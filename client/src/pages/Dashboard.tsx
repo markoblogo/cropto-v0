@@ -16,7 +16,8 @@ export default function Dashboard() {
 
   const createOptionMutation = useMutation({
     mutationFn: async (data: InsertOption) => {
-      return await apiRequest<Option>("POST", "/api/options", data);
+      const response = await apiRequest("POST", "/api/options", data);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
