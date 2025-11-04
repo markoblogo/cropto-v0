@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, Menu } from "lucide-react";
-import { Link } from "wouter";
+import { Wallet, Menu, LogOut, User } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -11,19 +12,30 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface HeaderProps {
   onCreateOption: () => void;
 }
 
 export function Header({ onCreateOption }: HeaderProps) {
+  const [, setLocation] = useLocation();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
   const [inputAddress, setInputAddress] = useState("");
   const { toast } = useToast();
+
+  // Fetch current user
+  const { data: userData } = useQuery<{ user: { id: string; email: string; role: string } } | null>({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+    enabled: !!localStorage.getItem('cropto_token'),
+  });
+
+  const user = userData?.user;
 
   const connectWallet = async () => {
     if (!inputAddress.trim()) {
@@ -61,6 +73,16 @@ export function Header({ onCreateOption }: HeaderProps) {
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('cropto_token');
+    queryClient.clear();
+    setLocation('/login');
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
   };
 
   return (
@@ -119,40 +141,75 @@ export function Header({ onCreateOption }: HeaderProps) {
               <Menu className="h-5 w-5" />
             </Button>
 
-            {/* Connect Wallet */}
-            {!walletAddress ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsWalletDialogOpen(true)}
-                data-testid="button-connect-wallet"
-              >
-                <Wallet className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Connect Wallet</span>
-                <span className="sm:hidden">Connect</span>
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="font-mono"
-                data-testid="button-wallet-address"
-              >
-                <Wallet className="h-4 w-4 mr-2" />
-                {formatAddress(walletAddress)}
-              </Button>
-            )}
+            {user ? (
+              <>
+                {/* User Role Badge */}
+                <Badge variant="secondary" className="capitalize hidden sm:flex" data-testid="badge-user-role">
+                  <User className="h-3 w-3 mr-1" />
+                  {user.role}
+                </Badge>
 
-            {/* Create Option CTA */}
-            <Button
-              size="sm"
-              onClick={onCreateOption}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              data-testid="button-header-create-option"
-            >
-              <span className="hidden sm:inline">Create Option</span>
-              <span className="sm:hidden">Create</span>
-            </Button>
+                {/* Connect Wallet */}
+                {!walletAddress ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsWalletDialogOpen(true)}
+                    data-testid="button-connect-wallet"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Connect Wallet</span>
+                    <span className="sm:hidden">Connect</span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="font-mono"
+                    data-testid="button-wallet-address"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    {formatAddress(walletAddress)}
+                  </Button>
+                )}
+
+                {/* Create Option CTA */}
+                <Button
+                  size="sm"
+                  onClick={onCreateOption}
+                  className="bg-primary text-primary-foreground font-semibold"
+                  data-testid="button-header-create-option"
+                >
+                  <span className="hidden sm:inline">Create Option</span>
+                  <span className="sm:hidden">Create</span>
+                </Button>
+
+                {/* Logout Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  data-testid="button-logout"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Logout</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Login/Register Buttons */}
+                <Link href="/login">
+                  <Button variant="outline" size="sm" data-testid="button-login">
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm" data-testid="button-register">
+                    Register
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
