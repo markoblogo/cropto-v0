@@ -6,6 +6,34 @@
       "passwordHash": "$2b$10$tw39B8UrtBd9fjsusML37erkctnEH0leN7xinhZZ2AZmG4xrHunN6",
       "role": "farmer",
       "createdAt": "2025-11-04T15:29:52.463Z"
+    },
+    {
+      "id": "user_1762284073922_7x56u3yp1",
+      "email": "testbroker@test.com",
+      "passwordHash": "$2b$10$cCSieCT.N8EKNLT9Ecst.uLeWJYstyV8rbhUraet92eXET8jkZcrK",
+      "role": "broker",
+      "createdAt": "2025-11-04T19:21:14.034Z"
+    },
+    {
+      "id": "user_1762284081440_877dimuju",
+      "email": "farmer@demo",
+      "passwordHash": "$2b$10$hpkGc7J55dy8s89xG7Vs1eXLp3wxuQgT635A4cpIDn0/UJB1gnGzi",
+      "role": "farmer",
+      "createdAt": "2025-11-04T19:21:21.534Z"
+    },
+    {
+      "id": "user_1762284081535_nydavqd83",
+      "email": "trader@demo",
+      "passwordHash": "$2b$10$OcuZcgljdZyAteHOgfp98uH5EOa4QNNfBAQS7TvN5mknvN9NR.PM.",
+      "role": "trader",
+      "createdAt": "2025-11-04T19:21:21.631Z"
+    },
+    {
+      "id": "user_1762284081634_v455elb62",
+      "email": "broker@demo",
+      "passwordHash": "$2b$10$h05S.KhGCrHoa8ssmuMpreqjTtUvmvyityzlmIynGo.EXWRVZfm96",
+      "role": "broker",
+      "createdAt": "2025-11-04T19:21:21.742Z"
     }
   ]
 }
