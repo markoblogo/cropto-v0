@@ -126,6 +126,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/jobs/run-margin-check - Run margin check on open options
+  app.post("/api/jobs/run-margin-check", async (req, res) => {
+    try {
+      const marginCheckSchema = z.object({
+        date: z.string().optional(),
+        commodity: z.string().optional(),
+        indexPrice: z.coerce.number().optional(),
+      });
+
+      const result = marginCheckSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message 
+        });
+      }
+
+      const { commodity, indexPrice } = result.data;
+      
+      // Default index price if not provided (using a default value for demo)
+      const currentIndexPrice = indexPrice ?? 100;
+
+      // Get all OPEN options, filtered by commodity if provided
+      const allOptions = await storage.listOptions();
+      const openOptions = allOptions.filter(option => {
+        const isOpen = option.status === "OPEN";
+        const matchesCommodity = !commodity || option.commodity === commodity;
+        return isOpen && matchesCommodity;
+      });
+
+      const marginCalls: any[] = [];
+      const createdNotifications: any[] = [];
+
+      // Process each open option
+      for (const option of openOptions) {
+        const strikePrice = parseFloat(option.strike || "0");
+        const qty = parseFloat(option.qty || "0");
+        const collateral = parseFloat(option.collateralAmount || "0");
+        const lastIntrinsic = parseFloat(option.lastIntrinsic || "0");
+
+        // Calculate intrinsic value based on option type
+        let intrinsicValue = 0;
+        if (option.type === "CALL") {
+          intrinsicValue = Math.max(0, currentIndexPrice - strikePrice) * qty;
+        } else if (option.type === "PUT") {
+          intrinsicValue = Math.max(0, strikePrice - currentIndexPrice) * qty;
+        }
+
+        // Calculate P&L
+        const pnl = lastIntrinsic > 0 ? intrinsicValue - lastIntrinsic : intrinsicValue;
+        
+        // Update option with new intrinsic and accumulated payout
+        const currentPayout = parseFloat(option.payoutAccumulated || "0");
+        const newPayoutAccumulated = currentPayout + pnl;
+
+        await storage.updateOption(option.id, {
+          lastIntrinsic: intrinsicValue.toFixed(8),
+          payoutAccumulated: newPayoutAccumulated.toFixed(8),
+        });
+
+        // Check margin rule: if abs(intrinsic) >= 0.8 * collateral_amount
+        if (collateral > 0 && Math.abs(intrinsicValue) >= 0.8 * collateral) {
+          const amountRequired = Math.max(0, Math.abs(intrinsicValue) - collateral);
+          
+          // Create margin call
+          const marginCall = await storage.createMarginCall({
+            optionId: option.id,
+            userId: option.issuerId || option.seller || option.buyer,
+            amountRequired: amountRequired.toFixed(8),
+            intrinsicValue: intrinsicValue.toFixed(8),
+            collateralAmount: collateral.toFixed(8),
+          });
+          
+          marginCalls.push(marginCall);
+
+          // Create notification for buyer
+          if (option.buyerId) {
+            const buyerNotification = await storage.createNotification({
+              userId: option.buyerId,
+              type: "MARGIN_CALL",
+              message: `Margin call triggered for option ${option.title}. Amount required: ${amountRequired.toFixed(8)}`,
+              relatedId: marginCall.id,
+            });
+            createdNotifications.push(buyerNotification);
+          }
+
+          // Create notification for issuer/seller
+          if (option.issuerId && option.issuerId !== option.buyerId) {
+            const issuerNotification = await storage.createNotification({
+              userId: option.issuerId,
+              type: "MARGIN_CALL",
+              message: `Margin call triggered for option ${option.title}. Amount required: ${amountRequired.toFixed(8)}`,
+              relatedId: marginCall.id,
+            });
+            createdNotifications.push(issuerNotification);
+          }
+        }
+      }
+
+      res.json({
+        marginCalls,
+        optionsProcessed: openOptions.length,
+        indexPrice: currentIndexPrice,
+        commodity: commodity || "all",
+      });
+    } catch (error: any) {
+      console.error("Error running margin check:", error);
+      res.status(500).json({ error: error.message || "Failed to run margin check" });
+    }
+  });
 
   const httpServer = createServer(app);
 
