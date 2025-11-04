@@ -40,6 +40,16 @@ Cropto is a professional cryptocurrency options trading platform that enables us
    - Token stored in localStorage (key: cropto_token) and automatically attached to all API requests
    - Graceful startup validation with clear error messages if JWT_SECRET missing
    - End-to-end tested: Registration, login, token persistence, option creation, logout flow
+8. **MetaMask Wallet Integration with Fallback** (November 4, 2025)
+   - MetaMask Integration: Uses ethers.js BrowserProvider to connect to MetaMask, gets wallet address and chainId
+   - Fallback to Manual Input: If MetaMask not available or rejected, users can enter address manually
+   - Backend Wallet Storage: Added walletAddress and network fields to User model in db.json
+   - Wallet API Endpoints: POST /api/wallet/link (saves to authenticated user or returns demo response), GET /api/wallet/:userId
+   - Dual-mode Dialog: Shows MetaMask button first, then "Or" separator, then manual input option
+   - Auth Response Updates: All auth endpoints now return walletAddress and network in user object
+   - Wallet Persistence: Connected wallet loaded from user data on login/refresh
+   - Display Format: Shows shortened address format (0x1234...5678) in header
+   - Optional Authentication: Wallet linking works for both authenticated users (persisted) and anonymous users (demo mode)
 
 ## User Preferences
 
