@@ -224,6 +224,11 @@ export function Header({ onCreateOption }: HeaderProps) {
                 Transactions
               </Button>
             </Link>
+            <Link href="/feedback">
+              <Button variant="ghost" size="sm" data-testid="button-nav-feedback">
+                Feedback
+              </Button>
+            </Link>
           </nav>
 
           {/* Action Buttons */}
