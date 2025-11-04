@@ -6,11 +6,15 @@ import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'server', 'db.json');
 
-// JWT_SECRET is mandatory - server will refuse to start without it
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required. Please add it to your Replit Secrets.');
+// JWT_SECRET validation will happen at server startup in server/index.ts
+function getJWTSecret(): string {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required. Please add it to your Replit Secrets.');
+  }
+  return process.env.JWT_SECRET;
 }
-const JWT_SECRET = process.env.JWT_SECRET;
+
+let JWT_SECRET: string;
 
 interface User {
   id: string;
@@ -55,6 +59,11 @@ export async function hashPassword(password: string): Promise<string> {
 // Verify password
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
+}
+
+// Initialize JWT secret - call this before using any auth functions
+export function initializeAuth() {
+  JWT_SECRET = getJWTSecret();
 }
 
 // Generate JWT token
