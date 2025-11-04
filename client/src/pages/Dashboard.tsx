@@ -12,6 +12,7 @@ import type { Option, InsertOption } from "@shared/schema";
 export default function Dashboard() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
 
   const { data: options = [], isLoading } = useQuery<Option[]>({
     queryKey: ["/api/options"],
@@ -84,11 +85,24 @@ export default function Dashboard() {
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
 
+  const handleConnectWallet = () => {
+    // Scroll to top where Header's Connect Wallet button is
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Wait a moment then click the header's connect wallet button
+    setTimeout(() => {
+      const walletButton = document.querySelector('[data-testid="button-connect-wallet"]') as HTMLElement;
+      walletButton?.click();
+    }, 500);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header onCreateOption={() => setIsCreateDialogOpen(true)} />
       
-      <Hero onCreateOption={() => setIsCreateDialogOpen(true)} />
+      <Hero 
+        onCreateOption={() => setIsCreateDialogOpen(true)}
+        onConnectWallet={handleConnectWallet}
+      />
 
       <main className="py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
