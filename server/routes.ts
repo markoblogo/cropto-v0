@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Send email notification for new margin call
             const responsibleUser = await findUserById(responsibleUserId);
-            if (responsibleUser) {
+            if (responsibleUser && marginCall.deadline) {
               await emailService.sendMarginCallEmail(
                 responsibleUser.email,
                 responsibleUser.email.split('@')[0], // Use email prefix as name
