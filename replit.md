@@ -9,6 +9,7 @@ Cropto is a professional cryptocurrency options trading platform that enables us
 ### Completed Features
 1. **Table Filtering and Sorting** - Users can filter options by type (CALL/PUT) and status (OPEN/FILLED/EXPIRED/CANCELLED), and sort by any column with ascending/descending/none states
 2. **Option Matching Engine** - Implemented transaction-safe matching that pairs buyers with sellers, creates trade records, and updates option status to FILLED with row-level locking to prevent race conditions
+3. **Exercise and Settlement Workflow** - Filled options can be exercised with spot price input, calculates payouts and P&L, creates settlement records, updates status to EXPIRED. Supports both CALL and PUT options with proper payout formulas
 
 ## User Preferences
 
@@ -47,7 +48,9 @@ Preferred communication style: Simple, everyday language.
 - `/api/health` - Health check endpoint
 - `/api/options` - GET (list all options) and POST (create new option)
 - `/api/options/:id/match` - POST (match an option with a seller, creates trade)
+- `/api/options/:id/exercise` - POST (exercise a filled option with spot price, creates settlement)
 - `/api/trades` - GET (list all trades)
+- `/api/settlements` - GET (list all settlements)
 
 **Data Validation**: Zod schemas shared between frontend and backend
 - Schema definitions in `shared/schema.ts`
@@ -99,6 +102,17 @@ trades table:
   - qty: decimal(18,8) (quantity traded)
   - premium: decimal(18,8) (premium per unit)
   - totalValue: decimal(18,8) (total trade value)
+  - createdAt: timestamp (auto-generated)
+
+settlements table:
+  - id: UUID (auto-generated primary key)
+  - optionId: UUID (foreign key to options)
+  - exercisedBy: text (user who exercised)
+  - spotPrice: decimal(18,8) (market price at exercise)
+  - strike: decimal(18,8) (strike price at exercise)
+  - qty: decimal(18,8) (quantity exercised)
+  - payout: decimal(18,8) (calculated payout amount)
+  - profitLoss: decimal(18,8) (net profit or loss after premium)
   - createdAt: timestamp (auto-generated)
 ```
 
