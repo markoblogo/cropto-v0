@@ -6,6 +6,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
+import croptoLogo from "@assets/cropto logo_1762265015324.png";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -87,11 +88,13 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary p-2">
-                <TrendingUp className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img 
+                src={croptoLogo} 
+                alt="Cropto" 
+                className="h-10 w-auto"
+                data-testid="img-cropto-logo"
+              />
               <div>
-                <h1 className="text-xl font-bold" data-testid="text-app-title">Cropto</h1>
                 <p className="text-xs text-muted-foreground">Options Trading Platform</p>
               </div>
             </div>
