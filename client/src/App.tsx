@@ -12,6 +12,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Admin from "@/pages/Admin";
 import AdminFeedback from "@/pages/AdminFeedback";
+import AdminReconciliation from "@/pages/AdminReconciliation";
 import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
 
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/docs" component={Docs} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/feedback" component={AdminFeedback} />
+      <Route path="/admin/reconciliation" component={AdminReconciliation} />
       <Route path="/feedback" component={Feedback} />
       <Route component={NotFound} />
     </Switch>

@@ -41,6 +41,7 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Email Mock Service**: Server-side email logging service (server/utils/emailMock.ts) that logs all email attempts to files in logs/email-log-<timestamp>.log and console. Integrated with margin check job to send email notifications when new margin calls are created.
 - **Demo Seeding System**: An idempotent system to seed demo data (users, options, index prices) for reproducible testing and demonstrations.
 - **Partner Feedback System**: Public feedback form at /feedback allows partners to submit UI/UX issues and suggestions without authentication. Admin view at /admin/feedback (broker-only) displays all feedback with resolve functionality and CSV export capability. Feedback table stores name, email, role, message, optional screenshot URL, and status (open/resolved).
+- **Admin Reconciliation**: Broker-only page at /admin/reconciliation provides comprehensive view of all transactions, settlements, and margin calls. Features include date range filtering, status filtering for margin calls, tabbed interface for different record types, and CSV export capability for each type. Frontend enforces broker-only access with redirect and error handling. Backend endpoints (`GET /api/admin/reconciliation/transactions`, `/settlements`, `/margincalls`) require broker authentication and return properly formatted data. Each tab displays records in tables with proper formatting, status badges, and loading/error states.
 
 ## External Dependencies
 

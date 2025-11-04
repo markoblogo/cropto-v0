@@ -229,6 +229,13 @@ export function Header({ onCreateOption }: HeaderProps) {
                 Feedback
               </Button>
             </Link>
+            {user?.role === "broker" && (
+              <Link href="/admin/reconciliation">
+                <Button variant="ghost" size="sm" data-testid="button-nav-reconciliation">
+                  Reconciliation
+                </Button>
+              </Link>
+            )}
           </nav>
 
           {/* Action Buttons */}

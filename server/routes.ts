@@ -894,6 +894,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Reconciliation endpoints
+  app.get("/api/admin/reconciliation/transactions", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user || req.user.role !== "broker") {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+      
+      const transactions = await storage.listTransactions();
+      res.json(transactions);
+    } catch (error: any) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch transactions" });
+    }
+  });
+
+  app.get("/api/admin/reconciliation/settlements", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user || req.user.role !== "broker") {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+      
+      const settlements = await storage.listSettlements();
+      res.json(settlements);
+    } catch (error: any) {
+      console.error("Error fetching settlements:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch settlements" });
+    }
+  });
+
+  app.get("/api/admin/reconciliation/margincalls", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user || req.user.role !== "broker") {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+      
+      const marginCalls = await storage.listMarginCalls();
+      res.json(marginCalls);
+    } catch (error: any) {
+      console.error("Error fetching margin calls:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch margin calls" });
+    }
+  });
+
   // Feedback endpoints
   app.post("/api/feedback", async (req, res) => {
     try {
