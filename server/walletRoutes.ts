@@ -62,6 +62,29 @@ router.post('/link', optionalAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/wallet/me - Get current authenticated user's wallet info
+router.get('/me', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const user = await findUserById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({
+      walletAddress: user.walletAddress || null,
+      network: user.network || null,
+    });
+  } catch (error) {
+    console.error('Get wallet error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/wallet/:userId - Get user's wallet info
 router.get('/:userId', async (req, res) => {
   try {
