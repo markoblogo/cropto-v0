@@ -365,7 +365,7 @@ export function OptionsTable({
                           isPending={isForceSettling}
                         />
                       )}
-                      {option.status === "MARGIN_CALL" && onTopUp && (
+                      {option.status === "MARGIN_CALL" && onTopUp && userId && option.buyerId === userId && (
                         <TopUpMarginCallDialog
                           marginCallId={option.id}
                           onTopUp={async (data) => {

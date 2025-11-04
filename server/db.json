@@ -34,6 +34,13 @@
       "passwordHash": "$2b$10$h05S.KhGCrHoa8ssmuMpreqjTtUvmvyityzlmIynGo.EXWRVZfm96",
       "role": "broker",
       "createdAt": "2025-11-04T19:21:21.742Z"
+    },
+    {
+      "id": "user_1762292505218_atm8n5fp8",
+      "email": "testuser@example.com",
+      "passwordHash": "$2b$10$vQYZ2lycKhE60blki4tAoOfakkWLDgZJuMIj6lPhNgWMqmI6Uw4Qi",
+      "role": "farmer",
+      "createdAt": "2025-11-04T21:41:45.329Z"
     }
   ]
 }

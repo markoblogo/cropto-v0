@@ -26,7 +26,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email format"),
+  email: z.string()
+    .min(1, "Email is required")
+    .refine((email) => email.includes("@"), "Invalid email format"),
   password: z.string().min(1, "Password is required"),
 });
 
