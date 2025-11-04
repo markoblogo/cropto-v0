@@ -1,6 +1,4 @@
-import { db } from "../db";
-import { marginCalls, options, notifications, transactions } from "@shared/schema";
-import { eq, and, lte } from "drizzle-orm";
+import { storage } from "../storage";
 
 interface ProcessedOption {
   optionId: string;
@@ -19,7 +17,6 @@ interface ProcessError {
 export async function processDeadlines() {
   console.log('🕐 Starting deadline processing...');
   
-  const now = new Date();
   const results = {
     processedCount: 0,
     expiredMarginCalls: 0,
@@ -28,98 +25,34 @@ export async function processDeadlines() {
   };
 
   try {
-    const expiredMarginCalls = await db
-      .select()
-      .from(marginCalls)
-      .where(
-        and(
-          eq(marginCalls.status, 'PENDING'),
-          lte(marginCalls.deadline, now)
-        )
-      );
-
+    const expiredMarginCalls = await storage.getExpiredMarginCalls();
     results.expiredMarginCalls = expiredMarginCalls.length;
     console.log(`  📋 Found ${expiredMarginCalls.length} expired margin calls`);
 
     for (const marginCall of expiredMarginCalls) {
       try {
-        const [option] = await db
-          .select()
-          .from(options)
-          .where(eq(options.id, marginCall.optionId));
-
-        if (!option) {
-          throw new Error(`Option ${marginCall.optionId} not found`);
-        }
-
         const reason = `Margin call deadline expired (${marginCall.deadline?.toISOString() || 'unknown'}). Collateral insufficient.`;
-        const isDefaulted = true;
-        const newStatus = "DEFAULTED";
-        const payout = parseFloat(option.payoutAccumulated || "0");
-
-        const [updatedOption] = await db
-          .update(options)
-          .set({ status: newStatus })
-          .where(eq(options.id, marginCall.optionId))
-          .returning();
-
-        const [transaction] = await db
-          .insert(transactions)
-          .values({
-            optionId: marginCall.optionId,
-            type: "FORCE_SETTLE",
-            fromUserId: option.issuerId || option.seller || null,
-            toUserId: option.buyerId || option.buyer,
-            amount: payout.toFixed(8),
-            description: reason,
-          })
-          .returning();
-
-        const createdNotifications = [];
-
-        if (option.buyerId) {
-          const [buyerNotification] = await db
-            .insert(notifications)
-            .values({
-              userId: option.buyerId,
-              type: "FORCE_SETTLE",
-              message: `Option ${option.title} has been force-settled. Status: ${newStatus}. ${reason}`,
-              relatedId: marginCall.optionId,
-            })
-            .returning();
-          createdNotifications.push(buyerNotification);
-        }
-
-        const responsibleUserId = option.issuerId || option.seller;
-        if (responsibleUserId && responsibleUserId !== option.buyerId) {
-          const [issuerNotification] = await db
-            .insert(notifications)
-            .values({
-              userId: responsibleUserId,
-              type: "FORCE_SETTLE",
-              message: `Option ${option.title} has been force-settled. Status: ${newStatus}. ${reason}`,
-              relatedId: marginCall.optionId,
-            })
-            .returning();
-          createdNotifications.push(issuerNotification);
-        }
-
-        const [updatedMarginCall] = await db
-          .update(marginCalls)
-          .set({ status: "LIQUIDATED" })
-          .where(eq(marginCalls.id, marginCall.id))
-          .returning();
+        
+        const result = await storage.forceSettleOption(
+          marginCall.optionId,
+          "system",
+          reason
+        );
+        
+        await storage.updateMarginCall(marginCall.id, {
+          status: "LIQUIDATED",
+        });
 
         results.processedOptions.push({
           optionId: marginCall.optionId,
           marginCallId: marginCall.id,
-          status: updatedOption.status,
-          transactionId: transaction.id,
-          notificationsCreated: createdNotifications.length,
+          status: result.option.status,
+          transactionId: result.transaction.id,
+          notificationsCreated: result.notifications.length,
         });
 
         results.processedCount++;
-        console.log(`  ✅ Processed margin call ${marginCall.id} for option ${option.title}`);
+        console.log(`  ✅ Processed margin call ${marginCall.id} for option ${result.option.title}`);
       } catch (error: any) {
         console.error(`  ❌ Error processing margin call ${marginCall.id}:`, error);
         results.errors.push({

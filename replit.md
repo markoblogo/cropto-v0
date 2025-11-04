@@ -34,6 +34,7 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Authentication & Authorization**: JWT-based authentication with user roles (farmer, trader, broker) and protected API endpoints.
 - **Wallet Integration**: MetaMask integration with a fallback for manual wallet address input, linking wallet addresses to user accounts.
 - **Margin System**: Automated margin check job calculates intrinsic value, P&L, triggers margin calls, and creates notifications. Users can top up reserved collateral for margin calls.
+- **Deadline Processing**: Automated system processes expired margin calls using scheduler module (server/cron/scheduler.ts). Manual trigger endpoint `POST /api/admin/schedule/process-deadlines` (broker-only) finds margin calls with past deadlines, force-settles options to DEFAULTED status, updates margin call status to LIQUIDATED, and creates notifications. Uses storage abstraction layer for transaction safety and business logic consistency.
 - **Demo Seeding System**: An idempotent system to seed demo data (users, options, index prices) for reproducible testing and demonstrations.
 
 ## External Dependencies
