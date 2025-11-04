@@ -108,7 +108,7 @@ export default function DesignArchitecture() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {mockScreens.map((screen, index) => (
               <Card key={index} data-testid={`card-mockup-${index}`}>
                 <CardHeader>
