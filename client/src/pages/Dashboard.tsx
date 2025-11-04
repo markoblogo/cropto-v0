@@ -35,6 +35,27 @@ export default function Dashboard() {
     },
   });
 
+  const matchOptionMutation = useMutation({
+    mutationFn: async ({ optionId, seller }: { optionId: string; seller: string }) => {
+      const response = await apiRequest("POST", `/api/options/${optionId}/match`, { seller });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      toast({
+        title: "Match Successful",
+        description: "Option has been successfully matched",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Match Failed",
+        description: error.message || "Failed to match option",
+        variant: "destructive",
+      });
+    },
+  });
+
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
@@ -93,7 +114,14 @@ export default function Dashboard() {
             />
           </div>
 
-          <OptionsTable options={options} isLoading={isLoading} />
+          <OptionsTable 
+            options={options} 
+            isLoading={isLoading}
+            onMatch={async (optionId, seller) => {
+              await matchOptionMutation.mutateAsync({ optionId, seller });
+            }}
+            isMatching={matchOptionMutation.isPending}
+          />
         </div>
       </main>
     </div>

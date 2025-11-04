@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertOptionSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (req, res) => {
@@ -35,6 +36,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating option:", error);
       res.status(500).json({ error: "Failed to create option" });
+    }
+  });
+
+  app.post("/api/options/:id/match", async (req, res) => {
+    try {
+      const matchSchema = z.object({
+        seller: z.string().min(1, "Seller is required"),
+      });
+
+      const result = matchSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message 
+        });
+      }
+
+      const trade = await storage.matchOption(req.params.id, result.data.seller);
+      res.status(201).json(trade);
+    } catch (error: any) {
+      console.error("Error matching option:", error);
+      const statusCode = error.message?.includes("not found") || 
+                        error.message?.includes("not open") || 
+                        error.message?.includes("cannot be the same") 
+                        ? 400 : 500;
+      res.status(statusCode).json({ error: error.message || "Failed to match option" });
+    }
+  });
+
+  app.get("/api/trades", async (req, res) => {
+    try {
+      const trades = await storage.listTrades();
+      res.json(trades);
+    } catch (error) {
+      console.error("Error fetching trades:", error);
+      res.status(500).json({ error: "Failed to fetch trades" });
     }
   });
 

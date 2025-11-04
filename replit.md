@@ -2,7 +2,13 @@
 
 ## Overview
 
-Cropto is a professional cryptocurrency options trading platform that enables users to create and manage crypto options (calls and puts) through an off-chain order book system. The application provides a clean, financial-focused interface for viewing options listings, creating new options contracts, and tracking trading activity with real-time data presentation.
+Cropto is a professional cryptocurrency options trading platform that enables users to create and manage crypto options (calls and puts) through an off-chain order book system with a matching engine. The application provides a clean, financial-focused interface for viewing options listings, creating new options contracts, matching buyers with sellers, filtering and sorting options, and tracking trading activity.
+
+## Recent Changes (November 4, 2025)
+
+### Completed Features
+1. **Table Filtering and Sorting** - Users can filter options by type (CALL/PUT) and status (OPEN/FILLED/EXPIRED/CANCELLED), and sort by any column with ascending/descending/none states
+2. **Option Matching Engine** - Implemented transaction-safe matching that pairs buyers with sellers, creates trade records, and updates option status to FILLED with row-level locking to prevent race conditions
 
 ## User Preferences
 
@@ -40,6 +46,8 @@ Preferred communication style: Simple, everyday language.
 **API Design**: RESTful JSON API
 - `/api/health` - Health check endpoint
 - `/api/options` - GET (list all options) and POST (create new option)
+- `/api/options/:id/match` - POST (match an option with a seller, creates trade)
+- `/api/trades` - GET (list all trades)
 
 **Data Validation**: Zod schemas shared between frontend and backend
 - Schema definitions in `shared/schema.ts`
@@ -49,6 +57,8 @@ Preferred communication style: Simple, everyday language.
 **Storage Layer**: Database abstraction through IStorage interface
 - Separates business logic from data access
 - DatabaseStorage implementation provides CRUD operations
+- Transaction-safe matching engine with row-level locking
+- Prevents race conditions during option matching
 - Enables easy testing and future storage backend changes
 
 **Key Design Decisions**:
@@ -76,7 +86,19 @@ options table:
   - qty: decimal(18,8) (quantity)
   - premium: decimal(18,8) (premium amount)
   - buyer: text (buyer identifier)
+  - seller: text (seller identifier, null until matched)
   - status: enum (OPEN, FILLED, EXPIRED, CANCELLED)
+  - createdAt: timestamp (auto-generated)
+
+trades table:
+  - id: UUID (auto-generated primary key)
+  - optionId: UUID (foreign key to options)
+  - buyer: text (buyer identifier)
+  - seller: text (seller identifier)
+  - strike: decimal(18,8) (strike price at time of trade)
+  - qty: decimal(18,8) (quantity traded)
+  - premium: decimal(18,8) (premium per unit)
+  - totalValue: decimal(18,8) (total trade value)
   - createdAt: timestamp (auto-generated)
 ```
 

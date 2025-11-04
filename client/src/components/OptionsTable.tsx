@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { StatusBadge } from "./StatusBadge";
 import { OptionTypeBadge } from "./OptionTypeBadge";
+import { MatchOptionDialog } from "./MatchOptionDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -28,9 +29,11 @@ type SortDirection = "asc" | "desc" | null;
 interface OptionsTableProps {
   options: Option[];
   isLoading: boolean;
+  onMatch?: (optionId: string, seller: string) => Promise<void>;
+  isMatching?: boolean;
 }
 
-export function OptionsTable({ options, isLoading }: OptionsTableProps) {
+export function OptionsTable({ options, isLoading, onMatch, isMatching = false }: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -235,6 +238,7 @@ export function OptionsTable({ options, isLoading }: OptionsTableProps) {
                     </Button>
                   </TableHead>
                   <TableHead className="font-semibold">Buyer</TableHead>
+                  <TableHead className="font-semibold">Seller</TableHead>
                   <TableHead className="font-semibold">
                     <Button 
                       variant="ghost" 
@@ -282,8 +286,26 @@ export function OptionsTable({ options, isLoading }: OptionsTableProps) {
                   <TableCell className="font-mono text-sm" data-testid={`text-buyer-${option.id}`}>
                     {option.buyer.slice(0, 6)}...{option.buyer.slice(-4)}
                   </TableCell>
+                  <TableCell className="font-mono text-sm" data-testid={`text-seller-${option.id}`}>
+                    {option.seller ? (
+                      <>{option.seller.slice(0, 6)}...{option.seller.slice(-4)}</>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>
-                    <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED"} />
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED"} />
+                      {option.status === "OPEN" && onMatch && (
+                        <MatchOptionDialog
+                          optionId={option.id}
+                          onMatch={async (data) => {
+                            await onMatch(option.id, data.seller);
+                          }}
+                          isPending={isMatching}
+                        />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground" data-testid={`text-created-${option.id}`}>
                     {format(new Date(option.createdAt), "MMM dd, yyyy")}
