@@ -1,9 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOptionSchema, insertFeedbackSchema } from "@shared/schema";
+import { db } from "./db";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { authenticateToken, type AuthRequest, findUserById } from "./auth";
@@ -754,6 +756,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error processing deadlines:", error);
       res.status(500).json({ error: error.message || "Failed to process deadlines" });
+    }
+  });
+
+  // POST /api/jobs/process-overdue-margincalls - Process expired margin calls with settlements (broker only)
+  app.post("/api/jobs/process-overdue-margincalls", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      // Only brokers can process overdue margin calls
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      if (req.user.role !== "broker") {
+        return res.status(403).json({ error: "Only brokers can process overdue margin calls" });
+      }
+      
+      // Get expired margin calls (deadline < now, status PENDING)
+      const expiredMarginCalls = await storage.getExpiredMarginCalls();
+      
+      const processedOptions: any[] = [];
+      const errors: any[] = [];
+      
+      console.log(`Processing ${expiredMarginCalls.length} overdue margin calls...`);
+      
+      // Process each expired margin call
+      for (const marginCall of expiredMarginCalls) {
+        try {
+          // Get the option
+          const option = await storage.getOptionById(marginCall.optionId);
+          if (!option) {
+            throw new Error("Option not found");
+          }
+          
+          // Calculate intrinsic value payout, accounting for collateral
+          const intrinsicValue = parseFloat(option.lastIntrinsic || "0");
+          const collateral = parseFloat(option.collateralAmount || "0");
+          const reservedCollateral = parseFloat(marginCall.reservedCollateral || "0");
+          const totalAvailableCollateral = collateral + reservedCollateral;
+          
+          // Payout is intrinsic value minus what's covered by available collateral
+          // If collateral is insufficient, the seller defaults and buyer gets max(intrinsic - collateral, 0)
+          const netPayout = Math.max(0, intrinsicValue - totalAvailableCollateral);
+          
+          // Premium paid by buyer
+          const qty = parseFloat(option.qty);
+          const premiumPaid = parseFloat(option.premium) * qty;
+          
+          // Profit/Loss for buyer = payout - premium paid
+          const profitLoss = netPayout - premiumPaid;
+          
+          // Create settlement record
+          const [settlement] = await db
+            .insert(settlements)
+            .values({
+              optionId: option.id,
+              exercisedBy: "system",
+              spotPrice: "0", // System settlement, no spot price
+              strike: option.strike,
+              qty: option.qty,
+              payout: netPayout.toFixed(8),
+              profitLoss: profitLoss.toFixed(8),
+            })
+            .returning();
+          
+          // Update option status to DEFAULTED
+          await db
+            .update(options)
+            .set({ status: "DEFAULTED" })
+            .where(eq(options.id, option.id));
+          
+          // Update margin call status to LIQUIDATED
+          await storage.updateMarginCall(marginCall.id, {
+            status: "LIQUIDATED",
+          });
+          
+          // Create transaction record for audit
+          const transaction = await storage.createTransaction({
+            optionId: option.id,
+            type: "FORCE_SETTLE",
+            fromUserId: option.issuerId || option.seller || null,
+            toUserId: option.buyerId || option.buyer,
+            amount: netPayout.toFixed(8),
+            description: `Overdue margin call liquidated. Deadline: ${marginCall.deadline?.toISOString() || 'unknown'}. Collateral: ${totalAvailableCollateral.toFixed(2)}, Intrinsic: ${intrinsicValue.toFixed(2)}`,
+          });
+          
+          // Create notifications
+          if (option.buyerId) {
+            await storage.createNotification({
+              userId: option.buyerId,
+              type: "LIQUIDATION",
+              message: `Option ${option.title} was liquidated due to overdue margin call. Net payout: ${netPayout.toFixed(2)}`,
+              relatedId: option.id,
+            });
+          }
+          
+          const responsibleUserId = option.issuerId || option.seller;
+          if (responsibleUserId && responsibleUserId !== option.buyerId) {
+            await storage.createNotification({
+              userId: responsibleUserId,
+              type: "LIQUIDATION",
+              message: `Option ${option.title} was liquidated due to overdue margin call. Collateral ${totalAvailableCollateral.toFixed(2)} applied.`,
+              relatedId: option.id,
+            });
+          }
+          
+          processedOptions.push({
+            optionId: marginCall.optionId,
+            marginCallId: marginCall.id,
+            status: "DEFAULTED",
+            settlementId: settlement.id,
+            transactionId: transaction.id,
+            payout: netPayout.toFixed(8),
+            collateralApplied: totalAvailableCollateral.toFixed(8),
+            intrinsicValue: intrinsicValue.toFixed(8),
+          });
+          
+          console.log(`✅ Processed overdue margin call ${marginCall.id} for option ${option.title}`);
+        } catch (error: any) {
+          console.error(`Error processing margin call ${marginCall.id}:`, error);
+          errors.push({
+            marginCallId: marginCall.id,
+            optionId: marginCall.optionId,
+            error: error.message,
+          });
+        }
+      }
+      
+      res.json({
+        processedCount: processedOptions.length,
+        expiredMarginCalls: expiredMarginCalls.length,
+        processedOptions,
+        errors,
+      });
+    } catch (error: any) {
+      console.error("Error processing overdue margin calls:", error);
+      res.status(500).json({ error: error.message || "Failed to process overdue margin calls" });
     }
   });
 
