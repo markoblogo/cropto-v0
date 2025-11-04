@@ -6,6 +6,7 @@ import {
   marginCalls,
   notifications,
   transactions,
+  feedback,
   type Option, 
   type InsertOption, 
   type Trade, 
@@ -18,7 +19,9 @@ import {
   type Notification,
   type InsertNotification,
   type Transaction,
-  type InsertTransaction
+  type InsertTransaction,
+  type Feedback,
+  type InsertFeedback
 } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and, lt } from "drizzle-orm";
@@ -48,6 +51,9 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   listTransactions(): Promise<Transaction[]>;
   forceSettleOption(optionId: string, settledBy: string, reason: string): Promise<{ option: Option; transaction: Transaction; notifications: Notification[] }>;
+  createFeedback(feedback: InsertFeedback): Promise<Feedback>;
+  listFeedback(): Promise<Feedback[]>;
+  updateFeedback(id: string, updates: Partial<Feedback>): Promise<Feedback>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -424,6 +430,31 @@ export class DatabaseStorage implements IStorage {
       transaction,
       notifications: createdNotifications,
     };
+  }
+
+  async createFeedback(insertFeedback: InsertFeedback): Promise<Feedback> {
+    const [feedbackEntry] = await db
+      .insert(feedback)
+      .values(insertFeedback)
+      .returning();
+    return feedbackEntry;
+  }
+
+  async listFeedback(): Promise<Feedback[]> {
+    const allFeedback = await db
+      .select()
+      .from(feedback)
+      .orderBy(desc(feedback.createdAt));
+    return allFeedback;
+  }
+
+  async updateFeedback(id: string, updates: Partial<Feedback>): Promise<Feedback> {
+    const [feedbackEntry] = await db
+      .update(feedback)
+      .set(updates)
+      .where(eq(feedback.id, id))
+      .returning();
+    return feedbackEntry;
   }
 }
 
