@@ -314,11 +314,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
-      const notifications = await storage.listNotifications(req.user.id);
+      const { unread } = req.query;
+      let notifications = await storage.listNotifications(req.user.id);
+      
+      // Filter to unread only if requested
+      if (unread === "true") {
+        notifications = notifications.filter(n => n.read === "false");
+      }
+      
       res.json(notifications);
     } catch (error: any) {
       console.error("Error fetching notifications:", error);
       res.status(500).json({ error: error.message || "Failed to fetch notifications" });
+    }
+  });
+
+  // POST /api/notifications/:id/mark-read - Mark a notification as read
+  app.post("/api/notifications/:id/mark-read", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const { id } = req.params;
+      
+      // Get the notification to verify ownership
+      const notifications = await storage.listNotifications(req.user.id);
+      const notification = notifications.find(n => n.id === id);
+      
+      if (!notification) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+      
+      // Update the notification
+      const updated = await storage.updateNotification(id, { read: "true" });
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: error.message || "Failed to mark notification as read" });
+    }
+  });
+
+  // POST /api/notifications/send-mock - Admin-only endpoint to create test notifications
+  app.post("/api/notifications/send-mock", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user || req.user.role !== "broker") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const { userId, type, message, relatedId } = req.body;
+      
+      if (!userId || !type || !message) {
+        return res.status(400).json({ error: "userId, type, and message are required" });
+      }
+      
+      const validTypes = ["MARGIN_CALL", "OPTION_MATCHED", "OPTION_EXERCISED", "LIQUIDATION", "FORCE_SETTLE"];
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({ error: `Invalid type. Must be one of: ${validTypes.join(", ")}` });
+      }
+      
+      const notification = await storage.createNotification({
+        userId,
+        type,
+        message,
+        relatedId: relatedId || null,
+      });
+      
+      console.log(`[Mock] Test notification sent to user ${userId}: ${message}`);
+      res.json(notification);
+    } catch (error: any) {
+      console.error("Error sending mock notification:", error);
+      res.status(500).json({ error: error.message || "Failed to send mock notification" });
     }
   });
 
