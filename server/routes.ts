@@ -6,7 +6,7 @@ import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
-import { authenticateToken } from "./auth";
+import { authenticateToken, type AuthRequest } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
