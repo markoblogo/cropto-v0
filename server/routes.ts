@@ -386,6 +386,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/options/:id/force-settle - Force settle an option (admin only)
+  app.post("/api/options/:id/force-settle", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Only brokers (admin) can force-settle
+      if (req.user.role !== "broker") {
+        return res.status(403).json({ error: "Only brokers can force-settle options" });
+      }
+      
+      if (!reason || typeof reason !== "string") {
+        return res.status(400).json({ error: "Reason is required" });
+      }
+      
+      const result = await storage.forceSettleOption(id, req.user.id, reason);
+      
+      res.json({
+        option: result.option,
+        transaction: result.transaction,
+        notificationsCreated: result.notifications.length,
+      });
+    } catch (error: any) {
+      console.error("Error force-settling option:", error);
+      const statusCode = error.message?.includes("not found") ? 404 : 500;
+      res.status(statusCode).json({ error: error.message || "Failed to force-settle option" });
+    }
+  });
+
+  // POST /api/jobs/process-deadlines - Process expired margin calls (manual trigger)
+  app.post("/api/jobs/process-deadlines", async (req, res) => {
+    try {
+      // Get expired margin calls
+      const expiredMarginCalls = await storage.getExpiredMarginCalls();
+      
+      const processedOptions: any[] = [];
+      const errors: any[] = [];
+      
+      // Force-settle each option with expired margin call
+      for (const marginCall of expiredMarginCalls) {
+        try {
+          const reason = `Margin call deadline expired (${marginCall.deadline}). Collateral insufficient.`;
+          
+          const result = await storage.forceSettleOption(
+            marginCall.optionId,
+            "system",
+            reason
+          );
+          
+          // Update margin call status to LIQUIDATED
+          await storage.updateMarginCall(marginCall.id, {
+            status: "LIQUIDATED",
+          });
+          
+          processedOptions.push({
+            optionId: marginCall.optionId,
+            marginCallId: marginCall.id,
+            status: result.option.status,
+            transactionId: result.transaction.id,
+          });
+        } catch (error: any) {
+          console.error(`Error processing margin call ${marginCall.id}:`, error);
+          errors.push({
+            marginCallId: marginCall.id,
+            optionId: marginCall.optionId,
+            error: error.message,
+          });
+        }
+      }
+      
+      res.json({
+        processedCount: processedOptions.length,
+        expiredMarginCalls: expiredMarginCalls.length,
+        processedOptions,
+        errors,
+      });
+    } catch (error: any) {
+      console.error("Error processing deadlines:", error);
+      res.status(500).json({ error: error.message || "Failed to process deadlines" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -5,6 +5,7 @@ import {
   wallets, 
   marginCalls,
   notifications,
+  transactions,
   type Option, 
   type InsertOption, 
   type Trade, 
@@ -15,10 +16,12 @@ import {
   type MarginCall,
   type InsertMarginCall,
   type Notification,
-  type InsertNotification
+  type InsertNotification,
+  type Transaction,
+  type InsertTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, lt } from "drizzle-orm";
 
 export interface IStorage {
   listOptions(): Promise<Option[]>;
@@ -38,9 +41,13 @@ export interface IStorage {
   getMarginCallById(id: string): Promise<MarginCall | undefined>;
   listMarginCalls(): Promise<MarginCall[]>;
   getMarginCallsByUser(userId: string): Promise<MarginCall[]>;
+  getExpiredMarginCalls(): Promise<MarginCall[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   listNotifications(userId: string): Promise<Notification[]>;
   updateNotification(id: string, updates: Partial<Notification>): Promise<Notification>;
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  listTransactions(): Promise<Transaction[]>;
+  forceSettleOption(optionId: string, settledBy: string, reason: string): Promise<{ option: Option; transaction: Transaction; notifications: Notification[] }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -318,6 +325,105 @@ export class DatabaseStorage implements IStorage {
       .where(eq(notifications.id, id))
       .returning();
     return notification;
+  }
+
+  async getExpiredMarginCalls(): Promise<MarginCall[]> {
+    const now = new Date();
+    const expiredMarginCalls = await db
+      .select()
+      .from(marginCalls)
+      .where(
+        and(
+          lt(marginCalls.deadline, now),
+          eq(marginCalls.status, "PENDING")
+        )
+      )
+      .orderBy(desc(marginCalls.createdAt));
+    return expiredMarginCalls;
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    const [transaction] = await db
+      .insert(transactions)
+      .values(insertTransaction)
+      .returning();
+    return transaction;
+  }
+
+  async listTransactions(): Promise<Transaction[]> {
+    const allTransactions = await db
+      .select()
+      .from(transactions)
+      .orderBy(desc(transactions.createdAt));
+    return allTransactions;
+  }
+
+  async forceSettleOption(
+    optionId: string, 
+    settledBy: string, 
+    reason: string
+  ): Promise<{ option: Option; transaction: Transaction; notifications: Notification[] }> {
+    // Get the option
+    const option = await this.getOptionById(optionId);
+    if (!option) {
+      throw new Error("Option not found");
+    }
+
+    // Determine status based on reason
+    const isDefaulted = reason.includes("margin call") || reason.includes("deadline");
+    const newStatus = isDefaulted ? "DEFAULTED" : "EXERCISED";
+
+    // Calculate payout from accumulated payout if defaulted
+    const payout = isDefaulted ? parseFloat(option.payoutAccumulated || "0") : 0;
+
+    // Update option status
+    const [updatedOption] = await db
+      .update(options)
+      .set({ status: newStatus })
+      .where(eq(options.id, optionId))
+      .returning();
+
+    // Create transaction record
+    const transaction = await this.createTransaction({
+      optionId,
+      type: "FORCE_SETTLE",
+      fromUserId: option.issuerId || option.seller || null,
+      toUserId: option.buyerId || option.buyer,
+      amount: payout.toFixed(8),
+      description: reason,
+    });
+
+    // Create notifications
+    const createdNotifications: Notification[] = [];
+
+    // Notify buyer
+    if (option.buyerId) {
+      const buyerNotification = await this.createNotification({
+        userId: option.buyerId,
+        type: "FORCE_SETTLE",
+        message: `Option ${option.title} has been force-settled. Status: ${newStatus}. ${reason}`,
+        relatedId: optionId,
+      });
+      createdNotifications.push(buyerNotification);
+    }
+
+    // Notify issuer/seller (prevent duplicate if same as buyer)
+    const responsibleUserId = option.issuerId || option.seller;
+    if (responsibleUserId && responsibleUserId !== option.buyerId) {
+      const issuerNotification = await this.createNotification({
+        userId: responsibleUserId,
+        type: "FORCE_SETTLE",
+        message: `Option ${option.title} has been force-settled. Status: ${newStatus}. ${reason}`,
+        relatedId: optionId,
+      });
+      createdNotifications.push(issuerNotification);
+    }
+
+    return {
+      option: updatedOption,
+      transaction,
+      notifications: createdNotifications,
+    };
   }
 }
 
