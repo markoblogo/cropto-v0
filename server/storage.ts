@@ -1,4 +1,22 @@
-import { options, trades, settlements, wallets, type Option, type InsertOption, type Trade, type InsertTrade, type Settlement, type Wallet, type InsertWallet } from "@shared/schema";
+import { 
+  options, 
+  trades, 
+  settlements, 
+  wallets, 
+  marginCalls,
+  notifications,
+  type Option, 
+  type InsertOption, 
+  type Trade, 
+  type InsertTrade, 
+  type Settlement, 
+  type Wallet, 
+  type InsertWallet,
+  type MarginCall,
+  type InsertMarginCall,
+  type Notification,
+  type InsertNotification
+} from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and } from "drizzle-orm";
 
@@ -15,6 +33,11 @@ export interface IStorage {
   linkWallet(address: string): Promise<Wallet>;
   getWalletByAddress(address: string): Promise<Wallet | undefined>;
   listWallets(): Promise<Wallet[]>;
+  createMarginCall(marginCall: InsertMarginCall): Promise<MarginCall>;
+  listMarginCalls(): Promise<MarginCall[]>;
+  getMarginCallsByUser(userId: string): Promise<MarginCall[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  listNotifications(userId: string): Promise<Notification[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -224,6 +247,48 @@ export class DatabaseStorage implements IStorage {
       .from(wallets)
       .orderBy(desc(wallets.createdAt));
     return allWallets;
+  }
+
+  async createMarginCall(insertMarginCall: InsertMarginCall): Promise<MarginCall> {
+    const [marginCall] = await db
+      .insert(marginCalls)
+      .values(insertMarginCall)
+      .returning();
+    return marginCall;
+  }
+
+  async listMarginCalls(): Promise<MarginCall[]> {
+    const allMarginCalls = await db
+      .select()
+      .from(marginCalls)
+      .orderBy(desc(marginCalls.createdAt));
+    return allMarginCalls;
+  }
+
+  async getMarginCallsByUser(userId: string): Promise<MarginCall[]> {
+    const userMarginCalls = await db
+      .select()
+      .from(marginCalls)
+      .where(eq(marginCalls.userId, userId))
+      .orderBy(desc(marginCalls.createdAt));
+    return userMarginCalls;
+  }
+
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    const [notification] = await db
+      .insert(notifications)
+      .values(insertNotification)
+      .returning();
+    return notification;
+  }
+
+  async listNotifications(userId: string): Promise<Notification[]> {
+    const userNotifications = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
+    return userNotifications;
   }
 }
 
