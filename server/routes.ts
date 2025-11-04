@@ -547,7 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/margin-call/:id/topup", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
-      const { amount } = req.body;
+      const { amount, currency } = req.body;
       
       if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -555,6 +555,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
         return res.status(400).json({ error: "Valid amount is required" });
+      }
+      
+      // Validate currency if provided (CROPT or FIAT)
+      if (currency && !["CROPT", "FIAT"].includes(currency)) {
+        return res.status(400).json({ error: "Currency must be CROPT or FIAT" });
       }
       
       // Get the margin call
@@ -591,6 +596,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reservedCollateral: newReserved.toFixed(8),
         status: shouldResolve ? "RESOLVED" : "PENDING",
       });
+      
+      // If resolved, update option status back to OPEN
+      if (shouldResolve) {
+        await storage.updateOption(marginCall.optionId, {
+          status: "OPEN",
+        });
+      }
       
       res.json({
         marginCall: updatedMarginCall,
