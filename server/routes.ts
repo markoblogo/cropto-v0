@@ -658,6 +658,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/feedback/export", authenticateToken, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const user = await findUserById(authReq.user!.userId);
+      
+      if (!user || user.role !== "broker") {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const allFeedback = await storage.listFeedback();
+      
+      // Generate CSV
+      const csvHeaders = "ID,Name,Email,Role,Message,Screenshot URL,Status,Created At\n";
+      const csvRows = allFeedback.map(f => {
+        const escapeCsvField = (field: string | null | undefined) => {
+          if (!field) return "";
+          const escaped = field.replace(/"/g, '""');
+          return escaped.includes(',') || escaped.includes('"') || escaped.includes('\n') 
+            ? `"${escaped}"` 
+            : escaped;
+        };
+        
+        return [
+          escapeCsvField(f.id),
+          escapeCsvField(f.name),
+          escapeCsvField(f.email),
+          escapeCsvField(f.role),
+          escapeCsvField(f.message),
+          escapeCsvField(f.screenshotUrl),
+          escapeCsvField(f.status),
+          escapeCsvField(f.createdAt?.toISOString())
+        ].join(',');
+      }).join('\n');
+      
+      const csv = csvHeaders + csvRows;
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=feedback-export.csv');
+      res.send(csv);
+    } catch (error) {
+      console.error("Error exporting feedback:", error);
+      res.status(500).json({ error: "Failed to export feedback" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
