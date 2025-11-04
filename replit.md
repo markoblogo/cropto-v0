@@ -22,6 +22,12 @@ Cropto is a professional cryptocurrency options trading platform that enables us
    - API endpoints: POST /api/wallet/link and GET /api/wallets
    - Frontend dialog for address input with validation and toast notifications
    - Connected state displayed in header with formatted address
+6. **Design Assets Integration** (November 4, 2025)
+   - Organized design assets in client/public/assets/designs/ directory (design-1.png through design-8.png, cropto-cover.png)
+   - Updated Hero component with new layout: cropto-cover background, cropto-logo positioned left, headline "Cropto — hedging for grain", CTAs "Create Option" and "Connect Wallet"
+   - Enhanced Design Architecture page (/design-architecture) with 8 design mockup cards, brand assets section, and color palette
+   - Responsive grid layout: 2 columns on tablet (md breakpoint 768px), single column on mobile (375px)
+   - Tested across desktop, tablet, and mobile viewports - all responsive breakpoints working correctly
 
 ## User Preferences
 
