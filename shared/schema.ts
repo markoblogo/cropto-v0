@@ -13,6 +13,12 @@ export const options = pgTable("options", {
   buyer: text("buyer").notNull(),
   seller: text("seller"),
   status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED"] }).notNull().default("OPEN"),
+  commodity: text("commodity"),
+  buyerId: text("buyer_id"),
+  issuerId: text("issuer_id"),
+  collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }),
+  lastIntrinsic: decimal("last_intrinsic", { precision: 18, scale: 8 }),
+  payoutAccumulated: decimal("payout_accumulated", { precision: 18, scale: 8 }).default("0"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -43,6 +49,27 @@ export const settlements = pgTable("settlements", {
 export const wallets = pgTable("wallets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   address: text("address").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const marginCalls = pgTable("margin_calls", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  optionId: varchar("option_id").notNull().references(() => options.id),
+  userId: text("user_id").notNull(),
+  amountRequired: decimal("amount_required", { precision: 18, scale: 8 }).notNull(),
+  intrinsicValue: decimal("intrinsic_value", { precision: 18, scale: 8 }).notNull(),
+  collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }).notNull(),
+  status: text("status", { enum: ["PENDING", "RESOLVED", "LIQUIDATED"] }).notNull().default("PENDING"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  type: text("type", { enum: ["MARGIN_CALL", "OPTION_MATCHED", "OPTION_EXERCISED", "LIQUIDATION"] }).notNull(),
+  message: text("message").notNull(),
+  relatedId: text("related_id"),
+  read: text("read", { enum: ["true", "false"] }).notNull().default("false"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -79,6 +106,18 @@ export const insertWalletSchema = createInsertSchema(wallets).omit({
   createdAt: true,
 });
 
+export const insertMarginCallSchema = createInsertSchema(marginCalls).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+  read: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -87,3 +126,7 @@ export type InsertSettlement = z.infer<typeof insertSettlementSchema>;
 export type Settlement = typeof settlements.$inferSelect;
 export type InsertWallet = z.infer<typeof insertWalletSchema>;
 export type Wallet = typeof wallets.$inferSelect;
+export type InsertMarginCall = z.infer<typeof insertMarginCallSchema>;
+export type MarginCall = typeof marginCalls.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
