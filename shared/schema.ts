@@ -86,6 +86,14 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const indexPrices = pgTable("index_prices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  commodity: text("commodity").notNull(),
+  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
+  date: timestamp("date").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -136,6 +144,11 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   read: true,
 });
 
+export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -150,3 +163,5 @@ export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
+export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
+export type IndexPrice = typeof indexPrices.$inferSelect;
