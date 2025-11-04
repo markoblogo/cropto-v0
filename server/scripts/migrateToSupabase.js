@@ -255,12 +255,12 @@ async function verifyMigration(supabase) {
 
   for (const table of tables) {
     try {
-      const { count, error } = await supabase
+      const { count, error: supabaseError } = await supabase
         .from(table)
         .select('*', { count: 'exact', head: true });
 
-      if (error) {
-        error(`Failed to count ${table}: ${error.message}`);
+      if (supabaseError) {
+        error(`Failed to count ${table}: ${supabaseError.message}`);
       } else {
         info(`${table}: ${count} rows`);
       }

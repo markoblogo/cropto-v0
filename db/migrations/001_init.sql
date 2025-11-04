@@ -2,8 +2,9 @@
 -- Version: 001_init
 -- Description: Initial schema for Supabase/PostgreSQL
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable pgcrypto extension for gen_random_uuid()
+-- Note: PostgreSQL 13+ has gen_random_uuid() built-in, but this ensures compatibility
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Users table (migrated from file-based storage)
 CREATE TABLE IF NOT EXISTS users (
