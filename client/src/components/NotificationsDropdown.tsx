@@ -9,17 +9,42 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useLocation } from "wouter";
 import type { Notification } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export function NotificationsDropdown() {
+  const [, setLocation] = useLocation();
+  
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
     retry: false,
     enabled: !!localStorage.getItem('cropto_token'),
     refetchInterval: 30000, // Refetch every 30 seconds
   });
+
+  const markAsReadMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      await apiRequest("POST", `/api/notifications/${notificationId}/mark-read`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    },
+  });
+
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if unread
+    if (notification.read === "false") {
+      markAsReadMutation.mutate(notification.id);
+    }
+
+    // Navigate to related option if relatedId exists
+    if (notification.relatedId) {
+      setLocation(`/?option=${notification.relatedId}`);
+    }
+  };
 
   const unreadCount = notifications.filter(n => n.read === "false").length;
 
@@ -98,6 +123,7 @@ export function NotificationsDropdown() {
             {notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
+                onClick={() => handleNotificationClick(notification)}
                 className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
                   notification.read === "false" ? "bg-muted/50" : ""
                 }`}
