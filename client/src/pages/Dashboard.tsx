@@ -5,6 +5,7 @@ import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
+import { DashboardIndexWidget } from "@/components/DashboardIndexWidget";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
@@ -205,12 +206,19 @@ export default function Dashboard() {
 
       <main className="py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Metric Cards */}
-          <MetricCards
-            totalOptions={totalOptions}
-            openPositions={openOptions}
-            totalVolume={totalVolume}
-          />
+          {/* Dashboard Widgets */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
+              <MetricCards
+                totalOptions={totalOptions}
+                openPositions={openOptions}
+                totalVolume={totalVolume}
+              />
+            </div>
+            <div className="lg:col-span-1">
+              <DashboardIndexWidget />
+            </div>
+          </div>
 
           {/* Options Table */}
           <div id="options-table">

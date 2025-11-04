@@ -2,10 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { authenticateToken, type AuthRequest, findUserById } from "./auth";
@@ -20,6 +20,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });
+  });
+
+  // Get latest index price with historical data for sparkline
+  app.get("/api/index/latest", async (req, res) => {
+    try {
+      const commodity = req.query.commodity as string || 'WHEAT';
+      
+      // Get the last 7 prices for sparkline
+      const prices = await db
+        .select()
+        .from(indexPrices)
+        .where(eq(indexPrices.commodity, commodity))
+        .orderBy(desc(indexPrices.date))
+        .limit(7);
+
+      if (prices.length === 0) {
+        return res.json({
+          commodity,
+          price: "0",
+          timestamp: new Date().toISOString(),
+          change: 0,
+          history: [],
+        });
+      }
+
+      // Latest price is the first one (most recent)
+      const latest = prices[0];
+      
+      // Calculate change percentage (comparing to oldest in the set)
+      const oldestPrice = prices[prices.length - 1];
+      const latestValue = parseFloat(latest.price);
+      const oldestValue = parseFloat(oldestPrice.price);
+      const change = oldestValue !== 0 
+        ? ((latestValue - oldestValue) / oldestValue) * 100
+        : 0;
+
+      // Reverse to get chronological order for sparkline
+      const history = prices.reverse().map(p => ({
+        price: parseFloat(p.price),
+        timestamp: p.date.toISOString(),
+      }));
+
+      res.json({
+        commodity: latest.commodity,
+        price: latest.price,
+        timestamp: latest.date.toISOString(),
+        change: parseFloat(change.toFixed(2)),
+        history,
+      });
+    } catch (error) {
+      console.error("Error fetching latest index:", error);
+      res.status(500).json({ error: "Failed to fetch index data" });
+    }
   });
 
   app.get("/api/options", async (req, res) => {
