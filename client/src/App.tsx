@@ -11,6 +11,7 @@ import Docs from "@/pages/Docs";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Admin from "@/pages/Admin";
+import AdminFeedback from "@/pages/AdminFeedback";
 import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
 
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/onchain-tx" component={OnchainTx} />
       <Route path="/docs" component={Docs} />
       <Route path="/admin" component={Admin} />
+      <Route path="/admin/feedback" component={AdminFeedback} />
       <Route path="/feedback" component={Feedback} />
       <Route component={NotFound} />
     </Switch>
