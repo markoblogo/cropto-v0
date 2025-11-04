@@ -28,6 +28,18 @@ Cropto is a professional cryptocurrency options trading platform that enables us
    - Enhanced Design Architecture page (/design-architecture) with 8 design mockup cards, brand assets section, and color palette
    - Responsive grid layout: 2 columns on tablet (md breakpoint 768px), single column on mobile (375px)
    - Tested across desktop, tablet, and mobile viewports - all responsive breakpoints working correctly
+7. **JWT Authentication System** (November 4, 2025)
+   - Implemented file-based user authentication with bcrypt password hashing and JWT tokens
+   - File storage: server/db.json contains users array (NOT PostgreSQL)
+   - JWT_SECRET managed through Replit Secrets (mandatory - server refuses to start without it)
+   - Three user roles: farmer, trader, broker
+   - Authentication endpoints: POST /api/auth/register, POST /api/auth/login, GET /api/auth/me
+   - Protected endpoint: POST /api/options requires valid JWT token
+   - Frontend: Login and Register pages with role selection
+   - Header: Shows user role badge and logout button when authenticated, shows login/register buttons when not
+   - Token stored in localStorage (key: cropto_token) and automatically attached to all API requests
+   - Graceful startup validation with clear error messages if JWT_SECRET missing
+   - End-to-end tested: Registration, login, token persistence, option creation, logout flow
 
 ## User Preferences
 
@@ -64,7 +76,10 @@ Preferred communication style: Simple, everyday language.
 
 **API Design**: RESTful JSON API
 - `/api/health` - Health check endpoint
-- `/api/options` - GET (list all options) and POST (create new option)
+- `/api/auth/register` - POST (register new user with email, password, role)
+- `/api/auth/login` - POST (login user, returns JWT token)
+- `/api/auth/me` - GET (get current user, requires authentication)
+- `/api/options` - GET (list all options) and POST (create new option, requires authentication)
 - `/api/options/:id/match` - POST (match an option with a seller, creates trade)
 - `/api/options/:id/exercise` - POST (exercise a filled option with spot price, creates settlement)
 - `/api/trades` - GET (list all trades)
