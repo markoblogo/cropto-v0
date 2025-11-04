@@ -62,6 +62,17 @@ Cropto is a professional cryptocurrency options trading platform that enables us
    - New schema tables: margin_calls (tracks margin calls with status), notifications (user notifications)
    - New option fields: commodity, buyerId, issuerId, collateralAmount, lastIntrinsic, payoutAccumulated
    - Returns: created margin_calls list, optionsProcessed count, indexPrice used, commodity filter
+10. **Margin Calls and Notifications Management** (November 4, 2025)
+   - GET /api/margin-calls: List all margin calls with optional status filter (PENDING/RESOLVED/LIQUIDATED)
+   - GET /api/notifications: Get notifications for authenticated user (margin calls, exercises, matches)
+   - POST /api/margin-call/:id/topup: Top up reserved collateral for a margin call
+     - Input: { amount } - amount to add to reserved collateral
+     - Updates reservedCollateral field on margin call
+     - Automatically marks status as RESOLVED if totalAvailable >= amountRequired
+     - Returns updated margin call with resolved status and totals
+   - New margin_calls field: reservedCollateral (tracks topup amounts)
+   - Authentication required for all endpoints
+   - Authorization checks ensure users can only topup their own margin calls
 
 ## User Preferences
 
@@ -110,6 +121,9 @@ Preferred communication style: Simple, everyday language.
 - `/api/trades` - GET (list all trades)
 - `/api/settlements` - GET (list all settlements)
 - `/api/jobs/run-margin-check` - POST (run margin check on open options, creates margin calls and notifications)
+- `/api/margin-calls` - GET (list all margin calls with optional status filter, requires authentication)
+- `/api/notifications` - GET (get notifications for current user, requires authentication)
+- `/api/margin-call/:id/topup` - POST (top up reserved collateral, auto-resolves if sufficient, requires authentication)
 
 **Data Validation**: Zod schemas shared between frontend and backend
 - Schema definitions in `shared/schema.ts`
