@@ -12,7 +12,7 @@ export const options = pgTable("options", {
   premium: decimal("premium", { precision: 18, scale: 8 }).notNull(),
   buyer: text("buyer").notNull(),
   seller: text("seller"),
-  status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED"] }).notNull().default("OPEN"),
+  status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED"] }).notNull().default("OPEN"),
   commodity: text("commodity"),
   buyerId: text("buyer_id"),
   issuerId: text("issuer_id"),
@@ -61,13 +61,25 @@ export const marginCalls = pgTable("margin_calls", {
   collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }).notNull(),
   reservedCollateral: decimal("reserved_collateral", { precision: 18, scale: 8 }).notNull().default("0"),
   status: text("status", { enum: ["PENDING", "RESOLVED", "LIQUIDATED"] }).notNull().default("PENDING"),
+  deadline: timestamp("deadline"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const transactions = pgTable("transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  optionId: varchar("option_id").notNull().references(() => options.id),
+  type: text("type", { enum: ["FORCE_SETTLE", "COLLATERAL_DEDUCTION", "PAYOUT"] }).notNull(),
+  fromUserId: text("from_user_id"),
+  toUserId: text("to_user_id"),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  description: text("description").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull(),
-  type: text("type", { enum: ["MARGIN_CALL", "OPTION_MATCHED", "OPTION_EXERCISED", "LIQUIDATION"] }).notNull(),
+  type: text("type", { enum: ["MARGIN_CALL", "OPTION_MATCHED", "OPTION_EXERCISED", "LIQUIDATION", "FORCE_SETTLE"] }).notNull(),
   message: text("message").notNull(),
   relatedId: text("related_id"),
   read: text("read", { enum: ["true", "false"] }).notNull().default("false"),
@@ -113,6 +125,11 @@ export const insertMarginCallSchema = createInsertSchema(marginCalls).omit({
   status: true,
 });
 
+export const insertTransactionSchema = createInsertSchema(transactions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertNotificationSchema = createInsertSchema(notifications).omit({
   id: true,
   createdAt: true,
@@ -129,5 +146,7 @@ export type InsertWallet = z.infer<typeof insertWalletSchema>;
 export type Wallet = typeof wallets.$inferSelect;
 export type InsertMarginCall = z.infer<typeof insertMarginCallSchema>;
 export type MarginCall = typeof marginCalls.$inferSelect;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type Transaction = typeof transactions.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
