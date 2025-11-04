@@ -6,9 +6,10 @@ import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
-import { authenticateToken, type AuthRequest } from "./auth";
+import { authenticateToken, type AuthRequest, findUserById } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
+import { emailService } from "./utils/emailMock";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
@@ -221,6 +222,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
               intrinsicValue: intrinsicValue.toFixed(8),
               collateralAmount: collateral.toFixed(8),
             });
+            
+            // Send email notification for new margin call
+            const responsibleUser = await findUserById(responsibleUserId);
+            if (responsibleUser) {
+              await emailService.sendMarginCallEmail(
+                responsibleUser.email,
+                responsibleUser.email.split('@')[0], // Use email prefix as name
+                option.id,
+                amountRequired.toFixed(2),
+                marginCall.deadline
+              );
+            }
           }
           
           // Add to response array (whether new or updated)
