@@ -59,6 +59,7 @@ export const marginCalls = pgTable("margin_calls", {
   amountRequired: decimal("amount_required", { precision: 18, scale: 8 }).notNull(),
   intrinsicValue: decimal("intrinsic_value", { precision: 18, scale: 8 }).notNull(),
   collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }).notNull(),
+  reservedCollateral: decimal("reserved_collateral", { precision: 18, scale: 8 }).notNull().default("0"),
   status: text("status", { enum: ["PENDING", "RESOLVED", "LIQUIDATED"] }).notNull().default("PENDING"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
