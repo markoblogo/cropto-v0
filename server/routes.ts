@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOptionSchema } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import authRoutes from "./authRoutes";
@@ -600,6 +600,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error processing deadlines:", error);
       res.status(500).json({ error: error.message || "Failed to process deadlines" });
+    }
+  });
+
+  // Feedback endpoints
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      const result = insertFeedbackSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message 
+        });
+      }
+
+      const feedbackEntry = await storage.createFeedback(result.data);
+      res.status(201).json(feedbackEntry);
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      res.status(500).json({ error: "Failed to create feedback" });
+    }
+  });
+
+  app.get("/api/admin/feedback", authenticateToken, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const user = await findUserById(authReq.user!.userId);
+      
+      if (!user || user.role !== "broker") {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const allFeedback = await storage.listFeedback();
+      res.json(allFeedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    }
+  });
+
+  app.post("/api/admin/feedback/:id/resolve", authenticateToken, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const user = await findUserById(authReq.user!.userId);
+      
+      if (!user || user.role !== "broker") {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const { id } = req.params;
+      const updatedFeedback = await storage.updateFeedback(id, { status: "resolved" });
+      res.json(updatedFeedback);
+    } catch (error) {
+      console.error("Error resolving feedback:", error);
+      res.status(500).json({ error: "Failed to resolve feedback" });
     }
   });
 
