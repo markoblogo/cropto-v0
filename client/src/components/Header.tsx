@@ -2,6 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Wallet, Menu } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -10,19 +21,39 @@ interface HeaderProps {
 export function Header({ onCreateOption }: HeaderProps) {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+  const [inputAddress, setInputAddress] = useState("");
+  const { toast } = useToast();
 
   const connectWallet = async () => {
+    if (!inputAddress.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a wallet address",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsConnecting(true);
     try {
-      // Mock wallet connection - in production, integrate with Web3 provider
-      const mockAddress = "0x" + Math.random().toString(16).substring(2, 42);
-      setWalletAddress(mockAddress);
+      const response = await apiRequest("POST", "/api/wallet/link", { address: inputAddress });
+      const wallet = await response.json();
       
-      // Send to backend (mock endpoint for now)
-      // In production: await apiRequest("POST", "/api/wallet/link", { address: mockAddress });
-      console.log("Wallet connected:", mockAddress);
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
+      setWalletAddress(wallet.address);
+      setIsWalletDialogOpen(false);
+      setInputAddress("");
+      
+      toast({
+        title: "Wallet Connected",
+        description: `Connected to ${formatAddress(wallet.address)}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect wallet",
+        variant: "destructive",
+      });
     } finally {
       setIsConnecting(false);
     }
@@ -93,14 +124,11 @@ export function Header({ onCreateOption }: HeaderProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={connectWallet}
-                disabled={isConnecting}
+                onClick={() => setIsWalletDialogOpen(true)}
                 data-testid="button-connect-wallet"
               >
                 <Wallet className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">
-                  {isConnecting ? "Connecting..." : "Connect Wallet"}
-                </span>
+                <span className="hidden sm:inline">Connect Wallet</span>
                 <span className="sm:hidden">Connect</span>
               </Button>
             ) : (
@@ -128,6 +156,49 @@ export function Header({ onCreateOption }: HeaderProps) {
           </div>
         </div>
       </div>
+
+      {/* Wallet Connection Dialog */}
+      <Dialog open={isWalletDialogOpen} onOpenChange={setIsWalletDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Connect Wallet</DialogTitle>
+            <DialogDescription>
+              Enter your wallet address to link it to your account
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="wallet-address">Wallet Address</Label>
+              <Input
+                id="wallet-address"
+                placeholder="0x..."
+                value={inputAddress}
+                onChange={(e) => setInputAddress(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && connectWallet()}
+                className="font-mono"
+                data-testid="input-wallet-address"
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsWalletDialogOpen(false)}
+                disabled={isConnecting}
+                data-testid="button-cancel-wallet"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={connectWallet}
+                disabled={isConnecting}
+                data-testid="button-submit-wallet"
+              >
+                {isConnecting ? "Connecting..." : "Connect"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

@@ -1,4 +1,4 @@
-import { options, trades, settlements, type Option, type InsertOption, type Trade, type InsertTrade, type Settlement } from "@shared/schema";
+import { options, trades, settlements, wallets, type Option, type InsertOption, type Trade, type InsertTrade, type Settlement, type Wallet, type InsertWallet } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and } from "drizzle-orm";
 
@@ -12,6 +12,9 @@ export interface IStorage {
   listTrades(): Promise<Trade[]>;
   getTradesByUser(user: string): Promise<Trade[]>;
   listSettlements(): Promise<Settlement[]>;
+  linkWallet(address: string): Promise<Wallet>;
+  getWalletByAddress(address: string): Promise<Wallet | undefined>;
+  listWallets(): Promise<Wallet[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -192,6 +195,35 @@ export class DatabaseStorage implements IStorage {
       .from(settlements)
       .orderBy(desc(settlements.createdAt));
     return allSettlements;
+  }
+
+  async linkWallet(address: string): Promise<Wallet> {
+    const existing = await this.getWalletByAddress(address);
+    if (existing) {
+      return existing;
+    }
+
+    const [wallet] = await db
+      .insert(wallets)
+      .values({ address })
+      .returning();
+    return wallet;
+  }
+
+  async getWalletByAddress(address: string): Promise<Wallet | undefined> {
+    const [wallet] = await db
+      .select()
+      .from(wallets)
+      .where(eq(wallets.address, address));
+    return wallet;
+  }
+
+  async listWallets(): Promise<Wallet[]> {
+    const allWallets = await db
+      .select()
+      .from(wallets)
+      .orderBy(desc(wallets.createdAt));
+    return allWallets;
   }
 }
 

@@ -40,6 +40,12 @@ export const settlements = pgTable("settlements", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const wallets = pgTable("wallets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  address: text("address").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -68,9 +74,16 @@ export const insertSettlementSchema = createInsertSchema(settlements).omit({
   createdAt: true,
 });
 
+export const insertWalletSchema = createInsertSchema(wallets).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
 export type InsertSettlement = z.infer<typeof insertSettlementSchema>;
 export type Settlement = typeof settlements.$inferSelect;
+export type InsertWallet = z.infer<typeof insertWalletSchema>;
+export type Wallet = typeof wallets.$inferSelect;

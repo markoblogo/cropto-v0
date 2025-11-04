@@ -119,6 +119,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/wallet/link", async (req, res) => {
+    try {
+      const walletSchema = z.object({
+        address: z.string().min(1, "Wallet address is required"),
+      });
+
+      const result = walletSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message 
+        });
+      }
+
+      const wallet = await storage.linkWallet(result.data.address);
+      res.status(201).json(wallet);
+    } catch (error: any) {
+      console.error("Error linking wallet:", error);
+      res.status(500).json({ error: error.message || "Failed to link wallet" });
+    }
+  });
+
+  app.get("/api/wallets", async (req, res) => {
+    try {
+      const wallets = await storage.listWallets();
+      res.json(wallets);
+    } catch (error) {
+      console.error("Error fetching wallets:", error);
+      res.status(500).json({ error: "Failed to fetch wallets" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

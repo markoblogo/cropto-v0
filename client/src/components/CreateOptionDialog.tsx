@@ -62,6 +62,15 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
     form.reset();
   };
 
+  // Watch form values for live calculations
+  const strike = form.watch("strike");
+  const qty = form.watch("qty");
+  const premium = form.watch("premium");
+
+  // Calculate total premium and collateral
+  const totalPremium = (parseFloat(premium) || 0) * (parseFloat(qty) || 0);
+  const requiredCollateral = (parseFloat(strike) || 0) * (parseFloat(qty) || 0);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -208,6 +217,30 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                 </FormItem>
               )}
             />
+
+            {/* Live Calculations Summary */}
+            {(totalPremium > 0 || requiredCollateral > 0) && (
+              <div className="rounded-md border bg-accent/5 p-4 space-y-3" data-testid="calculations-summary">
+                <h3 className="text-sm font-semibold text-foreground">Contract Summary</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Premium:</span>
+                    <span className="text-sm font-mono font-semibold text-accent-foreground" data-testid="text-total-premium">
+                      ${totalPremium.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Required Collateral:</span>
+                    <span className="text-sm font-mono font-semibold text-primary" data-testid="text-required-collateral">
+                      ${requiredCollateral.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t text-xs text-muted-foreground">
+                    Collateral is required from the seller to cover the obligation at strike price.
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-4">
               <Button

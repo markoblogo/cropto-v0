@@ -11,10 +11,10 @@ export function OptionTypeBadge({ type }: OptionTypeBadgeProps) {
   return (
     <Badge 
       variant="outline"
-      className={`inline-flex items-center gap-1 uppercase text-xs font-semibold tracking-wider ${
+      className={`inline-flex items-center gap-1 uppercase text-xs font-semibold tracking-wider rounded-full px-3 ${
         isCall 
-          ? "bg-chart-2/10 text-chart-2 border-chart-2/20" 
-          : "bg-chart-5/10 text-chart-5 border-chart-5/20"
+          ? "bg-accent/15 text-accent-foreground border-accent/30" 
+          : "bg-primary/10 text-primary border-primary/20"
       }`}
       data-testid={`badge-type-${type.toLowerCase()}`}
     >
