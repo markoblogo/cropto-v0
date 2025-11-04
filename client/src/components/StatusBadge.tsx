@@ -47,6 +47,10 @@ const STATUS_VARIANTS: Record<string, Variant> = {
     className: "bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400",
     label: "Resolved"
   },
+  MARGIN_CALL: {
+    className: "bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400",
+    label: "Margin Call"
+  },
 };
 
 const DEFAULT_VARIANT: Variant = {

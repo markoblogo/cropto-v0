@@ -12,7 +12,7 @@ export const options = pgTable("options", {
   premium: decimal("premium", { precision: 18, scale: 8 }).notNull(),
   buyer: text("buyer").notNull(),
   seller: text("seller"),
-  status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED"] }).notNull().default("OPEN"),
+  status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED", "MARGIN_CALL"] }).notNull().default("OPEN"),
   commodity: text("commodity"),
   buyerId: text("buyer_id"),
   issuerId: text("issuer_id"),
