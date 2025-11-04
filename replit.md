@@ -35,6 +35,8 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Wallet Integration**: MetaMask integration with a fallback for manual wallet address input, linking wallet addresses to user accounts.
 - **Margin System**: Automated margin check job calculates intrinsic value, P&L, triggers margin calls, and creates notifications. Users can top up reserved collateral for margin calls.
 - **Deadline Processing**: Automated system processes expired margin calls using scheduler module (server/cron/scheduler.ts). Manual trigger endpoint `POST /api/admin/schedule/process-deadlines` (broker-only) finds margin calls with past deadlines, force-settles options to DEFAULTED status, updates margin call status to LIQUIDATED, and creates notifications. Uses storage abstraction layer for transaction safety and business logic consistency.
+- **Notifications System**: In-app notification system with bell icon showing unread count. Notifications can be marked as read by clicking, with automatic navigation to related options. API endpoints: `GET /api/notifications` (supports ?unread=true filter), `POST /api/notifications/:id/mark-read`, and `POST /api/notifications/send-mock` (broker-only for testing).
+- **Email Mock Service**: Server-side email logging service (server/utils/emailMock.ts) that logs all email attempts to files in logs/email-log-<timestamp>.log and console. Integrated with margin check job to send email notifications when new margin calls are created.
 - **Demo Seeding System**: An idempotent system to seed demo data (users, options, index prices) for reproducible testing and demonstrations.
 
 ## External Dependencies
