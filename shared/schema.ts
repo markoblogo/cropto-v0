@@ -19,6 +19,7 @@ export const options = pgTable("options", {
   collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }),
   lastIntrinsic: decimal("last_intrinsic", { precision: 18, scale: 8 }),
   payoutAccumulated: decimal("payout_accumulated", { precision: 18, scale: 8 }).default("0"),
+  isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -91,6 +92,7 @@ export const indexPrices = pgTable("index_prices", {
   commodity: text("commodity").notNull(),
   price: decimal("price", { precision: 18, scale: 8 }).notNull(),
   date: timestamp("date").notNull().defaultNow(),
+  isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

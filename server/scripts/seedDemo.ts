@@ -39,6 +39,10 @@ export async function seedDemoData() {
     users: [] as any[],
     options: [] as any[],
     indexPrices: [] as any[],
+    deleted: {
+      options: 0,
+      indexPrices: 0,
+    },
   };
 
   // 1. Create demo users
@@ -81,7 +85,30 @@ export async function seedDemoData() {
   const traderId = traderUser?.id || 'trader@demo';
   const brokerId = brokerUser?.id || 'broker@demo';
 
-  // 2. Create demo index prices
+  // 2. Clean existing demo data (make idempotent)
+  console.log('🧹 Cleaning existing demo data...');
+  try {
+    // Delete existing demo options (identified by isDemo='true')
+    const { eq } = await import("drizzle-orm");
+    const deletedOptions = await db
+      .delete(options)
+      .where(eq(options.isDemo, 'true'))
+      .returning();
+    results.deleted.options = deletedOptions.length;
+    console.log(`  🗑️  Deleted ${deletedOptions.length} existing demo options`);
+
+    // Delete existing demo index prices (identified by isDemo='true')
+    const deletedIndexPrices = await db
+      .delete(indexPrices)
+      .where(eq(indexPrices.isDemo, 'true'))
+      .returning();
+    results.deleted.indexPrices = deletedIndexPrices.length;
+    console.log(`  🗑️  Deleted ${deletedIndexPrices.length} existing demo index prices`);
+  } catch (error) {
+    console.error('  ⚠️  Error cleaning existing demo data:', error);
+  }
+
+  // 3. Create demo index prices
   const demoIndexPrices: DemoIndexPrice[] = [
     { commodity: 'WHEAT', price: '210.00000000' },
     { commodity: 'WHEAT', price: '240.00000000', date: new Date(Date.now() + 24 * 60 * 60 * 1000) }, // Tomorrow
@@ -96,6 +123,7 @@ export async function seedDemoData() {
           commodity: indexPrice.commodity,
           price: indexPrice.price,
           date: indexPrice.date,
+          isDemo: 'true',
         })
         .returning();
       
@@ -107,7 +135,7 @@ export async function seedDemoData() {
     }
   }
 
-  // 3. Create demo options with computed collateral
+  // 4. Create demo options with computed collateral
   const demoOptions: DemoOption[] = [
     {
       title: 'WHEAT CALL Option - Strike 220',
@@ -163,6 +191,7 @@ export async function seedDemoData() {
           collateralAmount,
           lastIntrinsic: '0.00000000',
           payoutAccumulated: '0.00000000',
+          isDemo: 'true',
         })
         .returning();
       

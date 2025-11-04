@@ -21,9 +21,12 @@ export default function Admin() {
 
       setResults(data.results);
 
+      const deletedCount = (data.results.deleted?.options || 0) + (data.results.deleted?.indexPrices || 0);
+      const deletedMsg = deletedCount > 0 ? ` Cleaned ${deletedCount} existing records.` : "";
+      
       toast({
         title: "Demo scenario created! ✨",
-        description: `Created ${data.results.users.length} users, ${data.results.options.length} options, and ${data.results.indexPrices.length} index prices.`,
+        description: `Created ${data.results.users.length} users, ${data.results.options.length} options, and ${data.results.indexPrices.length} index prices.${deletedMsg}`,
       });
     } catch (error: any) {
       console.error("Error running demo:", error);
@@ -106,8 +109,8 @@ export default function Admin() {
                   </h4>
                   <div className="space-y-1 text-sm text-green-800 dark:text-green-200">
                     <p>• Users: {results.users.length} ({results.users.filter((u: any) => u.status === 'created').length} new, {results.users.filter((u: any) => u.status === 'already_exists').length} existing)</p>
-                    <p>• Options: {results.options.length}</p>
-                    <p>• Index Prices: {results.indexPrices.length}</p>
+                    <p>• Options: {results.options.length} created{results.deleted?.options > 0 ? ` (replaced ${results.deleted.options} existing)` : ''}</p>
+                    <p>• Index Prices: {results.indexPrices.length} created{results.deleted?.indexPrices > 0 ? ` (replaced ${results.deleted.indexPrices} existing)` : ''}</p>
                   </div>
                   
                   {results.users.some((u: any) => u.status === 'created') && (

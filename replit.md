@@ -2,77 +2,7 @@
 
 ## Overview
 
-Cropto is a professional cryptocurrency options trading platform that enables users to create and manage crypto options (calls and puts) through an off-chain order book system with a matching engine. The application provides a clean, financial-focused interface for viewing options listings, creating new options contracts, matching buyers with sellers, filtering and sorting options, and tracking trading activity.
-
-## Recent Changes (November 4, 2025)
-
-### Completed Features
-1. **Table Filtering and Sorting** - Users can filter options by type (CALL/PUT) and status (OPEN/FILLED/EXPIRED/CANCELLED), and sort by any column with ascending/descending/none states
-2. **Option Matching Engine** - Implemented transaction-safe matching that pairs buyers with sellers, creates trade records, and updates option status to FILLED with row-level locking to prevent race conditions
-3. **Exercise and Settlement Workflow** - Filled options can be exercised with spot price input, calculates payouts and P&L, creates settlement records, updates status to EXPIRED. Supports both CALL and PUT options with proper payout formulas
-4. **Comprehensive UI/UX Polish** - Complete visual refresh with Cropto branding
-   - Hero section with cover image, headline, and CTAs
-   - MetricCards component displaying Total Options, Open Positions, and Total Volume
-   - Updated Header with logo, navigation menu, Connect Wallet button, and Create Option CTA
-   - Pill-shaped status badges using new brand colors (olive #8AA43B for primary, gold #C9B86A for accent)
-   - Live calculations in Create Option form showing Total Premium and Required Collateral
-   - Documentation page at /docs with product information
-5. **Wallet Connection Feature** - Full implementation for linking wallet addresses
-   - Database schema with wallets table (unique constraint on address)
-   - API endpoints: POST /api/wallet/link and GET /api/wallets
-   - Frontend dialog for address input with validation and toast notifications
-   - Connected state displayed in header with formatted address
-6. **Design Assets Integration** (November 4, 2025)
-   - Organized design assets in client/public/assets/designs/ directory (design-1.png through design-8.png, cropto-cover.png)
-   - Updated Hero component with new layout: cropto-cover background, cropto-logo positioned left, headline "Cropto — hedging for grain", CTAs "Create Option" and "Connect Wallet"
-   - Enhanced Design Architecture page (/design-architecture) with 8 design mockup cards, brand assets section, and color palette
-   - Responsive grid layout: 2 columns on tablet (md breakpoint 768px), single column on mobile (375px)
-   - Tested across desktop, tablet, and mobile viewports - all responsive breakpoints working correctly
-7. **JWT Authentication System** (November 4, 2025)
-   - Implemented file-based user authentication with bcrypt password hashing and JWT tokens
-   - File storage: server/db.json contains users array (NOT PostgreSQL)
-   - JWT_SECRET managed through Replit Secrets (mandatory - server refuses to start without it)
-   - Three user roles: farmer, trader, broker
-   - Authentication endpoints: POST /api/auth/register, POST /api/auth/login, GET /api/auth/me
-   - Protected endpoint: POST /api/options requires valid JWT token
-   - Frontend: Login and Register pages with role selection
-   - Header: Shows user role badge and logout button when authenticated, shows login/register buttons when not
-   - Token stored in localStorage (key: cropto_token) and automatically attached to all API requests
-   - Graceful startup validation with clear error messages if JWT_SECRET missing
-   - End-to-end tested: Registration, login, token persistence, option creation, logout flow
-8. **MetaMask Wallet Integration with Fallback** (November 4, 2025)
-   - MetaMask Integration: Uses ethers.js BrowserProvider to connect to MetaMask, gets wallet address and chainId
-   - Fallback to Manual Input: If MetaMask not available or rejected, users can enter address manually
-   - Backend Wallet Storage: Added walletAddress and network fields to User model in db.json
-   - Wallet API Endpoints: POST /api/wallet/link (saves to authenticated user or returns demo response), GET /api/wallet/:userId
-   - Dual-mode Dialog: Shows MetaMask button first, then "Or" separator, then manual input option
-   - Auth Response Updates: All auth endpoints now return walletAddress and network in user object
-   - Wallet Persistence: Connected wallet loaded from user data on login/refresh
-   - Display Format: Shows shortened address format (0x1234...5678) in header
-   - Optional Authentication: Wallet linking works for both authenticated users (persisted) and anonymous users (demo mode)
-9. **Margin Check Job System** (November 4, 2025)
-   - POST /api/jobs/run-margin-check: Automated job to check margin requirements on open options
-   - Input: { date, commodity, indexPrice } - all optional, defaults to latest index if not provided
-   - For each OPEN option matching commodity:
-     - Calculates intrinsic value: CALL = max(0, indexPrice - strike) * qty, PUT = max(0, strike - indexPrice) * qty
-     - Calculates P&L: intrinsic - last_intrinsic (or intrinsic if first run)
-     - Updates option.last_intrinsic and option.payout_accumulated
-     - Margin rule: if abs(intrinsic) >= 0.8 * collateral_amount, creates margin_call record
-     - Creates notifications for buyer and issuer when margin call triggered
-   - New schema tables: margin_calls (tracks margin calls with status), notifications (user notifications)
-   - New option fields: commodity, buyerId, issuerId, collateralAmount, lastIntrinsic, payoutAccumulated
-   - Returns: created margin_calls list, optionsProcessed count, indexPrice used, commodity filter
-10. **Margin Calls and Notifications Management** (November 4, 2025)
-   - GET /api/margin-calls: List all margin calls with optional status filter (PENDING/RESOLVED/LIQUIDATED)
-   - GET /api/notifications: Get notifications for authenticated user (margin calls, exercises, matches)
-   - POST /api/margin-call/:id/topup: Top up reserved collateral for a margin call
-     - Input: { amount } - amount to add to reserved collateral
-     - Updates reservedCollateral field on margin call
-     - Automatically marks status as RESOLVED if totalAvailable >= amountRequired
-     - Returns updated margin call with resolved status and totals
-   - New margin_calls field: reservedCollateral (tracks topup amounts)
-   - Authentication required for all endpoints
-   - Authorization checks ensure users can only topup their own margin calls
+Cropto is a professional cryptocurrency options trading platform designed for creating and managing crypto options (calls and puts). It utilizes an off-chain order book system with a matching engine to facilitate trading. The platform provides a financial-focused interface for listing options, creating new contracts, matching buyers and sellers, and tracking trading activity. The business vision is to provide a robust and intuitive platform for crypto derivatives, offering users advanced trading capabilities and contributing to the broader adoption of regulated and efficient crypto options markets.
 
 ## User Preferences
 
@@ -82,149 +12,39 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Framework**: React with TypeScript using Vite as the build tool and development server
-
-**UI Component System**: shadcn/ui (Radix UI primitives) with Tailwind CSS
-- Design philosophy follows financial trading platforms (Robinhood, Coinbase, Binance)
-- Custom theme system with light/dark mode support
-- Material Design principles for data-rich interfaces
-- Typography: Inter for body text, JetBrains Mono for numerical values
-
-**State Management**:
-- TanStack Query (React Query) for server state management
-- Form state handled by React Hook Form with Zod validation
-- Local component state with React hooks
-
-**Routing**: Wouter for lightweight client-side routing
-
-**Key Design Decisions**:
-- Chose shadcn/ui over component libraries for maximum customization
-- Prioritized data legibility and quick scanning for financial data
-- Implemented consistent spacing system (2, 4, 6, 8 Tailwind units)
-- Used monospace fonts for numerical values to ensure alignment
+The frontend is built with React and TypeScript, using Vite for development and bundling. It employs `shadcn/ui` (built on Radix UI primitives) and Tailwind CSS for a highly customizable UI that follows financial trading platform aesthetics. Key design decisions include prioritizing data legibility, consistent spacing, and using monospace fonts for numerical values. State management is handled by TanStack Query for server state and React Hook Form with Zod for form management. Wouter is used for client-side routing.
 
 ### Backend Architecture
 
-**Framework**: Express.js with TypeScript running on Node.js
-
-**API Design**: RESTful JSON API
-- `/api/health` - Health check endpoint
-- `/api/auth/register` - POST (register new user with email, password, role)
-- `/api/auth/login` - POST (login user, returns JWT token)
-- `/api/auth/me` - GET (get current user, requires authentication)
-- `/api/wallet/link` - POST (link wallet address to user account, optional authentication)
-- `/api/wallet/me` - GET (get current user's wallet info, requires authentication)
-- `/api/wallet/:userId` - GET (get specific user's wallet info)
-- `/api/options` - GET (list all options) and POST (create new option, requires authentication)
-- `/api/options/:id/match` - POST (match an option with a seller, creates trade)
-- `/api/options/:id/exercise` - POST (exercise a filled option with spot price, creates settlement)
-- `/api/trades` - GET (list all trades)
-- `/api/settlements` - GET (list all settlements)
-- `/api/jobs/run-margin-check` - POST (run margin check on open options, creates margin calls and notifications)
-- `/api/margin-calls` - GET (list all margin calls with optional status filter, requires authentication)
-- `/api/notifications` - GET (get notifications for current user, requires authentication)
-- `/api/margin-call/:id/topup` - POST (top up reserved collateral, auto-resolves if sufficient, requires authentication)
-
-**Data Validation**: Zod schemas shared between frontend and backend
-- Schema definitions in `shared/schema.ts`
-- Runtime validation with `zod-validation-error` for user-friendly error messages
-- Decimal precision handling for financial values (18 digits, 8 decimal places)
-
-**Storage Layer**: Database abstraction through IStorage interface
-- Separates business logic from data access
-- DatabaseStorage implementation provides CRUD operations
-- Transaction-safe matching engine with row-level locking
-- Prevents race conditions during option matching
-- Enables easy testing and future storage backend changes
-
-**Key Design Decisions**:
-- Monorepo structure with shared types between client and server
-- TypeScript path aliases for clean imports (@/, @shared/)
-- Middleware for request logging and JSON body parsing with raw body access
-- ESM modules throughout for modern JavaScript support
+The backend is an Express.js application written in TypeScript, providing a RESTful JSON API. It uses a file-based user authentication system with bcrypt hashing and JWT tokens for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer (`IStorage`) with a `DatabaseStorage` implementation handles CRUD operations, ensuring transaction safety and preventing race conditions during option matching. Shared Zod schemas between frontend and backend (`shared/schema.ts`) are used for robust data validation. The system also includes a margin check job system that calculates intrinsic value, P&L, triggers margin calls, and generates notifications.
 
 ### Data Storage
 
-**Database**: PostgreSQL (via Neon serverless driver)
+The project uses PostgreSQL via Neon serverless driver, with Drizzle ORM for schema management and interactions. The schema includes tables for `options`, `trades`, `settlements`, `margin_calls`, and `notifications`, designed with high-precision decimals (18,8) for financial values, enum types for constrained data, and UUID primary keys.
 
-**ORM**: Drizzle ORM
-- Schema-first approach with TypeScript inference
-- Migration support through drizzle-kit
-- Serverless-optimized with connection pooling
+### UI/UX Decisions
 
-**Schema Design**:
-```typescript
-options table:
-  - id: UUID (auto-generated primary key)
-  - title: text (option description)
-  - type: enum (CALL, PUT)
-  - strike: decimal(18,8) (strike price)
-  - qty: decimal(18,8) (quantity)
-  - premium: decimal(18,8) (premium amount)
-  - buyer: text (buyer identifier)
-  - seller: text (seller identifier, null until matched)
-  - status: enum (OPEN, FILLED, EXPIRED, CANCELLED)
-  - createdAt: timestamp (auto-generated)
+The platform features a comprehensive visual refresh with Cropto branding, including a hero section, `MetricCards`, and a revamped header. It utilizes pill-shaped status badges with custom brand colors. The design architecture page (`/design-architecture`) showcases design mockups and brand assets, ensuring responsiveness across various viewports. Wallet connection is implemented with MetaMask integration and a manual input fallback.
 
-trades table:
-  - id: UUID (auto-generated primary key)
-  - optionId: UUID (foreign key to options)
-  - buyer: text (buyer identifier)
-  - seller: text (seller identifier)
-  - strike: decimal(18,8) (strike price at time of trade)
-  - qty: decimal(18,8) (quantity traded)
-  - premium: decimal(18,8) (premium per unit)
-  - totalValue: decimal(18,8) (total trade value)
-  - createdAt: timestamp (auto-generated)
+### Feature Specifications
 
-settlements table:
-  - id: UUID (auto-generated primary key)
-  - optionId: UUID (foreign key to options)
-  - exercisedBy: text (user who exercised)
-  - spotPrice: decimal(18,8) (market price at exercise)
-  - strike: decimal(18,8) (strike price at exercise)
-  - qty: decimal(18,8) (quantity exercised)
-  - payout: decimal(18,8) (calculated payout amount)
-  - profitLoss: decimal(18,8) (net profit or loss after premium)
-  - createdAt: timestamp (auto-generated)
-```
+- **Option Creation & Management**: Users can create, view, filter, and sort crypto options (CALL/PUT) by various statuses (OPEN/FILLED/EXPIRED/CANCELLED).
+- **Matching Engine**: Transaction-safe matching pairs buyers with sellers, updates option status, and creates trade records.
+- **Exercise & Settlement**: Filled options can be exercised with spot price input, calculating payouts and P&L, and creating settlement records.
+- **Authentication & Authorization**: JWT-based authentication with user roles (farmer, trader, broker) and protected API endpoints.
+- **Wallet Integration**: MetaMask integration with a fallback for manual wallet address input, linking wallet addresses to user accounts.
+- **Margin System**: Automated margin check job calculates intrinsic value, P&L, triggers margin calls, and creates notifications. Users can top up reserved collateral for margin calls.
+- **Demo Seeding System**: An idempotent system to seed demo data (users, options, index prices) for reproducible testing and demonstrations.
 
-**Key Design Decisions**:
-- High-precision decimals (18,8) for cryptocurrency amounts
-- Enum types for constrained values (option type, status)
-- Timestamps for audit trail and ordering
-- UUID primary keys for distributed system compatibility
+## External Dependencies
 
-### External Dependencies
-
-**Database Service**: Neon Serverless PostgreSQL
-- WebSocket-based connection for serverless environments
-- Connection pooling via @neondatabase/serverless
-- Environment variable: `DATABASE_URL`
-
-**UI Component Libraries**:
-- Radix UI primitives for accessible, unstyled components
-- Embla Carousel for potential carousel features
-- Lucide React for icons
-
-**Development Tools**:
-- Vite plugins for Replit integration (cartographer, dev banner, runtime error overlay)
-- PostCSS with Tailwind CSS and Autoprefixer
-- ESBuild for production server bundling
-
-**Validation & Forms**:
-- Zod for schema validation
-- React Hook Form for form state management
-- @hookform/resolvers for Zod integration
-
-**Utility Libraries**:
-- date-fns for date formatting
-- clsx and tailwind-merge (via cn utility) for conditional styling
-- class-variance-authority for component variant management
-- nanoid for unique ID generation
-
-**Key Design Decisions**:
-- Minimal external dependencies to reduce bundle size
-- Shared validation schemas between client and server
-- Google Fonts (Inter, JetBrains Mono) loaded via CDN
-- WebSocket constructor injection for Neon compatibility in Node.js environment
+- **Database**: Neon Serverless PostgreSQL (`@neondatabase/serverless`)
+- **ORM**: Drizzle ORM (`drizzle-orm`, `drizzle-kit`)
+- **Frontend UI**: `shadcn/ui`, Radix UI primitives, Tailwind CSS, Lucide React (icons)
+- **State Management**: TanStack Query (React Query)
+- **Form Handling & Validation**: React Hook Form, Zod (`zod`, `@hookform/resolvers`)
+- **Routing**: Wouter
+- **Wallet Integration**: `ethers.js`
+- **Authentication**: `bcrypt`, `jsonwebtoken`
+- **Utilities**: `date-fns`, `clsx`, `tailwind-merge`, `class-variance-authority`, `nanoid`
+- **Development Tools**: Vite, PostCSS, Autoprefixer, ESBuild
