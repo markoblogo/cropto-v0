@@ -279,19 +279,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/margin-calls - List all margin calls (admin can filter by status)
+  // GET /api/margin-calls - List margin calls (admin sees all, non-admin sees their own)
   app.get("/api/margin-calls", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const { status } = req.query;
-      const allMarginCalls = await storage.listMarginCalls();
-      
-      // Filter by status if provided
-      let filteredCalls = allMarginCalls;
-      if (status && typeof status === "string") {
-        filteredCalls = allMarginCalls.filter(mc => mc.status === status);
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
       }
       
-      res.json(filteredCalls);
+      const { status } = req.query;
+      const isAdmin = req.user.role === "broker"; // Broker role acts as admin
+      
+      let marginCalls;
+      if (isAdmin) {
+        // Admin sees all margin calls
+        marginCalls = await storage.listMarginCalls();
+      } else {
+        // Non-admin sees only their own margin calls
+        marginCalls = await storage.getMarginCallsByUser(req.user.id);
+      }
+      
+      // Filter by status if provided
+      if (status && typeof status === "string") {
+        marginCalls = marginCalls.filter(mc => mc.status === status);
+      }
+      
+      res.json(marginCalls);
     } catch (error: any) {
       console.error("Error fetching margin calls:", error);
       res.status(500).json({ error: error.message || "Failed to fetch margin calls" });
