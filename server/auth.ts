@@ -3,12 +3,20 @@ import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 
 const DB_PATH = path.join(process.cwd(), 'server', 'db.json');
 
 // JWT_SECRET validation will happen at server startup in server/index.ts
 function getJWTSecret(): string {
   if (!process.env.JWT_SECRET) {
+    // In development, auto-generate a secret key
+    if (process.env.NODE_ENV === 'development') {
+      const generatedSecret = crypto.randomBytes(32).toString('hex');
+      console.warn('⚠️  JWT_SECRET not found - auto-generated for development.');
+      console.warn('   For production, add JWT_SECRET to your Replit Secrets.');
+      return generatedSecret;
+    }
     throw new Error('JWT_SECRET environment variable is required. Please add it to your Replit Secrets.');
   }
   return process.env.JWT_SECRET;
