@@ -18,6 +18,21 @@ export default function Dashboard() {
     queryKey: ["/api/options"],
   });
 
+  // Fetch current user
+  const { data: userData } = useQuery<{ 
+    user: { 
+      id: string; 
+      email: string; 
+      role: string;
+    } 
+  } | null>({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+    enabled: !!localStorage.getItem('cropto_token'),
+  });
+
+  const user = userData?.user;
+
   const createOptionMutation = useMutation({
     mutationFn: async (data: InsertOption) => {
       const response = await apiRequest("POST", "/api/options", data);
@@ -81,6 +96,32 @@ export default function Dashboard() {
     },
   });
 
+  const simulateMarginCallMutation = useMutation({
+    mutationFn: async ({ indexPrice, commodity }: { indexPrice: number; commodity?: string }) => {
+      const response = await apiRequest("POST", "/api/jobs/run-margin-check", { 
+        indexPrice,
+        commodity,
+      });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      toast({
+        title: "Margin Check Complete",
+        description: `Processed ${data.optionsProcessed} options. Created ${data.marginCalls?.length || 0} margin calls.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Margin Check Failed",
+        description: error.message || "Failed to run margin check",
+        variant: "destructive",
+      });
+    },
+  });
+
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
@@ -133,6 +174,11 @@ export default function Dashboard() {
                 await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
               }}
               isExercising={exerciseOptionMutation.isPending}
+              onSimulate={async (optionId, indexPrice, commodity) => {
+                await simulateMarginCallMutation.mutateAsync({ indexPrice, commodity });
+              }}
+              isSimulating={simulateMarginCallMutation.isPending}
+              userRole={user?.role}
             />
           </div>
         </div>

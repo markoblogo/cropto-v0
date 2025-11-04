@@ -21,6 +21,7 @@ import { StatusBadge } from "./StatusBadge";
 import { OptionTypeBadge } from "./OptionTypeBadge";
 import { MatchOptionDialog } from "./MatchOptionDialog";
 import { ExerciseOptionDialog } from "./ExerciseOptionDialog";
+import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -34,9 +35,22 @@ interface OptionsTableProps {
   isMatching?: boolean;
   onExercise?: (optionId: string, exercisedBy: string, spotPrice: number) => Promise<void>;
   isExercising?: boolean;
+  onSimulate?: (optionId: string, indexPrice: number, commodity?: string) => Promise<void>;
+  isSimulating?: boolean;
+  userRole?: string;
 }
 
-export function OptionsTable({ options, isLoading, onMatch, isMatching = false, onExercise, isExercising = false }: OptionsTableProps) {
+export function OptionsTable({ 
+  options, 
+  isLoading, 
+  onMatch, 
+  isMatching = false, 
+  onExercise, 
+  isExercising = false,
+  onSimulate,
+  isSimulating = false,
+  userRole 
+}: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -297,7 +311,7 @@ export function OptionsTable({ options, isLoading, onMatch, isMatching = false, 
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED"} />
                       {option.status === "OPEN" && onMatch && (
                         <MatchOptionDialog
@@ -317,6 +331,16 @@ export function OptionsTable({ options, isLoading, onMatch, isMatching = false, 
                             await onExercise(option.id, data.exercisedBy, data.spotPrice);
                           }}
                           isPending={isExercising}
+                        />
+                      )}
+                      {option.status === "OPEN" && onSimulate && userRole === "broker" && (
+                        <SimulateMarginCallDialog
+                          optionId={option.id}
+                          commodity={option.commodity || undefined}
+                          onSimulate={async (data) => {
+                            await onSimulate(option.id, data.indexPrice, option.commodity || undefined);
+                          }}
+                          isPending={isSimulating}
                         />
                       )}
                     </div>
