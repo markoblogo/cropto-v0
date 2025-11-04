@@ -38,6 +38,7 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Notifications System**: In-app notification system with bell icon showing unread count. Notifications can be marked as read by clicking, with automatic navigation to related options. API endpoints: `GET /api/notifications` (supports ?unread=true filter), `POST /api/notifications/:id/mark-read`, and `POST /api/notifications/send-mock` (broker-only for testing).
 - **Email Mock Service**: Server-side email logging service (server/utils/emailMock.ts) that logs all email attempts to files in logs/email-log-<timestamp>.log and console. Integrated with margin check job to send email notifications when new margin calls are created.
 - **Demo Seeding System**: An idempotent system to seed demo data (users, options, index prices) for reproducible testing and demonstrations.
+- **Partner Feedback System**: Public feedback form at /feedback allows partners to submit UI/UX issues and suggestions without authentication. Admin view at /admin/feedback (broker-only) displays all feedback with resolve functionality and CSV export capability. Feedback table stores name, email, role, message, optional screenshot URL, and status (open/resolved).
 
 ## External Dependencies
 
