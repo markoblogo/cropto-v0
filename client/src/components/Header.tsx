@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, Menu, LogOut, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ethers } from "ethers";
 import {
   Dialog,
   DialogContent,
@@ -23,13 +24,24 @@ interface HeaderProps {
 export function Header({ onCreateOption }: HeaderProps) {
   const [, setLocation] = useLocation();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [network, setNetwork] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
   const [inputAddress, setInputAddress] = useState("");
+  const [inputNetwork, setInputNetwork] = useState("1");
   const { toast } = useToast();
 
   // Fetch current user
-  const { data: userData } = useQuery<{ user: { id: string; email: string; role: string } } | null>({
+  const { data: userData } = useQuery<{ 
+    user: { 
+      id: string; 
+      email: string; 
+      role: string;
+      walletAddress?: string;
+      network?: string;
+    } 
+  } | null>({
     queryKey: ["/api/auth/me"],
     retry: false,
     enabled: !!localStorage.getItem('cropto_token'),
@@ -37,7 +49,78 @@ export function Header({ onCreateOption }: HeaderProps) {
 
   const user = userData?.user;
 
-  const connectWallet = async () => {
+  // Load wallet from user data if available
+  useEffect(() => {
+    if (user?.walletAddress) {
+      setWalletAddress(user.walletAddress);
+      setNetwork(user.network || null);
+    }
+  }, [user]);
+
+  const connectMetaMask = async () => {
+    setIsConnecting(true);
+    try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum === 'undefined') {
+        toast({
+          title: "MetaMask Not Found",
+          description: "Switching to manual address input",
+        });
+        setShowManualInput(true);
+        setIsConnecting(false);
+        return;
+      }
+
+      // Request account access
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+      const address = accounts[0];
+
+      // Get network info
+      const networkInfo = await provider.getNetwork();
+      const chainId = networkInfo.chainId.toString();
+
+      // Save to backend
+      const response = await apiRequest("POST", "/api/wallet/link", { 
+        address, 
+        network: chainId 
+      });
+      const result = await response.json();
+      
+      setWalletAddress(address);
+      setNetwork(chainId);
+      setIsWalletDialogOpen(false);
+      
+      // Invalidate user query to refresh wallet data
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      
+      toast({
+        title: "Wallet Connected",
+        description: `Connected to ${formatAddress(address)} on network ${chainId}`,
+      });
+    } catch (error: any) {
+      console.error("MetaMask connection error:", error);
+      
+      // If user rejected, show manual input
+      if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
+        toast({
+          title: "Connection Rejected",
+          description: "You can enter your address manually instead",
+        });
+        setShowManualInput(true);
+      } else {
+        toast({
+          title: "Connection Failed",
+          description: error.message || "Failed to connect wallet",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const connectManually = async () => {
     if (!inputAddress.trim()) {
       toast({
         title: "Error",
@@ -49,16 +132,24 @@ export function Header({ onCreateOption }: HeaderProps) {
 
     setIsConnecting(true);
     try {
-      const response = await apiRequest("POST", "/api/wallet/link", { address: inputAddress });
-      const wallet = await response.json();
+      const response = await apiRequest("POST", "/api/wallet/link", { 
+        address: inputAddress,
+        network: inputNetwork
+      });
+      const result = await response.json();
       
-      setWalletAddress(wallet.address);
+      setWalletAddress(result.address || result.user?.walletAddress || inputAddress);
+      setNetwork(result.network || result.user?.network || inputNetwork);
       setIsWalletDialogOpen(false);
       setInputAddress("");
+      setShowManualInput(false);
+      
+      // Invalidate user query to refresh wallet data
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       
       toast({
         title: "Wallet Connected",
-        description: `Connected to ${formatAddress(wallet.address)}`,
+        description: `Connected to ${formatAddress(inputAddress)}`,
       });
     } catch (error: any) {
       toast({
@@ -69,6 +160,11 @@ export function Header({ onCreateOption }: HeaderProps) {
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const handleConnectWallet = () => {
+    setIsWalletDialogOpen(true);
+    setShowManualInput(false);
   };
 
   const formatAddress = (address: string) => {
@@ -154,7 +250,7 @@ export function Header({ onCreateOption }: HeaderProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setIsWalletDialogOpen(true)}
+                    onClick={handleConnectWallet}
                     data-testid="button-connect-wallet"
                   >
                     <Wallet className="h-4 w-4 mr-2" />
@@ -216,44 +312,99 @@ export function Header({ onCreateOption }: HeaderProps) {
 
       {/* Wallet Connection Dialog */}
       <Dialog open={isWalletDialogOpen} onOpenChange={setIsWalletDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Connect Wallet</DialogTitle>
             <DialogDescription>
-              Enter your wallet address to link it to your account
+              {showManualInput 
+                ? "Enter your wallet address manually" 
+                : "Connect using MetaMask or enter manually"}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="wallet-address">Wallet Address</Label>
-              <Input
-                id="wallet-address"
-                placeholder="0x..."
-                value={inputAddress}
-                onChange={(e) => setInputAddress(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && connectWallet()}
-                className="font-mono"
-                data-testid="input-wallet-address"
-              />
-            </div>
-            <div className="flex justify-end gap-3">
+          
+          {!showManualInput ? (
+            <div className="space-y-4 pt-4">
+              {/* MetaMask Connection Button */}
+              <Button
+                onClick={connectMetaMask}
+                disabled={isConnecting}
+                className="w-full"
+                size="lg"
+                data-testid="button-connect-metamask"
+              >
+                <Wallet className="h-5 w-5 mr-2" />
+                {isConnecting ? "Connecting..." : "Connect with MetaMask"}
+              </Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or
+                  </span>
+                </div>
+              </div>
+              
+              {/* Manual Input Option */}
               <Button
                 variant="outline"
-                onClick={() => setIsWalletDialogOpen(false)}
-                disabled={isConnecting}
-                data-testid="button-cancel-wallet"
+                onClick={() => setShowManualInput(true)}
+                className="w-full"
+                data-testid="button-manual-input"
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={connectWallet}
-                disabled={isConnecting}
-                data-testid="button-submit-wallet"
-              >
-                {isConnecting ? "Connecting..." : "Connect"}
+                Enter Address Manually
               </Button>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="wallet-address">Wallet Address</Label>
+                <Input
+                  id="wallet-address"
+                  placeholder="0x..."
+                  value={inputAddress}
+                  onChange={(e) => setInputAddress(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && connectManually()}
+                  className="font-mono"
+                  data-testid="input-wallet-address"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="network-id">Network / Chain ID</Label>
+                <Input
+                  id="network-id"
+                  placeholder="1 (Ethereum Mainnet)"
+                  value={inputNetwork}
+                  onChange={(e) => setInputNetwork(e.target.value)}
+                  data-testid="input-network-id"
+                />
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowManualInput(false);
+                    setInputAddress("");
+                  }}
+                  disabled={isConnecting}
+                  data-testid="button-back"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={connectManually}
+                  disabled={isConnecting}
+                  data-testid="button-submit-wallet"
+                >
+                  {isConnecting ? "Connecting..." : "Save Mock Address"}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </header>
