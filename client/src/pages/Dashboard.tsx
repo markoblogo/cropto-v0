@@ -1,43 +1,18 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { TrendingUp, BarChart3, DollarSign } from "lucide-react";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { OptionsTable } from "@/components/OptionsTable";
-import { Hero } from "@/components/Hero";
-import { Header } from "@/components/Header";
-import { MetricCards } from "@/components/MetricCards";
-import { DashboardIndexWidget } from "@/components/DashboardIndexWidget";
+import { StatsCard } from "@/components/StatsCard";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
+import croptoLogo from "@assets/cropto logo_1762265015324.png";
 
 export default function Dashboard() {
   const { toast } = useToast();
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
 
   const { data: options = [], isLoading } = useQuery<Option[]>({
     queryKey: ["/api/options"],
-  });
-
-  // Fetch current user
-  const { data: userData } = useQuery<{ 
-    user: { 
-      id: string; 
-      email: string; 
-      role: string;
-    } 
-  } | null>({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-    enabled: !!localStorage.getItem('cropto_token'),
-  });
-
-  const user = userData?.user;
-
-  // Fetch margin calls
-  const { data: marginCalls = [] } = useQuery<any[]>({
-    queryKey: ["/api/margin-calls"],
-    enabled: !!user,
   });
 
   const createOptionMutation = useMutation({
@@ -103,182 +78,80 @@ export default function Dashboard() {
     },
   });
 
-  const simulateMarginCallMutation = useMutation({
-    mutationFn: async ({ indexPrice, commodity }: { indexPrice: number; commodity?: string }) => {
-      const response = await apiRequest("POST", "/api/jobs/run-margin-check", { 
-        indexPrice,
-        commodity,
-      });
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      toast({
-        title: "Margin Check Complete",
-        description: `Processed ${data.optionsProcessed} options. Created ${data.marginCalls?.length || 0} margin calls.`,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Margin Check Failed",
-        description: error.message || "Failed to run margin check",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const forceSettleMutation = useMutation({
-    mutationFn: async ({ optionId, reason }: { optionId: string; reason: string }) => {
-      const response = await apiRequest("POST", `/api/options/${optionId}/force-settle`, { 
-        reason,
-      });
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      toast({
-        title: "Force Settlement Complete",
-        description: `Option has been force-settled. Status: ${data.option?.status}. ${data.notificationsCreated} notifications sent.`,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Force Settlement Failed",
-        description: error.message || "Failed to force-settle option",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const topUpMarginCallMutation = useMutation({
-    mutationFn: async ({ marginCallId, amount, currency }: { marginCallId: string; amount: number; currency: string }) => {
-      const response = await apiRequest("POST", `/api/margin-call/${marginCallId}/topup`, { 
-        amount,
-        currency,
-      });
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
-      toast({
-        title: data.resolved ? "Margin Call Resolved" : "Top-up Successful",
-        description: data.resolved 
-          ? "Margin call has been resolved. Option status restored to OPEN." 
-          : `Added ${data.marginCall.reservedCollateral} to collateral. Total available: ${data.totalAvailable}`,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Top-up Failed",
-        description: error.message || "Failed to top up margin call",
-        variant: "destructive",
-      });
-    },
-  });
-
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
 
-  const handleConnectWallet = () => {
-    // Scroll to top where Header's Connect Wallet button is
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Wait a moment then click the header's connect wallet button
-    setTimeout(() => {
-      const walletButton = document.querySelector('[data-testid="button-connect-wallet"]') as HTMLElement;
-      walletButton?.click();
-    }, 500);
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <Header onCreateOption={() => setIsCreateDialogOpen(true)} />
-      
-      <Hero 
-        onCreateOption={() => setIsCreateDialogOpen(true)}
-        onConnectWallet={handleConnectWallet}
-      />
-
-      <main className="py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Dashboard Widgets */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
-              <MetricCards
-                totalOptions={totalOptions}
-                openPositions={openOptions}
-                totalVolume={totalVolume}
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <img 
+                src={croptoLogo} 
+                alt="Cropto" 
+                className="h-10 w-auto"
+                data-testid="img-cropto-logo"
+              />
+              <div>
+                <p className="text-xs text-muted-foreground">Options Trading Platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <CreateOptionDialog 
+                onSubmit={(data) => createOptionMutation.mutateAsync(data)}
+                isPending={createOptionMutation.isPending}
               />
             </div>
-            <div className="lg:col-span-1">
-              <DashboardIndexWidget />
-            </div>
-          </div>
-
-          {/* Options Table */}
-          <div id="options-table">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Options Marketplace</h2>
-              <p className="text-muted-foreground">
-                Browse, create, and trade grain commodity options
-              </p>
-            </div>
-            
-            <OptionsTable 
-              options={options} 
-              isLoading={isLoading}
-              onMatch={async (optionId, seller) => {
-                await matchOptionMutation.mutateAsync({ optionId, seller });
-              }}
-              isMatching={matchOptionMutation.isPending}
-              onExercise={async (optionId, exercisedBy, spotPrice) => {
-                await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
-              }}
-              isExercising={exerciseOptionMutation.isPending}
-              onSimulate={async (optionId, indexPrice, commodity) => {
-                await simulateMarginCallMutation.mutateAsync({ indexPrice, commodity });
-              }}
-              isSimulating={simulateMarginCallMutation.isPending}
-              onForceSettle={async (optionId, reason) => {
-                await forceSettleMutation.mutateAsync({ optionId, reason });
-              }}
-              isForceSettling={forceSettleMutation.isPending}
-              onTopUp={async (optionId, amount, currency) => {
-                // Find the margin call for this option
-                const marginCall = marginCalls.find(mc => mc.optionId === optionId && mc.status === "PENDING");
-                if (!marginCall) {
-                  toast({
-                    title: "Error",
-                    description: "No pending margin call found for this option",
-                    variant: "destructive",
-                  });
-                  return;
-                }
-                await topUpMarginCallMutation.mutateAsync({ marginCallId: marginCall.id, amount, currency });
-              }}
-              isTopping={topUpMarginCallMutation.isPending}
-              userRole={user?.role}
-              userId={user?.id}
-            />
           </div>
         </div>
-      </main>
+      </header>
 
-      {/* Create Option Dialog */}
-      <CreateOptionDialog 
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onSubmit={async (data) => {
-          await createOptionMutation.mutateAsync(data);
-          setIsCreateDialogOpen(false);
-        }}
-        isPending={createOptionMutation.isPending}
-      />
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
+            <p className="text-muted-foreground">
+              Monitor your crypto options positions and trading activity
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatsCard
+              title="Total Options"
+              value={totalOptions.toString()}
+              icon={BarChart3}
+              description="All time contracts"
+            />
+            <StatsCard
+              title="Open Positions"
+              value={openOptions.toString()}
+              icon={TrendingUp}
+              description="Active contracts"
+            />
+            <StatsCard
+              title="Total Volume"
+              value={`$${totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              icon={DollarSign}
+              description="Cumulative premium"
+            />
+          </div>
+
+          <OptionsTable 
+            options={options} 
+            isLoading={isLoading}
+            onMatch={async (optionId, seller) => {
+              await matchOptionMutation.mutateAsync({ optionId, seller });
+            }}
+            isMatching={matchOptionMutation.isPending}
+            onExercise={async (optionId, exercisedBy, spotPrice) => {
+              await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
+            }}
+            isExercising={exerciseOptionMutation.isPending}
+          />
+        </div>
+      </main>
     </div>
   );
 }

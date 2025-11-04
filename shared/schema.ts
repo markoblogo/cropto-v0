@@ -12,14 +12,7 @@ export const options = pgTable("options", {
   premium: decimal("premium", { precision: 18, scale: 8 }).notNull(),
   buyer: text("buyer").notNull(),
   seller: text("seller"),
-  status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED", "MARGIN_CALL"] }).notNull().default("OPEN"),
-  commodity: text("commodity"),
-  buyerId: text("buyer_id"),
-  issuerId: text("issuer_id"),
-  collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }),
-  lastIntrinsic: decimal("last_intrinsic", { precision: 18, scale: 8 }),
-  payoutAccumulated: decimal("payout_accumulated", { precision: 18, scale: 8 }).default("0"),
-  isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
+  status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED"] }).notNull().default("OPEN"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -44,66 +37,6 @@ export const settlements = pgTable("settlements", {
   qty: decimal("qty", { precision: 18, scale: 8 }).notNull(),
   payout: decimal("payout", { precision: 18, scale: 8 }).notNull(),
   profitLoss: decimal("profit_loss", { precision: 18, scale: 8 }).notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const wallets = pgTable("wallets", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  address: text("address").notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const marginCalls = pgTable("margin_calls", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  optionId: varchar("option_id").notNull().references(() => options.id),
-  userId: text("user_id").notNull(),
-  amountRequired: decimal("amount_required", { precision: 18, scale: 8 }).notNull(),
-  intrinsicValue: decimal("intrinsic_value", { precision: 18, scale: 8 }).notNull(),
-  collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }).notNull(),
-  reservedCollateral: decimal("reserved_collateral", { precision: 18, scale: 8 }).notNull().default("0"),
-  status: text("status", { enum: ["PENDING", "RESOLVED", "LIQUIDATED"] }).notNull().default("PENDING"),
-  deadline: timestamp("deadline"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const transactions = pgTable("transactions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  optionId: varchar("option_id").notNull().references(() => options.id),
-  type: text("type", { enum: ["FORCE_SETTLE", "COLLATERAL_DEDUCTION", "PAYOUT"] }).notNull(),
-  fromUserId: text("from_user_id"),
-  toUserId: text("to_user_id"),
-  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
-  description: text("description").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const notifications = pgTable("notifications", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: text("user_id").notNull(),
-  type: text("type", { enum: ["MARGIN_CALL", "OPTION_MATCHED", "OPTION_EXERCISED", "LIQUIDATION", "FORCE_SETTLE"] }).notNull(),
-  message: text("message").notNull(),
-  relatedId: text("related_id"),
-  read: text("read", { enum: ["true", "false"] }).notNull().default("false"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const feedback = pgTable("feedback", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  role: text("role").notNull(),
-  message: text("message").notNull(),
-  screenshotUrl: text("screenshot_url"),
-  status: text("status", { enum: ["open", "resolved"] }).notNull().default("open"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const indexPrices = pgTable("index_prices", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  commodity: text("commodity").notNull(),
-  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
-  date: timestamp("date").notNull().defaultNow(),
-  isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -135,54 +68,9 @@ export const insertSettlementSchema = createInsertSchema(settlements).omit({
   createdAt: true,
 });
 
-export const insertWalletSchema = createInsertSchema(wallets).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertMarginCallSchema = createInsertSchema(marginCalls).omit({
-  id: true,
-  createdAt: true,
-  status: true,
-});
-
-export const insertTransactionSchema = createInsertSchema(transactions).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertNotificationSchema = createInsertSchema(notifications).omit({
-  id: true,
-  createdAt: true,
-  read: true,
-});
-
-export const insertFeedbackSchema = createInsertSchema(feedback).omit({
-  id: true,
-  createdAt: true,
-  status: true,
-});
-
-export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
-  id: true,
-  createdAt: true,
-});
-
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
 export type InsertSettlement = z.infer<typeof insertSettlementSchema>;
 export type Settlement = typeof settlements.$inferSelect;
-export type InsertWallet = z.infer<typeof insertWalletSchema>;
-export type Wallet = typeof wallets.$inferSelect;
-export type InsertMarginCall = z.infer<typeof insertMarginCallSchema>;
-export type MarginCall = typeof marginCalls.$inferSelect;
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
-export type Transaction = typeof transactions.$inferSelect;
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type Notification = typeof notifications.$inferSelect;
-export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
-export type Feedback = typeof feedback.$inferSelect;
-export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
-export type IndexPrice = typeof indexPrices.$inferSelect;

@@ -17,21 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { StatusBadge } from "./StatusBadge";
 import { OptionTypeBadge } from "./OptionTypeBadge";
 import { MatchOptionDialog } from "./MatchOptionDialog";
 import { ExerciseOptionDialog } from "./ExerciseOptionDialog";
-import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
-import { ForceSettleDialog } from "./ForceSettleDialog";
-import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
 import type { Option } from "@shared/schema";
-import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, ArrowDownToLine } from "lucide-react";
+import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 type SortField = "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
@@ -43,32 +34,9 @@ interface OptionsTableProps {
   isMatching?: boolean;
   onExercise?: (optionId: string, exercisedBy: string, spotPrice: number) => Promise<void>;
   isExercising?: boolean;
-  onSimulate?: (optionId: string, indexPrice: number, commodity?: string) => Promise<void>;
-  isSimulating?: boolean;
-  onForceSettle?: (optionId: string, reason: string) => Promise<void>;
-  isForceSettling?: boolean;
-  onTopUp?: (marginCallId: string, amount: number, currency: string) => Promise<void>;
-  isTopping?: boolean;
-  userRole?: string;
-  userId?: string;
 }
 
-export function OptionsTable({ 
-  options, 
-  isLoading, 
-  onMatch, 
-  isMatching = false, 
-  onExercise, 
-  isExercising = false,
-  onSimulate,
-  isSimulating = false,
-  onForceSettle,
-  isForceSettling = false,
-  onTopUp,
-  isTopping = false,
-  userRole,
-  userId 
-}: OptionsTableProps) {
+export function OptionsTable({ options, isLoading, onMatch, isMatching = false, onExercise, isExercising = false }: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -329,7 +297,7 @@ export function OptionsTable({
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
                       <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED"} />
                       {option.status === "OPEN" && onMatch && (
                         <MatchOptionDialog
@@ -350,55 +318,6 @@ export function OptionsTable({
                           }}
                           isPending={isExercising}
                         />
-                      )}
-                      {option.status === "OPEN" && onSimulate && userRole === "broker" && (
-                        <SimulateMarginCallDialog
-                          optionId={option.id}
-                          commodity={option.commodity || undefined}
-                          onSimulate={async (data) => {
-                            await onSimulate(option.id, data.indexPrice, option.commodity || undefined);
-                          }}
-                          isPending={isSimulating}
-                        />
-                      )}
-                      {option.status === "OPEN" && onForceSettle && userRole === "broker" && (
-                        <ForceSettleDialog
-                          optionId={option.id}
-                          optionTitle={option.title}
-                          onForceSettle={async (data) => {
-                            await onForceSettle(option.id, data.reason);
-                          }}
-                          isPending={isForceSettling}
-                        />
-                      )}
-                      {option.status === "MARGIN_CALL" && onTopUp && userId && option.buyerId === userId && (
-                        <TopUpMarginCallDialog
-                          marginCallId={option.id}
-                          onTopUp={async (data) => {
-                            await onTopUp(data.marginCallId, data.amount, data.currency);
-                          }}
-                          isPending={isTopping}
-                        />
-                      )}
-                      {(option.status === "EXERCISED" || option.status === "FILLED") && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled
-                                data-testid={`button-withdraw-${option.id}`}
-                              >
-                                <ArrowDownToLine className="h-4 w-4 mr-1" />
-                                Withdraw
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>On-chain withdrawals coming soon</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                       )}
                     </div>
                   </TableCell>

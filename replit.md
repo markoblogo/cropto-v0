@@ -2,7 +2,14 @@
 
 ## Overview
 
-Cropto is a professional cryptocurrency options trading platform designed for creating and managing crypto options (calls and puts). It utilizes an off-chain order book system with a matching engine to facilitate trading. The platform provides a financial-focused interface for listing options, creating new contracts, matching buyers and sellers, and tracking trading activity. The business vision is to provide a robust and intuitive platform for crypto derivatives, offering users advanced trading capabilities and contributing to the broader adoption of regulated and efficient crypto options markets.
+Cropto is a professional cryptocurrency options trading platform that enables users to create and manage crypto options (calls and puts) through an off-chain order book system with a matching engine. The application provides a clean, financial-focused interface for viewing options listings, creating new options contracts, matching buyers with sellers, filtering and sorting options, and tracking trading activity.
+
+## Recent Changes (November 4, 2025)
+
+### Completed Features
+1. **Table Filtering and Sorting** - Users can filter options by type (CALL/PUT) and status (OPEN/FILLED/EXPIRED/CANCELLED), and sort by any column with ascending/descending/none states
+2. **Option Matching Engine** - Implemented transaction-safe matching that pairs buyers with sellers, creates trade records, and updates option status to FILLED with row-level locking to prevent race conditions
+3. **Exercise and Settlement Workflow** - Filled options can be exercised with spot price input, calculates payouts and P&L, creates settlement records, updates status to EXPIRED. Supports both CALL and PUT options with proper payout formulas
 
 ## User Preferences
 
@@ -12,47 +19,139 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-The frontend is built with React and TypeScript, using Vite for development and bundling. It employs `shadcn/ui` (built on Radix UI primitives) and Tailwind CSS for a highly customizable UI that follows financial trading platform aesthetics. Key design decisions include prioritizing data legibility, consistent spacing, and using monospace fonts for numerical values. State management is handled by TanStack Query for server state and React Hook Form with Zod for form management. Wouter is used for client-side routing.
+**Framework**: React with TypeScript using Vite as the build tool and development server
+
+**UI Component System**: shadcn/ui (Radix UI primitives) with Tailwind CSS
+- Design philosophy follows financial trading platforms (Robinhood, Coinbase, Binance)
+- Custom theme system with light/dark mode support
+- Material Design principles for data-rich interfaces
+- Typography: Inter for body text, JetBrains Mono for numerical values
+
+**State Management**:
+- TanStack Query (React Query) for server state management
+- Form state handled by React Hook Form with Zod validation
+- Local component state with React hooks
+
+**Routing**: Wouter for lightweight client-side routing
+
+**Key Design Decisions**:
+- Chose shadcn/ui over component libraries for maximum customization
+- Prioritized data legibility and quick scanning for financial data
+- Implemented consistent spacing system (2, 4, 6, 8 Tailwind units)
+- Used monospace fonts for numerical values to ensure alignment
 
 ### Backend Architecture
 
-The backend is an Express.js application written in TypeScript, providing a RESTful JSON API. It uses a file-based user authentication system with bcrypt hashing and JWT tokens for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer (`IStorage`) with a `DatabaseStorage` implementation handles CRUD operations, ensuring transaction safety and preventing race conditions during option matching. Shared Zod schemas between frontend and backend (`shared/schema.ts`) are used for robust data validation. The system also includes a margin check job system that calculates intrinsic value, P&L, triggers margin calls, and generates notifications.
+**Framework**: Express.js with TypeScript running on Node.js
+
+**API Design**: RESTful JSON API
+- `/api/health` - Health check endpoint
+- `/api/options` - GET (list all options) and POST (create new option)
+- `/api/options/:id/match` - POST (match an option with a seller, creates trade)
+- `/api/options/:id/exercise` - POST (exercise a filled option with spot price, creates settlement)
+- `/api/trades` - GET (list all trades)
+- `/api/settlements` - GET (list all settlements)
+
+**Data Validation**: Zod schemas shared between frontend and backend
+- Schema definitions in `shared/schema.ts`
+- Runtime validation with `zod-validation-error` for user-friendly error messages
+- Decimal precision handling for financial values (18 digits, 8 decimal places)
+
+**Storage Layer**: Database abstraction through IStorage interface
+- Separates business logic from data access
+- DatabaseStorage implementation provides CRUD operations
+- Transaction-safe matching engine with row-level locking
+- Prevents race conditions during option matching
+- Enables easy testing and future storage backend changes
+
+**Key Design Decisions**:
+- Monorepo structure with shared types between client and server
+- TypeScript path aliases for clean imports (@/, @shared/)
+- Middleware for request logging and JSON body parsing with raw body access
+- ESM modules throughout for modern JavaScript support
 
 ### Data Storage
 
-The project uses PostgreSQL via Neon serverless driver, with Drizzle ORM for schema management and interactions. The schema includes tables for `options`, `trades`, `settlements`, `margin_calls`, and `notifications`, designed with high-precision decimals (18,8) for financial values, enum types for constrained data, and UUID primary keys.
+**Database**: PostgreSQL (via Neon serverless driver)
 
-### UI/UX Decisions
+**ORM**: Drizzle ORM
+- Schema-first approach with TypeScript inference
+- Migration support through drizzle-kit
+- Serverless-optimized with connection pooling
 
-The platform features a comprehensive visual refresh with Cropto branding, including a hero section, `MetricCards`, and a revamped header. It utilizes pill-shaped status badges with custom brand colors. The design architecture page (`/design-architecture`) showcases design mockups and brand assets, ensuring responsiveness across various viewports. Wallet connection is implemented with MetaMask integration and a manual input fallback.
+**Schema Design**:
+```typescript
+options table:
+  - id: UUID (auto-generated primary key)
+  - title: text (option description)
+  - type: enum (CALL, PUT)
+  - strike: decimal(18,8) (strike price)
+  - qty: decimal(18,8) (quantity)
+  - premium: decimal(18,8) (premium amount)
+  - buyer: text (buyer identifier)
+  - seller: text (seller identifier, null until matched)
+  - status: enum (OPEN, FILLED, EXPIRED, CANCELLED)
+  - createdAt: timestamp (auto-generated)
 
-### Feature Specifications
+trades table:
+  - id: UUID (auto-generated primary key)
+  - optionId: UUID (foreign key to options)
+  - buyer: text (buyer identifier)
+  - seller: text (seller identifier)
+  - strike: decimal(18,8) (strike price at time of trade)
+  - qty: decimal(18,8) (quantity traded)
+  - premium: decimal(18,8) (premium per unit)
+  - totalValue: decimal(18,8) (total trade value)
+  - createdAt: timestamp (auto-generated)
 
-- **Index Price Widget**: Real-time dashboard widget displays latest wheat index price with historical trend. Shows commodity name, current price (formatted USD), change percentage with color-coded trend indicator (green/red/gray), and sparkline chart. API endpoint `GET /api/index/latest` fetches latest price and last 7 historical data points from database. Widget auto-refreshes every 30 seconds and handles loading/error states. Integrated into dashboard in responsive grid layout.
-- **Option Creation & Management**: Users can create, view, filter, and sort crypto options (CALL/PUT) by various statuses (OPEN/FILLED/EXPIRED/CANCELLED).
-- **Matching Engine**: Transaction-safe matching pairs buyers with sellers, updates option status, and creates trade records.
-- **Exercise & Settlement**: Filled options can be exercised with spot price input, calculating payouts and P&L, and creating settlement records.
-- **Authentication & Authorization**: JWT-based authentication with user roles (farmer, trader, broker) and protected API endpoints.
-- **Wallet Integration**: MetaMask integration with a fallback for manual wallet address input, linking wallet addresses to user accounts.
-- **Margin System**: Automated margin check job calculates intrinsic value, P&L, triggers margin calls, and creates notifications. Users can top up reserved collateral for margin calls via `TopUpMarginCallDialog` component. Top-up button appears only for options owned by the current user with MARGIN_CALL status. Supports CROPT or FIAT currency. Partial top-ups increase reserved collateral; full top-ups (when reservedCollateral >= amountRequired) resolve the margin call and restore option status to OPEN. Query invalidation ensures UI updates after successful top-up.
-- **Daily Settlement**: `POST /api/jobs/daily-settle` endpoint processes OPEN options at a given index price. For each option, it calculates PnL and checks if it exceeds 0.8 * collateral. When threshold is breached, creates margin call with 24h deadline and updates option status to MARGIN_CALL. Returns detailed processing results including marginCalls array, processedOptions, and errors.
-- **Deadline Processing**: Automated system processes expired margin calls using scheduler module (server/cron/scheduler.ts). Manual trigger endpoint `POST /api/admin/schedule/process-deadlines` (broker-only) finds margin calls with past deadlines, force-settles options to DEFAULTED status, updates margin call status to LIQUIDATED, and creates notifications. Uses storage abstraction layer for transaction safety and business logic consistency.
-- **Overdue Margin Call Processing**: `POST /api/jobs/process-overdue-margincalls` endpoint (broker-only) processes expired margin calls with detailed settlement records. Calculates net payout as max(0, intrinsicValue - totalAvailableCollateral), creates settlement and transaction records with full audit trail (including collateral applied, intrinsic value, and deadline), updates option status to DEFAULTED, margin call status to LIQUIDATED, and sends notifications to affected parties. Returns summary with processedCount, expiredMarginCalls, processedOptions (including payout, collateralApplied, intrinsicValue), and errors.
-- **Notifications System**: In-app notification system with bell icon showing unread count. Notifications can be marked as read by clicking, with automatic navigation to related options. API endpoints: `GET /api/notifications` (supports ?unread=true filter), `POST /api/notifications/:id/mark-read`, and `POST /api/notifications/send-mock` (broker-only for testing).
-- **Email Mock Service**: Server-side email logging service (server/utils/emailMock.ts) that logs all email attempts to files in logs/email-log-<timestamp>.log and console. Integrated with margin check job to send email notifications when new margin calls are created.
-- **Demo Seeding System**: An idempotent system to seed demo data (users, options, index prices) for reproducible testing and demonstrations.
-- **Partner Feedback System**: Public feedback form at /feedback allows partners to submit UI/UX issues and suggestions without authentication. Admin view at /admin/feedback (broker-only) displays all feedback with resolve functionality and CSV export capability. Feedback table stores name, email, role, message, optional screenshot URL, and status (open/resolved).
-- **Admin Reconciliation**: Broker-only page at /admin/reconciliation provides comprehensive view of all transactions, settlements, and margin calls. Features include date range filtering, status filtering for margin calls, tabbed interface for different record types, and CSV export capability for each type. Frontend enforces broker-only access with redirect and error handling. Backend endpoints (`GET /api/admin/reconciliation/transactions`, `/settlements`, `/margincalls`) require broker authentication and return properly formatted data. Each tab displays records in tables with proper formatting, status badges, and loading/error states.
+settlements table:
+  - id: UUID (auto-generated primary key)
+  - optionId: UUID (foreign key to options)
+  - exercisedBy: text (user who exercised)
+  - spotPrice: decimal(18,8) (market price at exercise)
+  - strike: decimal(18,8) (strike price at exercise)
+  - qty: decimal(18,8) (quantity exercised)
+  - payout: decimal(18,8) (calculated payout amount)
+  - profitLoss: decimal(18,8) (net profit or loss after premium)
+  - createdAt: timestamp (auto-generated)
+```
 
-## External Dependencies
+**Key Design Decisions**:
+- High-precision decimals (18,8) for cryptocurrency amounts
+- Enum types for constrained values (option type, status)
+- Timestamps for audit trail and ordering
+- UUID primary keys for distributed system compatibility
 
-- **Database**: Neon Serverless PostgreSQL (`@neondatabase/serverless`)
-- **ORM**: Drizzle ORM (`drizzle-orm`, `drizzle-kit`)
-- **Frontend UI**: `shadcn/ui`, Radix UI primitives, Tailwind CSS, Lucide React (icons)
-- **State Management**: TanStack Query (React Query)
-- **Form Handling & Validation**: React Hook Form, Zod (`zod`, `@hookform/resolvers`)
-- **Routing**: Wouter
-- **Wallet Integration**: `ethers.js`
-- **Authentication**: `bcrypt`, `jsonwebtoken`
-- **Utilities**: `date-fns`, `clsx`, `tailwind-merge`, `class-variance-authority`, `nanoid`
-- **Development Tools**: Vite, PostCSS, Autoprefixer, ESBuild
+### External Dependencies
+
+**Database Service**: Neon Serverless PostgreSQL
+- WebSocket-based connection for serverless environments
+- Connection pooling via @neondatabase/serverless
+- Environment variable: `DATABASE_URL`
+
+**UI Component Libraries**:
+- Radix UI primitives for accessible, unstyled components
+- Embla Carousel for potential carousel features
+- Lucide React for icons
+
+**Development Tools**:
+- Vite plugins for Replit integration (cartographer, dev banner, runtime error overlay)
+- PostCSS with Tailwind CSS and Autoprefixer
+- ESBuild for production server bundling
+
+**Validation & Forms**:
+- Zod for schema validation
+- React Hook Form for form state management
+- @hookform/resolvers for Zod integration
+
+**Utility Libraries**:
+- date-fns for date formatting
+- clsx and tailwind-merge (via cn utility) for conditional styling
+- class-variance-authority for component variant management
+- nanoid for unique ID generation
+
+**Key Design Decisions**:
+- Minimal external dependencies to reduce bundle size
+- Shared validation schemas between client and server
+- Google Fonts (Inter, JetBrains Mono) loaded via CDN
+- WebSocket constructor injection for Neon compatibility in Node.js environment
