@@ -122,6 +122,31 @@ export default function Dashboard() {
     },
   });
 
+  const forceSettleMutation = useMutation({
+    mutationFn: async ({ optionId, reason }: { optionId: string; reason: string }) => {
+      const response = await apiRequest("POST", `/api/options/${optionId}/force-settle`, { 
+        reason,
+      });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      toast({
+        title: "Force Settlement Complete",
+        description: `Option has been force-settled. Status: ${data.option?.status}. ${data.notificationsCreated} notifications sent.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Force Settlement Failed",
+        description: error.message || "Failed to force-settle option",
+        variant: "destructive",
+      });
+    },
+  });
+
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
@@ -178,6 +203,10 @@ export default function Dashboard() {
                 await simulateMarginCallMutation.mutateAsync({ indexPrice, commodity });
               }}
               isSimulating={simulateMarginCallMutation.isPending}
+              onForceSettle={async (optionId, reason) => {
+                await forceSettleMutation.mutateAsync({ optionId, reason });
+              }}
+              isForceSettling={forceSettleMutation.isPending}
               userRole={user?.role}
             />
           </div>

@@ -22,6 +22,7 @@ import { OptionTypeBadge } from "./OptionTypeBadge";
 import { MatchOptionDialog } from "./MatchOptionDialog";
 import { ExerciseOptionDialog } from "./ExerciseOptionDialog";
 import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
+import { ForceSettleDialog } from "./ForceSettleDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -37,6 +38,8 @@ interface OptionsTableProps {
   isExercising?: boolean;
   onSimulate?: (optionId: string, indexPrice: number, commodity?: string) => Promise<void>;
   isSimulating?: boolean;
+  onForceSettle?: (optionId: string, reason: string) => Promise<void>;
+  isForceSettling?: boolean;
   userRole?: string;
 }
 
@@ -49,6 +52,8 @@ export function OptionsTable({
   isExercising = false,
   onSimulate,
   isSimulating = false,
+  onForceSettle,
+  isForceSettling = false,
   userRole 
 }: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -341,6 +346,16 @@ export function OptionsTable({
                             await onSimulate(option.id, data.indexPrice, option.commodity || undefined);
                           }}
                           isPending={isSimulating}
+                        />
+                      )}
+                      {option.status === "OPEN" && onForceSettle && userRole === "broker" && (
+                        <ForceSettleDialog
+                          optionId={option.id}
+                          optionTitle={option.title}
+                          onForceSettle={async (data) => {
+                            await onForceSettle(option.id, data.reason);
+                          }}
+                          isPending={isForceSettling}
                         />
                       )}
                     </div>
