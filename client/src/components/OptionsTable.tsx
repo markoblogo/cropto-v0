@@ -23,6 +23,7 @@ import { MatchOptionDialog } from "./MatchOptionDialog";
 import { ExerciseOptionDialog } from "./ExerciseOptionDialog";
 import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
 import { ForceSettleDialog } from "./ForceSettleDialog";
+import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -40,7 +41,10 @@ interface OptionsTableProps {
   isSimulating?: boolean;
   onForceSettle?: (optionId: string, reason: string) => Promise<void>;
   isForceSettling?: boolean;
+  onTopUp?: (marginCallId: string, amount: number, currency: string) => Promise<void>;
+  isTopping?: boolean;
   userRole?: string;
+  userId?: string;
 }
 
 export function OptionsTable({ 
@@ -54,7 +58,10 @@ export function OptionsTable({
   isSimulating = false,
   onForceSettle,
   isForceSettling = false,
-  userRole 
+  onTopUp,
+  isTopping = false,
+  userRole,
+  userId 
 }: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -356,6 +363,15 @@ export function OptionsTable({
                             await onForceSettle(option.id, data.reason);
                           }}
                           isPending={isForceSettling}
+                        />
+                      )}
+                      {option.status === "MARGIN_CALL" && onTopUp && (
+                        <TopUpMarginCallDialog
+                          marginCallId={option.id}
+                          onTopUp={async (data) => {
+                            await onTopUp(data.marginCallId, data.amount, data.currency);
+                          }}
+                          isPending={isTopping}
                         />
                       )}
                     </div>

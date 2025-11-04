@@ -33,6 +33,12 @@ export default function Dashboard() {
 
   const user = userData?.user;
 
+  // Fetch margin calls
+  const { data: marginCalls = [] } = useQuery<any[]>({
+    queryKey: ["/api/margin-calls"],
+    enabled: !!user,
+  });
+
   const createOptionMutation = useMutation({
     mutationFn: async (data: InsertOption) => {
       const response = await apiRequest("POST", "/api/options", data);
@@ -147,6 +153,33 @@ export default function Dashboard() {
     },
   });
 
+  const topUpMarginCallMutation = useMutation({
+    mutationFn: async ({ marginCallId, amount, currency }: { marginCallId: string; amount: number; currency: string }) => {
+      const response = await apiRequest("POST", `/api/margin-call/${marginCallId}/topup`, { 
+        amount,
+        currency,
+      });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
+      toast({
+        title: data.resolved ? "Margin Call Resolved" : "Top-up Successful",
+        description: data.resolved 
+          ? "Margin call has been resolved. Option status restored to OPEN." 
+          : `Added ${data.marginCall.reservedCollateral} to collateral. Total available: ${data.totalAvailable}`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Top-up Failed",
+        description: error.message || "Failed to top up margin call",
+        variant: "destructive",
+      });
+    },
+  });
+
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
@@ -207,7 +240,22 @@ export default function Dashboard() {
                 await forceSettleMutation.mutateAsync({ optionId, reason });
               }}
               isForceSettling={forceSettleMutation.isPending}
+              onTopUp={async (optionId, amount, currency) => {
+                // Find the margin call for this option
+                const marginCall = marginCalls.find(mc => mc.optionId === optionId && mc.status === "PENDING");
+                if (!marginCall) {
+                  toast({
+                    title: "Error",
+                    description: "No pending margin call found for this option",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                await topUpMarginCallMutation.mutateAsync({ marginCallId: marginCall.id, amount, currency });
+              }}
+              isTopping={topUpMarginCallMutation.isPending}
               userRole={user?.role}
+              userId={user?.id}
             />
           </div>
         </div>
