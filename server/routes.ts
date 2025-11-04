@@ -4,8 +4,13 @@ import { storage } from "./storage";
 import { insertOptionSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
+import authRoutes from "./authRoutes";
+import { authenticateToken } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register auth routes
+  app.use("/api/auth", authRoutes);
+
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });
   });
@@ -20,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/options", async (req, res) => {
+  app.post("/api/options", authenticateToken, async (req, res) => {
     try {
       const result = insertOptionSchema.safeParse(req.body);
       
