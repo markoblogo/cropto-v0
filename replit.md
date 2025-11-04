@@ -10,6 +10,18 @@ Cropto is a professional cryptocurrency options trading platform that enables us
 1. **Table Filtering and Sorting** - Users can filter options by type (CALL/PUT) and status (OPEN/FILLED/EXPIRED/CANCELLED), and sort by any column with ascending/descending/none states
 2. **Option Matching Engine** - Implemented transaction-safe matching that pairs buyers with sellers, creates trade records, and updates option status to FILLED with row-level locking to prevent race conditions
 3. **Exercise and Settlement Workflow** - Filled options can be exercised with spot price input, calculates payouts and P&L, creates settlement records, updates status to EXPIRED. Supports both CALL and PUT options with proper payout formulas
+4. **Comprehensive UI/UX Polish** - Complete visual refresh with Cropto branding
+   - Hero section with cover image, headline, and CTAs
+   - MetricCards component displaying Total Options, Open Positions, and Total Volume
+   - Updated Header with logo, navigation menu, Connect Wallet button, and Create Option CTA
+   - Pill-shaped status badges using new brand colors (olive #8AA43B for primary, gold #C9B86A for accent)
+   - Live calculations in Create Option form showing Total Premium and Required Collateral
+   - Documentation page at /docs with product information
+5. **Wallet Connection Feature** - Full implementation for linking wallet addresses
+   - Database schema with wallets table (unique constraint on address)
+   - API endpoints: POST /api/wallet/link and GET /api/wallets
+   - Frontend dialog for address input with validation and toast notifications
+   - Connected state displayed in header with formatted address
 
 ## User Preferences
 
