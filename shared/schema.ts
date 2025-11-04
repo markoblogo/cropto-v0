@@ -28,6 +28,18 @@ export const trades = pgTable("trades", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const settlements = pgTable("settlements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  optionId: varchar("option_id").notNull().references(() => options.id),
+  exercisedBy: text("exercised_by").notNull(),
+  spotPrice: decimal("spot_price", { precision: 18, scale: 8 }).notNull(),
+  strike: decimal("strike", { precision: 18, scale: 8 }).notNull(),
+  qty: decimal("qty", { precision: 18, scale: 8 }).notNull(),
+  payout: decimal("payout", { precision: 18, scale: 8 }).notNull(),
+  profitLoss: decimal("profit_loss", { precision: 18, scale: 8 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -51,7 +63,14 @@ export const insertTradeSchema = createInsertSchema(trades).omit({
   createdAt: true,
 });
 
+export const insertSettlementSchema = createInsertSchema(settlements).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
+export type InsertSettlement = z.infer<typeof insertSettlementSchema>;
+export type Settlement = typeof settlements.$inferSelect;

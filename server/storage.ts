@@ -1,4 +1,4 @@
-import { options, trades, type Option, type InsertOption, type Trade, type InsertTrade } from "@shared/schema";
+import { options, trades, settlements, type Option, type InsertOption, type Trade, type InsertTrade, type Settlement } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and } from "drizzle-orm";
 
@@ -8,8 +8,10 @@ export interface IStorage {
   getOptionById(id: string): Promise<Option | undefined>;
   updateOption(id: string, updates: Partial<Option>): Promise<Option>;
   matchOption(optionId: string, seller: string): Promise<Trade | null>;
+  exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement>;
   listTrades(): Promise<Trade[]>;
   getTradesByUser(user: string): Promise<Trade[]>;
+  listSettlements(): Promise<Settlement[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -114,6 +116,82 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(trades.createdAt));
     return userTrades;
+  }
+
+  async exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement> {
+    return await db.transaction(async (tx) => {
+      const [option] = await tx
+        .select()
+        .from(options)
+        .where(eq(options.id, optionId))
+        .for('update');
+      
+      if (!option) {
+        throw new Error("Option not found");
+      }
+
+      if (option.status !== "FILLED") {
+        throw new Error("Only filled options can be exercised");
+      }
+
+      if (option.buyer !== exercisedBy && option.seller !== exercisedBy) {
+        throw new Error("Only the buyer or seller can exercise this option");
+      }
+
+      const spot = parseFloat(spotPrice);
+      const strikePrice = parseFloat(option.strike);
+      const quantity = parseFloat(option.qty);
+      const premiumPaid = parseFloat(option.premium);
+
+      let payout = 0;
+      let profitLoss = 0;
+
+      if (option.type === "CALL") {
+        if (spot > strikePrice) {
+          payout = (spot - strikePrice) * quantity;
+          profitLoss = payout - (premiumPaid * quantity);
+        } else {
+          payout = 0;
+          profitLoss = -(premiumPaid * quantity);
+        }
+      } else {
+        if (spot < strikePrice) {
+          payout = (strikePrice - spot) * quantity;
+          profitLoss = payout - (premiumPaid * quantity);
+        } else {
+          payout = 0;
+          profitLoss = -(premiumPaid * quantity);
+        }
+      }
+
+      const [settlement] = await tx
+        .insert(settlements)
+        .values({
+          optionId: option.id,
+          exercisedBy: exercisedBy,
+          spotPrice: spotPrice,
+          strike: option.strike,
+          qty: option.qty,
+          payout: payout.toFixed(8),
+          profitLoss: profitLoss.toFixed(8),
+        })
+        .returning();
+
+      await tx
+        .update(options)
+        .set({ status: "EXPIRED" })
+        .where(eq(options.id, optionId));
+
+      return settlement;
+    });
+  }
+
+  async listSettlements(): Promise<Settlement[]> {
+    const allSettlements = await db
+      .select()
+      .from(settlements)
+      .orderBy(desc(settlements.createdAt));
+    return allSettlements;
   }
 }
 

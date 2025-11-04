@@ -20,6 +20,7 @@ import {
 import { StatusBadge } from "./StatusBadge";
 import { OptionTypeBadge } from "./OptionTypeBadge";
 import { MatchOptionDialog } from "./MatchOptionDialog";
+import { ExerciseOptionDialog } from "./ExerciseOptionDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -31,9 +32,11 @@ interface OptionsTableProps {
   isLoading: boolean;
   onMatch?: (optionId: string, seller: string) => Promise<void>;
   isMatching?: boolean;
+  onExercise?: (optionId: string, exercisedBy: string, spotPrice: number) => Promise<void>;
+  isExercising?: boolean;
 }
 
-export function OptionsTable({ options, isLoading, onMatch, isMatching = false }: OptionsTableProps) {
+export function OptionsTable({ options, isLoading, onMatch, isMatching = false, onExercise, isExercising = false }: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -303,6 +306,17 @@ export function OptionsTable({ options, isLoading, onMatch, isMatching = false }
                             await onMatch(option.id, data.seller);
                           }}
                           isPending={isMatching}
+                        />
+                      )}
+                      {option.status === "FILLED" && onExercise && (
+                        <ExerciseOptionDialog
+                          optionId={option.id}
+                          optionType={option.type as "CALL" | "PUT"}
+                          strike={option.strike}
+                          onExercise={async (data) => {
+                            await onExercise(option.id, data.exercisedBy, data.spotPrice);
+                          }}
+                          isPending={isExercising}
                         />
                       )}
                     </div>

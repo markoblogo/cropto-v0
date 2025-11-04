@@ -76,6 +76,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/options/:id/exercise", async (req, res) => {
+    try {
+      const exerciseSchema = z.object({
+        exercisedBy: z.string().min(1, "Exercised by is required"),
+        spotPrice: z.coerce.number()
+          .positive("Spot price must be positive")
+          .transform(val => val.toString()),
+      });
+
+      const result = exerciseSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message 
+        });
+      }
+
+      const settlement = await storage.exerciseOption(
+        req.params.id, 
+        result.data.exercisedBy,
+        result.data.spotPrice
+      );
+      res.status(201).json(settlement);
+    } catch (error: any) {
+      console.error("Error exercising option:", error);
+      const statusCode = error.message?.includes("not found") || 
+                        error.message?.includes("Only") 
+                        ? 400 : 500;
+      res.status(statusCode).json({ error: error.message || "Failed to exercise option" });
+    }
+  });
+
+  app.get("/api/settlements", async (req, res) => {
+    try {
+      const settlements = await storage.listSettlements();
+      res.json(settlements);
+    } catch (error) {
+      console.error("Error fetching settlements:", error);
+      res.status(500).json({ error: "Failed to fetch settlements" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

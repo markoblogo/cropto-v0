@@ -56,6 +56,27 @@ export default function Dashboard() {
     },
   });
 
+  const exerciseOptionMutation = useMutation({
+    mutationFn: async ({ optionId, exercisedBy, spotPrice }: { optionId: string; exercisedBy: string; spotPrice: number }) => {
+      const response = await apiRequest("POST", `/api/options/${optionId}/exercise`, { exercisedBy, spotPrice });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      toast({
+        title: "Exercise Successful",
+        description: "Option has been exercised and settled",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Exercise Failed",
+        description: error.message || "Failed to exercise option",
+        variant: "destructive",
+      });
+    },
+  });
+
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
@@ -121,6 +142,10 @@ export default function Dashboard() {
               await matchOptionMutation.mutateAsync({ optionId, seller });
             }}
             isMatching={matchOptionMutation.isPending}
+            onExercise={async (optionId, exercisedBy, spotPrice) => {
+              await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
+            }}
+            isExercising={exerciseOptionMutation.isPending}
           />
         </div>
       </main>

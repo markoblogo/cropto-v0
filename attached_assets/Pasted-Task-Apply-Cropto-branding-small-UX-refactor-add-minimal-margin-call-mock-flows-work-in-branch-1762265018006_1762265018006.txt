@@ -1,0 +1,110 @@
+Task: Apply Cropto branding + small UX refactor + add minimal margin-call mock flows (work in branch design-branding)
+
+Context / assets (already uploaded to repo under /public/assets/):
+	•	/public/assets/cropto-logo.png — main logo (use in header, favicon)
+	•	/public/assets/cropto-cover.png — hero / background pattern
+	•	/public/assets/icons.zip — icon set (unzip to /public/assets/icons/)
+	•	Use black/white primary palette (light/dark themes) + single accent OLIVE color #9AA33A (used for badges/buttons).
+
+High-level goal (one-sentence):
+Make the running Replit preview look & feel like Cropto brand, adjust the frontend structure to match partners’ product model, and add small, testable backend mock endpoints for margin-call workflows so partners can play with UI flows and comment.
+
+Work branch: design-branding (create from current master/main).
+
+⸻
+
+Step-by-step tasks (do only these now, do not implement unrelated features)
+
+A. Repo & branch
+	1.	Create and switch to branch design-branding.
+	2.	Commit all changes with clear messages (see examples below).
+
+B. Theme & branding (frontend)
+	1.	Replace header logo with /public/assets/cropto-logo.png; set favicon to same.
+	2.	Replace current hero / dashboard background with /public/assets/cropto-cover.png (use as subtle, low-contrast background behind cards).
+	3.	Add design token file (e.g., client/src/styles/brand.ts or CSS variables) containing:
+	•	--bg-white: #ffffff; --bg-black: #0b0b0b; --accent-olive: #9AA33A; --text: #111;
+	4.	Implement light/dark toggle (if none): default light, but provide theme context to switch to dark. Use accent for primary buttons/badges.
+
+C. Replace UI art/screens with provided mock images
+	1.	Under /public/mock-screens/ add the provided screen images and create a Design / Screens page in the app at /design-architecture which shows those images in a gallery (with captions).
+	2.	Create docs/design-architecture.md in repo containing short explanation and links to images and Notion page (we’ll keep copy in repo so partners can open via GitHub/Replit).
+
+D. Options table & Create Option UI adjustments (frontend)
+	1.	Update the Options table columns to reflect commodity-specific fields:
+	•	Instrument (title) | Commodity | Lot size | Strike ($/t) | Quantity (t) | Premium per t | Premium total | Collateral (%) | Collateral amount | Status | Actions
+	2.	Make sure Collateral amount is displayed and computed client-side as: collateral_amount = strike * qty * collateral_percent.
+	3.	Update Create Option form/modal to include fields:
+	•	title, type (CALL/PUT), commodity (dropdown), lot_size (t), quantity (t), strike ($/t), premium_per_t, premium_total (read-only), collateral_percent (derived from expiry), warehouse_receipt_url (file/url).
+	4.	Add client-side validation:
+	•	required fields, numeric > 0, quantity >= lot_min (set 500 t for now).
+	5.	Add small helper text under collateral field showing rule (e.g., Collateral: 0-3m = 5%, 6m = 10%, 12m = 20%).
+
+E. Simple mock margin-call UI (frontend)
+	1.	Add button in options row: Simulate margin call (visible in dev mode/admin view).
+	2.	Add small Inbox/Notifications panel (simple list) showing margin calls and deadlines.
+
+F. Backend: lightweight mock endpoints (server)
+	1.	Work in server/ — add/update endpoints (file-db OK for now):
+	•	POST /api/options — create option (existing) — ensure it returns collateral_amount, collateral_percent, status: "OPEN".
+	•	POST /api/options/:id/topup — body {amount, token} — add to reserved collateral; return updated reserved balance.
+	•	POST /api/options/:id/force-settle — perform forced settlement (move to EXERCISED or DEFAULTED depending); return settlement details.
+	•	POST /api/jobs/daily-settle — existing; ensure it can create margin-call records when index gap >= 80% of collateral.
+	•	GET /api/notifications — list in-app notifications / margin calls.
+	2.	Persist margin-call records in db.json or Postgres if already configured. Each margin-call should contain: {id, optionId, createdAt, deadlineAt, amountRequired, status}.
+	3.	Add simple job runner route for manual testing: POST /api/jobs/run-margin-check which runs margin-check logic and creates margin-calls (used in UI to simulate daily job).
+
+G. Admin pages (minimal)
+	1.	Create page /partners-contracts with a simple table: Partner | Type | Contact | Contract status | File (link) — populate with 3 sample rows (seed).
+	2.	Create page /onchain-tx showing a table with sample tx rows from provided mock screens (static data OK for now).
+
+H. Docs & preview
+	1.	Add docs/deployment.md with steps to preview on Replit and how to switch branch.
+	2.	Update README.md with short note: branch design-branding contains UI/branding changes + mock margin-call endpoints for review.
+	3.	Push branch and provide Replit preview URL and a short checklist comment in the PR describing what’s done.
+
+⸻
+
+Acceptance criteria / deliverables (what I should see in preview)
+	•	Header shows Cropto logo.
+	•	Dashboard background uses provided cover asset.
+	•	/design-architecture page contains the generated screens gallery (images from /public/mock-screens/).
+	•	Options table columns updated as above; Create Option modal shows new fields and computes collateral.
+	•	There is a visible button to Simulate margin call and a small notifications area listing margin calls.
+	•	Backend endpoints exist and can be called via curl/Postman to create topup/force-settle and to trigger margin-check job.
+	•	Branch design-branding pushed with commits and PR created against main with description and checklist.
+	•	Provide the preview URL and the PR link.
+
+⸻
+
+Small step priority (do in this order — finish each before next)
+	1.	Branch + replace header logo + favicon + theme tokens.
+	2.	Add /design-architecture gallery (static).
+	3.	Update Options table columns + Create Option form (UI only, no backend calc).
+	4.	Add backend collateral calc on create + persist to db.json.
+	5.	Add manual POST /api/jobs/run-margin-check and UI Simulate margin call button + notifications panel.
+	6.	Add admin Partners & Onchain pages (static seeded data).
+	7.	Push branch + open PR + give preview URL and checklist.
+
+⸻
+
+Example commit messages
+	•	chore: create branch design-branding
+	•	feat(ui): add cropto logo + favicon + theme tokens
+	•	feat(ui): add design-architecture gallery page
+	•	feat(ui): update options table and create-option form (commodity, collateral fields)
+	•	feat(server): compute collateral on option create
+	•	feat(server): add /api/jobs/run-margin-check and /api/options/:id/topup
+	•	docs: add design-architecture.md and deployment instructions
+
+⸻
+
+Testing checklist to include in PR description
+	•	Logo appears in header and favicon replaced
+	•	Theme tokens added and dark/light toggle works
+	•	/design-architecture page images load
+	•	Create Option computes premium_total and collateral_amount
+	•	POST /api/options returns collateral fields
+	•	POST /api/jobs/run-margin-check creates margin-call records
+	•	Simulate margin call button triggers notification
+	•	Branch pushed & preview URL provided
