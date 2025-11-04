@@ -54,12 +54,24 @@ const DEFAULT_VARIANT: Variant = {
   label: "Unknown"
 };
 
+// Track warned statuses to avoid console spam (one-time warnings)
+const warnedStatuses = new Set<string>();
+
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
+  // Safe normalization: trim and uppercase
   const normalizedStatus = (typeof status === "string" && status.trim()) 
     ? status.trim().toUpperCase() 
     : "UNKNOWN";
 
+  // Fallback guard: use STATUS_VARIANTS with DEFAULT_VARIANT fallback
   const variant = STATUS_VARIANTS[normalizedStatus] ?? DEFAULT_VARIANT;
+  
+  // One-time console.warn for unknown statuses (debugging)
+  if (!STATUS_VARIANTS[normalizedStatus] && !warnedStatuses.has(normalizedStatus)) {
+    console.warn(`[StatusBadge] Unknown status variant: "${status}" (normalized: "${normalizedStatus}"). Using default variant.`);
+    warnedStatuses.add(normalizedStatus);
+  }
+
   const displayLabel = variant.label === "Unknown" 
     ? (status || "Unknown").replace(/_/g, " ")
     : variant.label;
