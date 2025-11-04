@@ -35,10 +35,12 @@ export interface IStorage {
   listWallets(): Promise<Wallet[]>;
   createMarginCall(marginCall: InsertMarginCall): Promise<MarginCall>;
   updateMarginCall(id: string, updates: Partial<MarginCall>): Promise<MarginCall>;
+  getMarginCallById(id: string): Promise<MarginCall | undefined>;
   listMarginCalls(): Promise<MarginCall[]>;
   getMarginCallsByUser(userId: string): Promise<MarginCall[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   listNotifications(userId: string): Promise<Notification[]>;
+  updateNotification(id: string, updates: Partial<Notification>): Promise<Notification>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -267,6 +269,14 @@ export class DatabaseStorage implements IStorage {
     return marginCall;
   }
 
+  async getMarginCallById(id: string): Promise<MarginCall | undefined> {
+    const [marginCall] = await db
+      .select()
+      .from(marginCalls)
+      .where(eq(marginCalls.id, id));
+    return marginCall;
+  }
+
   async listMarginCalls(): Promise<MarginCall[]> {
     const allMarginCalls = await db
       .select()
@@ -299,6 +309,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(notifications.userId, userId))
       .orderBy(desc(notifications.createdAt));
     return userNotifications;
+  }
+
+  async updateNotification(id: string, updates: Partial<Notification>): Promise<Notification> {
+    const [notification] = await db
+      .update(notifications)
+      .set(updates)
+      .where(eq(notifications.id, id))
+      .returning();
+    return notification;
   }
 }
 

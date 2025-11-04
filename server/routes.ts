@@ -279,6 +279,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/margin-calls - List all margin calls (admin can filter by status)
+  app.get("/api/margin-calls", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { status } = req.query;
+      const allMarginCalls = await storage.listMarginCalls();
+      
+      // Filter by status if provided
+      let filteredCalls = allMarginCalls;
+      if (status && typeof status === "string") {
+        filteredCalls = allMarginCalls.filter(mc => mc.status === status);
+      }
+      
+      res.json(filteredCalls);
+    } catch (error: any) {
+      console.error("Error fetching margin calls:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch margin calls" });
+    }
+  });
+
+  // GET /api/notifications - Get notifications for current user
+  app.get("/api/notifications", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const notifications = await storage.listNotifications(req.user.id);
+      res.json(notifications);
+    } catch (error: any) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch notifications" });
+    }
+  });
+
+  // POST /api/margin-call/:id/topup - Top up reserved collateral for a margin call
+  app.post("/api/margin-call/:id/topup", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const { amount } = req.body;
+      
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+        return res.status(400).json({ error: "Valid amount is required" });
+      }
+      
+      // Get the margin call
+      const marginCall = await storage.getMarginCallById(id);
+      if (!marginCall) {
+        return res.status(404).json({ error: "Margin call not found" });
+      }
+      
+      // Verify the user is the responsible party
+      if (marginCall.userId !== req.user.id) {
+        return res.status(403).json({ error: "Not authorized to top up this margin call" });
+      }
+      
+      // Verify the margin call is pending
+      if (marginCall.status !== "PENDING") {
+        return res.status(400).json({ error: "Margin call is not in PENDING status" });
+      }
+      
+      // Calculate new reserved collateral
+      const currentReserved = parseFloat(marginCall.reservedCollateral || "0");
+      const topupAmount = parseFloat(amount);
+      const newReserved = currentReserved + topupAmount;
+      
+      // Calculate total available collateral
+      const currentCollateral = parseFloat(marginCall.collateralAmount);
+      const totalAvailable = currentCollateral + newReserved;
+      const amountRequired = parseFloat(marginCall.amountRequired);
+      
+      // Determine if margin call should be resolved
+      const shouldResolve = totalAvailable >= amountRequired;
+      
+      // Update margin call
+      const updatedMarginCall = await storage.updateMarginCall(id, {
+        reservedCollateral: newReserved.toFixed(8),
+        status: shouldResolve ? "RESOLVED" : "PENDING",
+      });
+      
+      res.json({
+        marginCall: updatedMarginCall,
+        resolved: shouldResolve,
+        totalAvailable: totalAvailable.toFixed(8),
+        amountRequired: amountRequired.toFixed(8),
+      });
+    } catch (error: any) {
+      console.error("Error topping up margin call:", error);
+      res.status(500).json({ error: error.message || "Failed to top up margin call" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
