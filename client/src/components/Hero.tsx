@@ -41,7 +41,7 @@ export function Hero({ onCreateOption, onConnectWallet }: HeroProps) {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full sm:w-auto"
+                className="bg-primary text-primary-foreground font-semibold w-full sm:w-auto"
                 onClick={onCreateOption}
                 data-testid="button-hero-create-option"
               >
@@ -51,7 +51,7 @@ export function Hero({ onCreateOption, onConnectWallet }: HeroProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm font-semibold w-full sm:w-auto"
+                className="bg-white/10 text-white border-white/30 backdrop-blur-sm font-semibold w-full sm:w-auto"
                 onClick={onConnectWallet}
                 data-testid="button-hero-connect-wallet"
               >
