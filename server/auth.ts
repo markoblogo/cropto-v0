@@ -22,6 +22,8 @@ interface User {
   passwordHash: string;
   role: 'farmer' | 'trader' | 'broker';
   createdAt: string;
+  walletAddress?: string;
+  network?: string;
 }
 
 interface DB {
@@ -123,6 +125,26 @@ export async function findUserById(id: string): Promise<User | null> {
   return db.users.find(u => u.id === id) || null;
 }
 
+// Update user wallet
+export async function updateUserWallet(
+  userId: string,
+  walletAddress: string,
+  network: string
+): Promise<User | null> {
+  const db = await readDB();
+  const userIndex = db.users.findIndex(u => u.id === userId);
+  
+  if (userIndex === -1) {
+    return null;
+  }
+  
+  db.users[userIndex].walletAddress = walletAddress;
+  db.users[userIndex].network = network;
+  
+  await writeDB(db);
+  return db.users[userIndex];
+}
+
 // Auth middleware
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
@@ -138,5 +160,20 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   }
   
   req.user = user;
+  next();
+}
+
+// Optional auth middleware - doesn't fail if token is missing
+export function optionalAuth(req: AuthRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (token) {
+    const user = verifyToken(token);
+    if (user) {
+      req.user = user;
+    }
+  }
+  
   next();
 }

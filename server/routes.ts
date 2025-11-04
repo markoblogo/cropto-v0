@@ -5,11 +5,13 @@ import { insertOptionSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import authRoutes from "./authRoutes";
+import walletRoutes from "./walletRoutes";
 import { authenticateToken } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
   app.use("/api/auth", authRoutes);
+  app.use("/api/wallet", walletRoutes);
 
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });

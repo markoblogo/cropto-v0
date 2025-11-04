@@ -47,6 +47,8 @@ router.post('/register', async (req, res) => {
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
+        walletAddress: user.walletAddress,
+        network: user.network,
       },
     });
   } catch (error) {
@@ -88,6 +90,8 @@ router.post('/login', async (req, res) => {
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
+        walletAddress: user.walletAddress,
+        network: user.network,
       },
     });
   } catch (error) {
@@ -119,6 +123,8 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
+        walletAddress: user.walletAddress,
+        network: user.network,
       },
     });
   } catch (error) {
