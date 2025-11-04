@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -244,6 +245,9 @@ export function Header({ onCreateOption }: HeaderProps) {
                   <User className="h-3 w-3 mr-1" />
                   {user.role}
                 </Badge>
+
+                {/* Notifications */}
+                <NotificationsDropdown />
 
                 {/* Connect Wallet */}
                 {!walletAddress ? (
