@@ -1,3 +1,11 @@
 {
-  "users": []
+  "users": [
+    {
+      "id": "user_1762270192349_gz3d1d7p8",
+      "email": "test-AIuDoT@cropto.com",
+      "passwordHash": "$2b$10$tw39B8UrtBd9fjsusML37erkctnEH0leN7xinhZZ2AZmG4xrHunN6",
+      "role": "farmer",
+      "createdAt": "2025-11-04T15:29:52.463Z"
+    }
+  ]
 }
