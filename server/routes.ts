@@ -415,6 +415,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/admin/run-demo - Run demo scenario seeding (broker only)
+  app.post("/api/admin/run-demo", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Only brokers (admin) can run demo scenario
+      if (req.user.role !== "broker") {
+        return res.status(403).json({ error: "Only brokers can run demo scenarios" });
+      }
+      
+      // Import and run seed script
+      const { seedDemoData } = await import("./scripts/seedDemo");
+      const results = await seedDemoData();
+      
+      res.json({
+        message: "Demo scenario seeded successfully",
+        results,
+      });
+    } catch (error: any) {
+      console.error("Error running demo scenario:", error);
+      res.status(500).json({ error: error.message || "Failed to run demo scenario" });
+    }
+  });
+
   // POST /api/jobs/process-deadlines - Process expired margin calls (manual trigger, admin/broker only)
   app.post("/api/jobs/process-deadlines", authenticateToken, async (req: AuthRequest, res) => {
     try {
