@@ -7,6 +7,7 @@ import { z } from "zod";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { authenticateToken, type AuthRequest } from "./auth";
+import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
@@ -167,13 +168,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const collateral = parseFloat(option.collateralAmount || "0");
         const lastIntrinsic = parseFloat(option.lastIntrinsic || "0");
 
-        // Calculate intrinsic value based on option type
-        let intrinsicValue = 0;
-        if (option.type === "CALL") {
-          intrinsicValue = Math.max(0, currentIndexPrice - strikePrice) * qty;
-        } else if (option.type === "PUT") {
-          intrinsicValue = Math.max(0, strikePrice - currentIndexPrice) * qty;
-        }
+        // Calculate intrinsic value using utility function
+        const intrinsicValue = intrinsic(option.type, currentIndexPrice, strikePrice, qty);
 
         // Calculate P&L
         const pnl = lastIntrinsic > 0 ? intrinsicValue - lastIntrinsic : intrinsicValue;
@@ -187,9 +183,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payoutAccumulated: newPayoutAccumulated.toFixed(8),
         });
 
-        // Check margin rule: if abs(intrinsic) >= 0.8 * collateral_amount
-        if (collateral > 0 && Math.abs(intrinsicValue) >= 0.8 * collateral) {
-          const amountRequired = Math.max(0, Math.abs(intrinsicValue) - collateral);
+        // Check margin rule using utility function
+        if (collateral > 0 && shouldTriggerMargin(intrinsicValue, collateral)) {
+          const amountRequired = calculateMarginCallAmount(intrinsicValue, collateral);
           
           // Determine responsible party (issuer/seller, not buyer)
           const responsibleUserId = option.issuerId || option.seller;
