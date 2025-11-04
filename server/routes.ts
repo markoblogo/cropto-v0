@@ -191,37 +191,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (collateral > 0 && Math.abs(intrinsicValue) >= 0.8 * collateral) {
           const amountRequired = Math.max(0, Math.abs(intrinsicValue) - collateral);
           
-          // Create margin call
-          const marginCall = await storage.createMarginCall({
-            optionId: option.id,
-            userId: option.issuerId || option.seller || option.buyer,
-            amountRequired: amountRequired.toFixed(8),
-            intrinsicValue: intrinsicValue.toFixed(8),
-            collateralAmount: collateral.toFixed(8),
-          });
+          // Determine responsible party (issuer/seller, not buyer)
+          const responsibleUserId = option.issuerId || option.seller;
           
+          if (!responsibleUserId) {
+            console.warn(`Option ${option.id} has no issuer or seller, skipping margin call`);
+            continue;
+          }
+          
+          // Check for existing open margin call for this option/user pair
+          const allMarginCalls = await storage.listMarginCalls();
+          const existingMarginCall = allMarginCalls.find(
+            mc => mc.optionId === option.id && 
+                  mc.userId === responsibleUserId && 
+                  mc.status === "PENDING"
+          );
+          
+          let marginCall;
+          if (existingMarginCall) {
+            // Update existing margin call with latest calculations
+            marginCall = await storage.updateMarginCall(existingMarginCall.id, {
+              amountRequired: amountRequired.toFixed(8),
+              intrinsicValue: intrinsicValue.toFixed(8),
+              collateralAmount: collateral.toFixed(8),
+            });
+          } else {
+            // Create new margin call
+            marginCall = await storage.createMarginCall({
+              optionId: option.id,
+              userId: responsibleUserId,
+              amountRequired: amountRequired.toFixed(8),
+              intrinsicValue: intrinsicValue.toFixed(8),
+              collateralAmount: collateral.toFixed(8),
+            });
+          }
+          
+          // Add to response array (whether new or updated)
           marginCalls.push(marginCall);
 
-          // Create notification for buyer
+          // Create notification for buyer (check for duplicates)
           if (option.buyerId) {
-            const buyerNotification = await storage.createNotification({
-              userId: option.buyerId,
-              type: "MARGIN_CALL",
-              message: `Margin call triggered for option ${option.title}. Amount required: ${amountRequired.toFixed(8)}`,
-              relatedId: marginCall.id,
-            });
-            createdNotifications.push(buyerNotification);
+            const existingBuyerNotifications = await storage.listNotifications(option.buyerId);
+            const hasBuyerNotification = existingBuyerNotifications.some(
+              n => n.type === "MARGIN_CALL" && n.relatedId === marginCall.id && n.read === "false"
+            );
+            
+            if (!hasBuyerNotification) {
+              const buyerNotification = await storage.createNotification({
+                userId: option.buyerId,
+                type: "MARGIN_CALL",
+                message: `Margin call triggered for option ${option.title}. Amount required: ${amountRequired.toFixed(8)}`,
+                relatedId: marginCall.id,
+              });
+              createdNotifications.push(buyerNotification);
+            }
           }
 
-          // Create notification for issuer/seller
-          if (option.issuerId && option.issuerId !== option.buyerId) {
-            const issuerNotification = await storage.createNotification({
-              userId: option.issuerId,
-              type: "MARGIN_CALL",
-              message: `Margin call triggered for option ${option.title}. Amount required: ${amountRequired.toFixed(8)}`,
-              relatedId: marginCall.id,
-            });
-            createdNotifications.push(issuerNotification);
+          // Create notification for issuer/seller (check for duplicates and prevent duplicate if same as buyer)
+          if (responsibleUserId !== option.buyerId) {
+            const existingIssuerNotifications = await storage.listNotifications(responsibleUserId);
+            const hasIssuerNotification = existingIssuerNotifications.some(
+              n => n.type === "MARGIN_CALL" && n.relatedId === marginCall.id && n.read === "false"
+            );
+            
+            if (!hasIssuerNotification) {
+              const issuerNotification = await storage.createNotification({
+                userId: responsibleUserId,
+                type: "MARGIN_CALL",
+                message: `Margin call triggered for option ${option.title}. Amount required: ${amountRequired.toFixed(8)}`,
+                relatedId: marginCall.id,
+              });
+              createdNotifications.push(issuerNotification);
+            }
           }
         }
       }

@@ -34,6 +34,7 @@ export interface IStorage {
   getWalletByAddress(address: string): Promise<Wallet | undefined>;
   listWallets(): Promise<Wallet[]>;
   createMarginCall(marginCall: InsertMarginCall): Promise<MarginCall>;
+  updateMarginCall(id: string, updates: Partial<MarginCall>): Promise<MarginCall>;
   listMarginCalls(): Promise<MarginCall[]>;
   getMarginCallsByUser(userId: string): Promise<MarginCall[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
@@ -253,6 +254,15 @@ export class DatabaseStorage implements IStorage {
     const [marginCall] = await db
       .insert(marginCalls)
       .values(insertMarginCall)
+      .returning();
+    return marginCall;
+  }
+
+  async updateMarginCall(id: string, updates: Partial<MarginCall>): Promise<MarginCall> {
+    const [marginCall] = await db
+      .update(marginCalls)
+      .set(updates)
+      .where(eq(marginCalls.id, id))
       .returning();
     return marginCall;
   }
