@@ -34,10 +34,14 @@ import type { InsertOption } from "@shared/schema";
 interface CreateOptionDialogProps {
   onSubmit: (data: InsertOption) => Promise<void>;
   isPending: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateOptionDialog({ onSubmit, isPending }: CreateOptionDialogProps) {
-  const [open, setOpen] = useState(false);
+export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, onOpenChange }: CreateOptionDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   const form = useForm<InsertOption>({
     resolver: zodResolver(insertOptionSchema),

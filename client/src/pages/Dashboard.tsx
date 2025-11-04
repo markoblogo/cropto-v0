@@ -1,15 +1,17 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { TrendingUp, BarChart3, DollarSign } from "lucide-react";
+import { useState } from "react";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { OptionsTable } from "@/components/OptionsTable";
-import { StatsCard } from "@/components/StatsCard";
+import { Hero } from "@/components/Hero";
+import { Header } from "@/components/Header";
+import { MetricCards } from "@/components/MetricCards";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
-import croptoLogo from "@assets/cropto logo_1762265015324.png";
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const { data: options = [], isLoading } = useQuery<Option[]>({
     queryKey: ["/api/options"],
@@ -84,74 +86,54 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <img 
-                src={croptoLogo} 
-                alt="Cropto" 
-                className="h-10 w-auto"
-                data-testid="img-cropto-logo"
-              />
-              <div>
-                <p className="text-xs text-muted-foreground">Options Trading Platform</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <CreateOptionDialog 
-                onSubmit={(data) => createOptionMutation.mutateAsync(data)}
-                isPending={createOptionMutation.isPending}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header onCreateOption={() => setIsCreateDialogOpen(true)} />
+      
+      <Hero onCreateOption={() => setIsCreateDialogOpen(true)} />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-            <p className="text-muted-foreground">
-              Monitor your crypto options positions and trading activity
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatsCard
-              title="Total Options"
-              value={totalOptions.toString()}
-              icon={BarChart3}
-              description="All time contracts"
-            />
-            <StatsCard
-              title="Open Positions"
-              value={openOptions.toString()}
-              icon={TrendingUp}
-              description="Active contracts"
-            />
-            <StatsCard
-              title="Total Volume"
-              value={`$${totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              icon={DollarSign}
-              description="Cumulative premium"
-            />
-          </div>
-
-          <OptionsTable 
-            options={options} 
-            isLoading={isLoading}
-            onMatch={async (optionId, seller) => {
-              await matchOptionMutation.mutateAsync({ optionId, seller });
-            }}
-            isMatching={matchOptionMutation.isPending}
-            onExercise={async (optionId, exercisedBy, spotPrice) => {
-              await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
-            }}
-            isExercising={exerciseOptionMutation.isPending}
+      <main className="py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Metric Cards */}
+          <MetricCards
+            totalOptions={totalOptions}
+            openPositions={openOptions}
+            totalVolume={totalVolume}
           />
+
+          {/* Options Table */}
+          <div id="options-table">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-2">Options Marketplace</h2>
+              <p className="text-muted-foreground">
+                Browse, create, and trade grain commodity options
+              </p>
+            </div>
+            
+            <OptionsTable 
+              options={options} 
+              isLoading={isLoading}
+              onMatch={async (optionId, seller) => {
+                await matchOptionMutation.mutateAsync({ optionId, seller });
+              }}
+              isMatching={matchOptionMutation.isPending}
+              onExercise={async (optionId, exercisedBy, spotPrice) => {
+                await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
+              }}
+              isExercising={exerciseOptionMutation.isPending}
+            />
+          </div>
         </div>
       </main>
+
+      {/* Create Option Dialog */}
+      <CreateOptionDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSubmit={async (data) => {
+          await createOptionMutation.mutateAsync(data);
+          setIsCreateDialogOpen(false);
+        }}
+        isPending={createOptionMutation.isPending}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
+import Docs from "@/pages/Docs";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/design-architecture" component={DesignArchitecture} />
       <Route path="/partners-contracts" component={PartnersContracts} />
       <Route path="/onchain-tx" component={OnchainTx} />
+      <Route path="/docs" component={Docs} />
       <Route component={NotFound} />
     </Switch>
   );
