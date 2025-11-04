@@ -28,6 +28,7 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 
 ### Feature Specifications
 
+- **Index Price Widget**: Real-time dashboard widget displays latest wheat index price with historical trend. Shows commodity name, current price (formatted USD), change percentage with color-coded trend indicator (green/red/gray), and sparkline chart. API endpoint `GET /api/index/latest` fetches latest price and last 7 historical data points from database. Widget auto-refreshes every 30 seconds and handles loading/error states. Integrated into dashboard in responsive grid layout.
 - **Option Creation & Management**: Users can create, view, filter, and sort crypto options (CALL/PUT) by various statuses (OPEN/FILLED/EXPIRED/CANCELLED).
 - **Matching Engine**: Transaction-safe matching pairs buyers with sellers, updates option status, and creates trade records.
 - **Exercise & Settlement**: Filled options can be exercised with spot price input, calculating payouts and P&L, and creating settlement records.
