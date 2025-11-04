@@ -8,6 +8,7 @@ import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { authenticateToken, type AuthRequest } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
+import { processDeadlines } from "./cron/scheduler";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
@@ -438,6 +439,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error running demo scenario:", error);
       res.status(500).json({ error: error.message || "Failed to run demo scenario" });
+    }
+  });
+
+  // POST /api/admin/schedule/process-deadlines - Manually trigger deadline processor (broker only)
+  app.post("/api/admin/schedule/process-deadlines", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      if (req.user.role !== "broker") {
+        return res.status(403).json({ error: "Only brokers can trigger deadline processing" });
+      }
+      
+      const results = await processDeadlines();
+      
+      res.json(results);
+    } catch (error: any) {
+      console.error("Error processing deadlines:", error);
+      res.status(500).json({ error: error.message || "Failed to process deadlines" });
     }
   });
 
