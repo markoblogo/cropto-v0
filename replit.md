@@ -50,6 +50,18 @@ Cropto is a professional cryptocurrency options trading platform that enables us
    - Wallet Persistence: Connected wallet loaded from user data on login/refresh
    - Display Format: Shows shortened address format (0x1234...5678) in header
    - Optional Authentication: Wallet linking works for both authenticated users (persisted) and anonymous users (demo mode)
+9. **Margin Check Job System** (November 4, 2025)
+   - POST /api/jobs/run-margin-check: Automated job to check margin requirements on open options
+   - Input: { date, commodity, indexPrice } - all optional, defaults to latest index if not provided
+   - For each OPEN option matching commodity:
+     - Calculates intrinsic value: CALL = max(0, indexPrice - strike) * qty, PUT = max(0, strike - indexPrice) * qty
+     - Calculates P&L: intrinsic - last_intrinsic (or intrinsic if first run)
+     - Updates option.last_intrinsic and option.payout_accumulated
+     - Margin rule: if abs(intrinsic) >= 0.8 * collateral_amount, creates margin_call record
+     - Creates notifications for buyer and issuer when margin call triggered
+   - New schema tables: margin_calls (tracks margin calls with status), notifications (user notifications)
+   - New option fields: commodity, buyerId, issuerId, collateralAmount, lastIntrinsic, payoutAccumulated
+   - Returns: created margin_calls list, optionsProcessed count, indexPrice used, commodity filter
 
 ## User Preferences
 
@@ -97,6 +109,7 @@ Preferred communication style: Simple, everyday language.
 - `/api/options/:id/exercise` - POST (exercise a filled option with spot price, creates settlement)
 - `/api/trades` - GET (list all trades)
 - `/api/settlements` - GET (list all settlements)
+- `/api/jobs/run-margin-check` - POST (run margin check on open options, creates margin calls and notifications)
 
 **Data Validation**: Zod schemas shared between frontend and backend
 - Schema definitions in `shared/schema.ts`
