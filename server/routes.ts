@@ -289,6 +289,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/jobs/daily-settle - Daily settlement with margin call generation
+  app.post("/api/jobs/daily-settle", async (req, res) => {
+    try {
+      const dailySettleSchema = z.object({
+        date: z.string().optional(),
+        commodity: z.string().optional(),
+        indexPrice: z.coerce.number(),
+      });
+
+      const result = dailySettleSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message 
+        });
+      }
+
+      const { commodity, indexPrice } = result.data;
+
+      // Get all OPEN options, filtered by commodity if provided
+      const allOptions = await storage.listOptions();
+      const openOptions = allOptions.filter(option => {
+        const isOpen = option.status === "OPEN";
+        const matchesCommodity = !commodity || option.commodity === commodity;
+        return isOpen && matchesCommodity;
+      });
+
+      const marginCalls: any[] = [];
+      const processedOptions: any[] = [];
+      const errors: any[] = [];
+
+      // Process each open option
+      for (const option of openOptions) {
+        try {
+          const strikePrice = parseFloat(option.strike || "0");
+          const qty = parseFloat(option.qty || "0");
+          const collateral = parseFloat(option.collateralAmount || "0");
+
+          // Calculate intrinsic value
+          const intrinsicValue = intrinsic(option.type, indexPrice, strikePrice, qty);
+
+          // Calculate P&L (simplified: just intrinsic value for now)
+          const pnl = intrinsicValue;
+
+          // Check if pnl exceeds 0.8 * collateral
+          const threshold = 0.8 * collateral;
+          
+          if (collateral > 0 && pnl > threshold) {
+            // Determine responsible party (issuer/seller)
+            const responsibleUserId = option.issuerId || option.seller;
+            
+            if (!responsibleUserId) {
+              errors.push({
+                optionId: option.id,
+                error: "No issuer or seller found for option"
+              });
+              continue;
+            }
+
+            // Check for existing open margin call for this option
+            const allMarginCalls = await storage.listMarginCalls();
+            const existingMarginCall = allMarginCalls.find(
+              mc => mc.optionId === option.id && 
+                    mc.userId === responsibleUserId && 
+                    mc.status === "PENDING"
+            );
+
+            let marginCall;
+            if (!existingMarginCall) {
+              // Calculate amount required to restore margin
+              const amountRequired = calculateMarginCallAmount(intrinsicValue, collateral);
+              
+              // Create new margin call with 24h deadline
+              marginCall = await storage.createMarginCall({
+                optionId: option.id,
+                userId: responsibleUserId,
+                amountRequired: amountRequired.toFixed(8),
+                intrinsicValue: intrinsicValue.toFixed(8),
+                collateralAmount: collateral.toFixed(8),
+              });
+
+              marginCalls.push(marginCall);
+
+              // Update option status to MARGIN_CALL
+              await storage.updateOption(option.id, {
+                status: "MARGIN_CALL",
+              });
+
+              processedOptions.push({
+                optionId: option.id,
+                intrinsicValue,
+                collateral,
+                pnl,
+                threshold,
+                marginCallId: marginCall.id,
+                status: "MARGIN_CALL",
+              });
+            } else {
+              // Existing margin call - don't create duplicate
+              processedOptions.push({
+                optionId: option.id,
+                intrinsicValue,
+                collateral,
+                pnl,
+                threshold,
+                status: "EXISTING_MARGIN_CALL",
+                marginCallId: existingMarginCall.id,
+              });
+            }
+          } else {
+            processedOptions.push({
+              optionId: option.id,
+              intrinsicValue,
+              collateral,
+              pnl,
+              threshold,
+              status: "OK",
+            });
+          }
+        } catch (error: any) {
+          errors.push({
+            optionId: option.id,
+            error: error.message || "Failed to process option"
+          });
+        }
+      }
+
+      res.json({
+        processedCount: openOptions.length,
+        marginCalls,
+        processedOptions,
+        errors,
+        indexPrice,
+        commodity: commodity || "all",
+      });
+    } catch (error: any) {
+      console.error("Error running daily settle:", error);
+      res.status(500).json({ error: error.message || "Failed to run daily settle" });
+    }
+  });
+
   // GET /api/margin-calls - List margin calls (admin sees all, non-admin sees their own)
   app.get("/api/margin-calls", authenticateToken, async (req: AuthRequest, res) => {
     try {
