@@ -5,7 +5,12 @@ import fs from 'fs/promises';
 import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'server', 'db.json');
-const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
+
+// JWT_SECRET is mandatory - server will refuse to start without it
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required. Please add it to your Replit Secrets.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 interface User {
   id: string;
