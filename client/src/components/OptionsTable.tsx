@@ -17,6 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { StatusBadge } from "./StatusBadge";
 import { OptionTypeBadge } from "./OptionTypeBadge";
 import { MatchOptionDialog } from "./MatchOptionDialog";
@@ -25,7 +31,7 @@ import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
 import { ForceSettleDialog } from "./ForceSettleDialog";
 import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
 import type { Option } from "@shared/schema";
-import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, ArrowDownToLine } from "lucide-react";
 
 type SortField = "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
@@ -373,6 +379,26 @@ export function OptionsTable({
                           }}
                           isPending={isTopping}
                         />
+                      )}
+                      {(option.status === "EXERCISED" || option.status === "FILLED") && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled
+                                data-testid={`button-withdraw-${option.id}`}
+                              >
+                                <ArrowDownToLine className="h-4 w-4 mr-1" />
+                                Withdraw
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>On-chain withdrawals coming soon</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </div>
                   </TableCell>

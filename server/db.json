@@ -19,7 +19,9 @@
       "email": "farmer@demo",
       "passwordHash": "$2b$10$hpkGc7J55dy8s89xG7Vs1eXLp3wxuQgT635A4cpIDn0/UJB1gnGzi",
       "role": "farmer",
-      "createdAt": "2025-11-04T19:21:21.534Z"
+      "createdAt": "2025-11-04T19:21:21.534Z",
+      "walletAddress": "0x1234567890abcdef1234567890abcdef12345678",
+      "network": "1"
     },
     {
       "id": "user_1762284081535_nydavqd83",
