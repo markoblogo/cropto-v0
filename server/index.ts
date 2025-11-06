@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeAuth } from "./auth";
+import { initSentry } from "./utils/sentry";
 
 const app = express();
 
@@ -48,6 +49,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize Sentry error monitoring
+  initSentry();
+
   // Initialize authentication (validates JWT_SECRET is present)
   try {
     initializeAuth();
