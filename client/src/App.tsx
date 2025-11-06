@@ -7,15 +7,29 @@ import Dashboard from "@/pages/Dashboard";
 import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
+import Docs from "@/pages/Docs";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Admin from "@/pages/Admin";
+import AdminFeedback from "@/pages/AdminFeedback";
+import AdminReconciliation from "@/pages/AdminReconciliation";
+import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/design-architecture" component={DesignArchitecture} />
       <Route path="/partners-contracts" component={PartnersContracts} />
       <Route path="/onchain-tx" component={OnchainTx} />
+      <Route path="/docs" component={Docs} />
+      <Route path="/admin" component={Admin} />
+      <Route path="/admin/feedback" component={AdminFeedback} />
+      <Route path="/admin/reconciliation" component={AdminReconciliation} />
+      <Route path="/feedback" component={Feedback} />
       <Route component={NotFound} />
     </Switch>
   );

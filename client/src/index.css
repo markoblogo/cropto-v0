@@ -16,17 +16,17 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 220 6% 97%;
+  --background: 0 0% 100%;
 
-  --foreground: 220 8% 12%;
+  --foreground: 0 0% 4%;
 
-  --border: 220 6% 88%;
+  --border: 0 0% 90%;
 
-  --card: 220 6% 95%;
+  --card: 0 0% 98%;
 
-  --card-foreground: 220 8% 12%;
+  --card-foreground: 0 0% 4%;
 
-  --card-border: 220 6% 90%;
+  --card-border: 0 0% 92%;
 
   --sidebar: 220 6% 93%;
 
@@ -50,21 +50,25 @@
 
   --popover-border: 220 6% 85%;
 
-  --primary: 65 47% 42%;
+  --primary: 76 47% 44%;
 
-  --primary-foreground: 65 47% 98%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 8% 86%;
+  --secondary: 48 48% 60%;
 
-  --secondary-foreground: 220 8% 12%;
+  --secondary-foreground: 0 0% 4%;
 
-  --muted: 220 12% 89%;
+  --muted: 0 0% 90%;
 
-  --muted-foreground: 220 8% 35%;
+  --muted-foreground: 0 0% 40%;
 
-  --accent: 65 47% 42%;
+  --accent: 76 47% 44%;
 
   --accent-foreground: 0 0% 100%;
+  
+  --gold: 48 48% 60%;
+  
+  --gold-foreground: 0 0% 4%;
 
   --destructive: 0 84% 42%;
 
@@ -134,17 +138,17 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 220 6% 8%;
+  --background: 0 0% 4%;
 
-  --foreground: 220 6% 92%;
+  --foreground: 0 0% 98%;
 
-  --border: 220 6% 18%;
+  --border: 0 0% 15%;
 
-  --card: 220 6% 11%;
+  --card: 0 0% 8%;
 
-  --card-foreground: 220 6% 92%;
+  --card-foreground: 0 0% 98%;
 
-  --card-border: 220 6% 16%;
+  --card-border: 0 0% 12%;
 
   --sidebar: 220 6% 13%;
 
@@ -168,21 +172,25 @@
 
   --popover-border: 220 6% 22%;
 
-  --primary: 65 47% 42%;
+  --primary: 76 47% 44%;
 
-  --primary-foreground: 65 47% 98%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 8% 20%;
+  --secondary: 48 48% 60%;
 
-  --secondary-foreground: 220 6% 92%;
+  --secondary-foreground: 0 0% 4%;
 
-  --muted: 220 12% 16%;
+  --muted: 0 0% 15%;
 
-  --muted-foreground: 220 8% 65%;
+  --muted-foreground: 0 0% 65%;
 
-  --accent: 65 47% 42%;
+  --accent: 76 47% 44%;
 
   --accent-foreground: 0 0% 100%;
+  
+  --gold: 48 48% 60%;
+  
+  --gold-foreground: 0 0% 98%;
 
   --destructive: 0 84% 42%;
 

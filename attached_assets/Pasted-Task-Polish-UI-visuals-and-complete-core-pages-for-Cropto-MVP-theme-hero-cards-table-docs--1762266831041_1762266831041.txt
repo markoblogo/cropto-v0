@@ -1,0 +1,38 @@
+Task: Polish UI visuals and complete core pages for Cropto MVP (theme + hero + cards + table + docs)
+
+Context:
+- Repo already has client/ (Next.js), server/ (Express), and assets in /public/assets (cropto-logo.png, cropto-cover.png, icons/).
+- Current branch: feature/full-mvp-structure (create if missing).
+- Agent previously implemented basic options CRUD, partial table, and logo insertion.
+
+Goals (high priority):
+1. Implement theme tokens (Tailwind) with colors: dark #0B0B0B, white #FFFFFF, olive #8AA43B, gold #C9B86A, muted #E6E6E6; add Inter + JetBrains Mono fonts.
+2. Replace current bland styling with glossy/selling look:
+   - Header: logo left, menu, Connect Wallet button, Create Option CTA.
+   - Hero: large headline "Cropto — Simple NFT options for grain markets", subhead and two CTAs ("Create Option", "Try demo"), use cropto-cover.png as background with dark overlay for contrast.
+   - Metric cards: three big rounded cards (Total Options / Open Positions / Total Volume) with large numbers and olive/gold accents.
+3. Restyle Options table: pill status badges, commodity icons (from /public/assets/icons), filter controls on top, responsive layout.
+4. Style Create Option form as a glass card with live calculations (collateral, premium_total shown as user fills qty/strike).
+5. Add design gallery page (/design-architecture) that displays images from /public/assets/mock-screens/, and a simple /docs page with short product description and partner instructions.
+6. Ensure wallet connect button stores address to `POST /api/wallet/link` (mock if on dev).
+7. Use your svg icon set for micro-icons in nav/cards.
+8. Seed minimal demo data (3 users with roles: farmer/trader/broker; 3 options) for preview.
+
+Acceptance criteria:
+- Theme appears in preview and is consistent across pages.
+- Hero is visually prominent; CTA visible on mobile.
+- Metric cards present and accurate (use seeded numbers).
+- Options table shows icons + pill statuses + filters.
+- Create Option form shows live collateral and premium_total calculation.
+- /design-architecture page lists uploaded design images and uses cropto-cover as background decoration.
+- Wallet connect writes address to backend endpoint (or local mock).
+- Push changes to branch feature/full-mvp-structure and provide preview link.
+
+Files to change:
+- client/styles/tailwind.config.js or equivalent
+- client/components/Header.tsx, Hero.tsx, MetricCards.tsx, OptionsTable.tsx, CreateOptionForm.tsx
+- client/pages/design-architecture.tsx, client/pages/docs.tsx
+- server/routes (wallet link endpoint if missing)
+- update README with preview instructions
+
+Use assets in /public/assets/. Commit small atomic changes with clear messages. Provide one PR/branch ready preview. Keep changes incremental — focus on visuals first (theme, header, hero, cards, table), then form logic.
