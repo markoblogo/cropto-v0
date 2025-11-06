@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -38,11 +40,41 @@ interface PortfolioData {
   positions: PortfolioPosition[];
 }
 
+interface UserData {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
 export default function Portfolio() {
-  const { data: portfolioData, isLoading, error } = useQuery<PortfolioData>({
+  const [, setLocation] = useLocation();
+
+  // Check authentication
+  const { data: userData, isLoading: isAuthLoading } = useQuery<UserData | null>({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+    enabled: !!localStorage.getItem('cropto_token'),
+  });
+
+  const user = userData?.user;
+
+  // Fetch portfolio data only if authenticated
+  const { data: portfolioData, isLoading: isPortfolioLoading, error } = useQuery<PortfolioData>({
     queryKey: ["/api/portfolio/me"],
     retry: false,
+    enabled: !!user,
   });
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      setLocation("/login");
+    }
+  }, [isAuthLoading, user, setLocation]);
+
+  const isLoading = isAuthLoading || isPortfolioLoading;
 
   if (isLoading) {
     return (
@@ -72,7 +104,12 @@ export default function Portfolio() {
     );
   }
 
-  if (error || !portfolioData) {
+  // Return null while redirecting
+  if (!isAuthLoading && !user) {
+    return null;
+  }
+
+  if (error || (!isPortfolioLoading && !portfolioData)) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="container mx-auto">
