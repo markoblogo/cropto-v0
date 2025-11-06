@@ -32,6 +32,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ ok: true });
   });
 
+  // Telegram webhook for posting index prices
+  app.post("/api/index", async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      // Validate Telegram update structure
+      if (!message || !message.text) {
+        return res.status(400).json({ error: "Invalid Telegram update format" });
+      }
+
+      // Parse message: Expected format "COMMODITY PRICE" e.g. "WHEAT 240.50" or "BTC 45000.00"
+      const text = message.text.trim();
+      const parts = text.split(/\s+/);
+      
+      if (parts.length !== 2) {
+        return res.status(400).json({ error: "Invalid format. Expected: COMMODITY PRICE" });
+      }
+
+      const [commodity, priceStr] = parts;
+      const price = parseFloat(priceStr);
+
+      if (isNaN(price) || price <= 0) {
+        return res.status(400).json({ error: "Invalid price value" });
+      }
+
+      // Store index price
+      const [indexPrice] = await db
+        .insert(indexPrices)
+        .values({
+          commodity: commodity.toUpperCase(),
+          price: price.toFixed(8),
+          date: new Date(),
+        })
+        .returning();
+
+      console.log(`[Telegram] Index price received: ${commodity} = ${price}`);
+
+      res.json({ 
+        ok: true, 
+        message: `Index price stored: ${commodity} = $${price}`,
+        data: indexPrice
+      });
+    } catch (error: any) {
+      console.error("Telegram webhook error:", error);
+      res.status(500).json({ error: error.message || "Failed to process index update" });
+    }
+  });
+
+  // Admin endpoint to manually add/override index prices
+  app.post("/api/admin/index", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userRole = req.user?.role;
+      if (userRole !== "broker") {
+        return res.status(403).json({ error: "Access denied. Broker role required." });
+      }
+
+      const { commodity, price, date } = req.body;
+
+      if (!commodity || !price) {
+        return res.status(400).json({ error: "Commodity and price are required" });
+      }
+
+      const priceNum = parseFloat(price);
+      if (isNaN(priceNum) || priceNum <= 0) {
+        return res.status(400).json({ error: "Invalid price value" });
+      }
+
+      const indexDate = date ? new Date(date) : new Date();
+
+      const [indexPrice] = await db
+        .insert(indexPrices)
+        .values({
+          commodity: commodity.toUpperCase(),
+          price: priceNum.toFixed(8),
+          date: indexDate,
+        })
+        .returning();
+
+      res.json({ 
+        success: true, 
+        message: `Index price added: ${commodity} = $${priceNum}`,
+        data: indexPrice
+      });
+    } catch (error: any) {
+      console.error("Admin index add error:", error);
+      res.status(500).json({ error: error.message || "Failed to add index price" });
+    }
+  });
+
+  // Get all index prices (for admin view)
+  app.get("/api/admin/index", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userRole = req.user?.role;
+      if (userRole !== "broker") {
+        return res.status(403).json({ error: "Access denied. Broker role required." });
+      }
+
+      const limit = parseInt(req.query.limit as string) || 100;
+      const commodity = req.query.commodity as string;
+
+      let query = db
+        .select()
+        .from(indexPrices)
+        .orderBy(desc(indexPrices.date))
+        .limit(limit);
+
+      if (commodity) {
+        query = query.where(eq(indexPrices.commodity, commodity.toUpperCase())) as any;
+      }
+
+      const prices = await query;
+
+      res.json(prices);
+    } catch (error: any) {
+      console.error("Admin index fetch error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch index prices" });
+    }
+  });
+
   // Get latest index price with historical data for sparkline
   app.get("/api/index/latest", async (req, res) => {
     try {
