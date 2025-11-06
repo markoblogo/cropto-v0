@@ -70,6 +70,7 @@ Minimal Sentry integration configured in `server/utils/sentry.ts`:
 
 ### Documentation
 
+- `docs/api-examples.md`: Comprehensive curl command examples for all API endpoints with authentication, wallet management, options trading, portfolio, blockchain operations, and admin functions
 - `docs/monitoring.md`: Comprehensive monitoring and CI/CD setup guide
 - `pilot_onboarding.md`: End-to-end onboarding guide for pilot users with steps to get test CROPT tokens
 
