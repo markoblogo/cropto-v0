@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,13 +29,22 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
   const { toast } = useToast();
   const web3 = useWeb3();
 
+  // Fetch user's linked wallet from server as fallback
+  const { data: walletData } = useQuery<{ walletAddress?: string } | null>({
+    queryKey: ["/api/wallet/me"],
+    retry: false,
+  });
+
+  // Use Web3 wallet if available, otherwise fall back to server-linked wallet
+  const walletAddress = web3.address || walletData?.walletAddress;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!web3.address) {
+    if (!walletAddress) {
       toast({
         title: "Wallet Not Connected",
-        description: "Please connect your Web3 wallet first",
+        description: "Please connect your wallet or link an address first",
         variant: "destructive",
       });
       return;
@@ -52,7 +62,7 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
     try {
       const result = await onWithdraw({
         optionId,
-        address: web3.address,
+        address: walletAddress,
         amount,
       });
 
@@ -123,7 +133,7 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
               <Label htmlFor="withdraw-address">Recipient Address</Label>
               <Input
                 id="withdraw-address"
-                value={web3.address || "Not connected"}
+                value={walletAddress || "Not connected"}
                 disabled
                 className="font-mono"
                 data-testid="input-withdraw-address"
@@ -158,7 +168,7 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
               </Button>
               <Button
                 type="submit"
-                disabled={isPending || !web3.address}
+                disabled={isPending || !walletAddress}
                 data-testid="button-submit-withdraw"
               >
                 {isPending ? "Processing..." : "Withdraw"}
