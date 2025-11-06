@@ -35,6 +35,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Telegram webhook for posting index prices
   app.post("/api/index", async (req, res) => {
     try {
+      // Verify Telegram bot token
+      const secretToken = req.headers['x-telegram-bot-api-secret-token'];
+      const expectedToken = process.env.TELEGRAM_BOT_SECRET_TOKEN;
+
+      if (!expectedToken) {
+        console.warn("[Telegram] TELEGRAM_BOT_SECRET_TOKEN not configured. Webhook disabled.");
+        return res.status(503).json({ error: "Telegram webhook not configured" });
+      }
+
+      if (secretToken !== expectedToken) {
+        console.warn("[Telegram] Invalid secret token received");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       const { message } = req.body;
       
       // Validate Telegram update structure
@@ -55,6 +69,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (isNaN(price) || price <= 0) {
         return res.status(400).json({ error: "Invalid price value" });
+      }
+
+      // Validate commodity name (alphanumeric only)
+      if (!/^[A-Z0-9]+$/i.test(commodity)) {
+        return res.status(400).json({ error: "Invalid commodity name" });
       }
 
       // Store index price

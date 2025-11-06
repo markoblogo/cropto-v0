@@ -237,11 +237,18 @@ export function Header({ onCreateOption }: HeaderProps) {
               </Button>
             </Link>
             {user?.role === "broker" && (
-              <Link href="/admin/reconciliation">
-                <Button variant="ghost" size="sm" data-testid="button-nav-reconciliation">
-                  Reconciliation
-                </Button>
-              </Link>
+              <>
+                <Link href="/admin/reconciliation">
+                  <Button variant="ghost" size="sm" data-testid="button-nav-reconciliation">
+                    Reconciliation
+                  </Button>
+                </Link>
+                <Link href="/admin/index">
+                  <Button variant="ghost" size="sm" data-testid="button-nav-index">
+                    Index
+                  </Button>
+                </Link>
+              </>
             )}
           </nav>
 

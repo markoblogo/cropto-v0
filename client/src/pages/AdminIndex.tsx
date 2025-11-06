@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,9 +62,15 @@ export default function AdminIndex() {
 
   const user = userData?.user;
 
-  // Redirect if not broker
+  // Redirect if not broker (in useEffect to avoid render-phase side effects)
+  useEffect(() => {
+    if (!isAuthLoading && (!user || user.role !== "broker")) {
+      setLocation("/");
+    }
+  }, [isAuthLoading, user, setLocation]);
+
+  // Early return after redirect useEffect
   if (!isAuthLoading && (!user || user.role !== "broker")) {
-    setLocation("/");
     return null;
   }
 
@@ -182,6 +188,15 @@ export default function AdminIndex() {
               </code>
             </div>
             <div>
+              <Label className="text-sm font-medium">Secret Token Header</Label>
+              <code className="block bg-muted p-3 rounded-md font-mono text-sm mt-2">
+                X-Telegram-Bot-Api-Secret-Token: YOUR_SECRET_TOKEN
+              </code>
+              <p className="text-sm text-muted-foreground mt-2">
+                Set <code className="bg-muted px-2 py-1 rounded">TELEGRAM_BOT_SECRET_TOKEN</code> in Replit Secrets
+              </p>
+            </div>
+            <div>
               <Label className="text-sm font-medium">Message Format</Label>
               <code className="block bg-muted p-3 rounded-md font-mono text-sm mt-2">
                 COMMODITY PRICE
@@ -195,7 +210,10 @@ export default function AdminIndex() {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Setup Required</AlertTitle>
               <AlertDescription>
-                Configure your Telegram bot to send POST requests to the webhook URL above with the message format shown.
+                1. Set the <code className="bg-muted px-2 py-1 rounded">TELEGRAM_BOT_SECRET_TOKEN</code> secret in your Replit environment<br/>
+                2. Configure your Telegram bot webhook to POST to the URL above<br/>
+                3. Include the secret token in the <code className="bg-muted px-2 py-1 rounded">X-Telegram-Bot-Api-Secret-Token</code> header<br/>
+                4. Send messages in the format: <code className="bg-muted px-2 py-1 rounded">COMMODITY PRICE</code>
               </AlertDescription>
             </Alert>
           </CardContent>
