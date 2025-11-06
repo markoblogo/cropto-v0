@@ -1100,6 +1100,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Portfolio aggregation endpoint
+  app.get("/api/portfolio/me", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Fetch all options where user is buyer or seller
+      const userOptions = await storage.getOptionsByUser(userId);
+
+      // Fetch settlements for exercised options
+      const settlementsData = await storage.getSettlements();
+
+      // Fetch margin calls
+      const marginCalls = await storage.getMarginCalls();
+      const userMarginCalls = marginCalls.filter(mc => 
+        userOptions.some(opt => opt.id === mc.optionId)
+      );
+
+      // Get latest index price for unrealized PnL calculation
+      const latestIndex = await db
+        .select()
+        .from(indexPrices)
+        .orderBy(desc(indexPrices.date))
+        .limit(1);
+      
+      const currentSpotPrice = latestIndex.length > 0 ? parseFloat(latestIndex[0].price) : 0;
+
+      let totalPnL = 0;
+      let totalLockedCollateral = 0;
+      let openPositionsCount = 0;
+      let marginCallsCount = 0;
+
+      const positions = userOptions.map(option => {
+        const isBuyer = option.buyerId === userId;
+        const strikePrice = parseFloat(option.strike);
+        const quantity = parseFloat(option.qty);
+        const premium = parseFloat(option.premium);
+        const collateral = parseFloat(option.collateral);
+
+        let pnl = 0;
+        let status = option.status;
+        let unrealized = false;
+
+        // Find settlement if exercised
+        const settlement = settlementsData.find(s => s.optionId === option.id);
+
+        if (settlement) {
+          // Realized PnL from settlement
+          const settlementPnL = parseFloat(settlement.profitLoss);
+          pnl = isBuyer ? settlementPnL : -settlementPnL;
+        } else if (option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL') {
+          // Unrealized PnL based on current spot price
+          unrealized = true;
+          const intrinsicValue = intrinsic(option.type, currentSpotPrice, strikePrice, quantity);
+          const totalPremium = premium * quantity;
+          
+          if (isBuyer) {
+            // Buyer: profit if intrinsic value > premium paid
+            pnl = intrinsicValue - totalPremium;
+          } else {
+            // Seller: profit is premium received - intrinsic value
+            pnl = totalPremium - intrinsicValue;
+          }
+        }
+
+        // Track locked collateral
+        if (option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL') {
+          totalLockedCollateral += collateral;
+          openPositionsCount++;
+        }
+
+        // Count margin calls
+        if (option.status === 'MARGIN_CALL') {
+          marginCallsCount++;
+        }
+
+        totalPnL += pnl;
+
+        return {
+          optionId: option.id,
+          title: option.title,
+          type: option.type,
+          strike: option.strike,
+          qty: option.qty,
+          premium: option.premium,
+          status: option.status,
+          role: isBuyer ? 'buyer' : 'seller',
+          pnl: pnl.toFixed(2),
+          unrealized,
+          createdAt: option.createdAt,
+        };
+      });
+
+      res.json({
+        totalPnL: totalPnL.toFixed(2),
+        totalLockedCollateral: totalLockedCollateral.toFixed(2),
+        openPositionsCount,
+        marginCallsCount,
+        positions: positions.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ),
+      });
+    } catch (error: any) {
+      console.error("Portfolio aggregation error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch portfolio" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
