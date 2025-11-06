@@ -30,8 +30,9 @@ import { ExerciseOptionDialog } from "./ExerciseOptionDialog";
 import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
 import { ForceSettleDialog } from "./ForceSettleDialog";
 import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
+import { WithdrawDialog } from "./WithdrawDialog";
 import type { Option } from "@shared/schema";
-import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, ArrowDownToLine } from "lucide-react";
+import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 type SortField = "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
@@ -49,6 +50,8 @@ interface OptionsTableProps {
   isForceSettling?: boolean;
   onTopUp?: (marginCallId: string, amount: number, currency: string) => Promise<void>;
   isTopping?: boolean;
+  onWithdraw?: (data: { optionId: string; address: string; amount: string }) => Promise<{ txHash: string }>;
+  isWithdrawing?: boolean;
   userRole?: string;
   userId?: string;
 }
@@ -66,6 +69,8 @@ export function OptionsTable({
   isForceSettling = false,
   onTopUp,
   isTopping = false,
+  onWithdraw,
+  isWithdrawing = false,
   userRole,
   userId 
 }: OptionsTableProps) {
@@ -380,25 +385,12 @@ export function OptionsTable({
                           isPending={isTopping}
                         />
                       )}
-                      {(option.status === "EXERCISED" || option.status === "FILLED") && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled
-                                data-testid={`button-withdraw-${option.id}`}
-                              >
-                                <ArrowDownToLine className="h-4 w-4 mr-1" />
-                                Withdraw
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>On-chain withdrawals coming soon</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                      {(option.status === "EXERCISED" || option.status === "FILLED") && onWithdraw && (
+                        <WithdrawDialog
+                          optionId={option.id}
+                          onWithdraw={onWithdraw}
+                          isPending={isWithdrawing}
+                        />
                       )}
                     </div>
                   </TableCell>

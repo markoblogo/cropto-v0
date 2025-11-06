@@ -107,6 +107,20 @@ export const indexPrices = pgTable("index_prices", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const onchainTransactions = pgTable("onchain_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  optionId: varchar("option_id").references(() => options.id),
+  userId: text("user_id").notNull(),
+  type: text("type", { enum: ["MINT", "WITHDRAW"] }).notNull(),
+  toAddress: text("to_address").notNull(),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  txHash: text("tx_hash"),
+  status: text("status", { enum: ["PENDING", "CONFIRMED", "FAILED"] }).notNull().default("PENDING"),
+  blockNumber: integer("block_number"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  confirmedAt: timestamp("confirmed_at"),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -168,6 +182,13 @@ export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
   createdAt: true,
 });
 
+export const insertOnchainTransactionSchema = createInsertSchema(onchainTransactions).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  confirmedAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -186,3 +207,5 @@ export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
+export type InsertOnchainTransaction = z.infer<typeof insertOnchainTransactionSchema>;
+export type OnchainTransaction = typeof onchainTransactions.$inferSelect;

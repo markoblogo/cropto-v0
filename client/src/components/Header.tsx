@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, Menu, LogOut, User } from "lucide-react";
+import { Wallet, Menu, LogOut, User, Coins } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ethers } from "ethers";
+import { useWeb3 } from "@/contexts/Web3Context";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function Header({ onCreateOption }: HeaderProps) {
   const [inputAddress, setInputAddress] = useState("");
   const [inputNetwork, setInputNetwork] = useState("1");
   const { toast } = useToast();
+  const web3 = useWeb3();
 
   // Fetch current user
   const { data: userData } = useQuery<{ 
@@ -261,7 +263,42 @@ export function Header({ onCreateOption }: HeaderProps) {
                 {/* Notifications */}
                 <NotificationsDropdown />
 
-                {/* Connect Wallet */}
+                {/* Web3 Wallet & CROPT Balance */}
+                {!web3.address ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={web3.connectWallet}
+                    disabled={web3.isConnecting}
+                    data-testid="button-connect-web3-wallet"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">
+                      {web3.isConnecting ? "Connecting..." : "Connect Web3"}
+                    </span>
+                    <span className="sm:hidden">Web3</span>
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono"
+                      data-testid="button-web3-address"
+                    >
+                      <Wallet className="h-4 w-4 mr-2" />
+                      {formatAddress(web3.address)}
+                    </Button>
+                    {web3.croptBalance && (
+                      <Badge variant="secondary" className="font-mono hidden sm:flex" data-testid="badge-cropt-balance">
+                        <Coins className="h-3 w-3 mr-1" />
+                        {parseFloat(web3.croptBalance).toFixed(2)} CROPT
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                {/* Profile Wallet (Server-side) */}
                 {!walletAddress ? (
                   <Button
                     variant="outline"
@@ -270,19 +307,13 @@ export function Header({ onCreateOption }: HeaderProps) {
                     data-testid="button-connect-wallet"
                   >
                     <Wallet className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Connect Wallet</span>
-                    <span className="sm:hidden">Connect</span>
+                    <span className="hidden sm:inline">Link Address</span>
+                    <span className="sm:hidden">Link</span>
                   </Button>
                 ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-mono"
-                    data-testid="button-wallet-address"
-                  >
-                    <Wallet className="h-4 w-4 mr-2" />
-                    {formatAddress(walletAddress)}
-                  </Button>
+                  <Badge variant="outline" className="font-mono hidden lg:flex" data-testid="badge-wallet-address">
+                    Profile: {formatAddress(walletAddress)}
+                  </Badge>
                 )}
 
                 {/* Create Option CTA */}

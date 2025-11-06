@@ -181,6 +181,32 @@ export default function Dashboard() {
     },
   });
 
+  const withdrawMutation = useMutation({
+    mutationFn: async ({ optionId, address, amount }: { optionId: string; address: string; amount: string }) => {
+      const response = await apiRequest("POST", "/api/onchain/mint", { 
+        optionId, 
+        toAddress: address, 
+        amount 
+      });
+      const data = await response.json();
+      return { txHash: data.txHash };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/onchain/transactions"] });
+      toast({
+        title: "Withdrawal Initiated",
+        description: `Transaction: ${data.txHash.substring(0, 10)}...`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Withdrawal Failed",
+        description: error.message || "Failed to initiate withdrawal",
+        variant: "destructive",
+      });
+    },
+  });
+
   const totalOptions = options.length;
   const openOptions = options.filter(opt => opt.status === "OPEN").length;
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
@@ -262,6 +288,10 @@ export default function Dashboard() {
                 await topUpMarginCallMutation.mutateAsync({ marginCallId: marginCall.id, amount, currency });
               }}
               isTopping={topUpMarginCallMutation.isPending}
+              onWithdraw={async (data) => {
+                return await withdrawMutation.mutateAsync(data);
+              }}
+              isWithdrawing={withdrawMutation.isPending}
               userRole={user?.role}
               userId={user?.id}
             />
