@@ -48,6 +48,31 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Telegram Index Price Updates**: Automated index price updates via Telegram bot webhook. API endpoint `POST /api/index` accepts Telegram messages in format "COMMODITY PRICE" (e.g., "WHEAT 240.50"), validates request using `X-Telegram-Bot-Api-Secret-Token` header against `TELEGRAM_BOT_SECRET_TOKEN` environment secret. Returns 503 if secret not configured, 401 if token invalid. Validates commodity name is alphanumeric and price is positive number. Successfully authenticated requests create new index price records.
 - **Admin Index Management**: Broker-only admin page at /admin/index for manual index price management and Telegram webhook setup. Displays webhook URL, required secret token header, and message format instructions. Admin form allows manual commodity/price entry with real-time validation. Lists all historical index prices with filtering by commodity and pagination. GET endpoint `/api/admin/index` retrieves index prices (optional commodity filter), POST endpoint `/api/admin/index` allows manual creation with broker authentication. useEffect-based redirect enforces broker role access.
 
+## CI/CD & Monitoring
+
+### Continuous Integration
+
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request:
+- Automated test suite execution with Jest
+- Application build verification
+- Health check endpoint validation (`/api/health`)
+- PostgreSQL integration testing
+
+### Error Monitoring
+
+Minimal Sentry integration configured in `server/utils/sentry.ts`:
+- Safe no-op initialization when `SENTRY_DSN` not configured
+- Ready to enable full error tracking by:
+  1. Installing packages: `npm install --legacy-peer-deps @sentry/node @sentry/profiling-node`
+  2. Adding `SENTRY_DSN` to Replit Secrets
+  3. Uncommenting initialization code in `server/utils/sentry.ts`
+- Supports error capture, performance monitoring, and profiling when enabled
+
+### Documentation
+
+- `docs/monitoring.md`: Comprehensive monitoring and CI/CD setup guide
+- `pilot_onboarding.md`: End-to-end onboarding guide for pilot users with steps to get test CROPT tokens
+
 ## External Dependencies
 
 - **Database**: Neon Serverless PostgreSQL (`@neondatabase/serverless`)
@@ -58,5 +83,6 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Routing**: Wouter
 - **Wallet Integration**: `ethers.js`
 - **Authentication**: `bcrypt`, `jsonwebtoken`
+- **Monitoring** (optional): Sentry (`@sentry/node`, `@sentry/profiling-node`)
 - **Utilities**: `date-fns`, `clsx`, `tailwind-merge`, `class-variance-authority`, `nanoid`
 - **Development Tools**: Vite, PostCSS, Autoprefixer, ESBuild
