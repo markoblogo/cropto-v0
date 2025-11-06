@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Web3Provider } from "@/contexts/Web3Context";
 import Dashboard from "@/pages/Dashboard";
+import Portfolio from "@/pages/Portfolio";
 import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
@@ -21,6 +22,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/portfolio" component={Portfolio} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/design-architecture" component={DesignArchitecture} />
