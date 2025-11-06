@@ -62,23 +62,18 @@ export default function AdminIndex() {
 
   const user = userData?.user;
 
+  // Fetch index prices (call all hooks before early returns)
+  const { data: indexPrices, isLoading: isPricesLoading } = useQuery<IndexPrice[]>({
+    queryKey: ["/api/admin/index", filterCommodity],
+    enabled: !!user && user.role === "broker",
+  });
+
   // Redirect if not broker (in useEffect to avoid render-phase side effects)
   useEffect(() => {
     if (!isAuthLoading && (!user || user.role !== "broker")) {
       setLocation("/");
     }
   }, [isAuthLoading, user, setLocation]);
-
-  // Early return after redirect useEffect
-  if (!isAuthLoading && (!user || user.role !== "broker")) {
-    return null;
-  }
-
-  // Fetch index prices
-  const { data: indexPrices, isLoading: isPricesLoading } = useQuery<IndexPrice[]>({
-    queryKey: ["/api/admin/index", filterCommodity],
-    enabled: !!user && user.role === "broker",
-  });
 
   // Add index price mutation
   const addIndexMutation = useMutation({
@@ -145,6 +140,11 @@ export default function AdminIndex() {
         </div>
       </div>
     );
+  }
+
+  // Early return after all hooks are called (unauthorized access)
+  if (!user || user.role !== "broker") {
+    return null;
   }
 
   return (
