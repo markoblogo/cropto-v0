@@ -12,6 +12,12 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    amoy: {
+      url: process.env.POLYGON_AMOY_RPC_URL || "",
+      accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
+      chainId: 80002,
+    },
+    // Legacy Mumbai network (deprecated)
     mumbai: {
       url: process.env.POLYGON_MUMBAI_RPC_URL || "",
       accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
