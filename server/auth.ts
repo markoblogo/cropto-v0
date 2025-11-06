@@ -4,8 +4,21 @@ import { Request, Response, NextFunction } from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { 
+  isSupabaseConfigured, 
+  findUserByEmailSupabase, 
+  createUserSupabase,
+  updateUserSupabase,
+  getAllUsersSupabase,
+  type SupabaseUser 
+} from './db/supabase';
 
 const DB_PATH = path.join(process.cwd(), 'server', 'db.json');
+
+// DB_MODE: Use Supabase if configured, otherwise use file-based DB
+function useSupabase(): boolean {
+  return isSupabaseConfigured();
+}
 
 // JWT_SECRET validation will happen at server startup in server/index.ts
 function getJWTSecret(): string {
@@ -96,6 +109,21 @@ export function verifyToken(token: string): { id: string; email: string; role: s
 
 // Find user by email
 export async function findUserByEmail(email: string): Promise<User | null> {
+  if (useSupabase()) {
+    const supabaseUser = await findUserByEmailSupabase(email);
+    if (!supabaseUser) return null;
+    
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email,
+      passwordHash: supabaseUser.password_hash,
+      role: supabaseUser.role,
+      createdAt: supabaseUser.created_at,
+      walletAddress: supabaseUser.wallet_address,
+      network: supabaseUser.network,
+    };
+  }
+  
   const db = await readDB();
   return db.users.find(u => u.email === email) || null;
 }
@@ -106,6 +134,27 @@ export async function createUser(
   password: string,
   role: 'farmer' | 'trader' | 'broker'
 ): Promise<User> {
+  if (useSupabase()) {
+    // Check if user exists
+    const existing = await findUserByEmailSupabase(email);
+    if (existing) {
+      throw new Error('User already exists');
+    }
+    
+    const passwordHash = await hashPassword(password);
+    const supabaseUser = await createUserSupabase(email, passwordHash, role);
+    
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email,
+      passwordHash: supabaseUser.password_hash,
+      role: supabaseUser.role,
+      createdAt: supabaseUser.created_at,
+      walletAddress: supabaseUser.wallet_address,
+      network: supabaseUser.network,
+    };
+  }
+  
   const db = await readDB();
   
   // Check if user exists
@@ -129,6 +178,22 @@ export async function createUser(
 
 // Find user by ID
 export async function findUserById(id: string): Promise<User | null> {
+  if (useSupabase()) {
+    const allUsers = await getAllUsersSupabase();
+    const supabaseUser = allUsers.find(u => u.id === id);
+    if (!supabaseUser) return null;
+    
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email,
+      passwordHash: supabaseUser.password_hash,
+      role: supabaseUser.role,
+      createdAt: supabaseUser.created_at,
+      walletAddress: supabaseUser.wallet_address,
+      network: supabaseUser.network,
+    };
+  }
+  
   const db = await readDB();
   return db.users.find(u => u.id === id) || null;
 }
@@ -139,6 +204,26 @@ export async function updateUserWallet(
   walletAddress: string,
   network: string
 ): Promise<User | null> {
+  if (useSupabase()) {
+    const user = await findUserById(userId);
+    if (!user) return null;
+    
+    const supabaseUser = await updateUserSupabase(user.email, {
+      wallet_address: walletAddress,
+      network: network,
+    });
+    
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email,
+      passwordHash: supabaseUser.password_hash,
+      role: supabaseUser.role,
+      createdAt: supabaseUser.created_at,
+      walletAddress: supabaseUser.wallet_address,
+      network: supabaseUser.network,
+    };
+  }
+  
   const db = await readDB();
   const userIndex = db.users.findIndex(u => u.id === userId);
   
