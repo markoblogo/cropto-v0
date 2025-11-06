@@ -16,7 +16,7 @@ The frontend is built with React and TypeScript, using Vite for development and 
 
 ### Backend Architecture
 
-The backend is an Express.js application written in TypeScript, providing a RESTful JSON API. It uses a file-based user authentication system with bcrypt hashing and JWT tokens for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer (`IStorage`) with a `DatabaseStorage` implementation handles CRUD operations, ensuring transaction safety and preventing race conditions during option matching. Shared Zod schemas between frontend and backend (`shared/schema.ts`) are used for robust data validation. The system also includes a margin check job system that calculates intrinsic value, P&L, triggers margin calls, and generates notifications.
+The backend is an Express.js application written in TypeScript, providing a RESTful JSON API. It features a flexible authentication system with dual-mode support: Supabase for production (when `SUPABASE_URL` configured) or file-based (`db.json`) for development/testing. Authentication uses bcrypt hashing and JWT tokens for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer (`IStorage`) with a `DatabaseStorage` implementation handles CRUD operations, ensuring transaction safety and preventing race conditions during option matching. Shared Zod schemas between frontend and backend (`shared/schema.ts`) are used for robust data validation. The system also includes a margin check job system that calculates intrinsic value, P&L, triggers margin calls, and generates notifications.
 
 ### Data Storage
 
@@ -32,7 +32,7 @@ The platform features a comprehensive visual refresh with Cropto branding, inclu
 - **Option Creation & Management**: Users can create, view, filter, and sort crypto options (CALL/PUT) by various statuses (OPEN/FILLED/EXPIRED/CANCELLED).
 - **Matching Engine**: Transaction-safe matching pairs buyers with sellers, updates option status, and creates trade records.
 - **Exercise & Settlement**: Filled options can be exercised with spot price input, calculating payouts and P&L, and creating settlement records.
-- **Authentication & Authorization**: JWT-based authentication with user roles (farmer, trader, broker) and protected API endpoints.
+- **Authentication & Authorization**: Flexible JWT-based authentication system supporting two storage modes: Supabase (production) when SUPABASE_URL configured, or file-based db.json (development). Supports user roles (farmer, trader, broker) with protected API endpoints. Automatic mode switching based on environment configuration ensures seamless deployment across different environments.
 - **Wallet Integration**: Fully implemented wallet connection system in Header component with MetaMask browser integration and manual address input fallback. API endpoints: `POST /api/wallet/link` links wallet address to user account, `GET /api/wallet/me` retrieves current user's wallet info. User schema includes optional `walletAddress` and `network` fields stored in user profile. After connection, formatted wallet address (0x1234...5678) displays in header.
 - **Blockchain Integration**: Complete on-chain infrastructure for CROPT ERC-20 token on Polygon Mumbai. Smart contract (`contracts/Cropt.sol`) with OpenZeppelin standards (ERC20, Burnable, AccessControl, Minter role). Hardhat deployment configured for Mumbai testnet. Backend: mint API at `POST /api/onchain/mint` signs transactions using DEPLOYER_PRIVATE_KEY, transaction poller (`server/onchain/poller.ts`) updates pending transactions every 15s, `onchain_transactions` table tracks all blockchain operations. Frontend: Web3Context provides ethers.js wallet connection with CROPT balance display, WithdrawDialog allows users to mint tokens to their connected wallet with transaction tracking, Header shows both wallet address and real-time CROPT balance via `GET /api/onchain/balance/:address`.
 - **Margin System**: Automated margin check job calculates intrinsic value, P&L, triggers margin calls, and creates notifications. Users can top up reserved collateral for margin calls via `TopUpMarginCallDialog` component. Top-up button appears only for options owned by the current user with MARGIN_CALL status. Supports CROPT or FIAT currency. Partial top-ups increase reserved collateral; full top-ups (when reservedCollateral >= amountRequired) resolve the margin call and restore option status to OPEN. Query invalidation ensures UI updates after successful top-up.
@@ -72,7 +72,10 @@ Minimal Sentry integration configured in `server/utils/sentry.ts`:
 
 - `docs/api-examples.md`: Comprehensive curl command examples for all API endpoints with authentication, wallet management, options trading, portfolio, blockchain operations, and admin functions
 - `docs/monitoring.md`: Comprehensive monitoring and CI/CD setup guide
+- `docs/supabase-migration.md`: Complete guide for migrating user authentication from file-based storage to Supabase
 - `pilot_onboarding.md`: End-to-end onboarding guide for pilot users with steps to get test CROPT tokens
+- `scripts/supabase-schema.sql`: SQL schema for creating users table in Supabase
+- `scripts/migrateToSupabase.ts`: Automated migration script to transfer users from db.json to Supabase
 
 ## External Dependencies
 

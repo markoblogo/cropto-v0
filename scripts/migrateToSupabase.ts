@@ -21,12 +21,20 @@ async function migrateToSupabase() {
 
   // Check environment variables
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Error: SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment');
+    console.error('❌ Error: SUPABASE_URL and either SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY must be set');
     console.error('Please add these to your Replit Secrets.');
+    console.error('\n⚠️  For production, use SUPABASE_SERVICE_ROLE_KEY (more secure)');
     process.exit(1);
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('⚠️  WARNING: Using SUPABASE_ANON_KEY for migration.');
+    console.warn('   For production, use SUPABASE_SERVICE_ROLE_KEY instead.');
+    console.warn('   Press Ctrl+C to cancel, or wait 5 seconds to continue...\n');
+    await new Promise(resolve => setTimeout(resolve, 5000));
   }
 
   console.log('✅ Supabase credentials found');

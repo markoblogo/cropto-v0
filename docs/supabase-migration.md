@@ -47,16 +47,48 @@ CREATE POLICY "Allow all operations on users" ON users
 
 ## Step 2: Configure Environment Variables
 
+⚠️ **CRITICAL SECURITY NOTE**: For production, you MUST use `SUPABASE_SERVICE_ROLE_KEY` instead of `SUPABASE_ANON_KEY` to prevent password hash exposure!
+
+### Option A: Production (SECURE) ✅ RECOMMENDED
+
 Add these secrets to your Replit project (Secrets tab):
+
+```bash
+SUPABASE_URL=https://xxxxxxxxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+```
+
+You can find these values in your Supabase project:
+- Settings → API → Project URL
+- Settings → API → Project API keys → `service_role` (⚠️ **secret** - NEVER expose to client!)
+
+**Why service_role is required:**
+- The `anon` key is intended for client-side use and has limited RLS permissions
+- Using `anon` key for backend = anyone who gets the key can read ALL user data including password hashes
+- The `service_role` key is for backend/server-side operations only and bypasses RLS
+- ⚠️ **NEVER** commit `service_role` key to code or expose it to the frontend
+
+### Option B: Development/Testing Only (INSECURE) ⚠️
+
+For local testing ONLY, you can temporarily use:
 
 ```bash
 SUPABASE_URL=https://xxxxxxxxxxx.supabase.co
 SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
-You can find these values in your Supabase project:
-- Settings → API → Project URL
-- Settings → API → Project API keys → `anon` `public`
+**Security Warning**: 
+- Anyone with your `anon` key can access ALL user records
+- Password hashes are readable
+- User data can be modified
+- **DO NOT USE IN PRODUCTION**
+
+The application will show a warning if using `anon` key:
+```
+⚠️  WARNING: Using SUPABASE_ANON_KEY for backend operations.
+   This is INSECURE in production as it exposes user data including password hashes.
+   Add SUPABASE_SERVICE_ROLE_KEY to Replit Secrets for secure production deployment.
+```
 
 ## Step 3: Run Migration Script
 
@@ -254,9 +286,30 @@ CREATE POLICY "Users can read own data" ON users
 
 ### API Keys
 
-- Use `SUPABASE_ANON_KEY` (public key) for client-side operations
-- Never expose `SUPABASE_SERVICE_ROLE_KEY` in client code
-- Store all keys in Replit Secrets, never in code
+**Critical Security Rules:**
+
+1. **Backend Operations**: ALWAYS use `SUPABASE_SERVICE_ROLE_KEY`
+   - This key has full database access and bypasses RLS
+   - Store in Replit Secrets (server-side only)
+   - Never expose to client/frontend
+   - Required for user authentication operations
+
+2. **Client Operations** (if needed): Use `SUPABASE_ANON_KEY`
+   - Limited by RLS policies
+   - Can be used in frontend code
+   - Only for public data access
+
+3. **Never commit keys to code**
+   - Always use environment variables
+   - Never hardcode in source files
+   - Use Replit Secrets for secure storage
+
+4. **Production Checklist**:
+   - ✅ `SUPABASE_SERVICE_ROLE_KEY` is set in Replit Secrets
+   - ✅ RLS policies are configured (not `USING (true)`)
+   - ✅ No keys in source code
+   - ✅ Test authentication works
+   - ❌ Do NOT use `SUPABASE_ANON_KEY` for backend operations
 
 ## Performance Notes
 

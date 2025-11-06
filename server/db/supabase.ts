@@ -18,10 +18,20 @@ export function getSupabaseClient() {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  
+  // SECURITY: Prefer service_role key for backend operations
+  // This key has full access and bypasses RLS policies
+  // NEVER expose this key to the client!
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY must be configured');
+    throw new Error('SUPABASE_URL and either SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY must be configured');
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('⚠️  WARNING: Using SUPABASE_ANON_KEY for backend operations.');
+    console.warn('   This is INSECURE in production as it exposes user data including password hashes.');
+    console.warn('   Add SUPABASE_SERVICE_ROLE_KEY to Replit Secrets for secure production deployment.');
   }
 
   supabase = createClient(supabaseUrl, supabaseKey);
@@ -29,7 +39,7 @@ export function getSupabaseClient() {
 }
 
 export function isSupabaseConfigured(): boolean {
-  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
+  return !!(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY));
 }
 
 export async function findUserByEmailSupabase(email: string): Promise<SupabaseUser | null> {
