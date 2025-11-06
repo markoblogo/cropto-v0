@@ -206,6 +206,11 @@ export function Header({ onCreateOption }: HeaderProps) {
                 Dashboard
               </Button>
             </Link>
+            <Link href="/portfolio">
+              <Button variant="ghost" size="sm" data-testid="button-nav-portfolio">
+                Portfolio
+              </Button>
+            </Link>
             <Link href="/design-architecture">
               <Button variant="ghost" size="sm" data-testid="button-nav-gallery">
                 Gallery

@@ -1112,10 +1112,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userOptions = await storage.getOptionsByUser(userId);
 
       // Fetch settlements for exercised options
-      const settlementsData = await storage.getSettlements();
+      const settlementsData = await storage.listSettlements();
 
       // Fetch margin calls
-      const marginCalls = await storage.getMarginCalls();
+      const marginCalls = await storage.listMarginCalls();
       const userMarginCalls = marginCalls.filter(mc => 
         userOptions.some(opt => opt.id === mc.optionId)
       );
@@ -1135,7 +1135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let marginCallsCount = 0;
 
       const positions = userOptions.map(option => {
-        const isBuyer = option.buyerId === userId;
+        const isBuyer = option.buyer === userId;
         const strikePrice = parseFloat(option.strike);
         const quantity = parseFloat(option.qty);
         const premium = parseFloat(option.premium);

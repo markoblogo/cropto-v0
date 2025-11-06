@@ -24,12 +24,13 @@ import {
   type InsertFeedback
 } from "@shared/schema";
 import { db } from "./db";
-import { desc, eq, and, lt } from "drizzle-orm";
+import { desc, eq, and, lt, or } from "drizzle-orm";
 
 export interface IStorage {
   listOptions(): Promise<Option[]>;
   createOption(option: InsertOption): Promise<Option>;
   getOptionById(id: string): Promise<Option | undefined>;
+  getOptionsByUser(userId: string): Promise<Option[]>;
   updateOption(id: string, updates: Partial<Option>): Promise<Option>;
   matchOption(optionId: string, seller: string): Promise<Trade | null>;
   exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement>;
@@ -79,6 +80,20 @@ export class DatabaseStorage implements IStorage {
       .from(options)
       .where(eq(options.id, id));
     return option;
+  }
+
+  async getOptionsByUser(userId: string): Promise<Option[]> {
+    const userOptions = await db
+      .select()
+      .from(options)
+      .where(
+        or(
+          eq(options.buyer, userId),
+          eq(options.seller, userId)
+        )
+      )
+      .orderBy(desc(options.createdAt));
+    return userOptions;
   }
 
   async updateOption(id: string, updates: Partial<Option>): Promise<Option> {
