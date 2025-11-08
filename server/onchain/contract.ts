@@ -9,8 +9,8 @@ const CROPT_ABI = [
 ];
 
 export function getCroptContract() {
-  if (!process.env.POLYGON_MUMBAI_RPC_URL) {
-    throw new Error("POLYGON_MUMBAI_RPC_URL not configured");
+  if (!process.env.POLYGON_AMOY_RPC_URL) {
+    throw new Error("POLYGON_AMOY_RPC_URL not configured");
   }
   
   if (!process.env.CROPT_CONTRACT_ADDRESS) {
@@ -21,7 +21,7 @@ export function getCroptContract() {
     throw new Error("DEPLOYER_PRIVATE_KEY not configured");
   }
 
-  const provider = new ethers.JsonRpcProvider(process.env.POLYGON_MUMBAI_RPC_URL);
+  const provider = new ethers.JsonRpcProvider(process.env.POLYGON_AMOY_RPC_URL);
   const wallet = new ethers.Wallet(process.env.DEPLOYER_PRIVATE_KEY, provider);
   
   const contract = new ethers.Contract(

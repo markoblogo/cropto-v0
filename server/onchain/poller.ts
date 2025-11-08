@@ -34,11 +34,11 @@ export function stopTransactionPoller() {
 }
 
 async function updatePendingTransactions() {
-  if (!process.env.POLYGON_MUMBAI_RPC_URL) {
+  if (!process.env.POLYGON_AMOY_RPC_URL) {
     return;
   }
 
-  const provider = new ethers.JsonRpcProvider(process.env.POLYGON_MUMBAI_RPC_URL);
+  const provider = new ethers.JsonRpcProvider(process.env.POLYGON_AMOY_RPC_URL);
   
   const pendingTxs = await db
     .select()
