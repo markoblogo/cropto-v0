@@ -1163,7 +1163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/feedback", authenticateToken, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
-      const user = await findUserById(authReq.user!.userId);
+      const user = await findUserById(authReq.user!.id);
       
       if (!user || user.role !== "broker") {
         return res.status(403).json({ error: "Forbidden: broker role required" });
@@ -1180,7 +1180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/feedback/:id/resolve", authenticateToken, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
-      const user = await findUserById(authReq.user!.userId);
+      const user = await findUserById(authReq.user!.id);
       
       if (!user || user.role !== "broker") {
         return res.status(403).json({ error: "Forbidden: broker role required" });
@@ -1198,7 +1198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/feedback/export", authenticateToken, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
-      const user = await findUserById(authReq.user!.userId);
+      const user = await findUserById(authReq.user!.id);
       
       if (!user || user.role !== "broker") {
         return res.status(403).json({ error: "Forbidden: broker role required" });
@@ -1279,7 +1279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const strikePrice = parseFloat(option.strike);
         const quantity = parseFloat(option.qty);
         const premium = parseFloat(option.premium);
-        const collateral = parseFloat(option.collateral);
+        const collateral = parseFloat(option.collateralAmount || '0');
 
         let pnl = 0;
         let status = option.status;

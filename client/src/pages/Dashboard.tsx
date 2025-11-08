@@ -6,6 +6,7 @@ import { Hero } from "@/components/Hero";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
 import { DashboardIndexWidget } from "@/components/DashboardIndexWidget";
+import { CroptMintButton } from "@/components/CroptMintButton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
@@ -25,6 +26,7 @@ export default function Dashboard() {
       id: string; 
       email: string; 
       role: string;
+      walletAddress?: string;
     } 
   } | null>({
     queryKey: ["/api/auth/me"],
@@ -241,8 +243,11 @@ export default function Dashboard() {
                 totalVolume={totalVolume}
               />
             </div>
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-6">
               <DashboardIndexWidget />
+              {user?.walletAddress && (
+                <CroptMintButton walletAddress={user.walletAddress} />
+              )}
             </div>
           </div>
 
