@@ -5,10 +5,11 @@ import { authenticateToken, type AuthRequest } from "./auth";
 import { mintTokens, getBalance } from "./onchain/contract";
 import { z } from "zod";
 import { desc } from "drizzle-orm";
+import { normalizeAddress } from "./utils/address";
 
 const mintSchema = z.object({
   optionId: z.string().optional(),
-  toAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
+  toAddress: z.string().min(42).max(42),  // Basic length check, normalizeAddress will validate
   amount: z.string().regex(/^\d+(\.\d+)?$/, "Invalid amount"),
 });
 
@@ -24,7 +25,18 @@ export function registerOnchainRoutes(app: Express) {
         });
       }
 
-      const { optionId, toAddress, amount } = validation.data;
+      const { optionId, amount } = validation.data;
+      let { toAddress } = validation.data;
+
+      // Normalize address to checksummed format
+      const normalizedAddress = normalizeAddress(toAddress);
+      if (!normalizedAddress) {
+        return res.status(400).json({
+          error: "Invalid Ethereum address",
+          message: "Address must be a valid Ethereum address"
+        });
+      }
+      toAddress = normalizedAddress;
 
       const txHash = await mintTokens(toAddress, amount);
 
@@ -57,15 +69,21 @@ export function registerOnchainRoutes(app: Express) {
 
   app.get("/api/onchain/balance/:address", async (req, res) => {
     try {
-      const { address } = req.params;
+      let { address } = req.params;
       
-      if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-        return res.status(400).json({ error: "Invalid Ethereum address" });
+      // Normalize address to checksummed format
+      const normalizedAddress = normalizeAddress(address);
+      if (!normalizedAddress) {
+        return res.status(400).json({ 
+          error: "Invalid Ethereum address",
+          message: "Address must be a valid Ethereum address" 
+        });
       }
+      address = normalizedAddress;
 
       const balance = await getBalance(address);
       
-      return res.json({ address, balance });
+      return res.json({ address, balance, symbol: 'CROPT' });
     } catch (error: any) {
       console.error("Balance check error:", error);
       return res.status(500).json({ 

@@ -241,8 +241,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!result.success) {
         const validationError = fromZodError(result.error);
+        
+        // Log detailed validation error for debugging
+        console.error("[CREATE_OPTION_ERROR] Validation failed");
+        console.error("Request body:", JSON.stringify(req.body, null, 2));
+        console.error("Validation errors:", JSON.stringify(result.error.issues, null, 2));
+        
         return res.status(400).json({ 
-          error: validationError.message 
+          error: validationError.message,
+          details: result.error.issues 
         });
       }
 
