@@ -1,0 +1,54 @@
+Task: add/update Testing Guide page + Mock Mode banner, commit and restart app.
+
+1) Create/overwrite file: client/src/pages/testing.tsx
+Content: a React page (Next.js-compatible) that:
+  - shows a prominent banner at top if env flag NEXT_PUBLIC_MOCK_ONCHAIN === 'true' OR NEXT_PUBLIC_ENABLE_MINT === 'false'.
+  - renders the full Testing Guide content below (use plain JSX headings/paragraphs/lists for reliable rendering).
+  - provides curl examples and notes as code blocks.
+  - uses simple inline styles / tailwind classes if available; keep markup minimal and robust.
+
+2) Also create a small reusable component: client/src/components/MockModeBanner.tsx
+  - Reads `process.env.NEXT_PUBLIC_MOCK_ONCHAIN` and `process.env.NEXT_PUBLIC_ENABLE_MINT`.
+  - If mock-mode enabled, renders a bright top banner:
+    - Text: "DEMO MODE — MOCK ONCHAIN IS ENABLED. On-chain actions are simulated; no gas required. For real on-chain tests, fund the wallet with POL on Polygon Amoy and set NEXT_PUBLIC_MOCK_ONCHAIN=false and NEXT_PUBLIC_ENABLE_MINT=true."
+    - Style: bold, high contrast (red/orange background), dismissible button (optional).
+  - Exports default component.
+
+3) Also write the markdown testing file (backup): client/src/pages/testing.md with the same content (so it exists for repo/search).
+
+4) Update project:
+  - git add the two/three files
+  - git commit -m "feat(testing): add Testing page and MockMode banner"
+  - run `npm run build` if project uses build step, otherwise restart dev server (run script used in repo)
+  - run healthcheck `curl -s http://localhost:5000/api/health | jq .` (or port used by project) and report result.
+
+5) Acceptance criteria:
+  - New page available at `/testing` (or `/client/src/pages/testing` route used by app); if routing differs, create page accessible from header/footer: add a link in header to `/testing`.
+  - Banner displays if NEXT_PUBLIC_MOCK_ONCHAIN === 'true' or NEXT_PUBLIC_ENABLE_MINT !== 'true'.
+  - Page shows the full Testing Guide content (headings, examples, curl snippets).
+  - Commit is pushed in current branch and dev server restarted without errors.
+  - Provide the preview URL or "dev server running" message and output of healthcheck.
+
+6) File contents to create (insert exactly):
+
+--- client/src/components/MockModeBanner.tsx ---
+```tsx
+import React from "react";
+
+export default function MockModeBanner() {
+  const mockEnv = (process.env.NEXT_PUBLIC_MOCK_ONCHAIN || "").toLowerCase() === "true";
+  const mintEnabled = (process.env.NEXT_PUBLIC_ENABLE_MINT || "").toLowerCase() === "true";
+  const show = mockEnv || !mintEnabled;
+  if (!show) return null;
+
+  return (
+    <div style={{background:"#FFEDD5", color:"#7C2D12", padding:"12px 16px", borderLeft:"4px solid #F97316", marginBottom:16}}>
+      <strong>DEMO / MOCK MODE:</strong>{" "}
+      {mockEnv ? "Mock on-chain is enabled — blockchain actions are simulated." : null}
+      {!mintEnabled ? (!mockEnv ? " On-chain minting is disabled (ENABLE_MINT not true)." : "") : null}
+      <div style={{marginTop:8, fontSize:13}}>
+        For real on-chain tests: fund your wallet with POL on Polygon Amoy faucet and set <code>NEXT_PUBLIC_MOCK_ONCHAIN=false</code> and <code>NEXT_PUBLIC_ENABLE_MINT=true</code>.
+      </div>
+    </div>
+  );
+}

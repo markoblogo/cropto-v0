@@ -3,6 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { CheckCircle2, AlertCircle } from "lucide-react";
+import MockModeBanner from "@/components/MockModeBanner";
 
 export default function Testing() {
   return (
@@ -17,6 +18,7 @@ export default function Testing() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <MockModeBanner />
             {/* Demo Accounts Section */}
             <section data-testid="section-demo-accounts">
               <h2 className="text-2xl font-semibold mb-3 flex items-center gap-2">
