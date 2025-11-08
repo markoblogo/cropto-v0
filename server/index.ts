@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeAuth } from "./auth";
 import { initSentry } from "./utils/sentry";
 import blockServiceRole from "./middleware/blockServiceRole";
+import auditLog from "./middleware/auditLog";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false }));
 
 app.use(blockServiceRole);
+app.use(auditLog);
 
 app.use((req, res, next) => {
   const start = Date.now();
