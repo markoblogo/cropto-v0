@@ -10,6 +10,7 @@ import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
 import { startTransactionPoller } from "./onchain/poller";
+import { startReconciler } from "./jobs/reconciler";
 import { authenticateToken, type AuthRequest, findUserById } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
@@ -26,6 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start transaction poller if blockchain is configured
   if (process.env.POLYGON_AMOY_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {
     startTransactionPoller();
+    startReconciler();
   }
 
   app.get("/api/health", (req, res) => {

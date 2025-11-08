@@ -1,36 +1,16 @@
 import { Router } from 'express';
-import { getBalance, mintTo } from '../services/onchain.js';
+import { getBalance, mintTo } from '../services/onchain';
 import { z } from 'zod';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { db } from '../db';
+import { onchainTransactions } from '../../shared/schema';
+import { desc } from 'drizzle-orm';
 
 const router = Router();
-const TX_FILE = path.join(__dirname, '../db/onchain_tx.json');
 
 const mintSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum address'),
   amount: z.coerce.number().positive('Amount must be positive')
 });
-
-async function readTxs() {
-  try {
-    const data = await fs.readFile(TX_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-async function appendTx(tx) {
-  const txs = await readTxs();
-  txs.push(tx);
-  await fs.mkdir(path.dirname(TX_FILE), { recursive: true });
-  await fs.writeFile(TX_FILE, JSON.stringify(txs, null, 2));
-}
 
 router.post('/mint', async (req, res) => {
   try {
@@ -50,17 +30,16 @@ router.post('/mint', async (req, res) => {
 
     const txHash = await mintTo(address, amount);
 
-    const tx = {
-      id: Date.now().toString(),
-      type: 'MINT',
-      address,
-      amount: amount.toString(),
-      txHash,
-      status: 'PENDING',
-      timestamp: new Date().toISOString()
-    };
-
-    await appendTx(tx);
+    const [tx] = await db
+      .insert(onchainTransactions)
+      .values({
+        userId: 'system',
+        type: 'MINT',
+        toAddress: address,
+        amount: amount.toString(),
+        txHash
+      })
+      .returning();
 
     res.json({ 
       success: true, 
@@ -94,7 +73,10 @@ router.get('/balance/:address', async (req, res) => {
 
 router.get('/txs', async (req, res) => {
   try {
-    const txs = await readTxs();
+    const txs = await db
+      .select()
+      .from(onchainTransactions)
+      .orderBy(desc(onchainTransactions.createdAt));
     res.json(txs);
   } catch (error) {
     res.status(500).json({ error: error.message });
