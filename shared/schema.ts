@@ -20,6 +20,10 @@ export const options = pgTable("options", {
   lastIntrinsic: decimal("last_intrinsic", { precision: 18, scale: 8 }),
   payoutAccumulated: decimal("payout_accumulated", { precision: 18, scale: 8 }).default("0"),
   isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
+  // NFT columns
+  nftTokenId: integer("nft_token_id"),
+  nftMintTx: text("nft_mint_tx"),
+  nftStatus: text("nft_status", { enum: ["NOT_MINTED", "MINTING", "MINTED", "FAILED"] }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
