@@ -31,6 +31,8 @@ contract CroptOptionNFT is ERC721URIStorage, AccessControl {
     constructor() ERC721("Cropto Option NFT", "CROPTNFT") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
+        // Start counter at 1 to avoid conflict with default mapping value of 0
+        _tokenIdCounter = 1;
     }
 
     /**

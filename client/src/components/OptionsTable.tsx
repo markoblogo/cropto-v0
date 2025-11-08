@@ -31,6 +31,7 @@ import { SimulateMarginCallDialog } from "./SimulateMarginCallDialog";
 import { ForceSettleDialog } from "./ForceSettleDialog";
 import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
 import { WithdrawDialog } from "./WithdrawDialog";
+import { MintNFTDialog } from "./MintNFTDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -390,6 +391,16 @@ export function OptionsTable({
                           optionId={option.id}
                           onWithdraw={onWithdraw}
                           isPending={isWithdrawing}
+                        />
+                      )}
+                      {(option.status === "FILLED" || option.status === "EXERCISED") && 
+                       userId && 
+                       (option.buyerId === userId || option.issuerId === userId) && (
+                        <MintNFTDialog
+                          optionId={option.id}
+                          nftStatus={option.nftStatus}
+                          nftTokenId={option.nftTokenId}
+                          nftMintTx={option.nftMintTx}
                         />
                       )}
                     </div>

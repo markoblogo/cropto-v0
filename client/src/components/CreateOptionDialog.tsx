@@ -73,15 +73,17 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          data-testid="button-create-option"
-          className="inline-flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Create Option
-        </Button>
-      </DialogTrigger>
+      {externalOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button 
+            data-testid="button-create-option"
+            className="inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Option
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold">Create New Option</DialogTitle>

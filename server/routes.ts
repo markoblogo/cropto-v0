@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/options", authenticateToken, async (req, res) => {
+  app.post("/api/options", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const result = insertOptionSchema.safeParse(req.body);
       
@@ -253,7 +253,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const option = await storage.createOption(result.data);
+      // Set the issuer ID to the authenticated user
+      const optionData = {
+        ...result.data,
+        issuerId: req.user!.id,
+      };
+
+      const option = await storage.createOption(optionData);
       res.status(201).json(option);
     } catch (error) {
       console.error("Error creating option:", error);

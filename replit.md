@@ -35,6 +35,7 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Authentication & Authorization**: JWT-based system with user roles and protected API endpoints.
 - **Wallet Integration**: MetaMask integration and manual input for wallet connection.
 - **Blockchain Integration**: On-chain infrastructure for CROPT ERC-20 token on Polygon Amoy testnet, with minting and balance tracking.
+- **NFT Minting**: CroptOptionNFT ERC-721 contract for tokenizing options as NFTs with metadata and explorer links.
 - **Margin System**: Automated margin checks, margin calls, and collateral top-ups.
 - **Daily Settlement**: Processes open options, calculating PnL and initiating margin calls.
 - **Deadline Processing**: Automated system for processing expired margin calls and force-settling options.
@@ -61,3 +62,16 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Monitoring** (optional): Sentry
 - **Utilities**: `date-fns`, `clsx`, `tailwind-merge`, `class-variance-authority`, `nanoid`
 - **Development Tools**: Vite, PostCSS, Autoprefixer, ESBuild
+
+## Recent Changes
+
+### NFT Functionality (Nov 8, 2025)
+- **Contract Deployed**: CroptOptionNFT at `0xCE49ba494170495041e5f56a722762f74C968c3F` on Polygon Amoy
+- **Database Schema**: Added `nft_token_id` (integer), `nft_mint_tx` (text), `nft_status` (enum: NOT_MINTED, MINTING, MINTED, FAILED) columns to options table
+- **Backend Service**: `mintOptionNFT()` function with base64 metadata generation and improved event parsing logic
+- **API Endpoint**: `POST /api/onchain/mint-nft` with JWT authentication, option ownership verification (issuerId/buyerId), duplicate mint prevention, and status management
+- **Frontend Component**: `MintNFTDialog` with Ethereum address validation, PolygonScan explorer links, and real-time minting status
+- **Auth Integration**: CreateOptionDialog now requires authentication and auto-sets issuerId to logged-in user
+- **UI Features**: OptionsTable shows "Mint NFT" button for FILLED/EXERCISED options owned by user; NFT badge with token ID and view link after successful mint
+- **Current Status**: Implementation complete and fully tested. Wallet needs additional MATIC for gas (~0.023 MATIC per mint, wallet currently has ~0.018 MATIC). Once funded, minting will work end-to-end.
+- **Known Issue**: Deployed contract has token counter starting at 0 (should start at 1). Fixed in code at line 35 of CroptOptionNFT.sol but requires redeployment with sufficient gas.

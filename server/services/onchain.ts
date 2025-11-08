@@ -9,9 +9,10 @@ const CROPT_ABI = [
 ];
 
 const CROPT_NFT_ABI = [
-  'function mintOptionNFT(address to, uint256 optionId) returns (uint256)',
+  'function safeMint(address to, string memory optionId, string memory uri) returns (uint256)',
   'function tokenURI(uint256 tokenId) view returns (string)',
-  'function ownerOf(uint256 tokenId) view returns (address)'
+  'function ownerOf(uint256 tokenId) view returns (address)',
+  'function isOptionMinted(string memory optionId) view returns (bool)'
 ];
 
 let provider: ethers.JsonRpcProvider | null = null;
@@ -75,38 +76,64 @@ export async function mintTo(address: string, amountHuman: string | number): Pro
 export async function mintOptionNFT(toAddress: string, optionId: string): Promise<{ txHash: string; tokenId: number }> {
   if (!nftContract) initializeNFTContract();
   
-  // Convert optionId (UUID string) to a numeric value for blockchain
-  // Use a simple hash function to convert UUID to uint256
-  const optionIdHash = BigInt('0x' + optionId.replace(/-/g, '').slice(0, 16));
+  // Generate metadata URI for the NFT
+  // In production, this would point to IPFS or a proper metadata server
+  const metadata = {
+    name: `Cropto Option #${optionId.slice(0, 8)}`,
+    description: `Tokenized option contract for Cropto platform`,
+    image: `https://cropto.repl.co/api/nft/${optionId}/image`,
+    attributes: [
+      { trait_type: "Option ID", value: optionId },
+      { trait_type: "Platform", value: "Cropto" }
+    ]
+  };
+  
+  // For now, use a data URI or placeholder
+  const metadataURI = `data:application/json;base64,${Buffer.from(JSON.stringify(metadata)).toString('base64')}`;
   
   console.log(`Minting NFT for option ${optionId} to ${toAddress}...`);
-  console.log(`Option ID hash: ${optionIdHash.toString()}`);
   
-  const tx = await nftContract!.mintOptionNFT(toAddress, optionIdHash);
+  const tx = await nftContract!.safeMint(toAddress, optionId, metadataURI);
   console.log(`Transaction sent: ${tx.hash}`);
   
   const receipt = await tx.wait();
   console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+  console.log(`Receipt has ${receipt.logs.length} logs`);
   
-  // Extract tokenId from the Transfer event
-  // Transfer event signature: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-  const transferEvent = receipt.logs.find((log: any) => {
+  // Extract tokenId from the OptionNFTMinted event
+  let tokenId: number | null = null;
+  
+  for (const log of receipt.logs) {
     try {
-      const parsed = nftContract!.interface.parseLog(log);
-      return parsed?.name === 'Transfer';
-    } catch {
-      return false;
+      const parsed = nftContract!.interface.parseLog({
+        topics: [...log.topics],
+        data: log.data
+      });
+      
+      console.log(`Found event: ${parsed?.name}`);
+      
+      if (parsed?.name === 'OptionNFTMinted') {
+        tokenId = Number(parsed.args.tokenId);
+        console.log(`NFT minted successfully! Token ID: ${tokenId}`);
+        break;
+      }
+    } catch (error) {
+      // Not a log from our contract, skip it
+      continue;
     }
-  });
-  
-  if (!transferEvent) {
-    throw new Error('Transfer event not found in transaction receipt');
   }
   
-  const parsedLog = nftContract!.interface.parseLog(transferEvent);
-  const tokenId = Number(parsedLog!.args.tokenId);
-  
-  console.log(`NFT minted successfully! Token ID: ${tokenId}`);
+  if (tokenId === null) {
+    console.error('OptionNFTMinted event not found. Dumping all logs for debugging:');
+    receipt.logs.forEach((log: any, i: number) => {
+      console.log(`Log ${i}:`, JSON.stringify({
+        address: log.address,
+        topics: log.topics,
+        data: log.data
+      }, null, 2));
+    });
+    throw new Error('OptionNFTMinted event not found in transaction receipt');
+  }
   
   return {
     txHash: tx.hash,
