@@ -10,6 +10,8 @@ import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
 import Docs from "@/pages/Docs";
+import FAQ from "@/pages/FAQ";
+import Testing from "@/pages/Testing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Admin from "@/pages/Admin";
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/partners-contracts" component={PartnersContracts} />
       <Route path="/onchain-tx" component={OnchainTx} />
       <Route path="/docs" component={Docs} />
+      <Route path="/faq" component={FAQ} />
+      <Route path="/testing" component={Testing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/feedback" component={AdminFeedback} />
       <Route path="/admin/reconciliation" component={AdminReconciliation} />
