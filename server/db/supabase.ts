@@ -39,10 +39,7 @@ export function getSupabaseClient() {
 }
 
 export function isSupabaseConfigured(): boolean {
-  // Temporarily disabled - users table not created in Supabase yet
-  // Re-enable after running: npx tsx scripts/migrateToSupabase.ts
-  return false;
-  // return !!(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY));
+  return !!(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY));
 }
 
 export async function findUserByEmailSupabase(email: string): Promise<SupabaseUser | null> {
