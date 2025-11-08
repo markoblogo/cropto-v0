@@ -78,7 +78,7 @@ export async function createUserSupabase(
 
   const { data, error } = await client
     .from('users')
-    .insert(newUser)
+    .insert(newUser as any)
     .select()
     .single();
 
@@ -97,7 +97,7 @@ export async function updateUserSupabase(
 
   const { data, error } = await client
     .from('users')
-    .update(updates)
+    .update(updates as any)
     .eq('email', email)
     .select()
     .single();
