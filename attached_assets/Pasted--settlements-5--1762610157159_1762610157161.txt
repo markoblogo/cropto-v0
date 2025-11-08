@@ -1,0 +1,105 @@
+
+
+- Очікуваний результат: масив settlements з розрахунками для опціонів.
+    
+
+  
+
+## **Крок 5 — Поведінка при margin call**
+
+- Якщо позиція переходить у margin call, трейдер отримає нотифікацію.
+    
+- У UI з’явиться кнопка **Top-up** → дозволяє поповнити колатерал (mock або реальна операція).
+    
+
+  
+
+## **Крок 6 — Mint NFT**
+
+- Якщо MOCK_ONCHAIN=true → натисніть **Mint (Simulate)** — отримаєте умовний txHash і badge NFT.
+    
+- Якщо реальний режим і гаманець має POL:
+    
+    - Натисніть **Mint NFT** → MetaMask відкриє підпис транзакції.
+        
+    - Після підтвердження транзакції чекати оновлення статусу (poller ~90s).
+        
+    
+
+  
+
+## **Перевірка результатів**
+
+- Option Detail повинен показати: nft_token_id, nft_mint_tx, nft_status.
+    
+- Для реальних транзакцій — подивитись txHash на Polygonscan Amoy.
+    
+
+  
+
+## **Troubleshooting (швидко)**
+
+- **Не бачу опціону у списку**: оновіть сторінку; перевірте, що ви створили правильний commodity/qty.
+    
+- **Mint падає з помилкою gas**: поповніть гаманець POL через faucet.
+    
+- **RLS / auth 401**: увійдіть повторно, перевірте токен у localStorage.
+    
+
+  
+
+## **Контакт**
+
+  
+
+Якщо щось не працює — надішліть скріншот і curl-лог на marco@cropto.example або в Slack.
+
+  
+
+— end file —
+
+```
+---
+
+## 3) Промпт — оновити header і видалити галерею (одним комітом)
+(Если хочешь делать это отдельно — пропусти.)
+```
+
+Repo edit: remove Gallery component usage (if exists), ensure nav links include FAQ and Testing.
+
+1. Remove client/src/components/Gallery* files and references (search imports and remove).
+    
+2. Update client/src/components/Header.tsx (or Nav) to include links:
+    
+    - Home -> /
+        
+    - Dashboard -> /dashboard
+        
+    - Тестування -> /testing
+        
+    - FAQ -> /faq
+        
+    - Docs/For partners -> /docs (if exists)
+        
+    
+3. Ensure routing pages exist: /faq and /testing (created above).
+    
+4. Commit: feat(ui): remove gallery + add FAQ and Testing links
+    
+
+```
+---
+
+### Пояснення / поради по запуску
+- Вставляй кожен промпт окремо в Replit Agent (або відправляй один за одним).  
+- Після виконання перевір: відкрий `/faq` і `/testing` у браузері Replit preview або на деплої — тексти мають бути українською.  
+- Якщо Replit выдаст ошибку о конфликте файлов — дай знать, я подготовлю дифф/патч точечно.
+
+---
+
+Хочешь — могу прямо сейчас сгенерировать ещё один промпт, который одновремено:
+- добавит `MOCK_ONCHAIN=true` в `.env.example` и в код (проверка в `/server/onchain`),  
+- и обновит кнопку Mint так, чтобы при MOCK_ONCHAIN она делала симуляцию.
+
+Скажи «Добавь MOCK_ONCHAIN промпт» — и я сделаю готовый текст.
+```

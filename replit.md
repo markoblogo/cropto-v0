@@ -65,6 +65,12 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 
 ## Recent Changes
 
+### UI Updates (Nov 8, 2025)
+- **Gallery Removal**: Removed "Gallery" navigation link from header
+- **FAQ Page**: Added comprehensive FAQ page at /faq with accordion-based Q&A covering platform features, user roles, NFT minting, margin calls, and demo accounts
+- **Testing Guide**: Added detailed testing guide at /testing with step-by-step instructions for testing all major features (option lifecycle, NFT minting, wallet connection, portfolio, admin features)
+- **Navigation**: Updated header to include FAQ and Testing links
+
 ### NFT Functionality (Nov 8, 2025)
 - **Contract Deployed**: CroptOptionNFT at `0xCE49ba494170495041e5f56a722762f74C968c3F` on Polygon Amoy
 - **Database Schema**: Added `nft_token_id` (integer), `nft_mint_tx` (text), `nft_status` (enum: NOT_MINTED, MINTING, MINTED, FAILED) columns to options table
