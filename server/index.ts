@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeAuth } from "./auth";
 import { initSentry } from "./utils/sentry";
+import blockServiceRole from "./middleware/blockServiceRole";
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ extended: false }));
+
+app.use(blockServiceRole);
 
 app.use((req, res, next) => {
   const start = Date.now();

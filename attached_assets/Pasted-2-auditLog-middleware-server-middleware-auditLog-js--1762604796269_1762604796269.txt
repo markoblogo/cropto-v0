@@ -1,0 +1,151 @@
+2. Добавь простой auditLog middleware:
+    
+
+  
+
+- Создай файл server/middleware/auditLog.js:
+    
+
+```
+// server/middleware/auditLog.js
+module.exports = function auditLog(req, res, next) {
+  try {
+    const user = (req.user && req.user.id) || req.headers['x-user-id'] || 'anonymous';
+    console.info(`[AUDIT] ${new Date().toISOString()} ${req.method} ${req.originalUrl} user=${user} ip=${req.ip}`);
+  } catch (e) {}
+  next();
+};
+```
+
+3. Зарегистрируй оба middleware в сервере:
+    
+
+  
+
+- Вставь перед всеми роутами (в начале файла server/index.js или app.js, сразу после express() и парсеров) строки:
+    
+
+```
+const blockServiceRole = require('./middleware/blockServiceRole');
+const auditLog = require('./middleware/auditLog');
+app.use(blockServiceRole);
+app.use(auditLog);
+```
+
+4. Проверь, что в клиентской части (папка client/ или public/) нет вхождений service_role / SUPABASE_SERVICE_ROLE_KEY:
+    
+
+  
+
+- Выполни:
+    
+    grep -R “SUPABASE_SERVICE_ROLE_KEY” -n client || true
+    
+    grep -R “SERVICE_ROLE” -n client || true
+    
+- Выведи только найденные пути (или “NOT FOUND”).
+    
+
+  
+
+5. Перезапусти сервер/процесс (npm run dev / npm start в Replit) и проверь healthcheck:
+    
+
+  
+
+- curl -s http://localhost:5000/api/health
+    
+- Выведи только JSON-ответ (обычно {“ok”:true}).
+    
+
+  
+
+6. Выполни E2E smoke tests (через backend) — используем demo-пользователя farmer@demo:
+    
+
+  
+
+- Получи токен (пример):
+    
+    TOKEN=$(curl -s -X POST “http://localhost:5000/api/auth/login” -H “Content-Type:application/json” -d ‘{“email”:“farmer@demo”,“password”:“pass”}’ | jq -r .accessToken)
+    
+- Если TOKEN пустой — вывести “TOKEN_MISSING” и прекращать тесты.
+    
+- Прогони запросы и запиши HTTP коды:
+    
+    a) GET /api/users/user_1762270192349_gz3d1d7p8  (ожидаем 403 или 404)
+    
+    curl -s -o /dev/null -w “%{http_code}” -H “Authorization: Bearer $TOKEN” “http://localhost:5000/api/users/user_1762270192349_gz3d1d7p8”
+    
+    b) GET /api/users/me  (ожидаем 200)
+    
+    curl -s -o /dev/null -w “%{http_code}” -H “Authorization: Bearer $TOKEN” “http://localhost:5000/api/users/me”
+    
+    c) PATCH чужого юзера (ожидаем 403)
+    
+    curl -s -o /dev/null -w “%{http_code}” -X PATCH -H “Authorization: Bearer $TOKEN” -H “Content-Type:application/json” -d ‘{“wallet_address”:“0x1111111111111111111111111111111111111111”}’ “http://localhost:5000/api/users/user_1762270192349_gz3d1d7p8”
+    
+    d) PATCH своего юзера (ожидаем 200)
+    
+    curl -s -o /dev/null -w “%{http_code}” -X PATCH -H “Authorization: Bearer $TOKEN” -H “Content-Type:application/json” -d ‘{“wallet_address”:“0x2222222222222222222222222222222222222222”}’ “http://localhost:5000/api/users/user_1762284081440_877dimuju”
+    
+- Сохрани и выведи только HTTP коды в виде:
+    
+    GET_OTHER: 
+    
+    GET_ME: 
+    
+    PATCH_OTHER: 
+    
+    PATCH_ME: 
+    
+
+  
+
+7. Найди возможные прямые вызовы к Supabase REST в фронтенде (grep):
+    
+    git grep -n “rest/v1” || true
+    
+    git grep -n “supabase” client || true
+    
+
+  
+
+- Выведи найденные строки (или “NONE”).
+    
+
+  
+
+8. Commit изменений с сообщением:
+    
+    git add server/middleware/blockServiceRole.js server/middleware/auditLog.js server/index.js || true
+    
+    git commit -m “chore(security): block service_role client usage + audit logging + e2e smoke tests”
+    
+9. Вывод финального компактного отчёта (строго, не печатать секреты):
+    
+
+  
+
+- Line: HEALTHCHECK: <json or OK/FAIL>
+    
+- Line: SERVICE_ROLE_IN_CLIENT: FOUND / NOT_FOUND (if found, show file paths)
+    
+- Line: GREP_SUPABASE_REST: FOUND / NONE (if found, list files)
+    
+- Lines: E2E results as above (GET_OTHER, GET_ME, PATCH_OTHER, PATCH_ME)
+    
+- Line: COMMIT: ok / nothing to commit
+    
+
+  
+
+Ограничения по выводу: не печатать значения переменных окружения или содержимое секретов.
+
+  
+
+Если что-то упадёт — выводи минимальную ошибку (одно предложение) и прекрати дальнейшее выполнение.
+
+  
+
+Commit message: “chore(security): block service_role client usage + audit logging + e2e smoke tests”
