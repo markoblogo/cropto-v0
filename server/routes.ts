@@ -24,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerOnchainRoutes(app);
   
   // Start transaction poller if blockchain is configured
-  if (process.env.POLYGON_MUMBAI_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {
+  if (process.env.POLYGON_AMOY_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {
     startTransactionPoller();
   }
 
