@@ -33,6 +33,10 @@ interface IndexPrice {
   commodity: string;
   price: string;
   date: string;
+  source?: string | null;
+  raw?: string | null;
+  meta?: string | null;
+  messageId?: string | null;
   createdAt: string;
 }
 
@@ -197,23 +201,48 @@ export default function AdminIndex() {
               </p>
             </div>
             <div>
-              <Label className="text-sm font-medium">Message Format</Label>
-              <code className="block bg-muted p-3 rounded-md font-mono text-sm mt-2">
-                COMMODITY PRICE
-              </code>
-              <p className="text-sm text-muted-foreground mt-2">
-                Example: <code className="bg-muted px-2 py-1 rounded">WHEAT 240.50</code> or{" "}
-                <code className="bg-muted px-2 py-1 rounded">BTC 45000.00</code>
-              </p>
+              <Label className="text-sm font-medium">Message Formats</Label>
+              <div className="space-y-3 mt-2">
+                <div>
+                  <p className="text-xs font-medium mb-1">Simple Format:</p>
+                  <code className="block bg-muted p-2 rounded-md font-mono text-xs">
+                    COMMODITY PRICE
+                  </code>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Example: <code className="bg-muted px-1 py-0.5 rounded text-xs">WHEAT 240.50</code>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium mb-1">Spike Brokers Format:</p>
+                  <code className="block bg-muted p-2 rounded-md font-mono text-xs whitespace-pre-wrap">
+                    • Пшениця 11.5pro – 221$ (0$)
+                  </code>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Auto-parses Ukrainian wheat prices from @spike_brokers channel
+                  </p>
+                </div>
+              </div>
             </div>
             <Alert>
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Setup Required</AlertTitle>
-              <AlertDescription>
-                1. Set the <code className="bg-muted px-2 py-1 rounded">TELEGRAM_BOT_SECRET_TOKEN</code> secret in your Replit environment<br/>
-                2. Configure your Telegram bot webhook to POST to the URL above<br/>
-                3. Include the secret token in the <code className="bg-muted px-2 py-1 rounded">X-Telegram-Bot-Api-Secret-Token</code> header<br/>
-                4. Send messages in the format: <code className="bg-muted px-2 py-1 rounded">COMMODITY PRICE</code>
+              <AlertTitle>Setup Options</AlertTitle>
+              <AlertDescription className="space-y-2">
+                <div>
+                  <strong>Option 1: Webhook (for bots)</strong>
+                  <ol className="list-decimal list-inside text-xs mt-1 space-y-1">
+                    <li>Set <code className="bg-muted px-1 py-0.5 rounded text-xs">TELEGRAM_BOT_SECRET_TOKEN</code> in Replit Secrets</li>
+                    <li>Configure bot webhook to POST to URL above</li>
+                    <li>Include secret in <code className="bg-muted px-1 py-0.5 rounded text-xs">X-Telegram-Bot-Api-Secret-Token</code> header</li>
+                  </ol>
+                </div>
+                <div>
+                  <strong>Option 2: Polling (automatic)</strong>
+                  <ol className="list-decimal list-inside text-xs mt-1 space-y-1">
+                    <li>Set <code className="bg-muted px-1 py-0.5 rounded text-xs">TELEGRAM_BOT_TOKEN</code> in Replit Secrets</li>
+                    <li>System polls @spike_brokers every 2 minutes automatically</li>
+                    <li>No webhook configuration needed</li>
+                  </ol>
+                </div>
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -255,6 +284,7 @@ export default function AdminIndex() {
                     <TableRow>
                       <TableHead>Commodity</TableHead>
                       <TableHead className="text-right">Price</TableHead>
+                      <TableHead>Source</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Added</TableHead>
                     </TableRow>
@@ -267,6 +297,11 @@ export default function AdminIndex() {
                         </TableCell>
                         <TableCell className="text-right font-mono" data-testid={`text-price-${price.id}`}>
                           ${parseFloat(price.price).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-sm" data-testid={`text-source-${price.id}`}>
+                          <code className="text-xs bg-muted px-2 py-1 rounded">
+                            {price.source || 'manual'}
+                          </code>
                         </TableCell>
                         <TableCell data-testid={`text-date-${price.id}`}>
                           {format(new Date(price.date), "MMM dd, yyyy HH:mm")}
