@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   const { data: options = [], isLoading } = useQuery<Option[]>({
     queryKey: ["/api/options"],
@@ -225,18 +227,37 @@ export default function Dashboard() {
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
 
   const handleConnectWallet = () => {
-    // Scroll to top where Header's Connect Wallet button is
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Wait a moment then click the header's connect wallet button
-    setTimeout(() => {
-      const walletButton = document.querySelector('[data-testid="button-connect-wallet"]') as HTMLElement;
-      walletButton?.click();
-    }, 500);
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to connect your wallet",
+      });
+      setLocation('/login');
+      return;
+    }
+
+    // If user already has a wallet, scroll to show it in header
+    if (user.walletAddress) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast({
+        title: "Wallet Already Connected",
+        description: `Your wallet ${user.walletAddress.substring(0, 6)}...${user.walletAddress.substring(user.walletAddress.length - 4)} is already linked`,
+      });
+      return;
+    }
+
+    // Open wallet dialog
+    setIsWalletDialogOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onCreateOption={() => setIsCreateDialogOpen(true)} />
+      <Header 
+        onCreateOption={() => setIsCreateDialogOpen(true)}
+        externalWalletDialogOpen={isWalletDialogOpen}
+        onExternalWalletDialogChange={setIsWalletDialogOpen}
+      />
       
       <Hero 
         onCreateOption={() => setIsCreateDialogOpen(true)}

@@ -21,14 +21,22 @@ import { NotificationsDropdown } from "./NotificationsDropdown";
 
 interface HeaderProps {
   onCreateOption: () => void;
+  externalWalletDialogOpen?: boolean;
+  onExternalWalletDialogChange?: (open: boolean) => void;
 }
 
-export function Header({ onCreateOption }: HeaderProps) {
+export function Header({ onCreateOption, externalWalletDialogOpen, onExternalWalletDialogChange }: HeaderProps) {
   const [, setLocation] = useLocation();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [network, setNetwork] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+  const [internalWalletDialogOpen, setInternalWalletDialogOpen] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const isWalletDialogOpen = externalWalletDialogOpen !== undefined ? externalWalletDialogOpen : internalWalletDialogOpen;
+  const setIsWalletDialogOpen = externalWalletDialogOpen !== undefined && onExternalWalletDialogChange 
+    ? onExternalWalletDialogChange 
+    : setInternalWalletDialogOpen;
   const [showManualInput, setShowManualInput] = useState(false);
   const [inputAddress, setInputAddress] = useState("");
   const [inputNetwork, setInputNetwork] = useState("1");
