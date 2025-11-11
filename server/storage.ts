@@ -178,35 +178,33 @@ export class DatabaseStorage implements IStorage {
         throw new Error("Only filled options can be exercised");
       }
 
-      if (option.buyer !== exercisedBy && option.seller !== exercisedBy) {
-        throw new Error("Only the buyer or seller can exercise this option");
+      // Strict ownership validation - no legacy bypass
+      if (!option.issuerId && !option.buyerId) {
+        throw new Error("This option cannot be exercised: missing ownership records. Contact administrator to update option data.");
+      }
+      
+      if (option.issuerId !== exercisedBy && option.buyerId !== exercisedBy) {
+        throw new Error("Only the buyer or issuer can exercise this option");
       }
 
       const spot = parseFloat(spotPrice);
       const strikePrice = parseFloat(option.strike);
       const quantity = parseFloat(option.qty);
       const premiumPaid = parseFloat(option.premium);
+      const collateralAmount = parseFloat(option.collateralAmount || "0");
 
+      let intrinsicValue = 0;
       let payout = 0;
       let profitLoss = 0;
 
       if (option.type === "CALL") {
-        if (spot > strikePrice) {
-          payout = (spot - strikePrice) * quantity;
-          profitLoss = payout - (premiumPaid * quantity);
-        } else {
-          payout = 0;
-          profitLoss = -(premiumPaid * quantity);
-        }
+        intrinsicValue = Math.max(0, (spot - strikePrice) * quantity);
       } else {
-        if (spot < strikePrice) {
-          payout = (strikePrice - spot) * quantity;
-          profitLoss = payout - (premiumPaid * quantity);
-        } else {
-          payout = 0;
-          profitLoss = -(premiumPaid * quantity);
-        }
+        intrinsicValue = Math.max(0, (strikePrice - spot) * quantity);
       }
+
+      payout = Math.min(collateralAmount, intrinsicValue);
+      profitLoss = payout - (premiumPaid * quantity);
 
       const [settlement] = await tx
         .insert(settlements)
@@ -223,8 +221,20 @@ export class DatabaseStorage implements IStorage {
 
       await tx
         .update(options)
-        .set({ status: "EXPIRED" })
+        .set({ status: "SETTLED" })
         .where(eq(options.id, optionId));
+
+      const [transaction] = await tx
+        .insert(transactions)
+        .values({
+          optionId: option.id,
+          type: "PAYOUT",
+          fromUserId: option.issuerId,
+          toUserId: option.buyerId,
+          amount: payout.toFixed(8),
+          description: `Settlement payout for ${option.type} option exercise at spot $${spot}`,
+        })
+        .returning();
 
       return settlement;
     });

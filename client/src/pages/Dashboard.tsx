@@ -85,12 +85,14 @@ export default function Dashboard() {
   });
 
   const exerciseOptionMutation = useMutation({
-    mutationFn: async ({ optionId, exercisedBy, spotPrice }: { optionId: string; exercisedBy: string; spotPrice: number }) => {
-      const response = await apiRequest("POST", `/api/options/${optionId}/exercise`, { exercisedBy, spotPrice });
+    mutationFn: async ({ optionId, spotPrice }: { optionId: string; spotPrice: number }) => {
+      const response = await apiRequest("POST", `/api/options/${optionId}/exercise`, { spotPrice });
       return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settlements"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       toast({
         title: "Exercise Successful",
         description: "Option has been exercised and settled",
@@ -267,8 +269,8 @@ export default function Dashboard() {
                 await matchOptionMutation.mutateAsync({ optionId, counterpartyId });
               }}
               isMatching={matchOptionMutation.isPending}
-              onExercise={async (optionId, exercisedBy, spotPrice) => {
-                await exerciseOptionMutation.mutateAsync({ optionId, exercisedBy, spotPrice });
+              onExercise={async (optionId, spotPrice) => {
+                await exerciseOptionMutation.mutateAsync({ optionId, spotPrice });
               }}
               isExercising={exerciseOptionMutation.isPending}
               onSimulate={async (optionId, indexPrice, commodity) => {

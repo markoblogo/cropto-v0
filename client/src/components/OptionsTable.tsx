@@ -43,7 +43,7 @@ interface OptionsTableProps {
   isLoading: boolean;
   onMatch?: (optionId: string, seller: string) => Promise<void>;
   isMatching?: boolean;
-  onExercise?: (optionId: string, exercisedBy: string, spotPrice: number) => Promise<void>;
+  onExercise?: (optionId: string, spotPrice: number) => Promise<void>;
   isExercising?: boolean;
   onSimulate?: (optionId: string, indexPrice: number, commodity?: string) => Promise<void>;
   isSimulating?: boolean;
@@ -351,9 +351,7 @@ export function OptionsTable({
                           optionId={option.id}
                           optionType={option.type as "CALL" | "PUT"}
                           strike={option.strike}
-                          onExercise={async (data) => {
-                            await onExercise(option.id, data.exercisedBy, data.spotPrice);
-                          }}
+                          onExercise={onExercise}
                           isPending={isExercising}
                         />
                       )}

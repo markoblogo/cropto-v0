@@ -145,6 +145,10 @@ export const insertOptionSchema = createInsertSchema(options).omit({
     .positive("Premium must be positive")
     .min(0.00000001, "Premium must be greater than 0")
     .transform(val => val.toString()),
+  collateralAmount: z.coerce.number()
+    .positive("Collateral amount must be positive")
+    .optional()
+    .transform(val => val ? val.toString() : undefined),
 });
 
 export const insertTradeSchema = createInsertSchema(trades).omit({

@@ -65,6 +65,23 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 
 ## Recent Changes
 
+### Exercise & Settlement Flow (Nov 11, 2025)
+- **Database Schema**: Updated options table to use `collateralAmount` for tracking collateral; settlements table stores exercisedBy, spotPrice, strike, qty, payout, and profitLoss
+- **API Endpoints**: 
+  - `POST /api/options/:id/exercise` with JWT authentication requiring buyer/issuer ownership
+  - `GET /api/transactions` for transaction audit trail
+- **Backend Logic**: 
+  - `exerciseOption()` in storage.ts calculates intrinsic value for CALL/PUT options
+  - Payout capped by collateralAmount: `payout = min(collateralAmount, intrinsicValue)`
+  - Creates settlement record, PAYOUT transaction, and transitions status FILLED → SETTLED
+  - Transaction-safe implementation with `.returning()` to ensure persistence
+- **Frontend UI**: 
+  - ExerciseOptionDialog accepts spotPrice input (exercisedBy derived from JWT token)
+  - Exercise button visible for FILLED options owned by authenticated user
+  - StatusBadge updated with SETTLED variant (green color scheme)
+- **Authorization**: Only option buyer or issuer can exercise; returns 403 for non-owners
+- **Testing**: `scripts/test_exercise.sh` validates complete flow with 8 test cases including option creation, matching, exercise, settlement verification, transaction audit trail, and authorization checks
+
 ### Manual Matching Engine (Nov 11, 2025)
 - **Database Schema**: Added `matched_by` (text), `matched_at` (timestamp), `counterparty_id` (text) columns to options table for tracking manual matches
 - **API Endpoint**: `POST /api/options/:id/match` with broker-only authorization requiring JWT authentication

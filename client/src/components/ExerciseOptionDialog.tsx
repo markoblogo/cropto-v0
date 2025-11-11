@@ -25,7 +25,6 @@ import { z } from "zod";
 import { Activity } from "lucide-react";
 
 const exerciseFormSchema = z.object({
-  exercisedBy: z.string().min(1, "Your identifier is required"),
   spotPrice: z.coerce.number().positive("Spot price must be positive"),
 });
 
@@ -35,7 +34,7 @@ interface ExerciseOptionDialogProps {
   optionId: string;
   optionType: "CALL" | "PUT";
   strike: string;
-  onExercise: (data: ExerciseFormData) => Promise<void>;
+  onExercise: (optionId: string, spotPrice: number) => Promise<void>;
   isPending: boolean;
 }
 
@@ -51,13 +50,12 @@ export function ExerciseOptionDialog({
   const form = useForm<ExerciseFormData>({
     resolver: zodResolver(exerciseFormSchema),
     defaultValues: {
-      exercisedBy: "",
       spotPrice: 0,
     },
   });
 
   const handleSubmit = async (data: ExerciseFormData) => {
-    await onExercise(data);
+    await onExercise(optionId, data.spotPrice);
     setOpen(false);
     form.reset();
   };
@@ -84,26 +82,6 @@ export function ExerciseOptionDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="exercisedBy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Your Identifier</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="your@example.com"
-                      {...field}
-                      data-testid="input-exercised-by"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Must be the buyer or seller of this option
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="spotPrice"

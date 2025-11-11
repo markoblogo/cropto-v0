@@ -31,6 +31,10 @@ const STATUS_VARIANTS: Record<string, Variant> = {
     className: "bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400",
     label: "Exercised"
   },
+  SETTLED: {
+    className: "bg-green-600/10 text-green-800 border-green-600/20 dark:text-green-300",
+    label: "Settled"
+  },
   DEFAULTED: {
     className: "bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400",
     label: "Defaulted"

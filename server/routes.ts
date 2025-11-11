@@ -317,13 +317,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/options/:id/exercise", async (req, res) => {
+  app.post("/api/options/:id/exercise", authenticateToken, async (req: AuthRequest, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       const exerciseSchema = z.object({
-        exercisedBy: z.string().min(1, "Exercised by is required"),
-        spotPrice: z.coerce.number()
-          .positive("Spot price must be positive")
-          .transform(val => val.toString()),
+        spotPrice: z.coerce.number().positive("Spot price must be positive"),
       });
 
       const result = exerciseSchema.safeParse(req.body);
@@ -336,11 +337,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const settlement = await storage.exerciseOption(
-        req.params.id, 
-        result.data.exercisedBy,
-        result.data.spotPrice
+        req.params.id,
+        req.user.id,
+        result.data.spotPrice.toString()
       );
-      res.status(201).json(settlement);
+      
+      res.status(200).json(settlement);
     } catch (error: any) {
       console.error("Error exercising option:", error);
       const statusCode = error.message?.includes("not found") || 
@@ -350,13 +352,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/settlements", async (req, res) => {
+  app.get("/api/settlements", authenticateToken, async (req: AuthRequest, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
       const settlements = await storage.listSettlements();
       res.json(settlements);
     } catch (error) {
       console.error("Error fetching settlements:", error);
       res.status(500).json({ error: "Failed to fetch settlements" });
+    }
+  });
+
+  app.get("/api/transactions", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const transactions = await storage.listTransactions();
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ error: "Failed to fetch transactions" });
     }
   });
 
