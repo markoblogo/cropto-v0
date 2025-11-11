@@ -24,7 +24,7 @@ import { z } from "zod";
 import { Handshake } from "lucide-react";
 
 const matchFormSchema = z.object({
-  seller: z.string().min(1, "Seller identifier is required"),
+  counterpartyId: z.string().min(1, "Counterparty ID is required"),
 });
 
 type MatchFormData = z.infer<typeof matchFormSchema>;
@@ -41,7 +41,7 @@ export function MatchOptionDialog({ optionId, onMatch, isPending }: MatchOptionD
   const form = useForm<MatchFormData>({
     resolver: zodResolver(matchFormSchema),
     defaultValues: {
-      seller: "",
+      counterpartyId: "",
     },
   });
 
@@ -68,22 +68,22 @@ export function MatchOptionDialog({ optionId, onMatch, isPending }: MatchOptionD
         <DialogHeader>
           <DialogTitle>Match Option</DialogTitle>
           <DialogDescription>
-            Enter the seller details to complete this trade
+            Enter the counterparty ID to complete this trade
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="seller"
+              name="counterpartyId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Seller Identifier</FormLabel>
+                  <FormLabel>Counterparty ID</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="seller@example.com"
+                      placeholder="user_id_123abc"
                       {...field}
-                      data-testid="input-seller"
+                      data-testid="input-counterparty-id"
                     />
                   </FormControl>
                   <FormMessage />

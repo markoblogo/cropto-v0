@@ -64,8 +64,8 @@ export default function Dashboard() {
   });
 
   const matchOptionMutation = useMutation({
-    mutationFn: async ({ optionId, seller }: { optionId: string; seller: string }) => {
-      const response = await apiRequest("POST", `/api/options/${optionId}/match`, { seller });
+    mutationFn: async ({ optionId, counterpartyId }: { optionId: string; counterpartyId: string }) => {
+      const response = await apiRequest("POST", `/api/options/${optionId}/match`, { counterpartyId });
       return await response.json();
     },
     onSuccess: () => {
@@ -263,8 +263,8 @@ export default function Dashboard() {
             <OptionsTable 
               options={options} 
               isLoading={isLoading}
-              onMatch={async (optionId, seller) => {
-                await matchOptionMutation.mutateAsync({ optionId, seller });
+              onMatch={async (optionId, counterpartyId) => {
+                await matchOptionMutation.mutateAsync({ optionId, counterpartyId });
               }}
               isMatching={matchOptionMutation.isPending}
               onExercise={async (optionId, exercisedBy, spotPrice) => {

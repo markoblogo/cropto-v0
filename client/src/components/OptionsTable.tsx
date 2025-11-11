@@ -337,11 +337,11 @@ export function OptionsTable({
                   <TableCell>
                     <div className="flex items-center gap-2 flex-wrap">
                       <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED"} />
-                      {option.status === "OPEN" && onMatch && (
+                      {option.status === "OPEN" && onMatch && userRole === "broker" && (
                         <MatchOptionDialog
                           optionId={option.id}
                           onMatch={async (data) => {
-                            await onMatch(option.id, data.seller);
+                            await onMatch(option.id, data.counterpartyId);
                           }}
                           isPending={isMatching}
                         />
