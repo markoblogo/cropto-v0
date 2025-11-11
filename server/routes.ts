@@ -5,13 +5,14 @@ import { db } from "./db";
 import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq, desc, gt, and, or } from "drizzle-orm";
+import { eq, desc, gt, and, or, sql } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
 import { startTransactionPoller } from "./onchain/poller";
 import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
+import { runScraper } from "./jobs/telegramScraper";
 import { authenticateToken, type AuthRequest, findUserById } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
@@ -31,11 +32,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     startReconciler();
   }
 
-  // Start Telegram poller if bot token is configured
+  // Start Telegram integration: Bot API (if token available) OR Public scraper (fallback)
   if (process.env.TELEGRAM_BOT_TOKEN) {
     startTelegramPoller();
   } else {
     console.log("[TelegramPoller] TELEGRAM_BOT_TOKEN not configured. Poller disabled.");
+    console.log("[TelegramScraper] Starting fallback scraper for public channel...");
+    // Run scraper in background, handle errors gracefully
+    runScraper(false).catch((error) => {
+      console.error("[TelegramScraper] Fatal error:", error);
+    });
   }
 
   app.get("/api/health", (req, res) => {
@@ -323,16 +329,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           price: "0",
           timestamp: new Date().toISOString(),
           change: 0,
+          changePct: null,
           history: [],
         });
       }
 
       // Latest price is the first one (most recent)
       const latest = prices[0];
-      
-      // Calculate change percentage (comparing to oldest in the set)
-      const oldestPrice = prices[prices.length - 1];
       const latestValue = parseFloat(latest.price);
+      
+      // Calculate change percentage (comparing to previous price only)
+      let changePct: number | null = null;
+      if (prices.length > 1) {
+        const previousPrice = prices[1];
+        const previousValue = parseFloat(previousPrice.price);
+        changePct = previousValue !== 0 
+          ? ((latestValue - previousValue) / previousValue) * 100
+          : 0;
+        changePct = parseFloat(changePct.toFixed(2));
+      }
+
+      // Fallback to change vs oldest for backward compatibility with sparkline
+      const oldestPrice = prices[prices.length - 1];
       const oldestValue = parseFloat(oldestPrice.price);
       const change = oldestValue !== 0 
         ? ((latestValue - oldestValue) / oldestValue) * 100
@@ -349,11 +367,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: latest.price,
         timestamp: latest.date.toISOString(),
         change: parseFloat(change.toFixed(2)),
+        changePct,
+        source: latest.source,
         history,
       });
     } catch (error) {
       console.error("Error fetching latest index:", error);
       res.status(500).json({ error: "Failed to fetch index data" });
+    }
+  });
+
+  // Get price history for charting
+  app.get("/api/index/history", async (req, res) => {
+    try {
+      const commodity = (req.query.commodity as string || 'WHEAT').toUpperCase();
+      const period = req.query.period as string || '30d';
+      const interval = req.query.interval as string || 'day';
+
+      // Parse period (30d, 90d, 365d, all)
+      let cutoffDate: Date | null = null;
+      if (period !== 'all') {
+        const days = parseInt(period.replace('d', ''));
+        if (!isNaN(days)) {
+          cutoffDate = new Date();
+          cutoffDate.setDate(cutoffDate.getDate() - days);
+        }
+      }
+
+      // Build query with conditional cutoff date
+      const whereConditions = cutoffDate
+        ? and(
+            eq(indexPrices.commodity, commodity),
+            sql`${indexPrices.date} >= ${cutoffDate}`
+          )
+        : eq(indexPrices.commodity, commodity);
+
+      const prices = await db
+        .select({
+          price: indexPrices.price,
+          date: indexPrices.date,
+        })
+        .from(indexPrices)
+        .where(whereConditions)
+        .orderBy(indexPrices.date);
+
+      // Group by interval (day or month)
+      const grouped = new Map<string, number>();
+      
+      for (const p of prices) {
+        let key: string;
+        if (interval === 'month') {
+          // Group by YYYY-MM
+          key = p.date.toISOString().substring(0, 7);
+        } else {
+          // Default: group by day (YYYY-MM-DD)
+          key = p.date.toISOString().split('T')[0];
+        }
+        // Take latest price for each interval
+        grouped.set(key, parseFloat(p.price));
+      }
+
+      // Convert to sorted array
+      const dataPoints = Array.from(grouped.entries())
+        .map(([date, price]) => ({ date, price }))
+        .sort((a, b) => a.date.localeCompare(b.date)); // Ascending order for chart
+
+      res.json(dataPoints);
+    } catch (error) {
+      console.error("Error fetching price history:", error);
+      res.status(500).json({ error: "Failed to fetch price history" });
+    }
+  });
+
+  // Internal endpoint for scraper ingestion
+  app.post("/api/index/ingest/scrape", async (req, res) => {
+    try {
+      const { commodity, price, message_id, raw, date } = req.body;
+
+      if (!commodity || !price || !message_id) {
+        return res.status(400).json({ error: "Missing required fields: commodity, price, message_id" });
+      }
+
+      // Check for duplicates
+      const existing = await db
+        .select()
+        .from(indexPrices)
+        .where(and(
+          eq(indexPrices.source, 'telegram/scraper'),
+          eq(indexPrices.messageId, message_id)
+        ))
+        .limit(1);
+
+      if (existing.length > 0) {
+        return res.json({ skipped: true, message: "Duplicate message_id" });
+      }
+
+      // Insert new record
+      const inserted = await db.insert(indexPrices).values({
+        commodity: commodity.toUpperCase(),
+        price: price.toString(),
+        date: date ? new Date(date) : new Date(),
+        source: 'telegram/scraper',
+        raw: raw || null,
+        messageId: message_id,
+        meta: JSON.stringify({
+          ingested_at: new Date().toISOString()
+        }),
+        isDemo: 'false'
+      }).returning();
+
+      res.json({ success: true, record: inserted[0] });
+    } catch (error) {
+      console.error("Error ingesting scraped data:", error);
+      res.status(500).json({ error: "Failed to ingest data" });
     }
   });
 

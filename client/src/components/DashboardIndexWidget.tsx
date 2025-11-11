@@ -1,13 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, Minus, LineChart as LineChartIcon } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
+import { useState } from "react";
+import { PriceHistoryDialog } from "./PriceHistoryDialog";
 
 interface IndexData {
   commodity: string;
   price: string;
   timestamp: string;
   change: number;
+  changePct: number | null;
+  source?: string;
   history: Array<{
     price: number;
     timestamp: string;
@@ -15,6 +20,8 @@ interface IndexData {
 }
 
 export function DashboardIndexWidget() {
+  const [showHistory, setShowHistory] = useState(false);
+  
   const { data: indexData, isLoading, error } = useQuery<IndexData>({
     queryKey: ["/api/index/latest"],
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -51,7 +58,10 @@ export function DashboardIndexWidget() {
   }
 
   const priceValue = parseFloat(indexData.price);
-  const changeValue = indexData.change;
+  // Use changePct if available (comparing to previous), otherwise fallback to change
+  const changeValue = indexData.changePct !== null && indexData.changePct !== undefined 
+    ? indexData.changePct 
+    : indexData.change;
   const isPositive = changeValue > 0;
   const isNegative = changeValue < 0;
   const isNeutral = changeValue === 0;
@@ -103,11 +113,32 @@ export function DashboardIndexWidget() {
           </div>
         )}
 
-        {/* Last Updated */}
-        <p className="text-xs text-muted-foreground" data-testid="text-last-updated">
-          Last updated: {new Date(indexData.timestamp).toLocaleTimeString()}
-        </p>
+        {/* Last Updated and History Button */}
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground" data-testid="text-last-updated">
+            Last updated: {new Date(indexData.timestamp).toLocaleTimeString()}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHistory(true)}
+            className="h-7 gap-1 text-xs"
+            data-testid="button-price-history"
+          >
+            <LineChartIcon className="w-3 h-3" />
+            История динамики
+          </Button>
+        </div>
       </CardContent>
+
+      {/* Price History Dialog */}
+      {showHistory && (
+        <PriceHistoryDialog
+          open={showHistory}
+          onClose={() => setShowHistory(false)}
+          commodity={indexData.commodity}
+        />
+      )}
     </Card>
   );
 }
