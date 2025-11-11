@@ -24,6 +24,10 @@ export const options = pgTable("options", {
   nftTokenId: integer("nft_token_id"),
   nftMintTx: text("nft_mint_tx"),
   nftStatus: text("nft_status", { enum: ["NOT_MINTED", "MINTING", "MINTED", "FAILED"] }),
+  // Matching engine columns
+  matchedBy: text("matched_by"),
+  matchedAt: timestamp("matched_at"),
+  counterpartyId: text("counterparty_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
