@@ -1,0 +1,159 @@
+
+
+> **Task:** Добавить Fallback-парсер Telegram-канала @spike_brokers через публичную страницу https://t.me/s/spike_brokers и обеспечить:
+
+- > автоматическое извлечение цены для целевой позиции: **“Пшениця 11.5pro”** (по умолчанию),
+    
+- > хранение истории цен (message_id/date/price/raw/source),
+    
+- > вычисление текущей цены + предыдущей (для % изменения),
+    
+- > API для получения latest + history для графика,
+    
+- > UI: кнопка “История динамики” в IndexWidget -> модальное окно с графиком (день/неделя/месяц/год).
+    
+
+>   
+
+> **Принцип:** Если в Secrets есть TELEGRAM_BOT_TOKEN — оставляем существующий Bot/webhook/polling. Если TELEGRAM_BOT_TOKEN отсутствует, активируем Fallback Scraper, который:
+
+- > делает HTTP GET https://t.me/s/spike_brokers (user-agent браузера),
+    
+- > парсит HTML (без headless браузера — парсер на cheerio/jsdom), находит элементы сообщений, извлекает дату, message_id (часто в атрибутах ссылок /123), текст.
+    
+- > применяет тот же regex, что вы уже используете для формата:
+    
+
+```
+const wheatRegex = /Пшениця\s*11\.5(?:pro)?\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$/u;
+```
+
+- >   
+    
+- > нормализует запятую → точку, parseFloat, округляет 2 знака.
+    
+- > защищает от дубликатов (message_id + source).
+    
+
+>   
+
+> **DB (миграция SQL)** — если таблицы нет, создать:
+
+```
+CREATE TABLE IF NOT EXISTS index_prices (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  commodity text NOT NULL,
+  price numeric NOT NULL,
+  source text NOT NULL,          -- 'telegram/bot' or 'telegram/scraper' or 'admin-override'
+  message_id text,               -- id из канала / url
+  raw text,
+  meta jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_index_prices_commodity_created ON index_prices (commodity, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_index_prices_source_message ON index_prices (source, message_id);
+```
+
+> **Backend API** (добавить/обновить routes):
+
+1. > GET /api/index/latest?commodity=wheat — возвращает последний объект {commodity, price, created_at, source, changePct}
+    
+    - > changePct вычисляется как (latest.price - prev.price)/prev.price*100 если prev exists, иначе null.
+        
+    
+2. > GET /api/index/history?commodity=wheat&period=30d&interval=day — возвращает точки для графика (date, price). Поддержать interval = day / month / all.
+    
+3. > (internal) POST /api/index/ingest/scrape — endpoint, который вызывается poller после скрапинга message; принимает {commodity, price, message_id, raw, date} и сохраняет или игнорирует дубли.
+    
+4. > POST /api/index/admin — независимо: admin override.
+    
+
+>   
+
+> **Jobs**
+
+- > jobs/telegramScraper.ts:
+    
+    - > interval env TELEGRAM_SCRAPE_INTERVAL_SEC (default 600) — запускается только если TELEGRAM_BOT_TOKEN отсутствует.
+        
+    - > делает fetch страницы https://t.me/s/spike_brokers (в header: user-agent).
+        
+    - > парсит последние N сообщений (например 50), делает ingest через /api/index/ingest/scrape.
+        
+    - > логирует в logs/indexer.log и выводит количество новых записей.
+        
+    - > имеет --once flag для ручного теста: node jobs/telegramScraper.js --once.
+        
+    
+
+>   
+
+> **Frontend**
+
+- > IndexWidget: — запрашивать GET /api/index/latest?commodity=wheat и показывать:
+    
+    - > Wheat — 221$ и справа Δ +2.3% (зелёный/красный).
+        
+    
+- > Кнопка “История динамики” — открывает модал с графиком:
+    
+    - > Запрашивает GET /api/index/history?commodity=wheat&period=365d&interval=day и рендерит Chart.js (line).
+        
+    - > Над графиком — селектор интервала (30d, 90d, 365d, all) и чек-бокс «Наложить прошлый год» (если есть данные).
+        
+    
+
+>   
+
+> **Backfill (история)**:
+
+- > Скрейпер должен при первом запуске попытаться собрать N=1000 последних сообщений (если фронт-пейджи позволяют) — и вносить цены в DB (но _делать это осторожно_: limit 1 запрос к t.me/s/* за запуск). Если t.me paginates, спарсить сколько возможно.
+    
+- > Если сообщений годовых нет — сохранять всё, что есть.
+    
+
+>   
+
+> **Acceptance criteria**
+
+1. > Если TELEGRAM_BOT_TOKEN не задан, jobs/telegramScraper.ts --once берёт тестовое содержимое https://t.me/s/spike_brokers, парсит хотя бы одно корректное сообщение и вызывает /api/index/ingest/scrape — в БД появляется запись с commodity='wheat' и price (пример 221).
+    
+2. > GET /api/index/latest?commodity=wheat возвращает latest price и changePct (если предыдущее есть).
+    
+3. > UI IndexWidget показывает цену + Δ% и кнопка «История динамики» открывает модал с графиком (в режиме demo график отображает сохранённую историю).
+    
+4. > Скрипт idempotent: повторные запуски не создают дубликатов (по source+message_id).
+    
+
+>   
+
+> **Conservative behaviour (экономим внешние вызовы)**
+
+- > По умолчанию включить Scraper в --once режиме или interval = 600s; в промптах/CI использовать --once тестовые запуски.
+    
+- > Не регистрировать webhook автоматически, не шлём лишних внешних запросов.
+    
+
+>   
+
+> **Test steps for you (manual)**
+
+1. > Запустить в Replit Shell: node server/jobs/telegramScraper.js --once (или npm run scrape -- --once если добавлен script).
+    
+2. > Выполнить curl "http://localhost:5000/api/index/latest?commodity=wheat" — убедиться, что возвращается JSON с price и created_at.
+    
+3. > На UI нажать «История динамики» — увидеть график.
+    
+
+>   
+
+> **Commit**: в ветку feature/telegram-scraper-fallback. PR title: feat(indexer): add telegram public scraper fallback + history graph
+
+>   
+
+> **If blocked**: если https://t.me/s/spike_brokers не отдаёт HTML (rate-limited/geo-block) — предложи использовать Telemetry via 3rd-party API (например Telegram-scraper 服务) — сообщи, я дам альтернативу.
+
+> ---
+
+> После выполнения — пришли вывод curl /api/index/latest и скрин модального графика — проверю и дам финальные polishing шаги.
+
