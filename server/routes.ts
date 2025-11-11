@@ -1316,6 +1316,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentSpotPrice = latestIndex.length > 0 ? parseFloat(latestIndex[0].price) : 0;
 
       let totalPnL = 0;
+      let realizedPnL = 0;
+      let unrealizedPnL = 0;
       let totalLockedCollateral = 0;
       let openPositionsCount = 0;
       let marginCallsCount = 0;
@@ -1338,6 +1340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Realized PnL from settlement
           const settlementPnL = parseFloat(settlement.profitLoss);
           pnl = isBuyer ? settlementPnL : -settlementPnL;
+          realizedPnL += pnl;
         } else if (option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL') {
           // Unrealized PnL based on current spot price
           unrealized = true;
@@ -1351,6 +1354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Seller: profit is premium received - intrinsic value
             pnl = totalPremium - intrinsicValue;
           }
+          unrealizedPnL += pnl;
         }
 
         // Track locked collateral
@@ -1383,9 +1387,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         totalPnL: totalPnL.toFixed(2),
-        totalLockedCollateral: totalLockedCollateral.toFixed(2),
-        openPositionsCount,
-        marginCallsCount,
+        realizedPnL: realizedPnL.toFixed(2),
+        unrealizedPnL: unrealizedPnL.toFixed(2),
+        lockedCollateral: totalLockedCollateral.toFixed(2),
+        openPositions: openPositionsCount,
+        marginCalls: marginCallsCount,
         positions: positions.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ),

@@ -45,7 +45,7 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Demo Seeding System**: Idempotent system for seeding demo data.
 - **Partner Feedback System**: Public feedback form and admin view for managing suggestions.
 - **Admin Reconciliation**: Broker-only view of transactions, settlements, and margin calls with filtering and export.
-- **Portfolio & P&L Aggregation**: Comprehensive portfolio page displaying user's options positions and performance metrics.
+- **Portfolio & P&L Aggregation**: Comprehensive portfolio page with separated realized/unrealized P&L metrics, locked collateral tracking, and detailed position analysis.
 - **Telegram Index Price Updates**: Automated index price updates via Telegram bot webhook.
 - **Admin Index Management**: Broker-only page for manual index price management and Telegram webhook setup.
 
@@ -64,6 +64,21 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Development Tools**: Vite, PostCSS, Autoprefixer, ESBuild
 
 ## Recent Changes
+
+### Portfolio Enhancement (Nov 11, 2025)
+- **API Endpoint**: Enhanced GET /api/portfolio/me to return separated realizedPnL and unrealizedPnL calculations
+- **Backend Logic**:
+  - Realized P&L: Calculated from settled options using settlement.profitLoss
+  - Unrealized P&L: Calculated from open/filled positions using current index price and intrinsic value formula
+  - API response includes: totalPnL, realizedPnL, unrealizedPnL, lockedCollateral, openPositions, marginCalls
+- **Frontend UI** (Portfolio.tsx):
+  - Added Realized P&L card (green/red color coding)
+  - Added Unrealized P&L card (green/red color coding)
+  - Updated TypeScript interface with proper null checks for portfolioData
+  - 6 metric cards: Total P&L, Realized P&L, Unrealized P&L, Open Positions, Locked Collateral, Margin Calls
+  - Responsive grid layout (lg:grid-cols-6)
+- **Testing**: Created scripts/test_portfolio.sh validating all numeric fields and authentication (all tests passing)
+- **Quality**: Architect approved for production deployment
 
 ### Exercise & Settlement Flow (Nov 11, 2025)
 - **Database Schema**: Updated options table to use `collateralAmount` for tracking collateral; settlements table stores exercisedBy, spotPrice, strike, qty, payout, and profitLoss

@@ -34,9 +34,11 @@ interface PortfolioPosition {
 
 interface PortfolioData {
   totalPnL: string;
-  totalLockedCollateral: string;
-  openPositionsCount: number;
-  marginCallsCount: number;
+  realizedPnL: string;
+  unrealizedPnL: string;
+  lockedCollateral: string;
+  openPositions: number;
+  marginCalls: number;
   positions: PortfolioPosition[];
 }
 
@@ -125,7 +127,13 @@ export default function Portfolio() {
     );
   }
 
+  if (!portfolioData) {
+    return null;
+  }
+
   const totalPnL = parseFloat(portfolioData.totalPnL);
+  const realizedPnL = parseFloat(portfolioData.realizedPnL);
+  const unrealizedPnL = parseFloat(portfolioData.unrealizedPnL);
   const isProfitable = totalPnL >= 0;
 
   return (
@@ -138,7 +146,7 @@ export default function Portfolio() {
         </div>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
           {/* Total PnL */}
           <Card data-testid="card-total-pnl">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
@@ -162,6 +170,52 @@ export default function Portfolio() {
             </CardContent>
           </Card>
 
+          {/* Realized PnL */}
+          <Card data-testid="card-realized-pnl">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Realized P&L</CardTitle>
+              {realizedPnL >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-success" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-destructive" />
+              )}
+            </CardHeader>
+            <CardContent>
+              <div 
+                className={`text-2xl font-bold ${realizedPnL >= 0 ? 'text-success' : 'text-destructive'}`}
+                data-testid="text-realized-pnl"
+              >
+                {realizedPnL >= 0 ? '+' : ''}${realizedPnL.toFixed(2)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Settled options
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Unrealized PnL */}
+          <Card data-testid="card-unrealized-pnl">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Unrealized P&L</CardTitle>
+              {unrealizedPnL >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-success" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-destructive" />
+              )}
+            </CardHeader>
+            <CardContent>
+              <div 
+                className={`text-2xl font-bold ${unrealizedPnL >= 0 ? 'text-success' : 'text-destructive'}`}
+                data-testid="text-unrealized-pnl"
+              >
+                {unrealizedPnL >= 0 ? '+' : ''}${unrealizedPnL.toFixed(2)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Open positions
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Open Positions */}
           <Card data-testid="card-open-positions">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
@@ -170,7 +224,7 @@ export default function Portfolio() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-open-positions">
-                {portfolioData.openPositionsCount}
+                {portfolioData.openPositions}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Active contracts
@@ -186,7 +240,7 @@ export default function Portfolio() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-locked-collateral">
-                ${parseFloat(portfolioData.totalLockedCollateral).toFixed(2)}
+                ${parseFloat(portfolioData.lockedCollateral).toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Reserved funds
@@ -198,17 +252,17 @@ export default function Portfolio() {
           <Card data-testid="card-margin-calls">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Margin Calls</CardTitle>
-              <AlertTriangle className={`h-4 w-4 ${portfolioData.marginCallsCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+              <AlertTriangle className={`h-4 w-4 ${portfolioData.marginCalls > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
             </CardHeader>
             <CardContent>
               <div 
-                className={`text-2xl font-bold ${portfolioData.marginCallsCount > 0 ? 'text-destructive' : ''}`}
+                className={`text-2xl font-bold ${portfolioData.marginCalls > 0 ? 'text-destructive' : ''}`}
                 data-testid="text-margin-calls"
               >
-                {portfolioData.marginCallsCount}
+                {portfolioData.marginCalls}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {portfolioData.marginCallsCount > 0 ? 'Action required' : 'All clear'}
+                {portfolioData.marginCalls > 0 ? 'Action required' : 'All clear'}
               </p>
             </CardContent>
           </Card>
