@@ -99,7 +99,7 @@ export class DatabaseStorage implements IStorage {
   async updateOption(id: string, updates: Partial<Option>): Promise<Option> {
     const [option] = await db
       .update(options)
-      .set(updates)
+      .set({ ...updates, lastUpdated: new Date() })
       .where(eq(options.id, id))
       .returning();
     return option;
@@ -133,6 +133,7 @@ export class DatabaseStorage implements IStorage {
           counterpartyId: counterpartyId,
           matchedBy: matchedBy,
           matchedAt: new Date(),
+          lastUpdated: new Date(),
         })
         .where(eq(options.id, optionId))
         .returning();
@@ -221,7 +222,7 @@ export class DatabaseStorage implements IStorage {
 
       await tx
         .update(options)
-        .set({ status: "SETTLED" })
+        .set({ status: "SETTLED", lastUpdated: new Date() })
         .where(eq(options.id, optionId));
 
       const [transaction] = await tx
@@ -288,7 +289,7 @@ export class DatabaseStorage implements IStorage {
   async updateMarginCall(id: string, updates: Partial<MarginCall>): Promise<MarginCall> {
     const [marginCall] = await db
       .update(marginCalls)
-      .set(updates)
+      .set({ ...updates, lastUpdated: new Date() })
       .where(eq(marginCalls.id, id))
       .returning();
     return marginCall;
@@ -397,7 +398,7 @@ export class DatabaseStorage implements IStorage {
     // Update option status
     const [updatedOption] = await db
       .update(options)
-      .set({ status: newStatus })
+      .set({ status: newStatus, lastUpdated: new Date() })
       .where(eq(options.id, optionId))
       .returning();
 
