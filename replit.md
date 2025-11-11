@@ -69,18 +69,24 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Database Schema**: Updated options table to use `collateralAmount` for tracking collateral; settlements table stores exercisedBy, spotPrice, strike, qty, payout, and profitLoss
 - **API Endpoints**: 
   - `POST /api/options/:id/exercise` with JWT authentication requiring buyer/issuer ownership
-  - `GET /api/transactions` for transaction audit trail
+  - `GET /api/transactions` with authenticateToken for secure transaction audit trail
+  - `GET /api/settlements` with authenticateToken for secure settlement history
 - **Backend Logic**: 
   - `exerciseOption()` in storage.ts calculates intrinsic value for CALL/PUT options
   - Payout capped by collateralAmount: `payout = min(collateralAmount, intrinsicValue)`
   - Creates settlement record, PAYOUT transaction, and transitions status FILLED → SETTLED
   - Transaction-safe implementation with `.returning()` to ensure persistence
+  - Strict ownership validation: blocks exercise for options with NULL issuer_id/buyer_id (legacy records)
 - **Frontend UI**: 
   - ExerciseOptionDialog accepts spotPrice input (exercisedBy derived from JWT token)
   - Exercise button visible for FILLED options owned by authenticated user
   - StatusBadge updated with SETTLED variant (green color scheme)
-- **Authorization**: Only option buyer or issuer can exercise; returns 403 for non-owners
+- **Security**: 
+  - Strict ownership enforcement: only buyer or issuer can exercise (403 for non-owners)
+  - Protected audit endpoints: settlements and transactions require JWT authentication
+  - Fail-closed stance: legacy options without ownership IDs cannot be exercised until backfilled
 - **Testing**: `scripts/test_exercise.sh` validates complete flow with 8 test cases including option creation, matching, exercise, settlement verification, transaction audit trail, and authorization checks
+- **Future Work**: Admin tool for backfilling issuer_id/buyer_id on legacy FILLED options to enable exercise
 
 ### Manual Matching Engine (Nov 11, 2025)
 - **Database Schema**: Added `matched_by` (text), `matched_at` (timestamp), `counterparty_id` (text) columns to options table for tracking manual matches
