@@ -1,0 +1,50 @@
+Действие: добавить финальный E2E-отчёт по NFT mint в документацию и подготовить ветку для релиза.
+
+1) Открой файл docs/testing.md (если нет — создай docs/testing.md в корне репозитория).
+2) В начало файла, сразу после основного заголовка (первой строки `#`), добавь ссылку-якорь:
+   - Вставь строку: `[Final E2E NFT Mint report](#final-e2e-nft-mint-—-отчет)`
+
+3) В конец файла добавь раздел EXACTLY как ниже (вставь весь блок целиком):
+
+```md
+## Final E2E NFT Mint — отчет
+
+Ниже — итоговый автоматический отчёт по проверке процесса mint NFT (Polygon Amoy):
+
+```json
+{
+  "optionId": "919d1b5b-eb37-43c3-bb6d-abc48711e616",
+  "txHash": "0xe239085b0e027d7e9a685a369fb7db8bb70f33f2b2f87cb8da69dcbd293f7f0f",
+  "blockNumber": 28914798,
+  "nft_token_id": 1,
+  "nft_status": "MINTED",
+  "polygonscan_url": "https://amoy.polygonscan.com/tx/0xe239085b0e027d7e9a685a369fb7db8bb70f33f2b2f87cb8da69dcbd293f7f0f",
+  "nft_contract": "0xCE49ba494170495041e5f56a722762f74C968c3F",
+  "nft_explorer_url": "https://amoy.polygonscan.com/token/0xCE49ba494170495041e5f56a722762f74C968c3F?a=1",
+  "deployer": "0xf6CA524fa30BC1c55e09bF9eDD7B527c2eF6AcB6",
+  "deployer_balance": "50.21 POL",
+  "gas_used": "~0.0036 POL",
+  "errors": null,
+  "status": "SUCCESS"
+}
+````
+
+**Кратко:** NFT успешно заминчен на Polygon Amoy (tokenId #1). Полный транзакционный лог доступен по ссылке выше.
+
+```
+4) Сохрани файл.
+
+5) Создай новую ветку `release/demo`, закоммить изменения и запушь в origin:
+   - `git checkout -b release/demo`
+   - `git add docs/testing.md`
+   - `git commit -m "docs: add final E2E NFT mint report"`
+   - `git push -u origin release/demo`
+
+6) Создай Pull Request из `release/demo` в `main` (или в основную ветку проекта), используя заголовок:
+   - `Release: demo — add final E2E NFT mint report`
+   и в описании PR вставь одно предложение: `Добавлен финальный E2E-отчёт по NFT-минту; готово к ревью перед деплоем.` 
+   Если в репо есть `.github/pull_request_template.md` — используй его автоматически.
+
+7) В ответе присылай короткий отчёт: какие файлы изменены, успешен ли push и ссылка на созданный PR (или сообщение об ошибке, если push/PR не удался).
+
+Выполни это действие и выведи только краткий статус (OK / ERROR) + ссылку на PR (если OK) и изменённые файлы.
