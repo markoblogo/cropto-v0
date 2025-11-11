@@ -29,6 +29,7 @@ export const options = pgTable("options", {
   matchedAt: timestamp("matched_at"),
   counterpartyId: text("counterparty_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
 
 export const trades = pgTable("trades", {
@@ -72,6 +73,7 @@ export const marginCalls = pgTable("margin_calls", {
   status: text("status", { enum: ["PENDING", "RESOLVED", "LIQUIDATED"] }).notNull().default("PENDING"),
   deadline: timestamp("deadline"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
 
 export const transactions = pgTable("transactions", {
@@ -83,6 +85,7 @@ export const transactions = pgTable("transactions", {
   amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
   description: text("description").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
 
 export const notifications = pgTable("notifications", {
@@ -132,6 +135,7 @@ export const onchainTransactions = pgTable("onchain_transactions", {
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
+  lastUpdated: true,
 }).extend({
   strike: z.coerce.number()
     .positive("Strike price must be positive")
@@ -169,12 +173,14 @@ export const insertWalletSchema = createInsertSchema(wallets).omit({
 export const insertMarginCallSchema = createInsertSchema(marginCalls).omit({
   id: true,
   createdAt: true,
+  lastUpdated: true,
   status: true,
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
+  lastUpdated: true,
 });
 
 export const insertNotificationSchema = createInsertSchema(notifications).omit({
@@ -221,3 +227,10 @@ export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
 export type InsertOnchainTransaction = z.infer<typeof insertOnchainTransactionSchema>;
 export type OnchainTransaction = typeof onchainTransactions.$inferSelect;
+
+export interface HealthUpdateResponse {
+  lastSync: string; // ISO timestamp from server
+  options: Option[];
+  marginCalls: MarginCall[];
+  transactions: Transaction[];
+}
