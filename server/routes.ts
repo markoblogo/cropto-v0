@@ -149,25 +149,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid Telegram update format" });
       }
 
-      // Parse message: Expected format "COMMODITY PRICE" e.g. "WHEAT 240.50" or "BTC 45000.00"
-      const text = message.text.trim();
-      const parts = text.split(/\s+/);
+      // Import parser
+      const { parseIndexMessage } = await import("./services/telegramParser.js");
       
-      if (parts.length !== 2) {
-        return res.status(400).json({ error: "Invalid format. Expected: COMMODITY PRICE" });
+      const text = message.text.trim();
+      const chatUsername = message.chat?.username ? `@${message.chat.username}` : undefined;
+      const messageId = message.message_id?.toString();
+
+      // Check for duplicate message_id to prevent reprocessing
+      if (messageId) {
+        const { eq } = await import("drizzle-orm");
+        const existing = await db
+          .select()
+          .from(indexPrices)
+          .where(eq(indexPrices.messageId, messageId))
+          .limit(1);
+
+        if (existing.length > 0) {
+          console.log(`[Telegram] Skipping duplicate message_id: ${messageId}`);
+          return res.json({ 
+            ok: true, 
+            message: "Duplicate message, already processed",
+            skipped: true
+          });
+        }
       }
 
-      const [commodity, priceStr] = parts;
-      const price = parseFloat(priceStr);
+      // Parse the message with intelligent parser
+      const parseResult = parseIndexMessage(text);
 
-      if (isNaN(price) || price <= 0) {
-        return res.status(400).json({ error: "Invalid price value" });
+      if (!parseResult.success) {
+        console.log(`[Telegram] Failed to parse: ${parseResult.error}`);
+        return res.status(400).json({ 
+          error: "Message format not recognized",
+          details: parseResult.error 
+        });
       }
 
-      // Validate commodity name (alphanumeric only)
-      if (!/^[A-Z0-9]+$/i.test(commodity)) {
-        return res.status(400).json({ error: "Invalid commodity name" });
-      }
+      const { commodity, price, location, change } = parseResult.data!;
+
+      // Build metadata
+      const meta = JSON.stringify({
+        location,
+        change,
+        chatUsername,
+      });
 
       // Store index price
       const [indexPrice] = await db
@@ -176,10 +202,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           commodity: commodity.toUpperCase(),
           price: price.toFixed(8),
           date: new Date(),
+          source: chatUsername || 'telegram',
+          raw: text,
+          meta,
+          messageId,
         })
         .returning();
 
-      console.log(`[Telegram] Index price received: ${commodity} = ${price}`);
+      console.log(`[Telegram] Index price received: ${commodity} = ${price} from ${chatUsername || 'telegram'}`);
 
       res.json({ 
         ok: true, 
@@ -212,6 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const indexDate = date ? new Date(date) : new Date();
+      const userName = req.user?.email || 'admin';
 
       const [indexPrice] = await db
         .insert(indexPrices)
@@ -219,6 +250,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           commodity: commodity.toUpperCase(),
           price: priceNum.toFixed(8),
           date: indexDate,
+          source: `admin-override:${userName}`,
+          raw: `Manual entry by ${userName}`,
         })
         .returning();
 
