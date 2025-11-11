@@ -12,7 +12,8 @@ const CROPT_NFT_ABI = [
   'function safeMint(address to, string memory optionId, string memory uri) returns (uint256)',
   'function tokenURI(uint256 tokenId) view returns (string)',
   'function ownerOf(uint256 tokenId) view returns (address)',
-  'function isOptionMinted(string memory optionId) view returns (bool)'
+  'function isOptionMinted(string memory optionId) view returns (bool)',
+  'event OptionNFTMinted(address indexed to, uint256 indexed tokenId, string optionId, string tokenURI)'
 ];
 
 let provider: ethers.JsonRpcProvider | null = null;
