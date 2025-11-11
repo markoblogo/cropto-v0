@@ -114,6 +114,10 @@ export const indexPrices = pgTable("index_prices", {
   commodity: text("commodity").notNull(),
   price: decimal("price", { precision: 18, scale: 8 }).notNull(),
   date: timestamp("date").notNull().defaultNow(),
+  source: text("source").default("manual"),
+  raw: text("raw"),
+  meta: text("meta"),
+  messageId: text("message_id"),
   isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

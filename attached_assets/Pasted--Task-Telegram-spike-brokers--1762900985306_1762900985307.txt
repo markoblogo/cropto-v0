@@ -1,0 +1,262 @@
+
+
+> **Task**: Добавить автоматический парсер цен из Telegram-канала @spike_brokers, извлекать цену пшеницы (“Пшениця 11.5pro – 221$ (…)”) и обновлять внутренний Spike Spot Commodity Index (wheat) в приложении.
+
+>   
+
+> **Цели**
+
+1. > Автоматически при появлении новых постов в канале @spike_brokers парсить сообщения в заданном формате и сохранять цену пшеницы (в $) в БД + обновлять текущий индекс.
+    
+2. > Обновлять UI-виджет индекса (главная страница и /dashboard) с последней ценой для wheat.
+    
+3. > Обеспечить админ-override (ручное изменение) через админ-UI (простая форма) и логирование источника/времени.
+    
+
+>   
+
+> **Secrets (добавь в Replit Secrets перед запуском)**
+
+- > TELEGRAM_BOT_TOKEN = (токен бота Telegram)
+    
+- > (по желанию) TELEGRAM_CHANNEL_USERNAME = @spike_brokers (или оставь в коде)
+    
+
+>   
+
+> **Архитектурные варианты** (реализуй оба, но по-умолчанию включи Polling в режиме запуска; webhook — опция):
+
+- > **Preferred (webhook)**: реализовать endpoint /api/webhook/telegram и зарегистрировать его с Bot API (если Replit проект публичен).
+    
+- > **Fallback (polling)**: реализовать job jobs/telegramPoller.ts который раз в 60–300 секунд вызывает getUpdates и обрабатывает новые сообщения (safe, не требует внешнего webhook).
+    
+
+>   
+
+> **Парсинг — правила / regex**
+
+- > Игнорировать посты, которые не содержат ключевые слова Пшениця или Пшениця 11.5pro.
+    
+- > Для извлечения цены использовать устойчивый regex (Unicode-aware). Пример:
+    
+
+```
+const wheatRegex = /Пшениця\s*11\.5(?:pro)?\s*[–—-]\s*([0-9]+(?:\.[0-9]+)?)\s*\$/u;
+```
+
+- > Если regex нашёл число priceStr, преобразовать в число: price = parseFloat(priceStr).
+    
+- > Вытаскивать также location если есть (например CPT ОДЕСА) — опционально.
+    
+
+>   
+
+> **DB / Schema (миграция)**
+
+- > Добавь/обнови таблицу index_values (если её нет) со следующими колонками:
+    
+    - > id (uuid, pk)
+        
+    - > commodity (text) — e.g. 'wheat'
+        
+    - > price (numeric) — цена в USD
+        
+    - > source (text) — 'telegram/@spike_brokers'
+        
+    - > raw (text) — полный текст поста
+        
+    - > meta (jsonb) — дополнительные поля (location, change, etc.)
+        
+    - > created_at (timestamptz default now())
+        
+    
+- > Добавь индекс на (commodity, created_at DESC) для быстрого выборa latest.
+    
+
+>   
+
+> **Backend API**
+
+- > Новый endpoint **POST /api/index/ingest/telegram** (internal, protected by bot token header X-TELEGRAM-BOT-TOKEN) — принимает {raw, chat_id, message_id, date} и возвращает parsed result. (Webhook будет POSTить сюда).
+    
+- > Endpoint **GET /api/index/latest?commodity=wheat** — возвращает последний index_values для commodity.
+    
+- > Endpoint **POST /api/index/admin** — protected (broker/admin role) — позволяет сделать админ-override: {commodity, price, note}; сохраняет in DB with source='admin-override'.
+    
+
+>   
+
+> **Jobs / Reconciler**
+
+- > jobs/telegramPoller.ts:
+    
+    - > Если webhook не доступен, запускается периодически (configurable interval via env TELEGRAM_POLL_INTERVAL=60).
+        
+    - > Находит новые сообщения (используй offset), передаёт на парсер.
+        
+    
+- > Парсер:
+    
+    - > Фильтрует посты по chat.username === '@spike_brokers' или chat.id (если известен).
+        
+    - > Применяет wheatRegex. Если price найден:
+        
+        1. > Создаёт запись в index_values.
+            
+        2. > Обновляет current_index кэшем/таблицей (опционально table index_current with commodity->latest_id).
+            
+        3. > Пушит внутреннее событие или invalidates UI cache so that widget updates (call to realtime or invalidation endpoint).
+            
+        
+    - > Если парсинг не успешен, сохраняет raw message to index_logs with status='skipped'.
+        
+    
+
+>   
+
+> **Frontend**
+
+- > Index widget (главная/дэшборд) уже есть (G). Подключить GET /api/index/latest?commodity=wheat и отображать:
+    
+    - > Wheat — 221$ (last updated: date) — source: telegram/@spike_brokers
+        
+    
+- > При получении нового значения обновлять UI (revalidate/poll or websocket).
+    
+- > Добавить небольшую панель в Admin → Index, где можно:
+    
+    - > Просмотреть последние 20 записей index_values для wheat.
+        
+    - > Нажать “Override” и выставить новую цену вручную (POST /api/index/admin).
+        
+    
+
+>   
+
+> **Acceptance criteria (чётко)**
+
+1. > Добавлен jobs/telegramPoller.ts и/или webhook endpoint и секрет TELEGRAM_BOT_TOKEN настроен в Secrets.
+    
+2. > При получении тестового сообщения (пример ниже) система:
+    
+    - > парсит price = 221,
+        
+    - > создаёт запись в index_values с commodity='wheat', price=221, source='telegram/@spike_brokers', raw=...,
+        
+    - > GET /api/index/latest?commodity=wheat возвращает эту запись.
+        
+    
+3. > UI widget на главной/дэшборде показывает новую цену в течение 30s после ingest (или при ручном refresh).
+    
+4. > Admin можно вручную изменить индекс через UI или API; manual override тоже виден в index_values с source='admin-override'.
+    
+5. > Полные лог-случаи: если сообщение пропущено (не в формате), то оно логируется с status='skipped' и причиной.
+    
+
+>   
+
+> **Тестовые данные (вставь в poller test / curl)**
+
+- > Пример исходного сообщения (полное):
+    
+
+```
+SPIKE Spot Commodity Index Ukraine
+11.11.2025
+
+CPT ОДЕСА, УКРАЇНА (експорт)
+
+• Кукурудза – 208$ (0$)
+• Пшениця 11.5pro – 221$ (0$)
+• Пшениця фураж – 211$ (0$) 
+• Соя ГМО – 412$ (0$)
+```
+
+- > Ожидаемый результат: wheat price = 221.
+    
+- > Curl тест для ingest endpoint:
+    
+
+```
+curl -X POST http://localhost:5000/api/index/ingest/telegram \
+ -H "Content-Type: application/json" \
+ -H "X-TELEGRAM-BOT-TOKEN: $TELEGRAM_BOT_TOKEN" \
+ -d '{"raw":"<проверочное сообщение выше>", "chat_username":"@spike_brokers", "message_id":123, "date":"2025-11-11T10:00:00Z"}'
+```
+
+- > После этого curl http://localhost:5000/api/index/latest?commodity=wheat должен вернуть JSON с price:221.
+    
+
+>   
+
+> **Logging / Monitoring**
+
+- > Пиши в logs/indexer.log операции ingest/skip/errors. Для ошибок отправлять предупреждение в консоль и fail-safe (не ломать job).
+    
+
+>   
+
+> **Edge cases / robustness**
+
+- > Если цена приходит с запятой 221,5$ — поддержать decimal by normalizing comma→dot.
+    
+- > Сообщения с другим языком/форматом — пропускать.
+    
+- > Дублирование: если message_id уже обработан — пропускать.
+    
+
+>   
+
+> **Files to change / create**
+
+- > server/jobs/telegramPoller.ts (new) — polling job + offset tracking
+    
+- > server/routes/index.ts (extend) — endpoints: /api/index/ingest/telegram, /api/index/latest, /api/index/admin
+    
+- > server/services/indexer.ts (new) — parsing logic + db insert/update helpers
+    
+- > server/migrations/xxxx_create_index_values.sql (new)
+    
+- > client/src/components/IndexWidget.tsx (or existing index widget) — consume /api/index/latest
+    
+- > client/src/pages/admin/IndexAdmin.tsx — simple admin list + override form
+    
+
+>   
+
+> **Testing tasks for you (after deploy)**
+
+1. > Add TELEGRAM_BOT_TOKEN to Replit Secrets.
+    
+2. > Run job in demo: node server/jobs/telegramPoller.js --once --test (implement test flag to run one iteration).
+    
+3. > POST the sample message via curl (see above) to verify ingest works.
+    
+
+>   
+
+> **Extra**: если webhook доступен (Replit exposes HTTPS endpoint), зарегистрируй webhook:
+
+```
+curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+ -d "url=https://<your-replit-domain>/api/webhook/telegram"
+```
+
+> ---
+
+> Сделай коммит в ветку feature/telegram-indexer и оставь краткое описание в PR:
+
+> feat(indexer): add Telegram parser for Spike index + admin override
+
+>   
+
+> **Выполни задачу экономно (экономия токенов):**
+
+- > Для начала реализуй Polling с interval=120s и опцией --once для тестов (меньше внешних вызовов).
+    
+- > Оставь webhook как опцию, но не включай автоматическую регистрацию webhook (потребует внешних вызовов).
+    
+
+>   
+
+> **Acceptance run**: после реализации, выполни curl тесты (ingest + latest) и пришли output curl ответа — я проверю и дам next-steps.
