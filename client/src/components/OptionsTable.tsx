@@ -325,7 +325,11 @@ export function OptionsTable({
                     ${parseFloat(option.premium).toLocaleString()}
                   </TableCell>
                   <TableCell className="font-mono text-sm" data-testid={`text-buyer-${option.id}`}>
-                    {option.buyer.slice(0, 6)}...{option.buyer.slice(-4)}
+                    {option.buyer ? (
+                      <>{option.buyer.slice(0, 6)}...{option.buyer.slice(-4)}</>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                   <TableCell className="font-mono text-sm" data-testid={`text-seller-${option.id}`}>
                     {option.seller ? (

@@ -10,7 +10,7 @@ export const options = pgTable("options", {
   strike: decimal("strike", { precision: 18, scale: 8 }).notNull(),
   qty: decimal("qty", { precision: 18, scale: 8 }).notNull(),
   premium: decimal("premium", { precision: 18, scale: 8 }).notNull(),
-  buyer: text("buyer").notNull(),
+  buyer: text("buyer"),
   seller: text("seller"),
   status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED", "MARGIN_CALL"] }).notNull().default("OPEN"),
   commodity: text("commodity"),

@@ -5,7 +5,7 @@ import { db } from "./db";
 import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq, desc, gt } from "drizzle-orm";
+import { eq, desc, gt, and, or } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
@@ -37,7 +37,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health updates endpoint for polling
   app.get("/api/health-updates", authenticateToken, async (req: AuthRequest, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const userId = req.user.id;
       const { since } = req.query;
+      
+      // Capture nextCursor BEFORE queries to prevent lost updates (race condition fix)
+      const nextCursor = new Date().toISOString();
       
       // Validate since parameter
       let sinceDate: Date;
@@ -57,32 +65,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Query changed options
+      // Query changed options (USER-SCOPED: only return options where user is participant)
       const changedOptions = await db
         .select()
         .from(options)
-        .where(gt(options.lastUpdated, sinceDate))
+        .where(
+          and(
+            gt(options.lastUpdated, sinceDate),
+            or(
+              eq(options.issuerId, userId),
+              eq(options.buyerId, userId),
+              eq(options.counterpartyId, userId)
+            )
+          )
+        )
         .orderBy(options.lastUpdated)
         .limit(100);
 
-      // Query changed margin calls
+      // Query changed margin calls (USER-SCOPED: only return user's margin calls)
       const changedMarginCalls = await db
         .select()
         .from(marginCalls)
-        .where(gt(marginCalls.lastUpdated, sinceDate))
+        .where(
+          and(
+            gt(marginCalls.lastUpdated, sinceDate),
+            eq(marginCalls.userId, userId)
+          )
+        )
         .orderBy(marginCalls.lastUpdated)
         .limit(100);
 
-      // Query changed transactions
+      // Query changed transactions (USER-SCOPED: only return transactions where user is sender or recipient)
       const changedTransactions = await db
         .select()
         .from(transactions)
-        .where(gt(transactions.lastUpdated, sinceDate))
+        .where(
+          and(
+            gt(transactions.lastUpdated, sinceDate),
+            or(
+              eq(transactions.fromUserId, userId),
+              eq(transactions.toUserId, userId)
+            )
+          )
+        )
         .orderBy(transactions.lastUpdated)
         .limit(100);
 
       const response: HealthUpdateResponse = {
-        lastSync: new Date().toISOString(),
+        lastSync: nextCursor, // Use pre-captured cursor to prevent race condition
         options: changedOptions,
         marginCalls: changedMarginCalls,
         transactions: changedTransactions,
