@@ -11,6 +11,7 @@ import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
 import { startTransactionPoller } from "./onchain/poller";
 import { startReconciler } from "./jobs/reconciler";
+import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
 import { authenticateToken, type AuthRequest, findUserById } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
@@ -28,6 +29,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (process.env.POLYGON_AMOY_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {
     startTransactionPoller();
     startReconciler();
+  }
+
+  // Start Telegram poller if bot token is configured
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    startTelegramPoller();
+  } else {
+    console.log("[TelegramPoller] TELEGRAM_BOT_TOKEN not configured. Poller disabled.");
   }
 
   app.get("/api/health", (req, res) => {
