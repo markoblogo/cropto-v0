@@ -65,6 +65,30 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 
 ## Recent Changes
 
+### Polling-Based Live Updates (Nov 11, 2025)
+- **Database Schema**: Added `lastUpdated` timestamp columns to options, marginCalls, and transactions tables for change tracking
+- **API Endpoint**: `GET /api/health-updates?since=<timestamp>` with JWT authentication
+- **Security Implementation**:
+  - User-scoped data filtering: options by issuer/buyer/counterparty, margin calls by userId, transactions by sender/recipient
+  - Prevents data leakage across user boundaries
+  - Cursor captured BEFORE queries to prevent race conditions and missed updates
+- **Backend Logic**:
+  - Storage layer updates lastUpdated on all mutations (match, exercise, margin calls, transactions)
+  - Health-updates endpoint returns changed objects since provided timestamp
+  - Clamped lookback: max 24h for efficiency
+- **Frontend Hook** (`usePolling.ts`):
+  - Configurable polling interval (15s default)
+  - Visibility-aware pausing: stops polling when browser tab hidden, resumes on visibility
+  - Prevents overlapping fetches with isPending check
+  - Automatic query invalidation: triggers re-fetch of specific queryKeys after receiving updates
+- **UI Integration**:
+  - Dashboard.tsx: Polls for options and margin calls updates, invalidates relevant queries
+  - Portfolio.tsx: Polls for portfolio data updates
+  - OptionsTable.tsx: Fixed to handle nullable buyer field with conditional rendering
+- **Schema Evolution**: buyer field in options table now nullable (set during match, not creation)
+- **Testing**: Created scripts/test_polling.sh validating end-to-end flow: create option → match → verify scoped health-updates
+- **Quality**: Architect approved - verified user scoping, cursor handling, and polling behavior
+
 ### Portfolio Enhancement (Nov 11, 2025)
 - **API Endpoint**: Enhanced GET /api/portfolio/me to return separated realizedPnL and unrealizedPnL calculations
 - **Backend Logic**:
