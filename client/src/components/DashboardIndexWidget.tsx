@@ -126,7 +126,7 @@ export function DashboardIndexWidget() {
             data-testid="button-price-history"
           >
             <LineChartIcon className="w-3 h-3" />
-            История динамики
+            Price History
           </Button>
         </div>
       </CardContent>

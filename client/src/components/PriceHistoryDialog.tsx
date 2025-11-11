@@ -32,10 +32,10 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
   });
 
   const periodOptions: Array<{ value: PeriodOption; label: string }> = [
-    { value: '30d', label: '30 дней' },
-    { value: '90d', label: '90 дней' },
-    { value: '365d', label: '1 год' },
-    { value: 'all', label: 'Всё время' },
+    { value: '30d', label: '30 days' },
+    { value: '90d', label: '90 days' },
+    { value: '365d', label: '1 year' },
+    { value: 'all', label: 'All time' },
   ];
 
   // Calculate min and max for Y-axis domain
@@ -48,7 +48,7 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-4xl" data-testid="dialog-price-history">
         <DialogHeader>
-          <DialogTitle>История цен — {commodity}</DialogTitle>
+          <DialogTitle>Price History — {commodity}</DialogTitle>
         </DialogHeader>
 
         {/* Period Selector */}
@@ -101,10 +101,10 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
                     borderRadius: '6px',
                     color: 'hsl(var(--card-foreground))',
                   }}
-                  formatter={(value: number) => [`$${value.toFixed(2)}`, 'Цена']}
+                  formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
                   labelFormatter={(label) => {
                     const date = new Date(label);
-                    return date.toLocaleDateString('ru-RU', {
+                    return date.toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
@@ -123,7 +123,7 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-              <p>Нет данных для отображения</p>
+              <p>No data to display</p>
             </div>
           )}
         </div>
@@ -132,15 +132,15 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
         {historyData && historyData.length > 0 && (
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
             <div>
-              <p className="text-sm text-muted-foreground">Точек данных</p>
+              <p className="text-sm text-muted-foreground">Data Points</p>
               <p className="text-lg font-semibold">{historyData.length}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Минимум</p>
+              <p className="text-sm text-muted-foreground">Minimum</p>
               <p className="text-lg font-semibold">${minPrice.toFixed(2)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Максимум</p>
+              <p className="text-sm text-muted-foreground">Maximum</p>
               <p className="text-lg font-semibold">${maxPrice.toFixed(2)}</p>
             </div>
           </div>
