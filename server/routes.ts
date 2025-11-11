@@ -377,12 +377,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get price history for charting
+  // Get price history for charting (with optional year-over-year comparison)
   app.get("/api/index/history", async (req, res) => {
     try {
       const commodity = (req.query.commodity as string || 'WHEAT').toUpperCase();
       const period = req.query.period as string || '30d';
       const interval = req.query.interval as string || 'day';
+      const includeComparison = req.query.comparison === 'true';
 
       // Parse period (30d, 90d, 365d, all)
       let cutoffDate: Date | null = null;
@@ -432,7 +433,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .map(([date, price]) => ({ date, price }))
         .sort((a, b) => a.date.localeCompare(b.date)); // Ascending order for chart
 
-      res.json(dataPoints);
+      // Fetch previous year data for comparison if requested
+      let previousYearData: Array<{ date: string; price: number }> = [];
+      if (includeComparison && cutoffDate) {
+        // Calculate date range for previous year (same calendar dates, 1 year ago)
+        const prevYearCutoff = new Date(cutoffDate);
+        prevYearCutoff.setFullYear(prevYearCutoff.getFullYear() - 1);
+        
+        const prevYearEnd = new Date();
+        prevYearEnd.setFullYear(prevYearEnd.getFullYear() - 1);
+
+        const prevYearConditions = and(
+          eq(indexPrices.commodity, commodity),
+          sql`${indexPrices.date} >= ${prevYearCutoff}`,
+          sql`${indexPrices.date} <= ${prevYearEnd}`
+        );
+
+        const prevYearPrices = await db
+          .select({
+            price: indexPrices.price,
+            date: indexPrices.date,
+          })
+          .from(indexPrices)
+          .where(prevYearConditions)
+          .orderBy(indexPrices.date);
+
+        // Group previous year data
+        const prevGrouped = new Map<string, number>();
+        for (const p of prevYearPrices) {
+          let key: string;
+          if (interval === 'month') {
+            key = p.date.toISOString().substring(0, 7);
+          } else {
+            key = p.date.toISOString().split('T')[0];
+          }
+          prevGrouped.set(key, parseFloat(p.price));
+        }
+
+        previousYearData = Array.from(prevGrouped.entries())
+          .map(([date, price]) => ({ date, price }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+      }
+
+      res.json({
+        current: dataPoints,
+        previous: previousYearData,
+        hasPreviousYear: previousYearData.length > 0
+      });
     } catch (error) {
       console.error("Error fetching price history:", error);
       res.status(500).json({ error: "Failed to fetch price history" });

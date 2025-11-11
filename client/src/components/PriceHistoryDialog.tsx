@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -21,13 +21,19 @@ interface HistoryDataPoint {
   price: number;
 }
 
+interface HistoryResponse {
+  current: HistoryDataPoint[];
+  previous: HistoryDataPoint[];
+  hasPreviousYear: boolean;
+}
+
 type PeriodOption = '30d' | '90d' | '365d' | 'all';
 
 export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDialogProps) {
   const [period, setPeriod] = useState<PeriodOption>('30d');
 
-  const { data: historyData, isLoading } = useQuery<HistoryDataPoint[]>({
-    queryKey: [`/api/index/history?commodity=${commodity}&period=${period}&interval=day`],
+  const { data: historyData, isLoading } = useQuery<HistoryResponse>({
+    queryKey: [`/api/index/history?commodity=${commodity}&period=${period}&interval=day&comparison=true`],
     enabled: open, // Only fetch when dialog is open
   });
 
@@ -38,11 +44,39 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
     { value: 'all', label: 'All time' },
   ];
 
-  // Calculate min and max for Y-axis domain
-  const prices = historyData?.map(d => d.price) || [];
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : 100;
-  const padding = (maxPrice - minPrice) * 0.1; // 10% padding
+  // Prepare chart data by normalizing dates for comparison
+  const chartData = historyData?.current.map((point, index) => {
+    const currentYear = new Date(point.date);
+    const monthDay = `${currentYear.getMonth() + 1}/${currentYear.getDate()}`;
+    
+    const dataPoint: any = {
+      date: point.date,
+      displayDate: monthDay,
+      currentYear: point.price,
+    };
+    
+    // Only include previousYear field if we have comparison data
+    if (historyData.hasPreviousYear && historyData.previous) {
+      const prevPoint = historyData.previous.find(p => {
+        const prevDate = new Date(p.date);
+        return prevDate.getMonth() === currentYear.getMonth() && 
+               prevDate.getDate() === currentYear.getDate();
+      });
+      if (prevPoint) {
+        dataPoint.previousYear = prevPoint.price;
+      }
+    }
+    
+    return dataPoint;
+  }) || [];
+
+  // Calculate min and max for Y-axis domain (including both series)
+  const allPrices = chartData.flatMap(d => 
+    [d.currentYear, d.previousYear].filter((p): p is number => p !== null && p !== undefined && !isNaN(p))
+  );
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
+  const padding = (maxPrice - minPrice) * 0.1 || 10; // 10% padding or default 10
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -75,9 +109,9 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
             </div>
-          ) : historyData && historyData.length > 0 ? (
+          ) : chartData && chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={historyData}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="date"
@@ -101,7 +135,11 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
                     borderRadius: '6px',
                     color: 'hsl(var(--card-foreground))',
                   }}
-                  formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                  formatter={(value: number, name: string) => {
+                    if (value === null) return null;
+                    const label = name === 'currentYear' ? 'This Year' : 'Last Year';
+                    return [`$${value.toFixed(2)}`, label];
+                  }}
                   labelFormatter={(label) => {
                     const date = new Date(label);
                     return date.toLocaleDateString('en-US', {
@@ -111,14 +149,34 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
                     });
                   }}
                 />
+                {historyData?.hasPreviousYear && (
+                  <Legend 
+                    wrapperStyle={{ paddingTop: '10px' }}
+                    formatter={(value) => value === 'currentYear' ? 'This Year' : 'Last Year'}
+                  />
+                )}
                 <Line
                   type="monotone"
-                  dataKey="price"
+                  dataKey="currentYear"
+                  name="This Year"
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={{ fill: 'hsl(var(--primary))', r: 3 }}
                   activeDot={{ r: 5 }}
                 />
+                {historyData?.hasPreviousYear && (
+                  <Line
+                    type="monotone"
+                    dataKey="previousYear"
+                    name="Last Year"
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={{ fill: 'hsl(var(--muted-foreground))', r: 3 }}
+                    activeDot={{ r: 5 }}
+                    connectNulls={false}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -129,20 +187,35 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
         </div>
 
         {/* Data Summary */}
-        {historyData && historyData.length > 0 && (
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-            <div>
-              <p className="text-sm text-muted-foreground">Data Points</p>
-              <p className="text-lg font-semibold">{historyData.length}</p>
+        {chartData && chartData.length > 0 && (
+          <div className="space-y-3 pt-4 border-t">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Data Points</p>
+                <p className="text-lg font-semibold">{chartData.length}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Minimum</p>
+                <p className="text-lg font-semibold">${minPrice.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Maximum</p>
+                <p className="text-lg font-semibold">${maxPrice.toFixed(2)}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Minimum</p>
-              <p className="text-lg font-semibold">${minPrice.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Maximum</p>
-              <p className="text-lg font-semibold">${maxPrice.toFixed(2)}</p>
-            </div>
+            {historyData?.hasPreviousYear && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <div className="w-4 h-0.5 bg-primary"></div>
+                  <span>This Year</span>
+                </div>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-4 h-0.5 bg-muted-foreground" style={{ borderTop: '2px dashed' }}></div>
+                  <span>Last Year (Comparison)</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </DialogContent>
