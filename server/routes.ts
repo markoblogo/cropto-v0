@@ -267,10 +267,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/options/:id/match", async (req, res) => {
+  app.post("/api/options/:id/match", authenticateToken, async (req: AuthRequest, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Only brokers/admin can manually match options
+      if (req.user.role !== "broker") {
+        return res.status(403).json({ error: "Only brokers can match options" });
+      }
+
       const matchSchema = z.object({
-        seller: z.string().min(1, "Seller is required"),
+        counterpartyId: z.string().min(1, "Counterparty ID is required"),
       });
 
       const result = matchSchema.safeParse(req.body);
@@ -282,8 +291,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const trade = await storage.matchOption(req.params.id, result.data.seller);
-      res.status(201).json(trade);
+      const option = await storage.matchOption(
+        req.params.id, 
+        result.data.counterpartyId,
+        req.user.id
+      );
+      res.status(200).json(option);
     } catch (error: any) {
       console.error("Error matching option:", error);
       const statusCode = error.message?.includes("not found") || 

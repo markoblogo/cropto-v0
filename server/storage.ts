@@ -32,7 +32,7 @@ export interface IStorage {
   getOptionById(id: string): Promise<Option | undefined>;
   getOptionsByUser(userId: string): Promise<Option[]>;
   updateOption(id: string, updates: Partial<Option>): Promise<Option>;
-  matchOption(optionId: string, seller: string): Promise<Trade | null>;
+  matchOption(optionId: string, counterpartyId: string, matchedBy: string): Promise<Option>;
   exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement>;
   listTrades(): Promise<Trade[]>;
   getTradesByUser(user: string): Promise<Trade[]>;
@@ -105,7 +105,7 @@ export class DatabaseStorage implements IStorage {
     return option;
   }
 
-  async matchOption(optionId: string, seller: string): Promise<Trade | null> {
+  async matchOption(optionId: string, counterpartyId: string, matchedBy: string): Promise<Option> {
     return await db.transaction(async (tx) => {
       const [option] = await tx
         .select()
@@ -121,36 +121,23 @@ export class DatabaseStorage implements IStorage {
         throw new Error("Option is not open for matching");
       }
 
-      if (option.buyer === seller) {
-        throw new Error("Buyer and seller cannot be the same");
+      if (!counterpartyId) {
+        throw new Error("Counterparty ID is required");
       }
 
-      const premiumNum = parseFloat(option.premium);
-      const qtyNum = parseFloat(option.qty);
-      const totalValue = (premiumNum * qtyNum).toFixed(8);
-
-      const [trade] = await tx
-        .insert(trades)
-        .values({
-          optionId: option.id,
-          buyer: option.buyer,
-          seller: seller,
-          strike: option.strike,
-          qty: option.qty,
-          premium: option.premium,
-          totalValue: totalValue,
-        })
-        .returning();
-
-      await tx
+      // Update option with matching details
+      const [updatedOption] = await tx
         .update(options)
         .set({
-          seller: seller,
           status: "FILLED",
+          counterpartyId: counterpartyId,
+          matchedBy: matchedBy,
+          matchedAt: new Date(),
         })
-        .where(eq(options.id, optionId));
+        .where(eq(options.id, optionId))
+        .returning();
 
-      return trade;
+      return updatedOption;
     });
   }
 
