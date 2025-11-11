@@ -27,7 +27,7 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
   const [period, setPeriod] = useState<PeriodOption>('30d');
 
   const { data: historyData, isLoading } = useQuery<HistoryDataPoint[]>({
-    queryKey: ["/api/index/history", { commodity, period, interval: 'day' }],
+    queryKey: [`/api/index/history?commodity=${commodity}&period=${period}&interval=day`],
     enabled: open, // Only fetch when dialog is open
   });
 
