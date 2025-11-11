@@ -30,7 +30,7 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 
 - **Index Price Widget**: Real-time display of commodity index prices with historical trends.
 - **Option Creation & Management**: Users can create, view, filter, and sort crypto options.
-- **Matching Engine**: Transaction-safe matching of buyers and sellers.
+- **Manual Matching Engine**: Broker-only feature for manually matching OPEN options with counterparties. Updates option status to FILLED and records matched_by, matched_at, and counterparty_id fields.
 - **Exercise & Settlement**: Facilitates option exercise with spot price input.
 - **Authentication & Authorization**: JWT-based system with user roles and protected API endpoints.
 - **Wallet Integration**: MetaMask integration and manual input for wallet connection.
@@ -64,6 +64,14 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Development Tools**: Vite, PostCSS, Autoprefixer, ESBuild
 
 ## Recent Changes
+
+### Manual Matching Engine (Nov 11, 2025)
+- **Database Schema**: Added `matched_by` (text), `matched_at` (timestamp), `counterparty_id` (text) columns to options table for tracking manual matches
+- **API Endpoint**: `POST /api/options/:id/match` with broker-only authorization requiring JWT authentication
+- **Backend Logic**: Transaction-safe matching in storage layer with row locking and status transition from OPEN to FILLED
+- **Frontend UI**: MatchOptionDialog updated to accept counterparty_id instead of seller; Match button visible only to broker role in OptionsTable
+- **Authorization**: Enforced broker-only access via middleware check (`req.user.role !== "broker"` returns 403)
+- **Testing**: Created `scripts/test_match.sh` for end-to-end curl testing of match workflow including authorization checks
 
 ### UI Updates (Nov 8, 2025)
 - **Gallery Removal**: Removed "Gallery" navigation link from header
