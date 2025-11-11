@@ -8,6 +8,7 @@ import { MetricCards } from "@/components/MetricCards";
 import { DashboardIndexWidget } from "@/components/DashboardIndexWidget";
 import { CroptMintButton } from "@/components/CroptMintButton";
 import { useToast } from "@/hooks/use-toast";
+import { usePolling } from "@/hooks/usePolling";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
 
@@ -35,6 +36,14 @@ export default function Dashboard() {
   });
 
   const user = userData?.user;
+
+  // Enable polling for live updates when user is authenticated
+  usePolling({
+    endpoint: "/api/health-updates",
+    interval: 20000, // Poll every 20 seconds
+    enabled: !!user,
+    visibilityPause: true,
+  });
 
   // Fetch margin calls
   const { data: marginCalls = [] } = useQuery<any[]>({

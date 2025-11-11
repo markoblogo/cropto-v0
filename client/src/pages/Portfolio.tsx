@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { usePolling } from "@/hooks/usePolling";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -61,6 +62,14 @@ export default function Portfolio() {
   });
 
   const user = userData?.user;
+
+  // Enable polling for live updates when user is authenticated
+  usePolling({
+    endpoint: "/api/health-updates",
+    interval: 20000, // Poll every 20 seconds
+    enabled: !!user,
+    visibilityPause: true,
+  });
 
   // Fetch portfolio data only if authenticated
   const { data: portfolioData, isLoading: isPortfolioLoading, error } = useQuery<PortfolioData>({
