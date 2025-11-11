@@ -2,10 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, gt } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
@@ -32,6 +32,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });
+  });
+
+  // Health updates endpoint for polling
+  app.get("/api/health-updates", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { since } = req.query;
+      
+      // Validate since parameter
+      let sinceDate: Date;
+      if (!since || typeof since !== 'string') {
+        // No since provided - return full sync (last 1 hour)
+        sinceDate = new Date(Date.now() - 60 * 60 * 1000);
+      } else {
+        sinceDate = new Date(since);
+        if (isNaN(sinceDate.getTime())) {
+          return res.status(400).json({ error: "Invalid since timestamp" });
+        }
+        
+        // Clamp lookback to max 24h
+        const maxLookback = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        if (sinceDate < maxLookback) {
+          sinceDate = maxLookback;
+        }
+      }
+
+      // Query changed options
+      const changedOptions = await db
+        .select()
+        .from(options)
+        .where(gt(options.lastUpdated, sinceDate))
+        .orderBy(options.lastUpdated)
+        .limit(100);
+
+      // Query changed margin calls
+      const changedMarginCalls = await db
+        .select()
+        .from(marginCalls)
+        .where(gt(marginCalls.lastUpdated, sinceDate))
+        .orderBy(marginCalls.lastUpdated)
+        .limit(100);
+
+      // Query changed transactions
+      const changedTransactions = await db
+        .select()
+        .from(transactions)
+        .where(gt(transactions.lastUpdated, sinceDate))
+        .orderBy(transactions.lastUpdated)
+        .limit(100);
+
+      const response: HealthUpdateResponse = {
+        lastSync: new Date().toISOString(),
+        options: changedOptions,
+        marginCalls: changedMarginCalls,
+        transactions: changedTransactions,
+      };
+
+      res.json(response);
+    } catch (error: any) {
+      console.error("[Health Updates] Error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch health updates" });
+    }
   });
 
   // Telegram webhook for posting index prices
