@@ -260,6 +260,7 @@ export default function Dashboard() {
       <Hero 
         onCreateOption={() => setIsCreateDialogOpen(true)}
         onConnectWallet={handleConnectWallet}
+        walletAddress={user?.walletAddress}
       />
 
       <main className="py-12">

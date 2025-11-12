@@ -4,9 +4,14 @@ import { Wallet } from "lucide-react";
 interface HeroProps {
   onCreateOption: () => void;
   onConnectWallet?: () => void;
+  walletAddress?: string | null;
 }
 
-export function Hero({ onCreateOption, onConnectWallet }: HeroProps) {
+const formatAddress = (address: string) => {
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+};
+
+export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroProps) {
   return (
     <div className="relative overflow-hidden bg-background">
       {/* Background Image with Semi-Transparent Overlay */}
@@ -51,12 +56,12 @@ export function Hero({ onCreateOption, onConnectWallet }: HeroProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-white/10 text-white border-white/30 backdrop-blur-sm font-semibold w-full sm:w-auto"
+                className="bg-white/10 text-white border-white/30 backdrop-blur-sm font-semibold w-full sm:w-auto font-mono"
                 onClick={onConnectWallet}
                 data-testid="button-hero-connect-wallet"
               >
                 <Wallet className="mr-2 h-5 w-5" />
-                Connect Wallet
+                {walletAddress ? formatAddress(walletAddress) : "Connect Wallet"}
               </Button>
             </div>
           </div>
