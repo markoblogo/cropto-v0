@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const registerSchema = z.object({
   email: z.string()
@@ -87,7 +88,9 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <div className="w-full max-w-md space-y-4">
+        <BackToDashboard />
+        <Card className="w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
           <CardDescription>
@@ -187,6 +190,7 @@ export default function Register() {
           </p>
         </CardFooter>
       </Card>
+      </div>
     </div>
   );
 }

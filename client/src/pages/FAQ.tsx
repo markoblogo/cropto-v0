@@ -1,12 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Header } from "@/components/Header";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function FAQ() {
   return (
     <div className="min-h-screen bg-background">
       <Header onCreateOption={() => {}} />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-4">
+          <BackToDashboard />
+        </div>
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl font-bold">Frequently Asked Questions</CardTitle>

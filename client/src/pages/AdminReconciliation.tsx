@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Download, Filter, Calendar, DollarSign, FileText, AlertCircle } from "lucide-react";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface Transaction {
   id: string;
@@ -243,13 +244,14 @@ export default function AdminReconciliation() {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Reconciliation Dashboard</h1>
               <p className="text-muted-foreground" data-testid="text-page-description">
                 View transactions, settlements, and margin calls with filtering and export
               </p>
             </div>
+            <BackToDashboard />
           </div>
 
           {/* Filters */}

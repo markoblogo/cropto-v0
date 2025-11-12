@@ -1,9 +1,13 @@
 import React from "react";
 import MockModeBanner from "../components/MockModeBanner";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function TestingPage() {
   return (
     <div style={{maxWidth:980, margin:"24px auto", padding:"0 16px", fontFamily:"Inter, system-ui, -apple-system, 'Segoe UI', Roboto"}}>
+      <div style={{marginBottom:16}}>
+        <BackToDashboard />
+      </div>
       <MockModeBanner />
 
       <h1 style={{fontSize:28, marginBottom:8}}>Testing Guide — Cropto (compact)</h1>

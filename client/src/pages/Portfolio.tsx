@@ -18,6 +18,7 @@ import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign } from "
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface PortfolioPosition {
   optionId: string;
@@ -149,9 +150,12 @@ export default function Portfolio() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">Portfolio</h1>
-          <p className="text-muted-foreground">Your options positions and performance</p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">Portfolio</h1>
+            <p className="text-muted-foreground">Your options positions and performance</p>
+          </div>
+          <BackToDashboard />
         </div>
 
         {/* Metrics Cards */}

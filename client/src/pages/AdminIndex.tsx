@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Plus, TrendingUp, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface IndexPrice {
   id: string;
@@ -155,7 +156,7 @@ export default function AdminIndex() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2" data-testid="heading-admin-index">
               Index Management
@@ -164,13 +165,16 @@ export default function AdminIndex() {
               Manage index prices and view Telegram updates
             </p>
           </div>
-          <Button
-            onClick={() => setIsAddDialogOpen(true)}
-            data-testid="button-add-index"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Index Price
-          </Button>
+          <div className="flex items-center gap-2">
+            <BackToDashboard />
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              data-testid="button-add-index"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Index Price
+            </Button>
+          </div>
         </div>
 
         {/* Telegram Info Card */}

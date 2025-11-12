@@ -1,10 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
+      <div className="w-full max-w-md mx-4 space-y-4">
+        <BackToDashboard />
+        <Card className="w-full">
         <CardContent className="pt-6">
           <div className="flex mb-4 gap-2">
             <AlertCircle className="h-8 w-8 text-red-500" />
@@ -16,6 +19,7 @@ export default function NotFound() {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { queryClient } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { Download, CheckCircle2, MessageSquare, Mail, User, Briefcase, Calendar } from "lucide-react";
 import type { Feedback } from "@shared/schema";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function AdminFeedback() {
   const { toast } = useToast();
@@ -91,17 +92,20 @@ export default function AdminFeedback() {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Partner Feedback</h1>
               <p className="text-muted-foreground" data-testid="text-page-description">
                 View and manage feedback from partners
               </p>
             </div>
-            <Button onClick={handleExport} variant="outline" data-testid="button-export-csv">
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              <BackToDashboard />
+              <Button onClick={handleExport} variant="outline" data-testid="button-export-csv">
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { CheckCircle2, Send } from "lucide-react";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const feedbackFormSchema = insertFeedbackSchema.extend({
   name: z.string().min(1, "Name is required"),
@@ -106,6 +107,9 @@ export default function Feedback() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
+        <div className="mb-4">
+          <BackToDashboard />
+        </div>
         <Card>
           <CardHeader>
             <CardTitle data-testid="text-page-title">Partner Feedback</CardTitle>

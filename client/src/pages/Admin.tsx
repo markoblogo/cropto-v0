@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, PlayCircle, Database, Users, TrendingUp } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function Admin() {
   const { toast } = useToast();
@@ -46,11 +47,14 @@ export default function Admin() {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
-            <p className="text-muted-foreground">
-              Manage demo scenarios and system operations
-            </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
+              <p className="text-muted-foreground">
+                Manage demo scenarios and system operations
+              </p>
+            </div>
+            <BackToDashboard />
           </div>
 
           <Card>
