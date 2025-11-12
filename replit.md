@@ -34,6 +34,31 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - **Admin & Portfolio Management**: Broker-only view for transaction reconciliation, and a comprehensive portfolio page with separated realized/unrealized P&L, locked collateral tracking, and detailed position analysis.
 - **Demo & Feedback**: Idempotent demo data seeding system and a public feedback form.
 - **Live Updates**: Polling-based live updates for real-time data changes, with user-scoped data filtering.
+- **Demo Data Export/Import**: System for transferring demo training data (options, trades, settlements, etc.) from development to production database for demonstration purposes.
+
+## Demo Data Migration
+
+The platform includes scripts for exporting and importing demo data between development and production environments:
+
+### Export Demo Data (Development)
+Exports demo-marked data (isDemo='true') from development database to JSON file:
+```bash
+tsx scripts/export-demo-data.ts
+```
+Output: `demo-data-export.json` with filtered demo data (options, trades, settlements, index prices, margin calls, transactions)
+
+### Import Demo Data (Production)
+Imports demo data from JSON file to production database (requires published site shell access):
+```bash
+tsx scripts/import-demo-data.ts
+```
+Features:
+- Uses database transactions for atomicity (all-or-nothing)
+- Tracks imported vs skipped records
+- Warns about conflicts and duplicate IDs
+- Safe rollback on errors
+
+**Security**: Export script filters only demo-linked records by optionId to prevent data leakage
 
 ## External Dependencies
 
