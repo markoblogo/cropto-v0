@@ -136,6 +136,14 @@ export const onchainTransactions = pgTable("onchain_transactions", {
   confirmedAt: timestamp("confirmed_at"),
 });
 
+export const nonces = pgTable("nonces", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletAddress: text("wallet_address").notNull().unique(),
+  nonce: text("nonce").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -211,6 +219,11 @@ export const insertOnchainTransactionSchema = createInsertSchema(onchainTransact
   confirmedAt: true,
 });
 
+export const insertNonceSchema = createInsertSchema(nonces).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -231,6 +244,8 @@ export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
 export type InsertOnchainTransaction = z.infer<typeof insertOnchainTransactionSchema>;
 export type OnchainTransaction = typeof onchainTransactions.$inferSelect;
+export type InsertNonce = z.infer<typeof insertNonceSchema>;
+export type Nonce = typeof nonces.$inferSelect;
 
 export interface HealthUpdateResponse {
   lastSync: string; // ISO timestamp from server

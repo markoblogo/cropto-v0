@@ -1,6 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { useLocation } from "wouter";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
@@ -8,6 +7,8 @@ import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
 import { DashboardIndexWidget } from "@/components/DashboardIndexWidget";
 import { CroptMintButton } from "@/components/CroptMintButton";
+import { WalletAuthModal } from "@/components/WalletAuthModal";
+import { RoleSelectionModal } from "@/components/RoleSelectionModal";
 import { useToast } from "@/hooks/use-toast";
 import { usePolling } from "@/hooks/usePolling";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -16,8 +17,8 @@ import type { Option, InsertOption } from "@shared/schema";
 export default function Dashboard() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
-  const [, setLocation] = useLocation();
+  const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
+  const [isRoleSelectionOpen, setIsRoleSelectionOpen] = useState(false);
 
   const { data: options = [], isLoading } = useQuery<Option[]>({
     queryKey: ["/api/options"],
@@ -227,36 +228,33 @@ export default function Dashboard() {
   const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
 
   const handleConnectWallet = () => {
-    // Check if user is logged in
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to connect your wallet",
-      });
-      setLocation('/login');
-      return;
-    }
+    // Wallet-first flow: Open wallet authentication modal for everyone
+    setIsWalletAuthModalOpen(true);
+  };
 
-    // If user already has a wallet, scroll to show it in header
-    if (user.walletAddress) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleWalletAuthSuccess = (token: string, newUser: boolean) => {
+    // If new user, show role selection onboarding
+    if (newUser) {
+      setIsRoleSelectionOpen(true);
+    } else {
       toast({
-        title: "Wallet Already Connected",
-        description: `Your wallet ${user.walletAddress.substring(0, 6)}...${user.walletAddress.substring(user.walletAddress.length - 4)} is already linked`,
+        title: "Welcome back!",
+        description: "You've been successfully authenticated",
       });
-      return;
     }
+  };
 
-    // Open wallet dialog
-    setIsWalletDialogOpen(true);
+  const handleRoleSelectionSuccess = () => {
+    toast({
+      title: "Account Setup Complete",
+      description: "You're all set! Start exploring grain options.",
+    });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header 
         onCreateOption={() => setIsCreateDialogOpen(true)}
-        externalWalletDialogOpen={isWalletDialogOpen}
-        onExternalWalletDialogChange={setIsWalletDialogOpen}
       />
       
       <Hero 
@@ -345,6 +343,20 @@ export default function Dashboard() {
           setIsCreateDialogOpen(false);
         }}
         isPending={createOptionMutation.isPending}
+      />
+
+      {/* Wallet Authentication Modal */}
+      <WalletAuthModal
+        open={isWalletAuthModalOpen}
+        onOpenChange={setIsWalletAuthModalOpen}
+        onSuccess={handleWalletAuthSuccess}
+      />
+
+      {/* Role Selection Modal (Onboarding) */}
+      <RoleSelectionModal
+        open={isRoleSelectionOpen}
+        onOpenChange={setIsRoleSelectionOpen}
+        onSuccess={handleRoleSelectionSuccess}
       />
     </div>
   );

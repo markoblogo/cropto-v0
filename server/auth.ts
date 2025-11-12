@@ -238,6 +238,129 @@ export async function updateUserWallet(
   return db.users[userIndex];
 }
 
+// Find or create user by wallet address
+export async function findOrCreateUserByWallet(
+  walletAddress: string
+): Promise<{ user: User; isNewUser: boolean }> {
+  const lowerAddress = walletAddress.toLowerCase();
+  
+  if (useSupabase()) {
+    // Try to find existing user by wallet address
+    const allUsers = await getAllUsersSupabase();
+    const existingUser = allUsers.find(u => u.wallet_address?.toLowerCase() === lowerAddress);
+    
+    if (existingUser) {
+      return {
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+          passwordHash: existingUser.password_hash,
+          role: existingUser.role,
+          createdAt: existingUser.created_at,
+          walletAddress: existingUser.wallet_address,
+          network: existingUser.network,
+        },
+        isNewUser: false,
+      };
+    }
+    
+    // Create new user with wallet
+    const email = `${lowerAddress}@wallet.local`;
+    const tempPassword = crypto.randomBytes(32).toString('hex');
+    const passwordHash = await hashPassword(tempPassword);
+    
+    const supabaseUser = await createUserSupabase(
+      email,
+      passwordHash,
+      'farmer' // Default role for new wallet users
+    );
+    
+    // Update with wallet address
+    const updatedUser = await updateUserSupabase(email, {
+      wallet_address: lowerAddress,
+    });
+    
+    return {
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        passwordHash: updatedUser.password_hash,
+        role: updatedUser.role,
+        createdAt: updatedUser.created_at,
+        walletAddress: updatedUser.wallet_address,
+        network: updatedUser.network,
+      },
+      isNewUser: true,
+    };
+  }
+  
+  // File-based storage
+  const db = await readDB();
+  const existingUser = db.users.find(u => u.walletAddress?.toLowerCase() === lowerAddress);
+  
+  if (existingUser) {
+    return {
+      user: existingUser,
+      isNewUser: false,
+    };
+  }
+  
+  // Create new user
+  const newUser: User = {
+    id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    email: `${lowerAddress}@wallet.local`,
+    passwordHash: await hashPassword(crypto.randomBytes(32).toString('hex')),
+    role: 'farmer', // Default role
+    createdAt: new Date().toISOString(),
+    walletAddress: lowerAddress,
+  };
+  
+  db.users.push(newUser);
+  await writeDB(db);
+  
+  return {
+    user: newUser,
+    isNewUser: true,
+  };
+}
+
+// Update user role (for onboarding)
+export async function updateUserRole(
+  userId: string,
+  role: 'farmer' | 'trader' | 'broker'
+): Promise<User | null> {
+  if (useSupabase()) {
+    const user = await findUserById(userId);
+    if (!user) return null;
+    
+    const supabaseUser = await updateUserSupabase(user.email, {
+      role,
+    });
+    
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email,
+      passwordHash: supabaseUser.password_hash,
+      role: supabaseUser.role,
+      createdAt: supabaseUser.created_at,
+      walletAddress: supabaseUser.wallet_address,
+      network: supabaseUser.network,
+    };
+  }
+  
+  const db = await readDB();
+  const userIndex = db.users.findIndex(u => u.id === userId);
+  
+  if (userIndex === -1) {
+    return null;
+  }
+  
+  db.users[userIndex].role = role;
+  
+  await writeDB(db);
+  return db.users[userIndex];
+}
+
 // Auth middleware
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
