@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export function Header({ onCreateOption }: HeaderProps) {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
 
   // Fetch current user
@@ -59,11 +59,13 @@ export function Header({ onCreateOption }: HeaderProps) {
 
           {/* Navigation - Hidden on mobile, shown on md+ */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link href="/">
-              <Button variant="ghost" size="sm" data-testid="button-nav-dashboard">
-                Dashboard
-              </Button>
-            </Link>
+            {location !== "/" && (
+              <Link href="/">
+                <Button variant="ghost" size="sm" data-testid="button-nav-dashboard">
+                  Dashboard
+                </Button>
+              </Link>
+            )}
             <Link href="/portfolio">
               <Button variant="ghost" size="sm" data-testid="button-nav-portfolio">
                 Portfolio
