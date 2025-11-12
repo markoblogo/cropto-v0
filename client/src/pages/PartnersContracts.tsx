@@ -2,8 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { Home } from "lucide-react";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const partners = [
   {
@@ -117,12 +116,7 @@ export default function PartnersContracts() {
               Manage institutional partnerships and service agreements
             </p>
           </div>
-          <Button variant="outline" asChild data-testid="button-back-home">
-            <Link href="/">
-              <Home className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
+          <BackToDashboard />
         </div>
 
         <Card>

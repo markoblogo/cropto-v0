@@ -1,6 +1,5 @@
-import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const mockScreens = [
   { src: "/assets/designs/design-1.png", caption: "Dashboard - Light & Dark Mode Overview", description: "Main dashboard showing total options, open positions, and total volume stats with options book table" },
@@ -31,15 +30,7 @@ export default function DesignArchitecture() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/">
-                <button 
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover-elevate active-elevate-2"
-                  data-testid="button-back-dashboard"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Dashboard
-                </button>
-              </Link>
+              <BackToDashboard />
             </div>
           </div>
         </div>

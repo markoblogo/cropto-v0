@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "wouter";
-import { Home, Book, Users, Shield, TrendingUp } from "lucide-react";
+import { Book, Users, Shield, TrendingUp } from "lucide-react";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function Docs() {
   return (
@@ -15,12 +14,7 @@ export default function Docs() {
               Learn how to use Cropto for grain market options trading
             </p>
           </div>
-          <Button variant="outline" asChild data-testid="button-back-home">
-            <Link href="/">
-              <Home className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
+          <BackToDashboard />
         </div>
 
         {/* What is Cropto */}

@@ -2,8 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { Home, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const transactions = [
   {
@@ -91,12 +91,7 @@ export default function OnchainTx() {
               Monitor blockchain settlements and transfers
             </p>
           </div>
-          <Button variant="outline" asChild data-testid="button-back-home">
-            <Link href="/">
-              <Home className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
+          <BackToDashboard />
         </div>
 
         <Card>
