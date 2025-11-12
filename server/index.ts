@@ -5,6 +5,8 @@ import { initializeAuth } from "./auth";
 import { initSentry } from "./utils/sentry";
 import blockServiceRole from "./middleware/blockServiceRole";
 import auditLog from "./middleware/auditLog";
+import { autoImportDemoData } from "../scripts/auto-import-demo-data";
+import { db } from "./db";
 
 const app = express();
 
@@ -65,6 +67,16 @@ app.use((req, res, next) => {
     console.error("❌ Failed to initialize authentication:", error.message);
     console.error("Please add JWT_SECRET to your Replit Secrets.");
     process.exit(1);
+  }
+
+  // Auto-import demo data if not present in database
+  if (process.env.DATABASE_URL) {
+    try {
+      await autoImportDemoData(db);
+    } catch (error: any) {
+      console.error("⚠️  Warning: Failed to auto-import demo data:", error.message);
+      // Don't exit - continue server startup even if demo import fails
+    }
   }
 
   const server = await registerRoutes(app);
