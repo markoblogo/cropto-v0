@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ interface CroptMintButtonProps {
 
 export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
   const { toast } = useToast();
-  const [mintEnabled, setMintEnabled] = useState(false);
+  const [mintEnabled, setMintEnabled] = useState(true);
 
   const { data: balanceData, isLoading: isLoadingBalance } = useCroptBalance(walletAddress);
   const { data: pendingTxs = [] } = usePendingTransactions();
@@ -28,8 +28,8 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
       }
 
       const response = await apiRequest('POST', '/api/onchain/mint', {
-        address: walletAddress,
-        amount: 1,
+        toAddress: walletAddress,
+        amount: "1",
       });
 
       return response.json();
@@ -63,18 +63,18 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
     },
   });
 
-  const checkMintEnabled = async () => {
-    try {
-      const response = await fetch('/api/health');
-      setMintEnabled(true);
-    } catch {
-      setMintEnabled(false);
-    }
-  };
+  useEffect(() => {
+    const checkMintEnabled = async () => {
+      try {
+        await fetch('/api/health');
+        setMintEnabled(true);
+      } catch {
+        setMintEnabled(false);
+      }
+    };
 
-  if (!checkMintEnabled()) {
     checkMintEnabled();
-  }
+  }, []);
 
   if (!walletAddress) {
     return null;
