@@ -50,9 +50,6 @@ async function importDemoData() {
   const db = drizzle({ client: pool });
 
   try {
-    // Import in a transaction for atomicity
-    await pool.query("BEGIN");
-    
     let importedCounts = {
       indexPrices: 0,
       options: 0,
@@ -62,12 +59,13 @@ async function importDemoData() {
       transactions: 0,
     };
 
-    try {
+    // Import in a transaction for atomicity
+    await db.transaction(async (tx) => {
       // Import index prices first (no dependencies)
       if (exportData.indexPrices.length > 0) {
         console.log(`\n📊 Importing ${exportData.indexPrices.length} index prices...`);
         for (const price of exportData.indexPrices) {
-          const result = await db.insert(indexPrices).values(price).onConflictDoNothing().returning({ id: indexPrices.id });
+          const result = await tx.insert(indexPrices).values(price).onConflictDoNothing().returning({ id: indexPrices.id });
           if (result.length > 0) importedCounts.indexPrices++;
         }
         console.log(`✓ Index prices imported (${importedCounts.indexPrices} new, ${exportData.indexPrices.length - importedCounts.indexPrices} skipped)`);
@@ -77,7 +75,7 @@ async function importDemoData() {
       if (exportData.options.length > 0) {
         console.log(`\n📝 Importing ${exportData.options.length} options...`);
         for (const option of exportData.options) {
-          const result = await db.insert(options).values(option).onConflictDoNothing().returning({ id: options.id });
+          const result = await tx.insert(options).values(option).onConflictDoNothing().returning({ id: options.id });
           if (result.length > 0) importedCounts.options++;
         }
         console.log(`✓ Options imported (${importedCounts.options} new, ${exportData.options.length - importedCounts.options} skipped)`);
@@ -91,7 +89,7 @@ async function importDemoData() {
       if (exportData.trades.length > 0) {
         console.log(`\n💰 Importing ${exportData.trades.length} trades...`);
         for (const trade of exportData.trades) {
-          const result = await db.insert(trades).values(trade).onConflictDoNothing().returning({ id: trades.id });
+          const result = await tx.insert(trades).values(trade).onConflictDoNothing().returning({ id: trades.id });
           if (result.length > 0) importedCounts.trades++;
         }
         console.log(`✓ Trades imported (${importedCounts.trades} new, ${exportData.trades.length - importedCounts.trades} skipped)`);
@@ -101,7 +99,7 @@ async function importDemoData() {
       if (exportData.settlements.length > 0) {
         console.log(`\n🏁 Importing ${exportData.settlements.length} settlements...`);
         for (const settlement of exportData.settlements) {
-          const result = await db.insert(settlements).values(settlement).onConflictDoNothing().returning({ id: settlements.id });
+          const result = await tx.insert(settlements).values(settlement).onConflictDoNothing().returning({ id: settlements.id });
           if (result.length > 0) importedCounts.settlements++;
         }
         console.log(`✓ Settlements imported (${importedCounts.settlements} new, ${exportData.settlements.length - importedCounts.settlements} skipped)`);
@@ -111,7 +109,7 @@ async function importDemoData() {
       if (exportData.marginCalls.length > 0) {
         console.log(`\n⚠️  Importing ${exportData.marginCalls.length} margin calls...`);
         for (const marginCall of exportData.marginCalls) {
-          const result = await db.insert(marginCalls).values(marginCall).onConflictDoNothing().returning({ id: marginCalls.id });
+          const result = await tx.insert(marginCalls).values(marginCall).onConflictDoNothing().returning({ id: marginCalls.id });
           if (result.length > 0) importedCounts.marginCalls++;
         }
         console.log(`✓ Margin calls imported (${importedCounts.marginCalls} new, ${exportData.marginCalls.length - importedCounts.marginCalls} skipped)`);
@@ -121,20 +119,14 @@ async function importDemoData() {
       if (exportData.transactions.length > 0) {
         console.log(`\n💸 Importing ${exportData.transactions.length} transactions...`);
         for (const transaction of exportData.transactions) {
-          const result = await db.insert(transactions).values(transaction).onConflictDoNothing().returning({ id: transactions.id });
+          const result = await tx.insert(transactions).values(transaction).onConflictDoNothing().returning({ id: transactions.id });
           if (result.length > 0) importedCounts.transactions++;
         }
         console.log(`✓ Transactions imported (${importedCounts.transactions} new, ${exportData.transactions.length - importedCounts.transactions} skipped)`);
       }
 
-      // Commit transaction
-      await pool.query("COMMIT");
       console.log("\n✅ Transaction committed successfully!");
-    } catch (error) {
-      // Rollback on error
-      await pool.query("ROLLBACK");
-      throw error;
-    }
+    });
 
     console.log(`\n✅ Demo data imported successfully!`);
     console.log(`\n📊 Final Summary:`);
