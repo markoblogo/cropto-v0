@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface HeroProps {
   onCreateOption: () => void;
@@ -12,6 +13,8 @@ const formatAddress = (address: string) => {
 };
 
 export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="relative overflow-hidden bg-background">
       {/* Background Image with Semi-Transparent Overlay */}
@@ -39,7 +42,7 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
           <div className="flex-1">
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight" data-testid="text-hero-headline">
-              Cropto — hedging for grain
+              {t('hero.headline')}
             </h1>
 
             {/* CTAs */}
@@ -50,7 +53,7 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
                 onClick={onCreateOption}
                 data-testid="button-hero-create-option"
               >
-                Create Option
+                {t('button.createOption')}
               </Button>
 
               <Button
@@ -61,7 +64,7 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
                 data-testid="button-hero-connect-wallet"
               >
                 <Wallet className="mr-2 h-5 w-5" />
-                {walletAddress ? formatAddress(walletAddress) : "Connect Wallet"}
+                {walletAddress ? formatAddress(walletAddress) : t('button.connectWallet')}
               </Button>
             </div>
           </div>

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { NotificationsDropdown } from "./NotificationsDropdown";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -14,6 +16,7 @@ interface HeaderProps {
 export function Header({ onCreateOption }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Fetch current user
   const { data: userData } = useQuery<{ 
@@ -62,7 +65,7 @@ export function Header({ onCreateOption }: HeaderProps) {
             {location !== "/" && (
               <Link href="/">
                 <Button variant="ghost" size="sm" data-testid="button-nav-dashboard">
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Button>
               </Link>
             )}
@@ -124,6 +127,9 @@ export function Header({ onCreateOption }: HeaderProps) {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             {/* Mobile Menu Button */}
             <Button 
               variant="ghost" 
@@ -152,7 +158,7 @@ export function Header({ onCreateOption }: HeaderProps) {
                   className="bg-primary text-primary-foreground font-semibold"
                   data-testid="button-header-create-option"
                 >
-                  <span className="hidden sm:inline">Create Option</span>
+                  <span className="hidden sm:inline">{t('button.createOption')}</span>
                   <span className="sm:hidden">Create</span>
                 </Button>
 

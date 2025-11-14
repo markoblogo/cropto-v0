@@ -5,6 +5,8 @@
   "nav.home": "Home",
   "nav.dashboard": "Dashboard",
   "button.createOption": "Create Option",
+  "button.connectWallet": "Connect Wallet",
+  "hero.headline": "Cropto — hedging for grain",
   "faq.title": "FAQ",
   "testing.title": "Testing guide"
 }

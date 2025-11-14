@@ -5,6 +5,8 @@
   "nav.home": "Головна",
   "nav.dashboard": "Панель",
   "button.createOption": "Створити опціон",
+  "button.connectWallet": "Підʼєднати гаманець",
+  "hero.headline": "Cropto — хеджування для зерна",
   "faq.title": "Питання",
   "testing.title": "Інструкція тестування"
 }
