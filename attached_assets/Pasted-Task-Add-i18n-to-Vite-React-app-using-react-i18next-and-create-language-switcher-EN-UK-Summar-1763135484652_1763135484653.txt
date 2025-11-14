@@ -1,0 +1,99 @@
+Task: Add i18n to Vite + React app using react-i18next and create language switcher (EN/UK).
+
+Summary:
+- Install react-i18next + i18next.
+- Add i18n bootstrap config.
+- Create locales folder with minimal keys for EN and UK.
+- Integrate into app entry (main.jsx / main.tsx) and wrap root with I18nextProvider if needed.
+- Add a small LanguageSwitcher component and place it in Header.
+- Commit changes on branch feature/i18n-vite.
+
+Steps to implement:
+1) Install packages:
+  npm install react-i18next i18next i18next-browser-languagedetector
+
+2) Create file src/i18n.ts with:
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+import en from '../public/locales/en/common.json';
+import uk from '../public/locales/uk/common.json';
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources: { en: { common: en }, uk: { common: uk } },
+    fallbackLng: 'en',
+    ns: ['common'],
+    defaultNS: 'common',
+    interpolation: { escapeValue: false },
+    detection: {
+      order: ['querystring','localStorage','navigator'],
+      caches: ['localStorage'],
+    },
+  });
+
+export default i18n;
+
+3) Create locale files:
+- public/locales/en/common.json
+{
+  "site.title": "Cropto",
+  "header.connect": "Connect wallet",
+  "header.signIn": "Sign in",
+  "nav.home": "Home",
+  "button.createOption": "Create Option",
+  "faq.title": "FAQ",
+  "testing.title": "Testing guide"
+}
+
+- public/locales/uk/common.json
+{
+  "site.title": "Cropto",
+  "header.connect": "Підʼєднати гаманець",
+  "header.signIn": "Увійти",
+  "nav.home": "Головна",
+  "button.createOption": "Створити опціон",
+  "faq.title": "Питання",
+  "testing.title": "Інструкція тестування"
+}
+
+4) Initialize i18n in app entry:
+- Edit src/main.jsx (or main.tsx) add:
+import './i18n';
+
+5) Create LanguageSwitcher component at src/components/LanguageSwitcher.jsx:
+import { useTranslation } from 'react-i18next';
+export default function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  return (
+    <select
+      aria-label="Language"
+      value={i18n.language}
+      onChange={e => i18n.changeLanguage(e.target.value)}
+    >
+      <option value="en">EN</option>
+      <option value="uk">УК</option>
+    </select>
+  );
+}
+
+6) Place <LanguageSwitcher/> in Header component (near Connect button) and replace a couple static strings with t('...') usages (header.connect, nav.home, button.createOption).
+
+7) Add branch, commit and push:
+git checkout -b feature/i18n-vite
+git add -A
+git commit -m "feat(i18n): add react-i18next, locales and language switcher"
+git push -u origin feature/i18n-vite
+
+Acceptance criteria:
+- App runs (`npm run dev`) without i18n errors.
+- Visiting site and switching select updates UI labels (or using ?lng=uk loads Ukrainian).
+- Locale JSON files present under public/locales/en and public/locales/uk.
+- Changes committed to branch feature/i18n-vite.
+
+Notes:
+- Keep translation keys minimal for now; we will extract more keys next.
+- If any file paths differ (main.jsx / App.jsx), adapt accordingly.
