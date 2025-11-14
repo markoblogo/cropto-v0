@@ -1,0 +1,52 @@
+Task: Complete full i18n (EN⇄UK) for the Vite React app and replace language switcher UI with classic flag toggle.
+
+Goals:
+1) Ensure **all** user-visible text across the site is replaced with react-i18next keys and have Ukrainian translations.
+2) Replace current LanguageSwitcher with a polished flag toggle (UK/EN flags). UI must be accessible and persist selection to localStorage.
+3) Run dev build and tests, fix any type/compile errors, commit to branch feature/i18n-complete-uk and push.
+
+Steps (do all):
+
+A. Scan & extract strings
+  1. Recursively scan src/ for JSX/TSX files and collect all literal strings rendered in UI (text nodes inside JSX, button labels, headings, nav items, table headers, form labels, placeholders, toast texts, dialogs, admin labels). Exclude: comments, variable names, strings used only in tests.
+  2. For each unique string, create a translation key under namespace `common` using kebab-case, e.g. "Create option" -> "button.create-option".
+  3. Replace occurrences in code with `t('common:button.create-option')` (use `import { useTranslation } from 'react-i18next'` and `const { t } = useTranslation();` at component top). Preserve existing interpolation where needed.
+
+B. Populate translation files
+  1. Update `src/locales/en/common.json` with all keys -> English strings.
+  2. Create/update `src/locales/uk/common.json` with Ukrainian translations for every key. Translate accurately (I will review later). For dynamic strings keep interpolation tokens, e.g. `"index.price": "{{price}} $"`.
+  3. For any long static pages (FAQ, Testing guide, docs in-app), place content under keys like `page.faq.title`, `page.faq.q1`, etc.
+
+C. Replace LanguageSwitcher UI
+  1. Replace current `src/components/LanguageSwitcher.jsx` with the supplied FlagSwitcher component (see below). It must:
+     - show current language flag (UKR flag for `uk`, UK/US flag for `en`)
+     - be keyboard accessible
+     - persist choice to `localStorage` (key `i18nextLng`)
+     - visually match header styling (compact button)
+  2. Insert FlagSwitcher in header next to Connect button.
+
+D. Edge cases & interpolation
+  1. Preserve component-level dynamic values (dates, tokenId) using i18next interpolation.
+  2. For pluralization or conditional phrases, use i18next pluralization or two separate keys.
+
+E. Build/test/commit
+  1. Run `npm run build` (or `npm run dev` smoke check) and fix compile/type errors.
+  2. Run existing test scripts (if any).
+  3. Create branch `feature/i18n-complete-uk`, add & commit changes: `feat(i18n): complete uk translations + flag switcher`.
+  4. Push to origin and open PR.
+
+Acceptance criteria:
+- All visible UI text switches to Ukrainian when selecting UK and reverts to English.
+- No runtime errors from missing translation keys.
+- Language toggle shows correct flag icons and persists selection.
+- `npm run dev` runs without errors.
+- Changes committed to branch `feature/i18n-complete-uk`.
+
+Notes:
+- If automated scan cannot replace some strings safely, list them in a short report and make manual replacements.
+- Keep translations human-readable (no machine placeholders) — mark any auto-generated translations with prefix `[AUTO]` so we can review.
+
+Proceed and report back with:
+1) summary of how many keys added,
+2) link to PR or branch,
+3) any strings left for manual translation.
