@@ -483,6 +483,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 - **Email**: support@cropto.io
 
+## Documentation
+
+Comprehensive bilingual documentation is available in both English and Ukrainian:
+
+### About
+- [About (EN)](docs/about.en.md) - Platform overview and business model
+- [About (UK)](docs/about.uk.md) - Огляд платформи та бізнес-модель
+
+### FAQ
+- [FAQ (EN)](docs/faq.en.md) - Frequently asked questions
+- [FAQ (UK)](docs/faq.uk.md) - Часті питання
+
+### Testing
+- [Testing (EN)](docs/testing.en.md) - Testing guide and demo accounts
+- [Testing (UK)](docs/testing.uk.md) - Інструкція з тестування та демо-акаунти
+
 ---
 
 **Version**: 1.0.0  
