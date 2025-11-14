@@ -1,30 +1,449 @@
 {
-  "site.title": "Cropto",
-  "site.logoAlt": "Cropto Logo",
-  "header.connect": "Connect wallet",
-  "header.signIn": "Sign in",
-  "header.language": "Language",
-  "nav.home": "Home",
-  "nav.dashboard": "Dashboard",
-  "nav.portfolio": "Portfolio",
-  "nav.docs": "Docs",
-  "nav.faq": "FAQ",
-  "nav.testing": "Testing",
-  "nav.partners": "Partners",
-  "nav.transactions": "Transactions",
-  "nav.feedback": "Feedback",
-  "nav.admin": "Admin",
-  "nav.reconciliation": "Reconciliation",
-  "nav.index": "Index",
-  "button.createOption": "Create Option",
-  "button.connectWallet": "Connect Wallet",
-  "button.create": "Create",
-  "button.login": "Login",
-  "button.register": "Register",
-  "button.logout": "Logout",
-  "toast.loggedOut": "Logged out",
-  "toast.loggedOutDesc": "You have been logged out successfully",
-  "hero.headline": "Cropto — hedging for grain",
-  "faq.title": "FAQ",
-  "testing.title": "Testing guide"
+  "site": {
+    "title": "Cropto",
+    "logoAlt": "Cropto Logo",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "header": {
+    "connect": "Connect wallet",
+    "signIn": "Sign in",
+    "language": "Language"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "portfolio": "Portfolio",
+    "docs": "Docs",
+    "faq": "FAQ",
+    "testing": "Testing",
+    "partners": "Partners",
+    "transactions": "Transactions",
+    "feedback": "Feedback",
+    "admin": "Admin",
+    "reconciliation": "Reconciliation",
+    "index": "Index"
+  },
+  "button": {
+    "createOption": "Create Option",
+    "connectWallet": "Connect Wallet",
+    "create": "Create",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "match": "Match",
+    "exercise": "Exercise",
+    "simulate": "Simulate",
+    "settle": "Force Settle",
+    "topup": "Top Up",
+    "withdraw": "Withdraw",
+    "mint": "Mint NFT",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "pending": "Pending...",
+    "noData": "No data available",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "toast": {
+    "loggedOut": "Logged out",
+    "loggedOutDesc": "You have been logged out successfully",
+    "success": "Success",
+    "error": "Error",
+    "optionCreated": "Option created successfully",
+    "optionCreateFailed": "Failed to create option",
+    "matchSuccess": "Match Successful",
+    "matchSuccessDesc": "Option has been successfully matched",
+    "matchFailed": "Match Failed",
+    "matchFailedDesc": "Failed to match option",
+    "exerciseSuccess": "Exercise Successful",
+    "exerciseSuccessDesc": "Option has been exercised and settled",
+    "exerciseFailed": "Exercise Failed",
+    "exerciseFailedDesc": "Failed to exercise option",
+    "marginCheckComplete": "Margin Check Complete",
+    "marginCheckProcessed": "Processed {{count}} options. Created {{calls}} margin calls.",
+    "marginCheckFailed": "Margin Check Failed",
+    "marginCheckFailedDesc": "Failed to run margin check",
+    "settleComplete": "Force Settlement Complete",
+    "settleCompleteDesc": "Option has been force-settled. Status: {{status}}. {{notifications}} notifications sent.",
+    "settleFailed": "Force Settlement Failed",
+    "settleFailedDesc": "Failed to force-settle option",
+    "topupSuccess": "Top-up Successful",
+    "topupResolved": "Margin Call Resolved",
+    "topupResolvedDesc": "Margin call has been resolved. Option status restored to OPEN.",
+    "topupSuccessDesc": "Added {{amount}} to collateral. Total available: {{total}}",
+    "topupFailed": "Top-up Failed",
+    "topupFailedDesc": "Failed to top up margin call",
+    "withdrawInitiated": "Withdrawal Initiated",
+    "withdrawInitiatedDesc": "Transaction: {{txHash}}",
+    "withdrawFailed": "Withdrawal Failed",
+    "withdrawFailedDesc": "Failed to initiate withdrawal",
+    "welcomeBack": "Welcome back!",
+    "welcomeBackDesc": "You've been successfully authenticated",
+    "accountSetup": "Account Setup Complete",
+    "accountSetupDesc": "You're all set! Start exploring grain options.",
+    "loginSuccess": "Success",
+    "loginSuccessDesc": "Logged in successfully",
+    "loginFailed": "Login Failed",
+    "loginFailedDesc": "Invalid email or password",
+    "registerSuccess": "Success",
+    "registerSuccessDesc": "Account created successfully",
+    "registerFailed": "Registration Failed",
+    "registerFailedDesc": "Failed to create account",
+    "croptMintRequested": "CROPT Mint Requested",
+    "mintingDisabled": "Minting Disabled",
+    "mintingDisabledDesc": "CROPT minting is currently disabled. Contact admin.",
+    "mintFailed": "Mint Failed",
+    "nftMinted": "NFT Minted Successfully!",
+    "noMarginCall": "No pending margin call found for this option"
+  },
+  "hero": {
+    "headline": "Cropto — hedging for grain",
+    "subheadline": "Trade agricultural commodity options with blockchain-backed transparency",
+    "cta": {
+      "createOption": "Create Option",
+      "connectWallet": "Connect Wallet"
+    }
+  },
+  "page": {
+    "dashboard": {
+      "title": "Options Marketplace",
+      "subtitle": "Browse, create, and trade grain commodity options",
+      "metrics": {
+        "totalOptions": "Total Options",
+        "totalOptionsDesc": "All time contracts",
+        "openPositions": "Open Positions",
+        "openPositionsDesc": "Currently active",
+        "totalVolume": "Total Volume",
+        "totalVolumeDesc": "Aggregate value"
+      },
+      "indexWidget": {
+        "title": "Index Price",
+        "loading": "Loading...",
+        "loadError": "Failed to load index data",
+        "lastUpdated": "Last updated:",
+        "priceHistory": "Price History"
+      }
+    },
+    "login": {
+      "title": "Login to Cropto",
+      "subtitle": "Enter your credentials to access your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "loginButton": "Login",
+      "loginButtonPending": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register",
+      "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email format",
+        "passwordRequired": "Password is required"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Register to start trading grain options on Cropto",
+      "emailLabel": "Email",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Minimum 6 characters",
+      "roleLabel": "Role",
+      "rolePlaceholder": "Select your role",
+      "roles": {
+        "farmer": "Farmer",
+        "trader": "Trader",
+        "broker": "Broker"
+      },
+      "registerButton": "Create Account",
+      "registerButtonPending": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Login",
+      "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email format",
+        "passwordMin": "Password must be at least 6 characters",
+        "roleRequired": "Please select a role"
+      }
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "subtitle": "Your options positions and performance",
+      "metrics": {
+        "totalPnl": "Total P&L",
+        "totalPnlDesc": "Realized + Unrealized",
+        "realizedPnl": "Realized P&L",
+        "realizedPnlDesc": "Settled options",
+        "unrealizedPnl": "Unrealized P&L",
+        "unrealizedPnlDesc": "Open positions",
+        "openPositions": "Open Positions",
+        "openPositionsDesc": "Active contracts",
+        "lockedCollateral": "Locked Collateral",
+        "lockedCollateralDesc": "Reserved funds",
+        "marginCalls": "Margin Calls",
+        "marginCallsDesc": "{{count}} {{action}}",
+        "actionRequired": "Action required",
+        "allClear": "All clear"
+      },
+      "positions": {
+        "title": "Positions",
+        "empty": "No positions yet",
+        "emptySubtitle": "Start trading options to see your portfolio here",
+        "table": {
+          "title": "Title",
+          "type": "Type",
+          "strike": "Strike",
+          "quantity": "Quantity",
+          "premium": "Premium",
+          "role": "Role",
+          "status": "Status",
+          "pnl": "P&L",
+          "date": "Date",
+          "buyer": "Buyer",
+          "seller": "Seller",
+          "unrealized": "Unrealized"
+        }
+      },
+      "loadError": "Failed to load portfolio data. Please try again."
+    },
+    "admin": {
+      "title": "Admin Panel",
+      "subtitle": "Manage demo scenarios and system operations",
+      "demo": {
+        "title": "Demo Scenario",
+        "subtitle": "Run a one-click demo to seed the platform with sample data for partner presentations",
+        "creates": "This will create:",
+        "users": "3 demo users: farmer@demo, trader@demo, broker@demo (password: pass)",
+        "options": "3 options contracts with various strikes, quantities, and statuses",
+        "indexPrices": "2 index price entries (WHEAT @ 210, WHEAT @ 240)",
+        "button": "Run Demo Scenario",
+        "buttonPending": "Seeding demo data...",
+        "success": "Demo seeded successfully!",
+        "successToast": "Demo scenario created! ✨",
+        "successDesc": "Created {{users}} users, {{options}} options, and {{prices}} index prices.{{deleted}}",
+        "deleted": " Cleaned {{count}} existing records.",
+        "failedToast": "Failed to run demo",
+        "failedDesc": "An error occurred while seeding demo data",
+        "results": {
+          "users": "Users: {{count}} ({{created}} new, {{existing}} existing)",
+          "options": "Options: {{count}} created{{replaced}}",
+          "optionsReplaced": " (replaced {{count}} existing)",
+          "indexPrices": "Index Prices: {{count}} created{{replaced}}",
+          "indexPricesReplaced": " (replaced {{count}} existing)",
+          "credentials": "Login credentials:",
+          "credentialEntry": "{{email}} / pass ({{role}})"
+        },
+        "note": "Note",
+        "noteDesc": "This feature is broker-only. The demo scenario is idempotent and can be run multiple times. Existing users will be preserved, and new options/index prices will be added to the database."
+      }
+    }
+  },
+  "component": {
+    "createOption": {
+      "button": "Create Option",
+      "title": "Create New Option",
+      "subtitle": "Create a new crypto option contract. Fill in all required fields.",
+      "form": {
+        "titleLabel": "Option Title",
+        "titlePlaceholder": "e.g., BTC-50000-CALL-30DEC",
+        "typeLabel": "Option Type",
+        "typePlaceholder": "Select option type",
+        "strikeLabel": "Strike Price",
+        "strikePlaceholder": "50000.00",
+        "qtyLabel": "Quantity",
+        "qtyPlaceholder": "1.00",
+        "premiumLabel": "Premium",
+        "premiumPlaceholder": "500.00",
+        "buyerLabel": "Buyer Address",
+        "buyerPlaceholder": "0x..."
+      },
+      "summary": {
+        "title": "Contract Summary",
+        "totalPremium": "Total Premium:",
+        "requiredCollateral": "Required Collateral:",
+        "collateralNote": "Collateral is required from the seller to cover the obligation at strike price."
+      },
+      "submit": "Create Option",
+      "submitPending": "Creating...",
+      "cancel": "Cancel"
+    },
+    "optionsTable": {
+      "title": "Options Book",
+      "empty": "No Options Found",
+      "emptyCreate": "Get started by creating your first option contract.",
+      "emptyFilter": "No options match your current filters. Try adjusting them.",
+      "filters": {
+        "type": "Filter Type",
+        "status": "Filter Status",
+        "allTypes": "All Types",
+        "allStatus": "All Status",
+        "call": "Call",
+        "put": "Put",
+        "open": "Open",
+        "filled": "Filled",
+        "expired": "Expired",
+        "cancelled": "Cancelled"
+      },
+      "headers": {
+        "title": "Title",
+        "type": "Type",
+        "strike": "Strike",
+        "qty": "Quantity",
+        "premium": "Premium",
+        "buyer": "Buyer",
+        "seller": "Seller",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "new": "{{count}} new",
+      "loading": "Loading notifications...",
+      "empty": "No notifications yet",
+      "types": {
+        "marginCall": "Margin Call",
+        "optionMatched": "Option Matched",
+        "optionExercised": "Option Exercised",
+        "liquidation": "Liquidation",
+        "notification": "Notification"
+      },
+      "newBadge": "New"
+    },
+    "statusBadge": {
+      "open": "OPEN",
+      "selected": "SELECTED",
+      "filled": "FILLED",
+      "exercised": "EXERCISED",
+      "settled": "SETTLED",
+      "expired": "EXPIRED",
+      "cancelled": "CANCELLED",
+      "defaulted": "DEFAULTED",
+      "marginCall": "MARGIN CALL"
+    }
+  },
+  "dialog": {
+    "match": {
+      "title": "Match Option",
+      "subtitle": "Enter the counterparty ID to complete this trade",
+      "counterpartyLabel": "Counterparty ID",
+      "counterpartyPlaceholder": "Enter user ID"
+    },
+    "exercise": {
+      "title": "Exercise Option",
+      "subtitle": "Enter the current spot price to exercise this option. Strike: ${{strike}}",
+      "spotPriceLabel": "Current Spot Price",
+      "spotPricePlaceholder": "Enter current price",
+      "spotPriceDesc": "The current market price of the asset"
+    },
+    "simulate": {
+      "title": "Simulate Margin Check",
+      "subtitle": "Run a margin check calculation for this option using a custom index price",
+      "indexPriceLabel": "Index Price",
+      "indexPricePlaceholder": "Enter index price",
+      "indexPriceDesc": "The current commodity index price for P&L calculation"
+    },
+    "forceSettle": {
+      "title": "Force Settle Option",
+      "subtitle": "This will force-settle the option \"{{title}}\" and update its status to EXERCISED or DEFAULTED. This action cannot be undone.",
+      "reasonLabel": "Reason for Force Settlement",
+      "reasonPlaceholder": "Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)",
+      "button": "Force Settle"
+    },
+    "topup": {
+      "title": "Top Up Collateral",
+      "subtitle": "Add additional collateral to resolve the margin call for option \"{{title}}\"",
+      "amountLabel": "Top-up Amount",
+      "amountPlaceholder": "Enter amount to add",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "usd": "USD",
+      "button": "Top Up"
+    },
+    "withdraw": {
+      "title": "Withdraw CROPT",
+      "subtitle": "Transfer CROPT tokens to your wallet address",
+      "addressLabel": "Wallet Address",
+      "addressPlaceholder": "0x...",
+      "amountLabel": "Amount",
+      "amountPlaceholder": "Amount to withdraw",
+      "button": "Withdraw"
+    },
+    "mintNft": {
+      "title": "Mint Option NFT",
+      "subtitle": "Mint this option as an ERC-721 NFT on Polygon Amoy testnet",
+      "recipientLabel": "Recipient Address",
+      "recipientPlaceholder": "0x...",
+      "recipientDesc": "The Ethereum address that will receive the NFT",
+      "success": "NFT Minted Successfully!",
+      "tokenId": "Token ID:",
+      "viewExplorer": "View on Explorer",
+      "nftLabel": "NFT #{{id}}",
+      "button": "Mint NFT",
+      "buttonPending": "Minting..."
+    },
+    "walletAuth": {
+      "title": "Connect Wallet",
+      "subtitle": "Choose how you want to connect",
+      "metamask": {
+        "title": "MetaMask",
+        "subtitle": "Connect using MetaMask browser extension",
+        "button": "Connect MetaMask",
+        "buttonPending": "Connecting..."
+      },
+      "manual": {
+        "title": "Manual Entry",
+        "subtitle": "Enter wallet address manually",
+        "addressLabel": "Wallet Address",
+        "addressPlaceholder": "0x...",
+        "button": "Connect",
+        "buttonPending": "Connecting..."
+      }
+    },
+    "roleSelection": {
+      "title": "Select Your Role",
+      "subtitle": "Choose how you'll participate in the Cropto platform",
+      "roles": {
+        "farmer": {
+          "title": "Farmer",
+          "subtitle": "Hedge grain production with options"
+        },
+        "trader": {
+          "title": "Trader",
+          "subtitle": "Trade and speculate on commodity prices"
+        },
+        "broker": {
+          "title": "Broker",
+          "subtitle": "Facilitate trades and manage platform"
+        }
+      },
+      "button": "Continue"
+    },
+    "priceHistory": {
+      "title": "Price History",
+      "subtitle": "View historical index price data for {{commodity}}",
+      "close": "Close"
+    }
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Frequently asked questions about the Cropto platform"
+  },
+  "testing": {
+    "title": "Testing guide",
+    "subtitle": "Learn how to test the Cropto platform features"
+  },
+  "notFound": {
+    "title": "404 Page Not Found",
+    "subtitle": "The page you're looking for doesn't exist",
+    "backLink": "Back to Dashboard"
+  }
 }

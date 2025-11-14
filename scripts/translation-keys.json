@@ -1,0 +1,3340 @@
+{
+  "meta": {
+    "total": 476,
+    "generatedAt": "2025-11-14T16:14:40.709Z"
+  },
+  "translations": [
+    {
+      "key": "component.back-to-dashboard.back-to-dashboard",
+      "en": "Back to Dashboard",
+      "uk": "",
+      "file": "client/src/components/BackToDashboard.tsx",
+      "line": 14
+    },
+    {
+      "key": "component.create-option-dialog.create-option",
+      "en": "Create Option",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 83
+    },
+    {
+      "key": "component.create-option-dialog.create-new-option",
+      "en": "Create New Option",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 89
+    },
+    {
+      "key": "component.create-option-dialog.create-a-new-crypto-option-contract-fill-in-all-re",
+      "en": "Create a new crypto option contract. Fill in all required fields.",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 91
+    },
+    {
+      "key": "component.create-option-dialog.option-title",
+      "en": "Option Title",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 101
+    },
+    {
+      "key": "component.create-option-dialog.option-type",
+      "en": "Option Type",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 119
+    },
+    {
+      "key": "component.create-option-dialog.strike-price",
+      "en": "Strike Price",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 142
+    },
+    {
+      "key": "component.create-option-dialog.buyer-address",
+      "en": "Buyer Address",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 209
+    },
+    {
+      "key": "component.create-option-dialog.contract-summary",
+      "en": "Contract Summary",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 226
+    },
+    {
+      "key": "component.create-option-dialog.total-premium",
+      "en": "Total Premium:",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 229
+    },
+    {
+      "key": "component.create-option-dialog.",
+      "en": "$",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 231
+    },
+    {
+      "key": "component.create-option-dialog.required-collateral",
+      "en": "Required Collateral:",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 235
+    },
+    {
+      "key": "component.create-option-dialog.collateral-is-required-from-the-seller-to-cover-th",
+      "en": "Collateral is required from the seller to cover the obligation at strike price.",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 241
+    },
+    {
+      "key": "component.create-option-dialog.placeholder-eg-btc-50000-call-30dec",
+      "en": "e.g., BTC-50000-CALL-30DEC",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 104
+    },
+    {
+      "key": "component.create-option-dialog.placeholder-select-option-type",
+      "en": "Select option type",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 123
+    },
+    {
+      "key": "component.create-option-dialog.placeholder-0x",
+      "en": "0x...",
+      "uk": "",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 212
+    },
+    {
+      "key": "component.cropt-mint-button.cropt-balance",
+      "en": "CROPT Balance",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 91
+    },
+    {
+      "key": "component.cropt-mint-button.test-cropt-tokens-for-polygon-amoy-testnet",
+      "en": "Test CROPT tokens for Polygon Amoy testnet",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 94
+    },
+    {
+      "key": "component.cropt-mint-button.pending-transaction",
+      "en": "pending transaction",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 112
+    },
+    {
+      "key": "component.cropt-mint-button.title-cropt-mint-requested",
+      "en": "CROPT Mint Requested",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 39
+    },
+    {
+      "key": "component.cropt-mint-button.title-minting-disabled",
+      "en": "Minting Disabled",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 52
+    },
+    {
+      "key": "component.cropt-mint-button.desc-cropt-minting-is-currently-disabled-contact-admin",
+      "en": "CROPT minting is currently disabled. Contact admin.",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 53
+    },
+    {
+      "key": "component.cropt-mint-button.title-mint-failed",
+      "en": "Mint Failed",
+      "uk": "",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 58
+    },
+    {
+      "key": "component.dashboard-index-widget.index-price",
+      "en": "Index Price",
+      "uk": "",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 35
+    },
+    {
+      "key": "component.dashboard-index-widget.loading",
+      "en": "Loading...",
+      "uk": "",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 39
+    },
+    {
+      "key": "component.dashboard-index-widget.failed-to-load-index-data",
+      "en": "Failed to load index data",
+      "uk": "",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 54
+    },
+    {
+      "key": "component.dashboard-index-widget.",
+      "en": "%",
+      "uk": "",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 94
+    },
+    {
+      "key": "component.dashboard-index-widget.last-updated",
+      "en": "Last updated:",
+      "uk": "",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 119
+    },
+    {
+      "key": "component.dashboard-index-widget.price-history",
+      "en": "Price History",
+      "uk": "",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 129
+    },
+    {
+      "key": "component.exercise-option-dialog.enter-the-current-spot-price-to-exercise-this-opti",
+      "en": "Enter the current spot price to exercise this option. Strike: $",
+      "uk": "",
+      "file": "client/src/components/ExerciseOptionDialog.tsx",
+      "line": 80
+    },
+    {
+      "key": "component.exercise-option-dialog.current-spot-price",
+      "en": "Current Spot Price",
+      "uk": "",
+      "file": "client/src/components/ExerciseOptionDialog.tsx",
+      "line": 90
+    },
+    {
+      "key": "component.exercise-option-dialog.the-current-market-price-of-the-asset",
+      "en": "The current market price of the asset",
+      "uk": "",
+      "file": "client/src/components/ExerciseOptionDialog.tsx",
+      "line": 101
+    },
+    {
+      "key": "component.force-settle-dialog.force-settle",
+      "en": "Force Settle",
+      "uk": "",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 72
+    },
+    {
+      "key": "component.force-settle-dialog.force-settle-option",
+      "en": "Force Settle Option",
+      "uk": "",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 79
+    },
+    {
+      "key": "component.force-settle-dialog.this-will-force-settle-the-option-",
+      "en": "This will force-settle the option \"",
+      "uk": "",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 82
+    },
+    {
+      "key": "component.force-settle-dialog.-and-update-its-status-to-exercised-or-defaulted-t",
+      "en": "\" and update its status to EXERCISED or DEFAULTED. \n            This action cannot be undone.",
+      "uk": "",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 82
+    },
+    {
+      "key": "component.force-settle-dialog.reason-for-force-settlement",
+      "en": "Reason for Force Settlement",
+      "uk": "",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 93
+    },
+    {
+      "key": "component.force-settle-dialog.placeholder-enter-detailed-reason-for-force-settling-this-opti",
+      "en": "Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)",
+      "uk": "",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 96
+    },
+    {
+      "key": "component.match-option-dialog.match-option",
+      "en": "Match Option",
+      "uk": "",
+      "file": "client/src/components/MatchOptionDialog.tsx",
+      "line": 69
+    },
+    {
+      "key": "component.match-option-dialog.enter-the-counterparty-id-to-complete-this-trade",
+      "en": "Enter the counterparty ID to complete this trade",
+      "uk": "",
+      "file": "client/src/components/MatchOptionDialog.tsx",
+      "line": 71
+    },
+    {
+      "key": "component.match-option-dialog.counterparty-id",
+      "en": "Counterparty ID",
+      "uk": "",
+      "file": "client/src/components/MatchOptionDialog.tsx",
+      "line": 81
+    },
+    {
+      "key": "component.metric-cards.title-total-options",
+      "en": "Total Options",
+      "uk": "",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 13
+    },
+    {
+      "key": "component.metric-cards.desc-all-time-contracts",
+      "en": "All time contracts",
+      "uk": "",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 16
+    },
+    {
+      "key": "component.metric-cards.title-open-positions",
+      "en": "Open Positions",
+      "uk": "",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 21
+    },
+    {
+      "key": "component.metric-cards.desc-currently-active",
+      "en": "Currently active",
+      "uk": "",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 24
+    },
+    {
+      "key": "component.metric-cards.title-total-volume",
+      "en": "Total Volume",
+      "uk": "",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 29
+    },
+    {
+      "key": "component.metric-cards.desc-aggregate-value",
+      "en": "Aggregate value",
+      "uk": "",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 32
+    },
+    {
+      "key": "component.mint-nftdialog.token-id",
+      "en": "Token ID:",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 93
+    },
+    {
+      "key": "component.mint-nftdialog.view-on-explorer",
+      "en": "View on Explorer",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 100
+    },
+    {
+      "key": "component.mint-nftdialog.nft-",
+      "en": "NFT #",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 130
+    },
+    {
+      "key": "component.mint-nftdialog.minting",
+      "en": "Minting...",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 156
+    },
+    {
+      "key": "component.mint-nftdialog.mint-nft",
+      "en": "Mint NFT",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 172
+    },
+    {
+      "key": "component.mint-nftdialog.mint-option-nft",
+      "en": "Mint Option NFT",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 177
+    },
+    {
+      "key": "component.mint-nftdialog.mint-this-option-as-an-erc-721-nft-on-polygon-amoy",
+      "en": "Mint this option as an ERC-721 NFT on Polygon Amoy testnet",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 179
+    },
+    {
+      "key": "component.mint-nftdialog.recipient-address",
+      "en": "Recipient Address",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 189
+    },
+    {
+      "key": "component.mint-nftdialog.the-ethereum-address-that-will-receive-the-nft",
+      "en": "The Ethereum address that will receive the NFT",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 198
+    },
+    {
+      "key": "component.mint-nftdialog.title-nft-minted-successfully",
+      "en": "NFT Minted Successfully!",
+      "uk": "",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 90
+    },
+    {
+      "key": "component.mock-mode-banner.demo-mock-mode",
+      "en": "DEMO / MOCK MODE:",
+      "uk": "",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 11
+    },
+    {
+      "key": "component.mock-mode-banner.for-real-on-chain-tests-fund-your-wallet-with-pol-",
+      "en": "For real on-chain tests: fund your wallet with POL on Polygon Amoy faucet and set",
+      "uk": "",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 15
+    },
+    {
+      "key": "component.mock-mode-banner.vitemockonchainfalse",
+      "en": "VITE_MOCK_ONCHAIN=false",
+      "uk": "",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 15
+    },
+    {
+      "key": "component.mock-mode-banner.viteenableminttrue",
+      "en": "VITE_ENABLE_MINT=true",
+      "uk": "",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 15
+    },
+    {
+      "key": "component.notifications-dropdown.loading-notifications",
+      "en": "Loading notifications...",
+      "uk": "",
+      "file": "client/src/components/NotificationsDropdown.tsx",
+      "line": 115
+    },
+    {
+      "key": "component.notifications-dropdown.no-notifications-yet",
+      "en": "No notifications yet",
+      "uk": "",
+      "file": "client/src/components/NotificationsDropdown.tsx",
+      "line": 119
+    },
+    {
+      "key": "component.options-table.options-book",
+      "en": "Options Book",
+      "uk": "",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 152
+    },
+    {
+      "key": "component.options-table.all-types",
+      "en": "All Types",
+      "uk": "",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 180
+    },
+    {
+      "key": "component.options-table.all-status",
+      "en": "All Status",
+      "uk": "",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 190
+    },
+    {
+      "key": "component.options-table.no-options-found",
+      "en": "No Options Found",
+      "uk": "",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 209
+    },
+    {
+      "key": "component.options-table.placeholder-filter-type",
+      "en": "Filter Type",
+      "uk": "",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 177
+    },
+    {
+      "key": "component.options-table.placeholder-filter-status",
+      "en": "Filter Status",
+      "uk": "",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 187
+    },
+    {
+      "key": "component.price-history-dialog.price-history-",
+      "en": "Price History —",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 85
+    },
+    {
+      "key": "component.price-history-dialog.no-data-to-display",
+      "en": "No data to display",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 184
+    },
+    {
+      "key": "component.price-history-dialog.data-points",
+      "en": "Data Points",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 194
+    },
+    {
+      "key": "component.price-history-dialog.this-year",
+      "en": "This Year",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 210
+    },
+    {
+      "key": "component.price-history-dialog.",
+      "en": "•",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 212
+    },
+    {
+      "key": "component.price-history-dialog.last-year-comparison",
+      "en": "Last Year (Comparison)",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 215
+    },
+    {
+      "key": "component.price-history-dialog.30-days",
+      "en": "30 days",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 41
+    },
+    {
+      "key": "component.price-history-dialog.90-days",
+      "en": "90 days",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 42
+    },
+    {
+      "key": "component.price-history-dialog.1-year",
+      "en": "1 year",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 43
+    },
+    {
+      "key": "component.price-history-dialog.all-time",
+      "en": "All time",
+      "uk": "",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 44
+    },
+    {
+      "key": "component.role-selection-modal.welcome-to-cropto",
+      "en": "Welcome to Cropto!",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 97
+    },
+    {
+      "key": "component.role-selection-modal.lets-set-up-your-account-what-best-describes-your-",
+      "en": "Let's set up your account. What best describes your role?",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 99
+    },
+    {
+      "key": "component.role-selection-modal.desc-i-grow-and-sell-grain-commodities",
+      "en": "I grow and sell grain commodities",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 26
+    },
+    {
+      "key": "component.role-selection-modal.desc-i-trade-commodity-options-and-futures",
+      "en": "I trade commodity options and futures",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 33
+    },
+    {
+      "key": "component.role-selection-modal.desc-i-facilitate-trades-and-manage-the-platform",
+      "en": "I facilitate trades and manage the platform",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 40
+    },
+    {
+      "key": "component.role-selection-modal.title-please-select-a-role",
+      "en": "Please select a role",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 53
+    },
+    {
+      "key": "component.role-selection-modal.desc-choose-the-role-that-best-describes-you",
+      "en": "Choose the role that best describes you",
+      "uk": "",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 54
+    },
+    {
+      "key": "component.simulate-margin-call-dialog.simulate-margin-call",
+      "en": "Simulate Margin Call",
+      "uk": "",
+      "file": "client/src/components/SimulateMarginCallDialog.tsx",
+      "line": 77
+    },
+    {
+      "key": "component.simulate-margin-call-dialog.enter-an-index-price-to-trigger-a-margin-check-for",
+      "en": "Enter an index price to trigger a margin check for this option",
+      "uk": "",
+      "file": "client/src/components/SimulateMarginCallDialog.tsx",
+      "line": 79
+    },
+    {
+      "key": "component.simulate-margin-call-dialog.placeholder-enter-index-price",
+      "en": "Enter index price",
+      "uk": "",
+      "file": "client/src/components/SimulateMarginCallDialog.tsx",
+      "line": 95
+    },
+    {
+      "key": "component.status-badge.margin-call",
+      "en": "Margin Call",
+      "uk": "",
+      "file": "client/src/components/StatusBadge.tsx",
+      "line": 56
+    },
+    {
+      "key": "component.theme-toggle.toggle-theme",
+      "en": "Toggle theme",
+      "uk": "",
+      "file": "client/src/components/ThemeToggle.tsx",
+      "line": 29
+    },
+    {
+      "key": "component.top-up-margin-call-dialog.top-up-margin-call",
+      "en": "Top-up Margin Call",
+      "uk": "",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 86
+    },
+    {
+      "key": "component.top-up-margin-call-dialog.add-funds-to-meet-the-margin-call-requirement",
+      "en": "Add funds to meet the margin call requirement",
+      "uk": "",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 88
+    },
+    {
+      "key": "component.top-up-margin-call-dialog.placeholder-enter-amount-to-top-up",
+      "en": "Enter amount to top-up",
+      "uk": "",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 104
+    },
+    {
+      "key": "component.top-up-margin-call-dialog.placeholder-select-currency",
+      "en": "Select currency",
+      "uk": "",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 126
+    },
+    {
+      "key": "component.wallet-auth-modal.connect-wallet-to-continue",
+      "en": "Connect Wallet to Continue",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 133
+    },
+    {
+      "key": "component.wallet-auth-modal.signature-based-authentication",
+      "en": "Signature-based authentication",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 170
+    },
+    {
+      "key": "component.wallet-auth-modal.youll-be-asked-to-sign-a-message-to-prove-wallet-o",
+      "en": "You'll be asked to sign a message to prove wallet ownership. This is free and does not send a transaction.",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 171
+    },
+    {
+      "key": "component.wallet-auth-modal.wallet-address",
+      "en": "Wallet Address",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 178
+    },
+    {
+      "key": "component.wallet-auth-modal.manual-address-input-is-not-supported-for-authenti",
+      "en": "Manual address input is not supported for authentication. Please install MetaMask to continue.",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 192
+    },
+    {
+      "key": "component.wallet-auth-modal.title-metamask-not-found",
+      "en": "MetaMask Not Found",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 35
+    },
+    {
+      "key": "component.wallet-auth-modal.desc-please-install-metamask-or-use-manual-address-inpu",
+      "en": "Please install MetaMask or use manual address input",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 36
+    },
+    {
+      "key": "component.wallet-auth-modal.title-wallet-connected",
+      "en": "Wallet Connected",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 86
+    },
+    {
+      "key": "component.wallet-auth-modal.title-connection-rejected",
+      "en": "Connection Rejected",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 97
+    },
+    {
+      "key": "component.wallet-auth-modal.desc-you-rejected-the-connection-request",
+      "en": "You rejected the connection request",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 98
+    },
+    {
+      "key": "component.wallet-auth-modal.title-connection-failed",
+      "en": "Connection Failed",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 102
+    },
+    {
+      "key": "component.wallet-auth-modal.desc-please-enter-a-wallet-address",
+      "en": "Please enter a wallet address",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 116
+    },
+    {
+      "key": "component.wallet-auth-modal.title-manual-mode-not-supported",
+      "en": "Manual Mode Not Supported",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 123
+    },
+    {
+      "key": "component.wallet-auth-modal.desc-please-use-metamask-to-sign-a-message-for-authenti",
+      "en": "Please use MetaMask to sign a message for authentication",
+      "uk": "",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 124
+    },
+    {
+      "key": "component.withdraw-dialog.withdraw-on-chain",
+      "en": "Withdraw On-Chain",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 122
+    },
+    {
+      "key": "component.withdraw-dialog.amount-cropt",
+      "en": "Amount (CROPT)",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 144
+    },
+    {
+      "key": "component.withdraw-dialog.transaction-hash",
+      "en": "Transaction Hash",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 181
+    },
+    {
+      "key": "component.withdraw-dialog.title-wallet-not-connected",
+      "en": "Wallet Not Connected",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 46
+    },
+    {
+      "key": "component.withdraw-dialog.desc-please-connect-your-wallet-or-link-an-address-firs",
+      "en": "Please connect your wallet or link an address first",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 47
+    },
+    {
+      "key": "component.withdraw-dialog.title-invalid-amount",
+      "en": "Invalid Amount",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 55
+    },
+    {
+      "key": "component.withdraw-dialog.desc-please-enter-a-valid-amount-to-withdraw",
+      "en": "Please enter a valid amount to withdraw",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 56
+    },
+    {
+      "key": "component.withdraw-dialog.title-withdrawal-initiated",
+      "en": "Withdrawal Initiated",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 72
+    },
+    {
+      "key": "component.withdraw-dialog.desc-transaction-submitted-to-blockchain",
+      "en": "Transaction submitted to blockchain",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 73
+    },
+    {
+      "key": "component.withdraw-dialog.title-withdrawal-failed",
+      "en": "Withdrawal Failed",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 79
+    },
+    {
+      "key": "component.withdraw-dialog.desc-transaction-hash-copied-to-clipboard",
+      "en": "Transaction hash copied to clipboard",
+      "uk": "",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 97
+    },
+    {
+      "key": "page.admin.admin-panel",
+      "en": "Admin Panel",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 52
+    },
+    {
+      "key": "page.admin.manage-demo-scenarios-and-system-operations",
+      "en": "Manage demo scenarios and system operations",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 54
+    },
+    {
+      "key": "page.admin.demo-scenario",
+      "en": "Demo Scenario",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 64
+    },
+    {
+      "key": "page.admin.run-a-one-click-demo-to-seed-the-platform-with-sam",
+      "en": "Run a one-click demo to seed the platform with sample data for partner presentations",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 67
+    },
+    {
+      "key": "page.admin.this-will-create",
+      "en": "This will create:",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 72
+    },
+    {
+      "key": "page.admin.3-demo-users-farmerdemo-traderdemo-brokerdemo-pass",
+      "en": "3 demo users: farmer@demo, trader@demo, broker@demo (password: pass)",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 76
+    },
+    {
+      "key": "page.admin.3-options-contracts-with-various-strikes-quantitie",
+      "en": "3 options contracts with various strikes, quantities, and statuses",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 80
+    },
+    {
+      "key": "page.admin.2-index-price-entries-wheat-210-wheat-240",
+      "en": "2 index price entries (WHEAT @ 210, WHEAT @ 240)",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 84
+    },
+    {
+      "key": "page.admin.-demo-seeded-successfully",
+      "en": "✅ Demo seeded successfully!",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 112
+    },
+    {
+      "key": "page.admin.-users",
+      "en": "• Users:",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.admin.",
+      "en": "(",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.admin.new",
+      "en": "new,",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.admin.existing",
+      "en": "existing)",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.admin.-options",
+      "en": "• Options:",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 116
+    },
+    {
+      "key": "page.admin.-index-prices",
+      "en": "• Index Prices:",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 117
+    },
+    {
+      "key": "page.admin.login-credentials",
+      "en": "Login credentials:",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 122
+    },
+    {
+      "key": "page.admin.-pass-",
+      "en": "/ pass (",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 125
+    },
+    {
+      "key": "page.admin.",
+      "en": ")",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 125
+    },
+    {
+      "key": "page.admin.this-feature-is-broker-only-the-demo-scenario-is-i",
+      "en": "This feature is broker-only. The demo scenario is idempotent and can be run multiple times. \n                Existing users will be preserved, and new options/index prices will be added to the database.",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 141
+    },
+    {
+      "key": "page.admin.title-demo-scenario-created-",
+      "en": "Demo scenario created! ✨",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 29
+    },
+    {
+      "key": "page.admin.title-failed-to-run-demo",
+      "en": "Failed to run demo",
+      "uk": "",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 36
+    },
+    {
+      "key": "page.admin-feedback.partner-feedback",
+      "en": "Partner Feedback",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 97
+    },
+    {
+      "key": "page.admin-feedback.view-and-manage-feedback-from-partners",
+      "en": "View and manage feedback from partners",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 99
+    },
+    {
+      "key": "page.admin-feedback.export-csv",
+      "en": "Export CSV",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 106
+    },
+    {
+      "key": "page.admin-feedback.open-feedback",
+      "en": "Open Feedback",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 114
+    },
+    {
+      "key": "page.admin-feedback.resolved-feedback",
+      "en": "Resolved Feedback",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 124
+    },
+    {
+      "key": "page.admin-feedback.loading-feedback",
+      "en": "Loading feedback...",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 136
+    },
+    {
+      "key": "page.admin-feedback.no-feedback-submitted-yet",
+      "en": "No feedback submitted yet",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 142
+    },
+    {
+      "key": "page.admin-feedback.title-feedback-resolved",
+      "en": "Feedback resolved",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 37
+    },
+    {
+      "key": "page.admin-feedback.desc-the-feedback-has-been-marked-as-resolved",
+      "en": "The feedback has been marked as resolved",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 38
+    },
+    {
+      "key": "page.admin-feedback.title-export-successful",
+      "en": "Export successful",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 74
+    },
+    {
+      "key": "page.admin-feedback.desc-feedback-data-has-been-exported-to-csv",
+      "en": "Feedback data has been exported to CSV",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 75
+    },
+    {
+      "key": "page.admin-feedback.title-export-failed",
+      "en": "Export failed",
+      "uk": "",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 79
+    },
+    {
+      "key": "page.admin-index.index-management",
+      "en": "Index Management",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 162
+    },
+    {
+      "key": "page.admin-index.manage-index-prices-and-view-telegram-updates",
+      "en": "Manage index prices and view Telegram updates",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 165
+    },
+    {
+      "key": "page.admin-index.add-index-price",
+      "en": "Add Index Price",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 175
+    },
+    {
+      "key": "page.admin-index.telegram-bot-integration",
+      "en": "Telegram Bot Integration",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 185
+    },
+    {
+      "key": "page.admin-index.configure-your-telegram-bot-to-post-index-updates",
+      "en": "Configure your Telegram bot to post index updates",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 188
+    },
+    {
+      "key": "page.admin-index.webhook-url",
+      "en": "Webhook URL",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 193
+    },
+    {
+      "key": "page.admin-index.secret-token-header",
+      "en": "Secret Token Header",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 199
+    },
+    {
+      "key": "page.admin-index.x-telegram-bot-api-secret-token-yoursecrettoken",
+      "en": "X-Telegram-Bot-Api-Secret-Token: YOUR_SECRET_TOKEN",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 201
+    },
+    {
+      "key": "page.admin-index.in-replit-secrets",
+      "en": "in Replit Secrets",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 204
+    },
+    {
+      "key": "page.admin-index.message-formats",
+      "en": "Message Formats",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 208
+    },
+    {
+      "key": "page.admin-index.simple-format",
+      "en": "Simple Format:",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 211
+    },
+    {
+      "key": "page.admin-index.commodity-price",
+      "en": "COMMODITY PRICE",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 213
+    },
+    {
+      "key": "page.admin-index.example",
+      "en": "Example:",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 216
+    },
+    {
+      "key": "page.admin-index.wheat-24050",
+      "en": "WHEAT 240.50",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 216
+    },
+    {
+      "key": "page.admin-index.spike-brokers-format",
+      "en": "Spike Brokers Format:",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 220
+    },
+    {
+      "key": "page.admin-index.-115pro-221-0",
+      "en": "• Пшениця 11.5pro – 221$ (0$)",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 222
+    },
+    {
+      "key": "page.admin-index.auto-parses-ukrainian-wheat-prices-from-spikebroke",
+      "en": "Auto-parses Ukrainian wheat prices from @spike_brokers channel",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 225
+    },
+    {
+      "key": "page.admin-index.setup-options",
+      "en": "Setup Options",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 232
+    },
+    {
+      "key": "page.admin-index.option-1-webhook-for-bots",
+      "en": "Option 1: Webhook (for bots)",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 235
+    },
+    {
+      "key": "page.admin-index.configure-bot-webhook-to-post-to-url-above",
+      "en": "Configure bot webhook to POST to URL above",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 238
+    },
+    {
+      "key": "page.admin-index.include-secret-in",
+      "en": "Include secret in",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 239
+    },
+    {
+      "key": "page.admin-index.option-2-polling-automatic",
+      "en": "Option 2: Polling (automatic)",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 243
+    },
+    {
+      "key": "page.admin-index.system-polls-spikebrokers-every-2-minutes-automati",
+      "en": "System polls @spike_brokers every 2 minutes automatically",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 246
+    },
+    {
+      "key": "page.admin-index.no-webhook-configuration-needed",
+      "en": "No webhook configuration needed",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 247
+    },
+    {
+      "key": "page.admin-index.filter-by-commodity",
+      "en": "Filter by Commodity",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 258
+    },
+    {
+      "key": "page.admin-index.index-price-history",
+      "en": "Index Price History",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 272
+    },
+    {
+      "key": "page.admin-index.index-prices",
+      "en": "index prices",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 274
+    },
+    {
+      "key": "page.admin-index.no-index-prices-yet",
+      "en": "No index prices yet",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 281
+    },
+    {
+      "key": "page.admin-index.add-a-price-manually-or-configure-the-telegram-bot",
+      "en": "Add a price manually or configure the Telegram bot",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 282
+    },
+    {
+      "key": "page.admin-index.manually-add-or-override-an-index-price",
+      "en": "Manually add or override an index price",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 331
+    },
+    {
+      "key": "page.admin-index.date-time",
+      "en": "Date & Time",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 360
+    },
+    {
+      "key": "page.admin-index.placeholder-eg-wheat-btc",
+      "en": "e.g. WHEAT, BTC",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 261
+    },
+    {
+      "key": "page.admin-index.placeholder-eg-24050",
+      "en": "e.g. 240.50",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 352
+    },
+    {
+      "key": "page.admin-index.desc-index-price-added-successfully",
+      "en": "Index price added successfully",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 98
+    },
+    {
+      "key": "page.admin-index.title-validation-error",
+      "en": "Validation Error",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.admin-index.desc-commodity-and-price-are-required",
+      "en": "Commodity and price are required",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 116
+    },
+    {
+      "key": "page.admin-index.desc-price-must-be-a-positive-number",
+      "en": "Price must be a positive number",
+      "uk": "",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 126
+    },
+    {
+      "key": "page.admin-reconciliation.reconciliation-dashboard",
+      "en": "Reconciliation Dashboard",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 249
+    },
+    {
+      "key": "page.admin-reconciliation.view-transactions-settlements-and-margin-calls-wit",
+      "en": "View transactions, settlements, and margin calls with filtering and export",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 251
+    },
+    {
+      "key": "page.admin-reconciliation.filter-records-by-date-range-and-status",
+      "en": "Filter records by date range and status",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 264
+    },
+    {
+      "key": "page.admin-reconciliation.from-date",
+      "en": "From Date",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 269
+    },
+    {
+      "key": "page.admin-reconciliation.to-date",
+      "en": "To Date",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 279
+    },
+    {
+      "key": "page.admin-reconciliation.margin-call-status",
+      "en": "Margin Call Status",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 289
+    },
+    {
+      "key": "page.admin-reconciliation.all-statuses",
+      "en": "All Statuses",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 295
+    },
+    {
+      "key": "page.admin-reconciliation.transactions-",
+      "en": "Transactions (",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 311
+    },
+    {
+      "key": "page.admin-reconciliation.settlements-",
+      "en": "Settlements (",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 315
+    },
+    {
+      "key": "page.admin-reconciliation.margin-calls-",
+      "en": "Margin Calls (",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 319
+    },
+    {
+      "key": "page.admin-reconciliation.all-transaction-records",
+      "en": "All transaction records",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 329
+    },
+    {
+      "key": "page.admin-reconciliation.loading-transactions",
+      "en": "Loading transactions...",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 343
+    },
+    {
+      "key": "page.admin-reconciliation.failed-to-load-transactions-please-try-again",
+      "en": "Failed to load transactions. Please try again.",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 347
+    },
+    {
+      "key": "page.admin-reconciliation.no-transactions-found",
+      "en": "No transactions found",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 350
+    },
+    {
+      "key": "page.admin-reconciliation.all-settlement-records",
+      "en": "All settlement records",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 397
+    },
+    {
+      "key": "page.admin-reconciliation.loading-settlements",
+      "en": "Loading settlements...",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 411
+    },
+    {
+      "key": "page.admin-reconciliation.failed-to-load-settlements-please-try-again",
+      "en": "Failed to load settlements. Please try again.",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 415
+    },
+    {
+      "key": "page.admin-reconciliation.no-settlements-found",
+      "en": "No settlements found",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 418
+    },
+    {
+      "key": "page.admin-reconciliation.exercised-by",
+      "en": "Exercised By",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 424
+    },
+    {
+      "key": "page.admin-reconciliation.spot-price",
+      "en": "Spot Price",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 425
+    },
+    {
+      "key": "page.admin-reconciliation.pl",
+      "en": "P&L",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 429
+    },
+    {
+      "key": "page.admin-reconciliation.margin-calls",
+      "en": "Margin Calls",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 462
+    },
+    {
+      "key": "page.admin-reconciliation.all-margin-call-records",
+      "en": "All margin call records",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 463
+    },
+    {
+      "key": "page.admin-reconciliation.loading-margin-calls",
+      "en": "Loading margin calls...",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 477
+    },
+    {
+      "key": "page.admin-reconciliation.failed-to-load-margin-calls-please-try-again",
+      "en": "Failed to load margin calls. Please try again.",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 481
+    },
+    {
+      "key": "page.admin-reconciliation.no-margin-calls-found",
+      "en": "No margin calls found",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 484
+    },
+    {
+      "key": "page.admin-reconciliation.amount-required",
+      "en": "Amount Required",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 491
+    },
+    {
+      "key": "page.admin-reconciliation.intrinsic-value",
+      "en": "Intrinsic Value",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 492
+    },
+    {
+      "key": "page.admin-reconciliation.placeholder-all-statuses",
+      "en": "All statuses",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 292
+    },
+    {
+      "key": "page.admin-reconciliation.title-access-denied",
+      "en": "Access Denied",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 80
+    },
+    {
+      "key": "page.admin-reconciliation.desc-this-page-is-only-accessible-to-broker-accounts",
+      "en": "This page is only accessible to broker accounts",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 81
+    },
+    {
+      "key": "page.admin-reconciliation.title-no-data-to-export",
+      "en": "No data to export",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 168
+    },
+    {
+      "key": "page.admin-reconciliation.desc-there-are-no-records-matching-your-filters",
+      "en": "There are no records matching your filters",
+      "uk": "",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 169
+    },
+    {
+      "key": "page.dashboard.options-marketplace",
+      "en": "Options Marketplace",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 288
+    },
+    {
+      "key": "page.dashboard.browse-create-and-trade-grain-commodity-options",
+      "en": "Browse, create, and trade grain commodity options",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 290
+    },
+    {
+      "key": "page.dashboard.desc-option-created-successfully",
+      "en": "Option created successfully",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 66
+    },
+    {
+      "key": "page.dashboard.title-match-successful",
+      "en": "Match Successful",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 86
+    },
+    {
+      "key": "page.dashboard.desc-option-has-been-successfully-matched",
+      "en": "Option has been successfully matched",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 87
+    },
+    {
+      "key": "page.dashboard.title-match-failed",
+      "en": "Match Failed",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 92
+    },
+    {
+      "key": "page.dashboard.title-exercise-successful",
+      "en": "Exercise Successful",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 109
+    },
+    {
+      "key": "page.dashboard.desc-option-has-been-exercised-and-settled",
+      "en": "Option has been exercised and settled",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 110
+    },
+    {
+      "key": "page.dashboard.title-exercise-failed",
+      "en": "Exercise Failed",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.dashboard.title-margin-check-complete",
+      "en": "Margin Check Complete",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 135
+    },
+    {
+      "key": "page.dashboard.title-margin-check-failed",
+      "en": "Margin Check Failed",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 141
+    },
+    {
+      "key": "page.dashboard.title-force-settlement-complete",
+      "en": "Force Settlement Complete",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 160
+    },
+    {
+      "key": "page.dashboard.title-force-settlement-failed",
+      "en": "Force Settlement Failed",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 166
+    },
+    {
+      "key": "page.dashboard.title-top-up-failed",
+      "en": "Top-up Failed",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 193
+    },
+    {
+      "key": "page.dashboard.title-welcome-back",
+      "en": "Welcome back!",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 241
+    },
+    {
+      "key": "page.dashboard.desc-youve-been-successfully-authenticated",
+      "en": "You've been successfully authenticated",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 242
+    },
+    {
+      "key": "page.dashboard.title-account-setup-complete",
+      "en": "Account Setup Complete",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 249
+    },
+    {
+      "key": "page.dashboard.desc-youre-all-set-start-exploring-grain-options",
+      "en": "You're all set! Start exploring grain options.",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 250
+    },
+    {
+      "key": "page.dashboard.desc-no-pending-margin-call-found-for-this-option",
+      "en": "No pending margin call found for this option",
+      "uk": "",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 319
+    },
+    {
+      "key": "page.design-architecture.design-architecture",
+      "en": "Design & Architecture",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 29
+    },
+    {
+      "key": "page.design-architecture.design-architecture-gallery",
+      "en": "Design & Architecture Gallery",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 42
+    },
+    {
+      "key": "page.design-architecture.cropto-platform-uiux-mockups-showcasing-the-commod",
+      "en": "Cropto platform UI/UX mockups showcasing the commodity options trading interface, \n              dark/light modes, and responsive design patterns.",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 44
+    },
+    {
+      "key": "page.design-architecture.brand-assets",
+      "en": "Brand Assets",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 48
+    },
+    {
+      "key": "page.design-architecture.cropto-logo",
+      "en": "Cropto Logo",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 52
+    },
+    {
+      "key": "page.design-architecture.main-brand-logo-with-wheat-grain-icon",
+      "en": "Main brand logo with wheat grain icon",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 53
+    },
+    {
+      "key": "page.design-architecture.cover-pattern",
+      "en": "Cover Pattern",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 61
+    },
+    {
+      "key": "page.design-architecture.wheat-field-and-sailboat-pattern-for-backgrounds",
+      "en": "Wheat field and sailboat pattern for backgrounds",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 62
+    },
+    {
+      "key": "page.design-architecture.color-palette",
+      "en": "Color Palette",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 70
+    },
+    {
+      "key": "page.design-architecture.white-light-bg",
+      "en": "White (Light BG)",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 75
+    },
+    {
+      "key": "page.design-architecture.black-dark-bg",
+      "en": "Black (Dark BG)",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 80
+    },
+    {
+      "key": "page.design-architecture.olive-accent",
+      "en": "Olive (Accent)",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 85
+    },
+    {
+      "key": "page.design-architecture.text-primary",
+      "en": "Text (Primary)",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 90
+    },
+    {
+      "key": "page.design-architecture.ui-mockups",
+      "en": "UI Mockups",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 94
+    },
+    {
+      "key": "page.design-architecture.explore-the-complete-set-of-ui-mockups-showing-var",
+      "en": "Explore the complete set of UI mockups showing various features including dashboard, \n                options creation, contract management, and transaction tracking.",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 96
+    },
+    {
+      "key": "page.design-architecture.additional-resources",
+      "en": "Additional Resources",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 124
+    },
+    {
+      "key": "page.design-architecture.documentation-and-design-specifications",
+      "en": "Documentation and design specifications",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 125
+    },
+    {
+      "key": "page.design-architecture.for-complete-design-documentation-including-compon",
+      "en": "For complete design documentation including component specifications, spacing systems, \n                  and implementation guidelines, refer to the",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 129
+    },
+    {
+      "key": "page.design-architecture.file-in-the-repository",
+      "en": "file in the repository.",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 130
+    },
+    {
+      "key": "page.design-architecture.docsdesign-architecturemd",
+      "en": "docs/design-architecture.md",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 130
+    },
+    {
+      "key": "page.design-architecture.additional-design-assets-and-figma-files-can-be-fo",
+      "en": "Additional design assets and Figma files can be found in the project's design documentation.",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 133
+    },
+    {
+      "key": "page.design-architecture.cropto-cover",
+      "en": "Cropto Cover",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 65
+    },
+    {
+      "key": "page.design-architecture.desc-main-dashboard-showing-total-options-open-position",
+      "en": "Main dashboard showing total options, open positions, and total volume stats with options book table",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 5
+    },
+    {
+      "key": "page.design-architecture.desc-detailed-options-listing-with-type-badges-premiums",
+      "en": "Detailed options listing with type badges, premiums, expiry dates, and status indicators",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 6
+    },
+    {
+      "key": "page.design-architecture.desc-form-for-creating-new-options-contracts-with-commo",
+      "en": "Form for creating new options contracts with commodity selection and collateral upload",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 7
+    },
+    {
+      "key": "page.design-architecture.desc-buyer-seller-matching-interface-with-transaction-c",
+      "en": "Buyer-seller matching interface with transaction confirmation",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 8
+    },
+    {
+      "key": "page.design-architecture.desc-option-exercise-workflow-showing-spot-price-input-",
+      "en": "Option exercise workflow showing spot price input and P&L calculations",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 9
+    },
+    {
+      "key": "page.design-architecture.desc-mobile-first-design-showing-dashboard-options-list",
+      "en": "Mobile-first design showing dashboard, options list, and navigation patterns",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 10
+    },
+    {
+      "key": "page.design-architecture.desc-wallet-integration-dialog-with-address-input-and-v",
+      "en": "Wallet integration dialog with address input and validation",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 11
+    },
+    {
+      "key": "page.design-architecture.desc-product-documentation-with-feature-guides-and-part",
+      "en": "Product documentation with feature guides and partner information",
+      "uk": "",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 12
+    },
+    {
+      "key": "page.docs.learn-how-to-use-cropto-for-grain-market-options-t",
+      "en": "Learn how to use Cropto for grain market options trading",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 16
+    },
+    {
+      "key": "page.docs.what-is-cropto",
+      "en": "What is Cropto?",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 27
+    },
+    {
+      "key": "page.docs.cropto-is-a-next-generation-platform-for-trading-a",
+      "en": "Cropto is a next-generation platform for trading agricultural commodity options backed by NFTs. \n              We bring transparency, accessibility, and innovation to grain markets through blockchain technology.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 32
+    },
+    {
+      "key": "page.docs.our-platform-enables-farmers-traders-and-brokers-t",
+      "en": "Our platform enables farmers, traders, and brokers to create, trade, and settle commodity options \n              with unprecedented ease and security. Every option is represented as an NFT, ensuring immutable \n              proof of ownership and trade history.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 36
+    },
+    {
+      "key": "page.docs.how-it-works",
+      "en": "How It Works",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 48
+    },
+    {
+      "key": "page.docs.1-create-options",
+      "en": "1. Create Options",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 54
+    },
+    {
+      "key": "page.docs.define-your-option-parameters-commodity-type-strik",
+      "en": "Define your option parameters: commodity type, strike price, quantity, and premium. \n                  Options can be CALL (right to buy) or PUT (right to sell).",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 56
+    },
+    {
+      "key": "page.docs.2-match-with-counterparties",
+      "en": "2. Match with Counterparties",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 62
+    },
+    {
+      "key": "page.docs.browse-the-marketplace-to-find-suitable-options-wh",
+      "en": "Browse the marketplace to find suitable options. When you find a match, the platform \n                  automatically pairs buyers with sellers and records the trade.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 64
+    },
+    {
+      "key": "page.docs.3-exercise-settle",
+      "en": "3. Exercise & Settle",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 70
+    },
+    {
+      "key": "page.docs.when-conditions-are-favorable-exercise-your-option",
+      "en": "When conditions are favorable, exercise your option by inputting the current spot price. \n                  The platform calculates your payout and profit/loss automatically.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 72
+    },
+    {
+      "key": "page.docs.partner-instructions",
+      "en": "Partner Instructions",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 85
+    },
+    {
+      "key": "page.docs.guidelines-for-institutional-partners-and-service-",
+      "en": "Guidelines for institutional partners and service providers",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 88
+    },
+    {
+      "key": "page.docs.prime-brokers",
+      "en": "Prime Brokers",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 93
+    },
+    {
+      "key": "page.docs.integrate-with-our-api-to-provide-liquidity-and-fa",
+      "en": "Integrate with our API to provide liquidity and facilitate trades for your clients. \n                Access institutional-grade analytics and reporting tools.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 95
+    },
+    {
+      "key": "page.docs.custody-providers",
+      "en": "Custody Providers",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 101
+    },
+    {
+      "key": "page.docs.secure-storage-of-nft-backed-options-with-multi-si",
+      "en": "Secure storage of NFT-backed options with multi-signature support. \n                Integration documentation available in the API reference.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 103
+    },
+    {
+      "key": "page.docs.liquidity-providers",
+      "en": "Liquidity Providers",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 109
+    },
+    {
+      "key": "page.docs.market-making-opportunities-with-competitive-fee-s",
+      "en": "Market-making opportunities with competitive fee structures. \n                Contact our partnerships team to discuss integration.",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 111
+    },
+    {
+      "key": "page.docs.view-partner-agreements",
+      "en": "View Partner Agreements",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 119
+    },
+    {
+      "key": "page.docs.security-compliance",
+      "en": "Security & Compliance",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 131
+    },
+    {
+      "key": "page.docs.cropto-employs-industry-leading-security-practices",
+      "en": "Cropto employs industry-leading security practices to protect your assets and data:",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 136
+    },
+    {
+      "key": "page.docs.end-to-end-encryption-for-all-transactions",
+      "en": "End-to-end encryption for all transactions",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 139
+    },
+    {
+      "key": "page.docs.multi-signature-wallet-support",
+      "en": "Multi-signature wallet support",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 140
+    },
+    {
+      "key": "page.docs.regular-security-audits-by-chainguard-security",
+      "en": "Regular security audits by ChainGuard Security",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 141
+    },
+    {
+      "key": "page.docs.compliance-with-international-commodity-trading-re",
+      "en": "Compliance with international commodity trading regulations",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 142
+    },
+    {
+      "key": "page.docs.transparent-on-chain-settlement-records",
+      "en": "Transparent on-chain settlement records",
+      "uk": "",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 143
+    },
+    {
+      "key": "page.faq.frequently-asked-questions",
+      "en": "Frequently Asked Questions",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 16
+    },
+    {
+      "key": "page.faq.common-questions-about-the-cropto-platform-and-cry",
+      "en": "Common questions about the Cropto platform and crypto options trading",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 18
+    },
+    {
+      "key": "page.faq.cropto-is-a-cryptocurrency-options-trading-platfor",
+      "en": "Cropto is a cryptocurrency options trading platform that enables users to create, \n                  trade, and manage crypto options contracts (calls and puts). It uses an off-chain \n                  order book system with a matching engine to facilitate efficient trading.",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 26
+    },
+    {
+      "key": "page.faq.how-do-i-create-an-option",
+      "en": "How do I create an option?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 33
+    },
+    {
+      "key": "page.faq.to-create-an-option",
+      "en": "To create an option:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 35
+    },
+    {
+      "key": "page.faq.log-in-to-your-account",
+      "en": "Log in to your account",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 37
+    },
+    {
+      "key": "page.faq.click-the-create-option-button-in-the-header",
+      "en": "Click the \"Create Option\" button in the header",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 38
+    },
+    {
+      "key": "page.faq.fill-in-the-option-details-title-strike-price-quan",
+      "en": "Fill in the option details (title, strike price, quantity, premium, buyer address)",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 39
+    },
+    {
+      "key": "page.faq.submit-the-form---your-option-will-be-created-with",
+      "en": "Submit the form - your option will be created with OPEN status",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 40
+    },
+    {
+      "key": "page.faq.what-is-the-matching-process",
+      "en": "What is the matching process?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 46
+    },
+    {
+      "key": "page.faq.the-matching-engine-connects-buyers-and-sellers-fo",
+      "en": "The matching engine connects buyers and sellers for options contracts. When an option \n                  is in OPEN status, a broker can match it by providing a seller's Ethereum address. \n                  Once matched, the option status changes to FILLED and becomes exercisable.",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 48
+    },
+    {
+      "key": "page.faq.how-does-nft-minting-work",
+      "en": "How does NFT minting work?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 55
+    },
+    {
+      "key": "page.faq.after-an-option-is-filled-or-exercised-the-option-",
+      "en": "After an option is FILLED or EXERCISED, the option owner (issuer or buyer) can mint \n                  it as an ERC-721 NFT on the Polygon Amoy testnet. The NFT includes metadata about the \n                  option and can be viewed on PolygonScan. Each option can only be minted once.",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 57
+    },
+    {
+      "key": "page.faq.what-are-margin-calls",
+      "en": "What are margin calls?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 64
+    },
+    {
+      "key": "page.faq.margin-calls-occur-when-the-collateral-value-of-an",
+      "en": "Margin calls occur when the collateral value of an option position falls below the \n                  required threshold. The system automatically monitors positions and issues margin calls \n                  when needed. Users can top up their collateral to meet the margin requirement or the \n                  position may be force-settled.",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 66
+    },
+    {
+      "key": "page.faq.what-are-the-different-user-roles",
+      "en": "What are the different user roles?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 74
+    },
+    {
+      "key": "page.faq.cropto-has-three-user-roles",
+      "en": "Cropto has three user roles:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 76
+    },
+    {
+      "key": "page.faq.can-create-and-trade-options-exercise-positions",
+      "en": "Can create and trade options, exercise positions",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 78
+    },
+    {
+      "key": "page.faq.farmer",
+      "en": "Farmer:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 78
+    },
+    {
+      "key": "page.faq.can-trade-options-and-participate-in-the-marketpla",
+      "en": "Can trade options and participate in the marketplace",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 79
+    },
+    {
+      "key": "page.faq.trader",
+      "en": "Trader:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 79
+    },
+    {
+      "key": "page.faq.admin-role-with-access-to-matching-reconciliation-",
+      "en": "Admin role with access to matching, reconciliation, and index management",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 80
+    },
+    {
+      "key": "page.faq.broker",
+      "en": "Broker:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 80
+    },
+    {
+      "key": "page.faq.which-blockchain-does-cropto-use",
+      "en": "Which blockchain does Cropto use?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 86
+    },
+    {
+      "key": "page.faq.cropto-uses-the-polygon-amoy-testnet-for-on-chain-",
+      "en": "Cropto uses the Polygon Amoy testnet for on-chain features. This includes:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 88
+    },
+    {
+      "key": "page.faq.cropt-erc-20-token-for-platform-currency",
+      "en": "CROPT ERC-20 token for platform currency",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 90
+    },
+    {
+      "key": "page.faq.croptoptionnft-erc-721-contract-for-tokenizing-opt",
+      "en": "CroptOptionNFT ERC-721 contract for tokenizing options",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 91
+    },
+    {
+      "key": "page.faq.all-transactions-can-be-viewed-on-polygonscan",
+      "en": "All transactions can be viewed on PolygonScan",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 92
+    },
+    {
+      "key": "page.faq.how-do-i-connect-my-wallet",
+      "en": "How do I connect my wallet?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 98
+    },
+    {
+      "key": "page.faq.you-can-connect-your-wallet-in-two-ways",
+      "en": "You can connect your wallet in two ways:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 100
+    },
+    {
+      "key": "page.faq.make-sure-youre-on-the-polygon-amoy-testnet-for-on",
+      "en": "Make sure you're on the Polygon Amoy testnet for on-chain features.",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 105
+    },
+    {
+      "key": "page.faq.click-connect-web3-and-approve-the-connection-in-m",
+      "en": "Click \"Connect Web3\" and approve the connection in MetaMask",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.faq.metamask",
+      "en": "MetaMask:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.faq.enter-your-ethereum-address-directly-in-the-wallet",
+      "en": "Enter your Ethereum address directly in the wallet input field",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 103
+    },
+    {
+      "key": "page.faq.manual",
+      "en": "Manual:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 103
+    },
+    {
+      "key": "page.faq.how-do-i-track-my-portfolio",
+      "en": "How do I track my portfolio?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 110
+    },
+    {
+      "key": "page.faq.the-portfolio-page-shows-your-complete-position-ov",
+      "en": "The Portfolio page shows your complete position overview including:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 112
+    },
+    {
+      "key": "page.faq.total-positions-and-pl-across-all-options",
+      "en": "Total positions and P&L across all options",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 114
+    },
+    {
+      "key": "page.faq.individual-option-performance-metrics",
+      "en": "Individual option performance metrics",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 115
+    },
+    {
+      "key": "page.faq.unrealized-and-realized-gainslosses",
+      "en": "Unrealized and realized gains/losses",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 116
+    },
+    {
+      "key": "page.faq.position-breakdown-by-status",
+      "en": "Position breakdown by status",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 117
+    },
+    {
+      "key": "page.faq.are-there-demo-accounts-available",
+      "en": "Are there demo accounts available?",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 123
+    },
+    {
+      "key": "page.faq.yes-you-can-use-these-demo-accounts-to-explore-the",
+      "en": "Yes! You can use these demo accounts to explore the platform:",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 125
+    },
+    {
+      "key": "page.faq.farmerdemo-password-pass---farmer-role",
+      "en": "farmer@demo (password: pass) - Farmer role",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 127
+    },
+    {
+      "key": "page.faq.traderdemo-password-pass---trader-role",
+      "en": "trader@demo (password: pass) - Trader role",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 128
+    },
+    {
+      "key": "page.faq.brokerdemo-password-pass---broker-role-with-admin-",
+      "en": "broker@demo (password: pass) - Broker role with admin access",
+      "uk": "",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 129
+    },
+    {
+      "key": "page.feedback.thank-you",
+      "en": "Thank You!",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 84
+    },
+    {
+      "key": "page.feedback.your-feedback-has-been-submitted-successfully-we-a",
+      "en": "Your feedback has been submitted successfully. We appreciate you taking the time to help us improve Cropto.",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 86
+    },
+    {
+      "key": "page.feedback.submit-another-feedback",
+      "en": "Submit Another Feedback",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 99
+    },
+    {
+      "key": "page.feedback.help-us-improve-cropto-by-reporting-ui-issues-bugs",
+      "en": "Help us improve Cropto by reporting UI issues, bugs, or suggesting improvements.",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 117
+    },
+    {
+      "key": "page.feedback.screenshot-url-optional",
+      "en": "Screenshot URL (Optional)",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 209
+    },
+    {
+      "key": "page.feedback.placeholder-your-name",
+      "en": "Your name",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 131
+    },
+    {
+      "key": "page.feedback.placeholder-youremailexamplecom",
+      "en": "your.email@example.com",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 150
+    },
+    {
+      "key": "page.feedback.placeholder-select-your-role",
+      "en": "Select your role",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 169
+    },
+    {
+      "key": "page.feedback.placeholder-describe-the-issue-or-suggestion",
+      "en": "Describe the issue or suggestion...",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 193
+    },
+    {
+      "key": "page.feedback.placeholder-https",
+      "en": "https://...",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 212
+    },
+    {
+      "key": "page.feedback.title-feedback-submitted",
+      "en": "Feedback submitted",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 59
+    },
+    {
+      "key": "page.feedback.desc-thank-you-for-your-feedback",
+      "en": "Thank you for your feedback!",
+      "uk": "",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 60
+    },
+    {
+      "key": "page.login.login-to-cropto",
+      "en": "Login to Cropto",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 84
+    },
+    {
+      "key": "page.login.enter-your-credentials-to-access-your-account",
+      "en": "Enter your credentials to access your account",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 86
+    },
+    {
+      "key": "page.login.dont-have-an-account",
+      "en": "Don't have an account?",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 143
+    },
+    {
+      "key": "page.login.placeholder-farmerexamplecom",
+      "en": "farmer@example.com",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.login.placeholder-enter-your-password",
+      "en": "Enter your password",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 121
+    },
+    {
+      "key": "page.login.desc-logged-in-successfully",
+      "en": "Logged in successfully",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 62
+    },
+    {
+      "key": "page.login.title-login-failed",
+      "en": "Login Failed",
+      "uk": "",
+      "file": "client/src/pages/Login.tsx",
+      "line": 69
+    },
+    {
+      "key": "page.onchain-tx.on-chain-transactions",
+      "en": "On-Chain Transactions",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 89
+    },
+    {
+      "key": "page.onchain-tx.monitor-blockchain-settlements-and-transfers",
+      "en": "Monitor blockchain settlements and transfers",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 91
+    },
+    {
+      "key": "page.onchain-tx.transaction-history",
+      "en": "Transaction History",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 99
+    },
+    {
+      "key": "page.onchain-tx.recent-on-chain-transactions-for-settlements-depos",
+      "en": "Recent on-chain transactions for settlements, deposits, and withdrawals",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 101
+    },
+    {
+      "key": "page.onchain-tx.gas-used",
+      "en": "Gas Used",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 116
+    },
+    {
+      "key": "page.onchain-tx.transaction-statistics",
+      "en": "Transaction Statistics",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 185
+    },
+    {
+      "key": "page.onchain-tx.summary-of-on-chain-activity",
+      "en": "Summary of on-chain activity",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 186
+    },
+    {
+      "key": "page.onchain-tx.total-transactions",
+      "en": "Total Transactions",
+      "uk": "",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 191
+    },
+    {
+      "key": "page.partners-contracts.partners-contracts",
+      "en": "Partners & Contracts",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 114
+    },
+    {
+      "key": "page.partners-contracts.manage-institutional-partnerships-and-service-agre",
+      "en": "Manage institutional partnerships and service agreements",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 116
+    },
+    {
+      "key": "page.partners-contracts.partner-organizations",
+      "en": "Partner Organizations",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 124
+    },
+    {
+      "key": "page.partners-contracts.active-and-pending-institutional-partners",
+      "en": "Active and pending institutional partners",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 126
+    },
+    {
+      "key": "page.partners-contracts.service-contracts",
+      "en": "Service Contracts",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 177
+    },
+    {
+      "key": "page.partners-contracts.all-partnership-agreements-and-service-contracts",
+      "en": "All partnership agreements and service contracts",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 179
+    },
+    {
+      "key": "page.partners-contracts.contract-id",
+      "en": "Contract ID",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 186
+    },
+    {
+      "key": "page.partners-contracts.start-date",
+      "en": "Start Date",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 189
+    },
+    {
+      "key": "page.partners-contracts.end-date",
+      "en": "End Date",
+      "uk": "",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 190
+    },
+    {
+      "key": "page.portfolio.your-options-positions-and-performance",
+      "en": "Your options positions and performance",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 97
+    },
+    {
+      "key": "page.portfolio.total-pl",
+      "en": "Total P&L",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 166
+    },
+    {
+      "key": "page.portfolio.realized-unrealized",
+      "en": "Realized + Unrealized",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 181
+    },
+    {
+      "key": "page.portfolio.realized-pl",
+      "en": "Realized P&L",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 189
+    },
+    {
+      "key": "page.portfolio.settled-options",
+      "en": "Settled options",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 204
+    },
+    {
+      "key": "page.portfolio.unrealized-pl",
+      "en": "Unrealized P&L",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 212
+    },
+    {
+      "key": "page.portfolio.open-positions",
+      "en": "Open positions",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 227
+    },
+    {
+      "key": "page.portfolio.active-contracts",
+      "en": "Active contracts",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 243
+    },
+    {
+      "key": "page.portfolio.locked-collateral",
+      "en": "Locked Collateral",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 251
+    },
+    {
+      "key": "page.portfolio.reserved-funds",
+      "en": "Reserved funds",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 259
+    },
+    {
+      "key": "page.portfolio.no-positions-yet",
+      "en": "No positions yet",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 293
+    },
+    {
+      "key": "page.portfolio.start-trading-options-to-see-your-portfolio-here",
+      "en": "Start trading options to see your portfolio here",
+      "uk": "",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 294
+    },
+    {
+      "key": "page.register.create-account",
+      "en": "Create Account",
+      "uk": "",
+      "file": "client/src/pages/Register.tsx",
+      "line": 95
+    },
+    {
+      "key": "page.register.register-to-start-trading-grain-options-on-cropto",
+      "en": "Register to start trading grain options on Cropto",
+      "uk": "",
+      "file": "client/src/pages/Register.tsx",
+      "line": 97
+    },
+    {
+      "key": "page.register.already-have-an-account",
+      "en": "Already have an account?",
+      "uk": "",
+      "file": "client/src/pages/Register.tsx",
+      "line": 186
+    },
+    {
+      "key": "page.register.placeholder-minimum-6-characters",
+      "en": "Minimum 6 characters",
+      "uk": "",
+      "file": "client/src/pages/Register.tsx",
+      "line": 132
+    },
+    {
+      "key": "page.register.desc-account-created-successfully",
+      "en": "Account created successfully",
+      "uk": "",
+      "file": "client/src/pages/Register.tsx",
+      "line": 73
+    },
+    {
+      "key": "page.register.title-registration-failed",
+      "en": "Registration Failed",
+      "uk": "",
+      "file": "client/src/pages/Register.tsx",
+      "line": 80
+    },
+    {
+      "key": "page.testing.testing-guide-cropto-compact",
+      "en": "Testing Guide — Cropto (compact)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 13
+    },
+    {
+      "key": "page.testing.updated-testing-instructions-for-the-cropto-demo-u",
+      "en": "Updated testing instructions for the Cropto demo. Use the demo accounts below to run through the flows.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 14
+    },
+    {
+      "key": "page.testing.demo-accounts",
+      "en": "Demo accounts",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 16
+    },
+    {
+      "key": "page.testing.-farmerdemo-pass",
+      "en": ": farmer@demo / pass",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 18
+    },
+    {
+      "key": "page.testing.-traderdemo-pass",
+      "en": ": trader@demo / pass",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 19
+    },
+    {
+      "key": "page.testing.-brokerdemo-pass",
+      "en": ": broker@demo / pass",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 20
+    },
+    {
+      "key": "page.testing.conventions-units",
+      "en": "Conventions & units",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 23
+    },
+    {
+      "key": "page.testing.price-in-usd-per-tonne-t",
+      "en": "price in USD per tonne ($/t).",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 25
+    },
+    {
+      "key": "page.testing.strike",
+      "en": "Strike:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 25
+    },
+    {
+      "key": "page.testing.tonnes-minimum-lot",
+      "en": "tonnes (minimum lot",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 26
+    },
+    {
+      "key": "page.testing.",
+      "en": ").",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 26
+    },
+    {
+      "key": "page.testing.quantity",
+      "en": "Quantity:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 26
+    },
+    {
+      "key": "page.testing.premiumpert-t-total-premium-premiumpert-qty",
+      "en": "premium_per_t ($/t). Total premium = premium_per_t * qty.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 27
+    },
+    {
+      "key": "page.testing.premium",
+      "en": "Premium:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 27
+    },
+    {
+      "key": "page.testing.polygon-amoy-currency-pol",
+      "en": "Polygon Amoy (currency: POL).",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 28
+    },
+    {
+      "key": "page.testing.network",
+      "en": "Network:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 28
+    },
+    {
+      "key": "page.testing.quick-scenario-create-match-mint-recommended",
+      "en": "Quick scenario: Create → Match → Mint (recommended)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 31
+    },
+    {
+      "key": "page.testing.1-create-option-farmer",
+      "en": "1) Create option (farmer)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 32
+    },
+    {
+      "key": "page.testing.login-as",
+      "en": "Login as",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 34
+    },
+    {
+      "key": "page.testing.farmerdemo",
+      "en": "farmer@demo",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 34
+    },
+    {
+      "key": "page.testing.dashboard-create-option",
+      "en": "Dashboard → Create Option.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 35
+    },
+    {
+      "key": "page.testing.example-fields",
+      "en": "Example fields:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 36
+    },
+    {
+      "key": "page.testing.commodity",
+      "en": "Commodity:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 38
+    },
+    {
+      "key": "page.testing.type",
+      "en": "Type:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 39
+    },
+    {
+      "key": "page.testing.t",
+      "en": "($/t)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 40
+    },
+    {
+      "key": "page.testing.t",
+      "en": "(t)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 41
+    },
+    {
+      "key": "page.testing.premium-per-t",
+      "en": "Premium per t:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 42
+    },
+    {
+      "key": "page.testing.submit-option-status-should-be",
+      "en": "Submit → option status should be",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 45
+    },
+    {
+      "key": "page.testing.2-match-option-broker",
+      "en": "2) Match option (broker)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 48
+    },
+    {
+      "key": "page.testing.logout-login-as",
+      "en": "Logout → Login as",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 50
+    },
+    {
+      "key": "page.testing.brokerdemo",
+      "en": "broker@demo",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 50
+    },
+    {
+      "key": "page.testing.find-the-created-option-press",
+      "en": "Find the created option → press",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 51
+    },
+    {
+      "key": "page.testing.and-assign-counterparty",
+      "en": "and assign counterparty.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 51
+    },
+    {
+      "key": "page.testing.status-should-change-to",
+      "en": "Status should change to",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 52
+    },
+    {
+      "key": "page.testing.3-mint-nft-owner",
+      "en": "3) Mint NFT (owner)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 55
+    },
+    {
+      "key": "page.testing.prerequisite-filled-option-and-sufficient-pol-in-w",
+      "en": "Prerequisite: FILLED option and sufficient POL in wallet (≈0.02–0.03 POL per mint) OR mock mode enabled.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 57
+    },
+    {
+      "key": "page.testing.to-mint",
+      "en": "To mint:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 59
+    },
+    {
+      "key": "page.testing.if-backend-relayer-dev-mint-call-the-api",
+      "en": "If backend relayer (dev-mint): call the API",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 61
+    },
+    {
+      "key": "page.testing.with-auth-token-curl-example-below",
+      "en": "with auth token (curl example below).",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 61
+    },
+    {
+      "key": "page.testing.post-apionchainmint-nft",
+      "en": "POST /api/onchain/mint-nft",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 61
+    },
+    {
+      "key": "page.testing.if-user-mint-via-metamask-click",
+      "en": "If user mint via MetaMask: click",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 62
+    },
+    {
+      "key": "page.testing.in-ui-and-approve-the-transaction-in-metamask",
+      "en": "in UI and approve the transaction in MetaMask.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 62
+    },
+    {
+      "key": "page.testing.admin-manual-settlement-daily",
+      "en": "Admin: Manual settlement (daily)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 65
+    },
+    {
+      "key": "page.testing.response-includes-per-option-settlements-pnl-and-a",
+      "en": "Response includes per-option settlements, PnL and actions taken (margin calls, forced settlements).",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 72
+    },
+    {
+      "key": "page.testing.useful-curl-commands",
+      "en": "Useful curl commands",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 74
+    },
+    {
+      "key": "page.testing.mint-nft-backend-relayer",
+      "en": "Mint NFT (backend relayer)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 75
+    },
+    {
+      "key": "page.testing.check-cropt-balance",
+      "en": "Check CROPT balance",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 83
+    },
+    {
+      "key": "page.testing.mock-safe-testing-mode",
+      "en": "MOCK / Safe testing mode",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 88
+    },
+    {
+      "key": "page.testing.to-avoid-spending-pol-during-early-tests-set-envir",
+      "en": "To avoid spending POL during early tests, set environment vars:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 90
+    },
+    {
+      "key": "page.testing.-client-shows-banner-and-on-chain-flows-are-simula",
+      "en": "— client shows banner and on-chain flows are simulated;",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 92
+    },
+    {
+      "key": "page.testing.vitemockonchaintrue",
+      "en": "VITE_MOCK_ONCHAIN=true",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 92
+    },
+    {
+      "key": "page.testing.-backend-blocks-real-minting-and-returns-simulated",
+      "en": "— backend blocks real minting and returns simulated TXs.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 93
+    },
+    {
+      "key": "page.testing.viteenablemintfalse",
+      "en": "VITE_ENABLE_MINT=false",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 93
+    },
+    {
+      "key": "page.testing.troubleshooting-common",
+      "en": "Troubleshooting (common)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 97
+    },
+    {
+      "key": "page.testing.check-pol-balance-faucet-or-enable-mock-mode",
+      "en": "check POL balance, faucet, or enable mock mode.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 99
+    },
+    {
+      "key": "page.testing.mint-fails",
+      "en": "Mint fails:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 99
+    },
+    {
+      "key": "page.testing.use-checksummed-address-from-metamask-ethersgetadd",
+      "en": "use checksummed address from MetaMask (ethers.getAddress validation).",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 100
+    },
+    {
+      "key": "page.testing.invalid-address",
+      "en": "Invalid address:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 100
+    },
+    {
+      "key": "page.testing.log-in-and-use-returned-jwt-for-curl-commands",
+      "en": "log in and use returned JWT for curl commands.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 101
+    },
+    {
+      "key": "page.testing.401-unauthorized",
+      "en": "401 Unauthorized:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 101
+    },
+    {
+      "key": "page.testing.ensure-qty",
+      "en": "ensure qty",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.testing.",
+      "en": ">=",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.testing.500-and-numeric-strike",
+      "en": "500 and numeric strike.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.testing.validation-errors",
+      "en": "Validation errors:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102
+    },
+    {
+      "key": "page.testing.where-to-find-contract-addresses-env",
+      "en": "Where to find contract addresses / env",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 105
+    },
+    {
+      "key": "page.testing.-cropt-token-env-replit-secrets",
+      "en": "— CROPT token (env / Replit secrets)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 107
+    },
+    {
+      "key": "page.testing.-option-nft-contract",
+      "en": "— Option NFT contract",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 108
+    },
+    {
+      "key": "page.testing.explorer",
+      "en": "Explorer:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 109
+    },
+    {
+      "key": "page.testing.httpsamoypolygonscancom",
+      "en": "https://amoy.polygonscan.com",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 109
+    },
+    {
+      "key": "page.testing.expected-status-flow",
+      "en": "Expected status flow",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 112
+    },
+    {
+      "key": "page.testing.open-selected-filled-exercised-settled",
+      "en": "OPEN → SELECTED → FILLED → EXERCISED → SETTLED",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 113
+    },
+    {
+      "key": "page.testing.margin-states",
+      "en": "Margin states:",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 114
+    },
+    {
+      "key": "page.testing.forced-settlement-after-24h-timeout",
+      "en": "(forced settlement after 24h timeout)",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 114
+    },
+    {
+      "key": "page.testing.ok-margincall-defaulted",
+      "en": "OK → MARGIN_CALL → DEFAULTED",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 114
+    },
+    {
+      "key": "page.testing.if-you-want-this-page-translated-to-ukrainian-or-r",
+      "en": "If you want this page translated to Ukrainian or Russian, or need the same file saved as /client/src/pages/testing.md, tell me and I will create that too.",
+      "uk": "",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 117
+    },
+    {
+      "key": "page.not-found.404-page-not-found",
+      "en": "404 Page Not Found",
+      "uk": "",
+      "file": "client/src/pages/not-found.tsx",
+      "line": 14
+    },
+    {
+      "key": "page.not-found.did-you-forget-to-add-the-page-to-the-router",
+      "en": "Did you forget to add the page to the router?",
+      "uk": "",
+      "file": "client/src/pages/not-found.tsx",
+      "line": 18
+    }
+  ]
+}

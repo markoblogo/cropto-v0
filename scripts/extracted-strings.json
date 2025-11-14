@@ -1,0 +1,6003 @@
+{
+  "total": 476,
+  "strings": [
+    {
+      "text": "Back to Dashboard",
+      "file": "client/src/components/BackToDashboard.tsx",
+      "line": 14,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Create Option",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 83,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Create New Option",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 89,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Create a new crypto option contract. Fill in all required fields.",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 91,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Option Title",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 101,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Option Type",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 119,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Strike Price",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 142,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Buyer Address",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 209,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Contract Summary",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 226,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Total Premium:",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 229,
+      "category": "jsx_text"
+    },
+    {
+      "text": "$",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 231,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Required Collateral:",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 235,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Collateral is required from the seller to cover the obligation at strike price.",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 241,
+      "category": "jsx_text"
+    },
+    {
+      "text": "e.g., BTC-50000-CALL-30DEC",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 104,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Select option type",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 123,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "0x...",
+      "file": "client/src/components/CreateOptionDialog.tsx",
+      "line": 212,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "CROPT Balance",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 91,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Test CROPT tokens for Polygon Amoy testnet",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 94,
+      "category": "jsx_text"
+    },
+    {
+      "text": "pending transaction",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 112,
+      "category": "jsx_text"
+    },
+    {
+      "text": "CROPT Mint Requested",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 39,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Minting Disabled",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 52,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "CROPT minting is currently disabled. Contact admin.",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 53,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Mint Failed",
+      "file": "client/src/components/CroptMintButton.tsx",
+      "line": 58,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Index Price",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 35,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Loading...",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 39,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Failed to load index data",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 54,
+      "category": "jsx_text"
+    },
+    {
+      "text": "%",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 94,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Last updated:",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 119,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Price History",
+      "file": "client/src/components/DashboardIndexWidget.tsx",
+      "line": 129,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter the current spot price to exercise this option. Strike: $",
+      "file": "client/src/components/ExerciseOptionDialog.tsx",
+      "line": 80,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Current Spot Price",
+      "file": "client/src/components/ExerciseOptionDialog.tsx",
+      "line": 90,
+      "category": "jsx_text"
+    },
+    {
+      "text": "The current market price of the asset",
+      "file": "client/src/components/ExerciseOptionDialog.tsx",
+      "line": 101,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Force Settle",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 72,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Force Settle Option",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 79,
+      "category": "jsx_text"
+    },
+    {
+      "text": "This will force-settle the option \"",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 82,
+      "category": "jsx_text"
+    },
+    {
+      "text": "\" and update its status to EXERCISED or DEFAULTED. \n            This action cannot be undone.",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 82,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Reason for Force Settlement",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 93,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)",
+      "file": "client/src/components/ForceSettleDialog.tsx",
+      "line": 96,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Match Option",
+      "file": "client/src/components/MatchOptionDialog.tsx",
+      "line": 69,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter the counterparty ID to complete this trade",
+      "file": "client/src/components/MatchOptionDialog.tsx",
+      "line": 71,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Counterparty ID",
+      "file": "client/src/components/MatchOptionDialog.tsx",
+      "line": 81,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Total Options",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 13,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "All time contracts",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 16,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Open Positions",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 21,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Currently active",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 24,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Total Volume",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 29,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Aggregate value",
+      "file": "client/src/components/MetricCards.tsx",
+      "line": 32,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Token ID:",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 93,
+      "category": "jsx_text"
+    },
+    {
+      "text": "View on Explorer",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 100,
+      "category": "jsx_text"
+    },
+    {
+      "text": "NFT #",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 130,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Minting...",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 156,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Mint NFT",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 172,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Mint Option NFT",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 177,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Mint this option as an ERC-721 NFT on Polygon Amoy testnet",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 179,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Recipient Address",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 189,
+      "category": "jsx_text"
+    },
+    {
+      "text": "The Ethereum address that will receive the NFT",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 198,
+      "category": "jsx_text"
+    },
+    {
+      "text": "NFT Minted Successfully!",
+      "file": "client/src/components/MintNFTDialog.tsx",
+      "line": 90,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "DEMO / MOCK MODE:",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 11,
+      "category": "jsx_text"
+    },
+    {
+      "text": "For real on-chain tests: fund your wallet with POL on Polygon Amoy faucet and set",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 15,
+      "category": "jsx_text"
+    },
+    {
+      "text": "VITE_MOCK_ONCHAIN=false",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 15,
+      "category": "jsx_text"
+    },
+    {
+      "text": "VITE_ENABLE_MINT=true",
+      "file": "client/src/components/MockModeBanner.tsx",
+      "line": 15,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Loading notifications...",
+      "file": "client/src/components/NotificationsDropdown.tsx",
+      "line": 115,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No notifications yet",
+      "file": "client/src/components/NotificationsDropdown.tsx",
+      "line": 119,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Options Book",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 152,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All Types",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 180,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All Status",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 190,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No Options Found",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 209,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Filter Type",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 177,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Filter Status",
+      "file": "client/src/components/OptionsTable.tsx",
+      "line": 187,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Price History —",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 85,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No data to display",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 184,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Data Points",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 194,
+      "category": "jsx_text"
+    },
+    {
+      "text": "This Year",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 210,
+      "category": "jsx_text"
+    },
+    {
+      "text": "•",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 212,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Last Year (Comparison)",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 215,
+      "category": "jsx_text"
+    },
+    {
+      "text": "30 days",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 41,
+      "category": "other",
+      "context": "property: label"
+    },
+    {
+      "text": "90 days",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 42,
+      "category": "other",
+      "context": "property: label"
+    },
+    {
+      "text": "1 year",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 43,
+      "category": "other",
+      "context": "property: label"
+    },
+    {
+      "text": "All time",
+      "file": "client/src/components/PriceHistoryDialog.tsx",
+      "line": 44,
+      "category": "other",
+      "context": "property: label"
+    },
+    {
+      "text": "Welcome to Cropto!",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 97,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Let's set up your account. What best describes your role?",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 99,
+      "category": "jsx_text"
+    },
+    {
+      "text": "I grow and sell grain commodities",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 26,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "I trade commodity options and futures",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 33,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "I facilitate trades and manage the platform",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 40,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Please select a role",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 53,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Choose the role that best describes you",
+      "file": "client/src/components/RoleSelectionModal.tsx",
+      "line": 54,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Simulate Margin Call",
+      "file": "client/src/components/SimulateMarginCallDialog.tsx",
+      "line": 77,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter an index price to trigger a margin check for this option",
+      "file": "client/src/components/SimulateMarginCallDialog.tsx",
+      "line": 79,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter index price",
+      "file": "client/src/components/SimulateMarginCallDialog.tsx",
+      "line": 95,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Margin Call",
+      "file": "client/src/components/StatusBadge.tsx",
+      "line": 56,
+      "category": "other",
+      "context": "property: label"
+    },
+    {
+      "text": "Toggle theme",
+      "file": "client/src/components/ThemeToggle.tsx",
+      "line": 29,
+      "category": "jsx_attribute",
+      "context": "aria-label"
+    },
+    {
+      "text": "Top-up Margin Call",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 86,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Add funds to meet the margin call requirement",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 88,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter amount to top-up",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 104,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Select currency",
+      "file": "client/src/components/TopUpMarginCallDialog.tsx",
+      "line": 126,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Connect Wallet to Continue",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 133,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Signature-based authentication",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 170,
+      "category": "jsx_text"
+    },
+    {
+      "text": "You'll be asked to sign a message to prove wallet ownership. This is free and does not send a transaction.",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 171,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Wallet Address",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 178,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Manual address input is not supported for authentication. Please install MetaMask to continue.",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 192,
+      "category": "jsx_text"
+    },
+    {
+      "text": "MetaMask Not Found",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 35,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Please install MetaMask or use manual address input",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 36,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Wallet Connected",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 86,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Connection Rejected",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 97,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "You rejected the connection request",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 98,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Connection Failed",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 102,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Please enter a wallet address",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 116,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Manual Mode Not Supported",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 123,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Please use MetaMask to sign a message for authentication",
+      "file": "client/src/components/WalletAuthModal.tsx",
+      "line": 124,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Withdraw On-Chain",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 122,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Amount (CROPT)",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 144,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Transaction Hash",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 181,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Wallet Not Connected",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 46,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Please connect your wallet or link an address first",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 47,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Invalid Amount",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 55,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Please enter a valid amount to withdraw",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 56,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Withdrawal Initiated",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 72,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Transaction submitted to blockchain",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 73,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Withdrawal Failed",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 79,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Transaction hash copied to clipboard",
+      "file": "client/src/components/WithdrawDialog.tsx",
+      "line": 97,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Admin Panel",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 52,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Manage demo scenarios and system operations",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 54,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Demo Scenario",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 64,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Run a one-click demo to seed the platform with sample data for partner presentations",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 67,
+      "category": "jsx_text"
+    },
+    {
+      "text": "This will create:",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 72,
+      "category": "jsx_text"
+    },
+    {
+      "text": "3 demo users: farmer@demo, trader@demo, broker@demo (password: pass)",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 76,
+      "category": "jsx_text"
+    },
+    {
+      "text": "3 options contracts with various strikes, quantities, and statuses",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 80,
+      "category": "jsx_text"
+    },
+    {
+      "text": "2 index price entries (WHEAT @ 210, WHEAT @ 240)",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 84,
+      "category": "jsx_text"
+    },
+    {
+      "text": "✅ Demo seeded successfully!",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 112,
+      "category": "jsx_text"
+    },
+    {
+      "text": "• Users:",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115,
+      "category": "jsx_text"
+    },
+    {
+      "text": "(",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115,
+      "category": "jsx_text"
+    },
+    {
+      "text": "new,",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115,
+      "category": "jsx_text"
+    },
+    {
+      "text": "existing)",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 115,
+      "category": "jsx_text"
+    },
+    {
+      "text": "• Options:",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 116,
+      "category": "jsx_text"
+    },
+    {
+      "text": "• Index Prices:",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 117,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Login credentials:",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 122,
+      "category": "jsx_text"
+    },
+    {
+      "text": "/ pass (",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 125,
+      "category": "jsx_text"
+    },
+    {
+      "text": ")",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 125,
+      "category": "jsx_text"
+    },
+    {
+      "text": "This feature is broker-only. The demo scenario is idempotent and can be run multiple times. \n                Existing users will be preserved, and new options/index prices will be added to the database.",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 141,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Demo scenario created! ✨",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 29,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Failed to run demo",
+      "file": "client/src/pages/Admin.tsx",
+      "line": 36,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Partner Feedback",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 97,
+      "category": "jsx_text"
+    },
+    {
+      "text": "View and manage feedback from partners",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 99,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Export CSV",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 106,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Open Feedback",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 114,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Resolved Feedback",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 124,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Loading feedback...",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 136,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No feedback submitted yet",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 142,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Feedback resolved",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 37,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "The feedback has been marked as resolved",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 38,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Export successful",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 74,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Feedback data has been exported to CSV",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 75,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Export failed",
+      "file": "client/src/pages/AdminFeedback.tsx",
+      "line": 79,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Index Management",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 162,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Manage index prices and view Telegram updates",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 165,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Add Index Price",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 175,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Telegram Bot Integration",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 185,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Configure your Telegram bot to post index updates",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 188,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Webhook URL",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 193,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Secret Token Header",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 199,
+      "category": "jsx_text"
+    },
+    {
+      "text": "X-Telegram-Bot-Api-Secret-Token: YOUR_SECRET_TOKEN",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 201,
+      "category": "jsx_text"
+    },
+    {
+      "text": "in Replit Secrets",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 204,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Message Formats",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 208,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Simple Format:",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 211,
+      "category": "jsx_text"
+    },
+    {
+      "text": "COMMODITY PRICE",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 213,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Example:",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 216,
+      "category": "jsx_text"
+    },
+    {
+      "text": "WHEAT 240.50",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 216,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Spike Brokers Format:",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 220,
+      "category": "jsx_text"
+    },
+    {
+      "text": "• Пшениця 11.5pro – 221$ (0$)",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 222,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Auto-parses Ukrainian wheat prices from @spike_brokers channel",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 225,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Setup Options",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 232,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Option 1: Webhook (for bots)",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 235,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Configure bot webhook to POST to URL above",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 238,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Include secret in",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 239,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Option 2: Polling (automatic)",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 243,
+      "category": "jsx_text"
+    },
+    {
+      "text": "System polls @spike_brokers every 2 minutes automatically",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 246,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No webhook configuration needed",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 247,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Filter by Commodity",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 258,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Index Price History",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 272,
+      "category": "jsx_text"
+    },
+    {
+      "text": "index prices",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 274,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No index prices yet",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 281,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Add a price manually or configure the Telegram bot",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 282,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Manually add or override an index price",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 331,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Date & Time",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 360,
+      "category": "jsx_text"
+    },
+    {
+      "text": "e.g. WHEAT, BTC",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 261,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "e.g. 240.50",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 352,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Index price added successfully",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 98,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Validation Error",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 115,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Commodity and price are required",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 116,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Price must be a positive number",
+      "file": "client/src/pages/AdminIndex.tsx",
+      "line": 126,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Reconciliation Dashboard",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 249,
+      "category": "jsx_text"
+    },
+    {
+      "text": "View transactions, settlements, and margin calls with filtering and export",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 251,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Filter records by date range and status",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 264,
+      "category": "jsx_text"
+    },
+    {
+      "text": "From Date",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 269,
+      "category": "jsx_text"
+    },
+    {
+      "text": "To Date",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 279,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Margin Call Status",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 289,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All Statuses",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 295,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Transactions (",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 311,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Settlements (",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 315,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Margin Calls (",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 319,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All transaction records",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 329,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Loading transactions...",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 343,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Failed to load transactions. Please try again.",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 347,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No transactions found",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 350,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All settlement records",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 397,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Loading settlements...",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 411,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Failed to load settlements. Please try again.",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 415,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No settlements found",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 418,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Exercised By",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 424,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Spot Price",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 425,
+      "category": "jsx_text"
+    },
+    {
+      "text": "P&L",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 429,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Margin Calls",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 462,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All margin call records",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 463,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Loading margin calls...",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 477,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Failed to load margin calls. Please try again.",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 481,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No margin calls found",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 484,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Amount Required",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 491,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Intrinsic Value",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 492,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All statuses",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 292,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Access Denied",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 80,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "This page is only accessible to broker accounts",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 81,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "No data to export",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 168,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "There are no records matching your filters",
+      "file": "client/src/pages/AdminReconciliation.tsx",
+      "line": 169,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Options Marketplace",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 288,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Browse, create, and trade grain commodity options",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 290,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Option created successfully",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 66,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Match Successful",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 86,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Option has been successfully matched",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 87,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Match Failed",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 92,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Exercise Successful",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 109,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Option has been exercised and settled",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 110,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Exercise Failed",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 115,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Margin Check Complete",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 135,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Margin Check Failed",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 141,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Force Settlement Complete",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 160,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Force Settlement Failed",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 166,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Top-up Failed",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 193,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Welcome back!",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 241,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "You've been successfully authenticated",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 242,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Account Setup Complete",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 249,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "You're all set! Start exploring grain options.",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 250,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "No pending margin call found for this option",
+      "file": "client/src/pages/Dashboard.tsx",
+      "line": 319,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Design & Architecture",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 29,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Design & Architecture Gallery",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 42,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto platform UI/UX mockups showcasing the commodity options trading interface, \n              dark/light modes, and responsive design patterns.",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 44,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Brand Assets",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 48,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto Logo",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 52,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Main brand logo with wheat grain icon",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 53,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cover Pattern",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 61,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Wheat field and sailboat pattern for backgrounds",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 62,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Color Palette",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 70,
+      "category": "jsx_text"
+    },
+    {
+      "text": "White (Light BG)",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 75,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Black (Dark BG)",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 80,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Olive (Accent)",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 85,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Text (Primary)",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 90,
+      "category": "jsx_text"
+    },
+    {
+      "text": "UI Mockups",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 94,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Explore the complete set of UI mockups showing various features including dashboard, \n                options creation, contract management, and transaction tracking.",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 96,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Additional Resources",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 124,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Documentation and design specifications",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 125,
+      "category": "jsx_text"
+    },
+    {
+      "text": "For complete design documentation including component specifications, spacing systems, \n                  and implementation guidelines, refer to the",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 129,
+      "category": "jsx_text"
+    },
+    {
+      "text": "file in the repository.",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 130,
+      "category": "jsx_text"
+    },
+    {
+      "text": "docs/design-architecture.md",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 130,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Additional design assets and Figma files can be found in the project's design documentation.",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 133,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto Cover",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 65,
+      "category": "jsx_attribute",
+      "context": "alt"
+    },
+    {
+      "text": "Main dashboard showing total options, open positions, and total volume stats with options book table",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 5,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Detailed options listing with type badges, premiums, expiry dates, and status indicators",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 6,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Form for creating new options contracts with commodity selection and collateral upload",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 7,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Buyer-seller matching interface with transaction confirmation",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 8,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Option exercise workflow showing spot price input and P&L calculations",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 9,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Mobile-first design showing dashboard, options list, and navigation patterns",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 10,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Wallet integration dialog with address input and validation",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 11,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Product documentation with feature guides and partner information",
+      "file": "client/src/pages/DesignArchitecture.tsx",
+      "line": 12,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Learn how to use Cropto for grain market options trading",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 16,
+      "category": "jsx_text"
+    },
+    {
+      "text": "What is Cropto?",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 27,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto is a next-generation platform for trading agricultural commodity options backed by NFTs. \n              We bring transparency, accessibility, and innovation to grain markets through blockchain technology.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 32,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Our platform enables farmers, traders, and brokers to create, trade, and settle commodity options \n              with unprecedented ease and security. Every option is represented as an NFT, ensuring immutable \n              proof of ownership and trade history.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 36,
+      "category": "jsx_text"
+    },
+    {
+      "text": "How It Works",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 48,
+      "category": "jsx_text"
+    },
+    {
+      "text": "1. Create Options",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 54,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Define your option parameters: commodity type, strike price, quantity, and premium. \n                  Options can be CALL (right to buy) or PUT (right to sell).",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 56,
+      "category": "jsx_text"
+    },
+    {
+      "text": "2. Match with Counterparties",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 62,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Browse the marketplace to find suitable options. When you find a match, the platform \n                  automatically pairs buyers with sellers and records the trade.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 64,
+      "category": "jsx_text"
+    },
+    {
+      "text": "3. Exercise & Settle",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 70,
+      "category": "jsx_text"
+    },
+    {
+      "text": "When conditions are favorable, exercise your option by inputting the current spot price. \n                  The platform calculates your payout and profit/loss automatically.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 72,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Partner Instructions",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 85,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Guidelines for institutional partners and service providers",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 88,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Prime Brokers",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 93,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Integrate with our API to provide liquidity and facilitate trades for your clients. \n                Access institutional-grade analytics and reporting tools.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 95,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Custody Providers",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 101,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Secure storage of NFT-backed options with multi-signature support. \n                Integration documentation available in the API reference.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 103,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Liquidity Providers",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 109,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Market-making opportunities with competitive fee structures. \n                Contact our partnerships team to discuss integration.",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 111,
+      "category": "jsx_text"
+    },
+    {
+      "text": "View Partner Agreements",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 119,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Security & Compliance",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 131,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto employs industry-leading security practices to protect your assets and data:",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 136,
+      "category": "jsx_text"
+    },
+    {
+      "text": "End-to-end encryption for all transactions",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 139,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Multi-signature wallet support",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 140,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Regular security audits by ChainGuard Security",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 141,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Compliance with international commodity trading regulations",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 142,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Transparent on-chain settlement records",
+      "file": "client/src/pages/Docs.tsx",
+      "line": 143,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Frequently Asked Questions",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 16,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Common questions about the Cropto platform and crypto options trading",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 18,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto is a cryptocurrency options trading platform that enables users to create, \n                  trade, and manage crypto options contracts (calls and puts). It uses an off-chain \n                  order book system with a matching engine to facilitate efficient trading.",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 26,
+      "category": "jsx_text"
+    },
+    {
+      "text": "How do I create an option?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 33,
+      "category": "jsx_text"
+    },
+    {
+      "text": "To create an option:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 35,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Log in to your account",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 37,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Click the \"Create Option\" button in the header",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 38,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Fill in the option details (title, strike price, quantity, premium, buyer address)",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 39,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Submit the form - your option will be created with OPEN status",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 40,
+      "category": "jsx_text"
+    },
+    {
+      "text": "What is the matching process?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 46,
+      "category": "jsx_text"
+    },
+    {
+      "text": "The matching engine connects buyers and sellers for options contracts. When an option \n                  is in OPEN status, a broker can match it by providing a seller's Ethereum address. \n                  Once matched, the option status changes to FILLED and becomes exercisable.",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 48,
+      "category": "jsx_text"
+    },
+    {
+      "text": "How does NFT minting work?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 55,
+      "category": "jsx_text"
+    },
+    {
+      "text": "After an option is FILLED or EXERCISED, the option owner (issuer or buyer) can mint \n                  it as an ERC-721 NFT on the Polygon Amoy testnet. The NFT includes metadata about the \n                  option and can be viewed on PolygonScan. Each option can only be minted once.",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 57,
+      "category": "jsx_text"
+    },
+    {
+      "text": "What are margin calls?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 64,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Margin calls occur when the collateral value of an option position falls below the \n                  required threshold. The system automatically monitors positions and issues margin calls \n                  when needed. Users can top up their collateral to meet the margin requirement or the \n                  position may be force-settled.",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 66,
+      "category": "jsx_text"
+    },
+    {
+      "text": "What are the different user roles?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 74,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto has three user roles:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 76,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Can create and trade options, exercise positions",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 78,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Farmer:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 78,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Can trade options and participate in the marketplace",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 79,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Trader:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 79,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Admin role with access to matching, reconciliation, and index management",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 80,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Broker:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 80,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Which blockchain does Cropto use?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 86,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto uses the Polygon Amoy testnet for on-chain features. This includes:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 88,
+      "category": "jsx_text"
+    },
+    {
+      "text": "CROPT ERC-20 token for platform currency",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 90,
+      "category": "jsx_text"
+    },
+    {
+      "text": "CroptOptionNFT ERC-721 contract for tokenizing options",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 91,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All transactions can be viewed on PolygonScan",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 92,
+      "category": "jsx_text"
+    },
+    {
+      "text": "How do I connect my wallet?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 98,
+      "category": "jsx_text"
+    },
+    {
+      "text": "You can connect your wallet in two ways:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 100,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Make sure you're on the Polygon Amoy testnet for on-chain features.",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 105,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Click \"Connect Web3\" and approve the connection in MetaMask",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 102,
+      "category": "jsx_text"
+    },
+    {
+      "text": "MetaMask:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 102,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter your Ethereum address directly in the wallet input field",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 103,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Manual:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 103,
+      "category": "jsx_text"
+    },
+    {
+      "text": "How do I track my portfolio?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 110,
+      "category": "jsx_text"
+    },
+    {
+      "text": "The Portfolio page shows your complete position overview including:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 112,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Total positions and P&L across all options",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 114,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Individual option performance metrics",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 115,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Unrealized and realized gains/losses",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 116,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Position breakdown by status",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 117,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Are there demo accounts available?",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 123,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Yes! You can use these demo accounts to explore the platform:",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 125,
+      "category": "jsx_text"
+    },
+    {
+      "text": "farmer@demo (password: pass) - Farmer role",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 127,
+      "category": "jsx_text"
+    },
+    {
+      "text": "trader@demo (password: pass) - Trader role",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 128,
+      "category": "jsx_text"
+    },
+    {
+      "text": "broker@demo (password: pass) - Broker role with admin access",
+      "file": "client/src/pages/FAQ.tsx",
+      "line": 129,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Thank You!",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 84,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Your feedback has been submitted successfully. We appreciate you taking the time to help us improve Cropto.",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 86,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Submit Another Feedback",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 99,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Help us improve Cropto by reporting UI issues, bugs, or suggesting improvements.",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 117,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Screenshot URL (Optional)",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 209,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Your name",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 131,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "your.email@example.com",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 150,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Select your role",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 169,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Describe the issue or suggestion...",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 193,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "https://...",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 212,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Feedback submitted",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 59,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Thank you for your feedback!",
+      "file": "client/src/pages/Feedback.tsx",
+      "line": 60,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Login to Cropto",
+      "file": "client/src/pages/Login.tsx",
+      "line": 84,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Enter your credentials to access your account",
+      "file": "client/src/pages/Login.tsx",
+      "line": 86,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Don't have an account?",
+      "file": "client/src/pages/Login.tsx",
+      "line": 143,
+      "category": "jsx_text"
+    },
+    {
+      "text": "farmer@example.com",
+      "file": "client/src/pages/Login.tsx",
+      "line": 102,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Enter your password",
+      "file": "client/src/pages/Login.tsx",
+      "line": 121,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Logged in successfully",
+      "file": "client/src/pages/Login.tsx",
+      "line": 62,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Login Failed",
+      "file": "client/src/pages/Login.tsx",
+      "line": 69,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "On-Chain Transactions",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 89,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Monitor blockchain settlements and transfers",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 91,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Transaction History",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 99,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Recent on-chain transactions for settlements, deposits, and withdrawals",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 101,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Gas Used",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 116,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Transaction Statistics",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 185,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Summary of on-chain activity",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 186,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Total Transactions",
+      "file": "client/src/pages/OnchainTx.tsx",
+      "line": 191,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Partners & Contracts",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 114,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Manage institutional partnerships and service agreements",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 116,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Partner Organizations",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 124,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Active and pending institutional partners",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 126,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Service Contracts",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 177,
+      "category": "jsx_text"
+    },
+    {
+      "text": "All partnership agreements and service contracts",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 179,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Contract ID",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 186,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Start Date",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 189,
+      "category": "jsx_text"
+    },
+    {
+      "text": "End Date",
+      "file": "client/src/pages/PartnersContracts.tsx",
+      "line": 190,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Your options positions and performance",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 97,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Total P&L",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 166,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Realized + Unrealized",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 181,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Realized P&L",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 189,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Settled options",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 204,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Unrealized P&L",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 212,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Open positions",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 227,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Active contracts",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 243,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Locked Collateral",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 251,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Reserved funds",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 259,
+      "category": "jsx_text"
+    },
+    {
+      "text": "No positions yet",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 293,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Start trading options to see your portfolio here",
+      "file": "client/src/pages/Portfolio.tsx",
+      "line": 294,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Create Account",
+      "file": "client/src/pages/Register.tsx",
+      "line": 95,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Register to start trading grain options on Cropto",
+      "file": "client/src/pages/Register.tsx",
+      "line": 97,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Already have an account?",
+      "file": "client/src/pages/Register.tsx",
+      "line": 186,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Minimum 6 characters",
+      "file": "client/src/pages/Register.tsx",
+      "line": 132,
+      "category": "jsx_attribute",
+      "context": "placeholder"
+    },
+    {
+      "text": "Account created successfully",
+      "file": "client/src/pages/Register.tsx",
+      "line": 73,
+      "category": "other",
+      "context": "property: description"
+    },
+    {
+      "text": "Registration Failed",
+      "file": "client/src/pages/Register.tsx",
+      "line": 80,
+      "category": "other",
+      "context": "property: title"
+    },
+    {
+      "text": "Testing Guide — Cropto (compact)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 13,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Updated testing instructions for the Cropto demo. Use the demo accounts below to run through the flows.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 14,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Demo accounts",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 16,
+      "category": "jsx_text"
+    },
+    {
+      "text": ": farmer@demo / pass",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 18,
+      "category": "jsx_text"
+    },
+    {
+      "text": ": trader@demo / pass",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 19,
+      "category": "jsx_text"
+    },
+    {
+      "text": ": broker@demo / pass",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 20,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Conventions & units",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 23,
+      "category": "jsx_text"
+    },
+    {
+      "text": "price in USD per tonne ($/t).",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 25,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Strike:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 25,
+      "category": "jsx_text"
+    },
+    {
+      "text": "tonnes (minimum lot",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 26,
+      "category": "jsx_text"
+    },
+    {
+      "text": ").",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 26,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Quantity:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 26,
+      "category": "jsx_text"
+    },
+    {
+      "text": "premium_per_t ($/t). Total premium = premium_per_t * qty.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 27,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Premium:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 27,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Polygon Amoy (currency: POL).",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 28,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Network:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 28,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Quick scenario: Create → Match → Mint (recommended)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 31,
+      "category": "jsx_text"
+    },
+    {
+      "text": "1) Create option (farmer)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 32,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Login as",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 34,
+      "category": "jsx_text"
+    },
+    {
+      "text": "farmer@demo",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 34,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Dashboard → Create Option.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 35,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Example fields:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 36,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Commodity:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 38,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Type:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 39,
+      "category": "jsx_text"
+    },
+    {
+      "text": "($/t)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 40,
+      "category": "jsx_text"
+    },
+    {
+      "text": "(t)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 41,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Premium per t:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 42,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Submit → option status should be",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 45,
+      "category": "jsx_text"
+    },
+    {
+      "text": "2) Match option (broker)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 48,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Logout → Login as",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 50,
+      "category": "jsx_text"
+    },
+    {
+      "text": "broker@demo",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 50,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Find the created option → press",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 51,
+      "category": "jsx_text"
+    },
+    {
+      "text": "and assign counterparty.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 51,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Status should change to",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 52,
+      "category": "jsx_text"
+    },
+    {
+      "text": "3) Mint NFT (owner)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 55,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Prerequisite: FILLED option and sufficient POL in wallet (≈0.02–0.03 POL per mint) OR mock mode enabled.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 57,
+      "category": "jsx_text"
+    },
+    {
+      "text": "To mint:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 59,
+      "category": "jsx_text"
+    },
+    {
+      "text": "If backend relayer (dev-mint): call the API",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 61,
+      "category": "jsx_text"
+    },
+    {
+      "text": "with auth token (curl example below).",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 61,
+      "category": "jsx_text"
+    },
+    {
+      "text": "POST /api/onchain/mint-nft",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 61,
+      "category": "jsx_text"
+    },
+    {
+      "text": "If user mint via MetaMask: click",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 62,
+      "category": "jsx_text"
+    },
+    {
+      "text": "in UI and approve the transaction in MetaMask.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 62,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Admin: Manual settlement (daily)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 65,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Response includes per-option settlements, PnL and actions taken (margin calls, forced settlements).",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 72,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Useful curl commands",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 74,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Mint NFT (backend relayer)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 75,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Check CROPT balance",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 83,
+      "category": "jsx_text"
+    },
+    {
+      "text": "MOCK / Safe testing mode",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 88,
+      "category": "jsx_text"
+    },
+    {
+      "text": "To avoid spending POL during early tests, set environment vars:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 90,
+      "category": "jsx_text"
+    },
+    {
+      "text": "— client shows banner and on-chain flows are simulated;",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 92,
+      "category": "jsx_text"
+    },
+    {
+      "text": "VITE_MOCK_ONCHAIN=true",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 92,
+      "category": "jsx_text"
+    },
+    {
+      "text": "— backend blocks real minting and returns simulated TXs.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 93,
+      "category": "jsx_text"
+    },
+    {
+      "text": "VITE_ENABLE_MINT=false",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 93,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Troubleshooting (common)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 97,
+      "category": "jsx_text"
+    },
+    {
+      "text": "check POL balance, faucet, or enable mock mode.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 99,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Mint fails:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 99,
+      "category": "jsx_text"
+    },
+    {
+      "text": "use checksummed address from MetaMask (ethers.getAddress validation).",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 100,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Invalid address:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 100,
+      "category": "jsx_text"
+    },
+    {
+      "text": "log in and use returned JWT for curl commands.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 101,
+      "category": "jsx_text"
+    },
+    {
+      "text": "401 Unauthorized:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 101,
+      "category": "jsx_text"
+    },
+    {
+      "text": "ensure qty",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102,
+      "category": "jsx_text"
+    },
+    {
+      "text": ">=",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102,
+      "category": "jsx_text"
+    },
+    {
+      "text": "500 and numeric strike.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Validation errors:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 102,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Where to find contract addresses / env",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 105,
+      "category": "jsx_text"
+    },
+    {
+      "text": "— CROPT token (env / Replit secrets)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 107,
+      "category": "jsx_text"
+    },
+    {
+      "text": "— Option NFT contract",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 108,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Explorer:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 109,
+      "category": "jsx_text"
+    },
+    {
+      "text": "https://amoy.polygonscan.com",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 109,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Expected status flow",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 112,
+      "category": "jsx_text"
+    },
+    {
+      "text": "OPEN → SELECTED → FILLED → EXERCISED → SETTLED",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 113,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Margin states:",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 114,
+      "category": "jsx_text"
+    },
+    {
+      "text": "(forced settlement after 24h timeout)",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 114,
+      "category": "jsx_text"
+    },
+    {
+      "text": "OK → MARGIN_CALL → DEFAULTED",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 114,
+      "category": "jsx_text"
+    },
+    {
+      "text": "If you want this page translated to Ukrainian or Russian, or need the same file saved as /client/src/pages/testing.md, tell me and I will create that too.",
+      "file": "client/src/pages/Testing.tsx",
+      "line": 117,
+      "category": "jsx_text"
+    },
+    {
+      "text": "404 Page Not Found",
+      "file": "client/src/pages/not-found.tsx",
+      "line": 14,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Did you forget to add the page to the router?",
+      "file": "client/src/pages/not-found.tsx",
+      "line": 18,
+      "category": "jsx_text"
+    }
+  ],
+  "byFile": {
+    "client/src/components/BackToDashboard.tsx": [
+      {
+        "text": "Back to Dashboard",
+        "file": "client/src/components/BackToDashboard.tsx",
+        "line": 14,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/components/CreateOptionDialog.tsx": [
+      {
+        "text": "Create Option",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 83,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Create New Option",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 89,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Create a new crypto option contract. Fill in all required fields.",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 91,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Option Title",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 101,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Option Type",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 119,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Strike Price",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 142,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Buyer Address",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 209,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Contract Summary",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 226,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Total Premium:",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 229,
+        "category": "jsx_text"
+      },
+      {
+        "text": "$",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 231,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Required Collateral:",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 235,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Collateral is required from the seller to cover the obligation at strike price.",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 241,
+        "category": "jsx_text"
+      },
+      {
+        "text": "e.g., BTC-50000-CALL-30DEC",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 104,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Select option type",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 123,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "0x...",
+        "file": "client/src/components/CreateOptionDialog.tsx",
+        "line": 212,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      }
+    ],
+    "client/src/components/CroptMintButton.tsx": [
+      {
+        "text": "CROPT Balance",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 91,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Test CROPT tokens for Polygon Amoy testnet",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 94,
+        "category": "jsx_text"
+      },
+      {
+        "text": "pending transaction",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 112,
+        "category": "jsx_text"
+      },
+      {
+        "text": "CROPT Mint Requested",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 39,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Minting Disabled",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 52,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "CROPT minting is currently disabled. Contact admin.",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 53,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Mint Failed",
+        "file": "client/src/components/CroptMintButton.tsx",
+        "line": 58,
+        "category": "other",
+        "context": "property: title"
+      }
+    ],
+    "client/src/components/DashboardIndexWidget.tsx": [
+      {
+        "text": "Index Price",
+        "file": "client/src/components/DashboardIndexWidget.tsx",
+        "line": 35,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Loading...",
+        "file": "client/src/components/DashboardIndexWidget.tsx",
+        "line": 39,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Failed to load index data",
+        "file": "client/src/components/DashboardIndexWidget.tsx",
+        "line": 54,
+        "category": "jsx_text"
+      },
+      {
+        "text": "%",
+        "file": "client/src/components/DashboardIndexWidget.tsx",
+        "line": 94,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Last updated:",
+        "file": "client/src/components/DashboardIndexWidget.tsx",
+        "line": 119,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Price History",
+        "file": "client/src/components/DashboardIndexWidget.tsx",
+        "line": 129,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/components/ExerciseOptionDialog.tsx": [
+      {
+        "text": "Enter the current spot price to exercise this option. Strike: $",
+        "file": "client/src/components/ExerciseOptionDialog.tsx",
+        "line": 80,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Current Spot Price",
+        "file": "client/src/components/ExerciseOptionDialog.tsx",
+        "line": 90,
+        "category": "jsx_text"
+      },
+      {
+        "text": "The current market price of the asset",
+        "file": "client/src/components/ExerciseOptionDialog.tsx",
+        "line": 101,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/components/ForceSettleDialog.tsx": [
+      {
+        "text": "Force Settle",
+        "file": "client/src/components/ForceSettleDialog.tsx",
+        "line": 72,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Force Settle Option",
+        "file": "client/src/components/ForceSettleDialog.tsx",
+        "line": 79,
+        "category": "jsx_text"
+      },
+      {
+        "text": "This will force-settle the option \"",
+        "file": "client/src/components/ForceSettleDialog.tsx",
+        "line": 82,
+        "category": "jsx_text"
+      },
+      {
+        "text": "\" and update its status to EXERCISED or DEFAULTED. \n            This action cannot be undone.",
+        "file": "client/src/components/ForceSettleDialog.tsx",
+        "line": 82,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Reason for Force Settlement",
+        "file": "client/src/components/ForceSettleDialog.tsx",
+        "line": 93,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)",
+        "file": "client/src/components/ForceSettleDialog.tsx",
+        "line": 96,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      }
+    ],
+    "client/src/components/MatchOptionDialog.tsx": [
+      {
+        "text": "Match Option",
+        "file": "client/src/components/MatchOptionDialog.tsx",
+        "line": 69,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter the counterparty ID to complete this trade",
+        "file": "client/src/components/MatchOptionDialog.tsx",
+        "line": 71,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Counterparty ID",
+        "file": "client/src/components/MatchOptionDialog.tsx",
+        "line": 81,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/components/MetricCards.tsx": [
+      {
+        "text": "Total Options",
+        "file": "client/src/components/MetricCards.tsx",
+        "line": 13,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "All time contracts",
+        "file": "client/src/components/MetricCards.tsx",
+        "line": 16,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Open Positions",
+        "file": "client/src/components/MetricCards.tsx",
+        "line": 21,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Currently active",
+        "file": "client/src/components/MetricCards.tsx",
+        "line": 24,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Total Volume",
+        "file": "client/src/components/MetricCards.tsx",
+        "line": 29,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Aggregate value",
+        "file": "client/src/components/MetricCards.tsx",
+        "line": 32,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/components/MintNFTDialog.tsx": [
+      {
+        "text": "Token ID:",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 93,
+        "category": "jsx_text"
+      },
+      {
+        "text": "View on Explorer",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 100,
+        "category": "jsx_text"
+      },
+      {
+        "text": "NFT #",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 130,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Minting...",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 156,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Mint NFT",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 172,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Mint Option NFT",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 177,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Mint this option as an ERC-721 NFT on Polygon Amoy testnet",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 179,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Recipient Address",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 189,
+        "category": "jsx_text"
+      },
+      {
+        "text": "The Ethereum address that will receive the NFT",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 198,
+        "category": "jsx_text"
+      },
+      {
+        "text": "NFT Minted Successfully!",
+        "file": "client/src/components/MintNFTDialog.tsx",
+        "line": 90,
+        "category": "other",
+        "context": "property: title"
+      }
+    ],
+    "client/src/components/MockModeBanner.tsx": [
+      {
+        "text": "DEMO / MOCK MODE:",
+        "file": "client/src/components/MockModeBanner.tsx",
+        "line": 11,
+        "category": "jsx_text"
+      },
+      {
+        "text": "For real on-chain tests: fund your wallet with POL on Polygon Amoy faucet and set",
+        "file": "client/src/components/MockModeBanner.tsx",
+        "line": 15,
+        "category": "jsx_text"
+      },
+      {
+        "text": "VITE_MOCK_ONCHAIN=false",
+        "file": "client/src/components/MockModeBanner.tsx",
+        "line": 15,
+        "category": "jsx_text"
+      },
+      {
+        "text": "VITE_ENABLE_MINT=true",
+        "file": "client/src/components/MockModeBanner.tsx",
+        "line": 15,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/components/NotificationsDropdown.tsx": [
+      {
+        "text": "Loading notifications...",
+        "file": "client/src/components/NotificationsDropdown.tsx",
+        "line": 115,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No notifications yet",
+        "file": "client/src/components/NotificationsDropdown.tsx",
+        "line": 119,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/components/OptionsTable.tsx": [
+      {
+        "text": "Options Book",
+        "file": "client/src/components/OptionsTable.tsx",
+        "line": 152,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All Types",
+        "file": "client/src/components/OptionsTable.tsx",
+        "line": 180,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All Status",
+        "file": "client/src/components/OptionsTable.tsx",
+        "line": 190,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No Options Found",
+        "file": "client/src/components/OptionsTable.tsx",
+        "line": 209,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Filter Type",
+        "file": "client/src/components/OptionsTable.tsx",
+        "line": 177,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Filter Status",
+        "file": "client/src/components/OptionsTable.tsx",
+        "line": 187,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      }
+    ],
+    "client/src/components/PriceHistoryDialog.tsx": [
+      {
+        "text": "Price History —",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 85,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No data to display",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 184,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Data Points",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 194,
+        "category": "jsx_text"
+      },
+      {
+        "text": "This Year",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 210,
+        "category": "jsx_text"
+      },
+      {
+        "text": "•",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 212,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Last Year (Comparison)",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 215,
+        "category": "jsx_text"
+      },
+      {
+        "text": "30 days",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 41,
+        "category": "other",
+        "context": "property: label"
+      },
+      {
+        "text": "90 days",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 42,
+        "category": "other",
+        "context": "property: label"
+      },
+      {
+        "text": "1 year",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 43,
+        "category": "other",
+        "context": "property: label"
+      },
+      {
+        "text": "All time",
+        "file": "client/src/components/PriceHistoryDialog.tsx",
+        "line": 44,
+        "category": "other",
+        "context": "property: label"
+      }
+    ],
+    "client/src/components/RoleSelectionModal.tsx": [
+      {
+        "text": "Welcome to Cropto!",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 97,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Let's set up your account. What best describes your role?",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 99,
+        "category": "jsx_text"
+      },
+      {
+        "text": "I grow and sell grain commodities",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 26,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "I trade commodity options and futures",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 33,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "I facilitate trades and manage the platform",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 40,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Please select a role",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 53,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Choose the role that best describes you",
+        "file": "client/src/components/RoleSelectionModal.tsx",
+        "line": 54,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/components/SimulateMarginCallDialog.tsx": [
+      {
+        "text": "Simulate Margin Call",
+        "file": "client/src/components/SimulateMarginCallDialog.tsx",
+        "line": 77,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter an index price to trigger a margin check for this option",
+        "file": "client/src/components/SimulateMarginCallDialog.tsx",
+        "line": 79,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter index price",
+        "file": "client/src/components/SimulateMarginCallDialog.tsx",
+        "line": 95,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      }
+    ],
+    "client/src/components/StatusBadge.tsx": [
+      {
+        "text": "Margin Call",
+        "file": "client/src/components/StatusBadge.tsx",
+        "line": 56,
+        "category": "other",
+        "context": "property: label"
+      }
+    ],
+    "client/src/components/ThemeToggle.tsx": [
+      {
+        "text": "Toggle theme",
+        "file": "client/src/components/ThemeToggle.tsx",
+        "line": 29,
+        "category": "jsx_attribute",
+        "context": "aria-label"
+      }
+    ],
+    "client/src/components/TopUpMarginCallDialog.tsx": [
+      {
+        "text": "Top-up Margin Call",
+        "file": "client/src/components/TopUpMarginCallDialog.tsx",
+        "line": 86,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Add funds to meet the margin call requirement",
+        "file": "client/src/components/TopUpMarginCallDialog.tsx",
+        "line": 88,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter amount to top-up",
+        "file": "client/src/components/TopUpMarginCallDialog.tsx",
+        "line": 104,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Select currency",
+        "file": "client/src/components/TopUpMarginCallDialog.tsx",
+        "line": 126,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      }
+    ],
+    "client/src/components/WalletAuthModal.tsx": [
+      {
+        "text": "Connect Wallet to Continue",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 133,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Signature-based authentication",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 170,
+        "category": "jsx_text"
+      },
+      {
+        "text": "You'll be asked to sign a message to prove wallet ownership. This is free and does not send a transaction.",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 171,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Wallet Address",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 178,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Manual address input is not supported for authentication. Please install MetaMask to continue.",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 192,
+        "category": "jsx_text"
+      },
+      {
+        "text": "MetaMask Not Found",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 35,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Please install MetaMask or use manual address input",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 36,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Wallet Connected",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 86,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Connection Rejected",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 97,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "You rejected the connection request",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 98,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Connection Failed",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 102,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Please enter a wallet address",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 116,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Manual Mode Not Supported",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 123,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Please use MetaMask to sign a message for authentication",
+        "file": "client/src/components/WalletAuthModal.tsx",
+        "line": 124,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/components/WithdrawDialog.tsx": [
+      {
+        "text": "Withdraw On-Chain",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 122,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Amount (CROPT)",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 144,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Transaction Hash",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 181,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Wallet Not Connected",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 46,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Please connect your wallet or link an address first",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 47,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Invalid Amount",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 55,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Please enter a valid amount to withdraw",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 56,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Withdrawal Initiated",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 72,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Transaction submitted to blockchain",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 73,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Withdrawal Failed",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 79,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Transaction hash copied to clipboard",
+        "file": "client/src/components/WithdrawDialog.tsx",
+        "line": 97,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/pages/Admin.tsx": [
+      {
+        "text": "Admin Panel",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 52,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Manage demo scenarios and system operations",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 54,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Demo Scenario",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 64,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Run a one-click demo to seed the platform with sample data for partner presentations",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 67,
+        "category": "jsx_text"
+      },
+      {
+        "text": "This will create:",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 72,
+        "category": "jsx_text"
+      },
+      {
+        "text": "3 demo users: farmer@demo, trader@demo, broker@demo (password: pass)",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 76,
+        "category": "jsx_text"
+      },
+      {
+        "text": "3 options contracts with various strikes, quantities, and statuses",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 80,
+        "category": "jsx_text"
+      },
+      {
+        "text": "2 index price entries (WHEAT @ 210, WHEAT @ 240)",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 84,
+        "category": "jsx_text"
+      },
+      {
+        "text": "✅ Demo seeded successfully!",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 112,
+        "category": "jsx_text"
+      },
+      {
+        "text": "• Users:",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 115,
+        "category": "jsx_text"
+      },
+      {
+        "text": "(",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 115,
+        "category": "jsx_text"
+      },
+      {
+        "text": "new,",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 115,
+        "category": "jsx_text"
+      },
+      {
+        "text": "existing)",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 115,
+        "category": "jsx_text"
+      },
+      {
+        "text": "• Options:",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 116,
+        "category": "jsx_text"
+      },
+      {
+        "text": "• Index Prices:",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 117,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Login credentials:",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 122,
+        "category": "jsx_text"
+      },
+      {
+        "text": "/ pass (",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 125,
+        "category": "jsx_text"
+      },
+      {
+        "text": ")",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 125,
+        "category": "jsx_text"
+      },
+      {
+        "text": "This feature is broker-only. The demo scenario is idempotent and can be run multiple times. \n                Existing users will be preserved, and new options/index prices will be added to the database.",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 141,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Demo scenario created! ✨",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 29,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Failed to run demo",
+        "file": "client/src/pages/Admin.tsx",
+        "line": 36,
+        "category": "other",
+        "context": "property: title"
+      }
+    ],
+    "client/src/pages/AdminFeedback.tsx": [
+      {
+        "text": "Partner Feedback",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 97,
+        "category": "jsx_text"
+      },
+      {
+        "text": "View and manage feedback from partners",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 99,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Export CSV",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 106,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Open Feedback",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 114,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Resolved Feedback",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 124,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Loading feedback...",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 136,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No feedback submitted yet",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 142,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Feedback resolved",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 37,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "The feedback has been marked as resolved",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 38,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Export successful",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 74,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Feedback data has been exported to CSV",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 75,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Export failed",
+        "file": "client/src/pages/AdminFeedback.tsx",
+        "line": 79,
+        "category": "other",
+        "context": "property: title"
+      }
+    ],
+    "client/src/pages/AdminIndex.tsx": [
+      {
+        "text": "Index Management",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 162,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Manage index prices and view Telegram updates",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 165,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Add Index Price",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 175,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Telegram Bot Integration",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 185,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Configure your Telegram bot to post index updates",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 188,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Webhook URL",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 193,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Secret Token Header",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 199,
+        "category": "jsx_text"
+      },
+      {
+        "text": "X-Telegram-Bot-Api-Secret-Token: YOUR_SECRET_TOKEN",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 201,
+        "category": "jsx_text"
+      },
+      {
+        "text": "in Replit Secrets",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 204,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Message Formats",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 208,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Simple Format:",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 211,
+        "category": "jsx_text"
+      },
+      {
+        "text": "COMMODITY PRICE",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 213,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Example:",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 216,
+        "category": "jsx_text"
+      },
+      {
+        "text": "WHEAT 240.50",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 216,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Spike Brokers Format:",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 220,
+        "category": "jsx_text"
+      },
+      {
+        "text": "• Пшениця 11.5pro – 221$ (0$)",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 222,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Auto-parses Ukrainian wheat prices from @spike_brokers channel",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 225,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Setup Options",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 232,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Option 1: Webhook (for bots)",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 235,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Configure bot webhook to POST to URL above",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 238,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Include secret in",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 239,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Option 2: Polling (automatic)",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 243,
+        "category": "jsx_text"
+      },
+      {
+        "text": "System polls @spike_brokers every 2 minutes automatically",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 246,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No webhook configuration needed",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 247,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Filter by Commodity",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 258,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Index Price History",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 272,
+        "category": "jsx_text"
+      },
+      {
+        "text": "index prices",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 274,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No index prices yet",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 281,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Add a price manually or configure the Telegram bot",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 282,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Manually add or override an index price",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 331,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Date & Time",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 360,
+        "category": "jsx_text"
+      },
+      {
+        "text": "e.g. WHEAT, BTC",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 261,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "e.g. 240.50",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 352,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Index price added successfully",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 98,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Validation Error",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 115,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Commodity and price are required",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 116,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Price must be a positive number",
+        "file": "client/src/pages/AdminIndex.tsx",
+        "line": 126,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/pages/AdminReconciliation.tsx": [
+      {
+        "text": "Reconciliation Dashboard",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 249,
+        "category": "jsx_text"
+      },
+      {
+        "text": "View transactions, settlements, and margin calls with filtering and export",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 251,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Filter records by date range and status",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 264,
+        "category": "jsx_text"
+      },
+      {
+        "text": "From Date",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 269,
+        "category": "jsx_text"
+      },
+      {
+        "text": "To Date",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 279,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Margin Call Status",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 289,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All Statuses",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 295,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Transactions (",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 311,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Settlements (",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 315,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Margin Calls (",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 319,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All transaction records",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 329,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Loading transactions...",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 343,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Failed to load transactions. Please try again.",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 347,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No transactions found",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 350,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All settlement records",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 397,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Loading settlements...",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 411,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Failed to load settlements. Please try again.",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 415,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No settlements found",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 418,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Exercised By",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 424,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Spot Price",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 425,
+        "category": "jsx_text"
+      },
+      {
+        "text": "P&L",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 429,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Margin Calls",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 462,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All margin call records",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 463,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Loading margin calls...",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 477,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Failed to load margin calls. Please try again.",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 481,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No margin calls found",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 484,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Amount Required",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 491,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Intrinsic Value",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 492,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All statuses",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 292,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Access Denied",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 80,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "This page is only accessible to broker accounts",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 81,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "No data to export",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 168,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "There are no records matching your filters",
+        "file": "client/src/pages/AdminReconciliation.tsx",
+        "line": 169,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/pages/Dashboard.tsx": [
+      {
+        "text": "Options Marketplace",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 288,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Browse, create, and trade grain commodity options",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 290,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Option created successfully",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 66,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Match Successful",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 86,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Option has been successfully matched",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 87,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Match Failed",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 92,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Exercise Successful",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 109,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Option has been exercised and settled",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 110,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Exercise Failed",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 115,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Margin Check Complete",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 135,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Margin Check Failed",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 141,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Force Settlement Complete",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 160,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Force Settlement Failed",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 166,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Top-up Failed",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 193,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Welcome back!",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 241,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "You've been successfully authenticated",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 242,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Account Setup Complete",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 249,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "You're all set! Start exploring grain options.",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 250,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "No pending margin call found for this option",
+        "file": "client/src/pages/Dashboard.tsx",
+        "line": 319,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/pages/DesignArchitecture.tsx": [
+      {
+        "text": "Design & Architecture",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 29,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Design & Architecture Gallery",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 42,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto platform UI/UX mockups showcasing the commodity options trading interface, \n              dark/light modes, and responsive design patterns.",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 44,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Brand Assets",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 48,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto Logo",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 52,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Main brand logo with wheat grain icon",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 53,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cover Pattern",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 61,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Wheat field and sailboat pattern for backgrounds",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 62,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Color Palette",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 70,
+        "category": "jsx_text"
+      },
+      {
+        "text": "White (Light BG)",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 75,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Black (Dark BG)",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 80,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Olive (Accent)",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 85,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Text (Primary)",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 90,
+        "category": "jsx_text"
+      },
+      {
+        "text": "UI Mockups",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 94,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Explore the complete set of UI mockups showing various features including dashboard, \n                options creation, contract management, and transaction tracking.",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 96,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Additional Resources",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 124,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Documentation and design specifications",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 125,
+        "category": "jsx_text"
+      },
+      {
+        "text": "For complete design documentation including component specifications, spacing systems, \n                  and implementation guidelines, refer to the",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 129,
+        "category": "jsx_text"
+      },
+      {
+        "text": "file in the repository.",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 130,
+        "category": "jsx_text"
+      },
+      {
+        "text": "docs/design-architecture.md",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 130,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Additional design assets and Figma files can be found in the project's design documentation.",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 133,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto Cover",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 65,
+        "category": "jsx_attribute",
+        "context": "alt"
+      },
+      {
+        "text": "Main dashboard showing total options, open positions, and total volume stats with options book table",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 5,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Detailed options listing with type badges, premiums, expiry dates, and status indicators",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 6,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Form for creating new options contracts with commodity selection and collateral upload",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 7,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Buyer-seller matching interface with transaction confirmation",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 8,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Option exercise workflow showing spot price input and P&L calculations",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 9,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Mobile-first design showing dashboard, options list, and navigation patterns",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 10,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Wallet integration dialog with address input and validation",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 11,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Product documentation with feature guides and partner information",
+        "file": "client/src/pages/DesignArchitecture.tsx",
+        "line": 12,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/pages/Docs.tsx": [
+      {
+        "text": "Learn how to use Cropto for grain market options trading",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 16,
+        "category": "jsx_text"
+      },
+      {
+        "text": "What is Cropto?",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 27,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto is a next-generation platform for trading agricultural commodity options backed by NFTs. \n              We bring transparency, accessibility, and innovation to grain markets through blockchain technology.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 32,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Our platform enables farmers, traders, and brokers to create, trade, and settle commodity options \n              with unprecedented ease and security. Every option is represented as an NFT, ensuring immutable \n              proof of ownership and trade history.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 36,
+        "category": "jsx_text"
+      },
+      {
+        "text": "How It Works",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 48,
+        "category": "jsx_text"
+      },
+      {
+        "text": "1. Create Options",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 54,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Define your option parameters: commodity type, strike price, quantity, and premium. \n                  Options can be CALL (right to buy) or PUT (right to sell).",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 56,
+        "category": "jsx_text"
+      },
+      {
+        "text": "2. Match with Counterparties",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 62,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Browse the marketplace to find suitable options. When you find a match, the platform \n                  automatically pairs buyers with sellers and records the trade.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 64,
+        "category": "jsx_text"
+      },
+      {
+        "text": "3. Exercise & Settle",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 70,
+        "category": "jsx_text"
+      },
+      {
+        "text": "When conditions are favorable, exercise your option by inputting the current spot price. \n                  The platform calculates your payout and profit/loss automatically.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 72,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Partner Instructions",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 85,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Guidelines for institutional partners and service providers",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 88,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Prime Brokers",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 93,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Integrate with our API to provide liquidity and facilitate trades for your clients. \n                Access institutional-grade analytics and reporting tools.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 95,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Custody Providers",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 101,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Secure storage of NFT-backed options with multi-signature support. \n                Integration documentation available in the API reference.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 103,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Liquidity Providers",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 109,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Market-making opportunities with competitive fee structures. \n                Contact our partnerships team to discuss integration.",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 111,
+        "category": "jsx_text"
+      },
+      {
+        "text": "View Partner Agreements",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 119,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Security & Compliance",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 131,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto employs industry-leading security practices to protect your assets and data:",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 136,
+        "category": "jsx_text"
+      },
+      {
+        "text": "End-to-end encryption for all transactions",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 139,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Multi-signature wallet support",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 140,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Regular security audits by ChainGuard Security",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 141,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Compliance with international commodity trading regulations",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 142,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Transparent on-chain settlement records",
+        "file": "client/src/pages/Docs.tsx",
+        "line": 143,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/pages/FAQ.tsx": [
+      {
+        "text": "Frequently Asked Questions",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 16,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Common questions about the Cropto platform and crypto options trading",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 18,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto is a cryptocurrency options trading platform that enables users to create, \n                  trade, and manage crypto options contracts (calls and puts). It uses an off-chain \n                  order book system with a matching engine to facilitate efficient trading.",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 26,
+        "category": "jsx_text"
+      },
+      {
+        "text": "How do I create an option?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 33,
+        "category": "jsx_text"
+      },
+      {
+        "text": "To create an option:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 35,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Log in to your account",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 37,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Click the \"Create Option\" button in the header",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 38,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Fill in the option details (title, strike price, quantity, premium, buyer address)",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 39,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Submit the form - your option will be created with OPEN status",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 40,
+        "category": "jsx_text"
+      },
+      {
+        "text": "What is the matching process?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 46,
+        "category": "jsx_text"
+      },
+      {
+        "text": "The matching engine connects buyers and sellers for options contracts. When an option \n                  is in OPEN status, a broker can match it by providing a seller's Ethereum address. \n                  Once matched, the option status changes to FILLED and becomes exercisable.",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 48,
+        "category": "jsx_text"
+      },
+      {
+        "text": "How does NFT minting work?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 55,
+        "category": "jsx_text"
+      },
+      {
+        "text": "After an option is FILLED or EXERCISED, the option owner (issuer or buyer) can mint \n                  it as an ERC-721 NFT on the Polygon Amoy testnet. The NFT includes metadata about the \n                  option and can be viewed on PolygonScan. Each option can only be minted once.",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 57,
+        "category": "jsx_text"
+      },
+      {
+        "text": "What are margin calls?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 64,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Margin calls occur when the collateral value of an option position falls below the \n                  required threshold. The system automatically monitors positions and issues margin calls \n                  when needed. Users can top up their collateral to meet the margin requirement or the \n                  position may be force-settled.",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 66,
+        "category": "jsx_text"
+      },
+      {
+        "text": "What are the different user roles?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 74,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto has three user roles:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 76,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Can create and trade options, exercise positions",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 78,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Farmer:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 78,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Can trade options and participate in the marketplace",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 79,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Trader:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 79,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Admin role with access to matching, reconciliation, and index management",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 80,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Broker:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 80,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Which blockchain does Cropto use?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 86,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto uses the Polygon Amoy testnet for on-chain features. This includes:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 88,
+        "category": "jsx_text"
+      },
+      {
+        "text": "CROPT ERC-20 token for platform currency",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 90,
+        "category": "jsx_text"
+      },
+      {
+        "text": "CroptOptionNFT ERC-721 contract for tokenizing options",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 91,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All transactions can be viewed on PolygonScan",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 92,
+        "category": "jsx_text"
+      },
+      {
+        "text": "How do I connect my wallet?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 98,
+        "category": "jsx_text"
+      },
+      {
+        "text": "You can connect your wallet in two ways:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 100,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Make sure you're on the Polygon Amoy testnet for on-chain features.",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 105,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Click \"Connect Web3\" and approve the connection in MetaMask",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 102,
+        "category": "jsx_text"
+      },
+      {
+        "text": "MetaMask:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 102,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter your Ethereum address directly in the wallet input field",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 103,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Manual:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 103,
+        "category": "jsx_text"
+      },
+      {
+        "text": "How do I track my portfolio?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 110,
+        "category": "jsx_text"
+      },
+      {
+        "text": "The Portfolio page shows your complete position overview including:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 112,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Total positions and P&L across all options",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 114,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Individual option performance metrics",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 115,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Unrealized and realized gains/losses",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 116,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Position breakdown by status",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 117,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Are there demo accounts available?",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 123,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Yes! You can use these demo accounts to explore the platform:",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 125,
+        "category": "jsx_text"
+      },
+      {
+        "text": "farmer@demo (password: pass) - Farmer role",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 127,
+        "category": "jsx_text"
+      },
+      {
+        "text": "trader@demo (password: pass) - Trader role",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 128,
+        "category": "jsx_text"
+      },
+      {
+        "text": "broker@demo (password: pass) - Broker role with admin access",
+        "file": "client/src/pages/FAQ.tsx",
+        "line": 129,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/pages/Feedback.tsx": [
+      {
+        "text": "Thank You!",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 84,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Your feedback has been submitted successfully. We appreciate you taking the time to help us improve Cropto.",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 86,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Submit Another Feedback",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 99,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Help us improve Cropto by reporting UI issues, bugs, or suggesting improvements.",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 117,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Screenshot URL (Optional)",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 209,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Your name",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 131,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "your.email@example.com",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 150,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Select your role",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 169,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Describe the issue or suggestion...",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 193,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "https://...",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 212,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Feedback submitted",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 59,
+        "category": "other",
+        "context": "property: title"
+      },
+      {
+        "text": "Thank you for your feedback!",
+        "file": "client/src/pages/Feedback.tsx",
+        "line": 60,
+        "category": "other",
+        "context": "property: description"
+      }
+    ],
+    "client/src/pages/Login.tsx": [
+      {
+        "text": "Login to Cropto",
+        "file": "client/src/pages/Login.tsx",
+        "line": 84,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Enter your credentials to access your account",
+        "file": "client/src/pages/Login.tsx",
+        "line": 86,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Don't have an account?",
+        "file": "client/src/pages/Login.tsx",
+        "line": 143,
+        "category": "jsx_text"
+      },
+      {
+        "text": "farmer@example.com",
+        "file": "client/src/pages/Login.tsx",
+        "line": 102,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Enter your password",
+        "file": "client/src/pages/Login.tsx",
+        "line": 121,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Logged in successfully",
+        "file": "client/src/pages/Login.tsx",
+        "line": 62,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Login Failed",
+        "file": "client/src/pages/Login.tsx",
+        "line": 69,
+        "category": "other",
+        "context": "property: title"
+      }
+    ],
+    "client/src/pages/OnchainTx.tsx": [
+      {
+        "text": "On-Chain Transactions",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 89,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Monitor blockchain settlements and transfers",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 91,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Transaction History",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 99,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Recent on-chain transactions for settlements, deposits, and withdrawals",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 101,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Gas Used",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 116,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Transaction Statistics",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 185,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Summary of on-chain activity",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 186,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Total Transactions",
+        "file": "client/src/pages/OnchainTx.tsx",
+        "line": 191,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/pages/PartnersContracts.tsx": [
+      {
+        "text": "Partners & Contracts",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 114,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Manage institutional partnerships and service agreements",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 116,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Partner Organizations",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 124,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Active and pending institutional partners",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 126,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Service Contracts",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 177,
+        "category": "jsx_text"
+      },
+      {
+        "text": "All partnership agreements and service contracts",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 179,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Contract ID",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 186,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Start Date",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 189,
+        "category": "jsx_text"
+      },
+      {
+        "text": "End Date",
+        "file": "client/src/pages/PartnersContracts.tsx",
+        "line": 190,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/pages/Portfolio.tsx": [
+      {
+        "text": "Your options positions and performance",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 97,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Total P&L",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 166,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Realized + Unrealized",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 181,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Realized P&L",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 189,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Settled options",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 204,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Unrealized P&L",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 212,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Open positions",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 227,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Active contracts",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 243,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Locked Collateral",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 251,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Reserved funds",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 259,
+        "category": "jsx_text"
+      },
+      {
+        "text": "No positions yet",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 293,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Start trading options to see your portfolio here",
+        "file": "client/src/pages/Portfolio.tsx",
+        "line": 294,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/pages/Register.tsx": [
+      {
+        "text": "Create Account",
+        "file": "client/src/pages/Register.tsx",
+        "line": 95,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Register to start trading grain options on Cropto",
+        "file": "client/src/pages/Register.tsx",
+        "line": 97,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Already have an account?",
+        "file": "client/src/pages/Register.tsx",
+        "line": 186,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Minimum 6 characters",
+        "file": "client/src/pages/Register.tsx",
+        "line": 132,
+        "category": "jsx_attribute",
+        "context": "placeholder"
+      },
+      {
+        "text": "Account created successfully",
+        "file": "client/src/pages/Register.tsx",
+        "line": 73,
+        "category": "other",
+        "context": "property: description"
+      },
+      {
+        "text": "Registration Failed",
+        "file": "client/src/pages/Register.tsx",
+        "line": 80,
+        "category": "other",
+        "context": "property: title"
+      }
+    ],
+    "client/src/pages/Testing.tsx": [
+      {
+        "text": "Testing Guide — Cropto (compact)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 13,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Updated testing instructions for the Cropto demo. Use the demo accounts below to run through the flows.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 14,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Demo accounts",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 16,
+        "category": "jsx_text"
+      },
+      {
+        "text": ": farmer@demo / pass",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 18,
+        "category": "jsx_text"
+      },
+      {
+        "text": ": trader@demo / pass",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 19,
+        "category": "jsx_text"
+      },
+      {
+        "text": ": broker@demo / pass",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 20,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Conventions & units",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 23,
+        "category": "jsx_text"
+      },
+      {
+        "text": "price in USD per tonne ($/t).",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 25,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Strike:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 25,
+        "category": "jsx_text"
+      },
+      {
+        "text": "tonnes (minimum lot",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 26,
+        "category": "jsx_text"
+      },
+      {
+        "text": ").",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 26,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Quantity:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 26,
+        "category": "jsx_text"
+      },
+      {
+        "text": "premium_per_t ($/t). Total premium = premium_per_t * qty.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 27,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Premium:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 27,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Polygon Amoy (currency: POL).",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 28,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Network:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 28,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Quick scenario: Create → Match → Mint (recommended)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 31,
+        "category": "jsx_text"
+      },
+      {
+        "text": "1) Create option (farmer)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 32,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Login as",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 34,
+        "category": "jsx_text"
+      },
+      {
+        "text": "farmer@demo",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 34,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Dashboard → Create Option.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 35,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Example fields:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 36,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Commodity:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 38,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Type:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 39,
+        "category": "jsx_text"
+      },
+      {
+        "text": "($/t)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 40,
+        "category": "jsx_text"
+      },
+      {
+        "text": "(t)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 41,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Premium per t:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 42,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Submit → option status should be",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 45,
+        "category": "jsx_text"
+      },
+      {
+        "text": "2) Match option (broker)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 48,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Logout → Login as",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 50,
+        "category": "jsx_text"
+      },
+      {
+        "text": "broker@demo",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 50,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Find the created option → press",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 51,
+        "category": "jsx_text"
+      },
+      {
+        "text": "and assign counterparty.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 51,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Status should change to",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 52,
+        "category": "jsx_text"
+      },
+      {
+        "text": "3) Mint NFT (owner)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 55,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Prerequisite: FILLED option and sufficient POL in wallet (≈0.02–0.03 POL per mint) OR mock mode enabled.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 57,
+        "category": "jsx_text"
+      },
+      {
+        "text": "To mint:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 59,
+        "category": "jsx_text"
+      },
+      {
+        "text": "If backend relayer (dev-mint): call the API",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 61,
+        "category": "jsx_text"
+      },
+      {
+        "text": "with auth token (curl example below).",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 61,
+        "category": "jsx_text"
+      },
+      {
+        "text": "POST /api/onchain/mint-nft",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 61,
+        "category": "jsx_text"
+      },
+      {
+        "text": "If user mint via MetaMask: click",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 62,
+        "category": "jsx_text"
+      },
+      {
+        "text": "in UI and approve the transaction in MetaMask.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 62,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Admin: Manual settlement (daily)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 65,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Response includes per-option settlements, PnL and actions taken (margin calls, forced settlements).",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 72,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Useful curl commands",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 74,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Mint NFT (backend relayer)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 75,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Check CROPT balance",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 83,
+        "category": "jsx_text"
+      },
+      {
+        "text": "MOCK / Safe testing mode",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 88,
+        "category": "jsx_text"
+      },
+      {
+        "text": "To avoid spending POL during early tests, set environment vars:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 90,
+        "category": "jsx_text"
+      },
+      {
+        "text": "— client shows banner and on-chain flows are simulated;",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 92,
+        "category": "jsx_text"
+      },
+      {
+        "text": "VITE_MOCK_ONCHAIN=true",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 92,
+        "category": "jsx_text"
+      },
+      {
+        "text": "— backend blocks real minting and returns simulated TXs.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 93,
+        "category": "jsx_text"
+      },
+      {
+        "text": "VITE_ENABLE_MINT=false",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 93,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Troubleshooting (common)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 97,
+        "category": "jsx_text"
+      },
+      {
+        "text": "check POL balance, faucet, or enable mock mode.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 99,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Mint fails:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 99,
+        "category": "jsx_text"
+      },
+      {
+        "text": "use checksummed address from MetaMask (ethers.getAddress validation).",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 100,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Invalid address:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 100,
+        "category": "jsx_text"
+      },
+      {
+        "text": "log in and use returned JWT for curl commands.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 101,
+        "category": "jsx_text"
+      },
+      {
+        "text": "401 Unauthorized:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 101,
+        "category": "jsx_text"
+      },
+      {
+        "text": "ensure qty",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 102,
+        "category": "jsx_text"
+      },
+      {
+        "text": ">=",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 102,
+        "category": "jsx_text"
+      },
+      {
+        "text": "500 and numeric strike.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 102,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Validation errors:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 102,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Where to find contract addresses / env",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 105,
+        "category": "jsx_text"
+      },
+      {
+        "text": "— CROPT token (env / Replit secrets)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 107,
+        "category": "jsx_text"
+      },
+      {
+        "text": "— Option NFT contract",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 108,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Explorer:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 109,
+        "category": "jsx_text"
+      },
+      {
+        "text": "https://amoy.polygonscan.com",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 109,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Expected status flow",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 112,
+        "category": "jsx_text"
+      },
+      {
+        "text": "OPEN → SELECTED → FILLED → EXERCISED → SETTLED",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 113,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Margin states:",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 114,
+        "category": "jsx_text"
+      },
+      {
+        "text": "(forced settlement after 24h timeout)",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 114,
+        "category": "jsx_text"
+      },
+      {
+        "text": "OK → MARGIN_CALL → DEFAULTED",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 114,
+        "category": "jsx_text"
+      },
+      {
+        "text": "If you want this page translated to Ukrainian or Russian, or need the same file saved as /client/src/pages/testing.md, tell me and I will create that too.",
+        "file": "client/src/pages/Testing.tsx",
+        "line": 117,
+        "category": "jsx_text"
+      }
+    ],
+    "client/src/pages/not-found.tsx": [
+      {
+        "text": "404 Page Not Found",
+        "file": "client/src/pages/not-found.tsx",
+        "line": 14,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Did you forget to add the page to the router?",
+        "file": "client/src/pages/not-found.tsx",
+        "line": 18,
+        "category": "jsx_text"
+      }
+    ]
+  }
+}

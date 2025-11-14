@@ -1,30 +1,449 @@
 {
-  "site.title": "Cropto",
-  "site.logoAlt": "Логотип Cropto",
-  "header.connect": "Підʼєднати гаманець",
-  "header.signIn": "Увійти",
-  "header.language": "Мова",
-  "nav.home": "Головна",
-  "nav.dashboard": "Панель",
-  "nav.portfolio": "Портфель",
-  "nav.docs": "Документація",
-  "nav.faq": "Питання",
-  "nav.testing": "Тестування",
-  "nav.partners": "Партнери",
-  "nav.transactions": "Транзакції",
-  "nav.feedback": "Зворотній звʼязок",
-  "nav.admin": "Адміністрування",
-  "nav.reconciliation": "Звірка",
-  "nav.index": "Індекс",
-  "button.createOption": "Створити опціон",
-  "button.connectWallet": "Підʼєднати гаманець",
-  "button.create": "Створити",
-  "button.login": "Увійти",
-  "button.register": "Реєстрація",
-  "button.logout": "Вийти",
-  "toast.loggedOut": "Вихід виконано",
-  "toast.loggedOutDesc": "Ви успішно вийшли з системи",
-  "hero.headline": "Cropto — хеджування для зерна",
-  "faq.title": "Питання",
-  "testing.title": "Інструкція тестування"
+  "site": {
+    "title": "Cropto",
+    "logoAlt": "Логотип Cropto",
+    "backToDashboard": "Назад на панель"
+  },
+  "header": {
+    "connect": "Підʼєднати гаманець",
+    "signIn": "Увійти",
+    "language": "Мова"
+  },
+  "nav": {
+    "home": "Головна",
+    "dashboard": "Панель",
+    "portfolio": "Портфель",
+    "docs": "Документація",
+    "faq": "Питання",
+    "testing": "Тестування",
+    "partners": "Партнери",
+    "transactions": "Транзакції",
+    "feedback": "Зворотній звʼязок",
+    "admin": "Адміністрування",
+    "reconciliation": "Звірка",
+    "index": "Індекс"
+  },
+  "button": {
+    "createOption": "Створити опціон",
+    "connectWallet": "Підʼєднати гаманець",
+    "create": "Створити",
+    "login": "Увійти",
+    "register": "Реєстрація",
+    "logout": "Вийти",
+    "cancel": "Скасувати",
+    "submit": "Підтвердити",
+    "match": "Зʼєднати",
+    "exercise": "Виконати",
+    "simulate": "Симулювати",
+    "settle": "Примусове погашення",
+    "topup": "Поповнити",
+    "withdraw": "Вивести",
+    "mint": "Створити NFT",
+    "confirm": "Підтвердити",
+    "close": "Закрити"
+  },
+  "common": {
+    "loading": "Завантаження...",
+    "error": "Помилка",
+    "success": "Успіх",
+    "pending": "Очікування...",
+    "noData": "Немає даних",
+    "yes": "Так",
+    "no": "Ні"
+  },
+  "toast": {
+    "loggedOut": "Вихід виконано",
+    "loggedOutDesc": "Ви успішно вийшли з системи",
+    "success": "Успіх",
+    "error": "Помилка",
+    "optionCreated": "Опціон успішно створено",
+    "optionCreateFailed": "Не вдалося створити опціон",
+    "matchSuccess": "Зʼєднання успішне",
+    "matchSuccessDesc": "Опціон успішно зʼєднано",
+    "matchFailed": "Зʼєднання не вдалося",
+    "matchFailedDesc": "Не вдалося зʼєднати опціон",
+    "exerciseSuccess": "Виконання успішне",
+    "exerciseSuccessDesc": "Опціон виконано та погашено",
+    "exerciseFailed": "Виконання не вдалося",
+    "exerciseFailedDesc": "Не вдалося виконати опціон",
+    "marginCheckComplete": "Перевірку маржі завершено",
+    "marginCheckProcessed": "Оброблено {{count}} опціонів. Створено {{calls}} маржин-колів.",
+    "marginCheckFailed": "Перевірка маржі не вдалася",
+    "marginCheckFailedDesc": "Не вдалося виконати перевірку маржі",
+    "settleComplete": "Примусове погашення завершено",
+    "settleCompleteDesc": "Опціон примусово погашено. Статус: {{status}}. Надіслано {{notifications}} сповіщень.",
+    "settleFailed": "Примусове погашення не вдалося",
+    "settleFailedDesc": "Не вдалося примусово погасити опціон",
+    "topupSuccess": "Поповнення успішне",
+    "topupResolved": "Маржин-кол вирішено",
+    "topupResolvedDesc": "Маржин-кол вирішено. Статус опціону відновлено до ВІДКРИТИЙ.",
+    "topupSuccessDesc": "Додано {{amount}} до забезпечення. Всього доступно: {{total}}",
+    "topupFailed": "Поповнення не вдалося",
+    "topupFailedDesc": "Не вдалося поповнити маржин-кол",
+    "withdrawInitiated": "Виведення ініційовано",
+    "withdrawInitiatedDesc": "Транзакція: {{txHash}}",
+    "withdrawFailed": "Виведення не вдалося",
+    "withdrawFailedDesc": "Не вдалося ініціювати виведення",
+    "welcomeBack": "З поверненням!",
+    "welcomeBackDesc": "Ви успішно автентифіковані",
+    "accountSetup": "Налаштування облікового запису завершено",
+    "accountSetupDesc": "Все готово! Починайте досліджувати опціони на зерно.",
+    "loginSuccess": "Успіх",
+    "loginSuccessDesc": "Вхід виконано успішно",
+    "loginFailed": "Вхід не вдався",
+    "loginFailedDesc": "Невірний email або пароль",
+    "registerSuccess": "Успіх",
+    "registerSuccessDesc": "Обліковий запис успішно створено",
+    "registerFailed": "Реєстрація не вдалася",
+    "registerFailedDesc": "Не вдалося створити обліковий запис",
+    "croptMintRequested": "Запит на створення CROPT",
+    "mintingDisabled": "Створення вимкнено",
+    "mintingDisabledDesc": "Створення CROPT наразі вимкнено. Звʼяжіться з адміністратором.",
+    "mintFailed": "Створення не вдалося",
+    "nftMinted": "NFT успішно створено!",
+    "noMarginCall": "Немає активного маржин-колу для цього опціону"
+  },
+  "hero": {
+    "headline": "Cropto — хеджування для зерна",
+    "subheadline": "Торгуйте опціонами на сільськогосподарські товари з прозорістю на блокчейні",
+    "cta": {
+      "createOption": "Створити опціон",
+      "connectWallet": "Підʼєднати гаманець"
+    }
+  },
+  "page": {
+    "dashboard": {
+      "title": "Ринок опціонів",
+      "subtitle": "Переглядайте, створюйте та торгуйте опціонами на зерно",
+      "metrics": {
+        "totalOptions": "Всього опціонів",
+        "totalOptionsDesc": "За весь час",
+        "openPositions": "Відкриті позиції",
+        "openPositionsDesc": "Зараз активні",
+        "totalVolume": "Загальний обсяг",
+        "totalVolumeDesc": "Сукупна вартість"
+      },
+      "indexWidget": {
+        "title": "Індексна ціна",
+        "loading": "Завантаження...",
+        "loadError": "Не вдалося завантажити індексні дані",
+        "lastUpdated": "Останнє оновлення:",
+        "priceHistory": "Історія цін"
+      }
+    },
+    "login": {
+      "title": "Вхід до Cropto",
+      "subtitle": "Введіть свої облікові дані для доступу до облікового запису",
+      "emailLabel": "Email",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Введіть ваш пароль",
+      "loginButton": "Увійти",
+      "loginButtonPending": "Вхід...",
+      "noAccount": "Немає облікового запису?",
+      "registerLink": "Реєстрація",
+      "validation": {
+        "emailRequired": "Email обовʼязковий",
+        "emailInvalid": "Невірний формат email",
+        "passwordRequired": "Пароль обовʼязковий"
+      }
+    },
+    "register": {
+      "title": "Створити обліковий запис",
+      "subtitle": "Зареєструйтеся щоб почати торгувати опціонами на зерно на Cropto",
+      "emailLabel": "Email",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Мінімум 6 символів",
+      "roleLabel": "Роль",
+      "rolePlaceholder": "Виберіть вашу роль",
+      "roles": {
+        "farmer": "Фермер",
+        "trader": "Трейдер",
+        "broker": "Брокер"
+      },
+      "registerButton": "Створити обліковий запис",
+      "registerButtonPending": "Створення облікового запису...",
+      "haveAccount": "Вже маєте обліковий запис?",
+      "loginLink": "Увійти",
+      "validation": {
+        "emailRequired": "Email обовʼязковий",
+        "emailInvalid": "Невірний формат email",
+        "passwordMin": "Пароль повинен містити щонайменше 6 символів",
+        "roleRequired": "Будь ласка, виберіть роль"
+      }
+    },
+    "portfolio": {
+      "title": "Портфель",
+      "subtitle": "Ваші опціонні позиції та результативність",
+      "metrics": {
+        "totalPnl": "Загальний P&L",
+        "totalPnlDesc": "Реалізований + Нереалізований",
+        "realizedPnl": "Реалізований P&L",
+        "realizedPnlDesc": "Погашені опціони",
+        "unrealizedPnl": "Нереалізований P&L",
+        "unrealizedPnlDesc": "Відкриті позиції",
+        "openPositions": "Відкриті позиції",
+        "openPositionsDesc": "Активні контракти",
+        "lockedCollateral": "Заблоковане забезпечення",
+        "lockedCollateralDesc": "Зарезервовані кошти",
+        "marginCalls": "Маржин-коли",
+        "marginCallsDesc": "{{count}} {{action}}",
+        "actionRequired": "Потрібні дії",
+        "allClear": "Все в порядку"
+      },
+      "positions": {
+        "title": "Позиції",
+        "empty": "Поки що немає позицій",
+        "emptySubtitle": "Почніть торгувати опціонами щоб побачити ваш портфель тут",
+        "table": {
+          "title": "Назва",
+          "type": "Тип",
+          "strike": "Страйк",
+          "quantity": "Кількість",
+          "premium": "Премія",
+          "role": "Роль",
+          "status": "Статус",
+          "pnl": "P&L",
+          "date": "Дата",
+          "buyer": "Покупець",
+          "seller": "Продавець",
+          "unrealized": "Нереалізований"
+        }
+      },
+      "loadError": "Не вдалося завантажити дані портфелю. Спробуйте ще раз."
+    },
+    "admin": {
+      "title": "Панель адміністратора",
+      "subtitle": "Керування демо-сценаріями та системними операціями",
+      "demo": {
+        "title": "Демо-сценарій",
+        "subtitle": "Запустіть демо в один клік щоб заповнити платформу зразковими даними для презентацій партнерам",
+        "creates": "Це створить:",
+        "users": "3 демо-користувачів: farmer@demo, trader@demo, broker@demo (пароль: pass)",
+        "options": "3 опціонних контракти з різними страйками, кількостями та статусами",
+        "indexPrices": "2 записи індексних цін (ПШЕНИЦЯ @ 210, ПШЕНИЦЯ @ 240)",
+        "button": "Запустити демо-сценарій",
+        "buttonPending": "Заповнення демо-даними...",
+        "success": "Демо успішно заповнено!",
+        "successToast": "Демо-сценарій створено! ✨",
+        "successDesc": "Створено {{users}} користувачів, {{options}} опціонів та {{prices}} індексних цін.{{deleted}}",
+        "deleted": " Очищено {{count}} існуючих записів.",
+        "failedToast": "Не вдалося запустити демо",
+        "failedDesc": "Сталася помилка під час заповнення демо-даними",
+        "results": {
+          "users": "Користувачів: {{count}} ({{created}} нових, {{existing}} існуючих)",
+          "options": "Опціонів: {{count}} створено{{replaced}}",
+          "optionsReplaced": " (замінено {{count}} існуючих)",
+          "indexPrices": "Індексних цін: {{count}} створено{{replaced}}",
+          "indexPricesReplaced": " (замінено {{count}} існуючих)",
+          "credentials": "Облікові дані для входу:",
+          "credentialEntry": "{{email}} / pass ({{role}})"
+        },
+        "note": "Примітка",
+        "noteDesc": "Ця функція доступна тільки брокерам. Демо-сценарій ідемпотентний і може бути запущений багато разів. Існуючі користувачі будуть збережені, а нові опціони/індексні ціни будуть додані до бази даних."
+      }
+    }
+  },
+  "component": {
+    "createOption": {
+      "button": "Створити опціон",
+      "title": "Створити новий опціон",
+      "subtitle": "Створіть новий крипто-опціонний контракт. Заповніть всі обовʼязкові поля.",
+      "form": {
+        "titleLabel": "Назва опціону",
+        "titlePlaceholder": "напр., BTC-50000-CALL-30DEC",
+        "typeLabel": "Тип опціону",
+        "typePlaceholder": "Виберіть тип опціону",
+        "strikeLabel": "Ціна страйк",
+        "strikePlaceholder": "50000.00",
+        "qtyLabel": "Кількість",
+        "qtyPlaceholder": "1.00",
+        "premiumLabel": "Премія",
+        "premiumPlaceholder": "500.00",
+        "buyerLabel": "Адреса покупця",
+        "buyerPlaceholder": "0x..."
+      },
+      "summary": {
+        "title": "Підсумок контракту",
+        "totalPremium": "Загальна премія:",
+        "requiredCollateral": "Необхідне забезпечення:",
+        "collateralNote": "Забезпечення необхідне від продавця для покриття зобовʼязань за ціною страйк."
+      },
+      "submit": "Створити опціон",
+      "submitPending": "Створення...",
+      "cancel": "Скасувати"
+    },
+    "optionsTable": {
+      "title": "Книга опціонів",
+      "empty": "Опціони не знайдено",
+      "emptyCreate": "Почніть зі створення вашого першого опціонного контракту.",
+      "emptyFilter": "Жодні опціони не відповідають вашим поточним фільтрам. Спробуйте їх налаштувати.",
+      "filters": {
+        "type": "Фільтр за типом",
+        "status": "Фільтр за статусом",
+        "allTypes": "Всі типи",
+        "allStatus": "Всі статуси",
+        "call": "Call",
+        "put": "Put",
+        "open": "Відкритий",
+        "filled": "Заповнений",
+        "expired": "Закінчився",
+        "cancelled": "Скасований"
+      },
+      "headers": {
+        "title": "Назва",
+        "type": "Тип",
+        "strike": "Страйк",
+        "qty": "Кількість",
+        "premium": "Премія",
+        "buyer": "Покупець",
+        "seller": "Продавець",
+        "status": "Статус",
+        "created": "Створено",
+        "actions": "Дії"
+      }
+    },
+    "notifications": {
+      "title": "Сповіщення",
+      "new": "{{count}} нових",
+      "loading": "Завантаження сповіщень...",
+      "empty": "Поки що немає сповіщень",
+      "types": {
+        "marginCall": "Маржин-кол",
+        "optionMatched": "Опціон зʼєднано",
+        "optionExercised": "Опціон виконано",
+        "liquidation": "Ліквідація",
+        "notification": "Сповіщення"
+      },
+      "newBadge": "Нове"
+    },
+    "statusBadge": {
+      "open": "ВІДКРИТИЙ",
+      "selected": "ВИБРАНИЙ",
+      "filled": "ЗАПОВНЕНИЙ",
+      "exercised": "ВИКОНАНИЙ",
+      "settled": "ПОГАШЕНИЙ",
+      "expired": "ЗАКІНЧИВСЯ",
+      "cancelled": "СКАСОВАНИЙ",
+      "defaulted": "ДЕФОЛТ",
+      "marginCall": "МАРЖИН-КОЛ"
+    }
+  },
+  "dialog": {
+    "match": {
+      "title": "Зʼєднати опціон",
+      "subtitle": "Введіть ID контрагента щоб завершити цю угоду",
+      "counterpartyLabel": "ID контрагента",
+      "counterpartyPlaceholder": "Введіть ID користувача"
+    },
+    "exercise": {
+      "title": "Виконати опціон",
+      "subtitle": "Введіть поточну спот-ціну для виконання цього опціону. Страйк: ${{strike}}",
+      "spotPriceLabel": "Поточна спот-ціна",
+      "spotPricePlaceholder": "Введіть поточну ціну",
+      "spotPriceDesc": "Поточна ринкова ціна активу"
+    },
+    "simulate": {
+      "title": "Симулювати перевірку маржі",
+      "subtitle": "Виконати розрахунок перевірки маржі для цього опціону з використанням користувацької індексної ціни",
+      "indexPriceLabel": "Індексна ціна",
+      "indexPricePlaceholder": "Введіть індексну ціну",
+      "indexPriceDesc": "Поточна індексна ціна товару для розрахунку P&L"
+    },
+    "forceSettle": {
+      "title": "Примусове погашення опціону",
+      "subtitle": "Це примусово погасить опціон \"{{title}}\" та оновить його статус до ВИКОНАНИЙ або ДЕФОЛТ. Цю дію не можна скасувати.",
+      "reasonLabel": "Причина примусового погашення",
+      "reasonPlaceholder": "Введіть детальну причину примусового погашення цього опціону (напр., термін маржин-колу закінчився, недостатнє забезпечення тощо)",
+      "button": "Примусове погашення"
+    },
+    "topup": {
+      "title": "Поповнити забезпечення",
+      "subtitle": "Додайте додаткове забезпечення для вирішення маржин-колу для опціону \"{{title}}\"",
+      "amountLabel": "Сума поповнення",
+      "amountPlaceholder": "Введіть суму для додавання",
+      "currencyLabel": "Валюта",
+      "currencyPlaceholder": "Виберіть валюту",
+      "usd": "USD",
+      "button": "Поповнити"
+    },
+    "withdraw": {
+      "title": "Вивести CROPT",
+      "subtitle": "Переведіть токени CROPT на вашу адресу гаманця",
+      "addressLabel": "Адреса гаманця",
+      "addressPlaceholder": "0x...",
+      "amountLabel": "Сума",
+      "amountPlaceholder": "Сума для виведення",
+      "button": "Вивести"
+    },
+    "mintNft": {
+      "title": "Створити NFT опціону",
+      "subtitle": "Створіть цей опціон як ERC-721 NFT на тестовій мережі Polygon Amoy",
+      "recipientLabel": "Адреса отримувача",
+      "recipientPlaceholder": "0x...",
+      "recipientDesc": "Адреса Ethereum, яка отримає NFT",
+      "success": "NFT успішно створено!",
+      "tokenId": "ID токену:",
+      "viewExplorer": "Переглянути в Explorer",
+      "nftLabel": "NFT #{{id}}",
+      "button": "Створити NFT",
+      "buttonPending": "Створення..."
+    },
+    "walletAuth": {
+      "title": "Підʼєднати гаманець",
+      "subtitle": "Виберіть спосіб підʼєднання",
+      "metamask": {
+        "title": "MetaMask",
+        "subtitle": "Підʼєднатися через розширення браузера MetaMask",
+        "button": "Підʼєднати MetaMask",
+        "buttonPending": "Підʼєднання..."
+      },
+      "manual": {
+        "title": "Ручне введення",
+        "subtitle": "Введіть адресу гаманця вручну",
+        "addressLabel": "Адреса гаманця",
+        "addressPlaceholder": "0x...",
+        "button": "Підʼєднати",
+        "buttonPending": "Підʼєднання..."
+      }
+    },
+    "roleSelection": {
+      "title": "Виберіть вашу роль",
+      "subtitle": "Оберіть як ви будете брати участь на платформі Cropto",
+      "roles": {
+        "farmer": {
+          "title": "Фермер",
+          "subtitle": "Хеджуйте виробництво зерна опціонами"
+        },
+        "trader": {
+          "title": "Трейдер",
+          "subtitle": "Торгуйте та спекулюйте на цінах товарів"
+        },
+        "broker": {
+          "title": "Брокер",
+          "subtitle": "Сприяйте угодам та керуйте платформою"
+        }
+      },
+      "button": "Продовжити"
+    },
+    "priceHistory": {
+      "title": "Історія цін",
+      "subtitle": "Переглянути історичні дані індексних цін для {{commodity}}",
+      "close": "Закрити"
+    }
+  },
+  "faq": {
+    "title": "Питання",
+    "subtitle": "Часті питання про платформу Cropto"
+  },
+  "testing": {
+    "title": "Інструкція тестування",
+    "subtitle": "Дізнайтеся як тестувати функції платформи Cropto"
+  },
+  "notFound": {
+    "title": "404 Сторінку не знайдено",
+    "subtitle": "Сторінка, яку ви шукаєте, не існує",
+    "backLink": "Назад на панель"
+  }
 }

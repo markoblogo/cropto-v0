@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { NotificationsDropdown } from "./NotificationsDropdown";
-import LanguageSwitcher from "./LanguageSwitcher";
+import FlagSwitcher from "./FlagSwitcher";
 import { useTranslation } from "react-i18next";
 
 interface HeaderProps {
@@ -128,7 +128,7 @@ export function Header({ onCreateOption }: HeaderProps) {
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             {/* Language Switcher */}
-            <LanguageSwitcher />
+            <FlagSwitcher />
             
             {/* Mobile Menu Button */}
             <Button 
