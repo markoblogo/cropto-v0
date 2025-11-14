@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,8 +9,7 @@ import Portfolio from "@/pages/Portfolio";
 import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
-import Docs from "@/pages/Docs";
-import FAQ from "@/pages/FAQ";
+import AboutPage from "@/pages/AboutPage";
 import Testing from "@/pages/Testing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -20,6 +19,15 @@ import AdminReconciliation from "@/pages/AdminReconciliation";
 import AdminIndex from "@/pages/AdminIndex";
 import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
+
+function RedirectToAbout() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/about");
+  }, [setLocation]);
+  return null;
+}
 
 function Router() {
   return (
@@ -31,8 +39,9 @@ function Router() {
       <Route path="/design-architecture" component={DesignArchitecture} />
       <Route path="/partners-contracts" component={PartnersContracts} />
       <Route path="/onchain-tx" component={OnchainTx} />
-      <Route path="/docs" component={Docs} />
-      <Route path="/faq" component={FAQ} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/docs" component={RedirectToAbout} />
+      <Route path="/faq" component={RedirectToAbout} />
       <Route path="/testing" component={Testing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/feedback" component={AdminFeedback} />

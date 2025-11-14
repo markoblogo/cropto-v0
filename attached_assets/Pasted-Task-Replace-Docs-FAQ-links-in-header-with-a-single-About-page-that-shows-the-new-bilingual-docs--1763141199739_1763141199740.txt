@@ -1,0 +1,37 @@
+Task: Replace Docs + FAQ links in header with a single About page that shows the new bilingual docs.
+
+Steps to perform (automatically):
+1) Install dependency if not present:
+   - npm i react-markdown remark-gfm
+
+2) Create new file client/src/pages/AboutPage.tsx with behavior:
+   - Detect current UI language (use existing i18n state / react-i18next current language).
+   - Load Markdown file from `/docs/about.en.md` (for 'en') or `/docs/about.uk.md` (for 'uk').
+   - Render markdown using react-markdown + remark-gfm.
+   - Show a small top area: language switcher (reuse existing flag switcher), and a link "View FAQ" that scrolls to FAQ section inside the page.
+
+3) Implement in AboutPage a rendered structure: intro (markdown), then a horizontal rule, then an FAQ section. The FAQ content should load from `/docs/faq.en.md` or `/docs/faq.uk.md` and render below intro (so About = intro + FAQ).
+
+4) Update router:
+   - Add route `/about` -> AboutPage.
+   - For `/docs` and `/faq` routes, add redirects to `/about`.
+
+5) Update Header / Nav component:
+   - Remove/hide the old "Docs" and "FAQ" nav items.
+   - Add a new nav item "About" linking to `/about`.
+   - Ensure language switcher remains present and looks classic (flag icon for EN / UA). Replace Globe text with flag icons using existing flag component if available.
+
+6) Create branch `docs/replace-with-about`, commit changes:
+   - commit message: "feat(docs): render bilingual About page in UI and replace Docs/FAQ nav"
+   - push branch to origin.
+
+7) If git push fails (agent cannot push), create a patch file `replit_changes.patch` with all diffs and print instructions for manual git apply.
+
+Acceptance criteria:
+- Visiting `/about` shows the English or Ukrainian About text depending on language switcher.
+- FAQ content is visible on the same page below the About intro.
+- Header shows only a single About link (Docs and FAQ removed from nav).
+- Router redirects `/docs` and `/faq` to `/about`.
+- A new branch `docs/replace-with-about` is created and changes are committed (or a patch file created if push restricted).
+
+Please run these steps now and report back with console output and whether branch push succeeded. If push blocked, save the patch as `replit_changes.patch` and show link to download it so I can give you the exact local git commands to apply and push.

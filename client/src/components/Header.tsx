@@ -74,14 +74,9 @@ export function Header({ onCreateOption }: HeaderProps) {
                 {t('nav.portfolio')}
               </Button>
             </Link>
-            <Link href="/docs">
-              <Button variant="ghost" size="sm" data-testid="button-nav-docs">
-                {t('nav.docs')}
-              </Button>
-            </Link>
-            <Link href="/faq">
-              <Button variant="ghost" size="sm" data-testid="button-nav-faq">
-                {t('nav.faq')}
+            <Link href="/about">
+              <Button variant="ghost" size="sm" data-testid="button-nav-about">
+                {t('nav.about')}
               </Button>
             </Link>
             <Link href="/testing">
