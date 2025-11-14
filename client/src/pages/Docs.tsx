@@ -1,5 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Book, Users, Shield, TrendingUp } from "lucide-react";
+import { Link } from "wouter";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function Docs() {
