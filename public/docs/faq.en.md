@@ -1,25 +1,25 @@
-# FAQ — Frequently Asked Questions
+# FAQ — Cropto
 
-### What is an NFT-option in Cropto?
-An NFT-option is an ERC-721 token that stores option metadata: type, strike, volume, term, and link to the physical contract. It is a digital certificate of the right/position.
+### What is an NFT option in Cropto?
 
-### How does a farmer use it?
-A farmer buys an option as insurance — pays the premium and locks a price for a future delivery. If the market moves unfavorably, the difference is compensated per the option terms.
+An NFT option is an ERC-721 token that represents the right to receive a payout based on a specific option contract in the Cropto system.  
+The token itself is not the grain — it is a **claim on settlement** linked to a physical deal.
 
-### Who pays the premium?
-The option buyer pays the premium. The seller (trader) sets the premium — guideline 3–4% for a 6-month option, but it's market-driven.
+### How is PnL calculated?
 
-### What are the trader's risks?
-Main risk is the market moving against the position. Traders post collateral; if losses exceed collateral → margin call → forced settlement → default rating.
+- Every day we take the **Spike Spot Commodity Index** for the chosen grade (e.g. wheat 11.5 pro).  
+- We compare it with the strike price of the option.  
+- For CALL/PUT we compute intrinsic value and update unrealized PnL and margin status.
 
-### What is a margin call?
-Automatic notification triggered at a threshold (80% of collateral). Trader has 24 hours to top up, otherwise forced settlement occurs.
+### What happens on a margin call?
 
-### How does settlement / exercise work?
-Buyer initiates exercise. System calculates intrinsic value using Spike Index, compares to collateral, performs payout (off-chain) or triggers on-chain release when required.
+If losses approach the collateral limit, the position is flagged, and the trader has a time window to top up margin.  
+If the call is not met, the platform can trigger **forced settlement** using the remaining collateral.
 
-### How does minting on-chain work?
-CROPT is ERC-20. In MVP, minting is handled by the backend (dev-wallet, testnet). Users request withdraw — backend mints CROPT to the address. Production requires additional infrastructure.
+### How do I get CROPT for tests?
 
-### Can I transfer/sell the NFT-option?
-Yes — the NFT can be traded. Legal/physical obligations are described in the contract; transferring the NFT changes the digital owner of the right.
+In the current Pre-MVP:
+
+- CROPT exists only on **Polygon Amoy testnet**.  
+- Test tokens are minted via backend endpoints by the team.  
+- You only need POL (testnet gas) in MetaMask to see transactions and NFT mints.

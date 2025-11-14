@@ -1,31 +1,44 @@
-# Cropto — what it is and why
+# About Cropto
 
-**Cropto** is a simple, transparent tool to manage price risk in the agricultural market. We connect the physical grain market with digital instruments (NFTs and the CROPT token) so farmers can hedge prices and traders can earn additional income.
+Cropto is an experimental platform for **hedging grain price risk** and trading **NFT options** that are linked to real physical grain prices via the **Spike Spot Commodity Index**.
 
-## Who is it for
-- **Farmers** — lock in expected revenue by fixing a future delivery price.
-- **Traders** — earn option premiums and profit from market movements.
-- **Brokers / operators** — manage deals and maintain records tied to physical delivery.
+## Who is it for?
 
-## How it works (brief)
-1. A physical deal (farmer ↔ trader) or an option listing is created.
-2. The system issues an **NFT-option** (CALL/PUT) with strike, volume, term, premium.
-3. Daily recalculation via the Spike Spot Commodity Index — PnL, margin calls, payouts.
-4. Settlements happen off-chain first; optionally withdraw → mint on-chain (CROPT).
-5. Admin panel: partners registry, transactions journal, reconciliation.
+- **Farmers** — lock in the selling price for future harvest, reduce downside risk.
+- **Traders** — sell options, earn premiums, manage collateral and margin calls.
+- **Brokers / partners** — onboard clients, reconcile deals, monitor risk.
 
-## What the NFT-option contains
-- Option id and link to the physical contract
-- Type (CALL/PUT), strike, volume (tons), expiry
-- Premium and settlement currency (CROPT / fiat)
-- Execution / payout status
+## How it works (Pre-MVP)
 
-## Money flow (simplified)
-- Premium goes to the seller (trader) or can act as a discount in the physical contract.
-- Upon exercise — payout from collateral or CROPT balance.
-- CROPT can be swapped to stablecoins / cashed out via usual channels.
+1. Parties agree a **physical deal** off-chain (farmer ↔ trader or trader ↔ trader).
+2. On Cropto, they create an **option**:
+   - type: CALL / PUT  
+   - strike price  
+   - volume (tons)  
+   - expiry date  
+   - premium  
+   - collateral (margin)
+3. The option can be **matched** on the platform (our matching engine) and becomes FILLED.
+4. Once FILLED, the option can be **minted as an NFT (ERC-721)** on Polygon Amoy:
+   - metadata includes optionId, type, strike, volume, expiry, parties and link to the contract.
+5. Every day the option is **repriced** using the Spike Spot Commodity Index:
+   - PnL, margin calls and potential forced settlement are calculated off-chain.
+6. At expiry or early exercise, the platform creates a **settlement** record and off-chain payout in fiat or CROPT.
 
-## Why it's useful
-- For farmers — a simpler hedging tool.
-- For traders — additional income streams.
-- For the market — a transparent ledger and an easy pilot path.
+## What is stored in the NFT?
+
+The NFT is a **proof of right** to settlement under a specific option. Metadata contains:
+
+- `optionId` — internal identifier in Cropto DB
+- option type (CALL / PUT)
+- strike price
+- volume (tons)
+- expiry date
+- buyer / seller roles
+- reference to the physical contract or broker deal
+
+## Current status
+
+- We use **Polygon Amoy** testnet and a test CROPT token.
+- All flows are **demo-only**, with limited real counterparties.
+- The goal of this Pre-MVP is to validate UX, risk logic and data model before scaling.

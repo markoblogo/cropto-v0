@@ -1,120 +1,80 @@
-import React from "react";
-import MockModeBanner from "../components/MockModeBanner";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Header } from "@/components/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import FlagSwitcher from "@/components/FlagSwitcher";
+import MockModeBanner from "@/components/MockModeBanner";
+import { FileText } from "lucide-react";
 
 export default function TestingPage() {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
+  
+  const [testingContent, setTestingContent] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadMarkdown = async () => {
+      setLoading(true);
+      try {
+        const testingFile = `/docs/testing.${currentLang}.md`;
+        const response = await fetch(testingFile);
+
+        if (response.ok) {
+          const text = await response.text();
+          setTestingContent(text);
+        } else {
+          setTestingContent(`# Error\nFailed to load ${testingFile}`);
+        }
+      } catch (error) {
+        console.error("Error loading markdown file:", error);
+        setTestingContent("# Error\nFailed to load testing guide");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMarkdown();
+  }, [currentLang]);
+
   return (
-    <div style={{maxWidth:980, margin:"24px auto", padding:"0 16px", fontFamily:"Inter, system-ui, -apple-system, 'Segoe UI', Roboto"}}>
-      <div style={{marginBottom:16}}>
-        <BackToDashboard />
+    <div className="min-h-screen bg-background">
+      <Header onCreateOption={() => {}} />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-4">
+          <BackToDashboard />
+        </div>
+
+        <MockModeBanner />
+
+        <Card className="mt-4">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <CardTitle className="text-3xl font-bold flex items-center gap-2">
+                <FileText className="w-8 h-8" />
+                {currentLang === 'uk' ? 'Інструкція з тестування' : 'Testing Guide'}
+              </CardTitle>
+              <FlagSwitcher />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="py-8 text-center text-muted-foreground">
+                {currentLang === 'uk' ? 'Завантаження...' : 'Loading...'}
+              </div>
+            ) : (
+              <div className="prose prose-sm dark:prose-invert max-w-none" data-testid="section-testing-content">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {testingContent}
+                </ReactMarkdown>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-      <MockModeBanner />
-
-      <h1 style={{fontSize:28, marginBottom:8}}>Testing Guide — Cropto (compact)</h1>
-      <p style={{color:"#555", marginBottom:20}}>Updated testing instructions for the Cropto demo. Use the demo accounts below to run through the flows.</p>
-
-      <h2>Demo accounts</h2>
-      <ul>
-        <li><strong>Farmer</strong>: farmer@demo / pass</li>
-        <li><strong>Trader</strong>: trader@demo / pass</li>
-        <li><strong>Broker</strong>: broker@demo / pass</li>
-      </ul>
-
-      <h2>Conventions & units</h2>
-      <ul>
-        <li><strong>Strike:</strong> price in USD per tonne ($/t).</li>
-        <li><strong>Quantity:</strong> tonnes (minimum lot <strong>500</strong>).</li>
-        <li><strong>Premium:</strong> premium_per_t ($/t). Total premium = premium_per_t * qty.</li>
-        <li><strong>Network:</strong> Polygon Amoy (currency: POL).</li>
-      </ul>
-
-      <h2>Quick scenario: Create → Match → Mint (recommended)</h2>
-      <h3>1) Create option (farmer)</h3>
-      <ol>
-        <li>Login as <code>farmer@demo</code>.</li>
-        <li>Dashboard → Create Option.</li>
-        <li>Example fields:
-          <ul>
-            <li>Commodity: <code>wheat</code></li>
-            <li>Type: <code>CALL</code></li>
-            <li>Strike: <code>210</code> ($/t)</li>
-            <li>Quantity: <code>500</code> (t)</li>
-            <li>Premium per t: <code>5</code> ($/t)</li>
-          </ul>
-        </li>
-        <li>Submit → option status should be <code>OPEN</code>.</li>
-      </ol>
-
-      <h3>2) Match option (broker)</h3>
-      <ol>
-        <li>Logout → Login as <code>broker@demo</code>.</li>
-        <li>Find the created option → press <em>Match</em> and assign counterparty.</li>
-        <li>Status should change to <code>FILLED</code>.</li>
-      </ol>
-
-      <h3>3) Mint NFT (owner)</h3>
-      <p>
-        Prerequisite: FILLED option and sufficient POL in wallet (≈0.02–0.03 POL per mint) OR mock mode enabled.
-      </p>
-      <p>To mint:</p>
-      <ul>
-        <li>If backend relayer (dev-mint): call the API <code>POST /api/onchain/mint-nft</code> with auth token (curl example below).</li>
-        <li>If user mint via MetaMask: click <em>Mint NFT</em> in UI and approve the transaction in MetaMask.</li>
-      </ul>
-
-      <h2>Admin: Manual settlement (daily)</h2>
-      <pre style={{background:"#f6f8fa", padding:12, borderRadius:6, overflowX:"auto"}}>
-{`curl -s -X POST https://<BASE_URL>/api/jobs/daily-settle \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer <ADMIN_JWT>" \\
-  -d '{"date":"2025-11-08","commodity":"wheat","indexPrice":230}'`}
-      </pre>
-      <p>Response includes per-option settlements, PnL and actions taken (margin calls, forced settlements).</p>
-
-      <h2>Useful curl commands</h2>
-      <h3>Mint NFT (backend relayer)</h3>
-      <pre style={{background:"#f6f8fa", padding:12, borderRadius:6, overflowX:"auto"}}>
-{`curl -s -X POST https://<BASE_URL>/api/onchain/mint-nft \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer <JWT_TOKEN>" \\
-  -d '{"optionId":"<OPTION_ID>","recipient":"0xAbCd..."}'`}
-      </pre>
-
-      <h3>Check CROPT balance</h3>
-      <pre style={{background:"#f6f8fa", padding:12, borderRadius:6, overflowX:"auto"}}>
-{`curl -s https://<BASE_URL>/api/onchain/balance/0xYourAddress`}
-      </pre>
-
-      <h2>MOCK / Safe testing mode</h2>
-      <p>
-        To avoid spending POL during early tests, set environment vars:
-        <ul>
-          <li><code>VITE_MOCK_ONCHAIN=true</code> — client shows banner and on-chain flows are simulated;</li>
-          <li>or <code>VITE_ENABLE_MINT=false</code> — backend blocks real minting and returns simulated TXs.</li>
-        </ul>
-      </p>
-
-      <h2>Troubleshooting (common)</h2>
-      <ul>
-        <li><strong>Mint fails:</strong> check POL balance, faucet, or enable mock mode.</li>
-        <li><strong>Invalid address:</strong> use checksummed address from MetaMask (ethers.getAddress validation).</li>
-        <li><strong>401 Unauthorized:</strong> log in and use returned JWT for curl commands.</li>
-        <li><strong>Validation errors:</strong> ensure qty {'>='} 500 and numeric strike.</li>
-      </ul>
-
-      <h2>Where to find contract addresses / env</h2>
-      <ul>
-        <li><code>CROPT_CONTRACT_ADDRESS</code> — CROPT token (env / Replit secrets)</li>
-        <li><code>CROPT_NFT_CONTRACT_ADDRESS</code> — Option NFT contract</li>
-        <li>Explorer: <code>https://amoy.polygonscan.com</code></li>
-      </ul>
-
-      <h2>Expected status flow</h2>
-      <p><code>OPEN → SELECTED → FILLED → EXERCISED → SETTLED</code></p>
-      <p>Margin states: <code>OK → MARGIN_CALL → DEFAULTED</code> (forced settlement after 24h timeout)</p>
-
-      <hr />
-      <p style={{fontSize:13, color:"#666"}}>If you want this page translated to Ukrainian or Russian, or need the same file saved as /client/src/pages/testing.md, tell me and I will create that too.</p>
     </div>
   );
 }

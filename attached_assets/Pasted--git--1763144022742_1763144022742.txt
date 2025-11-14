@@ -1,0 +1,293 @@
+**Важно: не запускать юнит/интеграционные тесты, не выполнять git-команды.**
+
+> Задача: привести контент к нормальному виду и сделать рендер About/FAQ/Testing из markdown с поддержкой EN/UK.
+
+>   
+
+> **Сделай:**
+
+1. > Перезапиши/создай эти файлы (строго по путям, контент ниже):
+    
+    - > public/docs/about.en.md
+        
+    - > public/docs/about.uk.md
+        
+    - > public/docs/faq.en.md
+        
+    - > public/docs/faq.uk.md
+        
+    - > public/docs/testing.en.md
+        
+    - > public/docs/testing.uk.md
+        
+    
+2. > В client/src/pages/AboutPage.tsx:
+    
+    - > Обеспечь, чтобы страница:
+        
+        - > показывала **About** (из about.*.md) в верхней части;
+            
+        - > ниже — раздел **FAQ** (из faq.*.md);
+            
+        - > выбирала язык по i18n.language ('en' → about.en.md / faq.en.md, 'uk' → about.uk.md / faq.uk.md, иначе по умолчанию 'en').
+            
+        
+    - > Используй уже установленные react-markdown и remark-gfm.
+        
+        > Можно рендерить без HTML (только markdown), **не нужно** dangerouslySetInnerHTML.
+        
+    - > Убери любые текущие попытки рендерить index.html или другие большие HTML-блоки — AboutPage должен грузить **только markdown**, а не весь HTML приложения.
+        
+    
+3. > В client/src/pages/TestingPage.tsx (или аналогичном компоненте страницы Testing, который сейчас используется в роутере):
+    
+    - > Заставь его брать markdown из public/docs/testing.en.md / public/docs/testing.uk.md по текущему языку (i18n.language), аналогично AboutPage.
+        
+    - > Рендер через react-markdown + remark-gfm без HTML.
+        
+    
+4. > Никаких тестов и git-команд сейчас не запускай. В ответе просто перечисли:
+    
+    - > какие файлы markdown перезаписаны;
+        
+    - > какие компоненты страниц изменены (AboutPage, TestingPage).
+        
+    
+
+>   
+
+> **Контент для файлов (вставь как есть):**
+
+>   
+
+> public/docs/about.en.md
+
+```
+# About Cropto
+
+Cropto is an experimental platform for **hedging grain price risk** and trading **NFT options** that are linked to real physical grain prices via the **Spike Spot Commodity Index**.
+
+## Who is it for?
+
+- **Farmers** — lock in the selling price for future harvest, reduce downside risk.
+- **Traders** — sell options, earn premiums, manage collateral and margin calls.
+- **Brokers / partners** — onboard clients, reconcile deals, monitor risk.
+
+## How it works (Pre-MVP)
+
+1. Parties agree a **physical deal** off-chain (farmer ↔ trader or trader ↔ trader).
+2. On Cropto, they create an **option**:
+   - type: CALL / PUT  
+   - strike price  
+   - volume (tons)  
+   - expiry date  
+   - premium  
+   - collateral (margin)
+3. The option can be **matched** on the platform (our matching engine) and becomes FILLED.
+4. Once FILLED, the option can be **minted as an NFT (ERC-721)** on Polygon Amoy:
+   - metadata includes optionId, type, strike, volume, expiry, parties and link to the contract.
+5. Every day the option is **repriced** using the Spike Spot Commodity Index:
+   - PnL, margin calls and potential forced settlement are calculated off-chain.
+6. At expiry or early exercise, the platform creates a **settlement** record and off-chain payout in fiat or CROPT.
+
+## What is stored in the NFT?
+
+The NFT is a **proof of right** to settlement under a specific option. Metadata contains:
+
+- `optionId` — internal identifier in Cropto DB
+- option type (CALL / PUT)
+- strike price
+- volume (tons)
+- expiry date
+- buyer / seller roles
+- reference to the physical contract or broker deal
+
+## Current status
+
+- We use **Polygon Amoy** testnet and a test CROPT token.
+- All flows are **demo-only**, with limited real counterparties.
+- The goal of this Pre-MVP is to validate UX, risk logic and data model before scaling.
+```
+
+> public/docs/about.uk.md
+
+```
+# Про Cropto
+
+**Cropto** — це експериментальна платформа для **хеджування цінових ризиків зерна** та торгівлі **NFT-опціонами**, які привʼязані до реальних фізичних цін через **Spike Spot Commodity Index**.
+
+## Для кого платформа
+
+- **Фермери** — фіксують ціну продажу майбутнього врожаю, зменшуючи ризик падіння ринку.
+- **Трейдери** — продають опціони, отримують премії, керують заставою та margin call.
+- **Брокери / партнери** — підключають клієнтів, ведуть реєстр угод і контролюють ризики.
+
+## Як це працює (Pre-MVP)
+
+1. Сторони домовляються про **фізичну угоду** офлайн (фермер ↔ трейдер або трейдер ↔ трейдер).  
+2. У Cropto створюється **опціон**:
+   - тип: CALL / PUT  
+   - страйк (ціна)  
+   - обсяг у тоннах  
+   - дата експірації  
+   - премія  
+   - застава (маржа)
+3. Опціон може бути **зіставлений (matched)** на платформі та отримує статус FILLED.
+4. Після цього опціон можна **замінтити як NFT (ERC-721)** в мережі Polygon Amoy:
+   - у metadata зберігаються optionId, тип, страйк, обсяг, дата, ролі сторін та посилання на контракт.
+5. Щоденно опціон **переоцінюється** за індексом Spike Spot Commodity Index:
+   - розраховується PnL, перевіряються пороги для margin call та можливого forced settlement.
+6. В момент експірації або дострокової реалізації створюється запис **settlement** та фіксується виплата у фіаті або CROPT.
+
+## Що містить NFT-опціон
+
+NFT є **цифровим підтвердженням права** на розрахунок за конкретним опціоном. У metadata містяться:
+
+- `optionId` — внутрішній ідентифікатор у базі Cropto
+- тип опціону (CALL / PUT)
+- страйк-ціна
+- обсяг (тонни)
+- дата експірації
+- ролі покупця та продавця
+- посилання на фізичний контракт або брокерську угоду
+
+## Поточний статус
+
+- Використовується тестова мережа **Polygon Amoy** та тестовий токен CROPT.  
+- Усі сценарії зараз **демонстраційні**, із обмеженою кількістю реальних контрагентів.  
+- Мета цього Pre-MVP — перевірити UX, логіку ризик-менеджменту та модель даних перед масштабуванням.
+```
+
+> public/docs/faq.en.md
+
+```
+# FAQ — Cropto
+
+### What is an NFT option in Cropto?
+
+An NFT option is an ERC-721 token that represents the right to receive a payout based on a specific option contract in the Cropto system.  
+The token itself is not the grain — it is a **claim on settlement** linked to a physical deal.
+
+### How is PnL calculated?
+
+- Every day we take the **Spike Spot Commodity Index** for the chosen grade (e.g. wheat 11.5 pro).  
+- We compare it with the strike price of the option.  
+- For CALL/PUT we compute intrinsic value and update unrealized PnL and margin status.
+
+### What happens on a margin call?
+
+If losses approach the collateral limit, the position is flagged, and the trader has a time window to top up margin.  
+If the call is not met, the platform can trigger **forced settlement** using the remaining collateral.
+
+### How do I get CROPT for tests?
+
+In the current Pre-MVP:
+
+- CROPT exists only on **Polygon Amoy testnet**.  
+- Test tokens are minted via backend endpoints by the team.  
+- You only need POL (testnet gas) in MetaMask to see transactions and NFT mints.
+```
+
+> public/docs/faq.uk.md
+
+```
+# FAQ — Cropto
+
+### Що таке NFT-опціон у Cropto?
+
+NFT-опціон — це токен ERC-721, який представляє право на отримання виплати за конкретним опціонним контрактом у системі Cropto.  
+Сам токен не є зерном — це **вимога на розрахунок**, привʼязана до фізичної угоди.
+
+### Як розраховується PnL?
+
+- Щодня береться **Spike Spot Commodity Index** для обраного класу (наприклад, пшениця 11.5 pro).  
+- Страйк опціону порівнюється з поточним значенням індексу.  
+- Для CALL/PUT рахується внутрішня вартість, оновлюється нереалізований PnL та статус маржі.
+
+### Що відбувається при margin call?
+
+Якщо збитки наближаються до розміру застави, позиція позначається як ризикова, і трейдер отримує час на поповнення маржі.  
+Якщо margin call не виконано, платформа може ініціювати **forced settlement**, використовуючи наявну заставу.
+
+### Як отримати CROPT для тестів?
+
+У поточному Pre-MVP:
+
+- CROPT існує лише в тестовій мережі **Polygon Amoy**.  
+- Тестові токени мінтяться через backend-ендпоінти командою.  
+- Вам потрібен лише POL (тестовий gas) у MetaMask, щоб бачити транзакції та NFT-мінти.
+```
+
+> public/docs/testing.en.md
+
+```
+# Testing Guide (EN)
+
+Demo logins (password: `pass`):
+- Farmer: `farmer@demo`
+- Trader: `trader@demo`
+- Broker: `broker@demo`
+
+## A. Test as Farmer
+
+1. Log in as `farmer@demo`.  
+2. Create a new option (CALL or PUT) with small volume and visible strike.  
+3. Check that it appears on the dashboard as **OPEN**.  
+4. Ask the broker (or use `broker@demo`) to match it → status becomes **FILLED**.  
+5. If testnet POL is available, click **Mint NFT** and verify the token on Polygon Amoy.
+
+## B. Test as Trader
+
+1. Log in as `trader@demo`.  
+2. Find OPEN options and match one of them.  
+3. Monitor margin status and PnL on the Portfolio page.  
+4. Trigger an exercise scenario (via UI) and check that settlement and transactions are recorded.
+
+## C. Test as Broker / Admin
+
+1. Log in as `broker@demo`.  
+2. Use the Admin screens to:
+   - review deals and settlements  
+   - export CSV  
+   - override index prices (for demo purposes)  
+3. Check that changes are reflected on the dashboard and in portfolio views.
+
+This guide is for **demo only** and does not constitute investment advice.
+```
+
+> public/docs/testing.uk.md
+
+```
+# Інструкція з тестування (UK)
+
+Демо-логіни (пароль: `pass`):
+- Фермер: `farmer@demo`
+- Трейдер: `trader@demo`
+- Брокер: `broker@demo`
+
+## A. Тест у ролі фермера
+
+1. Увійдіть як `farmer@demo`.  
+2. Створіть новий опціон (CALL або PUT) з невеликим обсягом та зрозумілим страйком.  
+3. Переконайтесь, що він зʼявився на дашборді зі статусом **OPEN**.  
+4. Попросіть брокера (або зайдіть як `broker@demo`) зробити match → статус має стати **FILLED**.  
+5. Якщо є тестовий POL, натисніть **Mint NFT** і перевірте токен у мережі Polygon Amoy.
+
+## B. Тест у ролі трейдера
+
+1. Увійдіть як `trader@demo`.  
+2. Знайдіть OPEN-опціони та виконайте match для одного з них.  
+3. Слідкуйте за статусом маржі та PnL на сторінці Portfolio.  
+4. Запустіть сценарій exercise через інтерфейс і перевірте, що створено записи settlement та transaction.
+
+## C. Тест у ролі брокера / адміністратора
+
+1. Увійдіть як `broker@demo`.  
+2. У розділі Admin:
+   - перегляньте угоди та розрахунки  
+   - протестуйте експорт CSV  
+   - змініть значення індексу (для демо-цілей)  
+3. Переконайтесь, що зміни відображаються на дашборді та в Portfolio.
+
+Ця інструкція призначена **лише для демонстраційного використання** і не є інвестиційною порадою.
+```

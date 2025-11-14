@@ -12,7 +12,7 @@ import { FileText } from "lucide-react";
 
 export default function AboutPage() {
   const { i18n, t } = useTranslation();
-  const currentLang = i18n.language;
+  const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
   
   const [aboutContent, setAboutContent] = useState<string>("");
   const [faqContent, setFaqContent] = useState<string>("");
