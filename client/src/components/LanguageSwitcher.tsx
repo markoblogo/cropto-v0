@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Languages } from 'lucide-react';
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'uk' : 'en';
@@ -15,11 +15,11 @@ export default function LanguageSwitcher() {
       variant="ghost"
       size="icon"
       onClick={toggleLanguage}
-      title={`Language: ${i18n.language.toUpperCase()}`}
+      title={`${t('header.language')}: ${i18n.language.toUpperCase()}`}
       data-testid="button-language-toggle"
     >
       <Languages className="h-5 w-5" />
-      <span className="sr-only">Toggle language</span>
+      <span className="sr-only">{t('header.language')}</span>
     </Button>
   );
 }

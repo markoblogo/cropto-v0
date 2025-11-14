@@ -32,7 +32,7 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
           <div className="flex-shrink-0">
             <img 
               src="/cropto-logo.png" 
-              alt="Cropto Logo" 
+              alt={t('site.logoAlt')}
               className="h-20 sm:h-24 lg:h-32 w-auto"
               data-testid="img-hero-logo"
             />

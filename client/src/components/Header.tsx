@@ -40,8 +40,8 @@ export function Header({ onCreateOption }: HeaderProps) {
     queryClient.clear();
     setLocation('/login');
     toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
+      title: t('toast.loggedOut'),
+      description: t('toast.loggedOutDesc'),
     });
   };
 
@@ -53,11 +53,11 @@ export function Header({ onCreateOption }: HeaderProps) {
           <Link href="/" className="flex items-center gap-3 hover-elevate rounded-lg px-2 py-1 -ml-2">
             <img 
               src="/cropto-logo.png" 
-              alt="Cropto" 
+              alt={t('site.logoAlt')}
               className="h-8 w-auto"
               data-testid="img-header-logo"
             />
-            <span className="font-bold text-lg hidden sm:inline">Cropto</span>
+            <span className="font-bold text-lg hidden sm:inline">{t('site.title')}</span>
           </Link>
 
           {/* Navigation - Hidden on mobile, shown on md+ */}
@@ -71,54 +71,54 @@ export function Header({ onCreateOption }: HeaderProps) {
             )}
             <Link href="/portfolio">
               <Button variant="ghost" size="sm" data-testid="button-nav-portfolio">
-                Portfolio
+                {t('nav.portfolio')}
               </Button>
             </Link>
             <Link href="/docs">
               <Button variant="ghost" size="sm" data-testid="button-nav-docs">
-                Docs
+                {t('nav.docs')}
               </Button>
             </Link>
             <Link href="/faq">
               <Button variant="ghost" size="sm" data-testid="button-nav-faq">
-                FAQ
+                {t('nav.faq')}
               </Button>
             </Link>
             <Link href="/testing">
               <Button variant="ghost" size="sm" data-testid="button-nav-testing">
-                Testing
+                {t('nav.testing')}
               </Button>
             </Link>
             <Link href="/partners-contracts">
               <Button variant="ghost" size="sm" data-testid="button-nav-partners">
-                Partners
+                {t('nav.partners')}
               </Button>
             </Link>
             <Link href="/onchain-tx">
               <Button variant="ghost" size="sm" data-testid="button-nav-transactions">
-                Transactions
+                {t('nav.transactions')}
               </Button>
             </Link>
             <Link href="/feedback">
               <Button variant="ghost" size="sm" data-testid="button-nav-feedback">
-                Feedback
+                {t('nav.feedback')}
               </Button>
             </Link>
             {user?.role === "broker" && (
               <>
                 <Link href="/admin">
                   <Button variant="ghost" size="sm" data-testid="button-nav-admin">
-                    Admin
+                    {t('nav.admin')}
                   </Button>
                 </Link>
                 <Link href="/admin/reconciliation">
                   <Button variant="ghost" size="sm" data-testid="button-nav-reconciliation">
-                    Reconciliation
+                    {t('nav.reconciliation')}
                   </Button>
                 </Link>
                 <Link href="/admin/index">
                   <Button variant="ghost" size="sm" data-testid="button-nav-index">
-                    Index
+                    {t('nav.index')}
                   </Button>
                 </Link>
               </>
@@ -159,7 +159,7 @@ export function Header({ onCreateOption }: HeaderProps) {
                   data-testid="button-header-create-option"
                 >
                   <span className="hidden sm:inline">{t('button.createOption')}</span>
-                  <span className="sm:hidden">Create</span>
+                  <span className="sm:hidden">{t('button.create')}</span>
                 </Button>
 
                 {/* Logout Button */}
@@ -170,7 +170,7 @@ export function Header({ onCreateOption }: HeaderProps) {
                   data-testid="button-logout"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Logout</span>
+                  <span className="hidden sm:inline">{t('button.logout')}</span>
                 </Button>
               </>
             ) : (
@@ -178,12 +178,12 @@ export function Header({ onCreateOption }: HeaderProps) {
                 {/* Login/Register Buttons */}
                 <Link href="/login">
                   <Button variant="outline" size="sm" data-testid="button-login">
-                    Login
+                    {t('button.login')}
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button size="sm" data-testid="button-register">
-                    Register
+                    {t('button.register')}
                   </Button>
                 </Link>
               </>
