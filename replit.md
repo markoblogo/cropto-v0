@@ -26,11 +26,17 @@ The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for sche
 **Spot Positions System**: Internal synthetic spot trading support:
 - `spot_positions`: Tracks user spot positions with fields: userId, commoditySlug, quantityKg, avgEntryPrice, createdAt, updatedAt. Allows multiple entries per user-commodity pair for flexible position management and API-level aggregation.
 - `cropt_balances`: Stores internal CROPT balances for users (separate from on-chain balances). Used for synthetic spot trading settlement.
-- **Spot Trading API**: Three endpoints for synthetic spot trading using CROPT as settlement token:
-  - `POST /api/spot/:commoditySlug/buy` - Buy commodity spot position using CROPT balance
-  - `POST /api/spot/:commoditySlug/sell` - Sell commodity spot position, receive CROPT payout
+- **Dual Balance Architecture**: Two separate CROPT balances per user:
+  - **On-chain balance**: Blockchain CROPT tokens (ERC-20 on Polygon Amoy testnet)
+  - **Internal balance**: Database-stored CROPT for fast spot trading without gas fees
+  - Users deposit from on-chain to internal balance via `POST /api/spot/deposit`
+- **Spot Trading API**: Four endpoints for synthetic spot trading using CROPT as settlement token:
+  - `POST /api/spot/deposit` - Deposit CROPT from on-chain to internal trading balance
+  - `POST /api/spot/:commoditySlug/buy` - Buy commodity spot position using internal CROPT balance
+  - `POST /api/spot/:commoditySlug/sell` - Sell commodity spot position, receive CROPT payout to internal balance
   - `GET /api/spot/:commoditySlug` - Get current position and P&L for commodity
   - `GET /api/spot/balance` - Get user's internal CROPT balance
+  - `GET /api/spot/positions` - Get all user's spot positions with P&L calculations
 - Prices sourced from commodity index system (converted from per-ton to per-kg)
 - Position management uses weighted average costing for buys and FIFO (First In First Out) for sells
 - Real-time P&L calculation based on current index prices

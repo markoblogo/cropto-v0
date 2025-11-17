@@ -11,9 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, ArrowDownToLine } from "lucide-react";
 
 interface SpotBuyModalProps {
   isOpen: boolean;
@@ -44,6 +45,33 @@ export function SpotBuyModal({
     queryKey: ["/api/spot/balance"],
     enabled: isOpen,
   });
+
+  const depositMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const response = await apiRequest("POST", "/api/spot/deposit", { amount });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/spot/balance"] });
+      toast({
+        title: "Deposit successful",
+        description: "CROPT deposited to internal balance",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Deposit failed",
+        description: error.message || "Failed to deposit CROPT",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeposit = () => {
+    // For now, deposit 3 CROPT (user's on-chain balance)
+    // In production, this would check actual on-chain balance
+    depositMutation.mutate(3);
+  };
 
   const buyMutation = useMutation({
     mutationFn: async (data: { quantityKg: number }) => {
@@ -107,6 +135,35 @@ export function SpotBuyModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {availableBalance === 0 && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="flex flex-col gap-2">
+                <span>You need to deposit CROPT from your on-chain balance to your internal trading balance first.</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleDeposit}
+                  disabled={depositMutation.isPending}
+                  data-testid="button-deposit"
+                  className="w-fit"
+                >
+                  {depositMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Depositing...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowDownToLine className="mr-2 h-4 w-4" />
+                      Deposit 3 CROPT
+                    </>
+                  )}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Current Price:</span>
@@ -115,7 +172,7 @@ export function SpotBuyModal({
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Available Balance:</span>
+              <span className="text-muted-foreground">Internal Balance:</span>
               <span className="font-mono font-medium" data-testid="text-available-balance">
                 {availableBalance.toFixed(2)} CROPT
               </span>

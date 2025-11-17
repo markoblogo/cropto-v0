@@ -499,6 +499,72 @@ export function registerSpotRoutes(app: Express) {
     }
   });
 
+  // POST /api/spot/deposit - Deposit CROPT from on-chain to internal balance
+  app.post("/api/spot/deposit", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { amount } = req.body;
+      const depositAmount = parseFloat(amount);
+
+      if (!depositAmount || depositAmount <= 0) {
+        return res.status(400).json({ error: "Invalid deposit amount" });
+      }
+
+      // Use transaction for safety
+      await db.transaction(async (tx) => {
+        // Get or create balance with row lock
+        const [balance] = await tx
+          .select()
+          .from(croptBalances)
+          .where(eq(croptBalances.userId, userId))
+          .limit(1)
+          .for('update');
+
+        const currentBalance = balance ? parseFloat(balance.balance) : 0;
+        const newBalance = currentBalance + depositAmount;
+
+        if (balance) {
+          // Update existing balance
+          await tx
+            .update(croptBalances)
+            .set({
+              balance: newBalance.toFixed(8),
+              updatedAt: new Date(),
+            })
+            .where(eq(croptBalances.userId, userId));
+        } else {
+          // Create new balance
+          await tx
+            .insert(croptBalances)
+            .values({
+              userId,
+              balance: newBalance.toFixed(8),
+            });
+        }
+      });
+
+      // Get updated balance
+      const [updatedBalance] = await db
+        .select()
+        .from(croptBalances)
+        .where(eq(croptBalances.userId, userId))
+        .limit(1);
+
+      res.json({
+        success: true,
+        balance: updatedBalance.balance,
+        deposited: depositAmount.toFixed(8),
+      });
+    } catch (error: any) {
+      console.error('[SpotRoutes] Error depositing:', error);
+      res.status(500).json({ error: "Failed to deposit CROPT" });
+    }
+  });
+
   // GET /api/spot/positions - Get all user's spot positions with P&L
   app.get("/api/spot/positions", authenticateToken, async (req: AuthRequest, res) => {
     try {
