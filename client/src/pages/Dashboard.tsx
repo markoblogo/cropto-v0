@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
 import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
+import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { CroptMintButton } from "@/components/CroptMintButton";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
@@ -52,6 +53,27 @@ export default function Dashboard() {
   // Fetch margin calls
   const { data: marginCalls = [] } = useQuery<any[]>({
     queryKey: ["/api/margin-calls"],
+    enabled: !!user,
+  });
+
+  // Fetch spot positions
+  interface SpotPosition {
+    id: string;
+    commoditySlug: string;
+    commodityName: string;
+    quantityKg: string;
+    avgEntryPrice: string;
+    currentPricePerKg: string;
+    currentValue: string;
+    entryValue: string;
+    pnl: string;
+    pnlPercent: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+
+  const { data: spotPositions = [], isLoading: isSpotLoading } = useQuery<SpotPosition[]>({
+    queryKey: ["/api/spot/positions"],
     enabled: !!user,
   });
 
@@ -287,6 +309,9 @@ export default function Dashboard() {
 
           {/* Spot Market */}
           <SpotMarketGrid />
+
+          {/* Spot Positions */}
+          {user && <SpotPositionsTable positions={spotPositions} isLoading={isSpotLoading} />}
 
           {/* Options Table */}
           <div id="options-table">

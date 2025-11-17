@@ -16,6 +16,8 @@ The frontend is built with React and TypeScript, using Vite, `shadcn/ui` (Radix 
 ### Backend
 The backend is an Express.js application in TypeScript, providing a RESTful JSON API. It features a flexible authentication system with Supabase (production) or file-based (`db.json`) for development, using bcrypt and JWT for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer ensures transaction safety. Shared Zod schemas are used for data validation. A margin check job system calculates intrinsic value, P&L, triggers margin calls, and generates notifications. Security middleware blocks unauthorized Supabase service role key usage.
 
+**Route Registration**: Spot trading routes (`server/spotRoutes.ts`) are registered in `server/index.ts` via `registerSpotRoutes(app)` after main routes. **Critical**: Specific routes (e.g., `/api/spot/balance`, `/api/spot/positions`) MUST be registered BEFORE parameterized routes (e.g., `/api/spot/:commoditySlug`) to prevent path parameter matching conflicts.
+
 ### Data Storage
 The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for schema management. Tables include `options`, `trades`, `settlements`, `margin_calls`, `notifications`, `indexes`, `commodity_index_prices`, and `spot_positions`, designed with high-precision decimals and UUID primary keys.
 
@@ -30,13 +32,13 @@ The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for sche
   - **On-chain balance**: Blockchain CROPT tokens (ERC-20 on Polygon Amoy testnet)
   - **Internal balance**: Database-stored CROPT for fast spot trading without gas fees
   - Users deposit from on-chain to internal balance via `POST /api/spot/deposit`
-- **Spot Trading API**: Four endpoints for synthetic spot trading using CROPT as settlement token:
+- **Spot Trading API**: Six endpoints for synthetic spot trading using CROPT as settlement token:
+  - `GET /api/spot/balance` - Get user's internal CROPT balance
+  - `GET /api/spot/positions` - Get all user's spot positions with P&L calculations
+  - `GET /api/spot/:commoditySlug` - Get current position and P&L for commodity
   - `POST /api/spot/deposit` - Deposit CROPT from on-chain to internal trading balance
   - `POST /api/spot/:commoditySlug/buy` - Buy commodity spot position using internal CROPT balance
   - `POST /api/spot/:commoditySlug/sell` - Sell commodity spot position, receive CROPT payout to internal balance
-  - `GET /api/spot/:commoditySlug` - Get current position and P&L for commodity
-  - `GET /api/spot/balance` - Get user's internal CROPT balance
-  - `GET /api/spot/positions` - Get all user's spot positions with P&L calculations
 - Prices sourced from commodity index system (converted from per-ton to per-kg)
 - Position management uses weighted average costing for buys and FIFO (First In First Out) for sells
 - Real-time P&L calculation based on current index prices
