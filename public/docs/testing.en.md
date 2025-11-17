@@ -1,32 +1,72 @@
-# Testing Guide (EN)
+---
+# How to Test Cropto
 
-Demo logins (password: `pass`):
-- Farmer: `farmer@demo`
-- Trader: `trader@demo`
-- Broker: `broker@demo`
+Testing should be done using **Google Chrome + MetaMask extension**.
 
-## A. Test as Farmer
+---
 
-1. Log in as `farmer@demo`.  
-2. Create a new option (CALL or PUT) with small volume and visible strike.  
-3. Check that it appears on the dashboard as **OPEN**.  
-4. Ask the broker (or use `broker@demo`) to match it → status becomes **FILLED**.  
-5. If testnet POL is available, click **Mint NFT** and verify the token on Polygon Amoy.
+## Step 1 — Install MetaMask
 
-## B. Test as Trader
+- Install MetaMask for Chrome  
+- Create a wallet or import your existing test wallet  
+- **Important:** enable test networks in MetaMask settings:  
+  *Settings → Advanced → Show test networks → Enable*
 
-1. Log in as `trader@demo`.  
-2. Find OPEN options and match one of them.  
-3. Monitor margin status and PnL on the Portfolio page.  
-4. Trigger an exercise scenario (via UI) and check that settlement and transactions are recorded.
+---
 
-## C. Test as Broker / Admin
+## Step 2 — Add Cropt (CROPT) token & Amoy network
 
-1. Log in as `broker@demo`.  
-2. Use the Admin screens to:
-   - review deals and settlements  
-   - export CSV  
-   - override index prices (for demo purposes)  
-3. Check that changes are reflected on the dashboard and in portfolio views.
+First, make sure test networks are enabled in MetaMask.
 
-This guide is for **demo only** and does not constitute investment advice.
+Then add the **Polygon Amoy** testnet network manually:
+
+- **Network Name:** Polygon Amoy  
+- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/5dHU6PKEJFVq2RRWHdVux  
+- **Chain ID:** 80002  
+- **Currency Symbol:** CROPT  
+
+Add **CROPT token** manually:
+
+- Token standard: ERC-20  
+- Token address: (test CROPT token address)  
+- Decimals: 18  
+
+Now your wallet is ready for testing.
+
+---
+
+## Step 3 — Connect wallet to the site
+
+- Open the Cropto app in your browser  
+- Click **Connect Wallet**  
+- Approve the connection in MetaMask  
+
+---
+
+## Testing as a Farmer
+
+- View all commodity indexes and their charts  
+- Create and sell CALL options to receive premium in CROPT  
+- Track your active positions in the portfolio  
+- Check how price changes impact the value of your options  
+
+---
+
+## Testing as a Trader
+
+- Browse available CALL and PUT options in the Options Book  
+- Buy options using CROPT  
+- Verify that the option appears in your wallet as an NFT  
+- Monitor price movements and indexes on the dashboard  
+- Decide when to exercise or close positions based on market moves  
+
+---
+
+## Testing as a Broker
+
+- Create options manually for other participants  
+- Match farmers and traders into option deals  
+- Track created options and their status  
+- Verify that settlements and state changes are executed on-chain  
+
+---

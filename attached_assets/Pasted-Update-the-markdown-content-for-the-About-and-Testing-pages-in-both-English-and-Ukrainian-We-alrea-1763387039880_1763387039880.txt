@@ -1,0 +1,369 @@
+Update the markdown content for the About and Testing pages in both English and Ukrainian.
+
+We already use markdown files for the About/Testing content.  
+Please locate the existing markdown docs for these pages (for example under docs/ or public/docs/) and replace their contents as follows:
+
+1) about.en.md → REPLACE FILE CONTENT WITH:
+
+---
+# About Cropto
+
+### About Cropto
+Cropto is a decentralized grain-options marketplace that uses real physical market prices as a settlement reference.  
+The platform connects farmers, traders and brokers, enabling them to hedge risks, lock in prices, and trade agricultural options in a transparent, on-chain format.
+
+All market prices are updated automatically using verified Telegram data sources. Each commodity (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, Rapeseed, Sunflower Seed) has its own live index and price history chart.
+
+---
+
+## How the Marketplace Works
+
+Cropto combines real-world grain prices with on-chain financial instruments:
+
+- The system parses verified market data from a Telegram feed  
+- Each commodity gets an index that updates regularly  
+- Users create options (CALL / PUT) based on these indexes  
+- Each option exists as an NFT smart contract  
+- Premiums are paid in **CROPT**, a token pegged 1:1 to **USDT** (on testnet)
+
+Cropto works in the Polygon Amoy test network and uses MetaMask for user authentication and signing.
+
+---
+
+## Why Cropto Matters
+
+Agriculture is extremely sensitive to price volatility.  
+Cropto allows market participants to manage risk in a transparent and simple way using crypto tools, without unnecessary intermediaries.
+
+---
+
+## For Farmers
+
+- Lock in prices for future grain delivery  
+- Protect against falling market prices  
+- Sell CALL options to receive upfront premium in CROPT  
+- Use options to secure a minimum acceptable price  
+- View clear charts and commodity indexes updated from real market data  
+
+---
+
+## For Traders
+
+- Buy CALL and PUT options to speculate on price movement  
+- Hedge your planned purchases or sales  
+- Monitor index movements on the main dashboard  
+- Analyze price history before opening a position  
+- Trade options transparently, with verifiable on-chain execution  
+
+---
+
+## For Brokers
+
+- Create and manage option deals between market participants  
+- Earn commissions without holding client funds  
+- Use indexes as a reference for settlement  
+- Track all client positions in a unified dashboard  
+- Benefit from transparent execution and immutable on-chain records  
+
+---
+
+## CROPT Token
+
+CROPT is the internal settlement token of the Cropto marketplace.  
+**1 CROPT = 1 USDT** (test network peg).
+
+It is used for:
+
+- Paying option premiums  
+- Receiving premiums as a seller  
+- Settling CALL/PUT outcomes  
+- On-chain identification of positions  
+
+---
+
+## NFT Options
+
+Every option created on Cropto exists as an NFT smart contract.  
+
+This ensures:
+
+- Transparent ownership  
+- Verifiable strike price, quantity and expiration date  
+- Automated settlement logic  
+- The ability to transfer or trade the option on-chain  
+
+---
+
+## FAQ
+
+**Where do price indexes come from?**  
+From verified Telegram market channels that are parsed automatically.
+
+**How often are prices updated?**  
+Every time a new relevant Telegram message appears.
+
+**Which commodities are supported?**  
+Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed.
+
+**Is this the final production version?**  
+No. This is a private testing release for internal use only.
+---
+
+2) about.uk.md → REPLACE FILE CONTENT WITH:
+
+---
+# Про проєкт Cropto
+
+### Про Cropto
+Cropto — це децентралізований маркетплейс зернових опціонів, який використовує реальні ринкові ціни як базу для розрахунків.  
+Платформа об’єднує фермерів, трейдерів та брокерів, дозволяючи хеджувати ризики, фіксувати ціни та торгувати опціонами на аграрні товари у прозорому on-chain форматі.
+
+Усі ціни оновлюються автоматично на основі перевірених Telegram-джерел. Для кожного товару є власний індекс та графік історії цін.
+
+---
+
+## Як працює маркетплейс
+
+Cropto поєднує реальні ціни аграрного ринку з on-chain інструментами:
+
+- система парсить дані з Telegram  
+- кожен товар має свій індекс, що регулярно оновлюється  
+- користувачі створюють CALL/PUT опціони на основі цих індексів  
+- кожен опціон існує як NFT смарт-контракт  
+- премії виплачуються у **CROPT**, токені, прив’язаному 1:1 до **USDT** (у тестовій мережі)
+
+Cropto працює в тестовій мережі Polygon Amoy та використовує MetaMask для авторизації та підпису транзакцій.
+
+---
+
+## Чому Cropto важливий
+
+Аграрний ринок дуже чутливий до цінових коливань.  
+Cropto дозволяє учасникам ринку ефективно управляти ціновими ризиками за допомогою простих і прозорих криптоінструментів, без зайвих посередників.
+
+---
+
+## Для фермерів
+
+- Фіксуйте майбутню ціну продажу зерна  
+- Захищайтеся від падіння ринку  
+- Продавайте CALL опціони та отримуйте премію наперед у CROPT  
+- Використовуйте опціони як інструмент цінового страхування  
+- Переглядайте графіки та індекси, що базуються на реальних ринкових даних  
+
+---
+
+## Для трейдерів
+
+- Купуйте CALL та PUT опціони для спекуляцій на русі цін  
+- Хеджуйте обсяги майбутніх закупівель або продажів  
+- Моніторте рух індексів на дашборді  
+- Аналізуйте історичні ціни перед відкриттям позиції  
+- Торгуйте прозоро з on-chain підтвердженням виконання  
+
+---
+
+## Для брокерів
+
+- Організовуйте опціонні угоди між учасниками ринку  
+- Заробляйте комісії без необхідності тримати кошти клієнтів  
+- Використовуйте індекси як базу для розрахунків  
+- Ведіть облік позицій клієнтів у єдиному інтерфейсі  
+- Отримуйте користь з прозорих on-chain записів  
+
+---
+
+## Токен CROPT
+
+CROPT — внутрішній розрахунковий токен Cropto.  
+**1 CROPT = 1 USDT** (у тестовій мережі).
+
+Він використовується для:
+
+- виплати премій за опціонами  
+- отримання премій продавцями  
+- розрахунків за результатами CALL/PUT  
+- позначення позицій у смарт-контрактах  
+
+---
+
+## NFT опціони
+
+Кожен опціон у Cropto — це NFT смарт-контракт.
+
+Це забезпечує:
+
+- прозоре володіння  
+- можливість перевірити страйк, обсяг та дату експірації  
+- автоматичну логіку розрахунку  
+- можливість передавати або продавати опціон on-chain  
+
+---
+
+## FAQ
+
+**Звідки беруться ціни?**  
+З перевірених аграрних Telegram-каналів, які парсяться автоматично.
+
+**Як часто оновлюються індекси?**  
+Кілька разів на день, коли з’являються нові релевантні повідомлення.
+
+**Які товари підтримуються?**  
+Кукурудза, Пшениця 11.5%, Пшениця фуражна, Соя ГМО, Соя ГМО (переробка), Ріпак, Соняшник.
+
+**Чи це фінальна версія?**  
+Ні. Це приватний тестовий реліз лише для обмеженого кола користувачів.
+---
+
+3) testing.en.md → REPLACE FILE CONTENT WITH:
+
+---
+# How to Test Cropto
+
+Testing should be done using **Google Chrome + MetaMask extension**.
+
+---
+
+## Step 1 — Install MetaMask
+
+- Install MetaMask for Chrome  
+- Create a wallet or import your existing test wallet  
+- **Important:** enable test networks in MetaMask settings:  
+  *Settings → Advanced → Show test networks → Enable*
+
+---
+
+## Step 2 — Add Cropt (CROPT) token & Amoy network
+
+First, make sure test networks are enabled in MetaMask.
+
+Then add the **Polygon Amoy** testnet network manually:
+
+- **Network Name:** Polygon Amoy  
+- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/5dHU6PKEJFVq2RRWHdVux  
+- **Chain ID:** 80002  
+- **Currency Symbol:** CROPT  
+
+Add **CROPT token** manually:
+
+- Token standard: ERC-20  
+- Token address: (test CROPT token address)  
+- Decimals: 18  
+
+Now your wallet is ready for testing.
+
+---
+
+## Step 3 — Connect wallet to the site
+
+- Open the Cropto app in your browser  
+- Click **Connect Wallet**  
+- Approve the connection in MetaMask  
+
+---
+
+## Testing as a Farmer
+
+- View all commodity indexes and their charts  
+- Create and sell CALL options to receive premium in CROPT  
+- Track your active positions in the portfolio  
+- Check how price changes impact the value of your options  
+
+---
+
+## Testing as a Trader
+
+- Browse available CALL and PUT options in the Options Book  
+- Buy options using CROPT  
+- Verify that the option appears in your wallet as an NFT  
+- Monitor price movements and indexes on the dashboard  
+- Decide when to exercise or close positions based on market moves  
+
+---
+
+## Testing as a Broker
+
+- Create options manually for other participants  
+- Match farmers and traders into option deals  
+- Track created options and their status  
+- Verify that settlements and state changes are executed on-chain  
+
+---
+
+4) testing.uk.md → REPLACE FILE CONTENT WITH:
+
+---
+# Як тестувати Cropto
+
+Тестування виконується у **Google Chrome + розширенні MetaMask**.
+
+---
+
+## Крок 1 — Встановіть MetaMask
+
+- Встановіть MetaMask для браузера Chrome  
+- Створіть гаманець або імпортуйте існуючий тестовий  
+- **Важливо:** увімкніть відображення тестових мереж у налаштуваннях MetaMask:  
+  *Settings → Advanced → Show test networks → Enable*
+
+---
+
+## Крок 2 — Додайте мережу Amoy та токен CROPT
+
+Спочатку переконайтеся, що тестові мережі увімкнені в MetaMask.
+
+Потім додайте тестову мережу **Polygon Amoy** вручну:
+
+- **Network Name:** Polygon Amoy  
+- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/5dHU6PKEJFVq2RRWHdVux  
+- **Chain ID:** 80002  
+- **Currency Symbol:** CROPT  
+
+Додайте токен **CROPT**:
+
+- Стандарт: ERC-20  
+- Token address: (адреса тестового токена CROPT)  
+- Decimals: 18  
+
+Тепер гаманець готовий для тестування.
+
+---
+
+## Крок 3 — Підключіть гаманець до сайту
+
+- Відкрийте застосунок Cropto у браузері  
+- Натисніть **Connect Wallet**  
+- Підтвердіть підключення у MetaMask  
+
+---
+
+## Тестування як фермер
+
+- Переглядайте індекси товарів та їхні графіки  
+- Створюйте та продавайте CALL опціони й отримуйте премію в CROPT  
+- Відстежуйте активні позиції у своєму портфелі  
+- Дивіться, як зміна ринкової ціни впливає на ваші опціони  
+
+---
+
+## Тестування як трейдер
+
+- Переглядайте доступні CALL та PUT опціони в Options Book  
+- Купуйте опціони за CROPT  
+- Перевіряйте, що опціон з’явився у гаманці як NFT  
+- Аналізуйте рух цін та індексів на дашборді  
+- Приймайте рішення, коли виконувати або закривати позиції  
+
+---
+
+## Тестування як брокер
+
+- Створюйте опціони для інших учасників  
+- Зводьте фермерів і трейдерів у опціонні угоди  
+- Відстежуйте створені опціони та їхній статус  
+- Переконуйтесь, що розрахунки та зміни стану виконуються on-chain  
+
+---
+
+After updating these four markdown files, ensure AboutPage and TestingPage are reading from the updated documents for both languages.
+Please do not change any routing or layout, only the markdown contents and their imports if needed.
