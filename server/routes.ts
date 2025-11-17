@@ -719,9 +719,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Set the issuer ID to the authenticated user
+      // Lookup commodity name from index if indexId is provided
+      let commodityName = result.data.commodity;
+      if (result.data.indexId) {
+        const [index] = await db
+          .select()
+          .from(indexes)
+          .where(eq(indexes.id, result.data.indexId))
+          .limit(1);
+        
+        if (!index) {
+          return res.status(400).json({ 
+            error: "Invalid commodity index" 
+          });
+        }
+        
+        // Populate commodity field with index name for backward compatibility
+        commodityName = index.name;
+      }
+
+      // Set the issuer ID and commodity name
       const optionData = {
         ...result.data,
+        commodity: commodityName,
         issuerId: req.user!.id,
       };
 
