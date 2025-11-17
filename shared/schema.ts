@@ -122,6 +122,24 @@ export const indexPrices = pgTable("index_prices", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const indexes = pgTable("indexes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  category: text("category").notNull(),
+  hasVat: text("has_vat", { enum: ["true", "false"] }).notNull().default("false"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const commodityIndexPrices = pgTable("commodity_index_prices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  indexId: varchar("index_id").notNull().references(() => indexes.id),
+  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
+  delta: decimal("delta", { precision: 18, scale: 8 }),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+});
+
 export const onchainTransactions = pgTable("onchain_transactions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   optionId: varchar("option_id").references(() => options.id),
@@ -212,6 +230,17 @@ export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
   createdAt: true,
 });
 
+export const insertIndexSchema = createInsertSchema(indexes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCommodityIndexPriceSchema = createInsertSchema(commodityIndexPrices).omit({
+  id: true,
+  timestamp: true,
+});
+
 export const insertOnchainTransactionSchema = createInsertSchema(onchainTransactions).omit({
   id: true,
   createdAt: true,
@@ -242,6 +271,10 @@ export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
+export type InsertIndex = z.infer<typeof insertIndexSchema>;
+export type Index = typeof indexes.$inferSelect;
+export type InsertCommodityIndexPrice = z.infer<typeof insertCommodityIndexPriceSchema>;
+export type CommodityIndexPrice = typeof commodityIndexPrices.$inferSelect;
 export type InsertOnchainTransaction = z.infer<typeof insertOnchainTransactionSchema>;
 export type OnchainTransaction = typeof onchainTransactions.$inferSelect;
 export type InsertNonce = z.infer<typeof insertNonceSchema>;
