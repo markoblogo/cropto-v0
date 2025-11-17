@@ -19,76 +19,99 @@ export interface MultiParserResult {
   errors: string[];
 }
 
-// Mapping of Ukrainian commodity names to English slugs
-const COMMODITY_MAPPINGS: Record<string, string> = {
-  'Кукурудза': 'corn',
-  'Пшениця 11.5pro': 'wheat-115',
-  'Пшениця фураж': 'feed-wheat',
-  'Соя ГМО': 'gmo-soybeans', // Default to regular GMO soybeans
-  'Ріпак': 'rapeseed',
-  'Соняшник': 'sunflower-seed',
-};
+// Context-aware commodity mapping: {name, context} → slug
+// CPT ОДЕСА (export) vs CPT ПАРИТЕТ (processing)
+type SectionContext = 'export' | 'processing' | null;
 
-// Parse all commodities from a Spike Brokers message
+interface CommodityMapping {
+  name: string;
+  slug: string;
+  context?: SectionContext; // If specified, only match in this context
+}
+
+const COMMODITY_MAPPINGS: CommodityMapping[] = [
+  { name: 'Кукурудза', slug: 'corn', context: 'export' },
+  { name: 'Пшениця 11.5pro', slug: 'wheat-115', context: 'export' },
+  { name: 'Пшениця фураж', slug: 'feed-wheat', context: 'export' },
+  { name: 'Соя ГМО', slug: 'gmo-soybeans', context: 'export' },
+  { name: 'Соя ГМО', slug: 'gmo-soybeans-processing', context: 'processing' },
+  { name: 'Ріпак', slug: 'rapeseed', context: 'processing' },
+  { name: 'Соняшник', slug: 'sunflower-seed', context: 'processing' },
+];
+
+// Parse all commodities from a Spike Brokers message using line-by-line approach
 export function parseAllSpikeMessage(text: string): MultiParserResult {
   const normalizedText = text.trim();
   const results: ParsedIndexPrice[] = [];
   const errors: string[] = [];
 
-  // Regex patterns for all commodities (with global flag for matchAll)
-  const commodityPatterns = [
-    { name: 'Кукурудза', slug: 'corn', regex: /[•\-–—]?\s*Кукурудза\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$\s*\(([+-]?[0-9]+(?:[.,][0-9]+)?)\$\)/g },
-    { name: 'Пшениця 11.5pro', slug: 'wheat-115', regex: /[•\-–—]?\s*Пшениц[яа]\s*11\.5(?:pro)?\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$\s*\(([+-]?[0-9]+(?:[.,][0-9]+)?)\$\)/g },
-    { name: 'Пшениця фураж', slug: 'feed-wheat', regex: /[•\-–—]?\s*Пшениц[яа]\s*фураж\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$\s*\(([+-]?[0-9]+(?:[.,][0-9]+)?)\$\)/g },
-    { name: 'Соя ГМО', slug: 'gmo-soybeans', regex: /[•\-–—]?\s*Со[яі]\s*ГМО\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$\s*\(([+-]?[0-9]+(?:[.,][0-9]+)?)\$\)/g },
-    { name: 'Ріпак', slug: 'rapeseed', regex: /[•\-–—]?\s*Ріпак\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$\s*\(([+-]?[0-9]+(?:[.,][0-9]+)?)\$\)/g },
-    { name: 'Соняшник', slug: 'sunflower-seed', regex: /[•\-–—]?\s*Соняшник\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$\s*\(([+-]?[0-9]+(?:[.,][0-9]+)?)\$\)/g },
-  ];
+  // Split into lines for sequential parsing
+  const lines = normalizedText.split(/\r?\n/);
+  
+  let currentContext: SectionContext = null;
+  let currentLocation: string | undefined;
 
-  // Determine location from message (CPT ODESA or CPT PARITET ODESA)
-  const locationMatch = normalizedText.match(/CPT\s+(?:PARITET\s+)?([^\n]+)/i);
-  const location = locationMatch ? locationMatch[0].trim() : undefined;
-  const isParitet = location?.includes('PARITET') || location?.includes('ПАРИТЕТ');
+  // Flexible regex for bullet lines that allows text between price and delta
+  // Matches: "• Commodity – 209$ (0$)" and "• Commodity – 450$ в т.ч. ПДВ (+1$)"
+  // Capture groups: [1]=name, [2]=price, [3]=filler text, [4]=delta
+  const bulletRegex = /^[•]\s*(.+?)\s*[–—-]\s*(\d+(?:[.,]\d+)?)\s*\$?\s*([^\(]*?)\s*\(([+−-]?\d+(?:[.,]\d+)?)\s*\$\)/;
 
-  // Parse each commodity using matchAll to capture all occurrences
-  for (const pattern of commodityPatterns) {
-    const matches = Array.from(normalizedText.matchAll(pattern.regex));
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    // Detect section headers
+    if (trimmedLine.includes('CPT ОДЕСА') || trimmedLine.includes('CPT ODESA')) {
+      currentContext = 'export';
+      currentLocation = 'CPT ODESA, УКРАЇНА (експорт)';
+      continue;
+    }
     
-    if (matches.length === 0) {
-      // Log warning for missing expected commodities
-      errors.push(`Commodity not found: ${pattern.name}`);
+    if (trimmedLine.includes('CPT ПАРИТЕТ') || trimmedLine.includes('CPT PARITET')) {
+      currentContext = 'processing';
+      currentLocation = 'CPT ПАРИТЕТ ОДЕСА, УКРАЇНА (переробка)';
       continue;
     }
 
-    // Process each occurrence
-    matches.forEach((match, index) => {
-      const priceStr = match[1].replace(',', '.');
-      const price = parseFloat(priceStr);
+    // Parse bullet lines (commodity entries)
+    const match = trimmedLine.match(bulletRegex);
+    if (!match) continue;
 
-      if (isNaN(price) || price <= 0) {
-        errors.push(`Invalid price for ${pattern.name}: ${priceStr}`);
-        return;
-      }
+    const name = match[1];
+    const priceStr = match[2];
+    const deltaStr = match[4];
+    
+    // Normalize commodity name (trim whitespace)
+    const normalizedName = name.trim();
 
-      // Parse delta (change)
-      const changeStr = match[2] ? match[2].replace(',', '.') : '0';
-      const change = parseFloat(changeStr);
+    // Find matching commodity slug based on name and current context
+    const mapping = COMMODITY_MAPPINGS.find(
+      m => m.name === normalizedName && 
+           (m.context === currentContext || m.context === undefined)
+    );
 
-      // Special handling for "Соя ГМО" - distinguish between regular and processing
-      let slug = pattern.slug;
-      if (pattern.slug === 'gmo-soybeans' && isParitet && index === 1) {
-        // Second occurrence in PARITET messages is for processing variant
-        slug = 'gmo-soybeans-processing';
-      }
+    if (!mapping) {
+      errors.push(`Unknown commodity in ${currentContext || 'unknown'} section: ${normalizedName}`);
+      continue;
+    }
 
-      results.push({
-        commodity: pattern.name,
-        slug,
-        price,
-        location,
-        change: isNaN(change) ? undefined : change,
-        raw: match[0],
-      });
+    // Parse price
+    const price = parseFloat(priceStr.replace(',', '.'));
+    if (isNaN(price) || price <= 0) {
+      errors.push(`Invalid price for ${normalizedName}: ${priceStr}`);
+      continue;
+    }
+
+    // Parse delta (change)
+    const delta = parseFloat(deltaStr.replace(',', '.').replace('−', '-'));
+    const change = isNaN(delta) ? undefined : delta;
+
+    results.push({
+      commodity: normalizedName,
+      slug: mapping.slug,
+      price,
+      location: currentLocation,
+      change,
+      raw: trimmedLine,
     });
   }
 

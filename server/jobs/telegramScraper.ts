@@ -69,8 +69,11 @@ export async function scrapeChannel(limit = 50): Promise<ScrapedMessage[]> {
       const dateStr = $msg.find('.tgme_widget_message_date time').attr('datetime');
       const date = dateStr ? new Date(dateStr) : new Date();
 
-      // Extract text content
-      const text = $msg.find('.tgme_widget_message_text').text().trim();
+      // Extract text content with proper line breaks
+      // Replace <br> tags with newlines before extracting text
+      const $textElement = $msg.find('.tgme_widget_message_text');
+      $textElement.find('br').replaceWith('\n');
+      const text = $textElement.text().trim();
 
       if (!text) return;
 

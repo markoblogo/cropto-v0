@@ -34,8 +34,8 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
   - Historical price entries table for each commodity
   - "Create Option" integration pre-filling commodity field with slug from index detail page
   - Manual price management (broker-only) via `/admin/index`
-  - **Automated Telegram Scraper**: Background job (`server/jobs/telegramScraper.ts`) scrapes https://t.me/s/spike_brokers channel, parses all 7 commodity prices from Ukrainian Spike Brokers format using `parseAllSpikeMessage()`, and inserts into `commodity_index_prices` table
-  - **Multi-commodity Parser** (`server/services/telegramParser.ts`): Supports parsing all 7 commodities with Ukrainian→English name mapping (Кукурудза→corn, Пшениця 11.5pro→wheat-115, Пшениця фураж→feed-wheat, Соя ГМО→gmo-soybeans, Ріпак→rapeseed, Соняшник→sunflower-seed)
+  - **Automated Telegram Scraper**: Background job (`server/jobs/telegramScraper.ts`) scrapes https://t.me/s/spike_brokers channel, processes HTML `<br>` tags to preserve line structure, parses all 7 commodity prices from Ukrainian Spike Brokers two-section format using `parseAllSpikeMessage()`, and inserts into `commodity_index_prices` table
+  - **Multi-commodity Parser** (`server/services/telegramParser.ts`): Line-by-line parser with section context tracking (CPT ОДЕСА export vs CPT ПАРИТЕТ processing). Supports all 7 commodities with Ukrainian→English name mapping and context-aware slug assignment (Кукурудза→corn, Пшениця 11.5pro→wheat-115, Пшениця фураж→feed-wheat, Соя ГМО in export→gmo-soybeans, Соя ГМО in processing→gmo-soybeans-processing, Ріпак→rapeseed, Соняшник→sunflower-seed). Flexible regex handles both export format ("• Кукурудза – 209$ (0$)") and processing format with VAT marker ("• Ріпак – 592$ в т.ч. ПДВ (-1$)")
   - Automated updates via Telegram bot webhook (single commodity) and polling scraper (all commodities)
   - Support for simple format ("WHEAT 240.50") and Ukrainian Spike Brokers format ("• Пшениця 11.5pro – 221$ (0$)")
 - **Option Creation & Management**: Users can create, view, filter, sort, and manually match crypto options (broker-only).
