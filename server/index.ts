@@ -6,6 +6,7 @@ import { initSentry } from "./utils/sentry";
 import blockServiceRole from "./middleware/blockServiceRole";
 import auditLog from "./middleware/auditLog";
 import { autoImportDemoData } from "../scripts/auto-import-demo-data";
+import { seedCommodityIndexes } from "./seed/commodityIndexes";
 import { db } from "./db";
 
 const app = express();
@@ -67,6 +68,16 @@ app.use((req, res, next) => {
     console.error("❌ Failed to initialize authentication:", error.message);
     console.error("Please add JWT_SECRET to your Replit Secrets.");
     process.exit(1);
+  }
+
+  // Seed commodity indexes (required for Telegram scraper)
+  if (process.env.DATABASE_URL) {
+    try {
+      await seedCommodityIndexes();
+    } catch (error: any) {
+      console.error("⚠️  Warning: Failed to seed commodity indexes:", error.message);
+      // Don't exit - continue server startup
+    }
   }
 
   // Auto-import demo data if not present in database

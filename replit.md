@@ -20,7 +20,7 @@ The backend is an Express.js application in TypeScript, providing a RESTful JSON
 The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for schema management. Tables include `options`, `trades`, `settlements`, `margin_calls`, `notifications`, `indexes`, and `commodity_index_prices`, designed with high-precision decimals and UUID primary keys.
 
 **Commodity Index System**: Two-table architecture for tracking commodity prices:
-- `indexes`: Master table with 7 commodity definitions (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed) organized by categories (CPT ODESA, CPT PARITET ODESA)
+- `indexes`: Master table with 7 commodity definitions (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed) organized by categories (CPT ODESA, CPT PARITET ODESA). **Auto-seeded on server startup** via `server/seed/commodityIndexes.ts` to ensure Telegram scraper has required master records.
 - `commodity_index_prices`: Historical price tracking with foreign key to indexes, storing price, delta, and timestamp
 
 ### UI/UX Decisions
