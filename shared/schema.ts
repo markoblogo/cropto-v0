@@ -174,6 +174,14 @@ export const spotPositions = pgTable("spot_positions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const croptBalances = pgTable("cropt_balances", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull().unique(),
+  balance: decimal("balance", { precision: 18, scale: 8 }).notNull().default("0"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -277,6 +285,12 @@ export const insertSpotPositionSchema = createInsertSchema(spotPositions).omit({
   updatedAt: true,
 });
 
+export const insertCroptBalanceSchema = createInsertSchema(croptBalances).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -305,6 +319,8 @@ export type InsertNonce = z.infer<typeof insertNonceSchema>;
 export type Nonce = typeof nonces.$inferSelect;
 export type InsertSpotPosition = z.infer<typeof insertSpotPositionSchema>;
 export type SpotPosition = typeof spotPositions.$inferSelect;
+export type InsertCroptBalance = z.infer<typeof insertCroptBalanceSchema>;
+export type CroptBalance = typeof croptBalances.$inferSelect;
 
 export interface HealthUpdateResponse {
   lastSync: string; // ISO timestamp from server

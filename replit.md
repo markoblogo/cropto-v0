@@ -25,6 +25,15 @@ The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for sche
 
 **Spot Positions System**: Internal synthetic spot trading support:
 - `spot_positions`: Tracks user spot positions with fields: userId, commoditySlug, quantityKg, avgEntryPrice, createdAt, updatedAt. Allows multiple entries per user-commodity pair for flexible position management and API-level aggregation.
+- `cropt_balances`: Stores internal CROPT balances for users (separate from on-chain balances). Used for synthetic spot trading settlement.
+- **Spot Trading API**: Three endpoints for synthetic spot trading using CROPT as settlement token:
+  - `POST /api/spot/:commoditySlug/buy` - Buy commodity spot position using CROPT balance
+  - `POST /api/spot/:commoditySlug/sell` - Sell commodity spot position, receive CROPT payout
+  - `GET /api/spot/:commoditySlug` - Get current position and P&L for commodity
+  - `GET /api/spot/balance` - Get user's internal CROPT balance
+- Prices sourced from commodity index system (converted from per-ton to per-kg)
+- Position management uses weighted average costing for buys and FIFO (First In First Out) for sells
+- Real-time P&L calculation based on current index prices
 
 ### UI/UX Decisions
 The platform features Cropto branding, including a hero section, `MetricCards`, and a revamped header. It uses pill-shaped status badges and ensures responsiveness. Wallet connection is implemented with MetaMask integration and a manual input fallback.

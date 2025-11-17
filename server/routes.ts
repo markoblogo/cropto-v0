@@ -9,6 +9,7 @@ import { eq, desc, gt, and, or, sql } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
+import { registerSpotRoutes } from "./spotRoutes";
 import { startTransactionPoller } from "./onchain/poller";
 import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
@@ -27,6 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register onchain routes
   registerOnchainRoutes(app);
+  
+  // Register spot trading routes
+  registerSpotRoutes(app);
   
   // Start transaction poller if blockchain is configured
   if (process.env.POLYGON_AMOY_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {

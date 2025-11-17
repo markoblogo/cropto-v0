@@ -1,0 +1,501 @@
+import { Express } from "express";
+import { db } from "./db";
+import { authenticateToken, AuthRequest } from "./auth";
+import { 
+  spotPositions, 
+  croptBalances, 
+  indexes, 
+  commodityIndexPrices 
+} from "@shared/schema";
+import { eq, desc, and } from "drizzle-orm";
+
+export function registerSpotRoutes(app: Express) {
+  
+  // Helper function to get or create user's CROPT balance
+  async function getOrCreateCroptBalance(userId: string) {
+    let [balance] = await db
+      .select()
+      .from(croptBalances)
+      .where(eq(croptBalances.userId, userId))
+      .limit(1);
+    
+    if (!balance) {
+      [balance] = await db
+        .insert(croptBalances)
+        .values({ userId, balance: "0" })
+        .returning();
+    }
+    
+    return balance;
+  }
+  
+  // Helper function to get current index price per kg
+  async function getCurrentPricePerKg(commoditySlug: string): Promise<number | null> {
+    // Find index by slug
+    const [index] = await db
+      .select()
+      .from(indexes)
+      .where(eq(indexes.slug, commoditySlug))
+      .limit(1);
+    
+    if (!index) {
+      return null;
+    }
+    
+    // Get latest price for this index
+    const [latestPrice] = await db
+      .select()
+      .from(commodityIndexPrices)
+      .where(eq(commodityIndexPrices.indexId, index.id))
+      .orderBy(desc(commodityIndexPrices.timestamp))
+      .limit(1);
+    
+    if (!latestPrice) {
+      return null;
+    }
+    
+    // Convert from price per ton to price per kg
+    const pricePerTon = parseFloat(latestPrice.price);
+    const pricePerKg = pricePerTon / 1000;
+    
+    return pricePerKg;
+  }
+  
+  // Helper function to get user's position
+  async function getUserPosition(userId: string, commoditySlug: string) {
+    const positions = await db
+      .select()
+      .from(spotPositions)
+      .where(
+        and(
+          eq(spotPositions.userId, userId),
+          eq(spotPositions.commoditySlug, commoditySlug)
+        )
+      );
+    
+    return positions;
+  }
+  
+  // Helper function to calculate aggregated position
+  function aggregatePositions(positions: any[]) {
+    if (positions.length === 0) {
+      return null;
+    }
+    
+    let totalQuantity = 0;
+    let totalCost = 0;
+    
+    for (const pos of positions) {
+      const qty = parseFloat(pos.quantityKg);
+      const price = parseFloat(pos.avgEntryPrice);
+      totalQuantity += qty;
+      totalCost += qty * price;
+    }
+    
+    const avgPrice = totalQuantity > 0 ? totalCost / totalQuantity : 0;
+    
+    return {
+      quantityKg: totalQuantity,
+      avgEntryPrice: avgPrice,
+    };
+  }
+  
+  // POST /api/spot/:commoditySlug/buy
+  app.post("/api/spot/:commoditySlug/buy", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const { commoditySlug } = req.params;
+      const { quantityKg } = req.body;
+      
+      if (!quantityKg || isNaN(parseFloat(quantityKg)) || parseFloat(quantityKg) <= 0) {
+        return res.status(400).json({ error: "Valid kg amount is required" });
+      }
+      
+      const kgAmount = parseFloat(quantityKg);
+      const userId = req.user.id;
+      
+      // Get current price per kg
+      const pricePerKg = await getCurrentPricePerKg(commoditySlug);
+      if (pricePerKg === null) {
+        return res.status(404).json({ error: "Commodity not found or no price available" });
+      }
+      
+      // Calculate cost
+      const cost = kgAmount * pricePerKg;
+      
+      // Wrap in transaction for atomicity and to prevent race conditions
+      let newBalance: number;
+      let newQuantity: number;
+      let newAvgPrice: number;
+      
+      await db.transaction(async (tx) => {
+        // Get user's CROPT balance with row-level lock (FOR UPDATE)
+        const [balance] = await tx
+          .select()
+          .from(croptBalances)
+          .where(eq(croptBalances.userId, userId))
+          .for('update')
+          .limit(1);
+        
+        if (!balance) {
+          // Create balance if doesn't exist
+          await tx
+            .insert(croptBalances)
+            .values({ userId, balance: "0" })
+            .returning();
+          
+          // Throw structured error
+          const error: any = new Error("Insufficient CROPT balance");
+          error.statusCode = 400;
+          error.details = {
+            required: cost.toFixed(8),
+            available: "0.00000000",
+          };
+          throw error;
+        }
+        
+        const currentBalance = parseFloat(balance.balance);
+        
+        // Check if user has enough CROPT
+        if (currentBalance < cost) {
+          const error: any = new Error("Insufficient CROPT balance");
+          error.statusCode = 400;
+          error.details = {
+            required: cost.toFixed(8),
+            available: currentBalance.toFixed(8),
+          };
+          throw error;
+        }
+        
+        // Get existing positions to calculate weighted average with row lock
+        const existingPositions = await tx
+          .select()
+          .from(spotPositions)
+          .where(
+            and(
+              eq(spotPositions.userId, userId),
+              eq(spotPositions.commoditySlug, commoditySlug)
+            )
+          )
+          .for('update');
+        
+        const aggregated = aggregatePositions(existingPositions);
+        
+        if (aggregated) {
+          // Calculate weighted average
+          const existingValue = aggregated.quantityKg * aggregated.avgEntryPrice;
+          const newValue = kgAmount * pricePerKg;
+          newQuantity = aggregated.quantityKg + kgAmount;
+          newAvgPrice = (existingValue + newValue) / newQuantity;
+        } else {
+          // First position
+          newQuantity = kgAmount;
+          newAvgPrice = pricePerKg;
+        }
+        
+        // Deduct cost from balance
+        newBalance = currentBalance - cost;
+        await tx
+          .update(croptBalances)
+          .set({ 
+            balance: newBalance.toFixed(8),
+            updatedAt: new Date(),
+          })
+          .where(eq(croptBalances.userId, userId));
+        
+        // Create new spot position record
+        await tx
+          .insert(spotPositions)
+          .values({
+            userId,
+            commoditySlug,
+            quantityKg: kgAmount.toFixed(8),
+            avgEntryPrice: pricePerKg.toFixed(8),
+          });
+      });
+      
+      // Calculate current P&L based on aggregated position
+      const currentValue = newQuantity * pricePerKg;
+      const bookValue = newQuantity * newAvgPrice;
+      const unrealizedPnL = currentValue - bookValue;
+      
+      res.json({
+        success: true,
+        transaction: {
+          type: "BUY",
+          kg: kgAmount,
+          pricePerKg: pricePerKg.toFixed(8),
+          cost: cost.toFixed(8),
+        },
+        balance: {
+          cropt: newBalance.toFixed(8),
+        },
+        position: {
+          quantityKg: newQuantity.toFixed(8),
+          avgEntryPrice: newAvgPrice.toFixed(8),
+          currentPrice: pricePerKg.toFixed(8),
+          unrealizedPnL: unrealizedPnL.toFixed(8),
+        },
+      });
+    } catch (error: any) {
+      console.error("Error buying spot position:", error);
+      
+      if (error.statusCode) {
+        return res.status(error.statusCode).json({
+          error: error.message,
+          ...error.details,
+        });
+      }
+      
+      res.status(500).json({ error: error.message || "Failed to buy spot position" });
+    }
+  });
+  
+  // POST /api/spot/:commoditySlug/sell
+  app.post("/api/spot/:commoditySlug/sell", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const { commoditySlug } = req.params;
+      const { quantityKg } = req.body;
+      
+      if (!quantityKg || isNaN(parseFloat(quantityKg)) || parseFloat(quantityKg) <= 0) {
+        return res.status(400).json({ error: "Valid kg amount is required" });
+      }
+      
+      const kgAmount = parseFloat(quantityKg);
+      const userId = req.user.id;
+      
+      // Get current price per kg
+      const pricePerKg = await getCurrentPricePerKg(commoditySlug);
+      if (pricePerKg === null) {
+        return res.status(404).json({ error: "Commodity not found or no price available" });
+      }
+      
+      // Wrap in transaction for atomicity and to prevent race conditions
+      let newBalance: number;
+      let payout: number;
+      let realizedPnL: number;
+      
+      await db.transaction(async (tx) => {
+        // Get user's CROPT balance with row-level lock (FOR UPDATE)
+        const [balance] = await tx
+          .select()
+          .from(croptBalances)
+          .where(eq(croptBalances.userId, userId))
+          .for('update')
+          .limit(1);
+        
+        if (!balance) {
+          // Create balance if doesn't exist
+          await tx
+            .insert(croptBalances)
+            .values({ userId, balance: "0" })
+            .returning();
+        }
+        
+        // Get user's positions with deterministic ordering (FIFO) and row lock
+        const positions = await tx
+          .select()
+          .from(spotPositions)
+          .where(
+            and(
+              eq(spotPositions.userId, userId),
+              eq(spotPositions.commoditySlug, commoditySlug)
+            )
+          )
+          .orderBy(desc(spotPositions.createdAt)) // Explicit ordering for consistency
+          .for('update'); // Lock rows to prevent concurrent modifications
+        
+        const aggregated = aggregatePositions(positions);
+        
+        if (!aggregated || aggregated.quantityKg < kgAmount) {
+          const error: any = new Error("Insufficient position");
+          error.statusCode = 400;
+          error.details = {
+            available: aggregated ? aggregated.quantityKg.toFixed(8) : "0",
+            requested: kgAmount.toFixed(8),
+          };
+          throw error;
+        }
+        
+        // Calculate payout
+        payout = kgAmount * pricePerKg;
+        
+        // Calculate realized P&L
+        const costBasis = kgAmount * aggregated.avgEntryPrice;
+        realizedPnL = payout - costBasis;
+        
+        // Add payout to balance
+        const currentBalance = balance ? parseFloat(balance.balance) : 0;
+        newBalance = currentBalance + payout;
+        await tx
+          .update(croptBalances)
+          .set({ 
+            balance: newBalance.toFixed(8),
+            updatedAt: new Date(),
+          })
+          .where(eq(croptBalances.userId, userId));
+        
+        // Reduce positions (FIFO - First In First Out)
+        // Explicitly order by createdAt to ensure deterministic FIFO
+        let remainingToSell = kgAmount;
+        const sortedPositions = [...positions].sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        
+        for (const position of sortedPositions) {
+          if (remainingToSell <= 0) break;
+          
+          const posQty = parseFloat(position.quantityKg);
+          
+          if (posQty <= remainingToSell) {
+            // Delete entire position
+            await tx
+              .delete(spotPositions)
+              .where(eq(spotPositions.id, position.id));
+            remainingToSell -= posQty;
+          } else {
+            // Reduce position
+            const newQty = posQty - remainingToSell;
+            await tx
+              .update(spotPositions)
+              .set({ 
+                quantityKg: newQty.toFixed(8),
+                updatedAt: new Date(),
+              })
+              .where(eq(spotPositions.id, position.id));
+            remainingToSell = 0;
+          }
+        }
+      });
+      
+      // Get remaining positions
+      const remainingPositions = await getUserPosition(userId, commoditySlug);
+      const remainingAggregated = aggregatePositions(remainingPositions);
+      
+      let unrealizedPnL = 0;
+      if (remainingAggregated) {
+        const currentValue = remainingAggregated.quantityKg * pricePerKg;
+        const bookValue = remainingAggregated.quantityKg * remainingAggregated.avgEntryPrice;
+        unrealizedPnL = currentValue - bookValue;
+      }
+      
+      res.json({
+        success: true,
+        transaction: {
+          type: "SELL",
+          kg: kgAmount,
+          pricePerKg: pricePerKg.toFixed(8),
+          payout: payout.toFixed(8),
+          realizedPnL: realizedPnL.toFixed(8),
+        },
+        balance: {
+          cropt: newBalance.toFixed(8),
+        },
+        position: remainingAggregated ? {
+          quantityKg: remainingAggregated.quantityKg.toFixed(8),
+          avgEntryPrice: remainingAggregated.avgEntryPrice.toFixed(8),
+          currentPrice: pricePerKg.toFixed(8),
+          unrealizedPnL: unrealizedPnL.toFixed(8),
+        } : null,
+      });
+    } catch (error: any) {
+      console.error("Error selling spot position:", error);
+      
+      if (error.statusCode) {
+        return res.status(error.statusCode).json({
+          error: error.message,
+          ...error.details,
+        });
+      }
+      
+      res.status(500).json({ error: error.message || "Failed to sell spot position" });
+    }
+  });
+  
+  // GET /api/spot/balance - Get user's internal CROPT balance
+  // IMPORTANT: This must be registered BEFORE /api/spot/:commoditySlug
+  app.get("/api/spot/balance", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const balance = await getOrCreateCroptBalance(req.user.id);
+      
+      res.json({
+        userId: req.user.id,
+        balance: balance.balance,
+        updatedAt: balance.updatedAt,
+      });
+    } catch (error: any) {
+      console.error("Error fetching CROPT balance:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch balance" });
+    }
+  });
+  
+  // GET /api/spot/:commoditySlug
+  app.get("/api/spot/:commoditySlug", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const { commoditySlug } = req.params;
+      const userId = req.user.id;
+      
+      // Get current price per kg
+      const pricePerKg = await getCurrentPricePerKg(commoditySlug);
+      if (pricePerKg === null) {
+        return res.status(404).json({ error: "Commodity not found or no price available" });
+      }
+      
+      // Get user's positions
+      const positions = await getUserPosition(userId, commoditySlug);
+      const aggregated = aggregatePositions(positions);
+      
+      // Get user's CROPT balance
+      const balance = await getOrCreateCroptBalance(userId);
+      
+      if (!aggregated) {
+        return res.json({
+          position: null,
+          currentPrice: pricePerKg.toFixed(8),
+          balance: {
+            cropt: balance.balance,
+          },
+        });
+      }
+      
+      // Calculate P&L
+      const currentValue = aggregated.quantityKg * pricePerKg;
+      const bookValue = aggregated.quantityKg * aggregated.avgEntryPrice;
+      const unrealizedPnL = currentValue - bookValue;
+      const unrealizedPnLPercent = bookValue > 0 ? (unrealizedPnL / bookValue) * 100 : 0;
+      
+      res.json({
+        position: {
+          quantityKg: aggregated.quantityKg.toFixed(8),
+          avgEntryPrice: aggregated.avgEntryPrice.toFixed(8),
+          currentValue: currentValue.toFixed(8),
+          bookValue: bookValue.toFixed(8),
+          unrealizedPnL: unrealizedPnL.toFixed(8),
+          unrealizedPnLPercent: unrealizedPnLPercent.toFixed(2),
+        },
+        currentPrice: pricePerKg.toFixed(8),
+        balance: {
+          cropt: balance.balance,
+        },
+      });
+    } catch (error: any) {
+      console.error("Error fetching spot position:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch spot position" });
+    }
+  });
+}
