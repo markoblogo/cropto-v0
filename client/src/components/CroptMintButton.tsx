@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Loader2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Coins, Loader2, ArrowDownToLine } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useCroptBalance, usePendingTransactions } from '@/hooks/useCroptBalance';
@@ -18,6 +19,17 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
 
   const { data: balanceData, isLoading: isLoadingBalance } = useCroptBalance(walletAddress);
   const { data: pendingTxs = [] } = usePendingTransactions();
+
+  // Fetch internal balance for spot trading
+  interface SpotBalance {
+    userId: string;
+    balance: string;
+    updatedAt: string;
+  }
+  
+  const { data: internalBalanceData } = useQuery<SpotBalance>({
+    queryKey: ["/api/spot/balance"],
+  });
 
   const hasPendingTx = pendingTxs.length > 0;
 
@@ -63,6 +75,27 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
     },
   });
 
+  const depositMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const response = await apiRequest("POST", "/api/spot/deposit", { amount });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/spot/balance"] });
+      toast({
+        title: "Deposit successful",
+        description: "CROPT deposited to internal trading balance",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Deposit failed",
+        description: error.message || "Failed to deposit CROPT",
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     const checkMintEnabled = async () => {
       try {
@@ -81,7 +114,10 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
   }
 
   const balance = balanceData?.balance || '0';
+  const internalBalance = internalBalanceData ? parseFloat(internalBalanceData.balance) : 0;
+  const onChainBalance = parseFloat(balance);
   const isButtonDisabled = !mintEnabled || hasPendingTx || mintMutation.isPending;
+  const canDeposit = onChainBalance > 0 && !depositMutation.isPending;
 
   return (
     <Card className="w-full" data-testid="card-cropt-mint">
@@ -95,15 +131,32 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-mono font-bold" data-testid="text-cropt-balance">
-            {isLoadingBalance ? (
-              <Loader2 className="w-8 h-8 animate-spin" />
-            ) : (
-              parseFloat(balance).toFixed(2)
-            )}
-          </span>
-          <span className="text-muted-foreground">CROPT</span>
+        <div className="space-y-3">
+          {/* On-chain balance */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">On-chain (Blockchain)</div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-mono font-bold" data-testid="text-cropt-balance">
+                {isLoadingBalance ? (
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                ) : (
+                  onChainBalance.toFixed(2)
+                )}
+              </span>
+              <span className="text-muted-foreground">CROPT</span>
+            </div>
+          </div>
+
+          {/* Internal balance */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">Internal (Spot Trading)</div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-mono font-semibold" data-testid="text-internal-balance">
+                {internalBalance.toFixed(2)}
+              </span>
+              <span className="text-sm text-muted-foreground">CROPT</span>
+            </div>
+          </div>
         </div>
 
         {hasPendingTx && (
@@ -113,29 +166,55 @@ export function CroptMintButton({ walletAddress }: CroptMintButtonProps) {
           </Badge>
         )}
 
-        <Button
-          onClick={() => mintMutation.mutate()}
-          disabled={isButtonDisabled}
-          className="w-full"
-          data-testid="button-request-cropt"
-        >
-          {mintMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Minting...
-            </>
-          ) : (
-            <>
-              <Coins className="w-4 h-4 mr-2" />
-              Request 1 CROPT
-            </>
-          )}
-        </Button>
+        <Separator />
+
+        <div className="space-y-2">
+          <Button
+            onClick={() => mintMutation.mutate()}
+            disabled={isButtonDisabled}
+            variant="default"
+            className="w-full"
+            data-testid="button-request-cropt"
+          >
+            {mintMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Minting...
+              </>
+            ) : (
+              <>
+                <Coins className="w-4 h-4 mr-2" />
+                Request 1 CROPT
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={() => depositMutation.mutate(onChainBalance)}
+            disabled={!canDeposit}
+            variant="secondary"
+            className="w-full"
+            data-testid="button-deposit-internal"
+          >
+            {depositMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Depositing...
+              </>
+            ) : (
+              <>
+                <ArrowDownToLine className="w-4 h-4 mr-2" />
+                Deposit to Internal
+              </>
+            )}
+          </Button>
+        </div>
 
         <p className="text-xs text-muted-foreground">
           {!mintEnabled && 'Minting disabled. Set ENABLE_MINT=true'}
           {hasPendingTx && 'Wait for pending transactions to complete'}
-          {mintEnabled && !hasPendingTx && 'Click to receive 1 test CROPT token'}
+          {!hasPendingTx && !canDeposit && onChainBalance === 0 && 'Request CROPT first to deposit'}
+          {mintEnabled && !hasPendingTx && canDeposit && 'Deposit on-chain CROPT to internal balance for spot trading'}
         </p>
       </CardContent>
     </Card>
