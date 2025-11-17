@@ -22,8 +22,8 @@ export default function AboutPage() {
     const loadMarkdown = async () => {
       setLoading(true);
       try {
-        const aboutFile = `/docs/about.${currentLang}.md`;
-        const faqFile = `/docs/faq.${currentLang}.md`;
+        const aboutFile = `/api/docs/about.${currentLang}.md`;
+        const faqFile = `/api/docs/faq.${currentLang}.md`;
         
         const [aboutRes, faqRes] = await Promise.all([
           fetch(aboutFile),

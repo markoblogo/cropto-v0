@@ -8,6 +8,7 @@ import auditLog from "./middleware/auditLog";
 import { autoImportDemoData } from "../scripts/auto-import-demo-data";
 import { seedCommodityIndexes } from "./seed/commodityIndexes";
 import { db } from "./db";
+import path from "path";
 
 const app = express();
 

@@ -1,4 +1,3 @@
----
 # How to Test Cropto
 
 Testing should be done using **Google Chrome + MetaMask extension**.
@@ -67,6 +66,4 @@ Now your wallet is ready for testing.
 - Create options manually for other participants  
 - Match farmers and traders into option deals  
 - Track created options and their status  
-- Verify that settlements and state changes are executed on-chain  
-
----
+- Verify that settlements and state changes are executed on-chain

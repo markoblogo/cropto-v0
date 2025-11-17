@@ -17,6 +17,8 @@ import { authenticateToken, type AuthRequest, findUserById } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
+import fs from "fs";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
@@ -46,6 +48,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });
+  });
+
+  // Serve markdown documentation files
+  app.get("/api/docs/:filename", async (req, res) => {
+    try {
+      const { filename } = req.params;
+      
+      // Validate filename to prevent directory traversal
+      if (!filename.match(/^[a-z0-9.-]+\.md$/i)) {
+        return res.status(400).json({ error: "Invalid filename" });
+      }
+
+      const docsPath = path.resolve(import.meta.dirname, "..", "public", "docs", filename);
+      
+      // Check if file exists
+      if (!fs.existsSync(docsPath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Read and return file content
+      const content = await fs.promises.readFile(docsPath, "utf-8");
+      res.set("Content-Type", "text/markdown; charset=utf-8");
+      res.send(content);
+    } catch (error) {
+      console.error("Error serving markdown file:", error);
+      res.status(500).json({ error: "Failed to load documentation" });
+    }
   });
 
   // Health updates endpoint for polling

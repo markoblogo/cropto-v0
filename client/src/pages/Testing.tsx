@@ -20,7 +20,7 @@ export default function TestingPage() {
     const loadMarkdown = async () => {
       setLoading(true);
       try {
-        const testingFile = `/docs/testing.${currentLang}.md`;
+        const testingFile = `/api/docs/testing.${currentLang}.md`;
         const response = await fetch(testingFile);
 
         if (response.ok) {
