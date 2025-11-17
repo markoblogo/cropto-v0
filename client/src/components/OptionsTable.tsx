@@ -119,8 +119,8 @@ export function OptionsTable({
         let bVal: any = b[sortField];
 
         if (sortField === "commodity") {
-          const aName = (a as any).commodityName || "";
-          const bName = (b as any).commodityName || "";
+          const aName = (a as any).commodityName || a.commodity || "";
+          const bName = (b as any).commodityName || b.commodity || "";
           if (aName < bName) return sortDirection === "asc" ? -1 : 1;
           if (aName > bName) return sortDirection === "asc" ? 1 : -1;
           return 0;
