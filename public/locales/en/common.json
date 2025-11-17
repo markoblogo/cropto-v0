@@ -112,6 +112,15 @@
       "connectWallet": "Connect Wallet"
     }
   },
+  "spot": {
+    "market": {
+      "title": "Spot Market",
+      "subtitle": "Buy and sell commodities using your CROPT balance",
+      "buy": "Buy",
+      "sell": "Sell",
+      "pricePerKg": "Price per kg"
+    }
+  },
   "page": {
     "dashboard": {
       "title": "Options Marketplace",

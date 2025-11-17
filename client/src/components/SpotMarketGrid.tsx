@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { SpotMarketCard } from "./SpotMarketCard";
 import { SpotBuyModal } from "./SpotBuyModal";
 import { SpotSellModal } from "./SpotSellModal";
@@ -37,6 +38,7 @@ interface SelectedCommodity {
 }
 
 export function SpotMarketGrid() {
+  const { t } = useTranslation();
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedCommodity, setSelectedCommodity] = useState<SelectedCommodity | null>(null);
@@ -58,25 +60,27 @@ export function SpotMarketGrid() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4" id="spot-market-section">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
-          <p className="text-muted-foreground mb-6">
-            Buy and sell commodities using your CROPT balance
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(7)].map((_, i) => (
-            <div key={i} className="space-y-3 p-4 border rounded-lg">
-              <Skeleton className="h-8 w-8" />
-              <Skeleton className="h-6 w-24" />
-              <Skeleton className="h-8 w-full" />
-              <div className="flex gap-2">
-                <Skeleton className="h-8 flex-1" />
-                <Skeleton className="h-8 flex-1" />
+      <div className="py-12" id="spot-market-section">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
+            <p className="text-muted-foreground">
+              {t('spot.market.subtitle')}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {[...Array(7)].map((_, i) => (
+              <div key={i} className="space-y-3 p-5 border rounded-xl shadow-md">
+                <Skeleton className="h-8 w-8" />
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-8 w-full" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-9 flex-1" />
+                  <Skeleton className="h-9 flex-1" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -84,19 +88,21 @@ export function SpotMarketGrid() {
 
   if (error) {
     return (
-      <div className="space-y-4" id="spot-market-section">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
-          <p className="text-muted-foreground mb-6">
-            Buy and sell commodities using your CROPT balance
-          </p>
+      <div className="py-12" id="spot-market-section">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
+            <p className="text-muted-foreground">
+              {t('spot.market.subtitle')}
+            </p>
+          </div>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load spot market data. Please try again later.
+            </AlertDescription>
+          </Alert>
         </div>
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Failed to load spot market data. Please try again later.
-          </AlertDescription>
-        </Alert>
       </div>
     );
   }
@@ -107,44 +113,49 @@ export function SpotMarketGrid() {
 
   if (spotIndexes.length === 0) {
     return (
-      <div className="space-y-4" id="spot-market-section">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
-          <p className="text-muted-foreground mb-6">
-            Buy and sell commodities using your CROPT balance
-          </p>
+      <div className="py-12" id="spot-market-section">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
+            <p className="text-muted-foreground">
+              {t('spot.market.subtitle')}
+            </p>
+          </div>
+          <Alert>
+            <AlertDescription>
+              No spot market data available at this time.
+            </AlertDescription>
+          </Alert>
         </div>
-        <Alert>
-          <AlertDescription>
-            No spot market data available at this time.
-          </AlertDescription>
-        </Alert>
       </div>
     );
   }
 
   return (
     <>
-      <div className="space-y-4" id="spot-market-section" data-testid="spot-market-grid">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
-          <p className="text-muted-foreground mb-6">
-            Buy and sell commodities using your CROPT balance
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {spotIndexes.map((index) => (
-            <SpotMarketCard
-              key={index.id}
-              slug={index.slug}
-              name={index.name}
-              pricePerTon={index.latestPrice?.price || 0}
-              delta={index.latestPrice?.delta || null}
-              onBuy={handleBuy}
-              onSell={handleSell}
-            />
-          ))}
+      <div className="py-12" id="spot-market-section" data-testid="spot-market-grid">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
+            <p className="text-muted-foreground">
+              {t('spot.market.subtitle')}
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {spotIndexes.map((index, i) => (
+              <SpotMarketCard
+                key={index.id}
+                slug={index.slug}
+                name={index.name}
+                pricePerTon={index.latestPrice?.price || 0}
+                delta={index.latestPrice?.delta || null}
+                onBuy={handleBuy}
+                onSell={handleSell}
+                index={i}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

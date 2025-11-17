@@ -49,7 +49,15 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 - "Spot Trading" (secondary button with TrendingUp icon, smooth-scrolls to #spot-market-section)
 - "Connect Wallet" (outline button with backdrop blur)
 
-**Spot Market Section**: All render states (loading, error, empty, success) include `id="spot-market-section"` anchor for smooth-scroll navigation from Hero CTA button.
+**Spot Market Section**: Polished visual design with professional UX/UI:
+- Section wrapper: `py-12` vertical spacing, `text-3xl` headline with full i18n support (EN: "Spot Market", UK: "Спотовий ринок")
+- Card layout: `rounded-xl` corners, `shadow-md` with `hover:shadow-lg`, `hover:scale-[1.01]` micro-interaction, `gap-5` grid spacing
+- Enhanced typography: Larger commodity titles (`text-lg font-bold`), prominent price display (`text-2xl font-bold`), clear labels with i18n
+- Button styling: "Buy" uses `bg-primary` with hover brightness, "Sell" uses `variant="secondary"` with neutral tone, both `size="default"` for consistency
+- Animations: framer-motion fade-in for cards (staggered 50ms delay per card), smooth transitions (200ms duration)
+- Responsive grid: 1 column mobile, 2 cols sm, 3 cols lg, 4 cols xl with `gap-5`
+- All render states (loading, error, empty, success) include `id="spot-market-section"` anchor for smooth-scroll navigation from Hero CTA button
+- Full i18n support: All text uses translation keys from `spot.market.*` namespace
 
 ### Key Features
 - **Internationalization (i18n)**: Multi-language support using react-i18next with English and Ukrainian locales. Translation files located in `public/locales/{en,uk}/common.json`. Language switcher component in header allows seamless language toggling with localStorage persistence.
