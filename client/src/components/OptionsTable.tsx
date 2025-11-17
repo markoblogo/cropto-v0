@@ -77,6 +77,7 @@ export function OptionsTable({
 }: OptionsTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [commodityFilter, setCommodityFilter] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -106,11 +107,24 @@ export function OptionsTable({
     return <ArrowDown className="w-4 h-4" />;
   };
 
+  const uniqueCommodities = useMemo(() => {
+    const commodities = new Set<string>();
+    options.forEach(opt => {
+      const commodityName = (opt as any).commodityName || opt.commodity;
+      if (commodityName) {
+        commodities.add(commodityName);
+      }
+    });
+    return Array.from(commodities).sort();
+  }, [options]);
+
   const filteredAndSortedOptions = useMemo(() => {
     let filtered = options.filter(opt => {
       const matchesStatus = statusFilter === "ALL" || opt.status === statusFilter;
       const matchesType = typeFilter === "ALL" || opt.type === typeFilter;
-      return matchesStatus && matchesType;
+      const commodityName = (opt as any).commodityName || opt.commodity || "";
+      const matchesCommodity = commodityFilter === "ALL" || commodityName === commodityFilter;
+      return matchesStatus && matchesType && matchesCommodity;
     });
 
     if (sortField && sortDirection) {
@@ -147,7 +161,7 @@ export function OptionsTable({
     }
 
     return filtered;
-  }, [options, statusFilter, typeFilter, sortField, sortDirection]);
+  }, [options, statusFilter, typeFilter, commodityFilter, sortField, sortDirection]);
 
   if (isLoading) {
     return (
@@ -198,6 +212,19 @@ export function OptionsTable({
                 <SelectItem value="FILLED">Filled</SelectItem>
                 <SelectItem value="EXPIRED">Expired</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={commodityFilter} onValueChange={setCommodityFilter}>
+              <SelectTrigger className="w-[160px]" data-testid="select-commodity-filter">
+                <SelectValue placeholder="Filter Commodity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Commodities</SelectItem>
+                {uniqueCommodities.map(commodity => (
+                  <SelectItem key={commodity} value={commodity}>
+                    {commodity}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
