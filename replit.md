@@ -32,9 +32,11 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
   - Real-time index grid display on homepage with latest prices and deltas
   - Individual index detail pages (`/index/:slug`) with full price history charts (Recharts LineChart)
   - Historical price entries table for each commodity
-  - "Create Option" integration pre-filling commodity field
+  - "Create Option" integration pre-filling commodity field with slug from index detail page
   - Manual price management (broker-only) via `/admin/index`
-  - Automated updates via Telegram bot webhook and polling
+  - **Automated Telegram Scraper**: Background job (`server/jobs/telegramScraper.ts`) scrapes https://t.me/s/spike_brokers channel, parses all 7 commodity prices from Ukrainian Spike Brokers format using `parseAllSpikeMessage()`, and inserts into `commodity_index_prices` table
+  - **Multi-commodity Parser** (`server/services/telegramParser.ts`): Supports parsing all 7 commodities with Ukrainian→English name mapping (Кукурудза→corn, Пшениця 11.5pro→wheat-115, Пшениця фураж→feed-wheat, Соя ГМО→gmo-soybeans, Ріпак→rapeseed, Соняшник→sunflower-seed)
+  - Automated updates via Telegram bot webhook (single commodity) and polling scraper (all commodities)
   - Support for simple format ("WHEAT 240.50") and Ukrainian Spike Brokers format ("• Пшениця 11.5pro – 221$ (0$)")
 - **Option Creation & Management**: Users can create, view, filter, sort, and manually match crypto options (broker-only).
 - **Exercise & Settlement**: Facilitates option exercise with spot price input, calculates payout, and records settlements.

@@ -1,17 +1,33 @@
 import * as cheerio from 'cheerio';
 import { db } from '../db.js';
-import { indexPrices } from '../../shared/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { commodityIndexPrices, indexes } from '../../shared/schema.js';
+import { eq, and, sql } from 'drizzle-orm';
+import { parseAllSpikeMessage } from '../services/telegramParser.js';
 
 const CHANNEL_URL = 'https://t.me/s/spike_brokers';
-const WHEAT_REGEX = /Пшениця\s*11\.5(?:pro)?\s*[–—-]\s*([0-9]+(?:[.,][0-9]+)?)\s*\$/;
 const SOURCE_SCRAPER = 'telegram/scraper';
 
 interface ScrapedMessage {
   messageId: string;
   date: Date;
   text: string;
-  price?: number;
+  commodities: Array<{
+    slug: string;
+    name: string;
+    price: number;
+    delta?: number;
+  }>;
+}
+
+// Cache for index slugs to IDs
+let indexCache: Map<string, string> | null = null;
+
+async function getIndexCache(): Promise<Map<string, string>> {
+  if (indexCache) return indexCache;
+  
+  const allIndexes = await db.select().from(indexes);
+  indexCache = new Map(allIndexes.map(idx => [idx.slug, idx.id]));
+  return indexCache;
 }
 
 export async function scrapeChannel(limit = 50): Promise<ScrapedMessage[]> {
@@ -58,30 +74,33 @@ export async function scrapeChannel(limit = 50): Promise<ScrapedMessage[]> {
 
       if (!text) return;
 
-      // Try to extract wheat price
-      const match = text.match(WHEAT_REGEX);
-      let price: number | undefined;
-
-      if (match && match[1]) {
-        const priceStr = match[1].replace(',', '.');
-        price = parseFloat(priceStr);
-        
-        if (!isNaN(price)) {
-          price = Math.round(price * 100) / 100; // Round to 2 decimals
-        } else {
-          price = undefined;
-        }
+      // Parse all commodities from the message
+      const parseResult = parseAllSpikeMessage(text);
+      
+      // Log parser errors for monitoring
+      if (parseResult.errors.length > 0) {
+        console.log(`[TelegramScraper] Parser warnings for message ${messageId}:`, parseResult.errors);
       }
 
-      messages.push({
-        messageId,
-        date,
-        text,
-        price
-      });
+      const commodities = parseResult.data.map(item => ({
+        slug: item.slug,
+        name: item.commodity,
+        price: item.price,
+        delta: item.change,
+      }));
+
+      if (commodities.length > 0) {
+        messages.push({
+          messageId,
+          date,
+          text,
+          commodities,
+        });
+      }
     });
 
-    console.log(`[TelegramScraper] Parsed ${messages.length} messages, ${messages.filter(m => m.price).length} with wheat prices`);
+    const totalCommodities = messages.reduce((sum, m) => sum + m.commodities.length, 0);
+    console.log(`[TelegramScraper] Parsed ${messages.length} messages, ${totalCommodities} commodity prices found`);
     return messages;
 
   } catch (error) {
@@ -92,49 +111,70 @@ export async function scrapeChannel(limit = 50): Promise<ScrapedMessage[]> {
 
 export async function ingestScrapedData(messages: ScrapedMessage[]): Promise<number> {
   let newRecords = 0;
+  let skippedRecords = 0;
+  const cache = await getIndexCache();
 
   for (const msg of messages) {
-    if (!msg.price) continue; // Skip messages without wheat price
+    if (msg.commodities.length === 0) continue;
 
     try {
-      // Check for duplicates
-      const existing = await db
-        .select()
-        .from(indexPrices)
-        .where(
-          and(
-            eq(indexPrices.source, SOURCE_SCRAPER),
-            eq(indexPrices.messageId, msg.messageId)
-          )
-        )
-        .limit(1);
+      // Process each commodity in the message
+      for (const commodity of msg.commodities) {
+        const indexId = cache.get(commodity.slug);
+        
+        if (!indexId) {
+          console.warn(`[TelegramScraper] Unknown commodity slug: ${commodity.slug}, skipping`);
+          continue;
+        }
 
-      if (existing.length > 0) {
-        console.log(`[TelegramScraper] Skipping duplicate message ${msg.messageId}`);
-        continue;
+        try {
+          // Check for duplicate entry (same index + exact timestamp)
+          // This prevents re-ingesting the same message data on every scraper run
+          const existingEntry = await db
+            .select()
+            .from(commodityIndexPrices)
+            .where(
+              and(
+                eq(commodityIndexPrices.indexId, indexId),
+                sql`${commodityIndexPrices.timestamp} = ${msg.date.toISOString()}`
+              )
+            )
+            .limit(1);
+
+          if (existingEntry.length > 0) {
+            skippedRecords++;
+            continue;
+          }
+
+          // Insert new price record
+          await db.insert(commodityIndexPrices).values({
+            indexId,
+            price: commodity.price.toString(),
+            delta: commodity.delta !== undefined ? commodity.delta.toString() : null,
+            timestamp: msg.date,
+          });
+
+          // Update the index's updatedAt timestamp
+          await db
+            .update(indexes)
+            .set({ updatedAt: new Date() })
+            .where(eq(indexes.id, indexId));
+
+          newRecords++;
+          console.log(`[TelegramScraper] ✓ Inserted ${commodity.name} price $${commodity.price} (${commodity.delta !== undefined ? `${commodity.delta > 0 ? '+' : ''}${commodity.delta}` : 'no delta'}) from message ${msg.messageId}`);
+
+        } catch (error) {
+          console.error(`[TelegramScraper] Error inserting ${commodity.name} from message ${msg.messageId}:`, error);
+        }
       }
 
-      // Insert new record
-      await db.insert(indexPrices).values({
-        commodity: 'WHEAT',
-        price: msg.price.toString(),
-        date: msg.date,
-        source: SOURCE_SCRAPER,
-        raw: msg.text,
-        messageId: msg.messageId,
-        meta: JSON.stringify({
-          url: `${CHANNEL_URL}/${msg.messageId}`,
-          scraped_at: new Date().toISOString()
-        }),
-        isDemo: 'false'
-      });
-
-      newRecords++;
-      console.log(`[TelegramScraper] ✓ Inserted WHEAT price $${msg.price} from message ${msg.messageId}`);
-
     } catch (error) {
-      console.error(`[TelegramScraper] Error inserting message ${msg.messageId}:`, error);
+      console.error(`[TelegramScraper] Error processing message ${msg.messageId}:`, error);
     }
+  }
+
+  if (skippedRecords > 0) {
+    console.log(`[TelegramScraper] Skipped ${skippedRecords} duplicate records`);
   }
 
   return newRecords;
