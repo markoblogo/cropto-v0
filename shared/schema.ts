@@ -164,6 +164,16 @@ export const nonces = pgTable("nonces", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const spotPositions = pgTable("spot_positions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  commoditySlug: text("commodity_slug").notNull(),
+  quantityKg: decimal("quantity_kg", { precision: 18, scale: 8 }).notNull(),
+  avgEntryPrice: decimal("avg_entry_price", { precision: 18, scale: 8 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -261,6 +271,12 @@ export const insertNonceSchema = createInsertSchema(nonces).omit({
   createdAt: true,
 });
 
+export const insertSpotPositionSchema = createInsertSchema(spotPositions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -287,6 +303,8 @@ export type InsertOnchainTransaction = z.infer<typeof insertOnchainTransactionSc
 export type OnchainTransaction = typeof onchainTransactions.$inferSelect;
 export type InsertNonce = z.infer<typeof insertNonceSchema>;
 export type Nonce = typeof nonces.$inferSelect;
+export type InsertSpotPosition = z.infer<typeof insertSpotPositionSchema>;
+export type SpotPosition = typeof spotPositions.$inferSelect;
 
 export interface HealthUpdateResponse {
   lastSync: string; // ISO timestamp from server

@@ -17,11 +17,14 @@ The frontend is built with React and TypeScript, using Vite, `shadcn/ui` (Radix 
 The backend is an Express.js application in TypeScript, providing a RESTful JSON API. It features a flexible authentication system with Supabase (production) or file-based (`db.json`) for development, using bcrypt and JWT for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer ensures transaction safety. Shared Zod schemas are used for data validation. A margin check job system calculates intrinsic value, P&L, triggers margin calls, and generates notifications. Security middleware blocks unauthorized Supabase service role key usage.
 
 ### Data Storage
-The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for schema management. Tables include `options`, `trades`, `settlements`, `margin_calls`, `notifications`, `indexes`, and `commodity_index_prices`, designed with high-precision decimals and UUID primary keys.
+The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for schema management. Tables include `options`, `trades`, `settlements`, `margin_calls`, `notifications`, `indexes`, `commodity_index_prices`, and `spot_positions`, designed with high-precision decimals and UUID primary keys.
 
 **Commodity Index System**: Two-table architecture for tracking commodity prices:
 - `indexes`: Master table with 7 commodity definitions (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed) organized by categories (CPT ODESA, CPT PARITET ODESA). **Auto-seeded on server startup** via `server/seed/commodityIndexes.ts` to ensure Telegram scraper has required master records.
 - `commodity_index_prices`: Historical price tracking with foreign key to indexes, storing price, delta, and timestamp
+
+**Spot Positions System**: Internal synthetic spot trading support:
+- `spot_positions`: Tracks user spot positions with fields: userId, commoditySlug, quantityKg, avgEntryPrice, createdAt, updatedAt. Allows multiple entries per user-commodity pair for flexible position management and API-level aggregation.
 
 ### UI/UX Decisions
 The platform features Cropto branding, including a hero section, `MetricCards`, and a revamped header. It uses pill-shaped status badges and ensures responsiveness. Wallet connection is implemented with MetaMask integration and a manual input fallback.
