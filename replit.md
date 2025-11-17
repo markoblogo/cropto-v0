@@ -28,7 +28,14 @@ The platform features Cropto branding, including a hero section, `MetricCards`, 
 
 ### Key Features
 - **Internationalization (i18n)**: Multi-language support using react-i18next with English and Ukrainian locales. Translation files located in `public/locales/{en,uk}/common.json`. Language switcher component in header allows seamless language toggling with localStorage persistence.
-- **Index Price Widget & Management**: Real-time display and manual management of commodity index prices with historical trends, including automated updates via Telegram bot webhook and polling. Supports both simple format ("WHEAT 240.50") and Ukrainian Spike Brokers format ("• Пшениця 11.5pro – 221$ (0$)"). New structured commodity index system with 7 commodities: Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, and Sunflower Seed.
+- **Commodity Index System**: Comprehensive commodity index management with 7 commodities (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed). Features include:
+  - Real-time index grid display on homepage with latest prices and deltas
+  - Individual index detail pages (`/index/:slug`) with full price history charts (Recharts LineChart)
+  - Historical price entries table for each commodity
+  - "Create Option" integration pre-filling commodity field
+  - Manual price management (broker-only) via `/admin/index`
+  - Automated updates via Telegram bot webhook and polling
+  - Support for simple format ("WHEAT 240.50") and Ukrainian Spike Brokers format ("• Пшениця 11.5pro – 221$ (0$)")
 - **Option Creation & Management**: Users can create, view, filter, sort, and manually match crypto options (broker-only).
 - **Exercise & Settlement**: Facilitates option exercise with spot price input, calculates payout, and records settlements.
 - **Authentication & Authorization**: JWT-based system with user roles and protected API endpoints.

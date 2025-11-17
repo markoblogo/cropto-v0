@@ -36,9 +36,10 @@ interface CreateOptionDialogProps {
   isPending: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  defaultCommodity?: string;
 }
 
-export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, onOpenChange }: CreateOptionDialogProps) {
+export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, onOpenChange, defaultCommodity }: CreateOptionDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
@@ -52,6 +53,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
       qty: "",
       premium: "",
       buyer: "",
+      commodity: defaultCommodity || "",
       status: "OPEN",
     },
   });
@@ -103,6 +105,25 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                     <Input 
                       placeholder="e.g., BTC-50000-CALL-30DEC" 
                       data-testid="input-title"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="commodity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Commodity</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g., WHEAT, Corn, Rapeseed" 
+                      data-testid="input-commodity"
+                      disabled={!!defaultCommodity}
                       {...field} 
                     />
                   </FormControl>

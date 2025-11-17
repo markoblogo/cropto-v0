@@ -24,7 +24,7 @@ export function CommodityIndexesGrid() {
   });
 
   const handleViewDetails = (slug: string) => {
-    window.open(`/admin/index?highlight=${slug}`, '_blank');
+    window.location.href = `/index/${slug}`;
   };
 
   if (isLoading) {

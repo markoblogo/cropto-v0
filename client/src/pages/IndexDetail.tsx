@@ -1,0 +1,335 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useRoute } from "wouter";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BackToDashboard } from "@/components/BackToDashboard";
+import { CreateOptionDialog } from "@/components/CreateOptionDialog";
+import { TrendingUp, TrendingDown, Minus, Plus, AlertTriangle } from "lucide-react";
+import { format } from "date-fns";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
+import type { InsertOption } from "@shared/schema";
+
+interface PriceHistoryEntry {
+  id: string;
+  price: number;
+  delta: number | null;
+  timestamp: string;
+}
+
+interface IndexData {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  hasVat: boolean;
+  priceHistory: PriceHistoryEntry[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function IndexDetail() {
+  const { toast } = useToast();
+  const [, params] = useRoute("/index/:slug");
+  const slug = params?.slug || "";
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const { data: indexData, isLoading, error } = useQuery<IndexData>({
+    queryKey: ["/api/indexes", slug],
+    queryFn: async () => {
+      const response = await fetch(`/api/indexes/${slug}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch index: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!slug,
+  });
+
+  const createOptionMutation = useMutation({
+    mutationFn: async (data: InsertOption) => {
+      const response = await apiRequest("POST", "/api/options", data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      toast({
+        title: "Success",
+        description: "Option created successfully",
+      });
+      setIsCreateDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create option",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          <Skeleton className="h-12 w-64" />
+          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !indexData) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          <BackToDashboard />
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load index data. The index "{slug}" may not exist.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    );
+  }
+
+  const latestPrice = indexData.priceHistory && indexData.priceHistory.length > 0 
+    ? indexData.priceHistory[0] 
+    : null;
+  const previousPrice = indexData.priceHistory && indexData.priceHistory.length > 1 
+    ? indexData.priceHistory[1] 
+    : null;
+  const priceChange = latestPrice && previousPrice 
+    ? latestPrice.price - previousPrice.price 
+    : latestPrice?.delta || 0;
+  
+  const isPositive = priceChange > 0;
+  const isNegative = priceChange < 0;
+  const TrendIcon = isPositive ? TrendingUp : isNegative ? TrendingDown : Minus;
+  const trendColor = isPositive 
+    ? "text-green-600 dark:text-green-400" 
+    : isNegative 
+    ? "text-red-600 dark:text-red-400" 
+    : "text-muted-foreground";
+
+  // Prepare chart data (reverse to show chronologically)
+  const chartData = [...indexData.priceHistory]
+    .reverse()
+    .map(entry => ({
+      date: format(new Date(entry.timestamp), "MMM dd HH:mm"),
+      price: entry.price,
+      timestamp: entry.timestamp,
+    }));
+
+  // Calculate Y-axis domain
+  const allPrices = chartData.map(d => d.price);
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
+  const padding = (maxPrice - minPrice) * 0.1 || 10;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <BackToDashboard />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold mb-2" data-testid="heading-index-name">
+                {indexData.name}
+              </h1>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md" data-testid="text-category">
+                  {indexData.category}
+                </span>
+                {indexData.hasVat && (
+                  <span className="text-xs text-muted-foreground px-2 py-1 border rounded-md">
+                    VAT Included
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <Button
+            onClick={() => setIsCreateDialogOpen(true)}
+            size="lg"
+            data-testid="button-create-option"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Option
+          </Button>
+        </div>
+
+        {/* Current Price Card */}
+        <Card data-testid="card-current-price">
+          <CardHeader>
+            <CardTitle>Current Price</CardTitle>
+            <CardDescription>
+              Latest commodity index price
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {latestPrice ? (
+              <div className="space-y-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-4xl font-bold font-mono" data-testid="text-current-price">
+                    ${latestPrice.price.toFixed(2)}
+                  </span>
+                  <div className={`flex items-center gap-2 ${trendColor}`} data-testid="text-price-change">
+                    <TrendIcon className="w-5 h-5" />
+                    <span className="text-lg font-medium">
+                      {isPositive ? "+" : ""}{priceChange.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground" data-testid="text-last-updated">
+                  Last updated: {format(new Date(latestPrice.timestamp), "MMM dd, yyyy HH:mm:ss")}
+                </p>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No price data available</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Price History Chart */}
+        {chartData.length > 0 && (
+          <Card data-testid="card-price-chart">
+            <CardHeader>
+              <CardTitle>Price History</CardTitle>
+              <CardDescription>
+                Historical price trend over time ({chartData.length} data points)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 12 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis 
+                      domain={[minPrice - padding, maxPrice + padding]}
+                      tick={{ fontSize: 12 }}
+                      className="text-muted-foreground"
+                      tickFormatter={(value) => `$${value.toFixed(2)}`}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                      }}
+                      labelFormatter={(label, payload) => {
+                        if (payload && payload[0]) {
+                          return format(new Date(payload[0].payload.timestamp), "MMM dd, yyyy HH:mm");
+                        }
+                        return label;
+                      }}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="price" 
+                      name="Price ($)"
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Price History Table */}
+        <Card data-testid="card-price-history">
+          <CardHeader>
+            <CardTitle>Historical Price Entries</CardTitle>
+            <CardDescription>
+              All recorded price updates for {indexData.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {indexData.priceHistory.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No price history yet</p>
+                <p className="text-sm">Price data will appear here once available</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date & Time</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="text-right">Change</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {indexData.priceHistory.map((entry) => (
+                      <TableRow key={entry.id} data-testid={`row-price-${entry.id}`}>
+                        <TableCell data-testid={`text-timestamp-${entry.id}`}>
+                          {format(new Date(entry.timestamp), "MMM dd, yyyy HH:mm:ss")}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-medium" data-testid={`text-price-${entry.id}`}>
+                          ${entry.price.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right" data-testid={`text-delta-${entry.id}`}>
+                          {entry.delta !== null ? (
+                            <span className={entry.delta > 0 ? "text-green-600 dark:text-green-400" : entry.delta < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}>
+                              {entry.delta > 0 ? "+" : ""}{entry.delta.toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Create Option Dialog */}
+        <CreateOptionDialog 
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          onSubmit={async (data) => {
+            await createOptionMutation.mutateAsync(data);
+          }}
+          isPending={createOptionMutation.isPending}
+          defaultCommodity={indexData.name}
+        />
+      </div>
+    </div>
+  );
+}
