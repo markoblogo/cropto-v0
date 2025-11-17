@@ -25,6 +25,7 @@
   "button": {
     "createOption": "Create Option",
     "connectWallet": "Connect Wallet",
+    "spotTrading": "Spot Trading",
     "create": "Create",
     "login": "Login",
     "register": "Register",
@@ -103,7 +104,8 @@
     "noMarginCall": "No pending margin call found for this option"
   },
   "hero": {
-    "headline": "Cropto — hedging for grain",
+    "headline": "Cropto — pricing, hedging and trading grain",
+    "tagline": "pricing, hedging and trading grain",
     "subheadline": "Trade agricultural commodity options with blockchain-backed transparency",
     "cta": {
       "createOption": "Create Option",

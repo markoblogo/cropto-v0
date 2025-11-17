@@ -58,7 +58,7 @@ export function SpotMarketGrid() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" id="spot-market-section">
         <div>
           <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
           <p className="text-muted-foreground mb-6">
@@ -84,7 +84,7 @@ export function SpotMarketGrid() {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" id="spot-market-section">
         <div>
           <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
           <p className="text-muted-foreground mb-6">
@@ -107,7 +107,7 @@ export function SpotMarketGrid() {
 
   if (spotIndexes.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" id="spot-market-section">
         <div>
           <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
           <p className="text-muted-foreground mb-6">
@@ -125,7 +125,7 @@ export function SpotMarketGrid() {
 
   return (
     <>
-      <div className="space-y-4" data-testid="spot-market-grid">
+      <div className="space-y-4" id="spot-market-section" data-testid="spot-market-grid">
         <div>
           <h2 className="text-2xl font-bold mb-2">Spot Market</h2>
           <p className="text-muted-foreground mb-6">

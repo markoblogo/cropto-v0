@@ -1,0 +1,91 @@
+Polish the visual design of the existing Spot Market section.  
+Do NOT modify the logic, API calls, or index/spot calculations.
+
+Apply the following UX/UI improvements:
+
+------------------------------------------------------------
+1. Section Styling (Wrapper)
+------------------------------------------------------------
+- Add more vertical spacing before and after the Spot Market section.
+- Add a subtle section headline: “Spot Market” (use t('spot.market.title'))
+  EN: “Spot Market”
+  UA: “Спотовий ринок”
+- Style similar to “Options Book” or Index headers for consistency.
+
+------------------------------------------------------------
+2. Card Layout Improvements
+------------------------------------------------------------
+Modify the existing spot cards:
+
+- Add a slight shadow (same as option cards or Tailwind shadow-md).
+- Add rounded-xl corners.
+- Add subtle hover scale: scale-[1.01] with transition duration-200.
+- Improve padding to match index cards (p-4 or p-5 depending on breakpoints).
+- Ensure icons remain 24–32px and left-aligned.
+
+Inside each card:
+- Commodity icon → left
+- Commodity title → bold, slightly larger font-weight
+- Price per kg → make visually dominant (font-bold)
+- Daily change (if available) → smaller, green/red depending on trend
+
+------------------------------------------------------------
+3. Add action buttons (Buy / Sell) styling improvements
+------------------------------------------------------------
+For both buttons:
+- Make spacing consistent with Create Option dialog buttons.
+- Buy:
+    Use primary color (green).
+    Button must match Create Option CTA styling.
+- Sell:
+    Use secondary/accent neutral color (light olive / sand tone from palette).
+- Add hover effects:
+    Buy → slight brightness increase
+    Sell → slight darken on hover
+
+------------------------------------------------------------
+4. Add micro-interactions
+------------------------------------------------------------
+Add:
+- subtle card hover shadow increase
+- price number count-up animation when values load (optional)
+- quick fade-in of each card (staggered list animation: 50–75ms per card)
+
+Use framer-motion if already in the project.
+If not, use simple Tailwind transitions.
+
+------------------------------------------------------------
+5. Ensure responsiveness
+------------------------------------------------------------
+- On desktop: cards displayed in a grid (3 or 4 columns depending on breakpoints)
+- On mobile: cards stacked vertically with clean spacing
+- Buttons must stack gracefully on small screens.
+
+------------------------------------------------------------
+6. Add i18n keys for the section
+------------------------------------------------------------
+Add to translation files:
+
+EN:
+spot.market.title: "Spot Market"
+spot.market.buy: "Buy"
+spot.market.sell: "Sell"
+
+UA:
+spot.market.title: "Спотовий ринок"
+spot.market.buy: "Купити"
+spot.market.sell: "Продати"
+
+Replace hardcoded strings in the section accordingly.
+
+------------------------------------------------------------
+7. Do NOT change:
+------------------------------------------------------------
+- Spot API logic
+- Buy/Sell modal logic
+- Pricing or index feed logic
+- Page routing
+- Existing index cards
+- Any option or contract code
+
+Make styling changes minimal, isolated, and additive.

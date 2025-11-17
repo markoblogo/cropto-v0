@@ -44,6 +44,13 @@ The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for sche
 ### UI/UX Decisions
 The platform features Cropto branding, including a hero section, `MetricCards`, and a revamped header. It uses pill-shaped status badges and ensures responsiveness. Wallet connection is implemented with MetaMask integration and a manual input fallback.
 
+**Hero Section**: Features updated branding with tagline "pricing, hedging and trading grain" (fully internationalized in EN/UK). Contains three CTA buttons:
+- "Create Option" (primary green button)
+- "Spot Trading" (secondary button with TrendingUp icon, smooth-scrolls to #spot-market-section)
+- "Connect Wallet" (outline button with backdrop blur)
+
+**Spot Market Section**: All render states (loading, error, empty, success) include `id="spot-market-section"` anchor for smooth-scroll navigation from Hero CTA button.
+
 ### Key Features
 - **Internationalization (i18n)**: Multi-language support using react-i18next with English and Ukrainian locales. Translation files located in `public/locales/{en,uk}/common.json`. Language switcher component in header allows seamless language toggling with localStorage persistence.
 - **Commodity Index System**: Comprehensive commodity index management with 7 commodities (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed). Features include:

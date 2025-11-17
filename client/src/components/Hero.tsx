@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
+import { Wallet, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface HeroProps {
@@ -14,6 +14,13 @@ const formatAddress = (address: string) => {
 
 export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroProps) {
   const { t } = useTranslation();
+  
+  const scrollToSpotMarket = () => {
+    const spotMarketSection = document.getElementById('spot-market-section');
+    if (spotMarketSection) {
+      spotMarketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
   
   return (
     <div className="relative overflow-hidden bg-background">
@@ -42,7 +49,7 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
           <div className="flex-1">
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight" data-testid="text-hero-headline">
-              {t('hero.headline')}
+              Cropto — {t('hero.tagline')}
             </h1>
 
             {/* CTAs */}
@@ -54,6 +61,17 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
                 data-testid="button-hero-create-option"
               >
                 {t('button.createOption')}
+              </Button>
+
+              <Button
+                size="lg"
+                variant="secondary"
+                className="font-semibold w-full sm:w-auto"
+                onClick={scrollToSpotMarket}
+                data-testid="button-hero-spot-trading"
+              >
+                <TrendingUp className="mr-2 h-5 w-5" />
+                {t('button.spotTrading')}
               </Button>
 
               <Button
