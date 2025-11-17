@@ -49,13 +49,13 @@ export function SpotMarketCard({
         className="rounded-xl shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200"
       >
         <CardHeader className="pb-3 p-5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3 min-h-[56px]">
             <img 
               src={`/commodities/${slug}.png`}
               alt={name}
               className="w-8 h-8 object-contain flex-shrink-0"
             />
-            <CardTitle className="text-lg font-bold">
+            <CardTitle className="text-lg font-bold leading-tight">
               {name}
             </CardTitle>
           </div>
