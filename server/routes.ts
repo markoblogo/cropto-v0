@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql } from "drizzle-orm";
@@ -527,6 +527,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error ingesting scraped data:", error);
       res.status(500).json({ error: "Failed to ingest data" });
+    }
+  });
+
+  // Commodity Indexes API - New structured index system
+  
+  // GET /api/indexes - List all commodity indexes with latest prices
+  app.get("/api/indexes", async (req, res) => {
+    try {
+      // Fetch all indexes
+      const allIndexes = await db
+        .select()
+        .from(indexes)
+        .orderBy(indexes.category, indexes.name);
+
+      // For each index, fetch the latest price
+      const indexesWithPrices = await Promise.all(
+        allIndexes.map(async (index) => {
+          const latestPrice = await db
+            .select()
+            .from(commodityIndexPrices)
+            .where(eq(commodityIndexPrices.indexId, index.id))
+            .orderBy(desc(commodityIndexPrices.timestamp))
+            .limit(1);
+
+          return {
+            id: index.id,
+            name: index.name,
+            slug: index.slug,
+            category: index.category,
+            hasVat: index.hasVat === 'true',
+            latestPrice: latestPrice.length > 0 ? {
+              price: parseFloat(latestPrice[0].price),
+              delta: latestPrice[0].delta ? parseFloat(latestPrice[0].delta) : null,
+              timestamp: latestPrice[0].timestamp,
+            } : null,
+            createdAt: index.createdAt,
+            updatedAt: index.updatedAt,
+          };
+        })
+      );
+
+      res.json(indexesWithPrices);
+    } catch (error) {
+      console.error("Error fetching indexes:", error);
+      res.status(500).json({ error: "Failed to fetch indexes" });
+    }
+  });
+
+  // GET /api/indexes/:slug - Get one index by slug with full price history
+  app.get("/api/indexes/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+
+      // Find the index by slug
+      const [index] = await db
+        .select()
+        .from(indexes)
+        .where(eq(indexes.slug, slug))
+        .limit(1);
+
+      if (!index) {
+        return res.status(404).json({ error: "Index not found" });
+      }
+
+      // Fetch all price history for this index
+      const priceHistory = await db
+        .select()
+        .from(commodityIndexPrices)
+        .where(eq(commodityIndexPrices.indexId, index.id))
+        .orderBy(desc(commodityIndexPrices.timestamp));
+
+      // Format response
+      const response = {
+        id: index.id,
+        name: index.name,
+        slug: index.slug,
+        category: index.category,
+        hasVat: index.hasVat === 'true',
+        createdAt: index.createdAt,
+        updatedAt: index.updatedAt,
+        priceHistory: priceHistory.map(p => ({
+          id: p.id,
+          price: parseFloat(p.price),
+          delta: p.delta ? parseFloat(p.delta) : null,
+          timestamp: p.timestamp,
+        })),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching index:", error);
+      res.status(500).json({ error: "Failed to fetch index" });
+    }
+  });
+
+  // POST /api/indexes/:slug/price - Add new price for an index
+  app.post("/api/indexes/:slug/price", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userRole = req.user?.role;
+      if (userRole !== "broker") {
+        return res.status(403).json({ error: "Access denied. Broker role required." });
+      }
+
+      const { slug } = req.params;
+
+      // Find the index by slug
+      const [index] = await db
+        .select()
+        .from(indexes)
+        .where(eq(indexes.slug, slug))
+        .limit(1);
+
+      if (!index) {
+        return res.status(404).json({ error: "Index not found" });
+      }
+
+      // Validate request body
+      const priceSchema = z.object({
+        price: z.coerce.number().positive("Price must be positive"),
+        delta: z.coerce.number().optional().nullable(),
+      });
+
+      const result = priceSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ 
+          error: validationError.message,
+          details: result.error.issues 
+        });
+      }
+
+      const { price, delta } = result.data;
+
+      // Insert new price record
+      const [newPrice] = await db
+        .insert(commodityIndexPrices)
+        .values({
+          indexId: index.id,
+          price: price.toString(),
+          delta: delta !== null && delta !== undefined ? delta.toString() : null,
+        })
+        .returning();
+
+      console.log(`[Index] New price added for ${index.name} (${slug}): $${price} by ${req.user?.email}`);
+
+      res.status(201).json({
+        id: newPrice.id,
+        indexId: newPrice.indexId,
+        price: parseFloat(newPrice.price),
+        delta: newPrice.delta ? parseFloat(newPrice.delta) : null,
+        timestamp: newPrice.timestamp,
+        index: {
+          name: index.name,
+          slug: index.slug,
+          category: index.category,
+        },
+      });
+    } catch (error: any) {
+      console.error("Error adding index price:", error);
+      res.status(500).json({ error: error.message || "Failed to add index price" });
     }
   });
 
