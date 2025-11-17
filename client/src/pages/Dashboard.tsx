@@ -5,7 +5,7 @@ import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
-import { DashboardIndexWidget } from "@/components/DashboardIndexWidget";
+import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
 import { CroptMintButton } from "@/components/CroptMintButton";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
@@ -265,7 +265,7 @@ export default function Dashboard() {
 
       <main className="py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Dashboard Widgets */}
+          {/* Dashboard Metrics */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3">
               <MetricCards
@@ -274,13 +274,15 @@ export default function Dashboard() {
                 totalVolume={totalVolume}
               />
             </div>
-            <div className="lg:col-span-1 space-y-6">
-              <DashboardIndexWidget />
+            <div className="lg:col-span-1">
               {user?.walletAddress && (
                 <CroptMintButton walletAddress={user.walletAddress} />
               )}
             </div>
           </div>
+
+          {/* Commodity Indexes */}
+          <CommodityIndexesGrid />
 
           {/* Options Table */}
           <div id="options-table">
