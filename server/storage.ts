@@ -1,5 +1,6 @@
 import { 
   options, 
+  indexes,
   trades, 
   settlements, 
   wallets, 
@@ -60,10 +61,40 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async listOptions(): Promise<Option[]> {
     const allOptions = await db
-      .select()
+      .select({
+        id: options.id,
+        title: options.title,
+        type: options.type,
+        strike: options.strike,
+        qty: options.qty,
+        premium: options.premium,
+        buyer: options.buyer,
+        seller: options.seller,
+        status: options.status,
+        commodity: options.commodity,
+        indexId: options.indexId,
+        expirationDate: options.expirationDate,
+        buyerId: options.buyerId,
+        issuerId: options.issuerId,
+        collateralAmount: options.collateralAmount,
+        lastIntrinsic: options.lastIntrinsic,
+        payoutAccumulated: options.payoutAccumulated,
+        isDemo: options.isDemo,
+        nftTokenId: options.nftTokenId,
+        nftMintTx: options.nftMintTx,
+        nftStatus: options.nftStatus,
+        matchedBy: options.matchedBy,
+        matchedAt: options.matchedAt,
+        counterpartyId: options.counterpartyId,
+        createdAt: options.createdAt,
+        lastUpdated: options.lastUpdated,
+        commodityName: indexes.name,
+        commoditySlug: indexes.slug,
+      })
       .from(options)
+      .leftJoin(indexes, eq(options.indexId, indexes.id))
       .orderBy(desc(options.createdAt));
-    return allOptions;
+    return allOptions as any;
   }
 
   async createOption(insertOption: InsertOption): Promise<Option> {
