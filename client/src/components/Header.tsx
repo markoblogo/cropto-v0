@@ -37,6 +37,7 @@ export function Header({ onCreateOption }: HeaderProps) {
 
   const handleLogout = () => {
     localStorage.removeItem('cropto_token');
+    localStorage.removeItem('cropto_admin_mode'); // Clear admin mode on logout
     queryClient.clear();
     setLocation('/login');
     toast({

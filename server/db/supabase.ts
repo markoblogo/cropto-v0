@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+
 export interface SupabaseUser {
   id: string;
   email: string;
   password_hash: string;
-  role: 'farmer' | 'trader' | 'broker';
+  role: UserRole;
   created_at: string;
   wallet_address?: string;
   network?: string;
@@ -64,7 +66,7 @@ export async function findUserByEmailSupabase(email: string): Promise<SupabaseUs
 export async function createUserSupabase(
   email: string,
   passwordHash: string,
-  role: 'farmer' | 'trader' | 'broker'
+  role: UserRole = 'USER'
 ): Promise<SupabaseUser> {
   const client = getSupabaseClient();
 

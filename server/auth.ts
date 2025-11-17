@@ -37,11 +37,13 @@ function getJWTSecret(): string {
 
 let JWT_SECRET: string;
 
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+
 interface User {
   id: string;
   email: string;
   passwordHash: string;
-  role: 'farmer' | 'trader' | 'broker';
+  role: UserRole;
   createdAt: string;
   walletAddress?: string;
   network?: string;
@@ -132,7 +134,7 @@ export async function findUserByEmail(email: string): Promise<User | null> {
 export async function createUser(
   email: string,
   password: string,
-  role: 'farmer' | 'trader' | 'broker'
+  role: UserRole = 'USER'
 ): Promise<User> {
   if (useSupabase()) {
     // Check if user exists
@@ -272,7 +274,7 @@ export async function findOrCreateUserByWallet(
     const supabaseUser = await createUserSupabase(
       email,
       passwordHash,
-      'farmer' // Default role for new wallet users
+      'USER' // Default role for new wallet users
     );
     
     // Update with wallet address
@@ -310,7 +312,7 @@ export async function findOrCreateUserByWallet(
     id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     email: `${lowerAddress}@wallet.local`,
     passwordHash: await hashPassword(crypto.randomBytes(32).toString('hex')),
-    role: 'farmer', // Default role
+    role: 'USER', // Default role
     createdAt: new Date().toISOString(),
     walletAddress: lowerAddress,
   };
@@ -324,10 +326,10 @@ export async function findOrCreateUserByWallet(
   };
 }
 
-// Update user role (for onboarding)
+// Update user role
 export async function updateUserRole(
   userId: string,
-  role: 'farmer' | 'trader' | 'broker'
+  role: UserRole
 ): Promise<User | null> {
   if (useSupabase()) {
     const user = await findUserById(userId);
@@ -392,4 +394,40 @@ export function optionalAuth(req: AuthRequest, res: Response, next: NextFunction
   }
   
   next();
+}
+
+// RBAC Middleware
+// Require any authenticated user (USER, ADMIN, or SUPER_ADMIN)
+export function requireUser(req: AuthRequest, res: Response, next: NextFunction) {
+  return authenticateToken(req, res, next);
+}
+
+// Require ADMIN or SUPER_ADMIN role
+export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  authenticateToken(req, res, () => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    next();
+  });
+}
+
+// Require SUPER_ADMIN role only
+export function requireSuperAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  authenticateToken(req, res, () => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    if (req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Super admin access required' });
+    }
+    
+    next();
+  });
 }

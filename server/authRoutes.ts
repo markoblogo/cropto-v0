@@ -26,9 +26,8 @@ const registerSchema = z.object({
     .min(1, 'Email is required')
     .refine((email) => email.includes('@'), 'Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['farmer', 'trader', 'broker'], {
-    errorMap: () => ({ message: 'Role must be farmer, trader, or broker' })
-  }),
+  // Role is optional - defaults to USER if not provided
+  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN']).optional(),
 });
 
 const loginSchema = z.object({
@@ -46,7 +45,7 @@ router.post('/register', async (req, res) => {
     const user = await createUser(
       validatedData.email,
       validatedData.password,
-      validatedData.role
+      validatedData.role || 'USER' // Default to USER role
     );
     
     const token = generateToken(user.id, user.email, user.role);
@@ -253,8 +252,8 @@ router.put('/update-role', authenticateToken, async (req: AuthRequest, res) => {
     }
 
     const roleSchema = z.object({
-      role: z.enum(['farmer', 'trader', 'broker'], {
-        errorMap: () => ({ message: 'Role must be farmer, trader, or broker' })
+      role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN'], {
+        errorMap: () => ({ message: 'Role must be USER, ADMIN, or SUPER_ADMIN' })
       }),
     });
 
