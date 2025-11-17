@@ -498,4 +498,78 @@ export function registerSpotRoutes(app: Express) {
       res.status(500).json({ error: error.message || "Failed to fetch spot position" });
     }
   });
+
+  // GET /api/spot/positions - Get all user's spot positions with P&L
+  app.get("/api/spot/positions", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Get all user's spot positions
+      const positions = await db
+        .select()
+        .from(spotPositions)
+        .where(eq(spotPositions.userId, userId));
+
+      // Get all indexes for mapping
+      const allIndexes = await db
+        .select()
+        .from(indexes);
+
+      // Build response with P&L calculations
+      const positionsWithPnL = await Promise.all(
+        positions.map(async (position) => {
+          const index = allIndexes.find(idx => idx.slug === position.commoditySlug);
+          
+          if (!index) {
+            return null;
+          }
+
+          // Get current price
+          const [latestPrice] = await db
+            .select()
+            .from(commodityIndexPrices)
+            .where(eq(commodityIndexPrices.indexId, index.id))
+            .orderBy(desc(commodityIndexPrices.timestamp))
+            .limit(1);
+
+          const currentPricePerKg = latestPrice 
+            ? parseFloat(latestPrice.price) / 1000 
+            : 0;
+
+          const quantityKg = parseFloat(position.quantityKg);
+          const avgEntryPrice = parseFloat(position.avgEntryPrice);
+          const currentValue = quantityKg * currentPricePerKg;
+          const entryValue = quantityKg * avgEntryPrice;
+          const pnl = currentValue - entryValue;
+          const pnlPercent = entryValue > 0 ? (pnl / entryValue) * 100 : 0;
+
+          return {
+            id: position.id,
+            commoditySlug: position.commoditySlug,
+            commodityName: index.name,
+            quantityKg: position.quantityKg,
+            avgEntryPrice: position.avgEntryPrice,
+            currentPricePerKg: currentPricePerKg.toFixed(8),
+            currentValue: currentValue.toFixed(2),
+            entryValue: entryValue.toFixed(2),
+            pnl: pnl.toFixed(2),
+            pnlPercent: pnlPercent.toFixed(2),
+            createdAt: position.createdAt,
+            updatedAt: position.updatedAt,
+          };
+        })
+      );
+
+      // Filter out null values (positions without matching indexes)
+      const validPositions = positionsWithPnL.filter(p => p !== null);
+
+      res.json(validPositions);
+    } catch (error: any) {
+      console.error('[SpotRoutes] Error fetching positions:', error);
+      res.status(500).json({ error: "Failed to fetch spot positions" });
+    }
+  });
 }

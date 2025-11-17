@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 
 interface PortfolioPosition {
   optionId: string;
@@ -52,6 +53,21 @@ interface UserData {
   };
 }
 
+interface SpotPosition {
+  id: string;
+  commoditySlug: string;
+  commodityName: string;
+  quantityKg: string;
+  avgEntryPrice: string;
+  currentPricePerKg: string;
+  currentValue: string;
+  entryValue: string;
+  pnl: string;
+  pnlPercent: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export default function Portfolio() {
   const [, setLocation] = useLocation();
 
@@ -75,6 +91,13 @@ export default function Portfolio() {
   // Fetch portfolio data only if authenticated
   const { data: portfolioData, isLoading: isPortfolioLoading, error } = useQuery<PortfolioData>({
     queryKey: ["/api/portfolio/me"],
+    retry: false,
+    enabled: !!user,
+  });
+
+  // Fetch spot positions
+  const { data: spotPositions = [], isLoading: isSpotLoading } = useQuery<SpotPosition[]>({
+    queryKey: ["/api/spot/positions"],
     retry: false,
     enabled: !!user,
   });
@@ -366,6 +389,9 @@ export default function Portfolio() {
             )}
           </CardContent>
         </Card>
+
+        {/* Spot Positions */}
+        <SpotPositionsTable positions={spotPositions} isLoading={isSpotLoading} />
       </div>
     </div>
   );
