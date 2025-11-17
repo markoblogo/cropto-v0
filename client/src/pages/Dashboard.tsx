@@ -6,6 +6,7 @@ import { Hero } from "@/components/Hero";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
 import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
+import { SpotMarketGrid } from "@/components/SpotMarketGrid";
 import { CroptMintButton } from "@/components/CroptMintButton";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
@@ -283,6 +284,9 @@ export default function Dashboard() {
 
           {/* Commodity Indexes */}
           <CommodityIndexesGrid />
+
+          {/* Spot Market */}
+          <SpotMarketGrid />
 
           {/* Options Table */}
           <div id="options-table">
