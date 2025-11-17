@@ -35,7 +35,7 @@ import { MintNFTDialog } from "./MintNFTDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
-type SortField = "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
+type SortField = "commodity" | "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
 
 interface OptionsTableProps {
@@ -118,7 +118,13 @@ export function OptionsTable({
         let aVal: any = a[sortField];
         let bVal: any = b[sortField];
 
-        if (sortField === "strike" || sortField === "qty" || sortField === "premium") {
+        if (sortField === "commodity") {
+          const aName = (a as any).commodityName || "";
+          const bName = (b as any).commodityName || "";
+          if (aName < bName) return sortDirection === "asc" ? -1 : 1;
+          if (aName > bName) return sortDirection === "asc" ? 1 : -1;
+          return 0;
+        } else if (sortField === "strike" || sortField === "qty" || sortField === "premium") {
           const aNum = Number(aVal);
           const bNum = Number(bVal);
           if (aNum < bNum) return sortDirection === "asc" ? -1 : 1;
@@ -222,6 +228,18 @@ export function OptionsTable({
                     <Button 
                       variant="ghost" 
                       size="sm" 
+                      onClick={() => handleSort("commodity")}
+                      className="hover-elevate gap-1 h-8"
+                      data-testid="button-sort-commodity"
+                    >
+                      Commodity
+                      {getSortIcon("commodity")}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="font-semibold">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
                       onClick={() => handleSort("title")}
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-title"
@@ -309,6 +327,20 @@ export function OptionsTable({
               <TableBody>
                 {filteredAndSortedOptions.map((option) => (
                 <TableRow key={option.id} data-testid={`row-option-${option.id}`}>
+                  <TableCell data-testid={`cell-commodity-${option.id}`}>
+                    <div className="flex items-center gap-2">
+                      {(option as any).commoditySlug && (
+                        <img 
+                          src={`/commodities/${(option as any).commoditySlug}.png`}
+                          alt={(option as any).commodityName || "Commodity"}
+                          className="w-5 h-5 object-contain"
+                        />
+                      )}
+                      <span className="font-medium">
+                        {(option as any).commodityName || option.commodity || "-"}
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-semibold" data-testid={`text-title-${option.id}`}>
                     {option.title}
                   </TableCell>
