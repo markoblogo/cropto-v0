@@ -17,14 +17,18 @@ The frontend is built with React and TypeScript, using Vite, `shadcn/ui` (Radix 
 The backend is an Express.js application in TypeScript, providing a RESTful JSON API. It features a flexible authentication system with Supabase (production) or file-based (`db.json`) for development, using bcrypt and JWT for security, supporting 'farmer', 'trader', and 'broker' roles. A database abstraction layer ensures transaction safety. Shared Zod schemas are used for data validation. A margin check job system calculates intrinsic value, P&L, triggers margin calls, and generates notifications. Security middleware blocks unauthorized Supabase service role key usage.
 
 ### Data Storage
-The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for schema management. Tables include `options`, `trades`, `settlements`, `margin_calls`, and `notifications`, designed with high-precision decimals and UUID primary keys.
+The project uses PostgreSQL via Neon serverless driver with Drizzle ORM for schema management. Tables include `options`, `trades`, `settlements`, `margin_calls`, `notifications`, `indexes`, and `commodity_index_prices`, designed with high-precision decimals and UUID primary keys.
+
+**Commodity Index System**: Two-table architecture for tracking commodity prices:
+- `indexes`: Master table with 7 commodity definitions (Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, Sunflower Seed) organized by categories (CPT ODESA, CPT PARITET ODESA)
+- `commodity_index_prices`: Historical price tracking with foreign key to indexes, storing price, delta, and timestamp
 
 ### UI/UX Decisions
 The platform features Cropto branding, including a hero section, `MetricCards`, and a revamped header. It uses pill-shaped status badges and ensures responsiveness. Wallet connection is implemented with MetaMask integration and a manual input fallback.
 
 ### Key Features
 - **Internationalization (i18n)**: Multi-language support using react-i18next with English and Ukrainian locales. Translation files located in `public/locales/{en,uk}/common.json`. Language switcher component in header allows seamless language toggling with localStorage persistence.
-- **Index Price Widget & Management**: Real-time display and manual management of commodity index prices with historical trends, including automated updates via Telegram bot webhook and polling. Supports both simple format ("WHEAT 240.50") and Ukrainian Spike Brokers format ("• Пшениця 11.5pro – 221$ (0$)").
+- **Index Price Widget & Management**: Real-time display and manual management of commodity index prices with historical trends, including automated updates via Telegram bot webhook and polling. Supports both simple format ("WHEAT 240.50") and Ukrainian Spike Brokers format ("• Пшениця 11.5pro – 221$ (0$)"). New structured commodity index system with 7 commodities: Corn, Wheat 11.5%, Feed Wheat, GMO Soybeans, GMO Soybeans (processing), Rapeseed, and Sunflower Seed.
 - **Option Creation & Management**: Users can create, view, filter, sort, and manually match crypto options (broker-only).
 - **Exercise & Settlement**: Facilitates option exercise with spot price input, calculates payout, and records settlements.
 - **Authentication & Authorization**: JWT-based system with user roles and protected API endpoints.
