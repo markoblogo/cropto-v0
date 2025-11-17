@@ -301,7 +301,9 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                           )}
                         >
                           <Calendar className="mr-2 h-4 w-4" />
-                          {field.value ? format(new Date(field.value), "PPP") : "Pick expiration date"}
+                          {field.value && !isNaN(new Date(field.value).getTime()) 
+                            ? format(new Date(field.value), "PPP") 
+                            : "Pick expiration date"}
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -315,6 +317,19 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                       />
                     </PopoverContent>
                   </Popover>
+                  {/* Hidden date input for testing purposes */}
+                  <input
+                    type="date"
+                    data-testid="input-expiration-date-hidden"
+                    className="sr-only"
+                    value={field.value && !isNaN(new Date(field.value).getTime()) 
+                      ? format(new Date(field.value), "yyyy-MM-dd") 
+                      : ""}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value + "T00:00:00") : undefined;
+                      field.onChange(date);
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
