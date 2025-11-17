@@ -3,6 +3,16 @@ import { pgTable, text, varchar, decimal, integer, timestamp } from "drizzle-orm
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const indexes = pgTable("indexes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  category: text("category").notNull(),
+  hasVat: text("has_vat", { enum: ["true", "false"] }).notNull().default("false"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const options = pgTable("options", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
@@ -14,6 +24,8 @@ export const options = pgTable("options", {
   seller: text("seller"),
   status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED", "MARGIN_CALL"] }).notNull().default("OPEN"),
   commodity: text("commodity"),
+  indexId: varchar("index_id").references(() => indexes.id),
+  expirationDate: timestamp("expiration_date"),
   buyerId: text("buyer_id"),
   issuerId: text("issuer_id"),
   collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }),
@@ -122,16 +134,6 @@ export const indexPrices = pgTable("index_prices", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const indexes = pgTable("indexes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  category: text("category").notNull(),
-  hasVat: text("has_vat", { enum: ["true", "false"] }).notNull().default("false"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
 export const commodityIndexPrices = pgTable("commodity_index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   indexId: varchar("index_id").notNull().references(() => indexes.id),
@@ -167,6 +169,11 @@ export const insertOptionSchema = createInsertSchema(options).omit({
   createdAt: true,
   lastUpdated: true,
 }).extend({
+  indexId: z.string().min(1, "Please select a commodity"),
+  expirationDate: z.coerce.date({
+    required_error: "Expiration date is required",
+    invalid_type_error: "Invalid date format",
+  }),
   strike: z.coerce.number()
     .positive("Strike price must be positive")
     .min(0.00000001, "Strike price must be greater than 0")
@@ -183,6 +190,7 @@ export const insertOptionSchema = createInsertSchema(options).omit({
     .positive("Collateral amount must be positive")
     .optional()
     .transform(val => val ? val.toString() : undefined),
+  commodity: z.string().optional(),
 });
 
 export const insertTradeSchema = createInsertSchema(trades).omit({
