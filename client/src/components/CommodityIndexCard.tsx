@@ -41,9 +41,16 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
     <Card data-testid={`card-index-${index.slug}`}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {index.name}
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <img 
+              src={`/commodities/${index.slug}.png`}
+              alt={index.name}
+              className="w-6 h-6 object-contain flex-shrink-0"
+            />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {index.name}
+            </CardTitle>
+          </div>
           <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
             {index.category}
           </span>

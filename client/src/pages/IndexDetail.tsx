@@ -153,9 +153,16 @@ export default function IndexDetail() {
               <BackToDashboard />
             </div>
             <div>
-              <h1 className="text-3xl font-bold mb-2" data-testid="heading-index-name">
-                {indexData.name}
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <img 
+                  src={`/commodities/${indexData.slug}.png`}
+                  alt={indexData.name}
+                  className="w-8 h-8 object-contain"
+                />
+                <h1 className="text-3xl font-bold" data-testid="heading-index-name">
+                  {indexData.name}
+                </h1>
+              </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md" data-testid="text-category">
                   {indexData.category}
