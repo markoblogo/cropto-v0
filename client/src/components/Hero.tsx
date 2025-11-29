@@ -1,24 +1,45 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useUserTier } from "@/hooks/useUserTier";
+import { useTradingGuard } from "@/hooks/useTradingGuard";
 
 interface HeroProps {
   onCreateOption: () => void;
   onConnectWallet?: () => void;
   walletAddress?: string | null;
+  onOpenLogin?: () => void;
+  onOpenWalletModal?: () => void;
 }
 
 const formatAddress = (address: string) => {
   return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 };
 
-export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroProps) {
+export function Hero({ onCreateOption, onConnectWallet, walletAddress, onOpenLogin, onOpenWalletModal }: HeroProps) {
   const { t } = useTranslation();
+  const userTier = useUserTier();
+  const guardTradingAction = useTradingGuard({
+    onOpenLogin,
+    onOpenWalletModal,
+  });
   
   const scrollToSpotMarket = () => {
     const spotMarketSection = document.getElementById('spot-market-section');
     if (spotMarketSection) {
       spotMarketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Get button text based on user tier
+  const getCreateOptionButtonText = () => {
+    switch (userTier) {
+      case "guest":
+        return "Sign up to start trading";
+      case "user_no_wallet":
+        return "Connect wallet to activate trading";
+      case "trader_full":
+        return t('button.createOption');
     }
   };
   
@@ -57,10 +78,10 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress }: HeroPro
               <Button
                 size="lg"
                 className="bg-primary text-primary-foreground font-semibold w-full sm:w-auto"
-                onClick={onCreateOption}
+                onClick={() => guardTradingAction(onCreateOption)}
                 data-testid="button-hero-create-option"
               >
-                {t('button.createOption')}
+                {getCreateOptionButtonText()}
               </Button>
 
               <Button

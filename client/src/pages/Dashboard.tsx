@@ -274,16 +274,29 @@ export default function Dashboard() {
     });
   };
 
+  const handleOpenLogin = () => {
+    // Navigate to login page
+    window.location.href = '/login';
+  };
+
+  const handleOpenWalletModal = () => {
+    setIsWalletAuthModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header 
         onCreateOption={() => setIsCreateDialogOpen(true)}
+        onOpenLogin={handleOpenLogin}
+        onOpenWalletModal={handleOpenWalletModal}
       />
       
       <Hero 
         onCreateOption={() => setIsCreateDialogOpen(true)}
         onConnectWallet={handleConnectWallet}
         walletAddress={user?.walletAddress}
+        onOpenLogin={handleOpenLogin}
+        onOpenWalletModal={handleOpenWalletModal}
       />
 
       <main className="py-12">

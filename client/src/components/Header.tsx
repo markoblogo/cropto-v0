@@ -8,15 +8,24 @@ import { queryClient } from "@/lib/queryClient";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import FlagSwitcher from "./FlagSwitcher";
 import { useTranslation } from "react-i18next";
+import { useUserTier } from "@/hooks/useUserTier";
+import { useTradingGuard } from "@/hooks/useTradingGuard";
 
 interface HeaderProps {
   onCreateOption: () => void;
+  onOpenLogin?: () => void;
+  onOpenWalletModal?: () => void;
 }
 
-export function Header({ onCreateOption }: HeaderProps) {
+export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const userTier = useUserTier();
+  const guardTradingAction = useTradingGuard({
+    onOpenLogin,
+    onOpenWalletModal,
+  });
 
   // Fetch current user
   const { data: userData } = useQuery<{ 
@@ -34,6 +43,29 @@ export function Header({ onCreateOption }: HeaderProps) {
   });
 
   const user = userData?.user;
+
+  // Get status badge text and styles based on user tier
+  const getStatusBadge = () => {
+    switch (userTier) {
+      case "guest":
+        return {
+          text: "Not logged in",
+          className: "bg-muted/50 text-muted-foreground",
+        };
+      case "user_no_wallet":
+        return {
+          text: "Wallet: Not connected",
+          className: "bg-orange-500/20 text-orange-600",
+        };
+      case "trader_full":
+        return {
+          text: "Wallet: Connected",
+          className: "bg-green-500/20 text-green-600",
+        };
+    }
+  };
+
+  const statusBadge = getStatusBadge();
 
   const handleLogout = () => {
     localStorage.removeItem('cropto_token');
@@ -147,10 +179,15 @@ export function Header({ onCreateOption }: HeaderProps) {
                 {/* Notifications */}
                 <NotificationsDropdown />
 
+                {/* User Tier Status Badge */}
+                <Badge className={statusBadge.className} data-testid="badge-user-tier-status">
+                  {statusBadge.text}
+                </Badge>
+
                 {/* Create Option CTA */}
                 <Button
                   size="sm"
-                  onClick={onCreateOption}
+                  onClick={() => guardTradingAction(onCreateOption)}
                   className="bg-primary text-primary-foreground font-semibold"
                   data-testid="button-header-create-option"
                 >
