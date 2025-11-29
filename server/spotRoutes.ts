@@ -92,7 +92,7 @@ export function registerSpotRoutes(app: Express) {
       totalCost += qty * price;
     }
     
-    const avgPrice = totalQuantity > 0 ? totalCost / totalQuantity : 0;
+    const avgPrice = totalQuantity !== 0 ? totalCost / totalQuantity : 0;
     
     return {
       quantityKg: totalQuantity,
@@ -290,7 +290,7 @@ export function registerSpotRoutes(app: Express) {
           .where(eq(croptBalances.userId, userId))
           .for('update')
           .limit(1);
-        
+
         if (!balance) {
           // Create balance if doesn't exist
           await tx
@@ -298,7 +298,7 @@ export function registerSpotRoutes(app: Express) {
             .values({ userId, balance: "0" })
             .returning();
         }
-        
+
         // Get user's positions with deterministic ordering (FIFO) and row lock
         const positions = await tx
           .select()
@@ -310,11 +310,14 @@ export function registerSpotRoutes(app: Express) {
             )
           )
           .orderBy(desc(spotPositions.createdAt)) // Explicit ordering for consistency
-          .for('update'); // Lock rows to prevent concurrent modifications
-        
+          .for("update"); // Lock rows to prevent concurrent modifications
+
         const aggregated = aggregatePositions(positions);
-        
-        if (!aggregated || aggregated.quantityKg < kgAmount) {
+        const netQuantity = aggregated ? aggregated.quantityKg : 0;
+        const isShortOrFlat = netQuantity <= 0;
+
+        // For long positions, enforce that you cannot sell more than you own.
+        if (!isShortOrFlat && netQuantity < kgAmount) {
           const error: any = new Error("Insufficient position");
           error.statusCode = 400;
           error.details = {
@@ -323,54 +326,71 @@ export function registerSpotRoutes(app: Express) {
           };
           throw error;
         }
-        
+
         // Calculate payout
         payout = kgAmount * pricePerKg;
-        
-        // Calculate realized P&L
-        const costBasis = kgAmount * aggregated.avgEntryPrice;
-        realizedPnL = payout - costBasis;
-        
+
+        // For opening/increasing shorts (or flat -> short), treat this as opening exposure:
+        // realized P&L is 0; P&L will be tracked as unrealized.
+        if (isShortOrFlat || !aggregated) {
+          realizedPnL = 0;
+        } else {
+          const costBasis = kgAmount * aggregated.avgEntryPrice;
+          realizedPnL = payout - costBasis;
+        }
+
         // Add payout to balance
         const currentBalance = balance ? parseFloat(balance.balance) : 0;
         newBalance = currentBalance + payout;
         await tx
           .update(croptBalances)
-          .set({ 
+          .set({
             balance: newBalance.toFixed(8),
             updatedAt: new Date(),
           })
           .where(eq(croptBalances.userId, userId));
-        
-        // Reduce positions (FIFO - First In First Out)
-        // Explicitly order by createdAt to ensure deterministic FIFO
-        let remainingToSell = kgAmount;
-        const sortedPositions = [...positions].sort((a, b) => 
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        
-        for (const position of sortedPositions) {
-          if (remainingToSell <= 0) break;
-          
-          const posQty = parseFloat(position.quantityKg);
-          
-          if (posQty <= remainingToSell) {
-            // Delete entire position
-            await tx
-              .delete(spotPositions)
-              .where(eq(spotPositions.id, position.id));
-            remainingToSell -= posQty;
-          } else {
-            // Reduce position
-            const newQty = posQty - remainingToSell;
-            await tx
-              .update(spotPositions)
-              .set({ 
-                quantityKg: newQty.toFixed(8),
-                updatedAt: new Date(),
-              })
-              .where(eq(spotPositions.id, position.id));
-            remainingToSell = 0;
+
+        if (isShortOrFlat) {
+          // Open or increase a short position: store negative quantity.
+          await tx
+            .insert(spotPositions)
+            .values({
+              userId,
+              commoditySlug,
+              quantityKg: (-kgAmount).toFixed(8),
+              avgEntryPrice: pricePerKg.toFixed(8),
+            });
+        } else {
+          // Reduce existing long positions (FIFO - First In First Out)
+          // Explicitly order by createdAt to ensure deterministic FIFO
+          let remainingToSell = kgAmount;
+          const sortedPositions = [...positions].sort((a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+
+          for (const position of sortedPositions) {
+            if (remainingToSell <= 0) break;
+
+            const posQty = parseFloat(position.quantityKg);
+
+            if (posQty <= remainingToSell) {
+              // Delete entire position
+              await tx
+                .delete(spotPositions)
+                .where(eq(spotPositions.id, position.id));
+              remainingToSell -= posQty;
+            } else {
+              // Reduce position
+              const newQty = posQty - remainingToSell;
+              await tx
+                .update(spotPositions)
+                .set({
+                  quantityKg: newQty.toFixed(8),
+                  updatedAt: new Date(),
+                })
+                .where(eq(spotPositions.id, position.id));
+              remainingToSell = 0;
+            }
           }
         }
       });
