@@ -56,7 +56,11 @@ export function SpotSellModal({
 
   const sellMutation = useMutation({
     mutationFn: async (data: { quantityKg: number }) => {
-      const response = await apiRequest("POST", `/api/spot/${commoditySlug}/sell`, data);
+      const response = await apiRequest(
+        "POST",
+        `/api/spot/${commoditySlug}/sell`,
+        data,
+      );
       return await response.json();
     },
     onSuccess: () => {
@@ -78,9 +82,26 @@ export function SpotSellModal({
     },
   });
 
+  // ---- количественная логика ----
+  const positionQty = positionData?.position
+    ? parseFloat(positionData.position.quantityKg)
+    : 0;
+
+  const parsedQty = parseFloat(quantityKg);
+  const qtyNum = isNaN(parsedQty) ? 0 : parsedQty;
+
+  const isLong = positionQty > 0;
+  const hasInsufficientPosition = isLong && qtyNum > positionQty;
+  const invalidQty = qtyNum <= 0;
+  const canSell = !invalidQty && !hasInsufficientPosition;
+
+  const pricePerKg = currentPrice / 1000;
+  const totalPayout = qtyNum * pricePerKg || 0;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const qty = parseFloat(quantityKg);
+
     if (!qty || qty <= 0) {
       toast({
         title: "Invalid quantity",
@@ -89,21 +110,20 @@ export function SpotSellModal({
       });
       return;
     }
-    if (!canSell) {
+
+    if (hasInsufficientPosition) {
       toast({
         title: "Insufficient position",
-        description: `You are trying to sell ${qty.toFixed(2)} kg but only have ${availablePosition.toFixed(2)} kg`,
+        description: `You are trying to sell ${qty.toFixed(
+          2,
+        )} kg but only have ${positionQty.toFixed(2)} kg`,
         variant: "destructive",
       });
       return;
     }
+
     sellMutation.mutate({ quantityKg: qty });
   };
-
-  const pricePerKg = currentPrice / 1000;
-  const totalPayout = parseFloat(quantityKg) * pricePerKg || 0;
-  const availablePosition = positionData?.position ? parseFloat(positionData.position.quantityKg) : 0;
-  const canSell = parseFloat(quantityKg) <= availablePosition;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -119,30 +139,40 @@ export function SpotSellModal({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Current Price:</span>
-              <span className="font-mono font-medium" data-testid="text-current-price">
+              <span
+                className="font-mono font-medium"
+                data-testid="text-current-price"
+              >
                 ${pricePerKg.toFixed(8)} / kg
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Your Position:</span>
-              <span className="font-mono font-medium" data-testid="text-your-position">
-                {availablePosition.toFixed(2)} kg
+              <span
+                className="font-mono font-medium"
+                data-testid="text-your-position"
+              >
+                {positionQty.toFixed(2)} kg
               </span>
             </div>
             {positionData?.position && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Unrealized P&L:</span>
-                <span 
+                <span
                   className={`font-mono font-medium ${
-                    parseFloat(positionData.position.unrealizedPnL) >= 0 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
+                    parseFloat(positionData.position.unrealizedPnL) >= 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
                   }`}
                   data-testid="text-unrealized-pnl"
                 >
-                  {parseFloat(positionData.position.unrealizedPnL) >= 0 ? '+' : ''}
-                  {parseFloat(positionData.position.unrealizedPnL).toFixed(2)} CROPT
-                  ({positionData.position.unrealizedPnLPercent}%)
+                  {parseFloat(positionData.position.unrealizedPnL) >= 0
+                    ? "+"
+                    : ""}
+                  {parseFloat(
+                    positionData.position.unrealizedPnL,
+                  ).toFixed(2)}{" "}
+                  CROPT ({positionData.position.unrealizedPnLPercent}%)
                 </span>
               </div>
             )}
@@ -155,35 +185,53 @@ export function SpotSellModal({
               type="number"
               step="0.01"
               min="0"
-              max={availablePosition}
+              // ограничиваем max только для лонга; для шорта/нуля — без лимита по UI
+              max={isLong ? positionQty : undefined}
               placeholder="Enter quantity in kg"
               value={quantityKg}
               onChange={(e) => setQuantityKg(e.target.value)}
               data-testid="input-quantity"
             />
-            {availablePosition > 0 && (
+            {isLong && positionQty > 0 && (
               <button
                 type="button"
                 className="text-xs text-muted-foreground hover:text-foreground underline"
-                onClick={() => setQuantityKg(availablePosition.toString())}
+                onClick={() => setQuantityKg(positionQty.toString())}
                 data-testid="link-max-quantity"
               >
-                Max: {availablePosition.toFixed(2)} kg
+                Max: {positionQty.toFixed(2)} kg
               </button>
             )}
           </div>
 
-          {quantityKg && parseFloat(quantityKg) > 0 && (
+          {qtyNum > 0 && (
             <div className="space-y-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Payout:</span>
-                <span className="font-mono font-medium" data-testid="text-total-payout">
+                <span
+                  className="font-mono font-medium"
+                  data-testid="text-total-payout"
+                >
                   {totalPayout.toFixed(2)} CROPT
                 </span>
               </div>
-              {!canSell && (
-                <p className="text-sm text-destructive" data-testid="text-insufficient-position">
-                  Insufficient position (available: {availablePosition.toFixed(2)} kg)
+
+              {hasInsufficientPosition && (
+                <p
+                  className="text-sm text-destructive"
+                  data-testid="text-insufficient-position"
+                >
+                  Insufficient position (available: {positionQty.toFixed(2)} kg)
+                </p>
+              )}
+
+              {!isLong && qtyNum > 0 && (
+                <p
+                  className="text-sm text-amber-700 dark:text-amber-400"
+                  data-testid="text-short-info"
+                >
+                  You don&apos;t own this commodity yet — this order will open
+                  or increase a short position.
                 </p>
               )}
             </div>
@@ -201,7 +249,7 @@ export function SpotSellModal({
             </Button>
             <Button
               type="submit"
-              disabled={sellMutation.isPending || !canSell || !quantityKg || availablePosition === 0}
+              disabled={sellMutation.isPending || !canSell}
               data-testid="button-sell"
             >
               {sellMutation.isPending && (
