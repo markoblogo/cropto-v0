@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "wouter";
 import { SpotMarketCard } from "./SpotMarketCard";
 import { SpotBuyModal } from "./SpotBuyModal";
 import { SpotSellModal } from "./SpotSellModal";
+import { WalletAuthModal } from "@/components/WalletAuthModal";
+import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
@@ -39,9 +42,16 @@ interface SelectedCommodity {
 
 export function SpotMarketGrid() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedCommodity, setSelectedCommodity] = useState<SelectedCommodity | null>(null);
+  const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
+
+  const guardTradingAction = useTradingGuard({
+    onOpenLogin: () => setLocation("/login"),
+    onOpenWalletModal: () => setIsWalletAuthModalOpen(true),
+  });
 
   const { data: indexes, isLoading, error } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
@@ -49,13 +59,21 @@ export function SpotMarketGrid() {
   });
 
   const handleBuy = (slug: string, name: string, pricePerTon: number) => {
-    setSelectedCommodity({ slug, name, pricePerTon });
-    setBuyModalOpen(true);
+    guardTradingAction(() => {
+      setSelectedCommodity({ slug, name, pricePerTon });
+      setBuyModalOpen(true);
+    });
   };
 
   const handleSell = (slug: string, name: string, pricePerTon: number) => {
-    setSelectedCommodity({ slug, name, pricePerTon });
-    setSellModalOpen(true);
+    guardTradingAction(() => {
+      setSelectedCommodity({ slug, name, pricePerTon });
+      setSellModalOpen(true);
+    });
+  };
+
+  const handleWalletAuthSuccess = (token: string, newUser: boolean) => {
+    setIsWalletAuthModalOpen(false);
   };
 
   if (isLoading) {
@@ -167,6 +185,8 @@ export function SpotMarketGrid() {
             commoditySlug={selectedCommodity.slug}
             commodityName={selectedCommodity.name}
             currentPrice={selectedCommodity.pricePerTon}
+            onOpenLogin={() => setLocation("/login")}
+            onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
           />
           <SpotSellModal
             isOpen={sellModalOpen}
@@ -174,9 +194,17 @@ export function SpotMarketGrid() {
             commoditySlug={selectedCommodity.slug}
             commodityName={selectedCommodity.name}
             currentPrice={selectedCommodity.pricePerTon}
+            onOpenLogin={() => setLocation("/login")}
+            onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
           />
         </>
       )}
+
+      <WalletAuthModal
+        open={isWalletAuthModalOpen}
+        onOpenChange={setIsWalletAuthModalOpen}
+        onSuccess={handleWalletAuthSuccess}
+      />
     </>
   );
 }
