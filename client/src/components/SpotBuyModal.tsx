@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { tonsToKg, formatTons } from "@/lib/units";
 import { Loader2, AlertCircle, ArrowDownToLine } from "lucide-react";
@@ -23,6 +24,8 @@ interface SpotBuyModalProps {
   commoditySlug: string;
   commodityName: string;
   currentPrice: number;
+  onOpenLogin?: () => void;
+  onOpenWalletModal?: () => void;
 }
 
 interface SpotBalance {
@@ -37,10 +40,16 @@ export function SpotBuyModal({
   commoditySlug,
   commodityName,
   currentPrice,
+  onOpenLogin,
+  onOpenWalletModal,
 }: SpotBuyModalProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [quantityTonnes, setQuantityTonnes] = useState("");
+  const guardTradingAction = useTradingGuard({
+    onOpenLogin,
+    onOpenWalletModal,
+  });
 
   const { data: balanceData } = useQuery<SpotBalance>({
     queryKey: ["/api/spot/balance"],
@@ -118,9 +127,12 @@ export function SpotBuyModal({
       });
       return;
     }
-    // Convert tonnes to kg for API
-    const qtyKg = tonsToKg(qtyTonnes);
-    buyMutation.mutate({ quantityKg: qtyKg });
+    // Guard wraps the actual trading action
+    guardTradingAction(() => {
+      // Convert tonnes to kg for API
+      const qtyKg = tonsToKg(qtyTonnes);
+      buyMutation.mutate({ quantityKg: qtyKg });
+    });
   };
 
   // currentPrice is already in price per ton

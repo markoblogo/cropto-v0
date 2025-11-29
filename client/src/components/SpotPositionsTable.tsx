@@ -10,12 +10,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SpotSellModal } from "@/components/SpotSellModal";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
+import { useUserTier } from "@/hooks/useUserTier";
 import { queryClient } from "@/lib/queryClient";
 import { kgToTons, formatTons } from "@/lib/units";
+import { Link } from "wouter";
 
 interface SpotPosition {
   id: string;
@@ -47,6 +50,7 @@ export function SpotPositionsTable({
 }: SpotPositionsTableProps) {
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<SpotPosition | null>(null);
+  const userTier = useUserTier();
   const guardTradingAction = useTradingGuard({
     onOpenLogin,
     onOpenWalletModal,
@@ -99,11 +103,31 @@ export function SpotPositionsTable({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert>
-            <AlertDescription>
-              No spot positions yet. Visit the Spot Market on the homepage to start trading.
-            </AlertDescription>
-          </Alert>
+          {userTier === "guest" ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p className="text-sm font-medium mb-3">Log in to see your spot positions</p>
+              <Link href="/login">
+                <Button size="sm" data-testid="button-spot-empty-sign-in">
+                  Sign in
+                </Button>
+              </Link>
+            </div>
+          ) : userTier === "user_no_wallet" ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p className="text-sm font-medium mb-3">Connect your wallet to start spot trading</p>
+              {onOpenWalletModal && (
+                <Button size="sm" onClick={onOpenWalletModal} data-testid="button-spot-empty-connect-wallet">
+                  Connect wallet
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Alert>
+              <AlertDescription>
+                No spot positions yet. Visit the Spot Market on the homepage to start trading.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     );
@@ -150,6 +174,7 @@ export function SpotPositionsTable({
                 const quantityTonnes = kgToTons(parseFloat(position.quantityKg));
                 const entryPricePerTon = parseFloat(position.avgEntryPrice) * 1000;
                 const currentPricePerTon = parseFloat(position.currentPricePerKg) * 1000;
+                const isShort = quantityTonnes < 0;
 
                 return (
                   <TableRow key={position.id} data-testid={`row-spot-position-${position.commoditySlug}`}>
@@ -167,7 +192,14 @@ export function SpotPositionsTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono" data-testid={`text-quantity-${position.commoditySlug}`}>
-                      {formatTons(quantityTonnes)} t
+                      <div className="flex items-center justify-end gap-2">
+                        {formatTons(quantityTonnes)} t
+                        {isShort && (
+                          <Badge variant="outline" className="text-xs text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700" data-testid={`badge-short-${position.commoditySlug}`}>
+                            SHORT
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right font-mono" data-testid={`text-entry-price-${position.commoditySlug}`}>
                       ${entryPricePerTon.toFixed(2)}
@@ -218,7 +250,9 @@ export function SpotPositionsTable({
           commoditySlug={selectedPosition.commoditySlug}
           commodityName={selectedPosition.commodityName}
           currentPrice={parseFloat(selectedPosition.currentPricePerKg) * 1000} // Convert kg to ton (price per ton)
-          initialQuantity={parseFloat(selectedPosition.quantityKg)} // Pass in kg, modal will convert to tonnes for display
+          initialQuantity={Math.abs(parseFloat(selectedPosition.quantityKg))} // Pass absolute value in kg, modal will convert to tonnes for display
+          onOpenLogin={onOpenLogin}
+          onOpenWalletModal={onOpenWalletModal}
         />
       )}
     </Card>
