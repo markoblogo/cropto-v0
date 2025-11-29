@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { usePolling } from "@/hooks/usePolling";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign } from "lucide-react";
@@ -21,6 +22,8 @@ import { OptionTypeBadge } from "@/components/OptionTypeBadge";
 import { BackToDashboard } from "@/components/BackToDashboard";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
+import { TradingStatusBanner } from "@/components/TradingStatusBanner";
+import { useUserTier } from "@/hooks/useUserTier";
 import { queryClient } from "@/lib/queryClient";
 
 interface PortfolioPosition {
@@ -155,6 +158,7 @@ interface SpotPosition {
 export default function Portfolio() {
   const [, setLocation] = useLocation();
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
+  const userTier = useUserTier();
 
   // Check authentication
   const { data: userData, isLoading: isAuthLoading } = useQuery<UserData | null>({
@@ -405,6 +409,9 @@ export default function Portfolio() {
           </Card>
         </div>
 
+        {/* Trading Status Banner */}
+        <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />
+
         {/* Positions Table */}
         <Card>
           <CardHeader>
@@ -414,8 +421,28 @@ export default function Portfolio() {
             {portfolioData.positions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground" data-testid="text-no-positions">
                 <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">No positions yet</p>
-                <p className="text-sm">Start trading options to see your portfolio here</p>
+                {userTier === "guest" ? (
+                  <>
+                    <p className="text-lg font-medium mb-2">Log in to see your options portfolio</p>
+                    <Link href="/login">
+                      <Button size="sm" data-testid="button-empty-sign-in">
+                        Sign in
+                      </Button>
+                    </Link>
+                  </>
+                ) : userTier === "user_no_wallet" ? (
+                  <>
+                    <p className="text-lg font-medium mb-2">Connect your wallet to start trading options</p>
+                    <Button size="sm" onClick={handleOpenWalletModal} data-testid="button-empty-connect-wallet">
+                      Connect wallet
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-lg font-medium mb-2">No positions yet</p>
+                    <p className="text-sm">Start trading options to see your portfolio here</p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="overflow-x-auto">

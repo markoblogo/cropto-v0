@@ -11,6 +11,7 @@ import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { CroptMintButton } from "@/components/CroptMintButton";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
+import { TradingStatusBanner } from "@/components/TradingStatusBanner";
 import { useToast } from "@/hooks/use-toast";
 import { usePolling } from "@/hooks/usePolling";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -301,6 +302,9 @@ export default function Dashboard() {
 
       <main className="py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Trading Status Banner */}
+          <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />
+          
           {/* Dashboard Metrics */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3">
