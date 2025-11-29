@@ -24,7 +24,6 @@ export function SpotMarketCard({
   index = 0,
 }: SpotMarketCardProps) {
   const { t } = useTranslation();
-  const pricePerKg = pricePerTon / 1000;
   const deltaValue = delta || 0;
   
   const isPositive = deltaValue > 0;
@@ -63,9 +62,9 @@ export function SpotMarketCard({
         <CardContent className="space-y-4 p-5 pt-0">
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground mb-1">{t('spot.market.pricePerKg')}</span>
+              <span className="text-xs text-muted-foreground mb-1">Price per ton</span>
               <span className="text-2xl font-bold font-mono" data-testid={`text-price-${slug}`}>
-                ${pricePerKg.toFixed(4)}
+                ${pricePerTon.toFixed(2)}
               </span>
             </div>
             {delta !== null && (

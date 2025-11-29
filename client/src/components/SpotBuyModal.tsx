@@ -39,7 +39,7 @@ export function SpotBuyModal({
 }: SpotBuyModalProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [quantityKg, setQuantityKg] = useState("");
+  const [quantityTonnes, setQuantityTonnes] = useState("");
 
   const { data: balanceData } = useQuery<SpotBalance>({
     queryKey: ["/api/spot/balance"],
@@ -81,11 +81,12 @@ export function SpotBuyModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spot/balance"] });
       queryClient.invalidateQueries({ queryKey: ["/api/spot", commoditySlug] });
+      const qtyTonnes = parseFloat(quantityTonnes);
       toast({
         title: "Success",
-        description: `Successfully bought ${quantityKg}kg of ${commodityName}`,
+        description: `Successfully bought ${qtyTonnes.toFixed(2)}t of ${commodityName}`,
       });
-      setQuantityKg("");
+      setQuantityTonnes("");
       onClose();
     },
     onError: (error: any) => {
@@ -99,8 +100,8 @@ export function SpotBuyModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const qty = parseFloat(quantityKg);
-    if (!qty || qty <= 0) {
+    const qtyTonnes = parseFloat(quantityTonnes);
+    if (!qtyTonnes || qtyTonnes <= 0) {
       toast({
         title: "Invalid quantity",
         description: "Please enter a valid quantity",
@@ -116,11 +117,14 @@ export function SpotBuyModal({
       });
       return;
     }
-    buyMutation.mutate({ quantityKg: qty });
+    // Convert tonnes to kg for API
+    const qtyKg = qtyTonnes * 1000;
+    buyMutation.mutate({ quantityKg: qtyKg });
   };
 
-  const pricePerKg = currentPrice / 1000;
-  const totalCost = parseFloat(quantityKg) * pricePerKg || 0;
+  // currentPrice is already in price per ton
+  const pricePerTon = currentPrice;
+  const totalCost = parseFloat(quantityTonnes) * pricePerTon || 0;
   const availableBalance = balanceData ? parseFloat(balanceData.balance) : 0;
   const canAfford = totalCost <= availableBalance;
 
@@ -168,7 +172,7 @@ export function SpotBuyModal({
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Current Price:</span>
               <span className="font-mono font-medium" data-testid="text-current-price">
-                ${pricePerKg.toFixed(8)} / kg
+                ${pricePerTon.toFixed(2)} / ton
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -180,20 +184,20 @@ export function SpotBuyModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity (kg)</Label>
+            <Label htmlFor="quantity">Quantity (t)</Label>
             <Input
               id="quantity"
               type="number"
               step="0.01"
               min="0"
-              placeholder="Enter quantity in kg"
-              value={quantityKg}
-              onChange={(e) => setQuantityKg(e.target.value)}
+              placeholder="Enter quantity in tonnes"
+              value={quantityTonnes}
+              onChange={(e) => setQuantityTonnes(e.target.value)}
               data-testid="input-quantity"
             />
           </div>
 
-          {quantityKg && parseFloat(quantityKg) > 0 && (
+          {quantityTonnes && parseFloat(quantityTonnes) > 0 && (
             <div className="space-y-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Cost:</span>
@@ -221,7 +225,7 @@ export function SpotBuyModal({
             </Button>
             <Button
               type="submit"
-              disabled={buyMutation.isPending || !canAfford || !quantityKg}
+              disabled={buyMutation.isPending || !canAfford || !quantityTonnes}
               data-testid="button-buy"
             >
               {buyMutation.isPending && (

@@ -49,7 +49,7 @@ export function SpotSellModal({
 }: SpotSellModalProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [quantityKg, setQuantityKg] = useState("");
+  const [quantityTonnes, setQuantityTonnes] = useState("");
 
   const { data: positionData } = useQuery<SpotPosition>({
     queryKey: ["/api/spot", commoditySlug],
@@ -57,18 +57,22 @@ export function SpotSellModal({
   });
 
   // Pre-fill quantity when modal opens or initialQuantity changes
+  // initialQuantity is in kg, convert to tonnes for display
   useEffect(() => {
     if (isOpen && initialQuantity !== undefined && initialQuantity > 0) {
-      setQuantityKg(initialQuantity.toString());
+      const qtyTonnes = initialQuantity / 1000;
+      setQuantityTonnes(qtyTonnes.toString());
     } else if (isOpen && !initialQuantity && positionData?.position) {
       // If no initialQuantity provided, use position quantity as default
-      const positionQty = parseFloat(positionData.position.quantityKg);
-      if (positionQty > 0) {
-        setQuantityKg(positionQty.toString());
+      // position quantity is in kg, convert to tonnes
+      const positionQtyKg = parseFloat(positionData.position.quantityKg);
+      if (positionQtyKg > 0) {
+        const qtyTonnes = positionQtyKg / 1000;
+        setQuantityTonnes(qtyTonnes.toString());
       }
     } else if (!isOpen) {
       // Reset when modal closes
-      setQuantityKg("");
+      setQuantityTonnes("");
     }
   }, [isOpen, initialQuantity, positionData]);
 
@@ -84,11 +88,12 @@ export function SpotSellModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spot/balance"] });
       queryClient.invalidateQueries({ queryKey: ["/api/spot", commoditySlug] });
+      const qtyTonnes = parseFloat(quantityTonnes);
       toast({
         title: "Success",
-        description: `Successfully sold ${quantityKg}kg of ${commodityName}`,
+        description: `Successfully sold ${qtyTonnes.toFixed(2)}t of ${commodityName}`,
       });
-      setQuantityKg("");
+      setQuantityTonnes("");
       onClose();
     },
     onError: (error: any) => {
@@ -101,26 +106,30 @@ export function SpotSellModal({
   });
 
   // ---- количественная логика ----
-  const positionQty = positionData?.position
+  // positionQty is in kg from backend, convert to tonnes for display
+  const positionQtyKg = positionData?.position
     ? parseFloat(positionData.position.quantityKg)
     : 0;
+  const positionQtyTonnes = positionQtyKg / 1000;
 
-  const parsedQty = parseFloat(quantityKg);
-  const qtyNum = isNaN(parsedQty) ? 0 : parsedQty;
+  const parsedQtyTonnes = parseFloat(quantityTonnes);
+  const qtyTonnesNum = isNaN(parsedQtyTonnes) ? 0 : parsedQtyTonnes;
+  const qtyKgNum = qtyTonnesNum * 1000; // Convert to kg for validation
 
-  const isLong = positionQty > 0;
-  const hasInsufficientPosition = isLong && qtyNum > positionQty;
-  const invalidQty = qtyNum <= 0;
+  const isLong = positionQtyKg > 0;
+  const hasInsufficientPosition = isLong && qtyKgNum > positionQtyKg;
+  const invalidQty = qtyTonnesNum <= 0;
   const canSell = !invalidQty && !hasInsufficientPosition;
 
-  const pricePerKg = currentPrice / 1000;
-  const totalPayout = qtyNum * pricePerKg || 0;
+  // currentPrice is already in price per ton
+  const pricePerTon = currentPrice;
+  const totalPayout = qtyTonnesNum * pricePerTon || 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const qty = parseFloat(quantityKg);
+    const qtyTonnes = parseFloat(quantityTonnes);
 
-    if (!qty || qty <= 0) {
+    if (!qtyTonnes || qtyTonnes <= 0) {
       toast({
         title: "Invalid quantity",
         description: "Please enter a valid quantity",
@@ -132,15 +141,17 @@ export function SpotSellModal({
     if (hasInsufficientPosition) {
       toast({
         title: "Insufficient position",
-        description: `You are trying to sell ${qty.toFixed(
+        description: `You are trying to sell ${qtyTonnes.toFixed(
           2,
-        )} kg but only have ${positionQty.toFixed(2)} kg`,
+        )}t but only have ${positionQtyTonnes.toFixed(2)}t`,
         variant: "destructive",
       });
       return;
     }
 
-    sellMutation.mutate({ quantityKg: qty });
+    // Convert tonnes to kg for API
+    const qtyKg = qtyTonnes * 1000;
+    sellMutation.mutate({ quantityKg: qtyKg });
   };
 
   return (
@@ -161,7 +172,7 @@ export function SpotSellModal({
                 className="font-mono font-medium"
                 data-testid="text-current-price"
               >
-                ${pricePerKg.toFixed(8)} / kg
+                ${pricePerTon.toFixed(2)} / ton
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -170,7 +181,7 @@ export function SpotSellModal({
                 className="font-mono font-medium"
                 data-testid="text-your-position"
               >
-                {positionQty.toFixed(2)} kg
+                {positionQtyTonnes.toFixed(2)} t
               </span>
             </div>
             {positionData?.position && (
@@ -197,32 +208,32 @@ export function SpotSellModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity (kg)</Label>
+            <Label htmlFor="quantity">Quantity (t)</Label>
             <Input
               id="quantity"
               type="number"
               step="0.01"
               min="0"
               // ограничиваем max только для лонга; для шорта/нуля — без лимита по UI
-              max={isLong ? positionQty : undefined}
-              placeholder="Enter quantity in kg"
-              value={quantityKg}
-              onChange={(e) => setQuantityKg(e.target.value)}
+              max={isLong ? positionQtyTonnes : undefined}
+              placeholder="Enter quantity in tonnes"
+              value={quantityTonnes}
+              onChange={(e) => setQuantityTonnes(e.target.value)}
               data-testid="input-quantity"
             />
-            {isLong && positionQty > 0 && (
+            {isLong && positionQtyTonnes > 0 && (
               <button
                 type="button"
                 className="text-xs text-muted-foreground hover:text-foreground underline"
-                onClick={() => setQuantityKg(positionQty.toString())}
+                onClick={() => setQuantityTonnes(positionQtyTonnes.toString())}
                 data-testid="link-max-quantity"
               >
-                Max: {positionQty.toFixed(2)} kg
+                Max: {positionQtyTonnes.toFixed(2)} t
               </button>
             )}
           </div>
 
-          {qtyNum > 0 && (
+          {qtyTonnesNum > 0 && (
             <div className="space-y-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Payout:</span>
@@ -239,11 +250,11 @@ export function SpotSellModal({
                   className="text-sm text-destructive"
                   data-testid="text-insufficient-position"
                 >
-                  Insufficient position (available: {positionQty.toFixed(2)} kg)
+                  Insufficient position (available: {positionQtyTonnes.toFixed(2)} t)
                 </p>
               )}
 
-              {!isLong && qtyNum > 0 && (
+              {!isLong && qtyTonnesNum > 0 && (
                 <p
                   className="text-sm text-amber-700 dark:text-amber-400"
                   data-testid="text-short-info"
