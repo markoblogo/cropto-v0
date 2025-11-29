@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { usePolling } from "@/hooks/usePolling";
@@ -20,6 +20,8 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
 import { BackToDashboard } from "@/components/BackToDashboard";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
+import { WalletAuthModal } from "@/components/WalletAuthModal";
+import { queryClient } from "@/lib/queryClient";
 
 interface PortfolioPosition {
   optionId: string;
@@ -70,6 +72,7 @@ interface SpotPosition {
 
 export default function Portfolio() {
   const [, setLocation] = useLocation();
+  const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
 
   // Check authentication
   const { data: userData, isLoading: isAuthLoading } = useQuery<UserData | null>({
@@ -79,6 +82,22 @@ export default function Portfolio() {
   });
 
   const user = userData?.user;
+
+  const handleOpenLogin = () => {
+    // Navigate to login page
+    setLocation("/login");
+  };
+
+  const handleOpenWalletModal = () => {
+    setIsWalletAuthModalOpen(true);
+  };
+
+  const handleWalletAuthSuccess = (token: string, newUser: boolean) => {
+    // Invalidate queries to refresh user data
+    queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
+    setIsWalletAuthModalOpen(false);
+  };
 
   // Enable polling for live updates when user is authenticated
   usePolling({
@@ -391,8 +410,20 @@ export default function Portfolio() {
         </Card>
 
         {/* Spot Positions */}
-        <SpotPositionsTable positions={spotPositions} isLoading={isSpotLoading} />
+        <SpotPositionsTable 
+          positions={spotPositions} 
+          isLoading={isSpotLoading}
+          onOpenLogin={handleOpenLogin}
+          onOpenWalletModal={handleOpenWalletModal}
+        />
       </div>
+
+      {/* Wallet Authentication Modal */}
+      <WalletAuthModal
+        open={isWalletAuthModalOpen}
+        onOpenChange={setIsWalletAuthModalOpen}
+        onSuccess={handleWalletAuthSuccess}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -21,6 +21,7 @@ interface SpotSellModalProps {
   commoditySlug: string;
   commodityName: string;
   currentPrice: number;
+  initialQuantity?: number; // Optional initial quantity to pre-fill
 }
 
 interface SpotPosition {
@@ -44,6 +45,7 @@ export function SpotSellModal({
   commoditySlug,
   commodityName,
   currentPrice,
+  initialQuantity,
 }: SpotSellModalProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -53,6 +55,22 @@ export function SpotSellModal({
     queryKey: ["/api/spot", commoditySlug],
     enabled: isOpen,
   });
+
+  // Pre-fill quantity when modal opens or initialQuantity changes
+  useEffect(() => {
+    if (isOpen && initialQuantity !== undefined && initialQuantity > 0) {
+      setQuantityKg(initialQuantity.toString());
+    } else if (isOpen && !initialQuantity && positionData?.position) {
+      // If no initialQuantity provided, use position quantity as default
+      const positionQty = parseFloat(positionData.position.quantityKg);
+      if (positionQty > 0) {
+        setQuantityKg(positionQty.toString());
+      }
+    } else if (!isOpen) {
+      // Reset when modal closes
+      setQuantityKg("");
+    }
+  }, [isOpen, initialQuantity, positionData]);
 
   const sellMutation = useMutation({
     mutationFn: async (data: { quantityKg: number }) => {
