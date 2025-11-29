@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInDays, formatDistanceToNow } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
 import { BackToDashboard } from "@/components/BackToDashboard";
@@ -35,6 +35,88 @@ interface PortfolioPosition {
   pnl: string;
   unrealized: boolean;
   createdAt: string;
+  expirationDate?: string; // Optional - may not be in backend response yet
+}
+
+/**
+ * Parse expiration date from option title
+ * Format: COMMODITY-QTY-CREATED-EXPIRES-VOLUME-ID
+ * Where EXPIRES is DDMMM (e.g., 30DEC)
+ */
+function parseExpirationFromTitle(title: string, createdAt: string): Date | null {
+  try {
+    const parts = title.split('-');
+    if (parts.length < 4) return null;
+    
+    const expirationCode = parts[3]; // EXPIRES part
+    if (!expirationCode || expirationCode.length < 5) return null;
+    
+    const day = parseInt(expirationCode.substring(0, 2));
+    const monthStr = expirationCode.substring(2, 5).toUpperCase();
+    
+    const months: Record<string, number> = {
+      'JAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAY': 4, 'JUN': 5,
+      'JUL': 6, 'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DEC': 11
+    };
+    
+    const month = months[monthStr];
+    if (month === undefined || isNaN(day)) return null;
+    
+    // Infer year: if expiration is before creation date, it's next year
+    const created = new Date(createdAt);
+    const currentYear = created.getFullYear();
+    let year = currentYear;
+    
+    const expiryThisYear = new Date(currentYear, month, day);
+    if (expiryThisYear < created) {
+      year = currentYear + 1;
+    }
+    
+    return new Date(year, month, day);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Calculate time to expiry and format it nicely
+ */
+function formatTimeToExpiry(expirationDate: string | Date | undefined | null): string {
+  let expiry: Date | null = null;
+  
+  if (expirationDate instanceof Date) {
+    expiry = expirationDate;
+  } else if (typeof expirationDate === 'string') {
+    try {
+      expiry = new Date(expirationDate);
+    } catch {
+      return "N/A";
+    }
+  }
+  
+  if (!expiry || isNaN(expiry.getTime())) {
+    return "N/A";
+  }
+
+  try {
+    const now = new Date();
+    const daysDiff = differenceInDays(expiry, now);
+
+    if (daysDiff < 0) {
+      // Expired
+      return `Expired ${Math.abs(daysDiff)} day${Math.abs(daysDiff) !== 1 ? 's' : ''} ago`;
+    } else if (daysDiff === 0) {
+      return "Expires today";
+    } else if (daysDiff === 1) {
+      return "Expires tomorrow";
+    } else if (daysDiff <= 7) {
+      return `${daysDiff} days left`;
+    } else {
+      return `in ${daysDiff} days`;
+    }
+  } catch {
+    return "N/A";
+  }
 }
 
 interface PortfolioData {
@@ -340,64 +422,97 @@ export default function Portfolio() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead className="text-right">Strike</TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Premium</TableHead>
-                      <TableHead>Role</TableHead>
+                      <TableHead>Underlying</TableHead>
+                      <TableHead>Type / Side</TableHead>
+                      <TableHead className="text-right">Size (t)</TableHead>
+                      <TableHead className="text-right">Strike ($/t)</TableHead>
+                      <TableHead>Expiry / TTE</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">P&L</TableHead>
-                      <TableHead>Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {portfolioData.positions.map((position) => {
                       const positionPnL = parseFloat(position.pnl);
                       const isProfitablePosition = positionPnL >= 0;
+                      
+                      // Convert quantity from kg to tonnes for display
+                      const quantityTonnes = parseFloat(position.qty) / 1000;
+                      
+                      // Convert strike from per kg to per ton (multiply by 1000)
+                      const strikePerTon = parseFloat(position.strike) * 1000;
+                      
+                      // Calculate PnL percentage (approximate based on premium)
+                      const premium = parseFloat(position.premium);
+                      const pnlPercent = premium !== 0 ? (positionPnL / (premium * quantityTonnes)) * 100 : 0;
+
+                      // Extract underlying commodity from title (format: COMMODITY-QTY-CREATED-EXPIRES-VOLUME-ID)
+                      const titleParts = position.title.split('-');
+                      const underlying = titleParts[0] || position.title;
+
+                      // Get expiration date: from API response or parse from title
+                      let expirationDate: Date | null = null;
+                      if (position.expirationDate) {
+                        expirationDate = new Date(position.expirationDate);
+                      } else {
+                        expirationDate = parseExpirationFromTitle(position.title, position.createdAt);
+                      }
 
                       return (
                         <TableRow key={position.optionId} data-testid={`row-position-${position.optionId}`}>
-                          <TableCell className="font-medium" data-testid={`text-title-${position.optionId}`}>
-                            {position.title}
+                          <TableCell className="font-medium" data-testid={`text-underlying-${position.optionId}`}>
+                            {underlying}
                           </TableCell>
                           <TableCell>
-                            <OptionTypeBadge type={position.type} />
+                            <div className="flex items-center gap-2">
+                              <OptionTypeBadge type={position.type} />
+                              <Badge 
+                                variant={position.role === 'buyer' ? 'default' : 'secondary'} 
+                                className="text-xs"
+                                data-testid={`badge-side-${position.optionId}`}
+                              >
+                                {position.role === 'buyer' ? 'LONG' : 'SHORT'}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-mono" data-testid={`text-size-${position.optionId}`}>
+                            {quantityTonnes.toFixed(2)} t
                           </TableCell>
                           <TableCell className="text-right font-mono" data-testid={`text-strike-${position.optionId}`}>
-                            ${parseFloat(position.strike).toFixed(2)}
+                            ${strikePerTon.toFixed(2)}
                           </TableCell>
-                          <TableCell className="text-right font-mono" data-testid={`text-qty-${position.optionId}`}>
-                            {parseFloat(position.qty).toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono" data-testid={`text-premium-${position.optionId}`}>
-                            ${parseFloat(position.premium).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={position.role === 'buyer' ? 'default' : 'secondary'} data-testid={`badge-role-${position.optionId}`}>
-                              {position.role === 'buyer' ? 'Buyer' : 'Seller'}
-                            </Badge>
+                          <TableCell className="text-sm" data-testid={`text-expiry-${position.optionId}`}>
+                            {expirationDate && !isNaN(expirationDate.getTime()) ? (
+                              <div className="flex flex-col">
+                                <span className="text-muted-foreground">
+                                  {format(expirationDate, "MMM dd, yyyy")}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatTimeToExpiry(expirationDate)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">N/A</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <StatusBadge status={position.status} />
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex flex-col items-end gap-1">
                               <span 
-                                className={`font-mono font-semibold ${isProfitablePosition ? 'text-success' : 'text-destructive'}`}
+                                className={`font-mono font-semibold ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                                 data-testid={`text-pnl-${position.optionId}`}
                               >
-                                {isProfitablePosition ? '+' : ''}${positionPnL.toFixed(2)}
+                                {isProfitablePosition ? '+' : ''}{positionPnL.toFixed(2)} CROPT
                               </span>
-                              {position.unrealized && (
-                                <Badge variant="outline" className="text-xs" data-testid={`badge-unrealized-${position.optionId}`}>
-                                  Unrealized
-                                </Badge>
-                              )}
+                              <span 
+                                className={`text-xs font-mono ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                                data-testid={`text-pnl-percent-${position.optionId}`}
+                              >
+                                ({isProfitablePosition ? '+' : ''}{pnlPercent.toFixed(1)}%)
+                              </span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground" data-testid={`text-date-${position.optionId}`}>
-                            {format(new Date(position.createdAt), "MMM dd, yyyy")}
                           </TableCell>
                         </TableRow>
                       );

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { tonsToKg, formatTons } from "@/lib/units";
 import { Loader2, AlertCircle, ArrowDownToLine } from "lucide-react";
 
 interface SpotBuyModalProps {
@@ -84,7 +85,7 @@ export function SpotBuyModal({
       const qtyTonnes = parseFloat(quantityTonnes);
       toast({
         title: "Success",
-        description: `Successfully bought ${qtyTonnes.toFixed(2)}t of ${commodityName}`,
+        description: `Successfully bought ${formatTons(qtyTonnes)}t of ${commodityName}`,
       });
       setQuantityTonnes("");
       onClose();
@@ -118,7 +119,7 @@ export function SpotBuyModal({
       return;
     }
     // Convert tonnes to kg for API
-    const qtyKg = qtyTonnes * 1000;
+    const qtyKg = tonsToKg(qtyTonnes);
     buyMutation.mutate({ quantityKg: qtyKg });
   };
 

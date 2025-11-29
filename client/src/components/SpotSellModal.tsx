@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { kgToTons, tonsToKg, formatTons } from "@/lib/units";
 import { Loader2 } from "lucide-react";
 
 interface SpotSellModalProps {
@@ -59,16 +60,17 @@ export function SpotSellModal({
   // Pre-fill quantity when modal opens or initialQuantity changes
   // initialQuantity is in kg, convert to tonnes for display
   useEffect(() => {
-    if (isOpen && initialQuantity !== undefined && initialQuantity > 0) {
-      const qtyTonnes = initialQuantity / 1000;
-      setQuantityTonnes(qtyTonnes.toString());
-    } else if (isOpen && !initialQuantity && positionData?.position) {
+    if (isOpen && initialQuantity !== undefined && initialQuantity !== 0) {
+      const qtyTonnes = kgToTons(initialQuantity);
+      setQuantityTonnes(formatTons(Math.abs(qtyTonnes)));
+    } else if (isOpen && initialQuantity === undefined && positionData?.position) {
       // If no initialQuantity provided, use position quantity as default
       // position quantity is in kg, convert to tonnes
       const positionQtyKg = parseFloat(positionData.position.quantityKg);
-      if (positionQtyKg > 0) {
-        const qtyTonnes = positionQtyKg / 1000;
-        setQuantityTonnes(qtyTonnes.toString());
+      if (positionQtyKg !== 0) {
+        const qtyTonnes = kgToTons(positionQtyKg);
+        // For display, show absolute value (user enters positive quantity to sell)
+        setQuantityTonnes(formatTons(Math.abs(qtyTonnes)));
       }
     } else if (!isOpen) {
       // Reset when modal closes
@@ -91,7 +93,7 @@ export function SpotSellModal({
       const qtyTonnes = parseFloat(quantityTonnes);
       toast({
         title: "Success",
-        description: `Successfully sold ${qtyTonnes.toFixed(2)}t of ${commodityName}`,
+        description: `Successfully sold ${formatTons(qtyTonnes)}t of ${commodityName}`,
       });
       setQuantityTonnes("");
       onClose();
@@ -110,11 +112,11 @@ export function SpotSellModal({
   const positionQtyKg = positionData?.position
     ? parseFloat(positionData.position.quantityKg)
     : 0;
-  const positionQtyTonnes = positionQtyKg / 1000;
+  const positionQtyTonnes = kgToTons(positionQtyKg);
 
   const parsedQtyTonnes = parseFloat(quantityTonnes);
   const qtyTonnesNum = isNaN(parsedQtyTonnes) ? 0 : parsedQtyTonnes;
-  const qtyKgNum = qtyTonnesNum * 1000; // Convert to kg for validation
+  const qtyKgNum = tonsToKg(qtyTonnesNum); // Convert to kg for validation
 
   const isLong = positionQtyKg > 0;
   const hasInsufficientPosition = isLong && qtyKgNum > positionQtyKg;
@@ -141,16 +143,14 @@ export function SpotSellModal({
     if (hasInsufficientPosition) {
       toast({
         title: "Insufficient position",
-        description: `You are trying to sell ${qtyTonnes.toFixed(
-          2,
-        )}t but only have ${positionQtyTonnes.toFixed(2)}t`,
+        description: `You are trying to sell ${formatTons(qtyTonnes)}t but only have ${formatTons(positionQtyTonnes)}t`,
         variant: "destructive",
       });
       return;
     }
 
     // Convert tonnes to kg for API
-    const qtyKg = qtyTonnes * 1000;
+    const qtyKg = tonsToKg(qtyTonnes);
     sellMutation.mutate({ quantityKg: qtyKg });
   };
 
@@ -181,7 +181,7 @@ export function SpotSellModal({
                 className="font-mono font-medium"
                 data-testid="text-your-position"
               >
-                {positionQtyTonnes.toFixed(2)} t
+                {formatTons(positionQtyTonnes)} t
               </span>
             </div>
             {positionData?.position && (
@@ -225,10 +225,10 @@ export function SpotSellModal({
               <button
                 type="button"
                 className="text-xs text-muted-foreground hover:text-foreground underline"
-                onClick={() => setQuantityTonnes(positionQtyTonnes.toString())}
+                onClick={() => setQuantityTonnes(formatTons(positionQtyTonnes))}
                 data-testid="link-max-quantity"
               >
-                Max: {positionQtyTonnes.toFixed(2)} t
+                Max: {formatTons(positionQtyTonnes)} t
               </button>
             )}
           </div>
@@ -250,7 +250,7 @@ export function SpotSellModal({
                   className="text-sm text-destructive"
                   data-testid="text-insufficient-position"
                 >
-                  Insufficient position (available: {positionQtyTonnes.toFixed(2)} t)
+                  Insufficient position (available: {formatTons(positionQtyTonnes)} t)
                 </p>
               )}
 

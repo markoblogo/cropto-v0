@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SpotSellModal } from "@/components/SpotSellModal";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { queryClient } from "@/lib/queryClient";
+import { kgToTons, formatTons } from "@/lib/units";
 
 interface SpotPosition {
   id: string;
@@ -146,7 +147,7 @@ export function SpotPositionsTable({
                   : "text-muted-foreground";
 
                 // Convert from kg to tonnes for display
-                const quantityTonnes = parseFloat(position.quantityKg) / 1000;
+                const quantityTonnes = kgToTons(parseFloat(position.quantityKg));
                 const entryPricePerTon = parseFloat(position.avgEntryPrice) * 1000;
                 const currentPricePerTon = parseFloat(position.currentPricePerKg) * 1000;
 
@@ -166,7 +167,7 @@ export function SpotPositionsTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono" data-testid={`text-quantity-${position.commoditySlug}`}>
-                      {quantityTonnes.toFixed(2)}
+                      {formatTons(quantityTonnes)} t
                     </TableCell>
                     <TableCell className="text-right font-mono" data-testid={`text-entry-price-${position.commoditySlug}`}>
                       ${entryPricePerTon.toFixed(2)}
@@ -190,7 +191,7 @@ export function SpotPositionsTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {parseFloat(position.quantityKg) > 0 && (
+                      {parseFloat(position.quantityKg) !== 0 && (
                         <Button
                           size="sm"
                           variant="outline"
