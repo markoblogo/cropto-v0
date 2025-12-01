@@ -1,59 +1,19 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import { MarkdownSection } from "@/components/MarkdownSection";
 import FlagSwitcher from "@/components/FlagSwitcher";
 import { FileText } from "lucide-react";
 
 export default function AboutPage() {
-  const { i18n, t } = useTranslation();
+  const { i18n } = useTranslation();
   const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
   
-  const [aboutContent, setAboutContent] = useState<string>("");
-  const [faqContent, setFaqContent] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadMarkdown = async () => {
-      setLoading(true);
-      try {
-        const aboutFile = `/api/docs/about.${currentLang}.md`;
-        const faqFile = `/api/docs/faq.${currentLang}.md`;
-        
-        const [aboutRes, faqRes] = await Promise.all([
-          fetch(aboutFile),
-          fetch(faqFile)
-        ]);
-
-        if (aboutRes.ok) {
-          const aboutText = await aboutRes.text();
-          setAboutContent(aboutText);
-        } else {
-          setAboutContent(`# Error\nFailed to load ${aboutFile}`);
-        }
-
-        if (faqRes.ok) {
-          const faqText = await faqRes.text();
-          setFaqContent(faqText);
-        } else {
-          setFaqContent(`# Error\nFailed to load ${faqFile}`);
-        }
-      } catch (error) {
-        console.error("Error loading markdown files:", error);
-        setAboutContent("# Error\nFailed to load documentation");
-        setFaqContent("");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadMarkdown();
-  }, [currentLang]);
+  const aboutSrc = `/docs/about.${currentLang}.md`;
+  const faqSrc = `/docs/faq.${currentLang}.md`;
 
   const scrollToFaq = () => {
     const faqSection = document.getElementById("faq-section");
@@ -91,32 +51,18 @@ export default function AboutPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="py-8 text-center text-muted-foreground">
-                {currentLang === 'uk' ? 'Завантаження...' : 'Loading...'}
-              </div>
-            ) : (
-              <>
-                {/* About Section */}
-                <div className="prose prose-sm dark:prose-invert max-w-none" data-testid="section-about-content">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {aboutContent}
-                  </ReactMarkdown>
-                </div>
+            {/* About Section */}
+            <div key={`about-${currentLang}`} data-testid="section-about-content">
+              <MarkdownSection src={aboutSrc} />
+            </div>
 
-                {/* Separator */}
-                <Separator className="my-8" />
+            {/* Separator */}
+            <Separator className="my-8" />
 
-                {/* FAQ Section */}
-                <div id="faq-section" className="scroll-mt-20">
-                  <div className="prose prose-sm dark:prose-invert max-w-none" data-testid="section-faq-content">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {faqContent}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              </>
-            )}
+            {/* FAQ Section */}
+            <div id="faq-section" className="scroll-mt-20" key={`faq-${currentLang}`} data-testid="section-faq-content">
+              <MarkdownSection src={faqSrc} />
+            </div>
           </CardContent>
         </Card>
       </div>

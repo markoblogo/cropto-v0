@@ -1,16 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, PlayCircle, Database, Users, TrendingUp } from "lucide-react";
+import { Loader2, PlayCircle, Database, Users, TrendingUp, Settings, BarChart3, MessageSquare, FileText } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import { useQuery } from "@tanstack/react-query";
+import { useIsAdminLevelUser } from "@/hooks/useIsAdminLevelUser";
+import { Link } from "wouter";
 
 export default function Admin() {
+  const [, setLocation] = useLocation();
+  const isAdminLevelUser = useIsAdminLevelUser();
+  const { data: userData, isLoading: isAuthLoading } = useQuery<{
+    user: {
+      id: string;
+      email: string;
+      role: string;
+    };
+  } | null>({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+    enabled: !!localStorage.getItem("cropto_token"),
+  });
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
+
+  // Redirect if not admin-level (in useEffect to avoid render-phase side effects)
+  useEffect(() => {
+    if (!isAuthLoading && (!userData?.user || !isAdminLevelUser)) {
+      setLocation("/");
+    }
+  }, [isAuthLoading, userData, isAdminLevelUser, setLocation]);
+
+  // Show loading while checking auth
+  if (isAuthLoading || !userData?.user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header onCreateOption={() => {}} />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Don't render if not admin (redirect will happen via useEffect)
+  if (!isAdminLevelUser) {
+    return null;
+  }
 
   const handleRunDemo = async () => {
     setIsLoading(true);
@@ -129,6 +172,55 @@ export default function Admin() {
                   )}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-primary" />
+                <CardTitle>Admin Tools</CardTitle>
+              </div>
+              <CardDescription>
+                Quick access to broker/admin utilities
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/admin/index">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Index Management
+                  </Link>
+                </Button>
+                <p className="text-xs text-muted-foreground ml-6">
+                  Configure commodity indexes and prices
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/admin/reconciliation">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Reconciliation & Reports
+                  </Link>
+                </Button>
+                <p className="text-xs text-muted-foreground ml-6">
+                  Review cash flows and spot/option settlements
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/admin/feedback">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    User Feedback
+                  </Link>
+                </Button>
+                <p className="text-xs text-muted-foreground ml-6">
+                  Browse and process platform feedback
+                </p>
+              </div>
             </CardContent>
           </Card>
 

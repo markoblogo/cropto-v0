@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql } from "drizzle-orm";
@@ -14,7 +14,7 @@ import { startTransactionPoller } from "./onchain/poller";
 import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
 import { runScraper } from "./jobs/telegramScraper";
-import { authenticateToken, type AuthRequest, findUserById } from "./auth";
+import { authenticateToken, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions } from "./auth";
 import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
@@ -272,8 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoint to manually add/override index prices
   app.post("/api/admin/index", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const userRole = req.user?.role;
-      if (userRole !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Access denied. Broker role required." });
       }
 
@@ -316,8 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all index prices (for admin view)
   app.get("/api/admin/index", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const userRole = req.user?.role;
-      if (userRole !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Access denied. Broker role required." });
       }
 
@@ -658,8 +656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/indexes/:slug/price - Add new price for an index
   app.post("/api/indexes/:slug/price", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const userRole = req.user?.role;
-      if (userRole !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Access denied. Broker role required." });
       }
 
@@ -779,6 +776,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const option = await storage.createOption(optionData);
+      
+      // Record platform fee (TODO: implement actual fee calculation policy)
+      // For now, storing 0 as placeholder
+      const feeAmount = 0; // TODO: implement fee calculation (e.g., premium * 0.001 for 0.1%)
+      await db
+        .insert(platformFees)
+        .values({
+          userId: req.user!.id,
+          role: req.user!.role || 'trader',
+          type: 'option_create',
+          amount: feeAmount.toFixed(8),
+          currency: 'CROPT',
+          instrument: option.id,
+          txId: null,
+        });
+      
       res.status(201).json(option);
     } catch (error) {
       console.error("Error creating option:", error);
@@ -793,7 +806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Only brokers/admin can manually match options
-      if (req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Only brokers can match options" });
       }
 
@@ -1209,7 +1222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const { status } = req.query;
-      const isAdmin = req.user.role === "broker"; // Broker role acts as admin
+      const isAdmin = hasBrokerPermissions(req.user?.role); // Broker/super_admin roles act as admin
       
       let marginCalls;
       if (isAdmin) {
@@ -1283,7 +1296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/notifications/send-mock - Admin-only endpoint to create test notifications
   app.post("/api/notifications/send-mock", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (!req.user || req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Admin access required" });
       }
       
@@ -1397,7 +1410,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only brokers (admin) can force-settle
-      if (req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Only brokers can force-settle options" });
       }
       
@@ -1427,7 +1440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only brokers (admin) can run demo scenario
-      if (req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Only brokers can run demo scenarios" });
       }
       
@@ -1452,7 +1465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
-      if (req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Only brokers can trigger deadline processing" });
       }
       
@@ -1473,7 +1486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only brokers (admin) can manually trigger deadline processing
-      if (req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Only brokers can process deadlines" });
       }
       
@@ -1535,7 +1548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
-      if (req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Only brokers can process overdue margin calls" });
       }
       
@@ -1665,7 +1678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Reconciliation endpoints
   app.get("/api/admin/reconciliation/transactions", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (!req.user || req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
       
@@ -1679,7 +1692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/reconciliation/settlements", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (!req.user || req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
       
@@ -1693,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/reconciliation/margincalls", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (!req.user || req.user.role !== "broker") {
+      if (!hasBrokerPermissions(req.user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
       
@@ -1702,6 +1715,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching margin calls:", error);
       res.status(500).json({ error: error.message || "Failed to fetch margin calls" });
+    }
+  });
+
+  // GET /api/admin/fees - Get platform fees summary
+  app.get("/api/admin/fees", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+      
+      // Get all fees
+      const allFees = await db
+        .select()
+        .from(platformFees);
+      
+      // Calculate totals
+      let totalFees = 0;
+      const byType: Record<string, number> = {};
+      const byRole: Record<string, number> = {};
+      
+      for (const fee of allFees) {
+        const amount = parseFloat(fee.amount);
+        totalFees += amount;
+        
+        // Group by type
+        const type = fee.type || 'unknown';
+        byType[type] = (byType[type] || 0) + amount;
+        
+        // Group by role
+        const role = fee.role || 'unknown';
+        byRole[role] = (byRole[role] || 0) + amount;
+      }
+      
+      res.json({
+        totalFees: totalFees.toFixed(8),
+        byType: Object.fromEntries(
+          Object.entries(byType).map(([k, v]) => [k, v.toFixed(8)])
+        ),
+        byRole: Object.fromEntries(
+          Object.entries(byRole).map(([k, v]) => [k, v.toFixed(8)])
+        ),
+      });
+    } catch (error: any) {
+      console.error("Error fetching platform fees:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch platform fees" });
     }
   });
 
@@ -1730,7 +1788,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authReq = req as AuthRequest;
       const user = await findUserById(authReq.user!.id);
       
-      if (!user || user.role !== "broker") {
+      if (!hasBrokerPermissions(user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
 
@@ -1747,7 +1805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authReq = req as AuthRequest;
       const user = await findUserById(authReq.user!.id);
       
-      if (!user || user.role !== "broker") {
+      if (!hasBrokerPermissions(user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
 
@@ -1765,7 +1823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authReq = req as AuthRequest;
       const user = await findUserById(authReq.user!.id);
       
-      if (!user || user.role !== "broker") {
+      if (!hasBrokerPermissions(user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
 

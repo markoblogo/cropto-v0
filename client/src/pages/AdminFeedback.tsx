@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,58 @@ import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function AdminFeedback() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  // Check authentication and role
+  const { data: userData, isLoading: isAuthLoading } = useQuery<{ 
+    user: { 
+      id: string; 
+      email: string; 
+      role: string;
+    } 
+  } | null>({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+    enabled: !!localStorage.getItem('cropto_token'),
+  });
+
+  const user = userData?.user;
+  const isAdminLevelUser = user && (
+    user.role?.toLowerCase() === 'admin' || 
+    user.role?.toLowerCase() === 'broker' || 
+    user.role?.toLowerCase() === 'super_admin'
+  );
+
+  // Redirect if not admin-level
+  useEffect(() => {
+    if (!isAuthLoading && (!user || !isAdminLevelUser)) {
+      setLocation("/");
+    }
+  }, [isAuthLoading, user, isAdminLevelUser, setLocation]);
 
   const { data: feedbackList = [], isLoading } = useQuery<Feedback[]>({
     queryKey: ["/api/admin/feedback"],
+    enabled: !!isAdminLevelUser,
   });
+
+  // Show loading while checking auth
+  if (isAuthLoading || !user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header onCreateOption={() => {}} />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Don't render if not admin (redirect will happen via useEffect)
+  if (!isAdminLevelUser) {
+    return null;
+  }
 
   const resolveMutation = useMutation({
     mutationFn: async (id: string) => {

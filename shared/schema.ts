@@ -182,6 +182,18 @@ export const croptBalances = pgTable("cropt_balances", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const platformFees = pgTable("platform_fees", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  role: text("role"),
+  type: text("type").notNull(),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  currency: text("currency").notNull().default("CROPT"),
+  instrument: text("instrument"),
+  txId: text("tx_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,
@@ -291,6 +303,11 @@ export const insertCroptBalanceSchema = createInsertSchema(croptBalances).omit({
   updatedAt: true,
 });
 
+export const insertPlatformFeeSchema = createInsertSchema(platformFees).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -321,6 +338,8 @@ export type InsertSpotPosition = z.infer<typeof insertSpotPositionSchema>;
 export type SpotPosition = typeof spotPositions.$inferSelect;
 export type InsertCroptBalance = z.infer<typeof insertCroptBalanceSchema>;
 export type CroptBalance = typeof croptBalances.$inferSelect;
+export type InsertPlatformFee = z.infer<typeof insertPlatformFeeSchema>;
+export type PlatformFee = typeof platformFees.$inferSelect;
 
 export interface HealthUpdateResponse {
   lastSync: string; // ISO timestamp from server

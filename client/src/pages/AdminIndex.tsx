@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,19 +66,24 @@ export default function AdminIndex() {
   });
 
   const user = userData?.user;
+  const isAdminLevelUser = user && (
+    user.role?.toLowerCase() === 'admin' || 
+    user.role?.toLowerCase() === 'broker' || 
+    user.role?.toLowerCase() === 'super_admin'
+  );
 
   // Fetch index prices (call all hooks before early returns)
   const { data: indexPrices, isLoading: isPricesLoading } = useQuery<IndexPrice[]>({
     queryKey: ["/api/admin/index", filterCommodity],
-    enabled: !!user && user.role === "broker",
+    enabled: !!isAdminLevelUser,
   });
 
-  // Redirect if not broker (in useEffect to avoid render-phase side effects)
+  // Redirect if not admin-level (in useEffect to avoid render-phase side effects)
   useEffect(() => {
-    if (!isAuthLoading && (!user || user.role !== "broker")) {
+    if (!isAuthLoading && (!user || !isAdminLevelUser)) {
       setLocation("/");
     }
-  }, [isAuthLoading, user, setLocation]);
+  }, [isAuthLoading, user, isAdminLevelUser, setLocation]);
 
   // Add index price mutation
   const addIndexMutation = useMutation({
@@ -148,7 +153,7 @@ export default function AdminIndex() {
   }
 
   // Early return after all hooks are called (unauthorized access)
-  if (!user || user.role !== "broker") {
+  if (!user || !isAdminLevelUser) {
     return null;
   }
 
@@ -166,7 +171,11 @@ export default function AdminIndex() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <BackToDashboard />
+            <Button asChild variant="outline">
+              <Link href="/admin">
+                Back to Admin
+              </Link>
+            </Button>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
               data-testid="button-add-index"

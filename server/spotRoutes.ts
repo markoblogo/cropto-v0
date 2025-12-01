@@ -5,7 +5,8 @@ import {
   spotPositions, 
   croptBalances, 
   indexes, 
-  commodityIndexPrices 
+  commodityIndexPrices,
+  platformFees
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -215,6 +216,21 @@ export function registerSpotRoutes(app: Express) {
             quantityKg: kgAmount.toFixed(8),
             avgEntryPrice: pricePerKg.toFixed(8),
           });
+        
+        // Record platform fee (TODO: implement actual fee calculation policy)
+        // For now, storing 0 as placeholder
+        const feeAmount = 0; // TODO: implement fee calculation (e.g., cost * 0.001 for 0.1%)
+        await tx
+          .insert(platformFees)
+          .values({
+            userId,
+            role: req.user.role || 'trader',
+            type: 'spot_buy',
+            amount: feeAmount.toFixed(8),
+            currency: 'CROPT',
+            instrument: commoditySlug,
+            txId: null,
+          });
       });
       
       // Calculate current P&L based on aggregated position
@@ -393,6 +409,21 @@ export function registerSpotRoutes(app: Express) {
             }
           }
         }
+        
+        // Record platform fee (TODO: implement actual fee calculation policy)
+        // For now, storing 0 as placeholder
+        const feeAmount = 0; // TODO: implement fee calculation (e.g., payout * 0.001 for 0.1%)
+        await tx
+          .insert(platformFees)
+          .values({
+            userId,
+            role: req.user.role || 'trader',
+            type: 'spot_sell',
+            amount: feeAmount.toFixed(8),
+            currency: 'CROPT',
+            instrument: commoditySlug,
+            txId: null,
+          });
       });
       
       // Get remaining positions
@@ -640,6 +671,21 @@ export function registerSpotRoutes(app: Express) {
               balance: newBalance.toFixed(8),
             });
         }
+        
+        // Record platform fee (TODO: implement actual fee calculation policy)
+        // For now, storing 0 as placeholder
+        const feeAmount = 0; // TODO: implement fee calculation
+        await tx
+          .insert(platformFees)
+          .values({
+            userId,
+            role: req.user?.role || 'trader',
+            type: 'deposit',
+            amount: feeAmount.toFixed(8),
+            currency: 'CROPT',
+            instrument: null,
+            txId: null,
+          });
       });
 
       // Get updated balance

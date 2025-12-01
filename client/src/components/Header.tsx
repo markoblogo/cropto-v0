@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,16 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
 
   const user = userData?.user;
 
+  // Check if user has admin-level permissions
+  const isAdminLevelUser = user && (
+    user.role === 'admin' || 
+    user.role === 'broker' || 
+    user.role === 'super_admin' ||
+    user.role === 'ADMIN' ||
+    user.role === 'BROKER' ||
+    user.role === 'SUPER_ADMIN'
+  );
+
   // Get status badge text and styles based on user tier
   const getStatusBadge = () => {
     switch (userTier) {
@@ -69,7 +79,7 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
 
   const handleLogout = () => {
     localStorage.removeItem('cropto_token');
-    localStorage.removeItem('cropto_admin_mode'); // Clear admin mode on logout
+    localStorage.removeItem('cropto_admin_mode'); // Clear any stale admin mode
     queryClient.clear();
     setLocation('/login');
     toast({
@@ -132,24 +142,12 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
                 {t('nav.feedback')}
               </Button>
             </Link>
-            {user?.role === "broker" && (
-              <>
-                <Link href="/admin">
-                  <Button variant="ghost" size="sm" data-testid="button-nav-admin">
-                    {t('nav.admin')}
-                  </Button>
-                </Link>
-                <Link href="/admin/reconciliation">
-                  <Button variant="ghost" size="sm" data-testid="button-nav-reconciliation">
-                    {t('nav.reconciliation')}
-                  </Button>
-                </Link>
-                <Link href="/admin/index">
-                  <Button variant="ghost" size="sm" data-testid="button-nav-index">
-                    {t('nav.index')}
-                  </Button>
-                </Link>
-              </>
+            {isAdminLevelUser && (
+              <Link href="/admin">
+                <Button variant="ghost" size="sm" data-testid="button-nav-admin">
+                  {t('nav.admin')}
+                </Button>
+              </Link>
             )}
           </nav>
 
@@ -170,12 +168,6 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
 
             {user ? (
               <>
-                {/* User Role Badge */}
-                <Badge variant="secondary" className="capitalize hidden sm:flex" data-testid="badge-user-role">
-                  <User className="h-3 w-3 mr-1" />
-                  {user.role}
-                </Badge>
-
                 {/* Notifications */}
                 <NotificationsDropdown />
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,32 +72,37 @@ export default function AdminReconciliation() {
   });
 
   const user = userData?.user;
+  const isAdminLevelUser = user && (
+    user.role?.toLowerCase() === 'admin' || 
+    user.role?.toLowerCase() === 'broker' || 
+    user.role?.toLowerCase() === 'super_admin'
+  );
 
-  // Redirect non-broker users
+  // Redirect non-admin-level users
   useEffect(() => {
-    if (userData !== undefined && (!user || user.role !== "broker")) {
+    if (userData !== undefined && (!user || !isAdminLevelUser)) {
       toast({
         title: "Access Denied",
-        description: "This page is only accessible to broker accounts",
+        description: "This page is only accessible to admin accounts",
         variant: "destructive",
       });
       setLocation("/");
     }
-  }, [user, userData, setLocation, toast]);
+  }, [user, userData, isAdminLevelUser, setLocation, toast]);
 
   const { data: transactions = [], isLoading: loadingTransactions, error: transactionsError } = useQuery<Transaction[]>({
     queryKey: ["/api/admin/reconciliation/transactions"],
-    enabled: user?.role === "broker",
+    enabled: !!isAdminLevelUser,
   });
 
   const { data: settlements = [], isLoading: loadingSettlements, error: settlementsError } = useQuery<Settlement[]>({
     queryKey: ["/api/admin/reconciliation/settlements"],
-    enabled: user?.role === "broker",
+    enabled: !!isAdminLevelUser,
   });
 
   const { data: marginCalls = [], isLoading: loadingMarginCalls, error: marginCallsError } = useQuery<MarginCall[]>({
     queryKey: ["/api/admin/reconciliation/margincalls"],
-    enabled: user?.role === "broker",
+    enabled: !!isAdminLevelUser,
   });
 
   // If still loading user data, show loading
@@ -114,8 +119,8 @@ export default function AdminReconciliation() {
     );
   }
 
-  // If not broker, don't render (redirect will happen via useEffect)
-  if (!user || user.role !== "broker") {
+  // If not admin-level, don't render (redirect will happen via useEffect)
+  if (!user || !isAdminLevelUser) {
     return null;
   }
 
@@ -246,12 +251,19 @@ export default function AdminReconciliation() {
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Reconciliation Dashboard</h1>
+              <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Reconciliation &amp; Reports</h1>
               <p className="text-muted-foreground" data-testid="text-page-description">
-                View transactions, settlements, and margin calls with filtering and export
+                Review cash flows, settlements, and margin calls with filtering and export
               </p>
             </div>
-            <BackToDashboard />
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href="/admin">
+                  Back to Admin
+                </Link>
+              </Button>
+              <BackToDashboard />
+            </div>
           </div>
 
           {/* Filters */}

@@ -8,6 +8,7 @@ import {
   notifications,
   transactions,
   feedback,
+  platformFees,
   type Option, 
   type InsertOption, 
   type Trade, 
@@ -267,6 +268,21 @@ export class DatabaseStorage implements IStorage {
           description: `Settlement payout for ${option.type} option exercise at spot $${spot}`,
         })
         .returning();
+
+      // Record platform fee (TODO: implement actual fee calculation policy)
+      // For now, storing 0 as placeholder
+      const feeAmount = 0; // TODO: implement fee calculation (e.g., payout * 0.001 for 0.1%)
+      await tx
+        .insert(platformFees)
+        .values({
+          userId: exercisedBy,
+          role: null, // Will be populated from user data if available
+          type: 'option_exercise',
+          amount: feeAmount.toFixed(8),
+          currency: 'CROPT',
+          instrument: option.id,
+          txId: null,
+        });
 
       return settlement;
     });

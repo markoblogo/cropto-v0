@@ -25,7 +25,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { BackToDashboard } from "@/components/BackToDashboard";
-import { AdminModeSelectionModal } from "@/components/AdminModeSelectionModal";
 
 const loginSchema = z.object({
   email: z.string()
@@ -40,8 +39,6 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [showAdminModeSelection, setShowAdminModeSelection] = useState(false);
-  const [userRole, setUserRole] = useState<'ADMIN' | 'SUPER_ADMIN' | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -59,21 +56,15 @@ export default function Login() {
 
       // Save token to localStorage
       localStorage.setItem("cropto_token", result.token);
-
-      // Check if user is ADMIN or SUPER_ADMIN
-      if (result.user?.role === 'ADMIN' || result.user?.role === 'SUPER_ADMIN') {
-        setUserRole(result.user.role);
-        setShowAdminModeSelection(true);
-        setIsLoading(false);
-      } else {
-        // Regular USER - clear any stale admin mode and redirect immediately
-        localStorage.removeItem("cropto_admin_mode");
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-        setLocation("/");
-      }
+      
+      // Clear any stale admin mode - we now rely on backend role only
+      localStorage.removeItem("cropto_admin_mode");
+      
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+      setLocation("/");
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -84,45 +75,8 @@ export default function Login() {
     }
   };
 
-  const handleAdminModeSelection = (mode: 'USER' | 'ADMIN') => {
-    // Store the selected mode in localStorage
-    localStorage.setItem("cropto_admin_mode", mode);
-
-    toast({
-      title: "Success",
-      description: `Logged in successfully as ${mode === 'ADMIN' ? 'Admin' : 'User'}`,
-    });
-
-    setShowAdminModeSelection(false);
-    setLocation("/");
-  };
-
-  const handleAdminModeCancel = () => {
-    // User cancelled mode selection - log them out
-    localStorage.removeItem("cropto_token");
-    localStorage.removeItem("cropto_admin_mode");
-    
-    toast({
-      title: "Cancelled",
-      description: "Login cancelled",
-    });
-
-    setShowAdminModeSelection(false);
-    setUserRole(null);
-  };
-
   return (
-    <>
-      {userRole && (
-        <AdminModeSelectionModal
-          open={showAdminModeSelection}
-          userRole={userRole}
-          onSelect={handleAdminModeSelection}
-          onCancel={handleAdminModeCancel}
-        />
-      )}
-      
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4">
           <BackToDashboard />
           <Card className="w-full">
@@ -195,6 +149,5 @@ export default function Login() {
         </Card>
         </div>
       </div>
-    </>
   );
 }

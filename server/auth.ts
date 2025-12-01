@@ -431,3 +431,16 @@ export function requireSuperAdmin(req: AuthRequest, res: Response, next: NextFun
     next();
   });
 }
+
+// Helper functions for role-based permissions
+export function hasBrokerPermissions(role: string | null | undefined): boolean {
+  if (!role) return false;
+  const normalizedRole = role.toLowerCase();
+  return normalizedRole === 'broker' || normalizedRole === 'super_admin';
+}
+
+export function hasAdminPermissions(role: string | null | undefined): boolean {
+  if (!role) return false;
+  const normalizedRole = role.toLowerCase();
+  return normalizedRole === 'admin' || normalizedRole === 'broker' || normalizedRole === 'super_admin';
+}
