@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { usePolling } from "@/hooks/usePolling";
@@ -25,6 +25,7 @@ import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
 import { useUserTier } from "@/hooks/useUserTier";
 import { queryClient } from "@/lib/queryClient";
+import type { Option } from "@shared/schema";
 
 interface PortfolioPosition {
   optionId: string;
@@ -158,6 +159,7 @@ interface SpotPosition {
 export default function Portfolio() {
   const [, setLocation] = useLocation();
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
+  const [focusedCommodity, setFocusedCommodity] = useState<string | null>(null);
   const userTier = useUserTier();
 
   // Check authentication
@@ -206,6 +208,32 @@ export default function Portfolio() {
     retry: false,
     enabled: !!user,
   });
+
+  // Fetch all options (used to link spot positions to related options)
+  const { data: allOptions = [] } = useQuery<Option[]>({
+    queryKey: ["/api/options"],
+    enabled: !!user,
+  });
+
+  // Build mapping commodity -> number of options for this user's portfolio
+  const optionsByCommodity = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!user) return map;
+
+    allOptions.forEach((opt) => {
+      // Only consider options where current user is involved (issuer or buyer)
+      if (opt.issuerId !== user.id && opt.buyerId !== user.id) {
+        return;
+      }
+
+      const slug = (opt as any).commoditySlug || opt.commodity;
+      if (!slug) return;
+
+      map[slug] = (map[slug] || 0) + 1;
+    });
+
+    return map;
+  }, [allOptions, user]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -486,7 +514,15 @@ export default function Portfolio() {
                       }
 
                       return (
-                        <TableRow key={position.optionId} data-testid={`row-position-${position.optionId}`}>
+                    <TableRow
+                      key={position.optionId}
+                      data-testid={`row-position-${position.optionId}`}
+                      className={
+                        focusedCommodity && underlying === focusedCommodity
+                          ? "bg-muted/40"
+                          : ""
+                      }
+                    >
                           <TableCell className="font-medium" data-testid={`text-underlying-${position.optionId}`}>
                             {underlying}
                           </TableCell>
@@ -557,6 +593,10 @@ export default function Portfolio() {
           isLoading={isSpotLoading}
           onOpenLogin={handleOpenLogin}
           onOpenWalletModal={handleOpenWalletModal}
+          optionsByCommodity={optionsByCommodity}
+          onShowOptionsForCommodity={(commoditySlug) => {
+            setFocusedCommodity(commoditySlug);
+          }}
         />
       </div>
 

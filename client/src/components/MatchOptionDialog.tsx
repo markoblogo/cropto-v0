@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,10 +33,21 @@ interface MatchOptionDialogProps {
   optionId: string;
   onMatch: (data: MatchFormData) => Promise<void>;
   isPending: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function MatchOptionDialog({ optionId, onMatch, isPending }: MatchOptionDialogProps) {
-  const [open, setOpen] = useState(false);
+export function MatchOptionDialog({ optionId, onMatch, isPending, open: controlledOpen, onOpenChange }: MatchOptionDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
+  const setOpen = (next: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(next);
+    }
+    onOpenChange?.(next);
+  };
 
   const form = useForm<MatchFormData>({
     resolver: zodResolver(matchFormSchema),

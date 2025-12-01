@@ -34,6 +34,7 @@ import { WithdrawDialog } from "./WithdrawDialog";
 import { MintNFTDialog } from "./MintNFTDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { useTradingGuard } from "@/hooks/useTradingGuard";
 
 type SortField = "commodity" | "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
@@ -80,6 +81,9 @@ export function OptionsTable({
   const [commodityFilter, setCommodityFilter] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [selectedOption, setSelectedOption] = useState<Option | null>(null);
+  const [isMatchDialogOpen, setIsMatchDialogOpen] = useState(false);
+  const guardTradingAction = useTradingGuard();
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -352,7 +356,14 @@ export function OptionsTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSortedOptions.map((option) => (
+                {filteredAndSortedOptions.map((option) => {
+                  const isMine = option.issuerId && userId ? option.issuerId === userId : false;
+                  const canMatchAsOther =
+                    option.status === "OPEN" &&
+                    !isMine &&
+                    onMatch;
+
+                  return (
                 <TableRow key={option.id} data-testid={`row-option-${option.id}`}>
                   <TableCell data-testid={`cell-commodity-${option.id}`}>
                     <div className="flex items-center gap-2">
@@ -399,8 +410,8 @@ export function OptionsTable({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED"} />
-                      {option.status === "OPEN" && onMatch && userRole === "broker" && (
+                      <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />
+                      {option.status === "OPEN" && onMatch && userRole === "broker" && isMine && (
                         <MatchOptionDialog
                           optionId={option.id}
                           onMatch={async (data) => {
@@ -464,18 +475,61 @@ export function OptionsTable({
                           nftMintTx={option.nftMintTx}
                         />
                       )}
+                      {canMatchAsOther && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                data-testid={`button-match-guarded-${option.id}`}
+                                onClick={() =>
+                                  guardTradingAction(() => {
+                                    setSelectedOption(option);
+                                    setIsMatchDialogOpen(true);
+                                  })
+                                }
+                              >
+                                Match
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Take this offer by matching the option</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground" data-testid={`text-created-${option.id}`}>
                     {format(new Date(option.createdAt), "MMM dd, yyyy")}
                   </TableCell>
                 </TableRow>
-                ))}
+                );
+              })}
               </TableBody>
             </Table>
+
+            {selectedOption && onMatch && (
+              <MatchOptionDialog
+                optionId={selectedOption.id}
+                open={isMatchDialogOpen}
+                onOpenChange={(open) => {
+                  setIsMatchDialogOpen(open);
+                  if (!open) {
+                    setSelectedOption(null);
+                  }
+                }}
+                onMatch={async (data) => {
+                  await onMatch(selectedOption.id, data.counterpartyId);
+                }}
+                isPending={isMatching}
+              />
+            )}
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
   );
 }

@@ -40,6 +40,8 @@ interface SpotPositionsTableProps {
   isLoading: boolean;
   onOpenLogin?: () => void;
   onOpenWalletModal?: () => void;
+  optionsByCommodity?: Record<string, number>;
+  onShowOptionsForCommodity?: (commoditySlug: string) => void;
 }
 
 export function SpotPositionsTable({ 
@@ -47,6 +49,8 @@ export function SpotPositionsTable({
   isLoading,
   onOpenLogin,
   onOpenWalletModal,
+  optionsByCommodity,
+  onShowOptionsForCommodity,
 }: SpotPositionsTableProps) {
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<SpotPosition | null>(null);
@@ -152,6 +156,7 @@ export function SpotPositionsTable({
                 <TableHead className="text-right">Current Price ($/t)</TableHead>
                 <TableHead className="text-right">Current Value</TableHead>
                 <TableHead className="text-right">P&L</TableHead>
+                <TableHead className="text-right">Options</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -171,9 +176,11 @@ export function SpotPositionsTable({
                   : "text-muted-foreground";
 
                 // Convert from kg to tonnes for display
-                const quantityTonnes = kgToTons(parseFloat(position.quantityKg));
+                const quantityKg = parseFloat(position.quantityKg);
+                const quantityTonnes = kgToTons(quantityKg);
                 const entryPricePerTon = parseFloat(position.avgEntryPrice) * 1000;
                 const currentPricePerTon = parseFloat(position.currentPricePerKg) * 1000;
+                const isLong = quantityTonnes > 0;
                 const isShort = quantityTonnes < 0;
 
                 return (
@@ -194,8 +201,21 @@ export function SpotPositionsTable({
                     <TableCell className="text-right font-mono" data-testid={`text-quantity-${position.commoditySlug}`}>
                       <div className="flex items-center justify-end gap-2">
                         {formatTons(quantityTonnes)} t
+                        {isLong && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950"
+                            data-testid={`badge-long-${position.commoditySlug}`}
+                          >
+                            LONG
+                          </Badge>
+                        )}
                         {isShort && (
-                          <Badge variant="outline" className="text-xs text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700" data-testid={`badge-short-${position.commoditySlug}`}>
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-red-700 dark:text-red-300 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950"
+                            data-testid={`badge-short-${position.commoditySlug}`}
+                          >
                             SHORT
                           </Badge>
                         )}
@@ -223,7 +243,22 @@ export function SpotPositionsTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {parseFloat(position.quantityKg) !== 0 && (
+                      {optionsByCommodity?.[position.commoditySlug] ? (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onShowOptionsForCommodity?.(position.commoditySlug)}
+                          data-testid={`button-show-options-${position.commoditySlug}`}
+                        >
+                          {optionsByCommodity[position.commoditySlug]} option
+                          {optionsByCommodity[position.commoditySlug] === 1 ? "" : "s"}
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">–</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {quantityKg > 0 && (
                         <Button
                           size="sm"
                           variant="outline"
