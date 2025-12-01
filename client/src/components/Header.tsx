@@ -110,6 +110,26 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
                 {t('nav.portfolio')}
               </Button>
             </Link>
+            <Link href="/spot-trading">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                data-testid="button-nav-spot"
+                className={location.startsWith("/spot-trading") ? "bg-accent" : ""}
+              >
+                {t('nav.spot')}
+              </Button>
+            </Link>
+            <Link href="/options">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                data-testid="button-nav-options"
+                className={location === "/options" ? "bg-accent" : ""}
+              >
+                {t('nav.options')}
+              </Button>
+            </Link>
             <Link href="/about">
               <Button variant="ghost" size="sm" data-testid="button-nav-about">
                 {t('nav.about')}

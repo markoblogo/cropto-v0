@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
@@ -12,12 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { SpotBuyModal } from "./SpotBuyModal";
 import { SpotSellModal } from "./SpotSellModal";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { getTradingPairs } from "@/lib/indexMapping";
+import { SpotMiniChart } from "./SpotMiniChart";
+import { SpotTradeHistory } from "./SpotTradeHistory";
 
 interface CommodityIndex {
   id: string;
@@ -30,6 +33,24 @@ interface CommodityIndex {
     delta: number | null;
     timestamp: Date;
   } | null;
+}
+
+interface PriceHistoryEntry {
+  id: string;
+  price: number;
+  delta: number | null;
+  timestamp: string;
+}
+
+interface IndexDataWithHistory {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  hasVat: boolean;
+  priceHistory: PriceHistoryEntry[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function SpotTradingBlock() {
@@ -65,6 +86,51 @@ export function SpotTradingBlock() {
   const selectedIndex = indexes?.find(idx => idx.slug === selectedPairSlug);
   const currentPrice = selectedIndex?.latestPrice?.price || 0;
   const delta = selectedIndex?.latestPrice?.delta || null;
+
+  // Fetch price history for selected index
+  const { data: indexDataWithHistory, isLoading: isHistoryLoading, error: historyError } = useQuery<IndexDataWithHistory>({
+    queryKey: ["/api/indexes", selectedPairSlug],
+    queryFn: async () => {
+      if (!selectedPairSlug) return null;
+      const response = await fetch(`/api/indexes/${selectedPairSlug}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch index history: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!selectedPairSlug,
+    refetchInterval: 30000,
+  });
+
+  // Prepare chart data from price history (last 20-30 points for mini chart)
+  const chartData = useMemo(() => {
+    if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
+      return [];
+    }
+    // Take last 30 points and reverse to show chronologically
+    return [...indexDataWithHistory.priceHistory]
+      .slice(-30)
+      .reverse()
+      .map(entry => ({
+        timestamp: entry.timestamp,
+        price: entry.price,
+      }));
+  }, [indexDataWithHistory]);
+
+  // Prepare trade history data (last 5 entries)
+  const tradeHistoryData = useMemo(() => {
+    if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
+      return [];
+    }
+    return indexDataWithHistory.priceHistory
+      .slice(-10) // Take last 10 for better coverage
+      .map(entry => ({
+        id: entry.id,
+        price: entry.price,
+        delta: entry.delta,
+        timestamp: entry.timestamp,
+      }));
+  }, [indexDataWithHistory]);
   
   // Calculate 24h change percentage
   const changePercent = delta !== null && currentPrice > 0 
@@ -106,7 +172,9 @@ export function SpotTradingBlock() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-60 w-full" />
+          <Skeleton className="h-32 w-full" />
           <div className="flex gap-2">
             <Skeleton className="h-10 flex-1" />
             <Skeleton className="h-10 flex-1" />
@@ -117,7 +185,20 @@ export function SpotTradingBlock() {
   }
 
   if (!tradingPairs.length) {
-    return null;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('spot.trading.title', 'Spot Trading')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertDescription>
+              No trading pairs available
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -151,21 +232,24 @@ export function SpotTradingBlock() {
 
           {/* Price and Change Display */}
           {selectedPair && (
-            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">
-                    {t('spot.trading.price', 'Price')}
+                    {selectedPair.pairCode}
                   </p>
-                  <p className="text-2xl font-bold font-mono">
+                  <p className="text-3xl font-bold font-mono">
                     ${currentPrice.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    / ton
                   </p>
                 </div>
                 {changePercent !== null && (
                   <div className={`flex flex-col items-end ${trendColor}`}>
                     <div className="flex items-center gap-1">
-                      <TrendIcon className="w-4 h-4" />
-                      <span className="text-sm font-semibold">
+                      <TrendIcon className="w-5 h-5" />
+                      <span className="text-lg font-semibold">
                         {isPositive ? "+" : ""}{changePercent.toFixed(2)}%
                       </span>
                     </div>
@@ -175,10 +259,43 @@ export function SpotTradingBlock() {
                   </div>
                 )}
               </div>
-              {/* Mini sparkline placeholder */}
-              <div className="h-8 w-full bg-background/50 rounded flex items-center justify-center">
-                <span className="text-xs text-muted-foreground">Chart</span>
+              
+              {/* Mini Chart */}
+              <div className="h-16 w-full">
+                {isHistoryLoading ? (
+                  <Skeleton className="h-full w-full" />
+                ) : historyError ? (
+                  <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+                    Failed to load chart
+                  </div>
+                ) : (
+                  <SpotMiniChart 
+                    data={chartData} 
+                    height={64}
+                    color={isPositive ? "hsl(142, 76%, 36%)" : isNegative ? "hsl(0, 84%, 60%)" : "hsl(var(--muted-foreground))"}
+                  />
+                )}
               </div>
+            </div>
+          )}
+
+          {/* Recent Trades / Price History */}
+          {selectedPair && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Recent Price Updates
+              </label>
+              {isHistoryLoading ? (
+                <Skeleton className="h-32 w-full" />
+              ) : historyError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Failed to load price history
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <SpotTradeHistory data={tradeHistoryData} maxRows={5} />
+              )}
             </div>
           )}
 

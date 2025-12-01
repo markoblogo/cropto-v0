@@ -8,8 +8,8 @@ import { MetricCards } from "@/components/MetricCards";
 import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
-import { SpotTradingBlock } from "@/components/SpotTradingBlock";
-import { CroptMintButton } from "@/components/CroptMintButton";
+import { WalletSummary } from "@/components/WalletSummary";
+import { useWalletSummary } from "@/hooks/useWalletSummary";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
@@ -43,6 +43,9 @@ export default function Dashboard() {
   });
 
   const user = userData?.user;
+
+  // Get wallet summary data
+  const walletData = useWalletSummary(user?.walletAddress || null);
 
   // Enable polling for live updates when user is authenticated
   usePolling({
@@ -312,26 +315,21 @@ export default function Dashboard() {
           <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />
           
           {/* Dashboard Metrics */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
-              <MetricCards
-                totalOptions={totalOptions}
-                openPositions={openOptions}
-                totalVolume={totalVolume}
-              />
+          <MetricCards
+            totalOptions={totalOptions}
+            openPositions={openOptions}
+            totalVolume={totalVolume}
+          />
+
+          {/* Wallet Summary Bar */}
+          {user?.walletAddress && (
+            <div className="mt-6">
+              <WalletSummary variant="bar" {...walletData} />
             </div>
-            <div className="lg:col-span-1">
-              {user?.walletAddress && (
-                <CroptMintButton walletAddress={user.walletAddress} />
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Commodity Indexes */}
           <CommodityIndexesGrid />
-
-          {/* Spot Trading Block */}
-          <SpotTradingBlock />
 
           {/* Spot Market */}
           <SpotMarketGrid />

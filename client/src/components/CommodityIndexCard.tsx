@@ -110,16 +110,27 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
               <p className="text-xs text-muted-foreground" data-testid={`text-updated-${index.slug}`}>
                 {hasPrice && index.latestPrice ? new Date(index.latestPrice.timestamp).toLocaleTimeString() : 'N/A'}
               </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onViewDetails?.(index.slug)}
-                className="h-7 gap-1 text-xs"
-                data-testid={`button-view-${index.slug}`}
-              >
-                <LineChartIcon className="w-3 h-3" />
-                View Details
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.location.href = `/spot-trading?commodity=${index.slug}`}
+                  className="h-7 gap-1 text-xs"
+                  data-testid={`button-trade-${index.slug}`}
+                >
+                  Trade
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewDetails?.(index.slug)}
+                  className="h-7 gap-1 text-xs"
+                  data-testid={`button-view-${index.slug}`}
+                >
+                  <LineChartIcon className="w-3 h-3" />
+                  Details
+                </Button>
+              </div>
             </div>
           </>
         ) : (

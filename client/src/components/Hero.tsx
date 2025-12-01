@@ -3,6 +3,7 @@ import { Wallet, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
+import { useLocation } from "wouter";
 
 interface HeroProps {
   onCreateOption: () => void;
@@ -18,17 +19,15 @@ const formatAddress = (address: string) => {
 
 export function Hero({ onCreateOption, onConnectWallet, walletAddress, onOpenLogin, onOpenWalletModal }: HeroProps) {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const userTier = useUserTier();
   const guardTradingAction = useTradingGuard({
     onOpenLogin,
     onOpenWalletModal,
   });
   
-  const scrollToSpotMarket = () => {
-    const spotMarketSection = document.getElementById('spot-market-section');
-    if (spotMarketSection) {
-      spotMarketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  const navigateToSpotTrading = () => {
+    setLocation("/spot-trading");
   };
 
   // Get button text based on user tier
@@ -88,7 +87,7 @@ export function Hero({ onCreateOption, onConnectWallet, walletAddress, onOpenLog
                 size="lg"
                 variant="secondary"
                 className="font-semibold w-full sm:w-auto"
-                onClick={scrollToSpotMarket}
+                onClick={navigateToSpotTrading}
                 data-testid="button-hero-spot-trading"
               >
                 <TrendingUp className="mr-2 h-5 w-5" />

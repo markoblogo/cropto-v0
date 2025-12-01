@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Web3Provider } from "@/contexts/Web3Context";
 import Dashboard from "@/pages/Dashboard";
 import Portfolio from "@/pages/Portfolio";
+import OptionChain from "@/pages/OptionChain";
+import SpotTrading from "@/pages/SpotTrading";
 import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
@@ -35,6 +37,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/portfolio" component={Portfolio} />
+      <Route path="/options" component={OptionChain} />
+      <Route path="/spot-trading" component={SpotTrading} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/design-architecture" component={DesignArchitecture} />
