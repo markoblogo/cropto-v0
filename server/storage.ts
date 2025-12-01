@@ -9,6 +9,8 @@ import {
   transactions,
   feedback,
   platformFees,
+  croptBalances,
+  spotPositions,
   type Option, 
   type InsertOption, 
   type Trade, 
@@ -220,25 +222,124 @@ export class DatabaseStorage implements IStorage {
         throw new Error("Only the buyer or issuer can exercise this option");
       }
 
+      if (!option.commodity) {
+        throw new Error("Option is missing underlying commodity information");
+      }
+
       const spot = parseFloat(spotPrice);
-      const strikePrice = parseFloat(option.strike);
-      const quantity = parseFloat(option.qty);
+      const strikePricePerTon = parseFloat(option.strike);
+      const quantityTons = parseFloat(option.qty);
       const premiumPaid = parseFloat(option.premium);
       const collateralAmount = parseFloat(option.collateralAmount || "0");
 
+      // Settlement metrics (kept for reporting)
       let intrinsicValue = 0;
       let payout = 0;
       let profitLoss = 0;
 
       if (option.type === "CALL") {
-        intrinsicValue = Math.max(0, (spot - strikePrice) * quantity);
+        intrinsicValue = Math.max(0, (spot - strikePricePerTon) * quantityTons);
       } else {
-        intrinsicValue = Math.max(0, (strikePrice - spot) * quantity);
+        intrinsicValue = Math.max(0, (strikePricePerTon - spot) * quantityTons);
       }
 
       payout = Math.min(collateralAmount, intrinsicValue);
-      profitLoss = payout - (premiumPaid * quantity);
+      profitLoss = payout - (premiumPaid * quantityTons);
 
+      // Identify holder (exerciser) and counterparty
+      const holderId = exercisedBy;
+      const counterpartyId = option.buyerId === holderId ? option.issuerId : option.buyerId;
+
+      if (!counterpartyId) {
+        throw new Error("Option is missing counterparty information");
+      }
+
+      // Monetary flow for exercise based on strike
+      const costAtStrike = quantityTons * strikePricePerTon; // CROPT amount
+      const quantityKg = quantityTons * 1000;
+      const strikePricePerKg = strikePricePerTon / 1000;
+
+      // Lock CROPT balances for both parties
+      const [holderBalance] = await tx
+        .select()
+        .from(croptBalances)
+        .where(eq(croptBalances.userId, holderId))
+        .for('update')
+        .limit(1);
+
+      const [counterpartyBalance] = await tx
+        .select()
+        .from(croptBalances)
+        .where(eq(croptBalances.userId, counterpartyId))
+        .for('update')
+        .limit(1);
+
+      const holderCurrent = holderBalance ? parseFloat(holderBalance.balance) : 0;
+      const counterpartyCurrent = counterpartyBalance ? parseFloat(counterpartyBalance.balance) : 0;
+
+      let holderNew = holderCurrent;
+      let counterpartyNew = counterpartyCurrent;
+
+      if (option.type === "CALL") {
+        // Holder buys underlying at strike: holder pays, counterparty receives
+        if (holderCurrent < costAtStrike) {
+          const error: any = new Error("Insufficient CROPT balance to exercise option");
+          error.statusCode = 400;
+          throw error;
+        }
+        holderNew = holderCurrent - costAtStrike;
+        counterpartyNew = counterpartyCurrent + costAtStrike;
+
+        // Create long spot position for holder
+        await tx.insert(spotPositions).values({
+          userId: holderId,
+          commoditySlug: option.commodity,
+          quantityKg: quantityKg.toFixed(8),
+          avgEntryPrice: strikePricePerKg.toFixed(8),
+        });
+      } else {
+        // PUT: holder sells underlying at strike: counterparty pays, holder receives
+        if (counterpartyCurrent < costAtStrike) {
+          const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
+          error.statusCode = 400;
+          throw error;
+        }
+        holderNew = holderCurrent + costAtStrike;
+        counterpartyNew = counterpartyCurrent - costAtStrike;
+
+        // Create short spot position for holder (negative quantity)
+        await tx.insert(spotPositions).values({
+          userId: holderId,
+          commoditySlug: option.commodity,
+          quantityKg: (-quantityKg).toFixed(8),
+          avgEntryPrice: strikePricePerKg.toFixed(8),
+        });
+      }
+
+      // Upsert CROPT balances
+      if (holderBalance) {
+        await tx
+          .update(croptBalances)
+          .set({ balance: holderNew.toFixed(8) })
+          .where(eq(croptBalances.userId, holderId));
+      } else {
+        await tx
+          .insert(croptBalances)
+          .values({ userId: holderId, balance: holderNew.toFixed(8) });
+      }
+
+      if (counterpartyBalance) {
+        await tx
+          .update(croptBalances)
+          .set({ balance: counterpartyNew.toFixed(8) })
+          .where(eq(croptBalances.userId, counterpartyId));
+      } else {
+        await tx
+          .insert(croptBalances)
+          .values({ userId: counterpartyId, balance: counterpartyNew.toFixed(8) });
+      }
+
+      // Record settlement for reporting
       const [settlement] = await tx
         .insert(settlements)
         .values({
@@ -252,31 +353,31 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
 
+      // Mark option as exercised
       await tx
         .update(options)
-        .set({ status: "SETTLED", lastUpdated: new Date() })
+        .set({ status: "EXERCISED", lastUpdated: new Date() })
         .where(eq(options.id, optionId));
 
-      const [transaction] = await tx
+      // Record transaction describing the cash flow at strike
+      await tx
         .insert(transactions)
         .values({
           optionId: option.id,
           type: "PAYOUT",
-          fromUserId: option.issuerId,
-          toUserId: option.buyerId,
-          amount: payout.toFixed(8),
-          description: `Settlement payout for ${option.type} option exercise at spot $${spot}`,
-        })
-        .returning();
+          fromUserId: option.type === "CALL" ? holderId : counterpartyId,
+          toUserId: option.type === "CALL" ? counterpartyId : holderId,
+          amount: costAtStrike.toFixed(8),
+          description: `Option ${option.type} exercised at strike $${strikePricePerTon} for ${quantityTons} tons`,
+        });
 
-      // Record platform fee (TODO: implement actual fee calculation policy)
-      // For now, storing 0 as placeholder
-      const feeAmount = 0; // TODO: implement fee calculation (e.g., payout * 0.001 for 0.1%)
+      // Record platform fee (kept as 0 placeholder)
+      const feeAmount = 0;
       await tx
         .insert(platformFees)
         .values({
           userId: exercisedBy,
-          role: null, // Will be populated from user data if available
+          role: null,
           type: 'option_exercise',
           amount: feeAmount.toFixed(8),
           currency: 'CROPT',

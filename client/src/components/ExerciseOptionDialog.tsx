@@ -98,7 +98,9 @@ export function ExerciseOptionDialog({
                     />
                   </FormControl>
                   <FormDescription>
-                    The current market price of the asset
+                    {optionType === "CALL"
+                      ? "You will buy the underlying at the strike price and open/update a long spot position."
+                      : "You will sell the underlying at the strike price and open/update a short spot position."}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

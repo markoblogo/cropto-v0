@@ -58,6 +58,11 @@ interface OptionsTableProps {
   userId?: string;
 }
 
+function canExercise(option: Option, currentUserId?: string) {
+  if (!currentUserId) return false;
+  return option.buyerId === currentUserId || option.issuerId === currentUserId;
+}
+
 export function OptionsTable({ 
   options, 
   isLoading, 
@@ -271,18 +276,6 @@ export function OptionsTable({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={() => handleSort("title")}
-                      className="hover-elevate gap-1 h-8"
-                      data-testid="button-sort-title"
-                    >
-                      Title
-                      {getSortIcon("title")}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="font-semibold">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
                       onClick={() => handleSort("type")}
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-type"
@@ -311,7 +304,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-qty"
                     >
-                      Quantity
+                      Qty
                       {getSortIcon("qty")}
                     </Button>
                   </TableHead>
@@ -327,8 +320,9 @@ export function OptionsTable({
                       {getSortIcon("premium")}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-semibold">Buyer</TableHead>
-                  <TableHead className="font-semibold">Seller</TableHead>
+                  <TableHead className="font-semibold">
+                    Counterparty
+                  </TableHead>
                   <TableHead className="font-semibold">
                     <Button 
                       variant="ghost" 
@@ -341,18 +335,7 @@ export function OptionsTable({
                       {getSortIcon("status")}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-semibold">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleSort("createdAt")}
-                      className="hover-elevate gap-1 h-8"
-                      data-testid="button-sort-created"
-                    >
-                      Created
-                      {getSortIcon("createdAt")}
-                    </Button>
-                  </TableHead>
+                  <TableHead className="font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -362,55 +345,55 @@ export function OptionsTable({
                     option.status === "OPEN" &&
                     !isMine &&
                     onMatch;
+                  const userCanExercise = canExercise(option, userId);
 
                   return (
                 <TableRow key={option.id} data-testid={`row-option-${option.id}`}>
                   <TableCell data-testid={`cell-commodity-${option.id}`}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
                       {(option as any).commoditySlug && (
                         <img 
                           src={`/commodities/${(option as any).commoditySlug}.png`}
                           alt={(option as any).commodityName || "Commodity"}
-                          className="w-5 h-5 object-contain"
+                          className="w-5 h-5 rounded-md object-cover"
                         />
                       )}
-                      <span className="font-medium">
+                      <span className="font-medium max-w-[140px] truncate">
                         {(option as any).commodityName || option.commodity || "-"}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-semibold" data-testid={`text-title-${option.id}`}>
-                    {option.title}
-                  </TableCell>
                   <TableCell>
                     <OptionTypeBadge type={option.type as "CALL" | "PUT"} />
                   </TableCell>
-                  <TableCell className="text-right font-mono font-semibold" data-testid={`text-strike-${option.id}`}>
+                  <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-strike-${option.id}`}>
                     ${parseFloat(option.strike).toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right font-mono font-semibold" data-testid={`text-qty-${option.id}`}>
-                    {parseFloat(option.qty).toFixed(2)}
+                  <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-qty-${option.id}`}>
+                    {Number(option.qty).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </TableCell>
-                  <TableCell className="text-right font-mono font-semibold" data-testid={`text-premium-${option.id}`}>
+                  <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-premium-${option.id}`}>
                     ${parseFloat(option.premium).toLocaleString()}
                   </TableCell>
-                  <TableCell className="font-mono text-sm" data-testid={`text-buyer-${option.id}`}>
-                    {option.buyer ? (
-                      <>{option.buyer.slice(0, 6)}...{option.buyer.slice(-4)}</>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm" data-testid={`text-seller-${option.id}`}>
-                    {option.seller ? (
-                      <>{option.seller.slice(0, 6)}...{option.seller.slice(-4)}</>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
+                  <TableCell className="font-mono text-sm whitespace-nowrap" data-testid={`text-counterparty-${option.id}`}>
+                    {(() => {
+                      const buyerShort = option.buyer ? `${option.buyer.slice(0, 6)}...${option.buyer.slice(-4)}` : "-";
+                      const sellerShort = option.seller ? `${option.seller.slice(0, 6)}...${option.seller.slice(-4)}` : "-";
+
+                      if (userId && option.buyerId === userId) {
+                        return <>You ↔ {sellerShort}</>;
+                      }
+                      if (userId && option.issuerId === userId) {
+                        return <>{buyerShort} ↔ You</>;
+                      }
+                      return <>{buyerShort} ↔ {sellerShort}</>;
+                    })()}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />
+                    <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2 flex-wrap whitespace-nowrap">
                       {option.status === "OPEN" && onMatch && userRole === "broker" && isMine && (
                         <MatchOptionDialog
                           optionId={option.id}
@@ -420,7 +403,7 @@ export function OptionsTable({
                           isPending={isMatching}
                         />
                       )}
-                      {option.status === "FILLED" && onExercise && (
+                      {option.status === "FILLED" && onExercise && userCanExercise && (
                         <ExerciseOptionDialog
                           optionId={option.id}
                           optionType={option.type as "CALL" | "PUT"}
@@ -481,9 +464,9 @@ export function OptionsTable({
                             <TooltipTrigger asChild>
                               <Button
                                 size="sm"
-                                variant="outline"
-                                className="gap-1"
-                                data-testid={`button-match-guarded-${option.id}`}
+                                variant="default"
+                                className="gap-1 bg-green-600 hover:bg-green-700"
+                                data-testid={`button-take-offer-${option.id}`}
                                 onClick={() =>
                                   guardTradingAction(() => {
                                     setSelectedOption(option);
@@ -491,19 +474,16 @@ export function OptionsTable({
                                   })
                                 }
                               >
-                                Match
+                                Take this offer
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Take this offer by matching the option</p>
+                              <p>Take this offer and become the counterparty on this option.</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground" data-testid={`text-created-${option.id}`}>
-                    {format(new Date(option.createdAt), "MMM dd, yyyy")}
                   </TableCell>
                 </TableRow>
                 );
@@ -511,9 +491,10 @@ export function OptionsTable({
               </TableBody>
             </Table>
 
-            {selectedOption && onMatch && (
+            {selectedOption && onMatch && userId && (
               <MatchOptionDialog
-                optionId={selectedOption.id}
+                option={selectedOption}
+                userId={userId}
                 open={isMatchDialogOpen}
                 onOpenChange={(open) => {
                   setIsMatchDialogOpen(open);
@@ -521,8 +502,8 @@ export function OptionsTable({
                     setSelectedOption(null);
                   }
                 }}
-                onMatch={async (data) => {
-                  await onMatch(selectedOption.id, data.counterpartyId);
+                onMatch={async (optionId, counterpartyId) => {
+                  await onMatch(optionId, counterpartyId);
                 }}
                 isPending={isMatching}
               />

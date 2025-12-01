@@ -877,10 +877,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(200).json(settlement);
     } catch (error: any) {
       console.error("Error exercising option:", error);
-      const statusCode = error.message?.includes("not found") || 
-                        error.message?.includes("Only") 
-                        ? 400 : 500;
-      res.status(statusCode).json({ error: error.message || "Failed to exercise option" });
+      const message: string = error.message || "Failed to exercise option";
+
+      const isClientError =
+        error.statusCode === 400 ||
+        message.includes("not found") ||
+        message.includes("Only") ||
+        message.includes("Insufficient CROPT balance") ||
+        message.includes("Counterparty has insufficient CROPT balance");
+
+      const statusCode = isClientError ? 400 : 500;
+      res.status(statusCode).json({ error: message });
     }
   });
 

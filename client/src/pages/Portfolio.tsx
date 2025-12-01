@@ -21,6 +21,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
 import { BackToDashboard } from "@/components/BackToDashboard";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SpotBuyModal } from "@/components/SpotBuyModal";
 import { SpotSellModal } from "@/components/SpotSellModal";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
@@ -59,6 +60,8 @@ interface PortfolioPosition {
 
 interface EnrichedOptionPosition extends PortfolioPosition {
   underlying: string;
+  commoditySlug: string;
+  commodityName: string;
   expirationDateObj: Date | null;
   timeToExpiryMs: number;
   timeToExpiryLabel: string;
@@ -66,6 +69,18 @@ interface EnrichedOptionPosition extends PortfolioPosition {
   impliedPnlNow: number | null;
   impliedPnlLabel: string;
   impliedPnlSign: "positive" | "negative" | "flat";
+}
+
+interface NetCommodityExposure {
+  commoditySlug: string;
+  commodityName: string;
+  spotQtyT: number;
+  syntheticFromOptionsT: number;
+  totalNetT: number;
+  currentPricePerT?: number;
+  spotValueUsd?: number;
+  optionsValueUsd?: number;
+  totalValueUsd?: number;
 }
 
 /**
@@ -269,25 +284,33 @@ export default function Portfolio() {
     enabled: !!user,
   });
 
-  // Build mapping commodity -> number of options for this user's portfolio
-  const optionsByCommodity = useMemo(() => {
-    const map: Record<string, number> = {};
+  // Build mapping commodity -> options list and counts for this user's portfolio
+  const optionsByCommodityList = useMemo(() => {
+    const map: Record<string, Option[]> = {};
     if (!user) return map;
 
     allOptions.forEach((opt) => {
-      // Only consider options where current user is involved (issuer or buyer)
       if (opt.issuerId !== user.id && opt.buyerId !== user.id) {
         return;
       }
-
       const slug = (opt as any).commoditySlug || opt.commodity;
       if (!slug) return;
-
-      map[slug] = (map[slug] || 0) + 1;
+      if (!map[slug]) {
+        map[slug] = [];
+      }
+      map[slug].push(opt);
     });
 
     return map;
   }, [allOptions, user]);
+
+  const optionsByCommodity = useMemo(() => {
+    const counts: Record<string, number> = {};
+    Object.entries(optionsByCommodityList).forEach(([slug, list]) => {
+      counts[slug] = list.length;
+    });
+    return counts;
+  }, [optionsByCommodityList]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -401,6 +424,8 @@ export default function Portfolio() {
       return {
         ...position,
         underlying,
+        commoditySlug: underlying.toLowerCase(),
+        commodityName: underlying,
         expirationDateObj: expirationDate,
         timeToExpiryMs,
         timeToExpiryLabel,
@@ -411,6 +436,96 @@ export default function Portfolio() {
       };
     });
   }, [portfolioData, indexPriceMap]);
+
+  const netExposure: NetCommodityExposure[] = useMemo(() => {
+    const map: Record<string, NetCommodityExposure> = {};
+
+    // Seed with spot positions
+    spotPositions.forEach((spot) => {
+      const slug = spot.commoditySlug.toLowerCase();
+      const name = spot.commodityName;
+      const qtyT = parseFloat(spot.quantityKg) / 1000; // kg -> tonnes
+      const currentPricePerT = parseFloat(spot.currentPricePerKg) * 1000; // $/kg -> $/t
+      const spotValueUsd = qtyT * currentPricePerT;
+
+      if (!map[slug]) {
+        map[slug] = {
+          commoditySlug: slug,
+          commodityName: name,
+          spotQtyT: 0,
+          syntheticFromOptionsT: 0,
+          totalNetT: 0,
+          currentPricePerT,
+          spotValueUsd: 0,
+          optionsValueUsd: 0,
+          totalValueUsd: 0,
+        };
+      }
+
+      map[slug].spotQtyT += qtyT;
+      map[slug].spotValueUsd = (map[slug].spotValueUsd || 0) + spotValueUsd;
+    });
+
+    // Add synthetic exposure from options (only active positions)
+    enrichedPositions.forEach((pos) => {
+      // Treat OPEN/FILLED as active; ignore expired/settled
+      const status = pos.status?.toUpperCase();
+      if (status !== "OPEN" && status !== "FILLED" && status !== "MATCHED") {
+        return;
+      }
+
+      const slug = pos.commoditySlug.toLowerCase();
+      const name = pos.commodityName;
+      const qtyT = parseFloat(pos.qty) / 1000;
+      if (!isFinite(qtyT) || qtyT <= 0) return;
+
+      let syntheticQtyT = 0;
+      if (pos.type === "CALL") {
+        syntheticQtyT = pos.role === "buyer" ? qtyT : -qtyT;
+      } else {
+        syntheticQtyT = pos.role === "buyer" ? -qtyT : qtyT;
+      }
+
+      if (!map[slug]) {
+        const indexInfo = indexPriceMap[slug];
+        const pricePerT = indexInfo?.latestPricePerTon;
+        map[slug] = {
+          commoditySlug: slug,
+          commodityName: name,
+          spotQtyT: 0,
+          syntheticFromOptionsT: 0,
+          totalNetT: 0,
+          currentPricePerT: pricePerT,
+          spotValueUsd: 0,
+          optionsValueUsd: 0,
+          totalValueUsd: 0,
+        };
+      }
+
+      map[slug].syntheticFromOptionsT += syntheticQtyT;
+
+      const pricePerT =
+        map[slug].currentPricePerT ??
+        indexPriceMap[slug]?.latestPricePerTon;
+      if (pricePerT !== undefined) {
+        const valueUsd = syntheticQtyT * pricePerT;
+        map[slug].optionsValueUsd =
+          (map[slug].optionsValueUsd || 0) + valueUsd;
+        map[slug].currentPricePerT = pricePerT;
+      }
+    });
+
+    // Finalize totals
+    Object.values(map).forEach((entry) => {
+      entry.totalNetT = entry.spotQtyT + entry.syntheticFromOptionsT;
+      if (entry.currentPricePerT !== undefined) {
+        entry.totalValueUsd =
+          (entry.spotValueUsd || 0) + (entry.optionsValueUsd || 0);
+      }
+    });
+
+    return Object.values(map);
+  }, [spotPositions, enrichedPositions, indexPriceMap]);
 
   // Derived values - computed after all hooks
   const isLoading = isAuthLoading || isPortfolioLoading;
@@ -794,7 +909,137 @@ export default function Portfolio() {
             setFocusedCommodity(commoditySlug);
           }}
         />
+
+        {/* Net Exposure / Hedged Positions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Net Exposure</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {netExposure.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No exposure yet. Trade options or spot to see your net positions here.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Commodity</TableHead>
+                      <TableHead className="text-right">Spot (t)</TableHead>
+                      <TableHead className="text-right">Options (t)</TableHead>
+                      <TableHead className="text-right">Net (t)</TableHead>
+                      <TableHead className="text-right">Current Price ($/t)</TableHead>
+                      <TableHead className="text-right">Net Value ($)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {netExposure.map((entry) => {
+                      const netClass =
+                        entry.totalNetT > 0
+                          ? "text-green-600 dark:text-green-400"
+                          : entry.totalNetT < 0
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-muted-foreground";
+
+                      return (
+                        <TableRow key={entry.commoditySlug}>
+                          <TableCell className="font-medium">
+                            {entry.commodityName}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {entry.spotQtyT.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {entry.syntheticFromOptionsT.toFixed(2)}
+                          </TableCell>
+                          <TableCell className={`text-right font-mono ${netClass}`}>
+                            {entry.totalNetT.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {entry.currentPricePerT !== undefined
+                              ? `$${entry.currentPricePerT.toFixed(2)}`
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {entry.totalValueUsd !== undefined
+                              ? `$${entry.totalValueUsd.toFixed(2)}`
+                              : "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Linked options modal for focused commodity */}
+      {focusedCommodity && (
+        <Dialog open={true} onOpenChange={(open) => !open && setFocusedCommodity(null)}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Options for {focusedCommodity}</DialogTitle>
+            </DialogHeader>
+            <div className="mt-2">
+              {optionsByCommodityList[focusedCommodity] && optionsByCommodityList[focusedCommodity].length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Type</TableHead>
+                        <TableHead className="text-right">Strike</TableHead>
+                        <TableHead className="text-right">Qty (t)</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Premium</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {optionsByCommodityList[focusedCommodity].map((opt) => (
+                        <TableRow key={opt.id}>
+                          <TableCell>
+                            <OptionTypeBadge type={opt.type as "CALL" | "PUT"} />
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            ${parseFloat(opt.strike).toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {parseFloat(opt.qty).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={opt.status as any} />
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            ${parseFloat(opt.premium).toLocaleString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No options linked to this commodity yet.
+                </p>
+              )}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFocusedCommodity(null);
+                  setLocation("/#options-table");
+                }}
+              >
+                Open Options Marketplace
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Wallet Authentication Modal */}
       <WalletAuthModal

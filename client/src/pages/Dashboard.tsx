@@ -105,16 +105,19 @@ export default function Dashboard() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate all related queries to refresh the UI
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
       toast({
-        title: "Match Successful",
-        description: "Option has been successfully matched",
+        title: "Option matched successfully",
+        description: "Your position is now updated in the portfolio.",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Match Failed",
-        description: error.message || "Failed to match option",
+        title: "Failed to match option",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     },
@@ -129,15 +132,17 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
       queryClient.invalidateQueries({ queryKey: ["/api/settlements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
       toast({
-        title: "Exercise Successful",
-        description: "Option has been exercised and settled",
+        title: "Exercise successful",
+        description: "Your option has been exercised and your spot position and CROPT balance are updated.",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Exercise Failed",
-        description: error.message || "Failed to exercise option",
+        title: "Exercise failed",
+        description: error.message || "Failed to exercise option. Please check your CROPT balance and try again.",
         variant: "destructive",
       });
     },
