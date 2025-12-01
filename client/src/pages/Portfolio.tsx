@@ -28,8 +28,10 @@ import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
 import { ExerciseOptionDialog } from "@/components/ExerciseOptionDialog";
 import { WithdrawDialog } from "@/components/WithdrawDialog";
+import { WalletSummary } from "@/components/WalletSummary";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
+import { useWalletSummary } from "@/hooks/useWalletSummary";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
@@ -185,6 +187,7 @@ interface UserData {
     id: string;
     email: string;
     role: string;
+    walletAddress?: string;
   };
 }
 
@@ -224,6 +227,9 @@ export default function Portfolio() {
   });
 
   const user = userData?.user;
+
+  // Get wallet summary data
+  const walletData = useWalletSummary(user?.walletAddress || null);
 
   const handleOpenLogin = () => {
     // Navigate to login page
@@ -850,6 +856,13 @@ export default function Portfolio() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Wallet Summary Bar */}
+        {user?.walletAddress && (
+          <div className="mt-6">
+            <WalletSummary variant="bar" {...walletData} />
+          </div>
+        )}
 
         {/* Trading Status Banner */}
         <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />

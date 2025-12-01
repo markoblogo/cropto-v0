@@ -105,13 +105,6 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
 
           {/* Navigation - Hidden on mobile, shown on md+ */}
           <nav className="hidden md:flex items-center gap-1">
-            {location !== "/" && (
-              <Link href="/">
-                <Button variant="ghost" size="sm" data-testid="button-nav-dashboard">
-                  {t('nav.dashboard')}
-                </Button>
-              </Link>
-            )}
             <Link href="/portfolio">
               <Button variant="ghost" size="sm" data-testid="button-nav-portfolio">
                 {t('nav.portfolio')}
@@ -120,11 +113,6 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
             <Link href="/about">
               <Button variant="ghost" size="sm" data-testid="button-nav-about">
                 {t('nav.about')}
-              </Button>
-            </Link>
-            <Link href="/testing">
-              <Button variant="ghost" size="sm" data-testid="button-nav-testing">
-                {t('nav.testing')}
               </Button>
             </Link>
             <Link href="/partners-contracts">

@@ -22,7 +22,9 @@ import {
   computeIntrinsicValueUSD,
   computeIntrinsicValueUSDCorrected,
   computePremiumUSD,
-  computeUnrealizedPnLUSD
+  computeUnrealizedPnLUSD,
+  collateralPct,
+  computeNotional
 } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
@@ -787,10 +789,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Ensure expirationDate is a Date object (Zod should handle this, but double-check)
+      let expirationDate: Date | undefined;
       if (result.data.expirationDate) {
-        optionData.expirationDate = result.data.expirationDate instanceof Date 
+        expirationDate = result.data.expirationDate instanceof Date 
           ? result.data.expirationDate 
           : new Date(result.data.expirationDate);
+        optionData.expirationDate = expirationDate;
+      }
+
+      // Calculate required collateral for the writer (issuer/seller)
+      // Collateral is only required for SHORT positions (writer side)
+      // When someone creates an option, they are the issuer (seller/writer), so they need to post collateral
+      if (!optionData.collateralAmount && expirationDate) {
+        const strikePerTon = parseFloat(result.data.strike); // Already in $/ton
+        const quantityTons = parseFloat(result.data.qty); // Already in tons
+        
+        // Calculate notional value (strike * quantity in tons) - result is in USD
+        const notional = computeNotional(strikePerTon, quantityTons);
+        
+        // Calculate expiry duration in months
+        const now = new Date();
+        const expiryDate = expirationDate;
+        const monthsUntilExpiry = Math.max(0.1, (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30));
+        
+        // Get collateral percentage based on expiry (5% for ≤3 months, 10% for 4-6 months, 20% for 7+ months)
+        const collateralPercent = collateralPct(monthsUntilExpiry);
+        
+        // Calculate required collateral in USD (notional * collateral percentage)
+        const collateralAmount = (notional * collateralPercent).toFixed(8);
+        optionData.collateralAmount = collateralAmount;
+        
+        console.log("[CREATE_OPTION] Calculated collateral for issuer:", {
+          strikePerTon,
+          quantityTons,
+          notional,
+          monthsUntilExpiry: monthsUntilExpiry.toFixed(2),
+          collateralPercent: `${(collateralPercent * 100).toFixed(1)}%`,
+          collateralAmount,
+        });
       }
 
       // Remove any undefined values that might cause issues with Drizzle
@@ -2113,15 +2149,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
           unrealizedPnL += pnl;
         }
 
-        // Track locked collateral
-        if (option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL') {
-          totalLockedCollateral += collateral;
+        // Track locked collateral - only for SHORT positions (seller/writer)
+        // Only count for active statuses
+        const isActiveStatus = option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL';
+        if (isActiveStatus) {
           openPositionsCount++;
-        }
-
-        // Count margin calls
-        if (option.status === 'MARGIN_CALL') {
-          marginCallsCount++;
+          
+          // Collateral is only locked for SHORT positions (seller/writer)
+          // LONG positions (buyer) don't require collateral
+          if (isSeller && collateral > 0) {
+            totalLockedCollateral += collateral;
+            
+            // Temporary debug logging
+            if (userOptions.length <= 3) {
+              console.log(`[Portfolio] Adding collateral for SHORT position ${option.id}:`, {
+                collateral,
+                status: option.status,
+                isSeller,
+              });
+            }
+          }
+          
+          // Calculate margin calls dynamically for SHORT positions
+          if (isSeller && collateral > 0 && currentPricePerTon > 0) {
+            const intrinsicValue = computeIntrinsicValueUSDCorrected(
+              option.type,
+              strikePerTon,
+              currentPricePerTon,
+              quantityTons
+            );
+            
+            // Check if margin call should be triggered
+            // For SHORT positions, intrinsic value represents potential loss
+            // Margin call triggers when intrinsic value >= 80% of collateral
+            const shouldTrigger = shouldTriggerMargin(intrinsicValue, collateral);
+            if (shouldTrigger) {
+              marginCallsCount++;
+              
+              // Temporary debug logging
+              if (userOptions.length <= 3) {
+                const marginCallAmount = calculateMarginCallAmount(intrinsicValue, collateral);
+                console.log(`[Portfolio] Margin call detected for option ${option.id}:`, {
+                  optionType: option.type,
+                  role: 'seller',
+                  intrinsicValue,
+                  collateral,
+                  marginCallAmount,
+                  currentPricePerTon,
+                  strikePerTon,
+                  quantityTons,
+                });
+              }
+            }
+          }
         }
 
         totalPnL += pnl;
@@ -2147,7 +2227,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Temporary debug logging
       console.log(`[Portfolio] Valid positions count: ${validPositions.length}`);
-      console.log(`[Portfolio] Summary: totalPnL=${totalPnL.toFixed(2)}, openPositions=${openPositionsCount}, marginCalls=${marginCallsCount}`);
+      console.log(`[Portfolio] Summary for user ${userId}:`, {
+        totalPnL: totalPnL.toFixed(2),
+        realizedPnL: realizedPnL.toFixed(2),
+        unrealizedPnL: unrealizedPnL.toFixed(2),
+        lockedCollateral: totalLockedCollateral.toFixed(2),
+        openPositions: openPositionsCount,
+        marginCalls: marginCallsCount,
+      });
 
       res.json({
         totalPnL: totalPnL.toFixed(2),
