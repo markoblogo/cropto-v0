@@ -21,11 +21,26 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
 import { BackToDashboard } from "@/components/BackToDashboard";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
+import { SpotBuyModal } from "@/components/SpotBuyModal";
+import { SpotSellModal } from "@/components/SpotSellModal";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
 import { useUserTier } from "@/hooks/useUserTier";
 import { queryClient } from "@/lib/queryClient";
 import type { Option } from "@shared/schema";
+
+interface CommodityIndex {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  hasVat: boolean;
+  latestPrice: {
+    price: number;
+    delta: number | null;
+    timestamp: Date;
+  } | null;
+}
 
 interface PortfolioPosition {
   optionId: string;
@@ -40,6 +55,17 @@ interface PortfolioPosition {
   unrealized: boolean;
   createdAt: string;
   expirationDate?: string; // Optional - may not be in backend response yet
+}
+
+interface EnrichedOptionPosition extends PortfolioPosition {
+  underlying: string;
+  expirationDateObj: Date | null;
+  timeToExpiryMs: number;
+  timeToExpiryLabel: string;
+  isExpired: boolean;
+  impliedPnlNow: number | null;
+  impliedPnlLabel: string;
+  impliedPnlSign: "positive" | "negative" | "flat";
 }
 
 /**
@@ -160,6 +186,12 @@ export default function Portfolio() {
   const [, setLocation] = useLocation();
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
   const [focusedCommodity, setFocusedCommodity] = useState<string | null>(null);
+  const [hedgeModalState, setHedgeModalState] = useState<{
+    mode: "buy" | "sell";
+    commoditySlug: string;
+    commodityName: string;
+    currentPrice: number;
+  } | null>(null);
   const userTier = useUserTier();
 
   // Check authentication
@@ -209,6 +241,28 @@ export default function Portfolio() {
     enabled: !!user,
   });
 
+  // Fetch indexes for implied PnL calculations
+  const { data: indexes = [] } = useQuery<CommodityIndex[]>({
+    queryKey: ["/api/indexes"],
+    enabled: !!user,
+  });
+
+  const indexPriceMap = useMemo(() => {
+    const map: Record<string, { name: string; slug: string; latestPricePerTon: number; latestPricePerKg: number }> = {};
+    indexes.forEach((idx) => {
+      if (!idx.slug || !idx.latestPrice) return;
+      const pricePerTon = idx.latestPrice.price;
+      const pricePerKg = pricePerTon / 1000;
+      map[idx.slug.toLowerCase()] = {
+        name: idx.name,
+        slug: idx.slug.toLowerCase(),
+        latestPricePerTon: pricePerTon,
+        latestPricePerKg: pricePerKg,
+      };
+    });
+    return map;
+  }, [indexes]);
+
   // Fetch all options (used to link spot positions to related options)
   const { data: allOptions = [] } = useQuery<Option[]>({
     queryKey: ["/api/options"],
@@ -242,8 +296,137 @@ export default function Portfolio() {
     }
   }, [isAuthLoading, user, setLocation]);
 
-  const isLoading = isAuthLoading || isPortfolioLoading;
+  // Enriched positions calculation - MUST be called before any early returns
+  const enrichedPositions: EnrichedOptionPosition[] = useMemo(() => {
+    if (!portfolioData || !portfolioData.positions) {
+      return [];
+    }
 
+    const now = new Date();
+
+    return portfolioData.positions.map((position) => {
+      // Underlying from title (COMMODITY-QTY-...)
+      const titleParts = position.title.split("-");
+      const underlying = titleParts[0] || position.title;
+
+      // Expiration date
+      let expirationDate: Date | null = null;
+      if (position.expirationDate) {
+        expirationDate = new Date(position.expirationDate);
+      } else {
+        expirationDate = parseExpirationFromTitle(position.title, position.createdAt);
+      }
+
+      let timeToExpiryMs = 0;
+      let timeToExpiryLabel = "N/A";
+      let isExpired = false;
+
+      if (expirationDate && !isNaN(expirationDate.getTime())) {
+        timeToExpiryMs = expirationDate.getTime() - now.getTime();
+        if (timeToExpiryMs <= 0) {
+          isExpired = true;
+          timeToExpiryLabel = "Expired";
+        } else {
+          const totalMinutes = Math.floor(timeToExpiryMs / (1000 * 60));
+          const totalHours = Math.floor(totalMinutes / 60);
+          const days = Math.floor(totalHours / 24);
+          const hours = totalHours % 24;
+          const minutes = totalMinutes % 60;
+
+          if (days >= 1) {
+            timeToExpiryLabel = `${days}d${hours > 0 ? ` ${hours}h` : ""}`;
+          } else if (hours >= 1) {
+            timeToExpiryLabel = `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
+          } else {
+            timeToExpiryLabel = `${minutes}m`;
+          }
+        }
+      }
+
+      // Implied PnL (very simplified, intrinsic-only approximation)
+      let impliedPnlNow: number | null = null;
+      let impliedPnlLabel = "—";
+      let impliedPnlSign: "positive" | "negative" | "flat" = "flat";
+
+      const indexKey = underlying.toLowerCase();
+      const indexInfo = indexPriceMap[indexKey];
+
+      if (indexInfo) {
+        const strikePerTon = parseFloat(position.strike) * 1000; // strike stored per kg -> per ton
+        const qtyTonnes = parseFloat(position.qty) / 1000; // qty stored in kg -> tonnes
+        const currentPerTon = indexInfo.latestPricePerTon;
+        const premiumPerTon = parseFloat(position.premium); // ASSUMPTION: premium is per ton
+
+        if (
+          isFinite(strikePerTon) &&
+          isFinite(qtyTonnes) &&
+          qtyTonnes > 0 &&
+          isFinite(currentPerTon) &&
+          isFinite(premiumPerTon)
+        ) {
+          const isLongUnderlying =
+            (position.type === "CALL" && position.role === "buyer") ||
+            (position.type === "PUT" && position.role === "seller");
+
+          let intrinsicPerTon = 0;
+          if (position.type === "CALL") {
+            intrinsicPerTon = Math.max(currentPerTon - strikePerTon, 0);
+          } else {
+            intrinsicPerTon = Math.max(strikePerTon - currentPerTon, 0);
+          }
+
+          let pnlTotal = 0;
+          if (isLongUnderlying) {
+            const netPerTon = intrinsicPerTon - premiumPerTon;
+            pnlTotal = netPerTon * qtyTonnes;
+          } else {
+            const grossPerTon = premiumPerTon - intrinsicPerTon;
+            pnlTotal = grossPerTon * qtyTonnes;
+          }
+
+          impliedPnlNow = pnlTotal;
+          if (pnlTotal > 0.0001) {
+            impliedPnlSign = "positive";
+            impliedPnlLabel = `+${pnlTotal.toFixed(2)} CROPT`;
+          } else if (pnlTotal < -0.0001) {
+            impliedPnlSign = "negative";
+            impliedPnlLabel = `${pnlTotal.toFixed(2)} CROPT`;
+          } else {
+            impliedPnlSign = "flat";
+            impliedPnlLabel = "0.00 CROPT";
+          }
+        }
+      }
+
+      return {
+        ...position,
+        underlying,
+        expirationDateObj: expirationDate,
+        timeToExpiryMs,
+        timeToExpiryLabel,
+        isExpired,
+        impliedPnlNow,
+        impliedPnlLabel,
+        impliedPnlSign,
+      };
+    });
+  }, [portfolioData, indexPriceMap]);
+
+  // Derived values - computed after all hooks
+  const isLoading = isAuthLoading || isPortfolioLoading;
+  const shouldRedirect = !isAuthLoading && !user;
+  const hasError = error || (!isPortfolioLoading && !portfolioData);
+  const totalPnL = portfolioData ? parseFloat(portfolioData.totalPnL) : 0;
+  const realizedPnL = portfolioData ? parseFloat(portfolioData.realizedPnL) : 0;
+  const unrealizedPnL = portfolioData ? parseFloat(portfolioData.unrealizedPnL) : 0;
+  const isProfitable = totalPnL >= 0;
+
+  // Single return with conditional rendering - all hooks must be called before this
+  if (shouldRedirect) {
+    return null;
+  }
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -272,12 +455,8 @@ export default function Portfolio() {
     );
   }
 
-  // Return null while redirecting
-  if (!isAuthLoading && !user) {
-    return null;
-  }
-
-  if (error || (!isPortfolioLoading && !portfolioData)) {
+  // Error state
+  if (hasError) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="container mx-auto">
@@ -293,14 +472,10 @@ export default function Portfolio() {
     );
   }
 
+  // Main content - portfolioData is guaranteed to exist here
   if (!portfolioData) {
     return null;
   }
-
-  const totalPnL = parseFloat(portfolioData.totalPnL);
-  const realizedPnL = parseFloat(portfolioData.realizedPnL);
-  const unrealizedPnL = parseFloat(portfolioData.unrealizedPnL);
-  const isProfitable = totalPnL >= 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -487,7 +662,7 @@ export default function Portfolio() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {portfolioData.positions.map((position) => {
+                    {enrichedPositions.map((position) => {
                       const positionPnL = parseFloat(position.pnl);
                       const isProfitablePosition = positionPnL >= 0;
                       
@@ -501,17 +676,7 @@ export default function Portfolio() {
                       const premium = parseFloat(position.premium);
                       const pnlPercent = premium !== 0 ? (positionPnL / (premium * quantityTonnes)) * 100 : 0;
 
-                      // Extract underlying commodity from title (format: COMMODITY-QTY-CREATED-EXPIRES-VOLUME-ID)
-                      const titleParts = position.title.split('-');
-                      const underlying = titleParts[0] || position.title;
-
-                      // Get expiration date: from API response or parse from title
-                      let expirationDate: Date | null = null;
-                      if (position.expirationDate) {
-                        expirationDate = new Date(position.expirationDate);
-                      } else {
-                        expirationDate = parseExpirationFromTitle(position.title, position.createdAt);
-                      }
+                      const { underlying, expirationDateObj, timeToExpiryLabel, impliedPnlLabel, impliedPnlSign } = position;
 
                       return (
                     <TableRow
@@ -545,13 +710,13 @@ export default function Portfolio() {
                             ${strikePerTon.toFixed(2)}
                           </TableCell>
                           <TableCell className="text-sm" data-testid={`text-expiry-${position.optionId}`}>
-                            {expirationDate && !isNaN(expirationDate.getTime()) ? (
+                            {expirationDateObj && !isNaN(expirationDateObj.getTime()) ? (
                               <div className="flex flex-col">
                                 <span className="text-muted-foreground">
-                                  {format(expirationDate, "MMM dd, yyyy")}
+                                  {format(expirationDateObj, "MMM dd, yyyy")}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {formatTimeToExpiry(expirationDate)}
+                                  {timeToExpiryLabel}
                                 </span>
                               </div>
                             ) : (
@@ -575,6 +740,37 @@ export default function Portfolio() {
                               >
                                 ({isProfitablePosition ? '+' : ''}{pnlPercent.toFixed(1)}%)
                               </span>
+                              <span
+                                className={`text-xs font-mono ${
+                                  impliedPnlSign === "positive"
+                                    ? "text-green-600 dark:text-green-400"
+                                    : impliedPnlSign === "negative"
+                                    ? "text-red-600 dark:text-red-400"
+                                    : "text-muted-foreground"
+                                }`}
+                                data-testid={`text-implied-pnl-${position.optionId}`}
+                              >
+                                Implied now: {impliedPnlLabel}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                className="mt-1"
+                                onClick={() =>
+                                  setHedgeModalState({
+                                    // TODO: Improve heuristic: determine effective LONG/SHORT underlying from option type and role.
+                                    // For now, default to SELL hedge so user can manually adjust direction/size in the modal.
+                                    mode: "sell",
+                                    commoditySlug: underlying.toLowerCase(),
+                                    commodityName: underlying,
+                                    // We don't have index price on this page; pass 0 and let the modal handle display gracefully.
+                                    currentPrice: 0,
+                                  })
+                                }
+                                data-testid={`button-hedge-with-spot-${position.optionId}`}
+                              >
+                                Hedge with spot
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -606,6 +802,30 @@ export default function Portfolio() {
         onOpenChange={setIsWalletAuthModalOpen}
         onSuccess={handleWalletAuthSuccess}
       />
+
+      {/* Hedge with Spot Modals */}
+      {hedgeModalState && hedgeModalState.mode === "sell" && (
+        <SpotSellModal
+          isOpen={true}
+          onClose={() => setHedgeModalState(null)}
+          commoditySlug={hedgeModalState.commoditySlug}
+          commodityName={hedgeModalState.commodityName}
+          currentPrice={hedgeModalState.currentPrice}
+          onOpenLogin={() => setLocation("/login")}
+          onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
+        />
+      )}
+      {hedgeModalState && hedgeModalState.mode === "buy" && (
+        <SpotBuyModal
+          isOpen={true}
+          onClose={() => setHedgeModalState(null)}
+          commoditySlug={hedgeModalState.commoditySlug}
+          commodityName={hedgeModalState.commodityName}
+          currentPrice={hedgeModalState.currentPrice}
+          onOpenLogin={() => setLocation("/login")}
+          onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
+        />
+      )}
     </div>
   );
 }
