@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Header } from "@/components/Header";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BackToDashboard } from "@/components/BackToDashboard";
 import { MarkdownSection } from "@/components/MarkdownSection";
 import FlagSwitcher from "@/components/FlagSwitcher";
 import MockModeBanner from "@/components/MockModeBanner";
@@ -14,13 +13,8 @@ export default function TestingPage() {
   const testingSrc = `/docs/testing.${currentLang}.md`;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header onCreateOption={() => {}} />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-4">
-          <BackToDashboard />
-        </div>
-
+    <MainLayout>
+      <div className="max-w-4xl mx-auto">
         <MockModeBanner />
 
         <Card className="mt-4">
@@ -40,6 +34,6 @@ export default function TestingPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 }

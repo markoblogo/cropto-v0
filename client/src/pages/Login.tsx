@@ -24,7 +24,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
-import { BackToDashboard } from "@/components/BackToDashboard";
 
 const loginSchema = z.object({
   email: z.string()
@@ -77,8 +76,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-4">
-          <BackToDashboard />
+        <div className="w-full max-w-md">
           <Card className="w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Login to Cropto</CardTitle>

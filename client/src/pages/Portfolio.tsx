@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { usePolling } from "@/hooks/usePolling";
+import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -19,15 +20,19 @@ import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign } from "
 import { format, differenceInDays, formatDistanceToNow } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
-import { BackToDashboard } from "@/components/BackToDashboard";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SpotBuyModal } from "@/components/SpotBuyModal";
 import { SpotSellModal } from "@/components/SpotSellModal";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
+import { ExerciseOptionDialog } from "@/components/ExerciseOptionDialog";
+import { WithdrawDialog } from "@/components/WithdrawDialog";
 import { useUserTier } from "@/hooks/useUserTier";
-import { queryClient } from "@/lib/queryClient";
+import { useTradingGuard } from "@/hooks/useTradingGuard";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
 import type { Option } from "@shared/schema";
 
 interface CommodityIndex {
@@ -47,9 +52,10 @@ interface PortfolioPosition {
   optionId: string;
   title: string;
   type: 'CALL' | 'PUT';
-  strike: string;
-  qty: string;
-  premium: string;
+  strike: string; // Original strike in $/kg (for backward compatibility)
+  strikePerTon?: string; // Strike in $/ton (for display)
+  qty: string; // Quantity in tons
+  premium: string; // Premium per ton
   status: string;
   role: 'buyer' | 'seller';
   pnl: string;
@@ -208,6 +214,7 @@ export default function Portfolio() {
     currentPrice: number;
   } | null>(null);
   const userTier = useUserTier();
+  const { toast } = useToast();
 
   // Check authentication
   const { data: userData, isLoading: isAuthLoading } = useQuery<UserData | null>({
@@ -227,12 +234,75 @@ export default function Portfolio() {
     setIsWalletAuthModalOpen(true);
   };
 
+  const guardTradingAction = useTradingGuard({
+    onOpenLogin: handleOpenLogin,
+    onOpenWalletModal: handleOpenWalletModal,
+  });
+
   const handleWalletAuthSuccess = (token: string, newUser: boolean) => {
     // Invalidate queries to refresh user data
     queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
     setIsWalletAuthModalOpen(false);
   };
+
+  // Helper to check if user can exercise an option
+  function canExercise(optionId: string): boolean {
+    if (!user) return false;
+    const option = allOptions.find(opt => opt.id === optionId);
+    if (!option) return false;
+    return option.buyerId === user.id || option.issuerId === user.id;
+  }
+
+  // Exercise mutation
+  const exerciseOptionMutation = useMutation({
+    mutationFn: async ({ optionId, spotPrice }: { optionId: string; spotPrice: number }) => {
+      const response = await apiRequest("POST", `/api/options/${optionId}/exercise`, { spotPrice });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settlements"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
+      toast({
+        title: "Exercise successful",
+        description: "Your option has been exercised and your spot position and CROPT balance are updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Exercise failed",
+        description: error.message || "Failed to exercise option. Please check your CROPT balance and try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Withdraw mutation (placeholder - implement if needed)
+  const withdrawMutation = useMutation({
+    mutationFn: async (data: { optionId: string; address: string; amount: string }) => {
+      const response = await apiRequest("POST", `/api/options/${data.optionId}/withdraw`, data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/options"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
+      toast({
+        title: "Withdraw successful",
+        description: "Funds have been withdrawn to your wallet.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Withdraw failed",
+        description: error.message || "Failed to withdraw funds.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Enable polling for live updates when user is authenticated
   usePolling({
@@ -372,13 +442,17 @@ export default function Portfolio() {
       let impliedPnlSign: "positive" | "negative" | "flat" = "flat";
 
       const indexKey = underlying.toLowerCase();
-      const indexInfo = indexPriceMap[indexKey];
+      const pnlIndexInfo = indexPriceMap[indexKey];
 
-      if (indexInfo) {
-        const strikePerTon = parseFloat(position.strike) * 1000; // strike stored per kg -> per ton
-        const qtyTonnes = parseFloat(position.qty) / 1000; // qty stored in kg -> tonnes
-        const currentPerTon = indexInfo.latestPricePerTon;
-        const premiumPerTon = parseFloat(position.premium); // ASSUMPTION: premium is per ton
+      if (pnlIndexInfo) {
+        // Use strikePerTon from API (already in $/ton, no conversion needed)
+        const strikePerTon = position.strikePerTon 
+          ? parseFloat(position.strikePerTon)
+          : parseFloat(position.strike); // Fallback: assume already in $/ton
+        // Quantity is already in tons (per user's note)
+        const qtyTonnes = parseFloat(position.qty);
+        const currentPerTon = pnlIndexInfo.latestPricePerTon;
+        const premiumPerTon = parseFloat(position.premium); // Premium is per ton
 
         if (
           isFinite(strikePerTon) &&
@@ -421,11 +495,16 @@ export default function Portfolio() {
         }
       }
 
+      // Try to get commodity name from index map
+      const commoditySlug = underlying.toLowerCase();
+      const indexInfo = indexPriceMap[commoditySlug];
+      const finalCommodityName = indexInfo?.name || underlying;
+
       return {
         ...position,
         underlying,
-        commoditySlug: underlying.toLowerCase(),
-        commodityName: underlying,
+        commoditySlug,
+        commodityName: finalCommodityName,
         expirationDateObj: expirationDate,
         timeToExpiryMs,
         timeToExpiryLabel,
@@ -436,6 +515,58 @@ export default function Portfolio() {
       };
     });
   }, [portfolioData, indexPriceMap]);
+
+  // Build options exposure map by underlying commodity (in tonnes)
+  const optionsExposure = useMemo(() => {
+    const exposure: Record<string, number> = {};
+    if (!user) return exposure;
+
+    allOptions.forEach((opt) => {
+      // Only consider options where user is buyer or issuer
+      if (opt.buyerId !== user.id && opt.issuerId !== user.id) {
+        return;
+      }
+
+      // Only active positions
+      const status = opt.status?.toUpperCase();
+      if (status !== "OPEN" && status !== "FILLED") {
+        return;
+      }
+
+      // Get commodity slug
+      const slug = ((opt as any).commoditySlug || opt.commodity || "").toLowerCase();
+      if (!slug) return;
+
+      // Quantity is already in tonnes (per user's note)
+      const qtyT = parseFloat(opt.qty);
+      if (!isFinite(qtyT) || qtyT <= 0) return;
+
+      // Determine user's role
+      const isBuyer = opt.buyerId === user.id;
+      const isSeller = opt.issuerId === user.id;
+
+      // Calculate synthetic exposure
+      let syntheticQtyT = 0;
+      if (opt.type === "CALL") {
+        if (isBuyer) {
+          syntheticQtyT = qtyT; // CALL buyer → +quantityTons
+        } else if (isSeller) {
+          syntheticQtyT = -qtyT; // CALL seller → -quantityTons
+        }
+      } else if (opt.type === "PUT") {
+        if (isBuyer) {
+          syntheticQtyT = -qtyT; // PUT buyer → -quantityTons
+        } else if (isSeller) {
+          syntheticQtyT = qtyT; // PUT seller → +quantityTons
+        }
+      }
+
+      // Accumulate exposure
+      exposure[slug] = (exposure[slug] || 0) + syntheticQtyT;
+    });
+
+    return exposure;
+  }, [allOptions, user]);
 
   const netExposure: NetCommodityExposure[] = useMemo(() => {
     const map: Record<string, NetCommodityExposure> = {};
@@ -466,28 +597,12 @@ export default function Portfolio() {
       map[slug].spotValueUsd = (map[slug].spotValueUsd || 0) + spotValueUsd;
     });
 
-    // Add synthetic exposure from options (only active positions)
-    enrichedPositions.forEach((pos) => {
-      // Treat OPEN/FILLED as active; ignore expired/settled
-      const status = pos.status?.toUpperCase();
-      if (status !== "OPEN" && status !== "FILLED" && status !== "MATCHED") {
-        return;
-      }
-
-      const slug = pos.commoditySlug.toLowerCase();
-      const name = pos.commodityName;
-      const qtyT = parseFloat(pos.qty) / 1000;
-      if (!isFinite(qtyT) || qtyT <= 0) return;
-
-      let syntheticQtyT = 0;
-      if (pos.type === "CALL") {
-        syntheticQtyT = pos.role === "buyer" ? qtyT : -qtyT;
-      } else {
-        syntheticQtyT = pos.role === "buyer" ? -qtyT : qtyT;
-      }
-
+    // Add synthetic exposure from options
+    Object.entries(optionsExposure).forEach(([slug, optionsTons]) => {
       if (!map[slug]) {
+        // Get commodity name from index map or use slug
         const indexInfo = indexPriceMap[slug];
+        const name = indexInfo?.name || slug;
         const pricePerT = indexInfo?.latestPricePerTon;
         map[slug] = {
           commoditySlug: slug,
@@ -502,15 +617,15 @@ export default function Portfolio() {
         };
       }
 
-      map[slug].syntheticFromOptionsT += syntheticQtyT;
+      map[slug].syntheticFromOptionsT = optionsTons;
 
+      // Calculate options value
       const pricePerT =
         map[slug].currentPricePerT ??
         indexPriceMap[slug]?.latestPricePerTon;
       if (pricePerT !== undefined) {
-        const valueUsd = syntheticQtyT * pricePerT;
-        map[slug].optionsValueUsd =
-          (map[slug].optionsValueUsd || 0) + valueUsd;
+        const valueUsd = optionsTons * pricePerT;
+        map[slug].optionsValueUsd = valueUsd;
         map[slug].currentPricePerT = pricePerT;
       }
     });
@@ -525,15 +640,24 @@ export default function Portfolio() {
     });
 
     return Object.values(map);
-  }, [spotPositions, enrichedPositions, indexPriceMap]);
+  }, [spotPositions, optionsExposure, indexPriceMap]);
 
   // Derived values - computed after all hooks
+  // All summary values come directly from /api/portfolio/me response
   const isLoading = isAuthLoading || isPortfolioLoading;
   const shouldRedirect = !isAuthLoading && !user;
   const hasError = error || (!isPortfolioLoading && !portfolioData);
-  const totalPnL = portfolioData ? parseFloat(portfolioData.totalPnL) : 0;
-  const realizedPnL = portfolioData ? parseFloat(portfolioData.realizedPnL) : 0;
-  const unrealizedPnL = portfolioData ? parseFloat(portfolioData.unrealizedPnL) : 0;
+  
+  // Extract summary values from API response
+  // Backend calculates totalPnL as realizedPnL + unrealizedPnL, so we use it directly
+  const totalPnL = portfolioData ? parseFloat(portfolioData.totalPnL || "0") : 0;
+  const realizedPnL = portfolioData ? parseFloat(portfolioData.realizedPnL || "0") : 0;
+  const unrealizedPnL = portfolioData ? parseFloat(portfolioData.unrealizedPnL || "0") : 0;
+  const openPositions = portfolioData?.openPositions ?? 0;
+  const lockedCollateral = portfolioData ? parseFloat(portfolioData.lockedCollateral || "0") : 0;
+  const marginCalls = portfolioData?.marginCalls ?? 0;
+  
+  // Determine if profitable for UI styling (Total P&L >= 0)
   const isProfitable = totalPnL >= 0;
 
   // Single return with conditional rendering - all hooks must be called before this
@@ -594,6 +718,7 @@ export default function Portfolio() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header onCreateOption={() => {}} />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
@@ -601,7 +726,6 @@ export default function Portfolio() {
             <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">Portfolio</h1>
             <p className="text-muted-foreground">Your options positions and performance</p>
           </div>
-          <BackToDashboard />
         </div>
 
         {/* Metrics Cards */}
@@ -683,7 +807,7 @@ export default function Portfolio() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-open-positions">
-                {portfolioData.openPositions}
+                {openPositions}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Active contracts
@@ -699,7 +823,7 @@ export default function Portfolio() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-locked-collateral">
-                ${parseFloat(portfolioData.lockedCollateral).toFixed(2)}
+                ${lockedCollateral.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Reserved funds
@@ -711,17 +835,17 @@ export default function Portfolio() {
           <Card data-testid="card-margin-calls">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Margin Calls</CardTitle>
-              <AlertTriangle className={`h-4 w-4 ${portfolioData.marginCalls > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+              <AlertTriangle className={`h-4 w-4 ${marginCalls > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
             </CardHeader>
             <CardContent>
               <div 
-                className={`text-2xl font-bold ${portfolioData.marginCalls > 0 ? 'text-destructive' : ''}`}
+                className={`text-2xl font-bold ${marginCalls > 0 ? 'text-destructive' : ''}`}
                 data-testid="text-margin-calls"
               >
-                {portfolioData.marginCalls}
+                {marginCalls}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {portfolioData.marginCalls > 0 ? 'Action required' : 'All clear'}
+                {marginCalls > 0 ? 'Action required' : 'All clear'}
               </p>
             </CardContent>
           </Card>
@@ -730,10 +854,10 @@ export default function Portfolio() {
         {/* Trading Status Banner */}
         <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />
 
-        {/* Positions Table */}
+        {/* Option Positions Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Positions</CardTitle>
+            <CardTitle>Option Positions</CardTitle>
           </CardHeader>
           <CardContent>
             {portfolioData.positions.length === 0 ? (
@@ -767,13 +891,17 @@ export default function Portfolio() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Underlying</TableHead>
-                      <TableHead>Type / Side</TableHead>
-                      <TableHead className="text-right">Size (t)</TableHead>
+                      <TableHead>Commodity</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Side</TableHead>
+                      <TableHead className="text-right">Qty (t)</TableHead>
                       <TableHead className="text-right">Strike ($/t)</TableHead>
-                      <TableHead>Expiry / TTE</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Entry Premium (CROPT)</TableHead>
+                      <TableHead className="text-right">Current Price ($/t)</TableHead>
                       <TableHead className="text-right">P&L</TableHead>
+                      <TableHead>Expiry</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -781,50 +909,74 @@ export default function Portfolio() {
                       const positionPnL = parseFloat(position.pnl);
                       const isProfitablePosition = positionPnL >= 0;
                       
-                      // Convert quantity from kg to tonnes for display
-                      const quantityTonnes = parseFloat(position.qty) / 1000;
+                      // Quantity is already in tons (per user's note)
+                      const quantityTonnes = parseFloat(position.qty);
                       
-                      // Convert strike from per kg to per ton (multiply by 1000)
-                      const strikePerTon = parseFloat(position.strike) * 1000;
+                      // Use strikePerTon from API (already in $/ton, no conversion needed)
+                      const strikePerTon = position.strikePerTon 
+                        ? parseFloat(position.strikePerTon)
+                        : parseFloat(position.strike); // Fallback: assume already in $/ton
                       
-                      // Calculate PnL percentage (approximate based on premium)
+                      // Entry Premium: negative for LONG (paid), positive for SHORT (received)
                       const premium = parseFloat(position.premium);
-                      const pnlPercent = premium !== 0 ? (positionPnL / (premium * quantityTonnes)) * 100 : 0;
+                      const entryPremium = position.role === 'buyer' 
+                        ? -(premium * quantityTonnes) // LONG: paid premium (negative cashflow)
+                        : (premium * quantityTonnes);  // SHORT: received premium (positive cashflow)
 
-                      const { underlying, expirationDateObj, timeToExpiryLabel, impliedPnlLabel, impliedPnlSign } = position;
+                      const { commodityName, expirationDateObj, timeToExpiryLabel, impliedPnlLabel, impliedPnlSign } = position;
+
+                      const indexKey = position.commoditySlug?.toLowerCase() || position.underlying?.toLowerCase() || "";
+                      const indexInfo = indexPriceMap[indexKey];
+                      const currentPricePerTon = indexInfo?.latestPricePerTon;
 
                       return (
-                    <TableRow
-                      key={position.optionId}
-                      data-testid={`row-position-${position.optionId}`}
-                      className={
-                        focusedCommodity && underlying === focusedCommodity
-                          ? "bg-muted/40"
-                          : ""
-                      }
-                    >
-                          <TableCell className="font-medium" data-testid={`text-underlying-${position.optionId}`}>
-                            {underlying}
+                        <TableRow
+                          key={position.optionId}
+                          data-testid={`row-position-${position.optionId}`}
+                          className={
+                            focusedCommodity && position.commoditySlug === focusedCommodity
+                              ? "bg-muted/40"
+                              : ""
+                          }
+                        >
+                          <TableCell className="font-medium" data-testid={`text-commodity-${position.optionId}`}>
+                            {commodityName}
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <OptionTypeBadge type={position.type} />
-                              <Badge 
-                                variant={position.role === 'buyer' ? 'default' : 'secondary'} 
-                                className="text-xs"
-                                data-testid={`badge-side-${position.optionId}`}
-                              >
-                                {position.role === 'buyer' ? 'LONG' : 'SHORT'}
-                              </Badge>
-                            </div>
+                            <OptionTypeBadge type={position.type} />
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={position.role === 'buyer' ? 'default' : 'secondary'} 
+                              className={position.role === 'buyer' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
+                              data-testid={`badge-side-${position.optionId}`}
+                            >
+                              {position.role === 'buyer' ? 'LONG' : 'SHORT'}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right font-mono" data-testid={`text-size-${position.optionId}`}>
-                            {quantityTonnes.toFixed(2)} t
+                            {quantityTonnes.toFixed(2)}
                           </TableCell>
-                          <TableCell className="text-right font-mono" data-testid={`text-strike-${position.optionId}`}>
+                          <TableCell className="text-right font-mono whitespace-nowrap" data-testid={`text-strike-${position.optionId}`}>
                             ${strikePerTon.toFixed(2)}
                           </TableCell>
-                          <TableCell className="text-sm" data-testid={`text-expiry-${position.optionId}`}>
+                          <TableCell className={`text-right font-mono whitespace-nowrap ${entryPremium < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} data-testid={`text-entry-premium-${position.optionId}`}>
+                            {entryPremium < 0 ? '' : '+'}{entryPremium.toFixed(2)} CROPT
+                          </TableCell>
+                          <TableCell className="text-right font-mono whitespace-nowrap" data-testid={`text-current-price-${position.optionId}`}>
+                            {currentPricePerTon !== undefined ? `$${currentPricePerTon.toFixed(2)}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
+                            <div className="flex flex-col items-end gap-1">
+                              <span 
+                                className={`font-mono font-semibold ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                                data-testid={`text-pnl-${position.optionId}`}
+                              >
+                                {isProfitablePosition ? '+' : ''}${positionPnL.toFixed(2)}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm whitespace-nowrap" data-testid={`text-expiry-${position.optionId}`}>
                             {expirationDateObj && !isNaN(expirationDateObj.getTime()) ? (
                               <div className="flex flex-col">
                                 <span className="text-muted-foreground">
@@ -835,57 +987,34 @@ export default function Portfolio() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">N/A</span>
+                              <span className="text-muted-foreground">Not specified</span>
                             )}
                           </TableCell>
                           <TableCell>
                             <StatusBadge status={position.status} />
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex flex-col items-end gap-1">
-                              <span 
-                                className={`font-mono font-semibold ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
-                                data-testid={`text-pnl-${position.optionId}`}
-                              >
-                                {isProfitablePosition ? '+' : ''}{positionPnL.toFixed(2)} CROPT
-                              </span>
-                              <span 
-                                className={`text-xs font-mono ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
-                                data-testid={`text-pnl-percent-${position.optionId}`}
-                              >
-                                ({isProfitablePosition ? '+' : ''}{pnlPercent.toFixed(1)}%)
-                              </span>
-                              <span
-                                className={`text-xs font-mono ${
-                                  impliedPnlSign === "positive"
-                                    ? "text-green-600 dark:text-green-400"
-                                    : impliedPnlSign === "negative"
-                                    ? "text-red-600 dark:text-red-400"
-                                    : "text-muted-foreground"
-                                }`}
-                                data-testid={`text-implied-pnl-${position.optionId}`}
-                              >
-                                Implied now: {impliedPnlLabel}
-                              </span>
-                              <Button
-                                variant="outline"
-                                size="xs"
-                                className="mt-1"
-                                onClick={() =>
-                                  setHedgeModalState({
-                                    // TODO: Improve heuristic: determine effective LONG/SHORT underlying from option type and role.
-                                    // For now, default to SELL hedge so user can manually adjust direction/size in the modal.
-                                    mode: "sell",
-                                    commoditySlug: underlying.toLowerCase(),
-                                    commodityName: underlying,
-                                    // We don't have index price on this page; pass 0 and let the modal handle display gracefully.
-                                    currentPrice: 0,
-                                  })
-                                }
-                                data-testid={`button-hedge-with-spot-${position.optionId}`}
-                              >
-                                Hedge with spot
-                              </Button>
+                            <div className="flex items-center justify-end gap-2">
+                              {position.status === "FILLED" && canExercise(position.optionId) && (
+                                <ExerciseOptionDialog
+                                  optionId={position.optionId}
+                                  optionType={position.type}
+                                  strike={position.strike}
+                                  onExercise={async (optionId, spotPrice) => {
+                                    await exerciseOptionMutation.mutateAsync({ optionId, spotPrice });
+                                  }}
+                                  isPending={exerciseOptionMutation.isPending}
+                                />
+                              )}
+                              {(position.status === "EXERCISED" || position.status === "FILLED") && (
+                                <WithdrawDialog
+                                  optionId={position.optionId}
+                                  onWithdraw={async (data) => {
+                                    return await withdrawMutation.mutateAsync(data);
+                                  }}
+                                  isPending={withdrawMutation.isPending}
+                                />
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -980,9 +1109,9 @@ export default function Portfolio() {
       {/* Linked options modal for focused commodity */}
       {focusedCommodity && (
         <Dialog open={true} onOpenChange={(open) => !open && setFocusedCommodity(null)}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[700px]">
             <DialogHeader>
-              <DialogTitle>Options for {focusedCommodity}</DialogTitle>
+              <DialogTitle>Options for {indexPriceMap[focusedCommodity]?.name || focusedCommodity}</DialogTitle>
             </DialogHeader>
             <div className="mt-2">
               {optionsByCommodityList[focusedCommodity] && optionsByCommodityList[focusedCommodity].length > 0 ? (
@@ -991,32 +1120,53 @@ export default function Portfolio() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Type</TableHead>
-                        <TableHead className="text-right">Strike</TableHead>
+                        <TableHead>Side</TableHead>
+                        <TableHead className="text-right">Strike ($/t)</TableHead>
                         <TableHead className="text-right">Qty (t)</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Premium</TableHead>
+                        <TableHead className="text-right">Premium (CROPT)</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {optionsByCommodityList[focusedCommodity].map((opt) => (
-                        <TableRow key={opt.id}>
-                          <TableCell>
-                            <OptionTypeBadge type={opt.type as "CALL" | "PUT"} />
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            ${parseFloat(opt.strike).toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {parseFloat(opt.qty).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <StatusBadge status={opt.status as any} />
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            ${parseFloat(opt.premium).toLocaleString()}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {optionsByCommodityList[focusedCommodity].map((opt) => {
+                        if (!user) return null;
+                        const isBuyer = opt.buyerId === user.id;
+                        const isSeller = opt.issuerId === user.id;
+                        const side = isBuyer ? 'LONG' : isSeller ? 'SHORT' : null;
+                        const premium = parseFloat(opt.qty) * parseFloat(opt.premium);
+                        const entryPremium = isBuyer ? -premium : isSeller ? premium : 0;
+                        const strikePerTon = parseFloat(opt.strike); // Already in $/ton, no conversion needed
+
+                        return (
+                          <TableRow key={opt.id}>
+                            <TableCell>
+                              <OptionTypeBadge type={opt.type as "CALL" | "PUT"} />
+                            </TableCell>
+                            <TableCell>
+                              {side && (
+                                <Badge 
+                                  variant={side === 'LONG' ? 'default' : 'secondary'} 
+                                  className={side === 'LONG' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
+                                >
+                                  {side}
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ${strikePerTon.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              {parseFloat(opt.qty).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              <StatusBadge status={opt.status as any} />
+                            </TableCell>
+                            <TableCell className={`text-right font-mono ${entryPremium < 0 ? 'text-red-600 dark:text-red-400' : entryPremium > 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                              {entryPremium !== 0 ? (entryPremium < 0 ? '' : '+') : ''}{entryPremium.toFixed(2)} CROPT
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

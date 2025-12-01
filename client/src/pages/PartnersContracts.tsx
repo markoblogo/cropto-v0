@@ -1,8 +1,8 @@
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BackToDashboard } from "@/components/BackToDashboard";
 
 const partners = [
   {
@@ -107,16 +107,13 @@ const contracts = [
 
 export default function PartnersContracts() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Partners & Contracts</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage institutional partnerships and service agreements
-            </p>
-          </div>
-          <BackToDashboard />
+    <MainLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Partners & Contracts</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage institutional partnerships and service agreements
+          </p>
         </div>
 
         <Card>
@@ -229,6 +226,6 @@ export default function PartnersContracts() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 }

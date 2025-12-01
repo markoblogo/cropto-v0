@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, PlayCircle, Database, Users, TrendingUp, Settings, BarChart3, MessageSquare, FileText } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { BackToDashboard } from "@/components/BackToDashboard";
 import { useQuery } from "@tanstack/react-query";
 import { useIsAdminLevelUser } from "@/hooks/useIsAdminLevelUser";
 import { Link } from "wouter";
@@ -97,7 +96,6 @@ export default function Admin() {
                 Manage demo scenarios and system operations
               </p>
             </div>
-            <BackToDashboard />
           </div>
 
           <Card>

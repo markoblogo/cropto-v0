@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { BackToDashboard } from "@/components/BackToDashboard";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { TrendingUp, TrendingDown, Minus, Plus, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
@@ -83,21 +83,20 @@ export default function IndexDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <MainLayout>
+        <div className="space-y-8">
           <Skeleton className="h-12 w-64" />
           <Skeleton className="h-96 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   if (error || !indexData) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-          <BackToDashboard />
+      <MainLayout>
+        <div className="space-y-8">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -105,7 +104,7 @@ export default function IndexDetail() {
             </AlertDescription>
           </Alert>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
@@ -144,14 +143,11 @@ export default function IndexDetail() {
   const padding = (maxPrice - minPrice) * 0.1 || 10;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <MainLayout>
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <BackToDashboard />
-            </div>
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <img 
@@ -337,6 +333,6 @@ export default function IndexDetail() {
           defaultCommodity={indexData.name}
         />
       </div>
-    </div>
+    </MainLayout>
   );
 }

@@ -15,7 +15,15 @@ import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
 import { runScraper } from "./jobs/telegramScraper";
 import { authenticateToken, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions } from "./auth";
-import { intrinsic, shouldTriggerMargin, calculateMarginCallAmount } from "./utils/finance";
+import { 
+  intrinsic, 
+  shouldTriggerMargin, 
+  calculateMarginCallAmount,
+  computeIntrinsicValueUSD,
+  computeIntrinsicValueUSDCorrected,
+  computePremiumUSD,
+  computeUnrealizedPnLUSD
+} from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
 import fs from "fs";
@@ -769,33 +777,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Set the issuer ID and commodity name
-      const optionData = {
+      // Ensure all required fields are present and properly formatted
+      const optionData: any = {
         ...result.data,
         commodity: commodityName,
         issuerId: req.user!.id,
+        // Ensure status is set (default is OPEN, but explicit is better)
+        status: result.data.status || 'OPEN',
       };
+
+      // Ensure expirationDate is a Date object (Zod should handle this, but double-check)
+      if (result.data.expirationDate) {
+        optionData.expirationDate = result.data.expirationDate instanceof Date 
+          ? result.data.expirationDate 
+          : new Date(result.data.expirationDate);
+      }
+
+      // Remove any undefined values that might cause issues with Drizzle
+      Object.keys(optionData).forEach(key => {
+        if (optionData[key] === undefined) {
+          delete optionData[key];
+        }
+      });
+
+      // Log option data before insertion for debugging
+      console.log("[CREATE_OPTION] Attempting to create option with data:", {
+        type: optionData.type,
+        strike: optionData.strike,
+        qty: optionData.qty,
+        premium: optionData.premium,
+        indexId: optionData.indexId,
+        commodity: optionData.commodity,
+        issuerId: optionData.issuerId,
+        expirationDate: optionData.expirationDate,
+        expirationDateType: typeof optionData.expirationDate,
+        status: optionData.status,
+        hasCollateralAmount: !!optionData.collateralAmount,
+      });
 
       const option = await storage.createOption(optionData);
       
       // Record platform fee (TODO: implement actual fee calculation policy)
       // For now, storing 0 as placeholder
       const feeAmount = 0; // TODO: implement fee calculation (e.g., premium * 0.001 for 0.1%)
-      await db
-        .insert(platformFees)
-        .values({
-          userId: req.user!.id,
-          role: req.user!.role || 'trader',
-          type: 'option_create',
-          amount: feeAmount.toFixed(8),
-          currency: 'CROPT',
-          instrument: option.id,
-          txId: null,
-        });
+      try {
+        await db
+          .insert(platformFees)
+          .values({
+            userId: req.user!.id,
+            role: req.user!.role || 'trader', // role column may not exist in DB yet
+            type: 'option_create',
+            amount: feeAmount.toFixed(8),
+            currency: 'CROPT',
+            instrument: option.id,
+            txId: null,
+          });
+      } catch (feeError: any) {
+        // If role column doesn't exist, try without it (for backward compatibility)
+        if (feeError?.code === '42703' || feeError?.message?.includes('role')) {
+          console.warn("[CREATE_OPTION] platform_fees.role column not found, inserting without role");
+          await db
+            .insert(platformFees)
+            .values({
+              userId: req.user!.id,
+              // role omitted
+              type: 'option_create',
+              amount: feeAmount.toFixed(8),
+              currency: 'CROPT',
+              instrument: option.id,
+              txId: null,
+            });
+        } else {
+          // Re-throw if it's a different error
+          throw feeError;
+        }
+      }
       
       res.status(201).json(option);
-    } catch (error) {
-      console.error("Error creating option:", error);
-      res.status(500).json({ error: "Failed to create option" });
+    } catch (error: any) {
+      // Detailed error logging for debugging
+      console.error("[CREATE_OPTION_ERROR] Failed to create option");
+      console.error("Request body:", JSON.stringify(req.body, null, 2));
+      console.error("Error type:", error?.constructor?.name || typeof error);
+      console.error("Error message:", error?.message || String(error));
+      console.error("Error stack:", error?.stack);
+      if (error?.code) {
+        console.error("Error code:", error.code);
+      }
+      res.status(500).json({ 
+        error: "Failed to create option",
+        details: error?.message || String(error)
+      });
     }
   });
 
@@ -1880,6 +1952,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Fetch all options where user is buyer or seller
       const userOptions = await storage.getOptionsByUser(userId);
+      
+      // Temporary debug logging
+      console.log(`[Portfolio] Current userId: ${userId}`);
+      console.log(`[Portfolio] Total options found: ${userOptions.length}`);
+      if (userOptions.length > 0) {
+        console.log(`[Portfolio] Sample options:`, userOptions.slice(0, 3).map(opt => ({
+          id: opt.id,
+          buyerId: opt.buyerId,
+          issuerId: opt.issuerId,
+          buyer: opt.buyer,
+          seller: opt.seller,
+          commodity: opt.commodity,
+          status: opt.status
+        })));
+      }
 
       // Fetch settlements for exercised options
       const settlementsData = await storage.listSettlements();
@@ -1890,14 +1977,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userOptions.some(opt => opt.id === mc.optionId)
       );
 
-      // Get latest index price for unrealized PnL calculation
-      const latestIndex = await db
+      // Get all indexes for price lookup
+      const allIndexes = await db.select().from(indexes);
+      const indexMap = new Map(allIndexes.map(idx => [idx.slug?.toLowerCase(), idx.id]));
+
+      // Get latest prices for all commodities
+      const allLatestPrices = await db
         .select()
-        .from(indexPrices)
-        .orderBy(desc(indexPrices.date))
-        .limit(1);
+        .from(commodityIndexPrices)
+        .orderBy(desc(commodityIndexPrices.timestamp));
       
-      const currentSpotPrice = latestIndex.length > 0 ? parseFloat(latestIndex[0].price) : 0;
+      // Build price map: indexId -> latest price per ton
+      const priceMap = new Map<string, number>();
+      const seenIndexIds = new Set<string>();
+      for (const price of allLatestPrices) {
+        if (!seenIndexIds.has(price.indexId)) {
+          priceMap.set(price.indexId, parseFloat(price.price));
+          seenIndexIds.add(price.indexId);
+        }
+      }
 
       let totalPnL = 0;
       let realizedPnL = 0;
@@ -1906,12 +2004,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let openPositionsCount = 0;
       let marginCallsCount = 0;
 
-      const positions = userOptions.map(option => {
-        const isBuyer = option.buyer === userId;
-        const strikePrice = parseFloat(option.strike);
-        const quantity = parseFloat(option.qty);
-        const premium = parseFloat(option.premium);
+      const positions = await Promise.all(userOptions.map(async (option) => {
+        // Check both new fields (buyerId/issuerId) and legacy fields (buyer/seller) for backward compatibility
+        const isBuyer = option.buyerId === userId || option.buyer === userId;
+        const isSeller = option.issuerId === userId || option.seller === userId;
+        
+        // Temporary debug logging
+        if (userOptions.length <= 5) {
+          console.log(`[Portfolio] Processing option ${option.id}:`, {
+            buyerId: option.buyerId,
+            issuerId: option.issuerId,
+            buyer: option.buyer,
+            seller: option.seller,
+            isBuyer,
+            isSeller,
+            status: option.status
+          });
+        }
+        
+        if (!isBuyer && !isSeller) {
+          console.log(`[Portfolio] WARNING: Option ${option.id} skipped - user ${userId} is not buyer or seller`);
+          return null; // Skip if user is not involved
+        }
+
+        // Parse values from DB - DEBUG: verify actual storage format
+        const strikeRaw = parseFloat(option.strike);
+        const quantityRaw = parseFloat(option.qty);
+        const premiumRaw = parseFloat(option.premium);
         const collateral = parseFloat(option.collateralAmount || '0');
+        
+        // Get commodity slug and find corresponding index for price lookup
+        const commoditySlug = (option as any).commoditySlug || option.commodity;
+        const indexId = commoditySlug ? indexMap.get(commoditySlug.toLowerCase()) : null;
+        const currentPricePerTon = indexId ? (priceMap.get(indexId) || 0) : 0;
+        
+        // DEBUG: Log raw values to verify storage format
+        if (userOptions.length <= 3) {
+          console.log('[PORTFOLIO_DEBUG] raw option', {
+            id: option.id,
+            underlying: commoditySlug || option.commodity,
+            strikeRaw,
+            quantityRaw,
+            premiumRaw,
+          });
+          console.log('[PORTFOLIO_DEBUG] index price', {
+            indexId,
+            currentPricePerTon,
+          });
+        }
+        
+        // Based on user feedback: strike appears to be stored in $/ton already
+        // If strikeRaw is ~200-700 and currentPricePerTon is also ~200-700, then strike is already in $/ton
+        // Otherwise, if strikeRaw is ~0.2-0.7, then it's in $/kg and needs conversion
+        // For now, assume strike is already in $/ton (no conversion needed)
+        const strikePerTon = strikeRaw; // Use directly - already in $/ton
+        const quantityTons = quantityRaw; // Already in tons per user's note
+        const premiumPerTon = premiumRaw; // Already per ton per user's note
 
         let pnl = 0;
         let status = option.status;
@@ -1926,18 +2074,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           pnl = isBuyer ? settlementPnL : -settlementPnL;
           realizedPnL += pnl;
         } else if (option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL') {
-          // Unrealized PnL based on current spot price
+          // Unrealized PnL based on current spot price for this commodity
           unrealized = true;
-          const intrinsicValue = intrinsic(option.type, currentSpotPrice, strikePrice, quantity);
-          const totalPremium = premium * quantity;
           
+          // Calculate intrinsic value and premium using corrected helpers (no * 1000 conversion)
+          const intrinsicValue = computeIntrinsicValueUSDCorrected(
+            option.type,
+            strikePerTon,        // Already in $/ton
+            currentPricePerTon,  // Already in $/ton
+            quantityTons         // Already in tons
+          );
+          const totalPremium = computePremiumUSD(premiumPerTon, quantityTons);
+          
+          // Calculate P&L based on position side
           if (isBuyer) {
-            // Buyer: profit if intrinsic value > premium paid
+            // LONG: profit = intrinsic value - premium paid
             pnl = intrinsicValue - totalPremium;
           } else {
-            // Seller: profit is premium received - intrinsic value
+            // SHORT: profit = premium received - intrinsic value
             pnl = totalPremium - intrinsicValue;
           }
+          
+          // Temporary debug logging
+          if (userOptions.length <= 3) {
+            console.log(`[Portfolio] Unrealized P&L calc for option ${option.id}:`, {
+              type: option.type,
+              role: isBuyer ? 'buyer' : 'seller',
+              strikePerTon,
+              currentPricePerTon,
+              quantityTons,
+              premiumPerTon,
+              intrinsicValue,
+              totalPremium,
+              pnl,
+            });
+          }
+          
           unrealizedPnL += pnl;
         }
 
@@ -1958,16 +2130,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           optionId: option.id,
           title: option.title,
           type: option.type,
-          strike: option.strike,
-          qty: option.qty,
-          premium: option.premium,
+          strike: option.strike, // Original value from DB
+          strikePerTon: strikePerTon.toFixed(2), // Strike in $/ton (already converted, no * 1000)
+          qty: option.qty, // Already in tons
+          premium: option.premium, // Premium per ton
           status: option.status,
           role: isBuyer ? 'buyer' : 'seller',
           pnl: pnl.toFixed(2),
           unrealized,
           createdAt: option.createdAt,
         };
-      });
+      }));
+
+      // Filter out null positions
+      const validPositions = positions.filter((p): p is NonNullable<typeof p> => p !== null);
+      
+      // Temporary debug logging
+      console.log(`[Portfolio] Valid positions count: ${validPositions.length}`);
+      console.log(`[Portfolio] Summary: totalPnL=${totalPnL.toFixed(2)}, openPositions=${openPositionsCount}, marginCalls=${marginCallsCount}`);
 
       res.json({
         totalPnL: totalPnL.toFixed(2),
@@ -1976,7 +2156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lockedCollateral: totalLockedCollateral.toFixed(2),
         openPositions: openPositionsCount,
         marginCalls: marginCallsCount,
-        positions: positions.sort((a, b) => 
+        positions: validPositions.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ),
       });

@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Plus, TrendingUp, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
-import { BackToDashboard } from "@/components/BackToDashboard";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 interface IndexPrice {
   id: string;
@@ -143,12 +143,12 @@ export default function AdminIndex() {
 
   if (isAuthLoading || isPricesLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="container mx-auto space-y-8">
+      <MainLayout>
+        <div className="space-y-8">
           <Skeleton className="h-12 w-64" />
           <Skeleton className="h-96 w-full" />
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
@@ -158,8 +158,8 @@ export default function AdminIndex() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <MainLayout>
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -397,6 +397,6 @@ export default function AdminIndex() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </MainLayout>
   );
 }

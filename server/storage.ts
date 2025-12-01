@@ -101,11 +101,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOption(insertOption: InsertOption): Promise<Option> {
-    const [option] = await db
-      .insert(options)
-      .values(insertOption)
-      .returning();
-    return option;
+    try {
+      console.log("[STORAGE] createOption called with:", {
+        type: insertOption.type,
+        strike: insertOption.strike,
+        qty: insertOption.qty,
+        premium: insertOption.premium,
+        indexId: insertOption.indexId,
+        commodity: insertOption.commodity,
+        issuerId: insertOption.issuerId,
+        expirationDate: insertOption.expirationDate,
+        expirationDateType: typeof insertOption.expirationDate,
+      });
+      
+      const [option] = await db
+        .insert(options)
+        .values(insertOption)
+        .returning();
+      
+      console.log("[STORAGE] Option created successfully:", option.id);
+      return option;
+    } catch (error: any) {
+      console.error("[STORAGE] Error in createOption:", {
+        message: error?.message,
+        code: error?.code,
+        detail: error?.detail,
+        stack: error?.stack,
+      });
+      throw error;
+    }
   }
 
   async getOptionById(id: string): Promise<Option | undefined> {
@@ -117,11 +141,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOptionsByUser(userId: string): Promise<Option[]> {
+    // Check both new fields (buyerId/issuerId) and legacy fields (buyer/seller) for backward compatibility
     const userOptions = await db
       .select()
       .from(options)
       .where(
         or(
+          eq(options.buyerId, userId),
+          eq(options.issuerId, userId),
           eq(options.buyer, userId),
           eq(options.seller, userId)
         )

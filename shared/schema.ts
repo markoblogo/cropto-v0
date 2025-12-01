@@ -185,7 +185,7 @@ export const croptBalances = pgTable("cropt_balances", {
 export const platformFees = pgTable("platform_fees", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull(),
-  role: text("role"),
+  role: text("role"), // Optional - may not exist in older DB schemas
   type: text("type").notNull(),
   amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
   currency: text("currency").notNull().default("CROPT"),

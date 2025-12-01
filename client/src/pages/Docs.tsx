@@ -1,22 +1,19 @@
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Book, Users, Shield, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
-import { BackToDashboard } from "@/components/BackToDashboard";
 
 export default function Docs() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <MainLayout>
+      <div>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Documentation</h1>
-            <p className="text-muted-foreground mt-1">
-              Learn how to use Cropto for grain market options trading
-            </p>
-          </div>
-          <BackToDashboard />
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Documentation</h1>
+          <p className="text-muted-foreground mt-1">
+            Learn how to use Cropto for grain market options trading
+          </p>
         </div>
 
         {/* What is Cropto */}
@@ -145,6 +142,6 @@ export default function Docs() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 }

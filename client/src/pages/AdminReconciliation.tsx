@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Download, Filter, Calendar, DollarSign, FileText, AlertCircle } from "lucide-react";
-import { BackToDashboard } from "@/components/BackToDashboard";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 interface Transaction {
   id: string;
@@ -108,14 +107,11 @@ export default function AdminReconciliation() {
   // If still loading user data, show loading
   if (userData === undefined) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header onCreateOption={() => {}} />
-        <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </main>
-      </div>
+      <MainLayout>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </MainLayout>
     );
   }
 
@@ -244,27 +240,14 @@ export default function AdminReconciliation() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header onCreateOption={() => {}} />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Reconciliation &amp; Reports</h1>
-              <p className="text-muted-foreground" data-testid="text-page-description">
-                Review cash flows, settlements, and margin calls with filtering and export
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline">
-                <Link href="/admin">
-                  Back to Admin
-                </Link>
-              </Button>
-              <BackToDashboard />
-            </div>
-          </div>
+    <MainLayout>
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Reconciliation &amp; Reports</h1>
+          <p className="text-muted-foreground" data-testid="text-page-description">
+            Review cash flows, settlements, and margin calls with filtering and export
+          </p>
+        </div>
 
           {/* Filters */}
           <Card>
@@ -540,8 +523,7 @@ export default function AdminReconciliation() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 }

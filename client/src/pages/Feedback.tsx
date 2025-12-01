@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { CheckCircle2, Send } from "lucide-react";
-import { BackToDashboard } from "@/components/BackToDashboard";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const feedbackFormSchema = insertFeedbackSchema.extend({
   name: z.string().min(1, "Name is required"),
@@ -75,8 +75,9 @@ export default function Feedback() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <MainLayout>
+        <div className="flex items-center justify-center">
+          <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-primary" data-testid="icon-success" />
@@ -100,16 +101,14 @@ export default function Feedback() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <MainLayout>
       <div className="max-w-2xl mx-auto">
-        <div className="mb-4">
-          <BackToDashboard />
-        </div>
         <Card>
           <CardHeader>
             <CardTitle data-testid="text-page-title">Partner Feedback</CardTitle>
@@ -240,6 +239,6 @@ export default function Feedback() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 }

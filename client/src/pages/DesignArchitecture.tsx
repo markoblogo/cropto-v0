@@ -1,5 +1,5 @@
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BackToDashboard } from "@/components/BackToDashboard";
 
 const mockScreens = [
   { src: "/assets/designs/design-1.png", caption: "Dashboard - Light & Dark Mode Overview", description: "Main dashboard showing total options, open positions, and total volume stats with options book table" },
@@ -14,29 +14,7 @@ const mockScreens = [
 
 export default function DesignArchitecture() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/cropto-logo.png" 
-                alt="Cropto" 
-                className="h-10 w-auto"
-                data-testid="img-cropto-logo"
-              />
-              <div>
-                <p className="text-xs text-muted-foreground">Design & Architecture</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <BackToDashboard />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <MainLayout>
         <div className="space-y-8">
           <div>
             <h1 className="text-4xl font-bold mb-4">Design & Architecture Gallery</h1>
@@ -136,7 +114,6 @@ export default function DesignArchitecture() {
             </Card>
           </div>
         </div>
-      </main>
-    </div>
+    </MainLayout>
   );
 }

@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { Header } from "@/components/Header";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BackToDashboard } from "@/components/BackToDashboard";
 import { MarkdownSection } from "@/components/MarkdownSection";
 import FlagSwitcher from "@/components/FlagSwitcher";
 import { FileText } from "lucide-react";
@@ -23,13 +22,8 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header onCreateOption={() => {}} />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-4">
-          <BackToDashboard />
-        </div>
-
+    <MainLayout>
+      <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -66,6 +60,6 @@ export default function AboutPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 }

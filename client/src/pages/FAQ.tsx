@@ -1,19 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Header } from "@/components/Header";
-import { BackToDashboard } from "@/components/BackToDashboard";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { useTranslation } from "react-i18next";
 
 export default function FAQ() {
   const { t } = useTranslation();
   
   return (
-    <div className="min-h-screen bg-background">
-      <Header onCreateOption={() => {}} />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-4">
-          <BackToDashboard />
-        </div>
+    <MainLayout>
+      <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl font-bold">{t('faq.title')}</CardTitle>
@@ -128,6 +123,6 @@ export default function FAQ() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 }
