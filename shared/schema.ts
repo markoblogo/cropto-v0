@@ -178,6 +178,9 @@ export const croptBalances = pgTable("cropt_balances", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull().unique(),
   balance: decimal("balance", { precision: 18, scale: 8 }).notNull().default("0"),
+  // Note: locked_collateral column may not exist in DB yet (migration 003)
+  // For now, lockedCollateral is computed from options, not stored in DB
+  // lockedCollateral: decimal("locked_collateral", { precision: 18, scale: 8 }).notNull().default("0"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -185,13 +188,44 @@ export const croptBalances = pgTable("cropt_balances", {
 export const platformFees = pgTable("platform_fees", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull(),
-  role: text("role"), // Optional - may not exist in older DB schemas
-  type: text("type").notNull(),
+  // Note: role column may not exist in DB (migration 002 not applied yet)
+  // When inserting, omit role if column doesn't exist - code handles this gracefully
+  role: text("role"), // Optional - nullable, may not exist in older DB schemas
+  // Note: DB column is named "fee_type" but we use "type" in code for consistency
+  // Map TypeScript field "type" to DB column "fee_type"
+  type: text("fee_type").notNull(),
   amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  notionalAmount: decimal("notional_amount", { precision: 18, scale: 8 }).notNull(),
   currency: text("currency").notNull().default("CROPT"),
   instrument: text("instrument"),
   txId: text("tx_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const partnerOrganizations = pgTable("partner_organizations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  relationship: text("relationship", { 
+    enum: ["prime_broker", "custody", "liquidity_provider", "security_auditor", "other"] 
+  }).notNull(),
+  status: text("status", { enum: ["active", "pending", "inactive"] }).notNull().default("pending"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const serviceContracts = pgTable("service_contracts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  partnerId: varchar("partner_id").notNull().references(() => partnerOrganizations.id),
+  contractCode: text("contract_code").notNull().unique(),
+  valueUsd: decimal("value_usd", { precision: 18, scale: 2 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  status: text("status", { enum: ["active", "pending", "completed", "terminated"] }).notNull().default("pending"),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertOptionSchema = createInsertSchema(options).omit({
@@ -340,6 +374,34 @@ export type InsertCroptBalance = z.infer<typeof insertCroptBalanceSchema>;
 export type CroptBalance = typeof croptBalances.$inferSelect;
 export type InsertPlatformFee = z.infer<typeof insertPlatformFeeSchema>;
 export type PlatformFee = typeof platformFees.$inferSelect;
+
+// Partner Organizations schemas
+export const insertPartnerOrganizationSchema = createInsertSchema(partnerOrganizations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updatePartnerOrganizationSchema = insertPartnerOrganizationSchema.partial();
+
+export type InsertPartnerOrganization = z.infer<typeof insertPartnerOrganizationSchema>;
+export type PartnerOrganization = typeof partnerOrganizations.$inferSelect;
+
+// Service Contracts schemas
+export const insertServiceContractSchema = createInsertSchema(serviceContracts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  valueUsd: z.coerce.number().positive(),
+});
+
+export const updateServiceContractSchema = insertServiceContractSchema.partial();
+
+export type InsertServiceContract = z.infer<typeof insertServiceContractSchema>;
+export type ServiceContract = typeof serviceContracts.$inferSelect;
 
 export interface HealthUpdateResponse {
   lastSync: string; // ISO timestamp from server

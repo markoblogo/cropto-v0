@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql } from "drizzle-orm";
@@ -24,7 +24,8 @@ import {
   computePremiumUSD,
   computeUnrealizedPnLUSD,
   collateralPct,
-  computeNotional
+  computeNotional,
+  getPartnerFeeStats
 } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
@@ -46,6 +47,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (process.env.POLYGON_AMOY_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {
     startTransactionPoller();
     startReconciler();
+    
+    // Start periodic deadline processing (expired options and margin calls)
+    const DEADLINE_CHECK_INTERVAL = 60000; // 1 minute
+    setInterval(async () => {
+      try {
+        await processDeadlines();
+      } catch (error) {
+        console.error('[Cron] Error in deadline processing:', error);
+      }
+    }, DEADLINE_CHECK_INTERVAL);
+    console.log(`[Cron] Started deadline processor with ${DEADLINE_CHECK_INTERVAL}ms interval`);
   }
 
   // Start Telegram integration: Bot API (if token available) OR Public scraper (fallback)
@@ -797,16 +809,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         optionData.expirationDate = expirationDate;
       }
 
+      // Calculate notional value once - will be reused for both collateral calculation and platform fee
+      // notional = strike * quantity in tons (result is in USD)
+      // This is always calculated regardless of whether collateral is needed, as it's also used for platform fee
+      const strikePerTon = parseFloat(result.data.strike); // Already in $/ton
+      const quantityTons = parseFloat(result.data.qty); // Already in tons
+      
+      // Validate inputs before computing notional (computeNotional throws if negative)
+      if (isNaN(strikePerTon) || isNaN(quantityTons) || strikePerTon < 0 || quantityTons < 0) {
+        return res.status(400).json({
+          error: "Invalid strike or quantity",
+          details: `Strike: ${strikePerTon}, Quantity: ${quantityTons}`
+        });
+      }
+      
+      const notional = computeNotional(strikePerTon, quantityTons);
+      
       // Calculate required collateral for the writer (issuer/seller)
       // Collateral is only required for SHORT positions (writer side)
       // When someone creates an option, they are the issuer (seller/writer), so they need to post collateral
       if (!optionData.collateralAmount && expirationDate) {
-        const strikePerTon = parseFloat(result.data.strike); // Already in $/ton
-        const quantityTons = parseFloat(result.data.qty); // Already in tons
-        
-        // Calculate notional value (strike * quantity in tons) - result is in USD
-        const notional = computeNotional(strikePerTon, quantityTons);
-        
         // Calculate expiry duration in months
         const now = new Date();
         const expiryDate = expirationDate;
@@ -851,48 +873,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasCollateralAmount: !!optionData.collateralAmount,
       });
 
-      const option = await storage.createOption(optionData);
+      // Freeze collateral for the seller (issuer) before creating the option
+      const requiredCollateral = parseFloat(optionData.collateralAmount || "0");
       
-      // Record platform fee (TODO: implement actual fee calculation policy)
-      // For now, storing 0 as placeholder
-      const feeAmount = 0; // TODO: implement fee calculation (e.g., premium * 0.001 for 0.1%)
-      try {
-        await db
-          .insert(platformFees)
-          .values({
-            userId: req.user!.id,
-            role: req.user!.role || 'trader', // role column may not exist in DB yet
-            type: 'option_create',
-            amount: feeAmount.toFixed(8),
-            currency: 'CROPT',
-            instrument: option.id,
-            txId: null,
+      if (requiredCollateral > 0) {
+        // Get or create seller's CROPT balance with row lock
+        const [sellerBalance] = await db
+          .select()
+          .from(croptBalances)
+          .where(eq(croptBalances.userId, req.user!.id))
+          .for('update')
+          .limit(1);
+
+        // NOTE: For demo, we don't actually freeze collateral in DB (locked_collateral column doesn't exist)
+        // Instead, we just check that the user has enough balance
+        // The collateralAmount is stored on the option record and used for portfolio calculations
+        const currentBalance = sellerBalance ? parseFloat(sellerBalance.balance) : 0;
+
+        if (currentBalance < requiredCollateral) {
+          return res.status(400).json({
+            error: "Insufficient collateral",
+            details: `Required: ${requiredCollateral.toFixed(2)} CROPT, Available: ${currentBalance.toFixed(2)} CROPT`
           });
-      } catch (feeError: any) {
-        // If role column doesn't exist, try without it (for backward compatibility)
-        if (feeError?.code === '42703' || feeError?.message?.includes('role')) {
-          console.warn("[CREATE_OPTION] platform_fees.role column not found, inserting without role");
-          await db
-            .insert(platformFees)
-            .values({
-              userId: req.user!.id,
-              // role omitted
-              type: 'option_create',
-              amount: feeAmount.toFixed(8),
-              currency: 'CROPT',
-              instrument: option.id,
-              txId: null,
-            });
-        } else {
-          // Re-throw if it's a different error
-          throw feeError;
         }
+
+        // For demo: we don't actually lock the balance in DB
+        // The collateralAmount on the option is used for portfolio display
+        console.log(`[CREATE_OPTION] Option requires ${requiredCollateral.toFixed(2)} CROPT collateral (stored on option, not frozen in DB for demo)`);
+      }
+
+      // Create the option - this is the critical operation that must succeed
+      // If this fails, we want to return 500
+      let createdOption;
+      try {
+        createdOption = await storage.createOption(optionData);
+      } catch (createError: any) {
+        console.error("[CREATE_OPTION_ERROR] Failed to create option row", createError);
+        console.error("[CREATE_OPTION_ERROR] Request body:", JSON.stringify(req.body, null, 2));
+        console.error("[CREATE_OPTION_ERROR] Error type:", createError?.constructor?.name || typeof createError);
+        console.error("[CREATE_OPTION_ERROR] Error message:", createError?.message || String(createError));
+        console.error("[CREATE_OPTION_ERROR] Error stack:", createError?.stack);
+        if (createError?.code) {
+          console.error("[CREATE_OPTION_ERROR] Error code:", createError.code);
+        }
+        return res.status(500).json({ 
+          error: "Failed to create option",
+          details: createError?.message || String(createError)
+        });
       }
       
-      res.status(201).json(option);
+      // IMPORTANT: Platform fee insertion is NON-FATAL
+      // Option creation has already succeeded, so fee logging failures should not cause 500
+      // This block is completely isolated from the main flow and NEVER throws
+      try {
+        // Record platform fee (TODO: implement actual fee calculation policy)
+        // For now, storing 0 as placeholder
+        const feeAmount = 0; // TODO: implement fee calculation (e.g., premium * 0.001 for 0.1%)
+        
+        // Compute and validate notionalAmount before attempting insert
+        // notional was already calculated above (strikePerTon * quantityTons)
+        let notionalAmount: string | null = null;
+        
+        if (typeof notional === 'number' && Number.isFinite(notional) && !Number.isNaN(notional) && notional > 0) {
+          notionalAmount = notional.toFixed(8);
+        } else {
+          console.error('[CREATE_OPTION] Invalid notional for platform fee (skipping insert)', { 
+            strikePerTon, 
+            quantityTons, 
+            notional,
+            optionId: createdOption.id 
+          });
+        }
+        
+        // Only attempt insert if we have a valid notionalAmount
+        if (!notionalAmount) {
+          console.warn("[CREATE_OPTION] Skipping platform_fees insert due to missing/invalid notionalAmount");
+        } else {
+          // Insert platform fee - ensure fee_type (mapped from 'type' field) is always set
+          // The schema maps 'type' field to 'fee_type' column in DB
+          // notionalAmount maps to 'notional_amount' column via Drizzle schema
+          const feeData = {
+            userId: req.user!.id,
+            type: 'option_create' as const, // Explicitly set fee_type via 'type' field
+            amount: feeAmount.toFixed(8),
+            notionalAmount: notionalAmount, // Required: quantity * strike in USD (as string for decimal)
+            currency: 'CROPT' as const,
+            instrument: createdOption.id,
+            txId: null,
+            // role is optional - only include if user has one
+            ...(req.user!.role && { role: req.user!.role }),
+          };
+          
+          // Final validation before insert - double check notionalAmount is present
+          if (!feeData.notionalAmount || feeData.notionalAmount === 'NaN' || feeData.notionalAmount === 'null' || feeData.notionalAmount === '') {
+            console.error('[CREATE_OPTION] Invalid notionalAmount in feeData (skipping fee insert)', { 
+              feeData, 
+              optionId: createdOption.id,
+              notionalAmountValue: feeData.notionalAmount
+            });
+          } else {
+            try {
+              await db.insert(platformFees).values(feeData);
+              console.log(`[CREATE_OPTION] Platform fee recorded for option ${createdOption.id}, userId=${req.user!.id}, fee_type=option_create, notionalAmount=${notionalAmount}, role=${req.user!.role || 'none'}`);
+            } catch (feeError: any) {
+              // Log error but don't fail the request - option was already created successfully
+              console.error("[CREATE_OPTION] Failed to insert platform fee (non-fatal):", feeError?.message || feeError);
+              console.error("[CREATE_OPTION] Fee data attempted:", JSON.stringify(feeData, null, 2));
+              if (feeError?.code) {
+                console.error("[CREATE_OPTION] Fee error code:", feeError.code);
+              }
+              
+              // Try once more without role if it's a role-related error
+              if (feeError?.code === '42703' || feeError?.message?.includes('role') || feeError?.message?.includes('does not exist')) {
+                try {
+                  console.warn("[CREATE_OPTION] Retrying platform fee insert without role column");
+                  const { role, ...feeDataWithoutRole } = feeData;
+                  // Ensure notionalAmount is still present after removing role
+                  if (feeDataWithoutRole.notionalAmount) {
+                    await db.insert(platformFees).values(feeDataWithoutRole);
+                    console.log(`[CREATE_OPTION] Platform fee recorded (retry without role) for option ${createdOption.id}`);
+                  } else {
+                    console.error('[CREATE_OPTION] notionalAmount missing after removing role', { feeDataWithoutRole });
+                  }
+                } catch (retryError: any) {
+                  // Even retry failed - log but continue
+                  console.error("[CREATE_OPTION] Retry also failed (non-fatal):", retryError?.message || retryError);
+                  if (retryError?.code) {
+                    console.error("[CREATE_OPTION] Retry error code:", retryError.code);
+                  }
+                }
+              }
+              // DO NOT re-throw - option creation succeeded, fee logging is secondary
+            }
+          }
+        }
+      } catch (feeBlockError: any) {
+        // Catch any unexpected errors in the entire fee insertion block
+        // This should never happen, but if it does, we log and continue
+        console.error("[CREATE_OPTION] Unexpected error in fee insertion block (non-fatal):", feeBlockError?.message || feeBlockError);
+        console.error("[CREATE_OPTION] Fee block error stack:", feeBlockError?.stack);
+        if (feeBlockError?.code) {
+          console.error("[CREATE_OPTION] Fee block error code:", feeBlockError.code);
+        }
+        // DO NOT re-throw - option was created successfully
+      }
+      
+      // Always return success if option was created
+      // This line must be reached regardless of fee insertion success/failure
+      res.status(201).json(createdOption);
     } catch (error: any) {
-      // Detailed error logging for debugging
-      console.error("[CREATE_OPTION_ERROR] Failed to create option");
+      // This catch block should only catch errors from validation, collateral checks, or option creation
+      // Fee insertion errors are already handled above and should never reach here
+      console.error("[CREATE_OPTION_ERROR] Unexpected error in option creation handler");
       console.error("Request body:", JSON.stringify(req.body, null, 2));
       console.error("Error type:", error?.constructor?.name || typeof error);
       console.error("Error message:", error?.message || String(error));
@@ -1986,31 +2118,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Authentication required" });
       }
 
+      // NOTE: locked_collateral column exists in DB (migration 003 applied)
+      // However, for demo we compute lockedCollateral from active SHORT positions
+      // This ensures consistency and avoids issues if column wasn't applied
+      // lockedCollateral is computed from option.collateralAmount for active SHORT positions
+      
       // Fetch all options where user is buyer or seller
       const userOptions = await storage.getOptionsByUser(userId);
-      
-      // Temporary debug logging
-      console.log(`[Portfolio] Current userId: ${userId}`);
-      console.log(`[Portfolio] Total options found: ${userOptions.length}`);
-      if (userOptions.length > 0) {
-        console.log(`[Portfolio] Sample options:`, userOptions.slice(0, 3).map(opt => ({
-          id: opt.id,
-          buyerId: opt.buyerId,
-          issuerId: opt.issuerId,
-          buyer: opt.buyer,
-          seller: opt.seller,
-          commodity: opt.commodity,
-          status: opt.status
-        })));
-      }
 
       // Fetch settlements for exercised options
       const settlementsData = await storage.listSettlements();
 
-      // Fetch margin calls
-      const marginCalls = await storage.listMarginCalls();
-      const userMarginCalls = marginCalls.filter(mc => 
-        userOptions.some(opt => opt.id === mc.optionId)
+      // Fetch margin calls for user's options
+      const marginCalls = await storage.getMarginCallsByUser(userId);
+      const activeMarginCalls = marginCalls.filter(mc => 
+        mc.status === "PENDING" || mc.status === "OPEN"
       );
 
       // Get all indexes for price lookup
@@ -2036,34 +2158,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let totalPnL = 0;
       let realizedPnL = 0;
       let unrealizedPnL = 0;
-      let totalLockedCollateral = 0;
       let openPositionsCount = 0;
-      let marginCallsCount = 0;
+      const marginCallsCount = activeMarginCalls.length;
 
       const positions = await Promise.all(userOptions.map(async (option) => {
         // Check both new fields (buyerId/issuerId) and legacy fields (buyer/seller) for backward compatibility
         const isBuyer = option.buyerId === userId || option.buyer === userId;
         const isSeller = option.issuerId === userId || option.seller === userId;
         
-        // Temporary debug logging
-        if (userOptions.length <= 5) {
-          console.log(`[Portfolio] Processing option ${option.id}:`, {
-            buyerId: option.buyerId,
-            issuerId: option.issuerId,
-            buyer: option.buyer,
-            seller: option.seller,
-            isBuyer,
-            isSeller,
-            status: option.status
-          });
-        }
-        
         if (!isBuyer && !isSeller) {
-          console.log(`[Portfolio] WARNING: Option ${option.id} skipped - user ${userId} is not buyer or seller`);
           return null; // Skip if user is not involved
         }
 
-        // Parse values from DB - DEBUG: verify actual storage format
+        // Parse values from DB
         const strikeRaw = parseFloat(option.strike);
         const quantityRaw = parseFloat(option.qty);
         const premiumRaw = parseFloat(option.premium);
@@ -2074,28 +2181,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const indexId = commoditySlug ? indexMap.get(commoditySlug.toLowerCase()) : null;
         const currentPricePerTon = indexId ? (priceMap.get(indexId) || 0) : 0;
         
-        // DEBUG: Log raw values to verify storage format
-        if (userOptions.length <= 3) {
-          console.log('[PORTFOLIO_DEBUG] raw option', {
-            id: option.id,
-            underlying: commoditySlug || option.commodity,
-            strikeRaw,
-            quantityRaw,
-            premiumRaw,
-          });
-          console.log('[PORTFOLIO_DEBUG] index price', {
-            indexId,
-            currentPricePerTon,
-          });
-        }
-        
-        // Based on user feedback: strike appears to be stored in $/ton already
-        // If strikeRaw is ~200-700 and currentPricePerTon is also ~200-700, then strike is already in $/ton
-        // Otherwise, if strikeRaw is ~0.2-0.7, then it's in $/kg and needs conversion
-        // For now, assume strike is already in $/ton (no conversion needed)
-        const strikePerTon = strikeRaw; // Use directly - already in $/ton
-        const quantityTons = quantityRaw; // Already in tons per user's note
-        const premiumPerTon = premiumRaw; // Already per ton per user's note
+        // Strike is stored in $/ton, quantity in tons, premium per ton
+        const strikePerTon = strikeRaw;
+        const quantityTons = quantityRaw;
+        const premiumPerTon = premiumRaw;
 
         let pnl = 0;
         let status = option.status;
@@ -2131,76 +2220,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             pnl = totalPremium - intrinsicValue;
           }
           
-          // Temporary debug logging
-          if (userOptions.length <= 3) {
-            console.log(`[Portfolio] Unrealized P&L calc for option ${option.id}:`, {
-              type: option.type,
-              role: isBuyer ? 'buyer' : 'seller',
-              strikePerTon,
-              currentPricePerTon,
-              quantityTons,
-              premiumPerTon,
-              intrinsicValue,
-              totalPremium,
-              pnl,
-            });
-          }
-          
           unrealizedPnL += pnl;
         }
 
-        // Track locked collateral - only for SHORT positions (seller/writer)
-        // Only count for active statuses
+        // Track open positions and compute locked collateral for SHORT positions
         const isActiveStatus = option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL';
         if (isActiveStatus) {
           openPositionsCount++;
           
-          // Collateral is only locked for SHORT positions (seller/writer)
-          // LONG positions (buyer) don't require collateral
+          // Locked collateral is only for SHORT positions (seller/writer)
+          // Sum the collateralAmount from active SHORT options
           if (isSeller && collateral > 0) {
-            totalLockedCollateral += collateral;
-            
-            // Temporary debug logging
-            if (userOptions.length <= 3) {
-              console.log(`[Portfolio] Adding collateral for SHORT position ${option.id}:`, {
-                collateral,
-                status: option.status,
-                isSeller,
-              });
-            }
-          }
-          
-          // Calculate margin calls dynamically for SHORT positions
-          if (isSeller && collateral > 0 && currentPricePerTon > 0) {
-            const intrinsicValue = computeIntrinsicValueUSDCorrected(
-              option.type,
-              strikePerTon,
-              currentPricePerTon,
-              quantityTons
-            );
-            
-            // Check if margin call should be triggered
-            // For SHORT positions, intrinsic value represents potential loss
-            // Margin call triggers when intrinsic value >= 80% of collateral
-            const shouldTrigger = shouldTriggerMargin(intrinsicValue, collateral);
-            if (shouldTrigger) {
-              marginCallsCount++;
-              
-              // Temporary debug logging
-              if (userOptions.length <= 3) {
-                const marginCallAmount = calculateMarginCallAmount(intrinsicValue, collateral);
-                console.log(`[Portfolio] Margin call detected for option ${option.id}:`, {
-                  optionType: option.type,
-                  role: 'seller',
-                  intrinsicValue,
-                  collateral,
-                  marginCallAmount,
-                  currentPricePerTon,
-                  strikePerTon,
-                  quantityTons,
-                });
-              }
-            }
+            // Collateral is already stored on the option record
+            // No need to query DB column that may not exist
           }
         }
 
@@ -2225,17 +2257,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter out null positions
       const validPositions = positions.filter((p): p is NonNullable<typeof p> => p !== null);
       
-      // Temporary debug logging
-      console.log(`[Portfolio] Valid positions count: ${validPositions.length}`);
-      console.log(`[Portfolio] Summary for user ${userId}:`, {
-        totalPnL: totalPnL.toFixed(2),
-        realizedPnL: realizedPnL.toFixed(2),
-        unrealizedPnL: unrealizedPnL.toFixed(2),
-        lockedCollateral: totalLockedCollateral.toFixed(2),
-        openPositions: openPositionsCount,
-        marginCalls: marginCallsCount,
-      });
-
+      // Compute locked collateral from active SHORT positions
+      // Sum collateralAmount from all active options where user is seller
+      let totalLockedCollateral = 0;
+      for (const option of userOptions) {
+        const isSeller = option.issuerId === userId || option.seller === userId;
+        const isActiveStatus = option.status === 'FILLED' || option.status === 'OPEN' || option.status === 'MARGIN_CALL';
+        if (isSeller && isActiveStatus) {
+          const collateral = parseFloat(option.collateralAmount || '0');
+          totalLockedCollateral += collateral;
+        }
+      }
+      
       res.json({
         totalPnL: totalPnL.toFixed(2),
         realizedPnL: realizedPnL.toFixed(2),
@@ -2250,6 +2283,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Portfolio aggregation error:", error);
       res.status(500).json({ error: error.message || "Failed to fetch portfolio" });
+    }
+  });
+
+  // ===== PARTNERS & CONTRACTS API =====
+  
+  // GET /api/admin/partners
+  app.get("/api/admin/partners", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: admin access required" });
+      }
+
+      const partners = await storage.getPartnerOrganizations();
+      const contracts = await storage.getServiceContracts();
+      
+      // Get platform fees for fee stats calculation
+      const allFees = await db
+        .select()
+        .from(platformFees)
+        .orderBy(desc(platformFees.createdAt));
+
+      // Calculate contract counts, total values, and fee stats per partner
+      const partnersWithStats = await Promise.all(partners.map(async (partner) => {
+        const partnerContracts = contracts.filter(c => c.partnerId === partner.id);
+        const activeContracts = partnerContracts.filter(c => c.status === 'active');
+        const totalContractValue = partnerContracts.reduce((sum, c) => sum + parseFloat(c.valueUsd), 0);
+        
+        // Get fee stats (demo implementation)
+        const feeStats = await getPartnerFeeStats(
+          partner.id,
+          allFees.map(f => ({ amount: f.amount, currency: f.currency, createdAt: f.createdAt }))
+        );
+        
+        return {
+          ...partner,
+          contractsCount: partnerContracts.length,
+          activeContractsCount: activeContracts.length,
+          totalContractValueUsd: totalContractValue.toFixed(2),
+          totalFeesUsd: feeStats.totalFeesUsd.toFixed(2),
+          totalVolumeUsd: feeStats.totalVolumeUsd.toFixed(2),
+        };
+      }));
+
+      res.json({ partners: partnersWithStats });
+    } catch (error: any) {
+      console.error("Error fetching partners:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch partners" });
+    }
+  });
+
+  // GET /api/admin/service-contracts
+  app.get("/api/admin/service-contracts", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: admin access required" });
+      }
+
+      const contracts = await storage.getServiceContracts();
+      const partners = await storage.getPartnerOrganizations();
+
+      // Enrich contracts with partner names
+      const contractsWithPartnerNames = contracts.map(contract => {
+        const partner = partners.find(p => p.id === contract.partnerId);
+        return {
+          ...contract,
+          partnerName: partner?.name || 'Unknown',
+        };
+      });
+
+      res.json({ contracts: contractsWithPartnerNames });
+    } catch (error: any) {
+      console.error("Error fetching service contracts:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch service contracts" });
+    }
+  });
+
+  // POST /api/admin/partners
+  app.post("/api/admin/partners", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: admin access required" });
+      }
+
+      const result = insertPartnerOrganizationSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: "Invalid partner data", 
+          details: fromZodError(result.error).message 
+        });
+      }
+
+      const { id, ...partnerData } = req.body;
+      const partner = await storage.createOrUpdatePartner(result.data, id);
+
+      res.status(id ? 200 : 201).json(partner);
+    } catch (error: any) {
+      console.error("Error creating/updating partner:", error);
+      res.status(500).json({ error: error.message || "Failed to create/update partner" });
+    }
+  });
+
+  // POST /api/admin/service-contracts
+  app.post("/api/admin/service-contracts", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: admin access required" });
+      }
+
+      const result = insertServiceContractSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: "Invalid contract data", 
+          details: fromZodError(result.error).message 
+        });
+      }
+
+      const { id, ...contractData } = req.body;
+      const contract = await storage.createOrUpdateServiceContract(result.data, id);
+
+      res.status(id ? 200 : 201).json(contract);
+    } catch (error: any) {
+      console.error("Error creating/updating service contract:", error);
+      res.status(500).json({ error: error.message || "Failed to create/update service contract" });
     }
   });
 

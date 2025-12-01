@@ -196,10 +196,15 @@ export function OptionsTable({
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            Options Book
-          </CardTitle>
+          <div>
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Option Chain
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Browse and trade commodity options contracts
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[140px]" data-testid="select-type-filter">
@@ -304,7 +309,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-qty"
                     >
-                      Qty
+                      Qty (t)
                       {getSortIcon("qty")}
                     </Button>
                   </TableHead>
@@ -321,7 +326,16 @@ export function OptionsTable({
                     </Button>
                   </TableHead>
                   <TableHead className="font-semibold">
-                    Counterparty
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleSort("createdAt")}
+                      className="hover-elevate gap-1 h-8"
+                      data-testid="button-sort-expiry"
+                    >
+                      Expiry
+                      {getSortIcon("createdAt")}
+                    </Button>
                   </TableHead>
                   <TableHead className="font-semibold">
                     <Button 
@@ -367,27 +381,18 @@ export function OptionsTable({
                     <OptionTypeBadge type={option.type as "CALL" | "PUT"} />
                   </TableCell>
                   <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-strike-${option.id}`}>
-                    ${parseFloat(option.strike).toLocaleString()}
+                    ${parseFloat(option.strike).toLocaleString()}/t
                   </TableCell>
                   <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-qty-${option.id}`}>
-                    {Number(option.qty).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    {Number(option.qty).toLocaleString(undefined, { maximumFractionDigits: 2 })} t
                   </TableCell>
                   <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-premium-${option.id}`}>
-                    ${parseFloat(option.premium).toLocaleString()}
+                    {parseFloat(option.premium).toLocaleString()} CROPT
                   </TableCell>
-                  <TableCell className="font-mono text-sm whitespace-nowrap" data-testid={`text-counterparty-${option.id}`}>
-                    {(() => {
-                      const buyerShort = option.buyer ? `${option.buyer.slice(0, 6)}...${option.buyer.slice(-4)}` : "-";
-                      const sellerShort = option.seller ? `${option.seller.slice(0, 6)}...${option.seller.slice(-4)}` : "-";
-
-                      if (userId && option.buyerId === userId) {
-                        return <>You ↔ {sellerShort}</>;
-                      }
-                      if (userId && option.issuerId === userId) {
-                        return <>{buyerShort} ↔ You</>;
-                      }
-                      return <>{buyerShort} ↔ {sellerShort}</>;
-                    })()}
+                  <TableCell className="text-sm whitespace-nowrap" data-testid={`text-expiry-${option.id}`}>
+                    {option.expirationDate 
+                      ? format(new Date(option.expirationDate), "MMM dd, yyyy")
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />

@@ -11,6 +11,8 @@ import {
   platformFees,
   croptBalances,
   spotPositions,
+  partnerOrganizations,
+  serviceContracts,
   type Option, 
   type InsertOption, 
   type Trade, 
@@ -25,10 +27,14 @@ import {
   type Transaction,
   type InsertTransaction,
   type Feedback,
-  type InsertFeedback
+  type InsertFeedback,
+  type PartnerOrganization,
+  type InsertPartnerOrganization,
+  type ServiceContract,
+  type InsertServiceContract
 } from "@shared/schema";
 import { db } from "./db";
-import { desc, eq, and, lt, or } from "drizzle-orm";
+import { desc, eq, and, lt, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   listOptions(): Promise<Option[]>;
@@ -59,6 +65,16 @@ export interface IStorage {
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
   listFeedback(): Promise<Feedback[]>;
   updateFeedback(id: string, updates: Partial<Feedback>): Promise<Feedback>;
+  // Partner Organizations
+  getPartnerOrganizations(): Promise<PartnerOrganization[]>;
+  getPartnerById(id: string): Promise<PartnerOrganization | undefined>;
+  createOrUpdatePartner(partner: InsertPartnerOrganization, id?: string): Promise<PartnerOrganization>;
+  // Service Contracts
+  getServiceContracts(): Promise<ServiceContract[]>;
+  getServiceContractById(id: string): Promise<ServiceContract | undefined>;
+  getServiceContractsByPartner(partnerId: string): Promise<ServiceContract[]>;
+  createOrUpdateServiceContract(contract: InsertServiceContract, id?: string): Promise<ServiceContract>;
+  getPartnerWithContracts(partnerId: string): Promise<{ partner: PartnerOrganization; contracts: ServiceContract[] } | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -259,34 +275,27 @@ export class DatabaseStorage implements IStorage {
       const premiumPaid = parseFloat(option.premium);
       const collateralAmount = parseFloat(option.collateralAmount || "0");
 
-      // Settlement metrics (kept for reporting)
-      let intrinsicValue = 0;
-      let payout = 0;
-      let profitLoss = 0;
+      // Calculate intrinsic value using corrected helper (strike already in $/ton)
+      const intrinsicValue = option.type === "CALL"
+        ? Math.max(0, (spot - strikePricePerTon) * quantityTons)
+        : Math.max(0, (strikePricePerTon - spot) * quantityTons);
 
-      if (option.type === "CALL") {
-        intrinsicValue = Math.max(0, (spot - strikePricePerTon) * quantityTons);
-      } else {
-        intrinsicValue = Math.max(0, (strikePricePerTon - spot) * quantityTons);
-      }
-
-      payout = Math.min(collateralAmount, intrinsicValue);
-      profitLoss = payout - (premiumPaid * quantityTons);
-
-      // Identify holder (exerciser) and counterparty
+      // Identify holder (exerciser) and counterparty (seller)
       const holderId = exercisedBy;
-      const counterpartyId = option.buyerId === holderId ? option.issuerId : option.buyerId;
+      const isHolderBuyer = option.buyerId === holderId;
+      const sellerId = isHolderBuyer ? option.issuerId : option.buyerId;
 
-      if (!counterpartyId) {
-        throw new Error("Option is missing counterparty information");
+      if (!sellerId) {
+        throw new Error("Option is missing seller information");
       }
 
-      // Monetary flow for exercise based on strike
-      const costAtStrike = quantityTons * strikePricePerTon; // CROPT amount
+      // Calculate payout: buyer receives intrinsic value, seller pays it
+      const payout = intrinsicValue; // Full intrinsic value is the payout
+      const costAtStrike = quantityTons * strikePricePerTon; // CROPT amount for spot position
       const quantityKg = quantityTons * 1000;
       const strikePricePerKg = strikePricePerTon / 1000;
 
-      // Lock CROPT balances for both parties
+      // Get balances with row locks
       const [holderBalance] = await tx
         .select()
         .from(croptBalances)
@@ -294,76 +303,158 @@ export class DatabaseStorage implements IStorage {
         .for('update')
         .limit(1);
 
-      const [counterpartyBalance] = await tx
+      const [sellerBalance] = await tx
         .select()
         .from(croptBalances)
-        .where(eq(croptBalances.userId, counterpartyId))
+        .where(eq(croptBalances.userId, sellerId))
         .for('update')
         .limit(1);
 
       const holderCurrent = holderBalance ? parseFloat(holderBalance.balance) : 0;
-      const counterpartyCurrent = counterpartyBalance ? parseFloat(counterpartyBalance.balance) : 0;
+      const sellerCurrent = sellerBalance ? parseFloat(sellerBalance.balance) : 0;
+      
+      // NOTE: For demo, we don't track lockedCollateral in DB
+      // The collateralAmount on the option is informational only
+
+      // Calculate P&L for buyer and seller
+      const totalPremium = premiumPaid * quantityTons;
+      const buyerPnL = isHolderBuyer ? (payout - totalPremium) : (-payout - totalPremium);
+      const sellerPnL = isHolderBuyer ? (totalPremium - payout) : (totalPremium + payout);
 
       let holderNew = holderCurrent;
-      let counterpartyNew = counterpartyCurrent;
+      let sellerNew = sellerCurrent;
 
       if (option.type === "CALL") {
-        // Holder buys underlying at strike: holder pays, counterparty receives
-        if (holderCurrent < costAtStrike) {
-          const error: any = new Error("Insufficient CROPT balance to exercise option");
-          error.statusCode = 400;
-          throw error;
-        }
-        holderNew = holderCurrent - costAtStrike;
-        counterpartyNew = counterpartyCurrent + costAtStrike;
+        // CALL: buyer exercises right to buy at strike
+        // Buyer pays strike price, receives underlying
+        // Seller receives strike price, delivers underlying
+        if (isHolderBuyer) {
+          // Buyer exercises: pays strike, receives underlying
+          if (holderCurrent < costAtStrike) {
+            const error: any = new Error("Insufficient CROPT balance to exercise option");
+            error.statusCode = 400;
+            throw error;
+          }
+          holderNew = holderCurrent - costAtStrike;
+          sellerNew = sellerCurrent + costAtStrike;
 
-        // Create long spot position for holder
-        await tx.insert(spotPositions).values({
-          userId: holderId,
-          commoditySlug: option.commodity,
-          quantityKg: quantityKg.toFixed(8),
-          avgEntryPrice: strikePricePerKg.toFixed(8),
-        });
+          // Create long spot position for buyer
+          await tx.insert(spotPositions).values({
+            userId: holderId,
+            commoditySlug: option.commodity,
+            quantityKg: quantityKg.toFixed(8),
+            avgEntryPrice: strikePricePerKg.toFixed(8),
+          });
+        } else {
+          // Seller is exercising (unusual but possible): seller pays, buyer receives
+          if (sellerCurrent < costAtStrike) {
+            const error: any = new Error("Insufficient CROPT balance to exercise option");
+            error.statusCode = 400;
+            throw error;
+          }
+          holderNew = holderCurrent + costAtStrike;
+          sellerNew = sellerCurrent - costAtStrike;
+
+          // Create short spot position for seller
+          await tx.insert(spotPositions).values({
+            userId: sellerId,
+            commoditySlug: option.commodity,
+            quantityKg: (-quantityKg).toFixed(8),
+            avgEntryPrice: strikePricePerKg.toFixed(8),
+          });
+        }
       } else {
-        // PUT: holder sells underlying at strike: counterparty pays, holder receives
-        if (counterpartyCurrent < costAtStrike) {
-          const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
-          error.statusCode = 400;
-          throw error;
-        }
-        holderNew = holderCurrent + costAtStrike;
-        counterpartyNew = counterpartyCurrent - costAtStrike;
+        // PUT: buyer exercises right to sell at strike
+        // Buyer delivers underlying, receives strike
+        // Seller receives underlying, pays strike
+        if (isHolderBuyer) {
+          // Buyer exercises: delivers underlying, receives strike
+          if (sellerCurrent < costAtStrike) {
+            const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
+            error.statusCode = 400;
+            throw error;
+          }
+          holderNew = holderCurrent + costAtStrike;
+          sellerNew = sellerCurrent - costAtStrike;
 
-        // Create short spot position for holder (negative quantity)
-        await tx.insert(spotPositions).values({
-          userId: holderId,
-          commoditySlug: option.commodity,
-          quantityKg: (-quantityKg).toFixed(8),
-          avgEntryPrice: strikePricePerKg.toFixed(8),
-        });
+          // Create short spot position for buyer
+          await tx.insert(spotPositions).values({
+            userId: holderId,
+            commoditySlug: option.commodity,
+            quantityKg: (-quantityKg).toFixed(8),
+            avgEntryPrice: strikePricePerKg.toFixed(8),
+          });
+        } else {
+          // Seller is exercising: seller delivers, buyer receives
+          if (holderCurrent < costAtStrike) {
+            const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
+            error.statusCode = 400;
+            throw error;
+          }
+          holderNew = holderCurrent - costAtStrike;
+          sellerNew = sellerCurrent + costAtStrike;
+
+          // Create long spot position for seller
+          await tx.insert(spotPositions).values({
+            userId: sellerId,
+            commoditySlug: option.commodity,
+            quantityKg: quantityKg.toFixed(8),
+            avgEntryPrice: strikePricePerKg.toFixed(8),
+          });
+        }
       }
 
-      // Upsert CROPT balances
+      // If payout > 0, transfer from seller's collateral/free balance to buyer
+      if (payout > 0) {
+        // Payout comes from seller's collateral first, then free balance
+        const payoutFromCollateral = Math.min(collateralAmount, payout);
+        const payoutFromFree = Math.max(0, payout - payoutFromCollateral);
+
+        if (payoutFromFree > 0 && sellerNew < payoutFromFree) {
+          const error: any = new Error("Seller has insufficient balance to cover payout");
+          error.statusCode = 400;
+          throw error;
+        }
+
+        holderNew += payout;
+        sellerNew -= payout;
+      }
+      // NOTE: For demo, we don't release lockedCollateral back to balance
+      // The collateralAmount on the option is informational only
+
+      // Upsert CROPT balances (without lockedCollateral - column doesn't exist in DB)
       if (holderBalance) {
         await tx
           .update(croptBalances)
-          .set({ balance: holderNew.toFixed(8) })
+          .set({ 
+            balance: holderNew.toFixed(8),
+            updatedAt: new Date(),
+          })
           .where(eq(croptBalances.userId, holderId));
       } else {
         await tx
           .insert(croptBalances)
-          .values({ userId: holderId, balance: holderNew.toFixed(8) });
+          .values({ 
+            userId: holderId, 
+            balance: holderNew.toFixed(8),
+          });
       }
 
-      if (counterpartyBalance) {
+      if (sellerBalance) {
         await tx
           .update(croptBalances)
-          .set({ balance: counterpartyNew.toFixed(8) })
-          .where(eq(croptBalances.userId, counterpartyId));
+          .set({ 
+            balance: sellerNew.toFixed(8),
+            updatedAt: new Date(),
+          })
+          .where(eq(croptBalances.userId, sellerId));
       } else {
         await tx
           .insert(croptBalances)
-          .values({ userId: counterpartyId, balance: counterpartyNew.toFixed(8) });
+          .values({ 
+            userId: sellerId, 
+            balance: sellerNew.toFixed(8),
+          });
       }
 
       // Record settlement for reporting
@@ -376,15 +467,21 @@ export class DatabaseStorage implements IStorage {
           strike: option.strike,
           qty: option.qty,
           payout: payout.toFixed(8),
-          profitLoss: profitLoss.toFixed(8),
+          profitLoss: (isHolderBuyer ? buyerPnL : sellerPnL).toFixed(8),
         })
         .returning();
 
-      // Mark option as exercised
+      // Mark option as EXERCISED (will be treated as SETTLED in portfolio)
       await tx
         .update(options)
-        .set({ status: "EXERCISED", lastUpdated: new Date() })
+        .set({ 
+          status: "EXERCISED",
+          lastUpdated: new Date(),
+          payoutAccumulated: payout.toFixed(8),
+        })
         .where(eq(options.id, optionId));
+
+      console.log(`[EXERCISE] Option ${optionId} exercised: payout=${payout.toFixed(2)}, buyerPnL=${buyerPnL.toFixed(2)}, sellerPnL=${sellerPnL.toFixed(2)}, released collateral=${collateralAmount.toFixed(2)}`);
 
       // Record transaction describing the cash flow at strike
       await tx
@@ -392,14 +489,31 @@ export class DatabaseStorage implements IStorage {
         .values({
           optionId: option.id,
           type: "PAYOUT",
-          fromUserId: option.type === "CALL" ? holderId : counterpartyId,
-          toUserId: option.type === "CALL" ? counterpartyId : holderId,
+          fromUserId: option.type === "CALL" ? holderId : sellerId,
+          toUserId: option.type === "CALL" ? sellerId : holderId,
           amount: costAtStrike.toFixed(8),
           description: `Option ${option.type} exercised at strike $${strikePricePerTon} for ${quantityTons} tons`,
         });
 
       // Record platform fee (kept as 0 placeholder)
       const feeAmount = 0;
+      // Calculate notional amount: quantity_tons * strike_price_usd_per_ton
+      // Note: strikePricePerTon and quantityTons are already defined above in this function
+      const notionalAmountUsd = strikePricePerTon * quantityTons;
+      
+      // Defensive check
+      if (notionalAmountUsd == null || Number.isNaN(notionalAmountUsd) || notionalAmountUsd < 0) {
+        console.error('[EXERCISE_OPTION] Invalid notionalAmount calculated', { 
+          strikePricePerTon, 
+          quantityTons, 
+          notionalAmountUsd,
+          optionId: option.id 
+        });
+        throw new Error('Invalid notional amount calculated for platform fee');
+      }
+      
+      const notionalAmount = notionalAmountUsd.toFixed(8);
+      
       await tx
         .insert(platformFees)
         .values({
@@ -407,6 +521,7 @@ export class DatabaseStorage implements IStorage {
           role: null,
           type: 'option_exercise',
           amount: feeAmount.toFixed(8),
+          notionalAmount: notionalAmount,
           currency: 'CROPT',
           instrument: option.id,
           txId: null,
@@ -536,6 +651,25 @@ export class DatabaseStorage implements IStorage {
     return expiredMarginCalls;
   }
 
+  async getExpiredOptions(): Promise<Option[]> {
+    const now = new Date();
+    const expiredOptions = await db
+      .select()
+      .from(options)
+      .where(
+        and(
+          sql`${options.expirationDate} IS NOT NULL`,
+          sql`${options.expirationDate} <= ${now}`,
+          or(
+            eq(options.status, "OPEN"),
+            eq(options.status, "FILLED")
+          )
+        )
+      )
+      .orderBy(desc(options.createdAt));
+    return expiredOptions;
+  }
+
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const [transaction] = await db
       .insert(transactions)
@@ -643,6 +777,103 @@ export class DatabaseStorage implements IStorage {
       .where(eq(feedback.id, id))
       .returning();
     return feedbackEntry;
+  }
+
+  // Partner Organizations
+  async getPartnerOrganizations(): Promise<PartnerOrganization[]> {
+    return await db
+      .select()
+      .from(partnerOrganizations)
+      .orderBy(desc(partnerOrganizations.createdAt));
+  }
+
+  async getPartnerById(id: string): Promise<PartnerOrganization | undefined> {
+    const [partner] = await db
+      .select()
+      .from(partnerOrganizations)
+      .where(eq(partnerOrganizations.id, id))
+      .limit(1);
+    return partner;
+  }
+
+  async createOrUpdatePartner(partner: InsertPartnerOrganization, id?: string): Promise<PartnerOrganization> {
+    if (id) {
+      const [updated] = await db
+        .update(partnerOrganizations)
+        .set({
+          ...partner,
+          updatedAt: new Date(),
+        })
+        .where(eq(partnerOrganizations.id, id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(partnerOrganizations)
+        .values(partner)
+        .returning();
+      return created;
+    }
+  }
+
+  // Service Contracts
+  async getServiceContracts(): Promise<ServiceContract[]> {
+    return await db
+      .select()
+      .from(serviceContracts)
+      .orderBy(desc(serviceContracts.createdAt));
+  }
+
+  async getServiceContractById(id: string): Promise<ServiceContract | undefined> {
+    const [contract] = await db
+      .select()
+      .from(serviceContracts)
+      .where(eq(serviceContracts.id, id))
+      .limit(1);
+    return contract;
+  }
+
+  async getServiceContractsByPartner(partnerId: string): Promise<ServiceContract[]> {
+    return await db
+      .select()
+      .from(serviceContracts)
+      .where(eq(serviceContracts.partnerId, partnerId))
+      .orderBy(desc(serviceContracts.createdAt));
+  }
+
+  async createOrUpdateServiceContract(contract: InsertServiceContract, id?: string): Promise<ServiceContract> {
+    // Convert valueUsd to string for database
+    const contractData = {
+      ...contract,
+      valueUsd: typeof contract.valueUsd === 'number' ? contract.valueUsd.toFixed(2) : contract.valueUsd,
+    };
+
+    if (id) {
+      const [updated] = await db
+        .update(serviceContracts)
+        .set({
+          ...contractData,
+          updatedAt: new Date(),
+        })
+        .where(eq(serviceContracts.id, id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(serviceContracts)
+        .values(contractData)
+        .returning();
+      return created;
+    }
+  }
+
+  async getPartnerWithContracts(partnerId: string): Promise<{ partner: PartnerOrganization; contracts: ServiceContract[] } | undefined> {
+    const partner = await this.getPartnerById(partnerId);
+    if (!partner) {
+      return undefined;
+    }
+    const contracts = await this.getServiceContractsByPartner(partnerId);
+    return { partner, contracts };
   }
 }
 

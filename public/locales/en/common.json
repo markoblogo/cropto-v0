@@ -119,6 +119,17 @@
       "buy": "Buy",
       "sell": "Sell",
       "pricePerKg": "Price per ton"
+    },
+    "trading": {
+      "title": "Spot Trading",
+      "pair": "Pair",
+      "selectPair": "Select trading pair",
+      "price": "Price",
+      "change24h": "24h change"
+    },
+    "index": {
+      "export": "Export index",
+      "processing": "Processing index"
     }
   },
   "page": {
@@ -221,6 +232,31 @@
           "unrealized": "Unrealized"
         }
       },
+      "collateralRisk": {
+        "title": "Collateral & Risk",
+        "availableMargin": "Available Margin",
+        "availableMarginDesc": "Free collateral for new positions",
+        "usedMargin": "Used Margin",
+        "usedMarginDesc": "Locked in active positions",
+        "riskLevel": "Risk Level",
+        "riskLevelHigh": "High risk",
+        "riskLevelModerate": "Moderate risk",
+        "riskLevelLow": "Low risk",
+        "marginUtilization": "Margin Utilization",
+        "liquidationThreshold": "Liquidation Threshold",
+        "marginCallsActive": "Margin Calls Active",
+        "marginCallsActiveDesc": "You have {{count}} active margin call{{plural}}. Please top up your collateral to avoid liquidation."
+      },
+      "filters": {
+        "all": "All",
+        "active": "Active",
+        "settled": "Settled",
+        "expired": "Expired"
+      },
+      "sections": {
+        "optionPositions": "Option Positions",
+        "spotPositions": "Spot Positions"
+      },
       "loadError": "Failed to load portfolio data. Please try again."
     },
     "admin": {
@@ -285,7 +321,8 @@
       "cancel": "Cancel"
     },
     "optionsTable": {
-      "title": "Options Book",
+      "title": "Option Chain",
+      "subtitle": "Browse and trade commodity options contracts",
       "empty": "No Options Found",
       "emptyCreate": "Get started by creating your first option contract.",
       "emptyFilter": "No options match your current filters. Try adjusting them.",
@@ -305,13 +342,43 @@
         "title": "Title",
         "type": "Type",
         "strike": "Strike",
-        "qty": "Quantity",
+        "qty": "Qty (t)",
         "premium": "Premium",
-        "buyer": "Buyer",
-        "seller": "Seller",
+        "expiry": "Expiry",
         "status": "Status",
-        "created": "Created",
         "actions": "Actions"
+      }
+    },
+    "createOption": {
+      "block1": {
+        "title": "Contract Terms",
+        "description": "Define the basic terms of the option contract",
+        "commodity": "Commodity / Index",
+        "type": "Option Type",
+        "quantity": "Quantity (tons)",
+        "strike": "Strike Price ($/t)",
+        "expiry": "Expiration Date",
+        "premium": "Premium (CROPT)"
+      },
+      "block2": {
+        "title": "Collateral Model",
+        "description": "Standard collateral model (calculated automatically based on expiry duration)",
+        "tooltip": "Collateral is required from the seller to cover potential obligations. For MVP, we use a simplified model based on expiry duration (5% for ≤3 months, 10% for 4-6 months, 20% for 7+ months)."
+      },
+      "block3": {
+        "title": "Price Preview",
+        "premium": "Premium:",
+        "notional": "Notional Value:",
+        "settlement": "Settlement Logic:",
+        "callSettlement": "If index at expiry is above strike, buyer receives (index - strike) × quantity. Otherwise, no payout.",
+        "putSettlement": "If index at expiry is below strike, seller pays (strike - index) × quantity. Otherwise, no payout."
+      },
+      "block4": {
+        "title": "Transaction & Signature",
+        "walletNotConnected": "Wallet not connected",
+        "connectWallet": "Connect Wallet",
+        "wallet": "Wallet:",
+        "croptBalance": "CROPT Balance:"
       }
     },
     "notifications": {

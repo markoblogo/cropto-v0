@@ -220,6 +220,14 @@ export function registerSpotRoutes(app: Express) {
         // Record platform fee (TODO: implement actual fee calculation policy)
         // For now, storing 0 as placeholder
         const feeAmount = 0; // TODO: implement fee calculation (e.g., cost * 0.001 for 0.1%)
+        // For spot buy, notional amount is the cost (quantity * price)
+        // Defensive check: ensure cost is valid
+        if (cost == null || Number.isNaN(cost) || cost < 0) {
+          console.error('[SPOT_BUY] Invalid cost for notionalAmount', { cost, commoditySlug, userId });
+          throw new Error('Invalid cost for platform fee notional amount');
+        }
+        const notionalAmount = cost.toFixed(8);
+        
         await tx
           .insert(platformFees)
           .values({
@@ -227,6 +235,7 @@ export function registerSpotRoutes(app: Express) {
             role: req.user.role || 'trader',
             type: 'spot_buy',
             amount: feeAmount.toFixed(8),
+            notionalAmount: notionalAmount,
             currency: 'CROPT',
             instrument: commoditySlug,
             txId: null,
@@ -413,6 +422,14 @@ export function registerSpotRoutes(app: Express) {
         // Record platform fee (TODO: implement actual fee calculation policy)
         // For now, storing 0 as placeholder
         const feeAmount = 0; // TODO: implement fee calculation (e.g., payout * 0.001 for 0.1%)
+        // For spot sell, notional amount is the payout (quantity * price)
+        // Defensive check: ensure payout is valid
+        if (payout == null || Number.isNaN(payout) || payout < 0) {
+          console.error('[SPOT_SELL] Invalid payout for notionalAmount', { payout, commoditySlug, userId });
+          throw new Error('Invalid payout for platform fee notional amount');
+        }
+        const notionalAmount = payout.toFixed(8);
+        
         await tx
           .insert(platformFees)
           .values({
@@ -420,6 +437,7 @@ export function registerSpotRoutes(app: Express) {
             role: req.user.role || 'trader',
             type: 'spot_sell',
             amount: feeAmount.toFixed(8),
+            notionalAmount: notionalAmount,
             currency: 'CROPT',
             instrument: commoditySlug,
             txId: null,
@@ -675,6 +693,14 @@ export function registerSpotRoutes(app: Express) {
         // Record platform fee (TODO: implement actual fee calculation policy)
         // For now, storing 0 as placeholder
         const feeAmount = 0; // TODO: implement fee calculation
+        // For deposit, notional amount equals the deposit amount (or 0 if no meaningful notional)
+        // Defensive check: ensure depositAmount is valid
+        if (depositAmount == null || Number.isNaN(depositAmount) || depositAmount < 0) {
+          console.error('[DEPOSIT] Invalid depositAmount for notionalAmount', { depositAmount, userId });
+          throw new Error('Invalid deposit amount for platform fee notional amount');
+        }
+        const notionalAmount = depositAmount.toFixed(8);
+        
         await tx
           .insert(platformFees)
           .values({
@@ -682,6 +708,7 @@ export function registerSpotRoutes(app: Express) {
             role: req.user?.role || 'trader',
             type: 'deposit',
             amount: feeAmount.toFixed(8),
+            notionalAmount: notionalAmount,
             currency: 'CROPT',
             instrument: null,
             txId: null,

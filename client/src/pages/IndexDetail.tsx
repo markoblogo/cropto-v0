@@ -327,7 +327,13 @@ export default function IndexDetail() {
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
           onSubmit={async (data) => {
-            await createOptionMutation.mutateAsync(data);
+            try {
+              await createOptionMutation.mutateAsync(data);
+            } catch (error) {
+              // Error is already handled by mutation's onError callback
+              // This catch prevents unhandled promise rejection and Vite ErrorOverlay issues
+              console.error("Create option error:", error);
+            }
           }}
           isPending={createOptionMutation.isPending}
           defaultCommodity={indexData.name}

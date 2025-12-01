@@ -8,6 +8,7 @@ import { MetricCards } from "@/components/MetricCards";
 import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
+import { SpotTradingBlock } from "@/components/SpotTradingBlock";
 import { CroptMintButton } from "@/components/CroptMintButton";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
@@ -329,6 +330,9 @@ export default function Dashboard() {
           {/* Commodity Indexes */}
           <CommodityIndexesGrid />
 
+          {/* Spot Trading Block */}
+          <SpotTradingBlock />
+
           {/* Spot Market */}
           <SpotMarketGrid />
 
@@ -338,9 +342,9 @@ export default function Dashboard() {
           {/* Options Table */}
           <div id="options-table">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Options Marketplace</h2>
+              <h2 className="text-2xl font-bold mb-2">Option Chain</h2>
               <p className="text-muted-foreground">
-                Browse, create, and trade grain commodity options
+                Browse and trade commodity options contracts
               </p>
             </div>
             
@@ -393,8 +397,14 @@ export default function Dashboard() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={async (data) => {
-          await createOptionMutation.mutateAsync(data);
-          setIsCreateDialogOpen(false);
+          try {
+            await createOptionMutation.mutateAsync(data);
+            setIsCreateDialogOpen(false);
+          } catch (error) {
+            // Error is already handled by mutation's onError callback
+            // This catch prevents unhandled promise rejection and Vite ErrorOverlay issues
+            console.error("Create option error:", error);
+          }
         }}
         isPending={createOptionMutation.isPending}
       />

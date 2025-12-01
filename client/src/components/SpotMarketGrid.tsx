@@ -168,6 +168,7 @@ export function SpotMarketGrid() {
                 name={index.name}
                 pricePerTon={index.latestPrice?.price || 0}
                 delta={index.latestPrice?.delta || null}
+                category={index.category}
                 onBuy={handleBuy}
                 onSell={handleSell}
                 index={i}

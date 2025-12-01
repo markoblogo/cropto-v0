@@ -208,3 +208,42 @@ export function computeUnrealizedPnLUSD(
     return totalPremium - intrinsicValue;
   }
 }
+
+/**
+ * Get partner fee statistics (demo implementation)
+ * For now, uses a simple heuristic: map partnerId to platform fees
+ * In production, this would use a proper partnerFeeKey or routing table
+ */
+export async function getPartnerFeeStats(
+  partnerId: string,
+  platformFees: Array<{ amount: string; currency: string; createdAt: Date }>
+): Promise<{
+  totalFeesUsd: number;
+  totalVolumeUsd: number;
+  contractCount: number;
+}> {
+  // Simple demo heuristic: use first 3 chars of partnerId as a hash
+  // In production, this would be a proper mapping
+  const partnerHash = partnerId.substring(0, 3);
+  
+  // Filter fees that might be related to this partner (demo logic)
+  // For now, we'll use a simple percentage of total fees
+  const totalFees = platformFees.reduce((sum, fee) => {
+    const amount = parseFloat(fee.amount);
+    // Convert CROPT to USD (demo: 1 CROPT = 1 USD)
+    return sum + amount;
+  }, 0);
+
+  // Assign a portion of fees to this partner (demo: based on partner hash)
+  const partnerShare = (partnerHash.charCodeAt(0) % 10) / 100; // 0-9% share
+  const totalFeesUsd = totalFees * partnerShare;
+  
+  // Estimate volume (demo: fees are ~0.1% of volume)
+  const totalVolumeUsd = totalFeesUsd * 1000;
+
+  return {
+    totalFeesUsd,
+    totalVolumeUsd,
+    contractCount: 0, // Will be set by caller
+  };
+}

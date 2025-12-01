@@ -16,7 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign, Shield } from "lucide-react";
 import { format, differenceInDays, formatDistanceToNow } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
@@ -206,10 +207,36 @@ interface SpotPosition {
   updatedAt: Date;
 }
 
+type OptionFilterTab = "all" | "active" | "settled" | "expired";
+
+// Map option statuses to filter categories (client-side only)
+function getOptionStatusCategory(status: string): "active" | "settled" | "expired" {
+  const upperStatus = status.toUpperCase();
+  
+  // Active: positions with live risk
+  if (["OPEN", "MATCHED", "FILLED", "MARGIN_CALL"].includes(upperStatus)) {
+    return "active";
+  }
+  
+  // Settled: fully cash-settled but not expired independently
+  if (["SETTLED", "EXERCISED"].includes(upperStatus)) {
+    return "settled";
+  }
+  
+  // Expired: final states
+  if (["EXPIRED", "CANCELLED", "DEFAULTED", "WITHDRAWN"].includes(upperStatus)) {
+    return "expired";
+  }
+  
+  // Default to active for unknown statuses
+  return "active";
+}
+
 export default function Portfolio() {
   const [, setLocation] = useLocation();
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
   const [focusedCommodity, setFocusedCommodity] = useState<string | null>(null);
+  const [optionFilterTab, setOptionFilterTab] = useState<OptionFilterTab>("active");
   const [hedgeModalState, setHedgeModalState] = useState<{
     mode: "buy" | "sell";
     commoditySlug: string;
@@ -648,6 +675,17 @@ export default function Portfolio() {
     return Object.values(map);
   }, [spotPositions, optionsExposure, indexPriceMap]);
 
+  // Filter enriched positions by selected tab
+  const filteredPositions = useMemo(() => {
+    if (optionFilterTab === "all") {
+      return enrichedPositions;
+    }
+    return enrichedPositions.filter((pos) => {
+      const category = getOptionStatusCategory(pos.status);
+      return category === optionFilterTab;
+    });
+  }, [enrichedPositions, optionFilterTab]);
+
   // Derived values - computed after all hooks
   // All summary values come directly from /api/portfolio/me response
   const isLoading = isAuthLoading || isPortfolioLoading;
@@ -665,6 +703,37 @@ export default function Portfolio() {
   
   // Determine if profitable for UI styling (Total P&L >= 0)
   const isProfitable = totalPnL >= 0;
+
+  // Collateral & Risk calculations (UI-only approximations)
+  // TODO: These are approximations based on available data. In a real system, 
+  // we would have explicit availableMargin and usedMargin fields from the backend.
+  // For now, we approximate:
+  // - Used margin ≈ lockedCollateral (collateral currently locked in positions)
+  // - Available margin ≈ internalBalance - lockedCollateral (if we had internal balance)
+  // - Since we don't have internal balance in portfolio response, we use a placeholder
+  const usedMargin = lockedCollateral;
+  // Approximate available margin: assume user has some free balance (this is a UI placeholder)
+  // In reality, this should come from /api/spot/balance or similar
+  const estimatedAvailableMargin = Math.max(0, walletData.internalBalance - lockedCollateral);
+  const totalMargin = usedMargin + estimatedAvailableMargin;
+  
+  // Risk ratio: usedMargin / totalMargin (clamped 0-1)
+  const riskRatio = totalMargin > 0 
+    ? Math.min(1, Math.max(0, usedMargin / totalMargin))
+    : 0;
+  
+  // Risk level colors
+  const riskColor = riskRatio >= 0.85 
+    ? "text-destructive" 
+    : riskRatio >= 0.60 
+    ? "text-yellow-600 dark:text-yellow-400"
+    : "text-green-600 dark:text-green-400";
+  
+  const riskBarColor = riskRatio >= 0.85 
+    ? "bg-destructive" 
+    : riskRatio >= 0.60 
+    ? "bg-yellow-500"
+    : "bg-green-500";
 
   // Single return with conditional rendering - all hooks must be called before this
   if (shouldRedirect) {
@@ -867,10 +936,88 @@ export default function Portfolio() {
         {/* Trading Status Banner */}
         <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />
 
+        {/* Collateral & Risk Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Collateral & Risk
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Available Margin</p>
+                <p className="text-2xl font-bold">
+                  ${estimatedAvailableMargin.toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Free collateral for new positions
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Used Margin</p>
+                <p className="text-2xl font-bold">
+                  ${usedMargin.toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Locked in active positions
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Risk Level</p>
+                <p className={`text-2xl font-bold ${riskColor}`}>
+                  {(riskRatio * 100).toFixed(1)}%
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {riskRatio >= 0.85 ? "High risk" : riskRatio >= 0.60 ? "Moderate risk" : "Low risk"}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Margin Utilization</span>
+                <span className={riskColor}>
+                  ${usedMargin.toFixed(2)} / ${totalMargin.toFixed(2)}
+                </span>
+              </div>
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
+                <div 
+                  className={`h-full transition-all ${riskBarColor}`}
+                  style={{ width: `${riskRatio * 100}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>0%</span>
+                <span>100%</span>
+              </div>
+            </div>
+            {marginCalls > 0 && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Margin Calls Active</AlertTitle>
+                <AlertDescription>
+                  You have {marginCalls} active margin call{marginCalls !== 1 ? 's' : ''}. Please top up your collateral to avoid liquidation.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Option Positions Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Option Positions</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Option Positions</CardTitle>
+              <Tabs value={optionFilterTab} onValueChange={(v) => setOptionFilterTab(v as OptionFilterTab)}>
+                <TabsList>
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="active">Active</TabsTrigger>
+                  <TabsTrigger value="settled">Settled</TabsTrigger>
+                  <TabsTrigger value="expired">Expired</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </CardHeader>
           <CardContent>
             {portfolioData.positions.length === 0 ? (
@@ -918,7 +1065,7 @@ export default function Portfolio() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {enrichedPositions.map((position) => {
+                    {filteredPositions.map((position) => {
                       const positionPnL = parseFloat(position.pnl);
                       const isProfitablePosition = positionPnL >= 0;
                       
@@ -1041,16 +1188,19 @@ export default function Portfolio() {
         </Card>
 
         {/* Spot Positions */}
-        <SpotPositionsTable 
-          positions={spotPositions} 
-          isLoading={isSpotLoading}
-          onOpenLogin={handleOpenLogin}
-          onOpenWalletModal={handleOpenWalletModal}
-          optionsByCommodity={optionsByCommodity}
-          onShowOptionsForCommodity={(commoditySlug) => {
-            setFocusedCommodity(commoditySlug);
-          }}
-        />
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Spot Positions</h2>
+          <SpotPositionsTable 
+            positions={spotPositions} 
+            isLoading={isSpotLoading}
+            onOpenLogin={handleOpenLogin}
+            onOpenWalletModal={handleOpenWalletModal}
+            optionsByCommodity={optionsByCommodity}
+            onShowOptionsForCommodity={(commoditySlug) => {
+              setFocusedCommodity(commoditySlug);
+            }}
+          />
+        </div>
 
         {/* Net Exposure / Hedged Positions */}
         <Card>
