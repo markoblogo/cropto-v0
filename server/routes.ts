@@ -29,6 +29,7 @@ import {
 } from "./utils/finance";
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
+import { normalizeLegacyCommodity, WHEAT_115_NAME } from "./utils/commodity";
 import fs from "fs";
 import path from "path";
 
@@ -366,7 +367,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get latest index price with historical data for sparkline
   app.get("/api/index/latest", async (req, res) => {
     try {
-      const commodity = req.query.commodity as string || 'WHEAT';
+      // Normalize legacy identifiers (e.g. WHEAT) to current canonical commodity name
+      const rawCommodity = (req.query.commodity as string | undefined) || WHEAT_115_NAME;
+      // For the legacy index_prices table we store a human-readable commodity name.
+      // Use normalization primarily for backward compatibility with old clients.
+      const commodity = normalizeLegacyCommodity(rawCommodity);
       
       // Get the last 7 prices for sparkline
       const prices = await db
@@ -433,7 +438,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get price history for charting (with optional year-over-year comparison)
   app.get("/api/index/history", async (req, res) => {
     try {
-      const commodity = (req.query.commodity as string || 'WHEAT').toUpperCase();
+      const rawCommodity = (req.query.commodity as string | undefined) || WHEAT_115_NAME;
+      const commodity = normalizeLegacyCommodity(rawCommodity);
       const period = req.query.period as string || '30d';
       const interval = req.query.interval as string || 'day';
       const includeComparison = req.query.comparison === 'true';

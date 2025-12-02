@@ -8,9 +8,12 @@ import Dashboard from "@/pages/Dashboard";
 import Portfolio from "@/pages/Portfolio";
 import OptionChain from "@/pages/OptionChain";
 import SpotTrading from "@/pages/SpotTrading";
+import MarketData from "@/pages/MarketData";
 import DesignArchitecture from "@/pages/DesignArchitecture";
 import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
+import Wallet from "@/pages/Wallet";
+import Education from "@/pages/Education";
 import AboutPage from "@/pages/AboutPage";
 import Testing from "@/pages/Testing";
 import Login from "@/pages/Login";
@@ -39,6 +42,9 @@ function Router() {
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/options" component={OptionChain} />
       <Route path="/spot-trading" component={SpotTrading} />
+      <Route path="/market-data" component={MarketData} />
+      <Route path="/wallet" component={Wallet} />
+      <Route path="/education" component={Education} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/design-architecture" component={DesignArchitecture} />

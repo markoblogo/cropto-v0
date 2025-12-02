@@ -155,7 +155,9 @@ export function parseSpikeMessage(text: string): ParserResult {
   return {
     success: true,
     data: {
-      commodity: 'WHEAT',
+      // Legacy Telegram parser: semantically this is Wheat 11.5% export index.
+      // Keep slug aligned with new index system so data lands on the correct index.
+      commodity: 'Wheat 11.5%',
       slug: 'wheat-115',
       price,
       location,

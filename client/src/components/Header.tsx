@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, MoreHorizontal, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,14 @@ import FlagSwitcher from "./FlagSwitcher";
 import { useTranslation } from "react-i18next";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -19,6 +27,7 @@ interface HeaderProps {
 
 export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: HeaderProps) {
   const [location, setLocation] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
   const userTier = useUserTier();
@@ -77,6 +86,23 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
 
   const statusBadge = getStatusBadge();
 
+  // Define navigation items
+  const primaryNav = [
+    { to: "/wallet", label: "Wallet", testId: "button-nav-wallet" },
+    { to: "/portfolio", label: t("nav.portfolio"), testId: "button-nav-portfolio" },
+    { to: "/spot-trading", label: t("nav.spot"), testId: "button-nav-spot" },
+    { to: "/options", label: t("nav.options"), testId: "button-nav-options" },
+    { to: "/market-data", label: t("nav.marketData"), testId: "button-nav-market-data" },
+    { to: "/education", label: t("nav.education"), testId: "button-nav-education" },
+  ];
+
+  const secondaryNav = [
+    { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },
+    { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
+    { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
+    { to: "/admin", label: t("nav.admin"), testId: "button-nav-admin", requiresAdmin: true },
+  ];
+
   const handleLogout = () => {
     localStorage.removeItem('cropto_token');
     localStorage.removeItem('cropto_admin_mode'); // Clear any stale admin mode
@@ -105,58 +131,57 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
 
           {/* Navigation - Hidden on mobile, shown on md+ */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link href="/portfolio">
-              <Button variant="ghost" size="sm" data-testid="button-nav-portfolio">
-                {t('nav.portfolio')}
-              </Button>
-            </Link>
-            <Link href="/spot-trading">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                data-testid="button-nav-spot"
-                className={location.startsWith("/spot-trading") ? "bg-accent" : ""}
-              >
-                {t('nav.spot')}
-              </Button>
-            </Link>
-            <Link href="/options">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                data-testid="button-nav-options"
-                className={location === "/options" ? "bg-accent" : ""}
-              >
-                {t('nav.options')}
-              </Button>
-            </Link>
-            <Link href="/about">
-              <Button variant="ghost" size="sm" data-testid="button-nav-about">
-                {t('nav.about')}
-              </Button>
-            </Link>
-            <Link href="/partners-contracts">
-              <Button variant="ghost" size="sm" data-testid="button-nav-partners">
-                {t('nav.partners')}
-              </Button>
-            </Link>
-            <Link href="/onchain-tx">
-              <Button variant="ghost" size="sm" data-testid="button-nav-transactions">
-                {t('nav.transactions')}
-              </Button>
-            </Link>
-            <Link href="/feedback">
-              <Button variant="ghost" size="sm" data-testid="button-nav-feedback">
-                {t('nav.feedback')}
-              </Button>
-            </Link>
-            {isAdminLevelUser && (
-              <Link href="/admin">
-                <Button variant="ghost" size="sm" data-testid="button-nav-admin">
-                  {t('nav.admin')}
+            {/* Primary Navigation */}
+            {primaryNav.map((item) => {
+              const isActive = location === item.to || 
+                (item.to !== "/" && location.startsWith(item.to));
+              return (
+                <Link key={item.to} href={item.to}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    data-testid={item.testId}
+                    className={isActive ? "bg-accent" : ""}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              );
+            })}
+
+            {/* More Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  data-testid="button-nav-more"
+                  className="gap-1"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">More</span>
                 </Button>
-              </Link>
-            )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {secondaryNav
+                  .filter((item) => !item.requiresAdmin || isAdminLevelUser)
+                  .map((item) => {
+                    const isActive = location === item.to || 
+                      (item.to !== "/" && location.startsWith(item.to));
+                    return (
+                      <DropdownMenuItem 
+                        key={item.to} 
+                        asChild
+                        className={isActive ? "bg-accent" : ""}
+                      >
+                        <Link href={item.to} data-testid={item.testId}>
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Action Buttons */}
@@ -170,8 +195,9 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
               size="icon"
               className="md:hidden"
               data-testid="button-mobile-menu"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <Menu className="h-5 w-5" />
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
             {user ? (
@@ -223,6 +249,43 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t bg-background">
+            <nav className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-2">
+              {/* Primary Navigation */}
+              {primaryNav.map((item) => (
+                <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    data-testid={`mobile-${item.testId}`}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
+
+              <Separator className="my-2" />
+
+              {/* Secondary Navigation */}
+              {secondaryNav
+                .filter((item) => !item.requiresAdmin || isAdminLevelUser)
+                .map((item) => (
+                  <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start"
+                      data-testid={`mobile-${item.testId}`}
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

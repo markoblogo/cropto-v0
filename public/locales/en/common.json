@@ -15,6 +15,8 @@
     "portfolio": "Portfolio",
     "spot": "Spot",
     "options": "Options",
+    "marketData": "Market Data",
+    "education": "Education",
     "about": "About",
     "testing": "Testing",
     "partners": "Partners",
@@ -261,6 +263,17 @@
       },
       "loadError": "Failed to load portfolio data. Please try again."
     },
+    "education": {
+      "title": "Education & Learn",
+      "subtitle": "Understand how Cropto works: indices, spot tokens, options and risk.",
+      "sections": {
+        "intro": "How Cropto works",
+        "indices": "Indices & Spot Tokens",
+        "options": "Options & Hedging",
+        "risk": "Risk & Collateral",
+        "faq": "Mini-FAQ"
+      }
+    },
     "admin": {
       "title": "Admin Panel",
       "subtitle": "Manage demo scenarios and system operations",
@@ -270,7 +283,7 @@
         "creates": "This will create:",
         "users": "3 demo users: farmer@demo, trader@demo, broker@demo (password: pass)",
         "options": "3 options contracts with various strikes, quantities, and statuses",
-        "indexPrices": "2 index price entries (WHEAT @ 210, WHEAT @ 240)",
+        "indexPrices": "2 index price entries (Wheat 11.5% @ 210, Wheat 11.5% @ 240)",
         "button": "Run Demo Scenario",
         "buttonPending": "Seeding demo data...",
         "success": "Demo seeded successfully!",

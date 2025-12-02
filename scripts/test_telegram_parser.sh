@@ -9,7 +9,7 @@ echo "🧪 Testing Telegram Parser Integration"
 echo "=================================="
 echo ""
 
-echo "Test 1: Simple Format (WHEAT 240.50)"
+echo "Test 1: Simple Format (Wheat 11.5% 240.50)"
 echo "------------------------------------"
 RESPONSE=$(curl -s -X POST "$API_URL/api/index" \
   -H "Content-Type: application/json" \
@@ -21,7 +21,7 @@ RESPONSE=$(curl -s -X POST "$API_URL/api/index" \
         "id": 12345,
         "username": "spike_brokers"
       },
-      "text": "WHEAT 240.50",
+      "text": "Wheat115 240.50",
       "date": 1699776000
     }
   }')
@@ -49,13 +49,14 @@ echo ""
 
 echo "Test 3: Retrieve Latest Index Price"
 echo "-----------------------------------"
-LATEST_RESPONSE=$(curl -s "$API_URL/api/index/latest?commodity=WHEAT")
+# Use canonical Wheat 11.5% name (legacy WHEAT will be normalized on the server)
+LATEST_RESPONSE=$(curl -s "$API_URL/api/index/latest?commodity=Wheat%2011.5%25")
 echo "Response: $LATEST_RESPONSE"
 echo ""
 
 LATEST_PRICE=$(echo "$LATEST_RESPONSE" | grep -o '"price":"[^"]*"' | head -1 | cut -d'"' -f4)
 if [ -n "$LATEST_PRICE" ]; then
-  echo "✅ Latest WHEAT price: \$$LATEST_PRICE"
+  echo "✅ Latest Wheat 11.5% price: \$$LATEST_PRICE"
 else
   echo "⚠️  Could not extract price from response"
 fi

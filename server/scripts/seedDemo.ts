@@ -109,9 +109,10 @@ export async function seedDemoData() {
   }
 
   // 3. Create demo index prices
+  // NOTE: Legacy demo used generic WHEAT; we now treat this as Wheat 11.5% for consistency.
   const demoIndexPrices: DemoIndexPrice[] = [
-    { commodity: 'WHEAT', price: '210.00000000' },
-    { commodity: 'WHEAT', price: '240.00000000', date: new Date(Date.now() + 24 * 60 * 60 * 1000) }, // Tomorrow
+    { commodity: 'Wheat 11.5%', price: '210.00000000' },
+    { commodity: 'Wheat 11.5%', price: '240.00000000', date: new Date(Date.now() + 24 * 60 * 60 * 1000) }, // Tomorrow
   ];
 
   console.log('💰 Creating demo index prices...');
@@ -138,19 +139,19 @@ export async function seedDemoData() {
   // 4. Create demo options with computed collateral
   const demoOptions: DemoOption[] = [
     {
-      title: 'WHEAT CALL Option - Strike 220',
+      title: 'Wheat 11.5% CALL Option - Strike 220',
       type: 'CALL',
       strike: '220.00000000',
       qty: '100.00000000',
       premium: '15.50000000',
       buyer: farmerId,
       status: 'OPEN',
-      commodity: 'WHEAT',
+      commodity: 'Wheat 11.5%',
       buyerId: farmerId,
       issuerId: farmerId,
     },
     {
-      title: 'WHEAT PUT Option - Strike 200',
+      title: 'Wheat 11.5% PUT Option - Strike 200',
       type: 'PUT',
       strike: '200.00000000',
       qty: '150.00000000',
@@ -158,19 +159,19 @@ export async function seedDemoData() {
       buyer: traderId,
       seller: farmerId,
       status: 'FILLED',
-      commodity: 'WHEAT',
+      commodity: 'Wheat 11.5%',
       buyerId: traderId,
       issuerId: farmerId,
     },
     {
-      title: 'WHEAT CALL Option - Strike 250',
+      title: 'Wheat 11.5% CALL Option - Strike 250',
       type: 'CALL',
       strike: '250.00000000',
       qty: '75.00000000',
       premium: '20.00000000',
       buyer: brokerId,
       status: 'OPEN',
-      commodity: 'WHEAT',
+      commodity: 'Wheat 11.5%',
       buyerId: brokerId,
       issuerId: brokerId,
     },

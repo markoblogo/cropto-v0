@@ -20,22 +20,35 @@ interface CommodityIndex {
 
 interface CommodityIndexCardProps {
   index: CommodityIndex;
+  change24hPercent?: number | null;
+  change7dPercent?: number | null;
+  indexType?: 'export' | 'processing' | 'other';
   onViewDetails?: (slug: string) => void;
+  onTrade?: (slug: string) => void;
 }
 
-export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardProps) {
+export function CommodityIndexCard({ 
+  index, 
+  change24hPercent: propChange24hPercent,
+  change7dPercent,
+  indexType: propIndexType,
+  onViewDetails,
+  onTrade
+}: CommodityIndexCardProps) {
   const hasPrice = index.latestPrice !== null;
   const priceValue = hasPrice && index.latestPrice ? index.latestPrice.price : 0;
   const deltaValue = hasPrice && index.latestPrice && index.latestPrice.delta !== null ? index.latestPrice.delta : 0;
   
-  // Calculate 24h change percentage if delta is available
-  const changePercent = deltaValue !== null && priceValue > 0 
-    ? ((deltaValue / (priceValue - deltaValue)) * 100) 
-    : null;
+  // Use provided change24hPercent or calculate from delta
+  const changePercent = propChange24hPercent !== undefined 
+    ? propChange24hPercent
+    : (deltaValue !== null && priceValue > 0 
+      ? ((deltaValue / (priceValue - deltaValue)) * 100) 
+      : null);
   
-  const isPositive = deltaValue > 0;
-  const isNegative = deltaValue < 0;
-  const isNeutral = deltaValue === 0;
+  const isPositive = changePercent !== null && changePercent > 0;
+  const isNegative = changePercent !== null && changePercent < 0;
+  const isNeutral = changePercent === null || changePercent === 0;
 
   const TrendIcon = isPositive ? TrendingUp : isNegative ? TrendingDown : Minus;
   const trendColor = isPositive 
@@ -44,8 +57,9 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
     ? "text-red-600 dark:text-red-400" 
     : "text-muted-foreground";
 
-  // Get index metadata (pair code and type)
+  // Get index metadata (pair code and type) - use prop if provided, otherwise calculate
   const metadata = getIndexMetadata(index.slug, index.category);
+  const indexType = propIndexType || metadata.type;
 
   return (
     <Card data-testid={`card-index-${index.slug}`}>
@@ -67,10 +81,10 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
                 {metadata.pairCode}
               </span>
               <Badge 
-                variant={metadata.type === "export" ? "default" : "secondary"}
+                variant={indexType === "export" ? "default" : "secondary"}
                 className="text-xs"
               >
-                {metadata.type === "export" ? "Export" : "Processing"}
+                {indexType === "export" ? "Export" : indexType === "processing" ? "Processing" : "Other"}
               </Badge>
             </div>
           </div>
@@ -84,7 +98,7 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
               <div className="flex flex-col">
                 <span className="text-xs text-muted-foreground mb-0.5">Price</span>
                 <span className="text-2xl font-bold font-mono" data-testid={`text-price-${index.slug}`}>
-                  ${priceValue.toFixed(2)}
+                  ${priceValue.toFixed(2)} / t
                 </span>
               </div>
               {changePercent !== null && (
@@ -96,6 +110,14 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">24h</span>
+                </div>
+              )}
+              {change7dPercent !== undefined && change7dPercent !== null && (
+                <div className={`flex flex-col items-end text-xs ${change7dPercent > 0 ? "text-green-600" : change7dPercent < 0 ? "text-red-600" : "text-muted-foreground"}`}>
+                  <span>
+                    {change7dPercent > 0 ? "+" : ""}{change7dPercent.toFixed(2)}%
+                  </span>
+                  <span className="text-xs text-muted-foreground">7d</span>
                 </div>
               )}
             </div>
@@ -111,15 +133,28 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
                 {hasPrice && index.latestPrice ? new Date(index.latestPrice.timestamp).toLocaleTimeString() : 'N/A'}
               </p>
               <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.location.href = `/spot-trading?commodity=${index.slug}`}
-                  className="h-7 gap-1 text-xs"
-                  data-testid={`button-trade-${index.slug}`}
-                >
-                  Trade
-                </Button>
+                {onTrade && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onTrade(index.slug)}
+                    className="h-7 gap-1 text-xs"
+                    data-testid={`button-trade-${index.slug}`}
+                  >
+                    Trade
+                  </Button>
+                )}
+                {!onTrade && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.location.href = `/spot-trading?commodity=${index.slug}`}
+                    className="h-7 gap-1 text-xs"
+                    data-testid={`button-trade-${index.slug}`}
+                  >
+                    Trade
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -128,7 +163,7 @@ export function CommodityIndexCard({ index, onViewDetails }: CommodityIndexCardP
                   data-testid={`button-view-${index.slug}`}
                 >
                   <LineChartIcon className="w-3 h-3" />
-                  Details
+                  View details
                 </Button>
               </div>
             </div>

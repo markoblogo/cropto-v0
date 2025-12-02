@@ -22,6 +22,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 import type { InsertOption } from "@shared/schema";
+import { getIndexMetadata } from "@/lib/indexMapping";
+import { Badge } from "@/components/ui/badge";
 
 interface PriceHistoryEntry {
   id: string;
@@ -118,6 +120,11 @@ export default function IndexDetail() {
     ? latestPrice.price - previousPrice.price 
     : latestPrice?.delta || 0;
   
+  // Calculate 24h change percentage
+  const changePercent = latestPrice && previousPrice && previousPrice.price > 0
+    ? ((priceChange / previousPrice.price) * 100)
+    : null;
+  
   const isPositive = priceChange > 0;
   const isNegative = priceChange < 0;
   const TrendIcon = isPositive ? TrendingUp : isNegative ? TrendingDown : Minus;
@@ -126,6 +133,9 @@ export default function IndexDetail() {
     : isNegative 
     ? "text-red-600 dark:text-red-400" 
     : "text-muted-foreground";
+
+  // Get index metadata
+  const metadata = getIndexMetadata(indexData.slug, indexData.category);
 
   // Prepare chart data (reverse to show chronologically)
   const chartData = [...indexData.priceHistory]
@@ -155,9 +165,22 @@ export default function IndexDetail() {
                   alt={indexData.name}
                   className="w-8 h-8 object-contain"
                 />
-                <h1 className="text-3xl font-bold" data-testid="heading-index-name">
-                  {indexData.name}
-                </h1>
+                <div>
+                  <h1 className="text-3xl font-bold" data-testid="heading-index-name">
+                    {indexData.name}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm font-mono text-muted-foreground">
+                      {metadata.pairCode}
+                    </span>
+                    <Badge 
+                      variant={metadata.type === "export" ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {metadata.type === "export" ? "Export" : "Processing"}
+                    </Badge>
+                  </div>
+                </div>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md" data-testid="text-category">
@@ -169,6 +192,24 @@ export default function IndexDetail() {
                   </span>
                 )}
               </div>
+              {latestPrice && (
+                <div className="mt-2">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-2xl font-bold font-mono">
+                      ${latestPrice.price.toFixed(2)} / t
+                    </span>
+                    {changePercent !== null && (
+                      <div className={`flex items-center gap-1 ${trendColor}`}>
+                        <TrendIcon className="w-4 h-4" />
+                        <span className="text-sm font-semibold">
+                          {isPositive ? "+" : ""}{changePercent.toFixed(2)}%
+                        </span>
+                        <span className="text-xs text-muted-foreground">24h</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
@@ -182,35 +223,64 @@ export default function IndexDetail() {
           </Button>
         </div>
 
-        {/* Current Price Card */}
+        {/* Stats Card */}
         <Card data-testid="card-current-price">
           <CardHeader>
-            <CardTitle>Current Price</CardTitle>
+            <CardTitle>Index Statistics</CardTitle>
             <CardDescription>
-              Latest commodity index price
+              Current price and index information
             </CardDescription>
           </CardHeader>
           <CardContent>
             {latestPrice ? (
-              <div className="space-y-4">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-4xl font-bold font-mono" data-testid="text-current-price">
-                    ${latestPrice.price.toFixed(2)}
-                  </span>
-                  <div className={`flex items-center gap-2 ${trendColor}`} data-testid="text-price-change">
-                    <TrendIcon className="w-5 h-5" />
-                    <span className="text-lg font-medium">
-                      {isPositive ? "+" : ""}{priceChange.toFixed(2)}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Current Price</p>
+                  <p className="text-2xl font-bold font-mono" data-testid="text-current-price">
+                    ${latestPrice.price.toFixed(2)} / t
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">24h Change</p>
+                  <div className={`flex items-center gap-1 ${trendColor}`} data-testid="text-price-change">
+                    <TrendIcon className="w-4 h-4" />
+                    <span className="text-xl font-semibold">
+                      {changePercent !== null 
+                        ? `${isPositive ? "+" : ""}${changePercent.toFixed(2)}%`
+                        : `${isPositive ? "+" : ""}${priceChange.toFixed(2)}`}
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground" data-testid="text-last-updated">
-                  Last updated: {format(new Date(latestPrice.timestamp), "MMM dd, yyyy HH:mm:ss")}
-                </p>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
+                  <p className="text-sm font-medium" data-testid="text-last-updated">
+                    {format(new Date(latestPrice.timestamp), "MMM dd, yyyy HH:mm:ss")}
+                  </p>
+                </div>
               </div>
             ) : (
               <p className="text-muted-foreground">No price data available</p>
             )}
+            <div className="mt-4 pt-4 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground mb-1">Base Currency</p>
+                  <p className="font-medium">USD</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Unit</p>
+                  <p className="font-medium">Ton (t)</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Index Type</p>
+                  <p className="font-medium">
+                    {metadata.type === "export" 
+                      ? "Export Index (FOB, no VAT)" 
+                      : "Processing Index (with VAT)"}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -336,7 +406,7 @@ export default function IndexDetail() {
             }
           }}
           isPending={createOptionMutation.isPending}
-          defaultCommodity={indexData.name}
+          defaultIndexId={indexData.id}
         />
       </div>
     </MainLayout>

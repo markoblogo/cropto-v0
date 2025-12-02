@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
@@ -13,6 +14,7 @@ import { useWalletSummary } from "@/hooks/useWalletSummary";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePolling } from "@/hooks/usePolling";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -20,6 +22,7 @@ import type { Option, InsertOption } from "@shared/schema";
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
   const [isRoleSelectionOpen, setIsRoleSelectionOpen] = useState(false);
@@ -337,17 +340,25 @@ export default function Dashboard() {
           {/* Spot Positions */}
           {user && <SpotPositionsTable positions={spotPositions} isLoading={isSpotLoading} />}
 
-          {/* Options Table */}
+          {/* Options Table Preview */}
           <div id="options-table">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Option Chain</h2>
-              <p className="text-muted-foreground">
-                Browse and trade commodity options contracts
-              </p>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Option Chain</h2>
+                <p className="text-muted-foreground">
+                  Browse and trade commodity options contracts
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/options")}
+              >
+                View Full Option Chain
+              </Button>
             </div>
             
             <OptionsTable 
-              options={options} 
+              options={options.slice(0, 5)} 
               isLoading={isLoading}
               onMatch={async (optionId, counterpartyId) => {
                 await matchOptionMutation.mutateAsync({ optionId, counterpartyId });

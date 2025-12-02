@@ -33,7 +33,7 @@ import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
 import { WithdrawDialog } from "./WithdrawDialog";
 import { MintNFTDialog } from "./MintNFTDialog";
 import type { Option } from "@shared/schema";
-import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
 
 type SortField = "commodity" | "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
@@ -54,6 +54,7 @@ interface OptionsTableProps {
   isTopping?: boolean;
   onWithdraw?: (data: { optionId: string; address: string; amount: string }) => Promise<{ txHash: string }>;
   isWithdrawing?: boolean;
+  onCreateFromOption?: (option: Option) => void;
   userRole?: string;
   userId?: string;
 }
@@ -78,6 +79,7 @@ export function OptionsTable({
   isTopping = false,
   onWithdraw,
   isWithdrawing = false,
+  onCreateFromOption,
   userRole,
   userId 
 }: OptionsTableProps) {
@@ -462,6 +464,18 @@ export function OptionsTable({
                           nftTokenId={option.nftTokenId}
                           nftMintTx={option.nftMintTx}
                         />
+                      )}
+                      {onCreateFromOption && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1"
+                          onClick={() => onCreateFromOption(option)}
+                          data-testid={`button-create-from-${option.id}`}
+                        >
+                          <Plus className="w-3 h-3" />
+                          Create
+                        </Button>
                       )}
                       {canMatchAsOther && (
                         <TooltipProvider>

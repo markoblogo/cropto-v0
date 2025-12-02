@@ -53,7 +53,7 @@ export default function AdminIndex() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [commodity, setCommodity] = useState("WHEAT");
+  const [commodity, setCommodity] = useState("Wheat 11.5%");
   const [price, setPrice] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterCommodity, setFilterCommodity] = useState("");
@@ -95,7 +95,7 @@ export default function AdminIndex() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/index"] });
       queryClient.invalidateQueries({ queryKey: ["/api/index/latest"] });
       setIsAddDialogOpen(false);
-      setCommodity("WHEAT");
+      setCommodity("Wheat 11.5%");
       setPrice("");
       setDate(new Date().toISOString().split('T')[0]);
       toast({
@@ -222,7 +222,7 @@ export default function AdminIndex() {
                     COMMODITY PRICE
                   </code>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Example: <code className="bg-muted px-1 py-0.5 rounded text-xs">WHEAT 240.50</code>
+                    Example: <code className="bg-muted px-1 py-0.5 rounded text-xs">Wheat 11.5% 240.50</code>
                   </p>
                 </div>
                 <div>
@@ -267,7 +267,7 @@ export default function AdminIndex() {
             <Label htmlFor="filter-commodity">Filter by Commodity</Label>
             <Input
               id="filter-commodity"
-              placeholder="e.g. WHEAT, BTC"
+              placeholder="e.g. Wheat 11.5%, BTC"
               value={filterCommodity}
               onChange={(e) => setFilterCommodity(e.target.value)}
               data-testid="input-filter-commodity"
@@ -345,7 +345,7 @@ export default function AdminIndex() {
                 <Label htmlFor="commodity">Commodity</Label>
                 <Input
                   id="commodity"
-                  placeholder="e.g. WHEAT, BTC"
+                  placeholder="e.g. Wheat 11.5%, BTC"
                   value={commodity}
                   onChange={(e) => setCommodity(e.target.value)}
                   required
