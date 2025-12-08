@@ -194,7 +194,7 @@ export const platformFees = pgTable("platform_fees", {
   // Note: DB column is named "fee_type" but we use "type" in code for consistency
   // Map TypeScript field "type" to DB column "fee_type"
   type: text("fee_type").notNull(),
-  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull().default("0"),
   notionalAmount: decimal("notional_amount", { precision: 18, scale: 8 }).notNull(),
   currency: text("currency").notNull().default("CROPT"),
   instrument: text("instrument"),
@@ -337,10 +337,15 @@ export const insertCroptBalanceSchema = createInsertSchema(croptBalances).omit({
   updatedAt: true,
 });
 
-export const insertPlatformFeeSchema = createInsertSchema(platformFees).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertPlatformFeeSchema = createInsertSchema(platformFees)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    amount: z.coerce.number().transform((val) => val.toString()),
+    notionalAmount: z.coerce.number().transform((val) => val.toString()),
+  });
 
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;

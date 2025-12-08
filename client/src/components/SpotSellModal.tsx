@@ -17,6 +17,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { kgToTons, tonsToKg, formatTons } from "@/lib/units";
 import { Loader2 } from "lucide-react";
 
+const MIN_TRADE_TONS = 0.001;
+
 interface SpotSellModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -129,7 +131,7 @@ export function SpotSellModal({
 
   const isLong = positionQtyKg > 0;
   const hasInsufficientPosition = isLong && qtyKgNum > positionQtyKg;
-  const invalidQty = qtyTonnesNum <= 0;
+  const invalidQty = qtyTonnesNum < MIN_TRADE_TONS;
   const canSell = !invalidQty && !hasInsufficientPosition;
 
   // currentPrice is already in price per ton
@@ -140,10 +142,10 @@ export function SpotSellModal({
     e.preventDefault();
     const qtyTonnes = parseFloat(quantityTonnes);
 
-    if (!qtyTonnes || qtyTonnes <= 0) {
+    if (!qtyTonnes || qtyTonnes < MIN_TRADE_TONS) {
       toast({
         title: "Invalid quantity",
-        description: "Please enter a valid quantity",
+        description: `Minimum quantity is ${MIN_TRADE_TONS.toFixed(3)} t`,
         variant: "destructive",
       });
       return;
@@ -224,8 +226,8 @@ export function SpotSellModal({
             <Input
               id="quantity"
               type="number"
-              step="0.01"
-              min="0"
+              step="0.001"
+              min={MIN_TRADE_TONS}
               // ограничиваем max только для лонга; для шорта/нуля — без лимита по UI
               max={isLong ? positionQtyTonnes : undefined}
               placeholder="Enter quantity in tonnes"
@@ -233,6 +235,11 @@ export function SpotSellModal({
               onChange={(e) => setQuantityTonnes(e.target.value)}
               data-testid="input-quantity"
             />
+            {invalidQty && quantityTonnes && (
+              <p className="text-xs text-destructive">
+                Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+              </p>
+            )}
             {isLong && positionQtyTonnes > 0 && (
               <button
                 type="button"

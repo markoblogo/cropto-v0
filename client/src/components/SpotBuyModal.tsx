@@ -18,6 +18,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { tonsToKg, formatTons } from "@/lib/units";
 import { Loader2, AlertCircle, ArrowDownToLine } from "lucide-react";
 
+const MIN_TRADE_TONS = 0.001;
+
 interface SpotBuyModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -111,10 +113,10 @@ export function SpotBuyModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const qtyTonnes = parseFloat(quantityTonnes);
-    if (!qtyTonnes || qtyTonnes <= 0) {
+    if (!qtyTonnes || qtyTonnes < MIN_TRADE_TONS) {
       toast({
         title: "Invalid quantity",
-        description: "Please enter a valid quantity",
+        description: `Minimum quantity is ${MIN_TRADE_TONS.toFixed(3)} t`,
         variant: "destructive",
       });
       return;
@@ -137,7 +139,9 @@ export function SpotBuyModal({
 
   // currentPrice is already in price per ton
   const pricePerTon = currentPrice;
-  const totalCost = parseFloat(quantityTonnes) * pricePerTon || 0;
+  const qtyTonnesNum = parseFloat(quantityTonnes) || 0;
+  const isQuantityValid = qtyTonnesNum >= MIN_TRADE_TONS;
+  const totalCost = qtyTonnesNum * pricePerTon || 0;
   const availableBalance = balanceData ? parseFloat(balanceData.balance) : 0;
   const canAfford = totalCost <= availableBalance;
 
@@ -201,13 +205,18 @@ export function SpotBuyModal({
             <Input
               id="quantity"
               type="number"
-              step="0.01"
-              min="0"
+              step="0.001"
+              min={MIN_TRADE_TONS}
               placeholder="Enter quantity in tonnes"
               value={quantityTonnes}
               onChange={(e) => setQuantityTonnes(e.target.value)}
               data-testid="input-quantity"
             />
+            {!isQuantityValid && quantityTonnes && (
+              <p className="text-xs text-destructive">
+                Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+              </p>
+            )}
           </div>
 
           {quantityTonnes && parseFloat(quantityTonnes) > 0 && (
@@ -238,7 +247,7 @@ export function SpotBuyModal({
             </Button>
             <Button
               type="submit"
-              disabled={buyMutation.isPending || !canAfford || !quantityTonnes}
+              disabled={buyMutation.isPending || !canAfford || !quantityTonnes || !isQuantityValid}
               data-testid="button-buy"
             >
               {buyMutation.isPending && (

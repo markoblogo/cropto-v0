@@ -13,6 +13,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { tonsToKg } from "@/lib/units";
 import { Loader2, AlertCircle } from "lucide-react";
 
+const MIN_TRADE_TONS = 0.001;
+
 interface SpotOrderFormProps {
   commoditySlug: string;
   commodityName: string;
@@ -49,6 +51,7 @@ export function SpotOrderForm({
 
   const availableBalance = balanceData ? parseFloat(balanceData.balance) : 0;
   const quantity = parseFloat(quantityTonnes) || 0;
+  const isQuantityValid = quantity >= MIN_TRADE_TONS;
   const estimatedCost = quantity * currentPrice;
   const canAfford = estimatedCost <= availableBalance;
 
@@ -103,10 +106,10 @@ export function SpotOrderForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const qtyTonnes = parseFloat(quantityTonnes);
-    if (!qtyTonnes || qtyTonnes <= 0) {
+    if (!qtyTonnes || qtyTonnes < MIN_TRADE_TONS) {
       toast({
         title: "Invalid quantity",
-        description: "Please enter a valid quantity",
+        description: `Minimum quantity is ${MIN_TRADE_TONS.toFixed(3)} t`,
         variant: "destructive",
       });
       return;
@@ -165,13 +168,18 @@ export function SpotOrderForm({
                 <Input
                   id="buy-quantity"
                   type="number"
-                  step="0.01"
-                  min="0"
+                  step="0.001"
+                  min={MIN_TRADE_TONS}
                   value={quantityTonnes}
                   onChange={(e) => setQuantityTonnes(e.target.value)}
                   placeholder="0.00"
                   disabled={isPending}
                 />
+                {!isQuantityValid && quantityTonnes && (
+                  <p className="text-xs text-destructive">
+                    Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
@@ -198,7 +206,7 @@ export function SpotOrderForm({
               <Button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700"
-                disabled={isPending || !quantity || (orderType === "buy" && !canAfford)}
+                disabled={isPending || !quantity || !isQuantityValid || (orderType === "buy" && !canAfford)}
               >
                 {isPending ? (
                   <>
@@ -219,13 +227,18 @@ export function SpotOrderForm({
                 <Input
                   id="sell-quantity"
                   type="number"
-                  step="0.01"
-                  min="0"
+                  step="0.001"
+                  min={MIN_TRADE_TONS}
                   value={quantityTonnes}
                   onChange={(e) => setQuantityTonnes(e.target.value)}
                   placeholder="0.00"
                   disabled={isPending}
                 />
+                {!isQuantityValid && quantityTonnes && (
+                  <p className="text-xs text-destructive">
+                    Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
@@ -247,7 +260,7 @@ export function SpotOrderForm({
                 type="submit"
                 variant="destructive"
                 className="w-full"
-                disabled={isPending || !quantity}
+                disabled={isPending || !quantity || !isQuantityValid}
               >
                 {isPending ? (
                   <>

@@ -24,9 +24,9 @@ export function tonsToKg(tons: number): number {
 /**
  * Format tonnes for display
  * @param tons - Quantity in tonnes
- * @returns Formatted string with 2 decimal places
+ * @returns Formatted string with 3 decimal places
  */
 export function formatTons(tons: number): string {
-  return tons.toFixed(2);
+  return tons.toFixed(3);
 }
 

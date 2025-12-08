@@ -23,6 +23,22 @@ export function CommodityIndexesGrid() {
     refetchInterval: 30000,
   });
 
+  const isGrainIndex = (index: CommodityIndex) => {
+    const lowered = index.name.toLowerCase();
+    const slug = index.slug.toLowerCase();
+    return (
+      lowered.includes("corn") ||
+      lowered.includes("milling wheat") ||
+      lowered.includes("feed wheat") ||
+      lowered.includes("wheat 11.5") ||
+      slug.includes("wheat-115") ||
+      slug.includes("whex")
+    );
+  };
+
+  const grains = (indexes || []).filter((index) => isGrainIndex(index));
+  const oilseeds = (indexes || []).filter((index) => !isGrainIndex(index));
+
   const handleViewDetails = (slug: string) => {
     window.location.href = `/index/${slug}`;
   };
@@ -33,7 +49,7 @@ export function CommodityIndexesGrid() {
         <div>
           <h2 className="text-2xl font-bold mb-2">Commodity Index Prices</h2>
           <p className="text-muted-foreground mb-6">
-            Real-time grain commodity prices from CPT ODESA and CPT PARITET ODESA
+            Real-time daily pricing for Ukrainian-origin commodities, powered by the Spike Spot Commodity Index.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -55,7 +71,7 @@ export function CommodityIndexesGrid() {
         <div>
           <h2 className="text-2xl font-bold mb-2">Commodity Index Prices</h2>
           <p className="text-muted-foreground mb-6">
-            Real-time grain commodity prices from CPT ODESA and CPT PARITET ODESA
+            Real-time daily pricing for Ukrainian-origin commodities, powered by the Spike Spot Commodity Index.
           </p>
         </div>
         <Alert variant="destructive">
@@ -74,7 +90,7 @@ export function CommodityIndexesGrid() {
         <div>
           <h2 className="text-2xl font-bold mb-2">Commodity Index Prices</h2>
           <p className="text-muted-foreground mb-6">
-            Real-time grain commodity prices from CPT ODESA and CPT PARITET ODESA
+            Real-time daily pricing for Ukrainian-origin commodities, powered by the Spike Spot Commodity Index.
           </p>
         </div>
         <Alert>
@@ -91,18 +107,34 @@ export function CommodityIndexesGrid() {
       <div>
         <h2 className="text-2xl font-bold mb-2">Commodity Index Prices</h2>
         <p className="text-muted-foreground mb-6">
-          Real-time grain commodity prices from CPT ODESA and CPT PARITET ODESA
+          Real-time daily pricing for Ukrainian-origin commodities, powered by the Spike Spot Commodity Index.
         </p>
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {indexes.map((index) => (
-          <CommodityIndexCard
-            key={index.id}
-            index={index}
-            onViewDetails={handleViewDetails}
-          />
-        ))}
+
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold text-muted-foreground">GRAINS</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {grains.map((index) => (
+            <CommodityIndexCard
+              key={index.id}
+              index={index}
+              onViewDetails={handleViewDetails}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold text-muted-foreground">OILSEEDS</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {oilseeds.map((index) => (
+            <CommodityIndexCard
+              key={index.id}
+              index={index}
+              onViewDetails={handleViewDetails}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
