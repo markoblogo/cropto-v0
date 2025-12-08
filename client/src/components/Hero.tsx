@@ -89,7 +89,7 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
             {walletAddress ? (
               <Button
                 size="lg"
-                className="font-semibold w-full sm:w-auto font-mono bg-emerald-500 text-white hover:bg-emerald-600 shadow-md"
+                className="font-semibold w-full sm:w-auto font-mono bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
                 onClick={onConnectWallet}
                 data-testid="badge-hero-wallet-connected"
               >
@@ -99,8 +99,7 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
             ) : (
               <Button
                 size="lg"
-                variant="default"
-                className="bg-white text-background hover:bg-white/90 font-semibold w-full sm:w-auto font-mono shadow-md"
+                className="font-semibold w-full sm:w-auto font-mono bg-amber-300 text-slate-900 hover:bg-amber-200 shadow-md"
                 onClick={onConnectWallet}
                 data-testid="button-hero-connect-wallet"
               >

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Calendar, Info, Wallet, AlertCircle } from "lucide-react";
+import { Plus, Info, Wallet, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,8 +29,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -42,6 +40,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { insertOptionSchema } from "@shared/schema";
 import type { InsertOption } from "@shared/schema";
 import { generateOptionTitle } from "@shared/utils";
@@ -87,6 +86,31 @@ interface CommodityIndex {
   } | null;
 }
 
+const monthOptions = [
+  { value: "1", label: "Jan" },
+  { value: "2", label: "Feb" },
+  { value: "3", label: "Mar" },
+  { value: "4", label: "Apr" },
+  { value: "5", label: "May" },
+  { value: "6", label: "Jun" },
+  { value: "7", label: "Jul" },
+  { value: "8", label: "Aug" },
+  { value: "9", label: "Sep" },
+  { value: "10", label: "Oct" },
+  { value: "11", label: "Nov" },
+  { value: "12", label: "Dec" },
+];
+
+function computeExpiryWindow(half: "1H" | "2H", month: number, year: number) {
+  const lastDay = new Date(year, month, 0).getDate();
+  const startDay = half === "1H" ? 1 : 16;
+  const endDay = half === "1H" ? 15 : lastDay;
+  const windowStart = new Date(Date.UTC(year, month - 1, startDay, 0, 0, 0));
+  const windowEnd = new Date(Date.UTC(year, month - 1, endDay, 23, 59, 59));
+  const label = `${half} ${monthOptions.find((m) => Number(m.value) === month)?.label || ""} ${year}`;
+  return { windowStart, windowEnd, settlementDate: windowEnd, label };
+}
+
 export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, onOpenChange, defaultIndexId, prefillOption }: CreateOptionDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
@@ -116,7 +140,8 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
   const walletAddress = userData?.user?.walletAddress || web3.address || null;
   const walletData = useWalletSummary(walletAddress);
 
-  const form = useForm<InsertOption>({
+  const today = new Date();
+  const form = useForm<InsertOption & { expiryHalf: "1H" | "2H"; expiryMonth: string; expiryYear: string }>({
     resolver: zodResolver(insertOptionSchema),
     defaultValues: {
       title: "",
@@ -126,11 +151,11 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
       premium: prefillOption?.premium || "",
       buyer: "",
       indexId: prefillOption?.indexId || defaultIndexId || "",
-      expirationDate: prefillOption?.expirationDate 
-        ? (typeof prefillOption.expirationDate === 'string' 
-          ? new Date(prefillOption.expirationDate) 
-          : prefillOption.expirationDate)
-        : undefined,
+      expirationDate: undefined,
+      expiryHalf: "1H",
+      expiryMonth: String(today.getUTCMonth() + 1),
+      expiryYear: String(today.getUTCFullYear()),
+      usePremiumAsMargin: false,
       status: "OPEN",
     },
   });
@@ -146,19 +171,93 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
         premium: prefillOption?.premium || "",
         buyer: "",
         indexId: prefillOption?.indexId || defaultIndexId || "",
-        expirationDate: prefillOption?.expirationDate 
-          ? (typeof prefillOption.expirationDate === 'string' 
-            ? new Date(prefillOption.expirationDate) 
-            : prefillOption.expirationDate)
-          : undefined,
+        expirationDate: undefined,
+        expiryHalf: "1H",
+        expiryMonth: String(today.getUTCMonth() + 1),
+        expiryYear: String(today.getUTCFullYear()),
+        usePremiumAsMargin: false,
         status: "OPEN",
       });
     }
   }, [open, prefillOption, defaultIndexId, form]);
 
+  // Watch form values for calculations
+  const indexId = form.watch("indexId");
+  const qty = form.watch("qty");
+  const expiryHalf = form.watch("expiryHalf");
+  const expiryMonth = form.watch("expiryMonth");
+  const expiryYear = form.watch("expiryYear");
+  const optionType = form.watch("type");
+  const strike = form.watch("strike");
+  const premium = form.watch("premium");
+  const usePremiumAsMargin = form.watch("usePremiumAsMargin");
+
+  // Compute expiry window derived dates
+  const { windowLabel, windowStart, windowEnd, settlementDate, derivedExpirationDate } = useMemo(() => {
+    try {
+      const half = expiryHalf || "1H";
+      const monthNum = Number(expiryMonth);
+      const yearNum = Number(expiryYear);
+      const computed = computeExpiryWindow(half as "1H" | "2H", monthNum, yearNum);
+      return {
+        windowLabel: computed.label,
+        windowStart: computed.windowStart,
+        windowEnd: computed.windowEnd,
+        settlementDate: computed.settlementDate,
+        derivedExpirationDate: computed.settlementDate,
+      };
+    } catch {
+      return {
+        windowLabel: "",
+        windowStart: undefined,
+        windowEnd: undefined,
+        settlementDate: undefined,
+        derivedExpirationDate: undefined,
+      };
+    }
+  }, [expiryHalf, expiryMonth, expiryYear]);
+
+  useEffect(() => {
+    if (derivedExpirationDate) {
+      form.setValue("expirationDate", derivedExpirationDate);
+    }
+  }, [derivedExpirationDate, form]);
+
+  // Find selected commodity
+  const selectedCommodity = commodities.find(c => c.id === indexId);
+  const currentMarketPrice = selectedCommodity?.latestPrice?.price || 0;
+
+  // Auto-generate title when relevant fields change
+  useEffect(() => {
+    if (selectedCommodity && qty && derivedExpirationDate) {
+      const qtyNum = parseFloat(qty);
+      if (!isNaN(qtyNum) && qtyNum > 0) {
+        const title = generateOptionTitle({
+          commodityName: selectedCommodity.name,
+          quantity: qtyNum,
+          creationDate: new Date(),
+          expirationDate: new Date(derivedExpirationDate),
+        });
+        form.setValue("title", title);
+      }
+    }
+  }, [selectedCommodity, qty, derivedExpirationDate, form]);
+
   const handleSubmit = async (data: InsertOption) => {
     try {
-      await onSubmit(data);
+      const payload = {
+        ...data,
+        expiryHalf,
+        expiryMonth,
+        expiryYear,
+        expiryWindow: derivedExpirationDate ? windowLabel : undefined,
+        windowStart: windowStart,
+        windowEnd: windowEnd,
+        settlementDate: settlementDate,
+        expirationDate: derivedExpirationDate,
+        usePremiumAsMargin,
+      };
+      await onSubmit(payload as InsertOption);
       setOpen(false);
       form.reset();
     } catch (error) {
@@ -167,50 +266,23 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
     }
   };
 
-  // Watch form values for calculations
-  const indexId = form.watch("indexId");
-  const qty = form.watch("qty");
-  const expirationDate = form.watch("expirationDate");
-  const optionType = form.watch("type");
-  const strike = form.watch("strike");
-  const premium = form.watch("premium");
-
-  // Find selected commodity
-  const selectedCommodity = commodities.find(c => c.id === indexId);
-  const currentMarketPrice = selectedCommodity?.latestPrice?.price || 0;
-
-  // Auto-generate title when relevant fields change
-  useEffect(() => {
-    if (selectedCommodity && qty && expirationDate) {
-      const qtyNum = parseFloat(qty);
-      if (!isNaN(qtyNum) && qtyNum > 0) {
-        const title = generateOptionTitle({
-          commodityName: selectedCommodity.name,
-          quantity: qtyNum,
-          creationDate: new Date(),
-          expirationDate: new Date(expirationDate),
-        });
-        form.setValue("title", title);
-      }
-    }
-  }, [selectedCommodity, qty, expirationDate, form]);
-
   // Calculate financial metrics
   const qtyNum = parseFloat(qty) || 0;
   const strikeNum = parseFloat(strike) || 0;
   const premiumNum = parseFloat(premium) || 0;
   const notional = computeNotional(strikeNum, qtyNum);
-  
-  // Calculate expiry months for collateral
+
   const expiryMonths = useMemo(() => {
-    if (!expirationDate) return 0;
-    const expiry = typeof expirationDate === 'string' ? new Date(expirationDate) : expirationDate;
-    return monthsBetween(new Date(), expiry);
-  }, [expirationDate]);
+    if (!derivedExpirationDate) return 0;
+    return monthsBetween(new Date(), derivedExpirationDate);
+  }, [derivedExpirationDate]);
   
   const collateralAmount = computeCollateral(notional, expiryMonths);
   const totalPremium = premiumNum * qtyNum;
-  const totalRequired = totalPremium + collateralAmount;
+  const effectiveInitialMargin = usePremiumAsMargin
+    ? Math.max(0, collateralAmount - totalPremium)
+    : collateralAmount;
+  const totalRequired = totalPremium + effectiveInitialMargin;
 
   // PnL Preview calculations
   const pnlPreview = useMemo(() => {
@@ -232,7 +304,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
 
   // Validation: check balance
   const hasInsufficientBalance = walletData.internalBalance < totalRequired;
-  const canSubmit = !hasInsufficientBalance && qtyNum > 0 && strikeNum > 0 && premiumNum > 0 && expirationDate && indexId;
+  const canSubmit = !hasInsufficientBalance && qtyNum > 0 && strikeNum > 0 && premiumNum > 0 && derivedExpirationDate && indexId;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -319,12 +391,12 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid gap-4 md:grid-cols-5">
                   <FormField
                     control={form.control}
                     name="qty"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel className="text-sm font-medium">Quantity (tons)</FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -333,7 +405,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                               step="0.01"
                               min="0"
                               placeholder="50" 
-                              className="font-mono pr-12"
+                              className="font-mono pr-12 w-full"
                               data-testid="input-qty"
                               {...field} 
                             />
@@ -349,7 +421,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                     control={form.control}
                     name="strike"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel className="text-sm font-medium">Strike Price ($/t)</FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -359,7 +431,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                               step="0.01"
                               min="0"
                               placeholder="209.00" 
-                              className="font-mono pl-7"
+                              className="font-mono pl-7 w-full"
                               data-testid="input-strike"
                               {...field} 
                             />
@@ -377,38 +449,68 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
 
                   <FormField
                     control={form.control}
-                    name="expirationDate"
+                    name="expiryHalf"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-sm font-medium">Expiration Date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                data-testid="button-expiration-date"
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal justify-start",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                <Calendar className="mr-2 h-4 w-4" />
-                                {field.value && !isNaN(new Date(field.value).getTime()) 
-                                  ? format(new Date(field.value), "PPP") 
-                                  : "Pick expiration date"}
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <CalendarComponent
-                              mode="single"
-                              selected={field.value ? new Date(field.value) : undefined}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm font-medium">Expiry Window</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger data-testid="select-expiry-half" className="w-full">
+                            <SelectValue placeholder="Select half" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1H">1H (days 1–15)</SelectItem>
+                            <SelectItem value="2H">2H (days 16–end)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="expiryMonth"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm font-medium">Month</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger data-testid="select-expiry-month" className="w-full">
+                            <SelectValue placeholder="Select month" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {monthOptions.map((m) => (
+                              <SelectItem key={m.value} value={m.value}>
+                                {m.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="expiryYear"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm font-medium">Year</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger data-testid="select-expiry-year" className="w-full">
+                            <SelectValue placeholder="Select year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 5 }).map((_, idx) => {
+                              const year = new Date().getUTCFullYear() + idx;
+                              return (
+                                <SelectItem key={year} value={String(year)}>
+                                  {year}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -512,11 +614,26 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                       </div>
                     )}
                     {notional > 0 && (
-                      <div className="pt-2 border-t">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">Collateral Amount:</span>
-                          <span className="text-sm font-mono font-semibold">
+                      <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Use received premium to cover initial margin</span>
+                          <Checkbox
+                            id="use-premium-margin"
+                            checked={!!usePremiumAsMargin}
+                            onCheckedChange={(val) => form.setValue("usePremiumAsMargin", Boolean(val))}
+                            data-testid="checkbox-use-premium-as-margin"
+                          />
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Estimated collateral:</span>
+                          <span className="font-mono font-semibold">
                             {collateralAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Expected initial margin:</span>
+                          <span className="font-mono font-semibold">
+                            {effectiveInitialMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
                           </span>
                         </div>
                       </div>
@@ -531,6 +648,21 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                   <CardTitle className="text-lg">Block 3: Price & PnL Preview</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="rounded-md border bg-muted/30 p-3 space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Expiry Window:</span>
+                      <span className="font-mono font-semibold">
+                        {windowLabel || "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Settlement Date:</span>
+                      <span className="font-mono font-semibold">
+                        {settlementDate ? format(settlementDate, "MMM dd, yyyy") : "-"}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Premium per ton:</span>

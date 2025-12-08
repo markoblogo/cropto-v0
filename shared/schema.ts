@@ -1,7 +1,15 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const optionCommodityEnum = [
+  "CORN_EXPORT",
+  "WHEAT_11_5_EXPORT",
+  "WHEAT_FEED_EXPORT",
+  "SOY_GMO_EXPORT",
+  "SUNFLOWER_PROCESSING",
+] as const;
 
 export const indexes = pgTable("indexes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -23,11 +31,17 @@ export const options = pgTable("options", {
   buyer: text("buyer"),
   seller: text("seller"),
   status: text("status", { enum: ["OPEN", "FILLED", "EXPIRED", "CANCELLED", "EXERCISED", "DEFAULTED", "MARGIN_CALL"] }).notNull().default("OPEN"),
-  commodity: text("commodity"),
+  commodity: text("commodity", { enum: optionCommodityEnum }),
   indexId: varchar("index_id").references(() => indexes.id),
   expirationDate: timestamp("expiration_date"),
+  expiryWindow: text("expiry_window").notNull().default(""),
+  windowStart: timestamp("window_start"),
+  windowEnd: timestamp("window_end"),
+  settlementDate: timestamp("settlement_date"),
   buyerId: text("buyer_id"),
   issuerId: text("issuer_id"),
+  longSide: text("long_side"),
+  shortSide: text("short_side"),
   collateralAmount: decimal("collateral_amount", { precision: 18, scale: 8 }),
   lastIntrinsic: decimal("last_intrinsic", { precision: 18, scale: 8 }),
   payoutAccumulated: decimal("payout_accumulated", { precision: 18, scale: 8 }).default("0"),
@@ -40,6 +54,15 @@ export const options = pgTable("options", {
   matchedBy: text("matched_by"),
   matchedAt: timestamp("matched_at"),
   counterpartyId: text("counterparty_id"),
+  usePremiumAsMargin: boolean("use_premium_as_margin").notNull().default(false),
+  initialMargin: decimal("initial_margin", { precision: 18, scale: 8 }),
+  marginBalance: decimal("margin_balance", { precision: 18, scale: 8 }),
+  floatingLoss: decimal("floating_loss", { precision: 18, scale: 8 }),
+  isInMarginCall: boolean("is_in_margin_call").notNull().default(false),
+  marginCallTimestamp: timestamp("margin_call_timestamp"),
+  marginCallDeadline: timestamp("margin_call_deadline"),
+  contractJson: text("contract_json"),
+  schemaVersion: text("schema_version"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
@@ -254,7 +277,22 @@ export const insertOptionSchema = createInsertSchema(options).omit({
     .positive("Collateral amount must be positive")
     .optional()
     .transform(val => val ? val.toString() : undefined),
-  commodity: z.string().optional(),
+  commodity: z.enum(optionCommodityEnum).optional(),
+  expiryWindow: z.string().optional(),
+  windowStart: z.coerce.date().optional(),
+  windowEnd: z.coerce.date().optional(),
+  settlementDate: z.coerce.date().optional(),
+  longSide: z.string().optional(),
+  shortSide: z.string().optional(),
+  contractJson: z.string().optional(),
+  schemaVersion: z.string().optional(),
+  usePremiumAsMargin: z.boolean().optional(),
+  initialMargin: z.coerce.number().optional().transform((val) => val?.toString()),
+  marginBalance: z.coerce.number().optional().transform((val) => val?.toString()),
+  floatingLoss: z.coerce.number().optional().transform((val) => val?.toString()),
+  isInMarginCall: z.boolean().optional(),
+  marginCallTimestamp: z.coerce.date().optional(),
+  marginCallDeadline: z.coerce.date().optional(),
 });
 
 export const insertTradeSchema = createInsertSchema(trades).omit({

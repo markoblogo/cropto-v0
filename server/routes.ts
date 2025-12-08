@@ -30,6 +30,9 @@ import {
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
 import { normalizeLegacyCommodity, WHEAT_115_NAME } from "./utils/commodity";
+import { computeExpiryWindow } from "./expiryWindows";
+import { serializeOptionToJson } from "./optionJson";
+import { calculateInitialMargin, checkMarginCall } from "./marginEngine";
 import fs from "fs";
 import path from "path";
 
@@ -759,6 +762,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/options/:id/json", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const option = await storage.getOptionById(id);
+      if (!option) {
+        return res.status(404).json({ error: "Option not found" });
+      }
+      const payload =
+        option.contractJson ||
+        JSON.stringify(serializeOptionToJson(option));
+      res.json({
+        schemaVersion: option.schemaVersion || "v1",
+        contractJson: JSON.parse(payload),
+      });
+    } catch (error: any) {
+      console.error("[GET_OPTION_JSON] Error:", error);
+      res.status(500).json({ error: "Failed to load option JSON" });
+    }
+  });
+
   app.post("/api/options", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const result = insertOptionSchema.safeParse(req.body);
@@ -796,14 +819,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         commodityName = index.name;
       }
 
+      // Compute expiry window if provided (prefer half/month/year over raw dates)
+      const { expiryHalf, expiryMonth, expiryYear } = req.body as any;
+      let windowComputed: {
+        expiryWindow?: string;
+        windowStart?: Date;
+        windowEnd?: Date;
+        settlementDate?: Date;
+        expirationDate?: Date;
+      } = {};
+
+      if (expiryHalf && expiryMonth && expiryYear) {
+        try {
+          const window = computeExpiryWindow({
+            half: expiryHalf,
+            month: Number(expiryMonth),
+            year: Number(expiryYear),
+          });
+          windowComputed = {
+            expiryWindow: window.label,
+            windowStart: window.windowStart,
+            windowEnd: window.windowEnd,
+            settlementDate: window.settlementDate,
+            expirationDate: window.settlementDate,
+          };
+        } catch (err) {
+          console.error("[CREATE_OPTION] Invalid expiry window input", err);
+          return res.status(400).json({ error: "Invalid expiry window" });
+        }
+      }
+
       // Set the issuer ID and commodity name
       // Ensure all required fields are present and properly formatted
       const optionData: any = {
         ...result.data,
+        ...windowComputed,
         commodity: commodityName,
         issuerId: req.user!.id,
         // Ensure status is set (default is OPEN, but explicit is better)
         status: result.data.status || 'OPEN',
+        usePremiumAsMargin: result.data.usePremiumAsMargin ?? false,
       };
 
       // Ensure expirationDate is a Date object (Zod should handle this, but double-check)
@@ -831,30 +886,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const notional = computeNotional(strikePerTon, quantityTons);
       
-      // Calculate required collateral for the writer (issuer/seller)
-      // Collateral is only required for SHORT positions (writer side)
-      // When someone creates an option, they are the issuer (seller/writer), so they need to post collateral
-      if (!optionData.collateralAmount && expirationDate) {
-        // Calculate expiry duration in months
-        const now = new Date();
-        const expiryDate = expirationDate;
-        const monthsUntilExpiry = Math.max(0.1, (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30));
-        
-        // Get collateral percentage based on expiry (5% for ≤3 months, 10% for 4-6 months, 20% for 7+ months)
-        const collateralPercent = collateralPct(monthsUntilExpiry);
-        
-        // Calculate required collateral in USD (notional * collateral percentage)
-        const collateralAmount = (notional * collateralPercent).toFixed(8);
-        optionData.collateralAmount = collateralAmount;
-        
-        console.log("[CREATE_OPTION] Calculated collateral for issuer:", {
-          strikePerTon,
-          quantityTons,
-          notional,
-          monthsUntilExpiry: monthsUntilExpiry.toFixed(2),
-          collateralPercent: `${(collateralPercent * 100).toFixed(1)}%`,
-          collateralAmount,
+      // Initial margin calculation using margin engine (SHORT side)
+      const premiumPerTon = parseFloat(result.data.premium);
+      const totalPremium = premiumPerTon * quantityTons;
+      if (expirationDate) {
+        const baseInitialMargin = calculateInitialMargin({
+          strike: strikePerTon,
+          quantityTon: quantityTons,
+          settlementDate: expirationDate,
+          currentDate: new Date(),
         });
+        const effectiveInitialMargin = optionData.usePremiumAsMargin
+          ? Math.max(0, baseInitialMargin - totalPremium)
+          : baseInitialMargin;
+        optionData.initialMargin = effectiveInitialMargin.toFixed(8);
+        optionData.collateralAmount = optionData.initialMargin;
       }
 
       // Remove any undefined values that might cause issues with Drizzle
@@ -880,7 +926,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Freeze collateral for the seller (issuer) before creating the option
-      const requiredCollateral = parseFloat(optionData.collateralAmount || "0");
+      const requiredCollateral = parseFloat(optionData.initialMargin || optionData.collateralAmount || "0");
       
       if (requiredCollateral > 0) {
         // Get or create seller's CROPT balance with row lock
@@ -2129,8 +2175,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // This ensures consistency and avoids issues if column wasn't applied
       // lockedCollateral is computed from option.collateralAmount for active SHORT positions
       
-      // Fetch all options where user is buyer or seller
-      const userOptions = await storage.getOptionsByUser(userId);
+      let userOptions: any[] = [];
+      try {
+        // Fetch all options where user is buyer or seller
+        userOptions = await storage.getOptionsByUser(userId);
+      } catch (error) {
+        console.error("Portfolio options query failed", error);
+        return res.status(500).json({ error: "Failed to fetch portfolio options" });
+      }
 
       // Fetch settlements for exercised options
       const settlementsData = await storage.listSettlements();
@@ -2287,8 +2339,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ),
       });
     } catch (error: any) {
-      console.error("Portfolio aggregation error:", error);
+      console.error("Portfolio query failed", error);
       res.status(500).json({ error: error.message || "Failed to fetch portfolio" });
+    }
+  });
+
+  // Admin: run margin checks for active SHORT positions
+  app.post("/api/admin/run-margin-check", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      // Only admins/brokers allowed
+      if (!hasAdminPermissions(req.user) && !hasBrokerPermissions(req.user)) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      // Load latest prices per index
+      const latestPrices = await db
+        .select()
+        .from(commodityIndexPrices)
+        .orderBy(desc(commodityIndexPrices.timestamp));
+      const priceMap = new Map<string, number>();
+      const seen = new Set<string>();
+      for (const p of latestPrices) {
+        if (!seen.has(p.indexId)) {
+          priceMap.set(p.indexId, parseFloat(p.price));
+          seen.add(p.indexId);
+        }
+      }
+
+      const activeOptions = await db
+        .select()
+        .from(options)
+        .where(
+          or(
+            eq(options.status, "OPEN"),
+            eq(options.status, "FILLED")
+          )
+        );
+
+      let checked = 0;
+      let triggered = 0;
+
+      for (const opt of activeOptions) {
+        const markPrice = opt.indexId ? priceMap.get(opt.indexId) || 0 : 0;
+        const { updated, marginCallTriggered } = checkMarginCall({
+          ...opt,
+          currentPrice: markPrice,
+        });
+
+        const needsUpdate =
+          marginCallTriggered ||
+          updated.floatingLoss !== opt.floatingLoss ||
+          updated.isInMarginCall !== opt.isInMarginCall;
+
+        if (needsUpdate) {
+          await db
+            .update(options)
+            .set({
+              floatingLoss: updated.floatingLoss?.toString(),
+              isInMarginCall: updated.isInMarginCall ?? false,
+              marginCallTimestamp: updated.marginCallTimestamp || null,
+              marginCallDeadline: updated.marginCallDeadline || null,
+              lastUpdated: new Date(),
+            })
+            .where(eq(options.id, opt.id));
+        }
+
+        if (marginCallTriggered) triggered += 1;
+        checked += 1;
+      }
+
+      res.json({ checked, triggered });
+    } catch (error: any) {
+      console.error("[ADMIN] Margin check failed", error);
+      res.status(500).json({ error: "Failed to run margin check" });
     }
   });
 

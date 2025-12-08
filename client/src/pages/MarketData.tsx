@@ -142,31 +142,87 @@ export default function MarketData() {
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {indexes.map((index) => {
-              const hasPrice = index.latestPrice !== null;
-              const priceValue = hasPrice && index.latestPrice ? index.latestPrice.price : 0;
-              const deltaValue = hasPrice && index.latestPrice && index.latestPrice.delta !== null 
-                ? index.latestPrice.delta 
-                : 0;
-              
-              // Calculate 24h change percentage
-              const changePercent = deltaValue !== null && priceValue > 0 
-                ? ((deltaValue / (priceValue - deltaValue)) * 100) 
-                : null;
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-muted-foreground">GRAINS</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {indexes
+                  .filter((index) => {
+                    const name = index.name.toLowerCase();
+                    return (
+                      name.includes("corn") ||
+                      name.includes("feed wheat") ||
+                      name.includes("wheat 11.5") ||
+                      name.includes("wheat 11.5%")
+                    );
+                  })
+                  .map((index) => {
+                    const hasPrice = index.latestPrice !== null;
+                    const priceValue = hasPrice && index.latestPrice ? index.latestPrice.price : 0;
+                    const deltaValue =
+                      hasPrice && index.latestPrice && index.latestPrice.delta !== null
+                        ? index.latestPrice.delta
+                        : 0;
 
-              const metadata = getIndexMetadata(index.slug, index.category);
+                    const changePercent =
+                      deltaValue !== null && priceValue > 0
+                        ? (deltaValue / (priceValue - deltaValue)) * 100
+                        : null;
 
-              return (
-                <CommodityIndexCard
-                  key={index.id}
-                  index={index}
-                  change24hPercent={changePercent}
-                  indexType={metadata.type}
-                  onViewDetails={handleViewDetails}
-                />
-              );
-            })}
+                    const metadata = getIndexMetadata(index.slug, index.category);
+
+                    return (
+                      <CommodityIndexCard
+                        key={index.id}
+                        index={index}
+                        change24hPercent={changePercent}
+                        indexType={metadata.type}
+                        onViewDetails={handleViewDetails}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-muted-foreground">OILSEEDS</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {indexes
+                  .filter((index) => {
+                    const name = index.name.toLowerCase();
+                    return (
+                      name.includes("soy") ||
+                      name.includes("rapeseed") ||
+                      name.includes("sunflower")
+                    );
+                  })
+                  .map((index) => {
+                    const hasPrice = index.latestPrice !== null;
+                    const priceValue = hasPrice && index.latestPrice ? index.latestPrice.price : 0;
+                    const deltaValue =
+                      hasPrice && index.latestPrice && index.latestPrice.delta !== null
+                        ? index.latestPrice.delta
+                        : 0;
+
+                    const changePercent =
+                      deltaValue !== null && priceValue > 0
+                        ? (deltaValue / (priceValue - deltaValue)) * 100
+                        : null;
+
+                    const metadata = getIndexMetadata(index.slug, index.category);
+
+                    return (
+                      <CommodityIndexCard
+                        key={index.id}
+                        index={index}
+                        change24hPercent={changePercent}
+                        indexType={metadata.type}
+                        onViewDetails={handleViewDetails}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
           </div>
         )}
 

@@ -1,9 +1,9 @@
-import { 
-  options, 
+import {
+  options,
   indexes,
-  trades, 
-  settlements, 
-  wallets, 
+  trades,
+  settlements,
+  wallets,
   marginCalls,
   notifications,
   transactions,
@@ -13,12 +13,12 @@ import {
   spotPositions,
   partnerOrganizations,
   serviceContracts,
-  type Option, 
-  type InsertOption, 
-  type Trade, 
-  type InsertTrade, 
-  type Settlement, 
-  type Wallet, 
+  type Option,
+  type InsertOption,
+  type Trade,
+  type InsertTrade,
+  type Settlement,
+  type Wallet,
   type InsertWallet,
   type MarginCall,
   type InsertMarginCall,
@@ -31,10 +31,11 @@ import {
   type PartnerOrganization,
   type InsertPartnerOrganization,
   type ServiceContract,
-  type InsertServiceContract
+  type InsertServiceContract,
 } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and, lt, or, sql } from "drizzle-orm";
+import { serializeOptionToJson } from "./optionJson";
 
 export interface IStorage {
   listOptions(): Promise<Option[]>;
@@ -132,9 +133,30 @@ export class DatabaseStorage implements IStorage {
       
       const [option] = await db
         .insert(options)
-        .values(insertOption)
+        .values({
+          ...insertOption,
+          schemaVersion: insertOption.schemaVersion ?? "v1",
+        })
         .returning();
-      
+
+      const contractJson = JSON.stringify(serializeOptionToJson(option as Option));
+      const needsUpdate =
+        option.contractJson !== contractJson || option.schemaVersion !== "v1";
+
+      if (needsUpdate) {
+        const [updated] = await db
+          .update(options)
+          .set({
+            contractJson,
+            schemaVersion: "v1",
+            lastUpdated: new Date(),
+          })
+          .where(eq(options.id, option.id))
+          .returning();
+        console.log("[STORAGE] Option created successfully:", updated.id);
+        return updated;
+      }
+
       console.log("[STORAGE] Option created successfully:", option.id);
       return option;
     } catch (error: any) {
@@ -156,21 +178,41 @@ export class DatabaseStorage implements IStorage {
     return option;
   }
 
+  /**
+   * TEMPORARY: simplified portfolio query to avoid missing columns/views.
+   * Returns basic option fields only, no joins, no derived columns.
+   */
   async getOptionsByUser(userId: string): Promise<Option[]> {
-    // Check both new fields (buyerId/issuerId) and legacy fields (buyer/seller) for backward compatibility
-    const userOptions = await db
-      .select()
-      .from(options)
-      .where(
-        or(
-          eq(options.buyerId, userId),
-          eq(options.issuerId, userId),
-          eq(options.buyer, userId),
-          eq(options.seller, userId)
+    try {
+      const rows = await db
+        .select({
+          id: options.id,
+          title: options.title,
+          type: options.type,
+          strike: options.strike,
+          qty: options.qty,
+          premium: options.premium,
+          status: options.status,
+          commodity: options.commodity,
+          expirationDate: options.expirationDate,
+          createdAt: options.createdAt,
+        })
+        .from(options)
+        .where(
+          or(
+            eq(options.buyerId, userId),
+            eq(options.issuerId, userId),
+            eq(options.buyer, userId),
+            eq(options.seller, userId)
+          )
         )
-      )
-      .orderBy(desc(options.createdAt));
-    return userOptions;
+        .orderBy(desc(options.createdAt));
+
+      return rows as Option[];
+    } catch (error) {
+      console.error("getOptionsByUser failed", error);
+      throw error;
+    }
   }
 
   async updateOption(id: string, updates: Partial<Option>): Promise<Option> {
