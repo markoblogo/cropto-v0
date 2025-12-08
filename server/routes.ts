@@ -32,7 +32,7 @@ import { emailService } from "./utils/emailMock";
 import { normalizeLegacyCommodity, WHEAT_115_NAME } from "./utils/commodity";
 import { computeExpiryWindow } from "./expiryWindows";
 import { serializeOptionToJson } from "./optionJson";
-import { calculateInitialMargin, checkMarginCall } from "./marginEngine";
+import { calculateInitialMargin, checkMarginCall, autoLiquidateIfNeeded } from "./marginEngine";
 import fs from "fs";
 import path from "path";
 
@@ -2412,6 +2412,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[ADMIN] Margin check failed", error);
       res.status(500).json({ error: "Failed to run margin check" });
+    }
+  });
+
+  // Admin: auto-liquidate overdue margin calls
+  app.post("/api/admin/run-liquidations", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasAdminPermissions(req.user) && !hasBrokerPermissions(req.user)) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      const now = new Date();
+
+      // Latest prices per index
+      const latestPrices = await db
+        .select()
+        .from(commodityIndexPrices)
+        .orderBy(desc(commodityIndexPrices.timestamp));
+      const priceMap = new Map<string, number>();
+      const seen = new Set<string>();
+      for (const p of latestPrices) {
+        if (!seen.has(p.indexId)) {
+          priceMap.set(p.indexId, parseFloat(p.price));
+          seen.add(p.indexId);
+        }
+      }
+
+      const candidates = await db
+        .select()
+        .from(options)
+        .where(
+          and(
+            eq(options.isInMarginCall, true),
+            sql`"margin_call_deadline" IS NOT NULL`,
+            or(eq(options.status, "OPEN"), eq(options.status, "FILLED"), eq(options.status, "MARGIN_CALL"))
+          )
+        );
+
+      let checked = 0;
+      let liquidated = 0;
+
+      for (const opt of candidates) {
+        const deadline = opt.marginCallDeadline ? new Date(opt.marginCallDeadline) : null;
+        if (!deadline || now <= deadline) continue;
+
+        const mark = opt.indexId ? priceMap.get(opt.indexId) || 0 : 0;
+        const { shouldLiquidate, updated } = autoLiquidateIfNeeded({ ...opt, currentPrice: mark });
+
+        if (shouldLiquidate) {
+          await db
+            .update(options)
+            .set({
+              status: updated.status || "LIQUIDATED",
+              floatingLoss: updated.floatingLoss?.toString(),
+              marginBalance: (updated as any).marginBalance?.toString() || "0",
+              isInMarginCall: false,
+              marginCallTimestamp: updated.marginCallTimestamp || null,
+              marginCallDeadline: updated.marginCallDeadline || null,
+              lastUpdated: new Date(),
+            })
+            .where(eq(options.id, opt.id));
+          liquidated += 1;
+        }
+        checked += 1;
+      }
+
+      res.json({ checked, liquidated });
+    } catch (error: any) {
+      console.error("[ADMIN] Liquidation run failed", error);
+      res.status(500).json({ error: "Failed to run liquidations" });
     }
   });
 

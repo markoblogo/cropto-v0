@@ -1,5 +1,5 @@
-import { format } from "date-fns";
-import { useState, useMemo } from "react";
+import { format, formatDistanceToNowStrict } from "date-fns";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -35,6 +35,8 @@ import { MintNFTDialog } from "./MintNFTDialog";
 import type { Option } from "@shared/schema";
 import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 type SortField = "commodity" | "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
@@ -91,6 +93,25 @@ export function OptionsTable({
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [isMatchDialogOpen, setIsMatchDialogOpen] = useState(false);
   const guardTradingAction = useTradingGuard();
+  const { toast } = useToast();
+  const [marginAlerted, setMarginAlerted] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const inCall = options.filter((opt) => (opt as any).isInMarginCall);
+    const newOnes = inCall.filter((opt) => !marginAlerted.has(opt.id));
+    if (newOnes.length > 0) {
+      newOnes.forEach((opt) => {
+        toast({
+          title: "Margin Call",
+          description: `Position ${opt.title || opt.id} is in margin call`,
+          variant: "destructive",
+        });
+      });
+      const next = new Set(marginAlerted);
+      newOnes.forEach((o) => next.add(o.id));
+      setMarginAlerted(next);
+    }
+  }, [options, marginAlerted, toast]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -351,6 +372,7 @@ export function OptionsTable({
                       {getSortIcon("status")}
                     </Button>
                   </TableHead>
+                  <TableHead className="font-semibold">Margin</TableHead>
                   <TableHead className="font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -362,6 +384,19 @@ export function OptionsTable({
                     !isMine &&
                     onMatch;
                   const userCanExercise = canExercise(option, userId);
+                  const isInMarginCall = Boolean((option as any).isInMarginCall);
+                  const isLiquidated = String(option.status || "").toUpperCase() === "LIQUIDATED";
+                  const marginDeadlineRaw = (option as any).marginCallDeadline;
+                  const marginDeadline = marginDeadlineRaw ? new Date(marginDeadlineRaw) : null;
+                  const timeLeft = marginDeadline
+                    ? formatDistanceToNowStrict(marginDeadline, { addSuffix: false })
+                    : null;
+                  const marginBalance = parseFloat((option as any).marginBalance || (option as any).initialMargin || "0");
+                  const floatingLoss = parseFloat((option as any).floatingLoss || "0");
+                  const initialMargin = parseFloat((option as any).initialMargin || "0");
+                  const topUp = Math.max(0, initialMargin - marginBalance);
+                  const ssiAvg = (option as any).ssiAvg || (option as any).settlementPrice;
+                  const finalPnl = (option as any).finalPnl;
 
                   return (
                 <TableRow key={option.id} data-testid={`row-option-${option.id}`}>
@@ -398,6 +433,43 @@ export function OptionsTable({
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1 text-sm">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge
+                          variant={
+                            isLiquidated
+                              ? "destructive"
+                              : isInMarginCall
+                              ? "warning"
+                              : "outline"
+                          }
+                        >
+                          {isLiquidated ? "Liquidated" : isInMarginCall ? "Margin Call" : "Normal"}
+                        </Badge>
+                        {isInMarginCall && timeLeft && !isLiquidated && (
+                          <span className="text-xs text-muted-foreground">Due in {timeLeft}</span>
+                        )}
+                        {isLiquidated && (
+                          <span className="text-xs text-muted-foreground">Auto-closed</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div>Margin Balance: {Number.isFinite(marginBalance) ? marginBalance.toFixed(2) : "-"}</div>
+                        <div>Floating Loss: {Number.isFinite(floatingLoss) ? floatingLoss.toFixed(2) : "-"}</div>
+                        <div>Top-up Needed: {Number.isFinite(initialMargin) ? topUp.toFixed(2) : "-"}</div>
+                        {isLiquidated && (
+                          <>
+                            <div>SSI avg: {ssiAvg ? Number(ssiAvg).toFixed(2) : "N/A"}</div>
+                            <div>Final PnL: {finalPnl !== undefined ? Number(finalPnl).toFixed(2) : "N/A"}</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              Position auto-closed due to unresolved margin call
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2 flex-wrap whitespace-nowrap">

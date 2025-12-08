@@ -18,6 +18,10 @@ export type OptionContractJsonV1 = {
   initialMargin?: number;
   escrowContract: string;
   settlementFormula: string;
+  settlementPrice?: number;
+  finalPnl?: number;
+  matchingFeePerSide?: number;
+  settlementFeePerSide?: number;
 };
 
 function toNumber(val: string | number | null | undefined): number {
@@ -60,6 +64,14 @@ export function serializeOptionToJson(option: Option): OptionContractJsonV1 {
     initialMargin: option.initialMargin ? toNumber(option.initialMargin as unknown as string) : undefined,
     escrowContract: "",
     settlementFormula,
+    settlementPrice: option.settlementDate ? toNumber((option as any).settlementPrice || (option as any).ssiAvg) : undefined,
+    finalPnl: (option as any).finalPnl ? toNumber((option as any).finalPnl) : undefined,
+    matchingFeePerSide: (option as any).matchingFeePerSide
+      ? toNumber((option as any).matchingFeePerSide)
+      : undefined,
+    settlementFeePerSide: (option as any).settlementFeePerSide
+      ? toNumber((option as any).settlementFeePerSide)
+      : undefined,
   };
 }
 

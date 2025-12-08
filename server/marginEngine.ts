@@ -78,3 +78,58 @@ export function calculateInitialMargin({
   return 0.02 * months * notional;
 }
 
+export interface AutoLiquidationResult {
+  shouldLiquidate: boolean;
+  payoutToBuyer: number;
+  updated: Option & {
+    floatingLoss?: number;
+    isInMarginCall?: boolean;
+    marginCallTimestamp?: Date | null;
+    marginCallDeadline?: Date | null;
+    marginBalance?: number;
+    status?: string;
+  };
+}
+
+export function autoLiquidateIfNeeded(
+  position: Option & { currentPrice?: number },
+): AutoLiquidationResult {
+  const now = new Date();
+  const deadline = position.marginCallDeadline ? new Date(position.marginCallDeadline) : null;
+  const inCall = Boolean(position.isInMarginCall);
+  const status = (position.status || "").toUpperCase();
+  const terminalStatuses = ["LIQUIDATED", "EXERCISED", "DEFAULTED", "CANCELLED", "SETTLED"];
+
+  if (!inCall || !deadline || now <= deadline || terminalStatuses.includes(status)) {
+    return { shouldLiquidate: false, payoutToBuyer: 0, updated: position };
+  }
+
+  const strike = toNumber(position.strike);
+  const qty = toNumber(position.qty);
+  const mark = toNumber((position as any).currentPrice);
+  const intrinsic =
+    position.type === "CALL"
+      ? Math.max(0, mark - strike)
+      : Math.max(0, strike - mark);
+
+  const pnl = intrinsic * qty;
+  const marginBalance = toNumber((position as any).marginBalance);
+  const payoutToBuyer = Math.min(pnl, marginBalance > 0 ? marginBalance : pnl);
+
+  const updated: any = {
+    ...position,
+    floatingLoss: pnl,
+    marginBalance: 0,
+    isInMarginCall: false,
+    marginCallTimestamp: position.marginCallTimestamp || null,
+    marginCallDeadline: position.marginCallDeadline || null,
+    status: "LIQUIDATED",
+  };
+
+  return {
+    shouldLiquidate: true,
+    payoutToBuyer,
+    updated,
+  };
+}
+

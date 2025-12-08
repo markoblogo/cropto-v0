@@ -34,8 +34,9 @@ import {
   type InsertServiceContract,
 } from "@shared/schema";
 import { db } from "./db";
-import { desc, eq, and, lt, or, sql } from "drizzle-orm";
+import { desc, eq, and, lt, or, sql, gte, lte } from "drizzle-orm";
 import { serializeOptionToJson } from "./optionJson";
+import { MATCHING_FEE_PER_TON, SETTLEMENT_FEE_PER_TON } from "./fees";
 
 export interface IStorage {
   listOptions(): Promise<Option[]>;
@@ -244,6 +245,9 @@ export class DatabaseStorage implements IStorage {
         throw new Error("Counterparty ID is required");
       }
 
+      const qtyTons = parseFloat(option.qty);
+      const matchingFee = MATCHING_FEE_PER_TON * qtyTons;
+
       // Update option with matching details
       const [updatedOption] = await tx
         .update(options)
@@ -253,9 +257,29 @@ export class DatabaseStorage implements IStorage {
           matchedBy: matchedBy,
           matchedAt: new Date(),
           lastUpdated: new Date(),
+          matchingFeePerSide: matchingFee.toFixed(8),
         })
         .where(eq(options.id, optionId))
         .returning();
+
+      // Record platform fees for both sides (issuer and counterparty)
+      const sides = [
+        { userId: option.issuerId, role: "issuer" },
+        { userId: counterpartyId, role: "counterparty" },
+      ].filter((s) => s.userId);
+
+      for (const side of sides) {
+        await tx.insert(platformFees).values({
+          userId: side.userId!,
+          role: side.role,
+          type: "option_match",
+          amount: matchingFee.toFixed(8),
+          notionalAmount: (qtyTons * MATCHING_FEE_PER_TON).toFixed(8),
+          currency: "CROPT",
+          instrument: option.id,
+          txId: null,
+        });
+      }
 
       return updatedOption;
     });
@@ -280,6 +304,24 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(trades.createdAt));
     return userTrades;
+  }
+
+  private async getSSIavg(indexId: string | null, windowStart?: Date | null, windowEnd?: Date | null): Promise<number | null> {
+    if (!indexId || !windowStart || !windowEnd) return null;
+    const rows = await db
+      .select()
+      .from(commodityIndexPrices)
+      .where(
+        and(
+          eq(commodityIndexPrices.indexId, indexId),
+          gte(commodityIndexPrices.timestamp, windowStart),
+          lte(commodityIndexPrices.timestamp, windowEnd)
+        )
+      );
+    if (!rows.length) return null;
+    const avg =
+      rows.reduce((sum, row) => sum + parseFloat(row.price), 0) / rows.length;
+    return avg;
   }
 
   async exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement> {
@@ -317,10 +359,19 @@ export class DatabaseStorage implements IStorage {
       const premiumPaid = parseFloat(option.premium);
       const collateralAmount = parseFloat(option.collateralAmount || "0");
 
-      // Calculate intrinsic value using corrected helper (strike already in $/ton)
+      // Compute SSI average over window if available; fallback to provided spot
+      let ssiAvg = spot;
+      if (option.indexId && option.windowStart && option.windowEnd) {
+        const avg = await this.getSSIavg(option.indexId, option.windowStart, option.windowEnd);
+        if (avg && Number.isFinite(avg)) {
+          ssiAvg = avg;
+        }
+      }
+
+      // Calculate intrinsic value using SSIavg (strike already in $/ton)
       const intrinsicValue = option.type === "CALL"
-        ? Math.max(0, (spot - strikePricePerTon) * quantityTons)
-        : Math.max(0, (strikePricePerTon - spot) * quantityTons);
+        ? Math.max(0, (ssiAvg - strikePricePerTon) * quantityTons)
+        : Math.max(0, (strikePricePerTon - ssiAvg) * quantityTons);
 
       // Identify holder (exerciser) and counterparty (seller)
       const holderId = exercisedBy;
@@ -500,12 +551,13 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Record settlement for reporting
+      const settlementFeePerSide = SETTLEMENT_FEE_PER_TON * quantityTons;
       const [settlement] = await tx
         .insert(settlements)
         .values({
           optionId: option.id,
           exercisedBy: exercisedBy,
-          spotPrice: spotPrice,
+          spotPrice: ssiAvg.toString(),
           strike: option.strike,
           qty: option.qty,
           payout: payout.toFixed(8),
@@ -514,12 +566,24 @@ export class DatabaseStorage implements IStorage {
         .returning();
 
       // Mark option as EXERCISED (will be treated as SETTLED in portfolio)
+      const contractJson = JSON.stringify(
+        serializeOptionToJson({
+          ...(option as any),
+          settlementDate: option.settlementDate || option.expirationDate || option.windowEnd || option.windowStart || new Date(),
+          finalPnl: isHolderBuyer ? buyerPnL : sellerPnL,
+          settlementPrice: ssiAvg,
+        } as any)
+      );
+
       await tx
         .update(options)
         .set({ 
           status: "EXERCISED",
           lastUpdated: new Date(),
           payoutAccumulated: payout.toFixed(8),
+          contractJson,
+          schemaVersion: "v1",
+          settlementFeePerSide: settlementFeePerSide.toFixed(8),
         })
         .where(eq(options.id, optionId));
 
@@ -556,18 +620,27 @@ export class DatabaseStorage implements IStorage {
       
       const notionalAmount = notionalAmountUsd.toFixed(8);
       
-      await tx
-        .insert(platformFees)
-        .values({
-          userId: exercisedBy,
-          role: null,
-          type: 'option_exercise',
-          amount: feeAmount.toFixed(8),
-          notionalAmount: notionalAmount,
-          currency: 'CROPT',
-          instrument: option.id,
-          txId: null,
-        });
+      // Settlement fee per side (buyer/seller)
+      const feeAmountSettlement = settlementFeePerSide;
+      const sidesForSettlement = [
+        { userId: holderId, role: isHolderBuyer ? "buyer" : "seller" },
+        { userId: sellerId, role: isHolderBuyer ? "seller" : "buyer" },
+      ];
+
+      for (const side of sidesForSettlement) {
+        await tx
+          .insert(platformFees)
+          .values({
+            userId: side.userId!,
+            role: side.role,
+            type: 'option_settlement',
+            amount: feeAmountSettlement.toFixed(8),
+            notionalAmount: notionalAmount,
+            currency: 'CROPT',
+            instrument: option.id,
+            txId: null,
+          });
+      }
 
       return settlement;
     });
