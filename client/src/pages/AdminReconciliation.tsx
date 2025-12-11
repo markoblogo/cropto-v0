@@ -420,27 +420,40 @@ export default function AdminReconciliation() {
                             <TableHead>Spot Price</TableHead>
                             <TableHead>Strike</TableHead>
                             <TableHead>Quantity</TableHead>
-                            <TableHead>Payout</TableHead>
+                            <TableHead>Payout (gross)</TableHead>
+                            <TableHead>Settlement fee (per side)</TableHead>
+                            <TableHead>Net payout (buyer)</TableHead>
                             <TableHead>P&L</TableHead>
                             <TableHead>Date</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredSettlements.map((settlement) => (
-                            <TableRow key={settlement.id} data-testid={`row-settlement-${settlement.id}`}>
-                              <TableCell className="text-sm truncate max-w-[120px]">{settlement.exercisedBy}</TableCell>
-                              <TableCell className="font-mono">${parseFloat(settlement.spotPrice).toFixed(2)}</TableCell>
-                              <TableCell className="font-mono">${parseFloat(settlement.strike).toFixed(2)}</TableCell>
-                              <TableCell className="font-mono">{parseFloat(settlement.qty).toFixed(2)}</TableCell>
-                              <TableCell className="font-mono">${parseFloat(settlement.payout).toFixed(2)}</TableCell>
-                              <TableCell className={`font-mono ${parseFloat(settlement.profitLoss) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                ${parseFloat(settlement.profitLoss).toFixed(2)}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {format(new Date(settlement.createdAt), "MMM dd, yyyy HH:mm")}
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          {filteredSettlements.map((settlement) => {
+                            const qty = parseFloat(settlement.qty);
+                            const payout = parseFloat(settlement.payout);
+                            const feePerSide = settlement.settlementFeePerSide
+                              ? parseFloat(settlement.settlementFeePerSide)
+                              : qty * 0.125;
+                            const netPayoutBuyer = payout - feePerSide;
+                            const pnl = parseFloat(settlement.profitLoss);
+                            return (
+                              <TableRow key={settlement.id} data-testid={`row-settlement-${settlement.id}`}>
+                                <TableCell className="text-sm truncate max-w-[120px]">{settlement.exercisedBy}</TableCell>
+                                <TableCell className="font-mono">${parseFloat(settlement.spotPrice).toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">${parseFloat(settlement.strike).toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">{qty.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">${payout.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">${feePerSide.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">${netPayoutBuyer.toFixed(2)}</TableCell>
+                                <TableCell className={`font-mono ${pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  ${pnl.toFixed(2)}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {format(new Date(settlement.createdAt), "MMM dd, yyyy HH:mm")}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </div>

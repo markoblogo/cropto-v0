@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -37,6 +36,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import type { Option } from "@shared/schema";
+import { Badge } from "@/components/ui/badge";
 
 interface CommodityIndex {
   id: string;
@@ -357,6 +357,11 @@ export default function Portfolio() {
   const { data: spotPositions = [], isLoading: isSpotLoading } = useQuery<SpotPosition[]>({
     queryKey: ["/api/spot/positions"],
     retry: false,
+    enabled: !!user,
+  });
+
+  const { data: marginCallsList = [] } = useQuery<any[]>({
+    queryKey: ["/api/margin-calls"],
     enabled: !!user,
   });
 
@@ -701,6 +706,10 @@ export default function Portfolio() {
   const openPositions = portfolioData?.openPositions ?? 0;
   const lockedCollateral = portfolioData ? parseFloat(portfolioData.lockedCollateral || "0") : 0;
   const marginCalls = portfolioData?.marginCalls ?? 0;
+  const myMarginCalls = useMemo(() => {
+    if (!user) return [];
+    return (marginCallsList || []).filter((mc: any) => mc.userId === user.id);
+  }, [marginCallsList, user]);
   
   // Determine if profitable for UI styling (Total P&L >= 0)
   const isProfitable = totalPnL >= 0;
@@ -1001,6 +1010,68 @@ export default function Portfolio() {
                   You have {marginCalls} active margin call{marginCalls !== 1 ? 's' : ''}. Please top up your collateral to avoid liquidation.
                 </AlertDescription>
               </Alert>
+            )}
+            {myMarginCalls.length > 0 && (
+              <div className="mt-3 rounded-md border bg-muted/30 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Your Margin Calls</div>
+                  <div className="text-xs text-muted-foreground">Deadlines and status</div>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Option</TableHead>
+                        <TableHead>Required</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Deadline</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {myMarginCalls.map((mc: any) => {
+                        const deadline = mc.deadline ? new Date(mc.deadline) : null;
+                        const now = new Date();
+                        const hoursLeft = deadline ? (deadline.getTime() - now.getTime()) / (1000 * 60 * 60) : null;
+                        const isOverdue = deadline ? deadline.getTime() < now.getTime() : false;
+                        const isLiquidated = String(mc.status || "").toUpperCase() === "LIQUIDATED";
+                        const badgeClass =
+                          isLiquidated && isOverdue
+                            ? "bg-red-100 text-red-900"
+                            : hoursLeft !== null && hoursLeft < 24
+                            ? "bg-amber-100 text-amber-900"
+                            : "bg-muted text-foreground";
+                        return (
+                          <TableRow key={mc.id}>
+                            <TableCell className="font-mono text-xs">{mc.optionId}</TableCell>
+                            <TableCell className="font-mono text-sm">
+                              ${parseFloat(mc.amountRequired || mc.amount || 0).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {mc.status || "PENDING"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {deadline ? (
+                                <div className="flex items-center gap-2">
+                                  <Badge className={`text-[11px] ${badgeClass}`}>
+                                    {isOverdue ? "Overdue" : hoursLeft !== null ? `${Math.max(0, Math.floor(hoursLeft))}h left` : "—"}
+                                  </Badge>
+                                  <span className="font-mono text-xs">
+                                    {format(deadline, "MMM dd HH:mm")}
+                                  </span>
+                                </div>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

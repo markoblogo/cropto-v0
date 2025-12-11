@@ -73,6 +73,24 @@ export default function PrivacyPolicy() {
             We may update this policy periodically. The current version is always available on this page.
           </p>
         </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Payment Terms and Settlement</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Cropto instruments are quoted and settled in CROPT and are index-settled (cash-settled) against the Spike
+            Spot Index (CPT Odesa). There is no physical delivery of commodities. Forward-style CROPT contracts remain
+            in development (WIP); references are descriptive only.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Use of Emails and Identifiers</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            We use email addresses, user IDs, and wallet identifiers to operate the platform: processing option actions,
+            sending notifications (e.g., margin calls, settlements), and keeping audit trails. We do not sell or share
+            these identifiers for marketing.
+          </p>
+        </section>
       </div>
     </MainLayout>
   );

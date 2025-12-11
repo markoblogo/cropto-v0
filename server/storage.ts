@@ -269,12 +269,17 @@ export class DatabaseStorage implements IStorage {
       ].filter((s) => s.userId);
 
       for (const side of sides) {
+        const notionalAmt = (() => {
+          const strikeNum = parseFloat(option.strike);
+          if (Number.isFinite(strikeNum)) return (strikeNum * qtyTons).toFixed(8);
+          return (qtyTons * MATCHING_FEE_PER_TON).toFixed(8);
+        })();
         await tx.insert(platformFees).values({
           userId: side.userId!,
           role: side.role,
-          type: "option_match",
+          type: "matching_fee",
           amount: matchingFee.toFixed(8),
-          notionalAmount: (qtyTons * MATCHING_FEE_PER_TON).toFixed(8),
+          notionalAmount: notionalAmt,
           currency: "CROPT",
           instrument: option.id,
           txId: null,
@@ -324,6 +329,17 @@ export class DatabaseStorage implements IStorage {
     return avg;
   }
 
+  private async getLatestIndexPrice(indexId: string | null): Promise<number | null> {
+    if (!indexId) return null;
+    const [row] = await db
+      .select()
+      .from(commodityIndexPrices)
+      .where(eq(commodityIndexPrices.indexId, indexId))
+      .orderBy(desc(commodityIndexPrices.timestamp))
+      .limit(1);
+    return row ? parseFloat(row.price) : null;
+  }
+
   async exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement> {
     return await db.transaction(async (tx) => {
       const [option] = await tx
@@ -365,6 +381,26 @@ export class DatabaseStorage implements IStorage {
         const avg = await this.getSSIavg(option.indexId, option.windowStart, option.windowEnd);
         if (avg && Number.isFinite(avg)) {
           ssiAvg = avg;
+        } else {
+          const latest = await this.getLatestIndexPrice(option.indexId);
+          if (latest && Number.isFinite(latest)) {
+            console.warn("[EXERCISE] SSIavg not found for window; falling back to latest price", {
+              optionId,
+              indexId: option.indexId,
+              windowStart: option.windowStart?.toISOString?.(),
+              windowEnd: option.windowEnd?.toISOString?.(),
+              latest,
+            });
+            ssiAvg = latest;
+          } else {
+            console.warn("[EXERCISE] SSIavg and latest price missing; using provided spot fallback", {
+              optionId,
+              indexId: option.indexId,
+              windowStart: option.windowStart?.toISOString?.(),
+              windowEnd: option.windowEnd?.toISOString?.(),
+              spot,
+            });
+          }
         }
       }
 
@@ -562,6 +598,7 @@ export class DatabaseStorage implements IStorage {
           qty: option.qty,
           payout: payout.toFixed(8),
           profitLoss: (isHolderBuyer ? buyerPnL : sellerPnL).toFixed(8),
+          settlementFeePerSide: settlementFeePerSide.toFixed(8),
         })
         .returning();
 
@@ -628,18 +665,28 @@ export class DatabaseStorage implements IStorage {
       ];
 
       for (const side of sidesForSettlement) {
-        await tx
-          .insert(platformFees)
-          .values({
-            userId: side.userId!,
+        try {
+          await tx
+            .insert(platformFees)
+            .values({
+              userId: side.userId!,
+              role: side.role,
+              type: 'settlement_fee',
+              amount: feeAmountSettlement.toFixed(8),
+              notionalAmount: notionalAmount,
+              currency: 'CROPT',
+              instrument: option.id,
+              txId: null,
+            });
+        } catch (err) {
+          console.warn("[SETTLEMENT_FEE] Failed to record fee", {
+            optionId: option.id,
+            userId: side.userId,
             role: side.role,
-            type: 'option_settlement',
-            amount: feeAmountSettlement.toFixed(8),
-            notionalAmount: notionalAmount,
-            currency: 'CROPT',
-            instrument: option.id,
-            txId: null,
+            fee: feeAmountSettlement,
+            error: (err as Error)?.message,
           });
+        }
       }
 
       return settlement;

@@ -216,7 +216,9 @@ export const platformFees = pgTable("platform_fees", {
   role: text("role"), // Optional - nullable, may not exist in older DB schemas
   // Note: DB column is named "fee_type" but we use "type" in code for consistency
   // Map TypeScript field "type" to DB column "fee_type"
-  type: text("fee_type").notNull(),
+  type: text("fee_type", { enum: ["matching_fee", "settlement_fee", "exercise_fee"] }).notNull().$type<
+    "matching_fee" | "settlement_fee" | "exercise_fee"
+  >(),
   amount: decimal("amount", { precision: 18, scale: 8 }).notNull().default("0"),
   notionalAmount: decimal("notional_amount", { precision: 18, scale: 8 }).notNull(),
   currency: text("currency").notNull().default("CROPT"),
@@ -234,6 +236,7 @@ export const partnerOrganizations = pgTable("partner_organizations", {
   }).notNull(),
   status: text("status", { enum: ["active", "pending", "inactive"] }).notNull().default("pending"),
   notes: text("notes"),
+  feeSharePercent: decimal("fee_share_percent", { precision: 5, scale: 2 }).notNull().default("0"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -423,6 +426,8 @@ export const insertPartnerOrganizationSchema = createInsertSchema(partnerOrganiz
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  feeSharePercent: z.coerce.number().min(0).max(100).optional(),
 });
 
 export const updatePartnerOrganizationSchema = insertPartnerOrganizationSchema.partial();

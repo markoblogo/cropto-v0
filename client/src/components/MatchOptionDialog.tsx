@@ -77,6 +77,48 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
     // Extract commodity name
     const commodityName = (option as any).commodityName || option.commodity || "Unknown";
     const commoditySlug = (option as any).commoditySlug || option.commodity?.toLowerCase() || "";
+    const indexName = commodityName || "Spike Spot Grain Index";
+    const basis = "CPT Odesa";
+    const windowLabel = (option as any).expiryWindow || (option as any).windowLabel || "Not specified";
+    const windowStart = (option as any).windowStart ? format(new Date((option as any).windowStart), "dd MMM yyyy") : "—";
+    const windowEnd = (option as any).windowEnd ? format(new Date((option as any).windowEnd), "dd MMM yyyy") : "—";
+    const settlementDate = option.settlementDate
+      ? format(new Date(option.settlementDate), "dd MMM yyyy")
+      : option.expirationDate
+      ? format(new Date(option.expirationDate), "dd MMM yyyy")
+      : "Not specified";
+    const createdAt = option.createdAt ? new Date(option.createdAt) : null;
+    const matchedAt = (option as any).matchedAt ? new Date((option as any).matchedAt) : null;
+    const marginDeadline = (option as any).marginCallDeadline ? new Date((option as any).marginCallDeadline) : null;
+    const isInMarginCall = Boolean((option as any).isInMarginCall);
+    const statusUpper = String(option.status || "").toUpperCase();
+    const isSettled = ["EXERCISED", "SETTLED"].includes(statusUpper);
+    const isLiquidated = ["LIQUIDATED", "DEFAULTED"].includes(statusUpper);
+
+    const timeline = [
+      createdAt && {
+        label: "Created",
+        date: createdAt,
+        description: "Option was created.",
+      },
+      matchedAt && {
+        label: "Matched",
+        date: matchedAt,
+        description: "Counterparty matched; status FILLED.",
+      },
+      (isInMarginCall || marginDeadline) && {
+        label: "Margin Call",
+        date: marginDeadline || null,
+        description: marginDeadline
+          ? `Margin call active. Deadline: ${format(marginDeadline, "dd MMM yyyy HH:mm")}`
+          : "Margin call active.",
+      },
+      (isSettled || isLiquidated) && {
+        label: isLiquidated ? "Liquidated" : "Settled",
+        date: option.settlementDate ? new Date(option.settlementDate) : null,
+        description: isLiquidated ? "Auto-liquidated / defaulted." : "Exercised and settled.",
+      },
+    ].filter(Boolean) as { label: string; date: Date | null; description: string }[];
 
     // Format quantity in tons
     const quantityT = parseFloat(option.qty) / 1000;
@@ -125,6 +167,76 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
                         {commodityName}
                       </div>
                     </div>
+                  </div>
+
+                  <Separator />
+
+                  {timeline.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="font-semibold text-sm text-muted-foreground">Lifecycle</div>
+                      <div className="space-y-3">
+                        {timeline.map((step, idx) => (
+                          <div key={idx} className="flex items-start gap-3">
+                            <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{step.label}</span>
+                                {step.date && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {format(step.date, "dd MMM yyyy HH:mm")}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{step.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="font-semibold text-sm text-muted-foreground">Index</div>
+                      <div className="font-medium break-words">{indexName}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm text-muted-foreground">Basis</div>
+                      <div className="font-medium">{basis}</div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="font-semibold text-sm text-muted-foreground">Settlement type</div>
+                      <div className="font-medium break-words">Index cash-settled (Spike Spot)</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm text-muted-foreground">Basis</div>
+                      <div className="font-medium">{basis}</div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="font-semibold text-sm text-muted-foreground">Window</div>
+                      <div className="font-medium break-words">{windowLabel}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm text-muted-foreground">Window dates</div>
+                      <div className="font-medium text-sm">{windowStart} → {windowEnd}</div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <div className="font-semibold text-sm text-muted-foreground">Settlement date</div>
+                    <div className="font-medium">{settlementDate}</div>
                   </div>
 
                   <Separator />

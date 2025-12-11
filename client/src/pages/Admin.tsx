@@ -96,6 +96,20 @@ export default function Admin() {
     enabled: !!isAdminLevelUser,
   });
 
+type FeeType = "matching_fee" | "settlement_fee" | "exercise_fee" | string;
+interface FeesSummary {
+  totalFees: string;
+  byType: Record<FeeType, string>;
+  byRole: Record<string, string>;
+  platformShare?: string;
+  partnerShares?: Array<{ id: string; name: string; feeSharePercent: number; partnerShare: string }>;
+}
+
+const { data: feesSummary } = useQuery<FeesSummary>({
+  queryKey: ["/api/admin/fees"],
+  enabled: !!isAdminLevelUser,
+});
+
   // Calculate overview stats (always computed at top level, never conditionally)
   const overviewStats = useMemo(() => {
     if (!options || options.length === 0) {
@@ -620,6 +634,48 @@ export default function Admin() {
                   <p className="text-xs text-muted-foreground">Pending margin calls</p>
                 </CardContent>
               </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Platform Fees</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-2xl font-bold">
+                  {feesSummary ? `${parseFloat(feesSummary.totalFees).toFixed(2)} CROPT` : "—"}
+                </div>
+                <div className="text-xs text-muted-foreground">Grouped by type</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {feesSummary &&
+                    Object.entries(feesSummary.byType || {}).map(([type, amt]) => (
+                      <Badge key={type} variant="outline">
+                        {type}: {parseFloat(amt).toFixed(2)}
+                      </Badge>
+                    ))}
+                </div>
+                <div className="text-xs text-muted-foreground">By role</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {feesSummary &&
+                    Object.entries(feesSummary.byRole || {}).map(([role, amt]) => (
+                      <Badge key={role} variant="secondary">
+                        {role}: {parseFloat(amt).toFixed(2)}
+                      </Badge>
+                    ))}
+                </div>
+                <div className="text-xs text-muted-foreground">Platform vs partners</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {feesSummary?.platformShare && (
+                    <Badge variant="outline">Platform: {parseFloat(feesSummary.platformShare).toFixed(2)}</Badge>
+                  )}
+                  {feesSummary?.partnerShares &&
+                    feesSummary.partnerShares.map((p) => (
+                      <Badge key={p.id} variant="secondary">
+                        {p.name}: {parseFloat(p.partnerShare).toFixed(2)} ({p.feeSharePercent}%)
+                      </Badge>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
             </div>
 
             <Card>

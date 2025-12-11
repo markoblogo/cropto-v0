@@ -1,5 +1,6 @@
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
+import { Link } from "wouter";
 import {
   Table,
   TableBody,
@@ -596,6 +597,17 @@ export function OptionsTable({
                         >
                           <Plus className="w-3 h-3" />
                           Create
+                        </Button>
+                      )}
+                      {isLiquidated && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="gap-1"
+                          data-testid={`button-view-settlement-${option.id}`}
+                          asChild
+                        >
+                          <Link href="/admin/reconciliation">View settlement / transaction</Link>
                         </Button>
                       )}
                       {canMatchAsOther && (

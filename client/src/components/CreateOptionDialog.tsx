@@ -156,7 +156,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
       expiryHalf: "1H",
       expiryMonth: String(today.getUTCMonth() + 1),
       expiryYear: String(today.getUTCFullYear()),
-      usePremiumAsMargin: false,
+      usePremiumAsMargin: true,
       status: "OPEN",
     },
   });
@@ -176,7 +176,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
         expiryHalf: "1H",
         expiryMonth: String(today.getUTCMonth() + 1),
         expiryYear: String(today.getUTCFullYear()),
-        usePremiumAsMargin: false,
+        usePremiumAsMargin: true,
         status: "OPEN",
       });
     }
@@ -192,7 +192,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
   const strike = form.watch("strike");
   const premium = form.watch("premium");
   const usePremiumAsMargin = form.watch("usePremiumAsMargin");
-  const [marginProfileId, setMarginProfileId] = useState<MarginProfileId>("standard");
+  const [marginProfileId, setMarginProfileId] = useState<MarginProfileId>("premium-margin");
 
   // Compute expiry window derived dates
   const { windowLabel, windowStart, windowEnd, settlementDate, derivedExpirationDate } = useMemo(() => {
@@ -380,23 +380,76 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                   <FormField
                     control={form.control}
                     name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">Option Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-type">
-                              <SelectValue placeholder="Select option type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="CALL">CALL</SelectItem>
-                            <SelectItem value="PUT">PUT</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const isCall = field.value === "CALL";
+                      const isPut = field.value === "PUT";
+                      return (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium flex items-center gap-2">
+                            Option Type
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="h-4 w-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent side="top" align="start" className="max-w-xs text-sm leading-snug">
+                                  Choose whether you bet on the index moving up (Call) or down (Put). Values stay CALL/PUT.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </FormLabel>
+                          <div className="grid grid-cols-2 gap-2" data-testid="select-type">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant={isCall ? "default" : "outline"}
+                                    className={cn(
+                                      "w-full justify-center h-full min-h-[76px] flex-col items-start gap-1 text-left leading-snug",
+                                      isCall && "shadow-md"
+                                    )}
+                                    onClick={() => field.onChange("CALL")}
+                                  >
+                                    <span className="font-semibold">Call</span>
+                                    <span className="text-xs text-muted-foreground">Bet on price rising above strike.</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" align="start" className="max-w-xs text-sm leading-snug">
+                                  Buyer earns if the index is above strike during the delivery window.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant={isPut ? "default" : "outline"}
+                                    className={cn(
+                                      "w-full justify-center h-full min-h-[76px] flex-col items-start gap-1 text-left leading-snug",
+                                      isPut && "shadow-md"
+                                    )}
+                                    onClick={() => field.onChange("PUT")}
+                                  >
+                                    <span className="font-semibold">Put</span>
+                                    <span className="text-xs text-muted-foreground">Bet on price falling below strike.</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" align="start" className="max-w-xs text-sm leading-snug">
+                                  Buyer earns if the index is below strike during the delivery window.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <FormDescription className="text-xs leading-snug">
+                            Call = up; Put = down. Values remain CALL/PUT in the payload.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 
@@ -556,6 +609,23 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                   />
 
                   <div className="space-y-2">
+                    <Label className="text-sm font-medium">Total premium (read-only)</Label>
+                    <div className="rounded-md border bg-muted/30 p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Qty × premium</span>
+                        <span className="font-mono font-semibold">
+                          {totalPremium > 0
+                            ? `${totalPremium.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT`
+                            : "-"}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Calculated automatically from quantity and premium per ton.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm font-medium">Side</Label>
                     <div className="rounded-md border bg-muted/30 p-3">
                       <div className="flex items-center justify-between">
@@ -624,32 +694,46 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                     )}
                     {notional > 0 && (
                       <div className="rounded-md border bg-muted/40 p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">Use received premium to cover initial margin</span>
-                          <Checkbox
-                            id="use-premium-margin"
-                            checked={!!usePremiumAsMargin}
-                            onCheckedChange={(val) => form.setValue("usePremiumAsMargin", Boolean(val))}
-                            data-testid="checkbox-use-premium-as-margin"
-                          />
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">Use received premium as margin</span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Checkbox
+                                  id="use-premium-margin"
+                                  checked={!!usePremiumAsMargin}
+                                  onCheckedChange={(val) => form.setValue("usePremiumAsMargin", Boolean(val))}
+                                  data-testid="checkbox-use-premium-as-margin"
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs text-xs leading-snug">
+                                When enabled, total premium reduces the initial margin to lock; remaining amount is covered by collateral.
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
-                        {usePremiumAsMargin && (
-                          <p className="text-xs text-muted-foreground">
-                            Premium offsets the margin you need to lock; any shortfall is provided as collateral.
-                          </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Base initial margin:</span>
+                            <span className="font-mono font-semibold">
+                              {collateralAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Effective margin:</span>
+                            <span className="font-mono font-semibold">
+                              {effectiveInitialMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
+                            </span>
+                          </div>
+                        </div>
+                        {marginProfile.riskMultiplier !== 1 && (
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Display buffer (profile):</span>
+                            <span className="font-mono">
+                              {effectiveInitialMarginDisplay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
+                            </span>
+                          </div>
                         )}
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">Estimated collateral:</span>
-                          <span className="font-mono font-semibold">
-                            {collateralAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">Expected initial margin:</span>
-                          <span className="font-mono font-semibold">
-                            {effectiveInitialMarginDisplay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
-                          </span>
-                        </div>
                         <div className="space-y-2 pt-2 border-t">
                           <div className="flex items-center gap-2">
                             <Label className="text-xs">Margin profile</Label>
@@ -677,7 +761,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                             </SelectContent>
                           </Select>
                           <p className="text-xs text-muted-foreground">
-                            Maps to usePremiumAsMargin; riskMultiplier is display-only (no backend margin change).
+                            Premium can offset margin when enabled; riskMultiplier is display-only (no backend margin change).
                           </p>
                         </div>
                       </div>
@@ -763,6 +847,35 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Risk notes */}
+            <div className="flex flex-col md:flex-row gap-3">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm cursor-default">
+                      Buyer: maximum loss = premium paid.
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs leading-snug">
+                    Long side risk is limited to the upfront premium; no margin calls for the buyer.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="rounded-md border bg-amber-50 px-3 py-2 text-sm cursor-default text-amber-900">
+                      Seller: risk can be unbounded; premium only partially offsets risk.
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs leading-snug">
+                    Short side may owe (index − strike) × quantity for calls or (strike − index) × quantity for puts; collateral and margin help cover this.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Block 4: Wallet & Confirmation */}

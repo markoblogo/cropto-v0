@@ -5,7 +5,7 @@ import { db } from "./db";
 import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq, desc, gt, and, or, sql, asc } from "drizzle-orm";
+import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
@@ -1350,7 +1350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // notionalAmount maps to 'notional_amount' column via Drizzle schema
           const feeData = {
             userId: req.user!.id,
-            type: 'option_create' as const, // Explicitly set fee_type via 'type' field
+            type: 'matching_fee' as const,
             amount: feeAmount.toFixed(8),
             notionalAmount: notionalAmount, // Required: quantity * strike in USD (as string for decimal)
             currency: 'CROPT' as const,
@@ -1370,7 +1370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             try {
               await db.insert(platformFees).values(feeData);
-              console.log(`[CREATE_OPTION] Platform fee recorded for option ${createdOption.id}, userId=${req.user!.id}, fee_type=option_create, notionalAmount=${notionalAmount}, role=${req.user!.role || 'none'}`);
+              console.log(`[CREATE_OPTION] Platform fee recorded for option ${createdOption.id}, userId=${req.user!.id}, fee_type=matching_fee, notionalAmount=${notionalAmount}, role=${req.user!.role || 'none'}`);
             } catch (feeError: any) {
               // Log error but don't fail the request - option was already created successfully
               console.error("[CREATE_OPTION] Failed to insert platform fee (non-fatal):", feeError?.message || feeError);
@@ -2368,37 +2368,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
       
-      // Get all fees
-      const allFees = await db
-        .select()
-        .from(platformFees);
-      
-      // Calculate totals
-      let totalFees = 0;
-      const byType: Record<string, number> = {};
-      const byRole: Record<string, number> = {};
-      
+      const allFees = await db.select().from(platformFees);
+      const partners = await storage.getPartnerOrganizations();
+
+      const totals = {
+        totalFees: 0,
+        byType: {} as Record<string, number>,
+        byRole: {} as Record<string, number>,
+      };
+
       for (const fee of allFees) {
         const amount = parseFloat(fee.amount);
-        totalFees += amount;
-        
-        // Group by type
-        const type = fee.type || 'unknown';
-        byType[type] = (byType[type] || 0) + amount;
-        
-        // Group by role
-        const role = fee.role || 'unknown';
-        byRole[role] = (byRole[role] || 0) + amount;
+        if (!Number.isFinite(amount)) continue;
+        totals.totalFees += amount;
+
+        const type = fee.type || "unknown";
+        totals.byType[type] = (totals.byType[type] || 0) + amount;
+
+        const role = fee.role || "unknown";
+        totals.byRole[role] = (totals.byRole[role] || 0) + amount;
       }
-      
+
+      // Partner fee sharing (reporting only)
+      const partnerShares = partners.map((p) => {
+        const sharePct = parseFloat((p as any).feeSharePercent || "0");
+        const clampedPct = Number.isFinite(sharePct) ? Math.min(100, Math.max(0, sharePct)) : 0;
+        const partnerShare = (totals.totalFees * clampedPct) / 100;
+        return {
+          id: p.id,
+          name: p.name,
+          feeSharePercent: clampedPct,
+          partnerShare,
+        };
+      });
+
+      const totalPartnerShare = partnerShares.reduce((sum, p) => sum + p.partnerShare, 0);
+      const platformShare = Math.max(0, totals.totalFees - totalPartnerShare);
+
+      const formatTotals = (obj: Record<string, number>) =>
+        Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v.toFixed(8)]));
+
       res.json({
-        totalFees: totalFees.toFixed(8),
-        byType: Object.fromEntries(
-          Object.entries(byType).map(([k, v]) => [k, v.toFixed(8)])
-        ),
-        byRole: Object.fromEntries(
-          Object.entries(byRole).map(([k, v]) => [k, v.toFixed(8)])
-        ),
+        totalFees: totals.totalFees.toFixed(8),
+        byType: formatTotals(totals.byType),
+        byRole: formatTotals(totals.byRole),
+        platformShare: platformShare.toFixed(8),
+        partnerShares: partnerShares.map((p) => ({
+          ...p,
+          partnerShare: p.partnerShare.toFixed(8),
+        })),
       });
     } catch (error: any) {
       console.error("Error fetching platform fees:", error);
@@ -2710,6 +2728,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      const getSSIavgWindow = async (indexId: string | null, windowStart?: Date | null, windowEnd?: Date | null) => {
+        if (!indexId || !windowStart || !windowEnd) return null;
+        const rows = await db
+          .select()
+          .from(commodityIndexPrices)
+          .where(
+            and(
+              eq(commodityIndexPrices.indexId, indexId),
+              gte(commodityIndexPrices.timestamp, windowStart),
+              lte(commodityIndexPrices.timestamp, windowEnd)
+            )
+          );
+        if (rows.length === 0) return null;
+        const avg = rows.reduce((sum, r) => sum + parseFloat(r.price), 0) / rows.length;
+        return avg;
+      };
+
       const activeOptions = await db
         .select()
         .from(options)
@@ -2724,7 +2759,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let triggered = 0;
 
       for (const opt of activeOptions) {
-        const markPrice = opt.indexId ? priceMap.get(opt.indexId) || 0 : 0;
+        let markPrice = opt.indexId ? priceMap.get(opt.indexId) || 0 : 0;
+        if (opt.indexId && opt.windowStart && opt.windowEnd) {
+          const ssi = await getSSIavgWindow(opt.indexId, opt.windowStart as any, opt.windowEnd as any);
+          if (ssi && Number.isFinite(ssi)) {
+            markPrice = ssi;
+          } else {
+            console.warn("[MARGIN_CHECK] No SSIavg in window; using latest price as fallback", {
+              optionId: opt.id,
+              indexId: opt.indexId,
+              windowStart: (opt.windowStart as any)?.toISOString?.() ?? opt.windowStart,
+              windowEnd: (opt.windowEnd as any)?.toISOString?.() ?? opt.windowEnd,
+              latest: markPrice,
+            });
+          }
+        }
         const { updated, marginCallTriggered } = checkMarginCall({
           ...opt,
           currentPrice: markPrice,

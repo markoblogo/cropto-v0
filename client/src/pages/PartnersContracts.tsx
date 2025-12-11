@@ -25,6 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,6 +48,7 @@ interface PartnerOrganization {
   relationship: "prime_broker" | "custody" | "liquidity_provider" | "security_auditor" | "other";
   status: "active" | "pending" | "inactive";
   notes?: string | null;
+  feeSharePercent?: number | string | null;
   contractsCount?: number;
   activeContractsCount?: number;
   totalContractValueUsd?: string;
@@ -73,6 +75,7 @@ const partnerFormSchema = z.object({
   relationship: z.enum(["prime_broker", "custody", "liquidity_provider", "security_auditor", "other"]),
   status: z.enum(["active", "pending", "inactive"]),
   notes: z.string().optional(),
+  feeSharePercent: z.coerce.number().min(0).max(100).optional(),
 });
 
 const contractFormSchema = z.object({
@@ -144,6 +147,7 @@ export default function PartnersContracts() {
       relationship: "other",
       status: "pending",
       notes: "",
+      feeSharePercent: 0,
     },
   });
 
@@ -352,6 +356,30 @@ export default function PartnersContracts() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={partnerForm.control}
+                          name="feeSharePercent"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fee share (%)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="100"
+                                  value={field.value ?? ""}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  placeholder="0"
+                                />
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                Portion of platform fees attributed to this partner (reporting only).
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <DialogFooter>
                           <Button
                             type="button"
@@ -379,6 +407,7 @@ export default function PartnersContracts() {
                   <TableHead>Contact</TableHead>
                   <TableHead>Relationship</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Fee share (%)</TableHead>
                   <TableHead className="text-right">Contracts</TableHead>
                   <TableHead className="text-right">Total Value</TableHead>
                 </TableRow>
@@ -414,6 +443,11 @@ export default function PartnersContracts() {
                         >
                           {partner.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono">
+                        {partner.feeSharePercent != null
+                          ? `${parseFloat(partner.feeSharePercent as any).toFixed(2)}%`
+                          : "0.00%"}
                       </TableCell>
                       <TableCell className="text-right font-mono" data-testid={`text-partner-contracts-${partner.id}`}>
                         {partner.contractsCount || 0}

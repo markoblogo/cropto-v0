@@ -61,6 +61,41 @@ export default function TermsOfUse() {
         </section>
 
         <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Payment Terms and Settlement</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Platform amounts are quoted and settled in CROPT. Instruments are index-linked and cash-settled against the
+            Spike Spot Index (CPT Odesa). There is no physical delivery of commodities and no post-delivery obligations.
+            Forward-style CROPT contracts are under development (WIP); any references are descriptive and not a
+            commitment to provide physical settlement.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Product Description</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Cropto options are index-settled, cash-settled contracts on grain indices (e.g., Spike Spot CPT Odesa).
+            Settlement uses index prices; there is no physical grain delivery and no after-delivery risk.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Fees</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Matching and settlement fees may apply (per-ton, quoted in CROPT). Applicable fees are shown in the interface
+            before you confirm actions.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Disclaimer</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            The platform is a demo/non-regulated environment provided “as is”. No warranties are given. Products are for
+            educational/testing purposes and do not constitute investment advice or a licensed trading venue. Use at your
+            own risk.
+          </p>
+        </section>
+
+        <section className="space-y-4">
           <h2 className="text-xl font-semibold">Governing Law and Dispute Resolution</h2>
           <p className="text-muted-foreground leading-relaxed">
             Relationships may be subject to the law of a jurisdiction selected by Cropto. Specific jurisdiction and

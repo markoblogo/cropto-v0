@@ -10,6 +10,11 @@ export interface MarginCheckResult {
   marginCallTriggered: boolean;
 }
 
+// Margin config (tunable without migrations)
+export const MARGIN_BASE_PERCENT_PER_MONTH = 0.02; // 2% per month
+export const MIN_MARGIN_MONTHS = 1;
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 function toNumber(val: any): number {
   const n = typeof val === "string" ? parseFloat(val) : typeof val === "number" ? val : NaN;
   return Number.isFinite(n) ? n : 0;
@@ -71,11 +76,42 @@ export function calculateInitialMargin({
   settlementDate,
   currentDate = new Date(),
 }: MarginInput): number {
-  const msPerDay = 1000 * 60 * 60 * 24;
-  const diffDays = Math.max(0, (settlementDate.getTime() - currentDate.getTime()) / msPerDay);
-  const months = Math.max(1, Math.ceil(diffDays / 30));
+  const settlement = new Date(settlementDate);
+  const now = new Date(currentDate);
+
+  const diffDays = Math.max(0, (settlement.getTime() - now.getTime()) / MS_PER_DAY);
+  const monthsRaw = diffDays / 30;
+  const months = Math.max(MIN_MARGIN_MONTHS, Math.ceil(monthsRaw));
+
   const notional = strike * quantityTon;
-  return 0.02 * months * notional;
+  if (!Number.isFinite(notional) || notional <= 0) {
+    console.warn("[MARGIN] Notional is non-positive in calculateInitialMargin", {
+      strike,
+      quantityTon,
+      settlementDate: settlementDate?.toString?.() ?? settlementDate,
+      currentDate: currentDate?.toString?.() ?? currentDate,
+      notional,
+    });
+  }
+
+  const margin = MARGIN_BASE_PERCENT_PER_MONTH * months * Math.max(notional, 0);
+
+  if (!Number.isFinite(margin) || margin < 0) {
+    console.warn("[MARGIN] Margin calculation returned invalid value", {
+      strike,
+      quantityTon,
+      settlementDate: settlementDate?.toString?.() ?? settlementDate,
+      currentDate: currentDate?.toString?.() ?? currentDate,
+      diffDays,
+      monthsRaw,
+      months,
+      notional,
+      margin,
+    });
+    return 0;
+  }
+
+  return margin;
 }
 
 export interface AutoLiquidationResult {
