@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
@@ -36,6 +36,8 @@ import { calculateInitialMargin, checkMarginCall, autoLiquidateIfNeeded } from "
 import { mapOptionToMarketRow } from "./utils/marketSnapshot";
 import fs from "fs";
 import path from "path";
+import { AVAILABLE_COMMODITIES, COMMODITY_MAP } from "@shared/commodities";
+import { createHash } from "crypto";
 
 const STALE_MAX_AGE_DAYS = 7;
 
@@ -195,9 +197,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastUpdated: options.lastUpdated,
           collateralAmount: options.collateralAmount,
           payoutAccumulated: options.payoutAccumulated,
-          isInMarginCall: options.isInMarginCall,
-          marginCallDeadline: options.marginCallDeadline,
-          marginCallTimestamp: options.marginCallTimestamp,
         })
         .from(options)
         .where(
@@ -215,7 +214,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Query changed margin calls (USER-SCOPED: only return user's margin calls)
       const changedMarginCalls = await db
-        .select()
+        .select({
+          id: marginCalls.id,
+          optionId: marginCalls.optionId,
+          forwardContractId: sql`NULL::varchar`,
+          instrumentType: sql`'OPTION'::text`,
+          userId: marginCalls.userId,
+          amountRequired: marginCalls.amountRequired,
+          intrinsicValue: marginCalls.intrinsicValue,
+          collateralAmount: marginCalls.collateralAmount,
+          reservedCollateral: marginCalls.reservedCollateral,
+          status: marginCalls.status,
+          deadline: marginCalls.deadline,
+          createdAt: marginCalls.createdAt,
+          lastUpdated: marginCalls.lastUpdated,
+        })
         .from(marginCalls)
         .where(
           and(
@@ -2375,6 +2388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalFees: 0,
         byType: {} as Record<string, number>,
         byRole: {} as Record<string, number>,
+        byInstrument: {} as Record<string, number>,
       };
 
       for (const fee of allFees) {
@@ -2387,6 +2401,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const role = fee.role || "unknown";
         totals.byRole[role] = (totals.byRole[role] || 0) + amount;
+
+        const instrumentType = (fee as any).instrumentType || "OPTION";
+        totals.byInstrument[instrumentType] = (totals.byInstrument[instrumentType] || 0) + amount;
       }
 
       // Partner fee sharing (reporting only)
@@ -2412,6 +2429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalFees: totals.totalFees.toFixed(8),
         byType: formatTotals(totals.byType),
         byRole: formatTotals(totals.byRole),
+        byInstrument: formatTotals(totals.byInstrument),
         platformShare: platformShare.toFixed(8),
         partnerShares: partnerShares.map((p) => ({
           ...p,
@@ -2874,6 +2892,374 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[ADMIN] Liquidation run failed", error);
       res.status(500).json({ error: "Failed to run liquidations" });
+    }
+  });
+
+  // ===== FORWARD ORDERS MATCHING =====
+
+  app.post("/api/forward/orders/:id/match", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const orderId = req.params.id;
+      const [order] = await db.select().from(forwardOrders).where(eq(forwardOrders.id, orderId));
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      if (order.userId === req.user.id) {
+        return res.status(403).json({ error: "Counterparty cannot be the same user" });
+      }
+      if (order.status !== "OPEN") {
+        return res.status(400).json({ error: `Order status is ${order.status}, cannot match` });
+      }
+
+      const oppositeSide = order.side === "BUY" ? "SELL" : "BUY";
+      const [counterOrder] = await db
+        .select()
+        .from(forwardOrders)
+        .where(
+          and(
+            eq(forwardOrders.side, oppositeSide),
+            eq(forwardOrders.indexId, order.indexId),
+            eq(forwardOrders.window, order.window),
+            eq(forwardOrders.price, order.price),
+            eq(forwardOrders.status, "OPEN")
+          )
+        )
+        .limit(1);
+
+      if (!counterOrder) {
+        return res.status(404).json({ error: "No matching counter-order found" });
+      }
+
+      const qtyA = parseFloat(order.qtyTon);
+      const qtyB = parseFloat(counterOrder.qtyTon);
+      if (!Number.isFinite(qtyA) || !Number.isFinite(qtyB) || qtyA <= 0 || qtyB <= 0) {
+        return res.status(400).json({ error: "Invalid quantity on order" });
+      }
+      if (Math.abs(qtyA - qtyB) > 1e-9) {
+        return res.status(400).json({ error: "Quantity mismatch; partial fills not supported yet" });
+      }
+      const qtyTon = qtyA;
+      const contractPriceNum = parseFloat(order.price);
+      const settlementDate =
+        order.settlementDate ||
+        order.windowEnd ||
+        counterOrder.settlementDate ||
+        counterOrder.windowEnd ||
+        new Date();
+
+      const initialMargin = calculateInitialMargin({
+        strike: contractPriceNum,
+        quantityTon: qtyTon,
+        settlementDate: new Date(settlementDate),
+        currentDate: new Date(),
+      });
+
+      const buyOrder = order.side === "BUY" ? order : counterOrder;
+      const sellOrder = order.side === "SELL" ? order : counterOrder;
+
+      // Soft proof: hash a JSON snapshot of key, non-PII contract fields
+      const contractProofPayload = {
+        buyOrderId: buyOrder.id,
+        sellOrderId: sellOrder.id,
+        indexId: order.indexId,
+        commodity: order.commodity || counterOrder.commodity || null,
+        contractPrice: contractPriceNum,
+        qtyTon,
+        window: order.window,
+        windowStart: order.windowStart || counterOrder.windowStart || null,
+        windowEnd: order.windowEnd || counterOrder.windowEnd || null,
+        settlementDate,
+        longUserId: buyOrder.userId,
+        shortUserId: sellOrder.userId,
+        initialMargin,
+      };
+      const contractHash = createHash("sha256")
+        .update(JSON.stringify(contractProofPayload))
+        .digest("hex");
+
+      const [contract] = await db
+        .insert(forwardContracts)
+        .values({
+          buyOrderId: buyOrder.id,
+          sellOrderId: sellOrder.id,
+          indexId: order.indexId,
+          commodity: order.commodity || counterOrder.commodity || null,
+          contractPrice: contractPriceNum.toString(),
+          qtyTon: qtyTon.toString(),
+          window: order.window,
+          windowStart: order.windowStart || counterOrder.windowStart || null,
+          windowEnd: order.windowEnd || counterOrder.windowEnd || null,
+          settlementDate,
+          longUserId: buyOrder.userId,
+          shortUserId: sellOrder.userId,
+          initialMargin: initialMargin.toFixed(8),
+          status: "ACTIVE",
+          contractHash,
+        })
+        .returning();
+
+      await db
+        .update(forwardOrders)
+        .set({ status: "FILLED", updatedAt: new Date() })
+        .where(or(eq(forwardOrders.id, buyOrder.id), eq(forwardOrders.id, sellOrder.id)));
+
+      // Record matching fees (per side)
+      const matchingFeeAmount = qtyTon * MATCHING_FEE_PER_TON;
+      const feeNotional = (contractPriceNum * qtyTon).toFixed(8);
+      const forwardSides = [
+        { userId: buyOrder.userId, role: "buyer" },
+        { userId: sellOrder.userId, role: "seller" },
+      ];
+      for (const side of forwardSides) {
+        try {
+          await db.insert(platformFees).values({
+            userId: side.userId!,
+            role: side.role,
+            type: "matching_fee",
+            amount: matchingFeeAmount.toFixed(8),
+            notionalAmount: feeNotional,
+            currency: "CROPT",
+            instrument: contract.id,
+            instrumentType: "FORWARD",
+            txId: null,
+          });
+        } catch (err) {
+          console.warn("[FORWARD_MATCH_FEE] Failed to record fee", {
+            contractId: contract.id,
+            userId: side.userId,
+            role: side.role,
+            error: (err as Error)?.message,
+          });
+        }
+      }
+
+      console.log("[FORWARD_MATCH] Created forward contract", {
+        contractId: contract.id,
+        buyOrderId: buyOrder.id,
+        sellOrderId: sellOrder.id,
+        price: contractPriceNum,
+        qtyTon,
+      });
+
+      res.status(201).json(contract);
+    } catch (error: any) {
+      console.error("Error matching forward order:", error);
+      res.status(500).json({ error: error.message || "Failed to match forward order" });
+    }
+  });
+
+  // List forward contracts with soft-proof hash
+  app.get("/api/forward/contracts", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { status } = req.query;
+      const isAdmin = hasBrokerPermissions(req.user.role) || hasAdminPermissions(req.user);
+
+      const rows = await db.select().from(forwardContracts).orderBy(desc(forwardContracts.createdAt));
+      let contracts = rows;
+      if (!isAdmin) {
+        contracts = contracts.filter(
+          (c) => c.longUserId === req.user!.id || c.shortUserId === req.user!.id
+        );
+      }
+      if (status && typeof status === "string") {
+        contracts = contracts.filter((c) => c.status === status);
+      }
+
+      res.json(contracts);
+    } catch (error: any) {
+      console.error("Error fetching forward contracts:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch forward contracts" });
+    }
+  });
+
+  // Settle a forward contract using SSIavg over the window
+  app.post("/api/forward/contracts/:id/settle", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasAdminPermissions(req.user) && !hasBrokerPermissions(req.user)) {
+        return res.status(403).json({ error: "Forbidden: broker/admin required" });
+      }
+
+      const contractId = req.params.id;
+      const [contract] = await db.select().from(forwardContracts).where(eq(forwardContracts.id, contractId));
+      if (!contract) {
+        return res.status(404).json({ error: "Forward contract not found" });
+      }
+      if (contract.status === "SETTLED") {
+        return res.status(400).json({ error: "Contract already settled" });
+      }
+
+      const windowStart = contract.windowStart ? new Date(contract.windowStart) : null;
+      const windowEnd = contract.windowEnd ? new Date(contract.windowEnd) : null;
+      const indexId = contract.indexId;
+
+      let ssiAvg: number | null = null;
+      if (indexId && windowStart && windowEnd) {
+        const rows = await db
+          .select()
+          .from(commodityIndexPrices)
+          .where(
+            and(
+              eq(commodityIndexPrices.indexId, indexId),
+              gte(commodityIndexPrices.timestamp, windowStart),
+              lte(commodityIndexPrices.timestamp, windowEnd)
+            )
+          );
+        if (rows.length > 0) {
+          ssiAvg = rows.reduce((sum, r) => sum + parseFloat(r.price), 0) / rows.length;
+        }
+      }
+
+      if (!ssiAvg || !Number.isFinite(ssiAvg)) {
+        const [latest] = indexId
+          ? await db
+              .select()
+              .from(commodityIndexPrices)
+              .where(eq(commodityIndexPrices.indexId, indexId))
+              .orderBy(desc(commodityIndexPrices.timestamp))
+              .limit(1)
+          : [];
+        if (latest) {
+          ssiAvg = parseFloat(latest.price);
+          console.warn("[FORWARD_SETTLE] No SSIavg in window; falling back to latest price", {
+            contractId,
+            indexId,
+            windowStart: windowStart?.toISOString?.(),
+            windowEnd: windowEnd?.toISOString?.(),
+            latest: ssiAvg,
+          });
+        } else {
+          console.warn("[FORWARD_SETTLE] No prices found; aborting settlement", {
+            contractId,
+            indexId,
+          });
+          return res.status(400).json({ error: "No prices available to settle" });
+        }
+      }
+
+      const contractPrice = parseFloat(contract.contractPrice);
+      const qtyTon = parseFloat(contract.qtyTon);
+      const pnlLong = (ssiAvg - contractPrice) * qtyTon;
+      const pnlShort = -pnlLong;
+
+      const [settlement] = await db
+        .insert(forwardSettlements)
+        .values({
+          forwardContractId: contract.id,
+          settlementPrice: ssiAvg.toFixed(8),
+          contractPrice: contractPrice.toFixed(8),
+          qtyTon: qtyTon.toFixed(8),
+          pnlLong: pnlLong.toFixed(8),
+          pnlShort: pnlShort.toFixed(8),
+          feesTotal: "0",
+        })
+        .returning();
+
+      await db
+        .update(forwardContracts)
+        .set({ status: "SETTLED", updatedAt: new Date() })
+        .where(eq(forwardContracts.id, contract.id));
+
+      // Settlement fees per side
+      const settlementFeeAmount = qtyTon * SETTLEMENT_FEE_PER_TON;
+      const feeNotional = (contractPrice * qtyTon).toFixed(8);
+      const sides = [
+        { userId: contract.longUserId, role: "long" },
+        { userId: contract.shortUserId, role: "short" },
+      ];
+      for (const side of sides) {
+        if (!side.userId) continue;
+        try {
+          await db.insert(platformFees).values({
+            userId: side.userId,
+            role: side.role,
+            type: "settlement_fee",
+            amount: settlementFeeAmount.toFixed(8),
+            notionalAmount: feeNotional,
+            currency: "CROPT",
+            instrument: contract.id,
+            instrumentType: "FORWARD",
+            txId: null,
+          });
+        } catch (err) {
+          console.warn("[FORWARD_SETTLE_FEE] Failed to record fee", {
+            contractId: contract.id,
+            userId: side.userId,
+            role: side.role,
+            error: (err as Error)?.message,
+          });
+        }
+      }
+
+      console.log("[FORWARD_SETTLE] Settled forward contract", {
+        contractId: contract.id,
+        ssiAvg,
+        pnlLong,
+        pnlShort,
+      });
+
+      res.json(settlement);
+    } catch (error: any) {
+      console.error("Error settling forward contract:", error);
+      res.status(500).json({ error: error.message || "Failed to settle forward contract" });
+    }
+  });
+
+  // ===== FORWARD SPREADS (analytics/demo) =====
+  const createForwardSpreadSchema = z.object({
+    spreadType: z.enum(["CALENDAR", "CROSS_COMMODITY"]),
+    leg1IndexId: z.string().optional(),
+    leg2IndexId: z.string().optional(),
+    leg1Window: z.string().optional(),
+    leg2Window: z.string().optional(),
+    spreadPrice: z.coerce.number(),
+    baseContractId: z.string().optional(),
+    hedgeContractId: z.string().optional(),
+    status: z.enum(["OPEN", "CANCELLED"]).optional(),
+  });
+
+  app.get("/api/forward/spreads", async (_req, res) => {
+    try {
+      const rows = await db.select().from(forwardSpreads).orderBy(desc(forwardSpreads.createdAt));
+      res.json(rows);
+    } catch (error: any) {
+      console.error("Error fetching forward spreads:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch forward spreads" });
+    }
+  });
+
+  app.post("/api/forward/spreads", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+      const parsed = createForwardSpreadSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+      const data = parsed.data;
+      const [created] = await db
+        .insert(forwardSpreads)
+        .values({
+          spreadType: data.spreadType,
+          leg1IndexId: data.leg1IndexId,
+          leg2IndexId: data.leg2IndexId,
+          leg1Window: data.leg1Window,
+          leg2Window: data.leg2Window,
+          spreadPrice: data.spreadPrice.toFixed(8),
+          baseContractId: data.baseContractId,
+          hedgeContractId: data.hedgeContractId,
+          status: data.status || "OPEN",
+        })
+        .returning();
+      res.status(201).json(created);
+    } catch (error: any) {
+      console.error("Error creating forward spread:", error);
+      res.status(500).json({ error: error.message || "Failed to create forward spread" });
     }
   });
 

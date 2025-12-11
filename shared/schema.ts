@@ -99,7 +99,9 @@ export const wallets = pgTable("wallets", {
 
 export const marginCalls = pgTable("margin_calls", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  optionId: varchar("option_id").notNull().references(() => options.id),
+  optionId: varchar("option_id").references(() => options.id),
+  forwardContractId: varchar("forward_contract_id").references(() => forwardContracts.id),
+  instrumentType: text("instrument_type", { enum: ["OPTION", "FORWARD"] }).default("OPTION"),
   userId: text("user_id").notNull(),
   amountRequired: decimal("amount_required", { precision: 18, scale: 8 }).notNull(),
   intrinsicValue: decimal("intrinsic_value", { precision: 18, scale: 8 }).notNull(),
@@ -119,6 +121,7 @@ export const transactions = pgTable("transactions", {
   toUserId: text("to_user_id"),
   amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
   description: text("description").notNull(),
+  onchainTxHash: text("onchain_tx_hash"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
@@ -223,8 +226,82 @@ export const platformFees = pgTable("platform_fees", {
   notionalAmount: decimal("notional_amount", { precision: 18, scale: 8 }).notNull(),
   currency: text("currency").notNull().default("CROPT"),
   instrument: text("instrument"),
+  instrumentType: text("instrument_type", { enum: ["OPTION", "FORWARD"] }).default("OPTION"),
   txId: text("tx_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Forward orders
+export const forwardOrders = pgTable("forward_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  side: text("side", { enum: ["BUY", "SELL"] }).notNull(),
+  indexId: varchar("index_id").references(() => indexes.id),
+  commodity: text("commodity"),
+  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
+  qtyTon: decimal("qty_ton", { precision: 18, scale: 8 }).notNull(),
+  window: text("window"),
+  windowStart: timestamp("window_start"),
+  windowEnd: timestamp("window_end"),
+  settlementDate: timestamp("settlement_date"),
+  status: text("status", {
+    enum: ["OPEN", "PARTIALLY_FILLED", "FILLED", "CANCELLED", "EXPIRED"],
+  }).notNull().default("OPEN"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Forward contracts
+export const forwardContracts = pgTable("forward_contracts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  buyOrderId: varchar("buy_order_id").references(() => forwardOrders.id),
+  sellOrderId: varchar("sell_order_id").references(() => forwardOrders.id),
+  indexId: varchar("index_id").references(() => indexes.id),
+  commodity: text("commodity"),
+  contractPrice: decimal("contract_price", { precision: 18, scale: 8 }).notNull(),
+  qtyTon: decimal("qty_ton", { precision: 18, scale: 8 }).notNull(),
+  window: text("window"),
+  windowStart: timestamp("window_start"),
+  windowEnd: timestamp("window_end"),
+  settlementDate: timestamp("settlement_date"),
+  longUserId: text("long_user_id"),
+  shortUserId: text("short_user_id"),
+  initialMargin: decimal("initial_margin", { precision: 18, scale: 8 }),
+  status: text("status", {
+    enum: ["ACTIVE", "MARGIN_CALL", "SETTLED", "LIQUIDATED", "DEFAULTED", "CANCELLED"],
+  }).notNull().default("ACTIVE"),
+  contractHash: text("contract_hash"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Forward settlements
+export const forwardSettlements = pgTable("forward_settlements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  forwardContractId: varchar("forward_contract_id").notNull().references(() => forwardContracts.id),
+  settlementPrice: decimal("settlement_price", { precision: 18, scale: 8 }).notNull(),
+  contractPrice: decimal("contract_price", { precision: 18, scale: 8 }).notNull(),
+  qtyTon: decimal("qty_ton", { precision: 18, scale: 8 }).notNull(),
+  pnlLong: decimal("pnl_long", { precision: 18, scale: 8 }).notNull(),
+  pnlShort: decimal("pnl_short", { precision: 18, scale: 8 }).notNull(),
+  feesTotal: decimal("fees_total", { precision: 18, scale: 8 }).default("0"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Forward spreads (analytics/demo)
+export const forwardSpreads = pgTable("forward_spreads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  spreadType: text("spread_type", { enum: ["CALENDAR", "CROSS_COMMODITY"] }).notNull(),
+  leg1IndexId: varchar("leg1_index_id").references(() => indexes.id),
+  leg2IndexId: varchar("leg2_index_id").references(() => indexes.id),
+  leg1Window: text("leg1_window"),
+  leg2Window: text("leg2_window"),
+  spreadPrice: decimal("spread_price", { precision: 18, scale: 8 }).notNull(),
+  baseContractId: varchar("base_contract_id").references(() => forwardContracts.id),
+  hedgeContractId: varchar("hedge_contract_id").references(() => forwardContracts.id),
+  status: text("status", { enum: ["OPEN", "CANCELLED"] }).notNull().default("OPEN"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const partnerOrganizations = pgTable("partner_organizations", {
@@ -388,6 +465,29 @@ export const insertPlatformFeeSchema = createInsertSchema(platformFees)
     notionalAmount: z.coerce.number().transform((val) => val.toString()),
   });
 
+export const insertForwardOrderSchema = createInsertSchema(forwardOrders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertForwardContractSchema = createInsertSchema(forwardContracts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertForwardSettlementSchema = createInsertSchema(forwardSettlements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertForwardSpreadSchema = createInsertSchema(forwardSpreads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -420,6 +520,14 @@ export type InsertCroptBalance = z.infer<typeof insertCroptBalanceSchema>;
 export type CroptBalance = typeof croptBalances.$inferSelect;
 export type InsertPlatformFee = z.infer<typeof insertPlatformFeeSchema>;
 export type PlatformFee = typeof platformFees.$inferSelect;
+export type InsertForwardOrder = z.infer<typeof insertForwardOrderSchema>;
+export type ForwardOrder = typeof forwardOrders.$inferSelect;
+export type InsertForwardContract = z.infer<typeof insertForwardContractSchema>;
+export type ForwardContract = typeof forwardContracts.$inferSelect;
+export type InsertForwardSettlement = z.infer<typeof insertForwardSettlementSchema>;
+export type ForwardSettlement = typeof forwardSettlements.$inferSelect;
+export type InsertForwardSpread = z.infer<typeof insertForwardSpreadSchema>;
+export type ForwardSpread = typeof forwardSpreads.$inferSelect;
 
 // Partner Organizations schemas
 export const insertPartnerOrganizationSchema = createInsertSchema(partnerOrganizations).omit({

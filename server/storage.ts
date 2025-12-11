@@ -33,6 +33,7 @@ import {
   type ServiceContract,
   type InsertServiceContract,
 } from "@shared/schema";
+import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { desc, eq, and, lt, or, sql, gte, lte } from "drizzle-orm";
 import { serializeOptionToJson } from "./optionJson";
@@ -282,6 +283,7 @@ export class DatabaseStorage implements IStorage {
           notionalAmount: notionalAmt,
           currency: "CROPT",
           instrument: option.id,
+          instrumentType: "OPTION",
           txId: null,
         });
       }
@@ -676,6 +678,7 @@ export class DatabaseStorage implements IStorage {
               notionalAmount: notionalAmount,
               currency: 'CROPT',
               instrument: option.id,
+              instrumentType: "OPTION",
               txId: null,
             });
         } catch (err) {
@@ -749,7 +752,21 @@ export class DatabaseStorage implements IStorage {
 
   async getMarginCallById(id: string): Promise<MarginCall | undefined> {
     const [marginCall] = await db
-      .select()
+      .select({
+        id: marginCalls.id,
+        optionId: marginCalls.optionId,
+        forwardContractId: sql`NULL::varchar`,
+        instrumentType: sql`'OPTION'::text`,
+        userId: marginCalls.userId,
+        amountRequired: marginCalls.amountRequired,
+        intrinsicValue: marginCalls.intrinsicValue,
+        collateralAmount: marginCalls.collateralAmount,
+        reservedCollateral: marginCalls.reservedCollateral,
+        status: marginCalls.status,
+        deadline: marginCalls.deadline,
+        createdAt: marginCalls.createdAt,
+        lastUpdated: marginCalls.lastUpdated,
+      })
       .from(marginCalls)
       .where(eq(marginCalls.id, id));
     return marginCall;
@@ -757,7 +774,21 @@ export class DatabaseStorage implements IStorage {
 
   async listMarginCalls(): Promise<MarginCall[]> {
     const allMarginCalls = await db
-      .select()
+      .select({
+        id: marginCalls.id,
+        optionId: marginCalls.optionId,
+        forwardContractId: sql`NULL::varchar`,
+        instrumentType: sql`'OPTION'::text`,
+        userId: marginCalls.userId,
+        amountRequired: marginCalls.amountRequired,
+        intrinsicValue: marginCalls.intrinsicValue,
+        collateralAmount: marginCalls.collateralAmount,
+        reservedCollateral: marginCalls.reservedCollateral,
+        status: marginCalls.status,
+        deadline: marginCalls.deadline,
+        createdAt: marginCalls.createdAt,
+        lastUpdated: marginCalls.lastUpdated,
+      })
       .from(marginCalls)
       .orderBy(desc(marginCalls.createdAt));
     return allMarginCalls;
@@ -765,7 +796,21 @@ export class DatabaseStorage implements IStorage {
 
   async getMarginCallsByUser(userId: string): Promise<MarginCall[]> {
     const userMarginCalls = await db
-      .select()
+      .select({
+        id: marginCalls.id,
+        optionId: marginCalls.optionId,
+        forwardContractId: sql`NULL::varchar`,
+        instrumentType: sql`'OPTION'::text`,
+        userId: marginCalls.userId,
+        amountRequired: marginCalls.amountRequired,
+        intrinsicValue: marginCalls.intrinsicValue,
+        collateralAmount: marginCalls.collateralAmount,
+        reservedCollateral: marginCalls.reservedCollateral,
+        status: marginCalls.status,
+        deadline: marginCalls.deadline,
+        createdAt: marginCalls.createdAt,
+        lastUpdated: marginCalls.lastUpdated,
+      })
       .from(marginCalls)
       .where(eq(marginCalls.userId, userId))
       .orderBy(desc(marginCalls.createdAt));
@@ -801,7 +846,21 @@ export class DatabaseStorage implements IStorage {
   async getExpiredMarginCalls(): Promise<MarginCall[]> {
     const now = new Date();
     const expiredMarginCalls = await db
-      .select()
+      .select({
+        id: marginCalls.id,
+        optionId: marginCalls.optionId,
+        forwardContractId: sql`NULL::varchar`,
+        instrumentType: sql`'OPTION'::text`,
+        userId: marginCalls.userId,
+        amountRequired: marginCalls.amountRequired,
+        intrinsicValue: marginCalls.intrinsicValue,
+        collateralAmount: marginCalls.collateralAmount,
+        reservedCollateral: marginCalls.reservedCollateral,
+        status: marginCalls.status,
+        deadline: marginCalls.deadline,
+        createdAt: marginCalls.createdAt,
+        lastUpdated: marginCalls.lastUpdated,
+      })
       .from(marginCalls)
       .where(
         and(

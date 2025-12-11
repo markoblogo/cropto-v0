@@ -25,6 +25,7 @@ import AdminIndex from "@/pages/AdminIndex";
 import RiskDashboard from "@/pages/RiskDashboard";
 import IndexDetail from "@/pages/IndexDetail";
 import Feedback from "@/pages/Feedback";
+import ForwardMarket from "@/pages/ForwardMarket";
 import NotFound from "@/pages/not-found";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -47,6 +48,7 @@ function Router() {
       <Route path="/options" component={OptionChain} />
       <Route path="/spot-trading" component={SpotTrading} />
       <Route path="/market-data" component={MarketData} />
+      <Route path="/forward-market" component={ForwardMarket} />
       <Route path="/wallet" component={Wallet} />
       <Route path="/education" component={Education} />
       <Route path="/login" component={Login} />

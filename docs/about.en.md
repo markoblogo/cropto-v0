@@ -14,6 +14,12 @@
 4. Settlements happen off-chain first; optionally withdraw → mint on-chain (CROPT).
 5. Admin panel: partners registry, transactions journal, reconciliation.
 
+## Spot-forward model (what we actually run)
+- Non-deliverable (cash-settled) forwards on grain indexes: Corn, Wheat 11.5, Feed Wheat, Soy GMO, Sunflower processing.
+- Settlement in CROPT versus Spike Spot (CPT Odesa) using PnL = (SettlementPrice – ContractPrice) × Qty.
+- Margin-based: initial margin + margin calls; overdue margin can be auto-liquidated.
+- Legal form is an electronic agreement on the platform (not GAFTA-style physical delivery); disputes are handled off-chain.
+
 ## What the NFT-option contains
 - Option id and link to the physical contract
 - Type (CALL/PUT), strike, volume (tons), expiry

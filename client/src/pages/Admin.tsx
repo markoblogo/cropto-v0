@@ -103,6 +103,7 @@ interface FeesSummary {
   byRole: Record<string, string>;
   platformShare?: string;
   partnerShares?: Array<{ id: string; name: string; feeSharePercent: number; partnerShare: string }>;
+  byInstrument?: Record<string, string>;
 }
 
 const { data: feesSummary } = useQuery<FeesSummary>({
@@ -671,6 +672,15 @@ const { data: feesSummary } = useQuery<FeesSummary>({
                     feesSummary.partnerShares.map((p) => (
                       <Badge key={p.id} variant="secondary">
                         {p.name}: {parseFloat(p.partnerShare).toFixed(2)} ({p.feeSharePercent}%)
+                      </Badge>
+                    ))}
+                </div>
+                <div className="text-xs text-muted-foreground">By instrument</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {feesSummary?.byInstrument &&
+                    Object.entries(feesSummary.byInstrument).map(([inst, amt]) => (
+                      <Badge key={inst} variant="outline">
+                        {inst}: {parseFloat(amt).toFixed(2)}
                       </Badge>
                     ))}
                 </div>

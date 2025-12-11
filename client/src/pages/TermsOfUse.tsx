@@ -65,8 +65,8 @@ export default function TermsOfUse() {
           <p className="text-muted-foreground leading-relaxed">
             Platform amounts are quoted and settled in CROPT. Instruments are index-linked and cash-settled against the
             Spike Spot Index (CPT Odesa). There is no physical delivery of commodities and no post-delivery obligations.
-            Forward-style CROPT contracts are under development (WIP); any references are descriptive and not a
-            commitment to provide physical settlement.
+            Forward-style CROPT contracts are non-deliverable; any references are descriptive and not a commitment to
+            provide physical settlement.
           </p>
         </section>
 
@@ -79,10 +79,23 @@ export default function TermsOfUse() {
         </section>
 
         <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Spot-Forward Market</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Forward contracts on the platform are non-deliverable (cash-settled) forwards on grain indexes such as Corn,
+            Wheat 11.5, Feed Wheat, Soy GMO, and Sunflower processing. Settlement occurs in CROPT versus the Spike Spot
+            index (CPT Odesa) with the formula: PnL = (SettlementPrice – ContractPrice) × Quantity. Positions use margin
+            (initial margin plus margin calls), and overdue margin can be auto-liquidated. The legal force is an
+            electronic agreement inside the platform, not a GAFTA-style physical delivery contract; disputes are handled
+            off-chain without built-in arbitration.
+          </p>
+        </section>
+
+        <section className="space-y-4">
           <h2 className="text-xl font-semibold">Fees</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Matching and settlement fees may apply (per-ton, quoted in CROPT). Applicable fees are shown in the interface
-            before you confirm actions.
+            Matching and settlement fees apply per side for forward trades: matching_fee = 0.125 CROPT/ton and
+            settlement_fee = 0.125 CROPT/ton. With both sides paying both fees, the platform earns 0.50 CROPT/ton in
+            total on a completed forward trade. Applicable fees are shown in the interface before you confirm actions.
           </p>
         </section>
 
