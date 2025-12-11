@@ -61,6 +61,21 @@ export interface AuthRequest extends Request {
   };
 }
 
+// Role helpers
+export function hasBrokerPermissions(roleOrUser: { role?: string } | string | null | undefined): boolean {
+  const role = typeof roleOrUser === "string" ? roleOrUser : roleOrUser?.role;
+  if (!role) return false;
+  const normalized = role.toLowerCase();
+  return normalized === "broker" || normalized === "super_admin";
+}
+
+export function hasAdminPermissions(roleOrUser: { role?: string } | string | null | undefined): boolean {
+  const role = typeof roleOrUser === "string" ? roleOrUser : roleOrUser?.role;
+  if (!role) return false;
+  const normalized = role.toLowerCase();
+  return normalized === "admin" || normalized === "broker" || normalized === "super_admin";
+}
+
 // Read database
 async function readDB(): Promise<DB> {
   try {
@@ -430,17 +445,4 @@ export function requireSuperAdmin(req: AuthRequest, res: Response, next: NextFun
     
     next();
   });
-}
-
-// Helper functions for role-based permissions
-export function hasBrokerPermissions(role: string | null | undefined): boolean {
-  if (!role) return false;
-  const normalizedRole = role.toLowerCase();
-  return normalizedRole === 'broker' || normalizedRole === 'super_admin';
-}
-
-export function hasAdminPermissions(role: string | null | undefined): boolean {
-  if (!role) return false;
-  const normalizedRole = role.toLowerCase();
-  return normalizedRole === 'admin' || normalizedRole === 'broker' || normalizedRole === 'super_admin';
 }

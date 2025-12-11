@@ -49,12 +49,12 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
             <div className="flex flex-col gap-4 flex-1">
               <div className="flex flex-col md:flex-row items-center md:items-center gap-6">
                 <img
-                  src="/cropto-hero-logo.png"
+                  src="/CroptoBlackLogo-removebg-preview.png"
                   alt="Cropto logo"
-                  className="h-16 w-auto"
+                  className="h-20 w-auto md:h-24"
                   data-testid="img-hero-logo"
                 />
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight" data-testid="text-hero-headline">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight text-center md:text-left" data-testid="text-hero-headline">
                   CROPTO – Trade Commodities. On-Chain.
                 </h1>
               </div>

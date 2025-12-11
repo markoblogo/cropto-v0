@@ -22,6 +22,7 @@ import Admin from "@/pages/Admin";
 import AdminFeedback from "@/pages/AdminFeedback";
 import AdminReconciliation from "@/pages/AdminReconciliation";
 import AdminIndex from "@/pages/AdminIndex";
+import RiskDashboard from "@/pages/RiskDashboard";
 import IndexDetail from "@/pages/IndexDetail";
 import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/admin/feedback" component={AdminFeedback} />
       <Route path="/admin/reconciliation" component={AdminReconciliation} />
+      <Route path="/admin/risk" component={RiskDashboard} />
       <Route path="/admin/index" component={AdminIndex} />
       <Route path="/index/:slug" component={IndexDetail} />
       <Route path="/feedback" component={Feedback} />

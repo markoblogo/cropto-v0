@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -94,22 +94,6 @@ export default function Admin() {
     queryKey: ["/api/admin/reconciliation/margincalls"],
     enabled: !!isAdminLevelUser,
   });
-
-  // Show loading while checking auth
-  if (isAuthLoading || !userData?.user) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Don't render if not admin (redirect will happen via useEffect)
-  if (!isAdminLevelUser) {
-    return null;
-  }
 
   // Calculate overview stats (always computed at top level, never conditionally)
   const overviewStats = useMemo(() => {
@@ -242,6 +226,22 @@ export default function Admin() {
     return Array.from(commodities).sort();
   }, [options]);
 
+  // Show loading while checking auth
+  if (isAuthLoading || !userData?.user) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Don't render if not admin (redirect will happen via useEffect)
+  if (!isAdminLevelUser) {
+    return null;
+  }
+
   // Calculate 24h change for index
   const get24hChange = (index: CommodityIndex): number | null => {
     if (!index.latestPrice || !index.latestPrice.delta || !index.latestPrice.price) return null;
@@ -259,6 +259,11 @@ export default function Admin() {
           <p className="text-muted-foreground">
             Platform overview, markets, options, and risk monitoring
           </p>
+          <div className="mt-3">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/risk">Open Risk Dashboard</Link>
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-4">

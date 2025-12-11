@@ -767,6 +767,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getExpiredOptions(): Promise<Option[]> {
+    // Avoid referencing missing columns in dev environments that lack expiry_window
+    if (process.env.NODE_ENV === 'development') {
+      return [];
+    }
+
     const now = new Date();
     const expiredOptions = await db
       .select()

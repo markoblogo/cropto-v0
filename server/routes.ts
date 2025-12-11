@@ -140,7 +140,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Query changed options (USER-SCOPED: only return options where user is participant)
       const changedOptions = await db
-        .select()
+        .select({
+          id: options.id,
+          title: options.title,
+          type: options.type,
+          strike: options.strike,
+          qty: options.qty,
+          premium: options.premium,
+          status: options.status,
+          commodity: options.commodity,
+          indexId: options.indexId,
+          buyerId: options.buyerId,
+          issuerId: options.issuerId,
+          counterpartyId: options.counterpartyId,
+          expirationDate: options.expirationDate,
+          createdAt: options.createdAt,
+          lastUpdated: options.lastUpdated,
+          collateralAmount: options.collateralAmount,
+          payoutAccumulated: options.payoutAccumulated,
+          isInMarginCall: options.isInMarginCall,
+          marginCallDeadline: options.marginCallDeadline,
+          marginCallTimestamp: options.marginCallTimestamp,
+        })
         .from(options)
         .where(
           and(
@@ -195,6 +216,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[Health Updates] Error:", error);
       res.status(500).json({ error: error.message || "Failed to fetch health updates" });
+    }
+  });
+
+  // Risk overview (admin-level)
+  app.get("/api/risk/overview", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = req.user;
+      const isAllowed = hasAdminPermissions(user) || hasBrokerPermissions(user);
+      if (!isAllowed) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      const now = new Date();
+      const activeOptions = await db
+        .select({
+          id: options.id,
+          status: options.status,
+          collateralAmount: options.collateralAmount,
+        })
+        .from(options)
+        .where(
+          or(
+            eq(options.status, "OPEN"),
+            eq(options.status, "FILLED"),
+            eq(options.status, "MARGIN_CALL")
+          )
+        );
+
+      const marginCallRows = await db
+        .select({
+          id: marginCalls.id,
+          status: marginCalls.status,
+          deadline: marginCalls.deadline,
+        })
+        .from(marginCalls);
+      const openMarginCalls = marginCallRows.filter((mc) => mc.status === "PENDING");
+      const overdueMarginCalls = openMarginCalls.filter(
+        (mc) => mc.deadline && new Date(mc.deadline) < now
+      );
+
+      const totalLockedCollateral = activeOptions.reduce((sum, opt) => {
+        const collateral = parseFloat(opt.collateralAmount || "0");
+        return sum + (Number.isFinite(collateral) ? collateral : 0);
+      }, 0);
+
+      const response = {
+        userRole: user?.role,
+        metrics: {
+          activeOptions: activeOptions.length,
+          openMarginCalls: openMarginCalls.length,
+          overdueMarginCalls: overdueMarginCalls.length,
+          totalLockedCollateral: totalLockedCollateral.toFixed(2),
+        },
+      };
+
+      res.json(response);
+    } catch (error: any) {
+      console.error("[Risk Overview] Error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch risk overview" });
     }
   });
 
