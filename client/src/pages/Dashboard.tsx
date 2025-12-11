@@ -7,6 +7,7 @@ import { Hero } from "@/components/Hero";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
 import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
+import { OptionsMarketStrip } from "@/components/home/OptionsMarketStrip";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { WalletSummary } from "@/components/WalletSummary";
@@ -333,6 +334,9 @@ export default function Dashboard() {
 
           {/* Commodity Indexes */}
           <CommodityIndexesGrid />
+
+          {/* Options Market Snapshot */}
+          <OptionsMarketStrip />
 
           {/* Spot Market */}
           <SpotMarketGrid />

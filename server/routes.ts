@@ -5,7 +5,7 @@ import { db } from "./db";
 import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq, desc, gt, and, or, sql } from "drizzle-orm";
+import { eq, desc, gt, and, or, sql, asc } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
@@ -33,6 +33,7 @@ import { normalizeLegacyCommodity, WHEAT_115_NAME } from "./utils/commodity";
 import { computeExpiryWindow } from "./expiryWindows";
 import { serializeOptionToJson } from "./optionJson";
 import { calculateInitialMargin, checkMarginCall, autoLiquidateIfNeeded } from "./marginEngine";
+import { mapOptionToMarketRow } from "./utils/marketSnapshot";
 import fs from "fs";
 import path from "path";
 
@@ -221,13 +222,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Risk overview (admin-level)
   app.get("/api/risk/overview", authenticateToken, async (req: AuthRequest, res) => {
+    const requestContext = {
+      userId: req.user?.id ?? "anonymous",
+      role: req.user?.role ?? "unknown",
+    };
+
+    if (!req.user) {
+      console.warn("[Risk Overview] Unauthorized request", requestContext);
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     try {
-      const user = req.user;
-      const isAllowed = hasAdminPermissions(user) || hasBrokerPermissions(user);
-      if (!isAllowed) {
-        return res.status(403).json({ error: "Forbidden" });
+      if (!hasBrokerPermissions(req.user?.role)) {
+        console.warn("[Risk Overview] Forbidden request", { ...requestContext, status: 403 });
+        return res.status(403).json({ error: "Forbidden: broker role required" });
       }
 
+      console.info("[Risk Overview] Access granted", { ...requestContext, status: 200 });
       const now = new Date();
       const activeOptions = await db
         .select({
@@ -262,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }, 0);
 
       const response = {
-        userRole: user?.role,
+        userRole: req.user?.role,
         metrics: {
           activeOptions: activeOptions.length,
           openMarginCalls: openMarginCalls.length,
@@ -271,9 +282,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       };
 
+      console.info("[Risk Overview] Response", { ...requestContext, status: 200 });
       res.json(response);
     } catch (error: any) {
-      console.error("[Risk Overview] Error:", error);
+      console.error("[Risk Overview] Error", { ...requestContext, error: error?.message });
       res.status(500).json({ error: error.message || "Failed to fetch risk overview" });
     }
   });
@@ -839,6 +851,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching options:", error);
       res.status(500).json({ error: "Failed to fetch options" });
+    }
+  });
+
+  // Market snapshot for open options (authenticated users)
+  app.get("/api/options/market", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { commodity, window, limit } = req.query as {
+        commodity?: string;
+        window?: string;
+        limit?: string;
+      };
+
+      const parsedLimit = Math.min(Math.max(Number(limit) || 0, 1), 50) || 10;
+
+      const baseWhere: any[] = [eq(options.status, "OPEN")];
+
+      if (commodity) {
+        baseWhere.push(sql`${options.commodity} = ${commodity}`);
+      }
+
+      // Add window filter only if column exists
+      // Use raw SQL to avoid referencing optional columns that might be missing
+      const conditions = [
+        sql`o.status = 'OPEN'`
+      ];
+
+      if (commodity) {
+        conditions.push(sql`o.commodity = ${commodity}`);
+      }
+
+      const whereSql = sql.join(conditions, sql` AND `);
+
+      const rowsResult = await db.execute(
+        sql`
+          SELECT
+            o.id,
+            o.type,
+            o.strike,
+            o.qty,
+            o.premium,
+            o.status,
+            o.commodity,
+          COALESCE(i.name, o.commodity, i.slug, o.title, 'Unknown') AS "commodityLabel",
+          COALESCE(o.commodity, i.slug) AS "commoditySlug",
+            o.expiration_date AS "expirationDate",
+            NULL::text AS "expiryWindow",
+            NULL::timestamptz AS "windowStart",
+            NULL::timestamptz AS "windowEnd",
+            NULL::timestamptz AS "settlementDate",
+            o.created_at AS "createdAt",
+            o.issuer_id AS "issuerId",
+            i.name AS "indexName",
+            i.slug AS "indexSlug"
+          FROM options o
+          LEFT JOIN indexes i ON o.index_id = i.id
+          WHERE ${whereSql}
+          ORDER BY COALESCE(o.expiration_date, o.created_at) ASC, o.strike ASC, o.premium ASC
+          LIMIT ${parsedLimit}
+        `
+      );
+
+      const rows = (rowsResult as any).rows ?? [];
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run3',hypothesisId:'S1',location:'routes.ts:901',message:'/api/options/market rows',data:{count:rows.length,sample:rows[0]},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+
+      const marketRows = rows.map((opt) => mapOptionToMarketRow(opt as any));
+
+      res.json({ options: marketRows });
+    } catch (error: any) {
+      console.error("[Options Market] Error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch market options" });
     }
   });
 

@@ -1,40 +1,31 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useIsAdminLevelUser } from "@/hooks/useIsAdminLevelUser";
-
-interface RiskOverviewResponse {
-  userRole?: string;
-  metrics: {
-    activeOptions: number;
-    openMarginCalls: number;
-    overdueMarginCalls: number;
-    totalLockedCollateral: string;
-  };
-}
+import { useAdminAccess } from "@/hooks/useIsAdminLevelUser";
+import { useRiskOverview } from "@/hooks/useRiskOverview";
 
 export default function RiskDashboard() {
   const [, setLocation] = useLocation();
-  const isAdminLevelUser = useIsAdminLevelUser();
-
-  const { data, isLoading, isError, error } = useQuery<RiskOverviewResponse>({
-    queryKey: ["/api/risk/overview"],
-    enabled: !!isAdminLevelUser,
-  });
+  const adminAccess = useAdminAccess();
+  const {
+    data,
+    isLoading: isRiskLoading,
+    isError,
+    error,
+    isUnauthorized,
+    isForbidden,
+  } = useRiskOverview({ enabled: !adminAccess.isUnauthorized });
 
   useEffect(() => {
-    if (!isAdminLevelUser) {
-      setLocation("/");
+    if (adminAccess.isUnauthorized || isUnauthorized) {
+      setLocation("/login");
     }
-  }, [isAdminLevelUser, setLocation]);
+  }, [adminAccess.isUnauthorized, isUnauthorized, setLocation]);
 
-  if (!isAdminLevelUser) {
-    return null;
-  }
+  const isLoading = adminAccess.isLoading || isRiskLoading;
 
   if (isLoading) {
     return (
@@ -47,6 +38,17 @@ export default function RiskDashboard() {
               <Skeleton key={idx} className="h-32 w-full" />
             ))}
           </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (isForbidden) {
+    return (
+      <MainLayout>
+        <div className="space-y-4">
+          <h1 className="text-2xl font-bold">Risk Dashboard</h1>
+          <p className="text-destructive">You do not have access to the risk dashboard.</p>
         </div>
       </MainLayout>
     );
@@ -66,6 +68,7 @@ export default function RiskDashboard() {
   }
 
   const metrics = data?.metrics;
+  const userRole = data?.userRole || adminAccess.user?.role;
 
   return (
     <MainLayout>
@@ -78,7 +81,7 @@ export default function RiskDashboard() {
             </p>
           </div>
           <Badge variant="outline">
-            Role: {data?.userRole || "unknown"}
+            Role: {userRole || "unknown"}
           </Badge>
         </div>
 
