@@ -11,6 +11,50 @@ import {
 import { eq, desc, and } from "drizzle-orm";
 
 export function registerSpotRoutes(app: Express) {
+  const STALE_MAX_AGE_DAYS = 7;
+
+  function computeIsStale(latestTimestamp: Date | string | null | undefined) {
+    if (!latestTimestamp) return { isStale: true, staleReason: "no_recent_quotes" };
+    const ts = new Date(latestTimestamp).getTime();
+    if (Number.isNaN(ts)) return { isStale: true, staleReason: "invalid_timestamp" };
+    const ageMs = Date.now() - ts;
+    const thresholdMs = STALE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+    const isStale = ageMs > thresholdMs;
+    return { isStale, staleReason: isStale ? `no_updates_since:${new Date(ts).toISOString()}` : null };
+  }
+
+  async function getPricePerKgOrThrow(commoditySlug: string) {
+    const [index] = await db.select().from(indexes).where(eq(indexes.slug, commoditySlug)).limit(1);
+    if (!index) {
+      const err: any = new Error("Commodity not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const [latestPrice] = await db
+      .select()
+      .from(commodityIndexPrices)
+      .where(eq(commodityIndexPrices.indexId, index.id))
+      .orderBy(desc(commodityIndexPrices.timestamp))
+      .limit(1);
+
+    if (!latestPrice) {
+      const err: any = new Error("No price available");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const { isStale } = computeIsStale(latestPrice.timestamp);
+    if (isStale) {
+      const err: any = new Error("Trading disabled for this commodity (index is stale)");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const pricePerTon = parseFloat(latestPrice.price);
+    const pricePerKg = pricePerTon / 1000;
+    return pricePerKg;
+  }
   
   // Helper function to get or create user's CROPT balance
   async function getOrCreateCroptBalance(userId: string) {
@@ -29,38 +73,77 @@ export function registerSpotRoutes(app: Express) {
     
     return balance;
   }
-  
-  // Helper function to get current index price per kg
-  async function getCurrentPricePerKg(commoditySlug: string): Promise<number | null> {
-    // Find index by slug
-    const [index] = await db
-      .select()
-      .from(indexes)
-      .where(eq(indexes.slug, commoditySlug))
-      .limit(1);
-    
-    if (!index) {
-      return null;
+
+  // GET /api/spot/orderbook - aggregated order book (positions as proxy)
+  app.get("/api/spot/orderbook", authenticateToken, async (req: AuthRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
-    
-    // Get latest price for this index
-    const [latestPrice] = await db
-      .select()
-      .from(commodityIndexPrices)
-      .where(eq(commodityIndexPrices.indexId, index.id))
-      .orderBy(desc(commodityIndexPrices.timestamp))
-      .limit(1);
-    
-    if (!latestPrice) {
-      return null;
+
+    const { commodity, depth } = req.query as { commodity?: string; depth?: string };
+    if (!commodity) {
+      return res.status(400).json({ error: "commodity is required" });
     }
-    
-    // Convert from price per ton to price per kg
-    const pricePerTon = parseFloat(latestPrice.price);
-    const pricePerKg = pricePerTon / 1000;
-    
-    return pricePerKg;
-  }
+
+    const depthNum = Math.min(Math.max(Number(depth) || 5, 1), 50);
+
+    try {
+      const rows = await db
+        .select({
+          priceKg: spotPositions.avgEntryPrice,
+          qtyKg: spotPositions.quantityKg,
+        })
+        .from(spotPositions)
+        .where(eq(spotPositions.commoditySlug, commodity));
+
+      const bidsMap = new Map<number, number>();
+      const asksMap = new Map<number, number>();
+
+      for (const row of rows) {
+        const priceKg = Number(row.priceKg);
+        const qtyKg = Number(row.qtyKg);
+        if (!Number.isFinite(priceKg) || !Number.isFinite(qtyKg) || qtyKg === 0) continue;
+
+        // Convert kg price to ton price
+        const priceTon = priceKg * 1000;
+
+        if (qtyKg > 0) {
+          const current = bidsMap.get(priceTon) || 0;
+          bidsMap.set(priceTon, current + qtyKg / 1000); // store in tons
+        } else {
+          const current = asksMap.get(priceTon) || 0;
+          asksMap.set(priceTon, current + Math.abs(qtyKg) / 1000); // store in tons
+        }
+      }
+
+      const bids = Array.from(bidsMap.entries())
+        .map(([price, quantity]) => ({ price, quantity }))
+        .sort((a, b) => b.price - a.price)
+        .slice(0, depthNum);
+
+      const asks = Array.from(asksMap.entries())
+        .map(([price, quantity]) => ({ price, quantity }))
+        .sort((a, b) => a.price - b.price)
+        .slice(0, depthNum);
+
+      const response = {
+        commodity,
+        bids,
+        asks,
+      };
+
+      console.info("[Orderbook Spot] handled in spotRoutes", {
+        commodity,
+        depth: depthNum,
+        bids: bids.length,
+        asks: asks.length,
+      });
+      res.json(response);
+    } catch (error: any) {
+      console.error("[Orderbook Spot] Error in spotRoutes", { commodity, error: error?.message });
+      res.status(500).json({ error: error?.message || "Failed to fetch spot orderbook" });
+    }
+  });
   
   // Helper function to get user's position
   async function getUserPosition(userId: string, commoditySlug: string) {
@@ -119,10 +202,7 @@ export function registerSpotRoutes(app: Express) {
       const userId = req.user.id;
       
       // Get current price per kg
-      const pricePerKg = await getCurrentPricePerKg(commoditySlug);
-      if (pricePerKg === null) {
-        return res.status(404).json({ error: "Commodity not found or no price available" });
-      }
+      const pricePerKg = await getPricePerKgOrThrow(commoditySlug);
       
       // Calculate cost
       const cost = kgAmount * pricePerKg;
@@ -296,10 +376,7 @@ export function registerSpotRoutes(app: Express) {
       const userId = req.user.id;
       
       // Get current price per kg
-      const pricePerKg = await getCurrentPricePerKg(commoditySlug);
-      if (pricePerKg === null) {
-        return res.status(404).json({ error: "Commodity not found or no price available" });
-      }
+      const pricePerKg = await getPricePerKgOrThrow(commoditySlug);
       
       // Wrap in transaction for atomicity and to prevent race conditions
       let newBalance: number;
@@ -593,10 +670,7 @@ export function registerSpotRoutes(app: Express) {
       const userId = req.user.id;
       
       // Get current price per kg
-      const pricePerKg = await getCurrentPricePerKg(commoditySlug);
-      if (pricePerKg === null) {
-        return res.status(404).json({ error: "Commodity not found or no price available" });
-      }
+      const pricePerKg = await getPricePerKgOrThrow(commoditySlug);
       
       // Get user's positions
       const positions = await getUserPosition(userId, commoditySlug);

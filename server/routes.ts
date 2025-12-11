@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc } from "drizzle-orm";
@@ -36,6 +36,42 @@ import { calculateInitialMargin, checkMarginCall, autoLiquidateIfNeeded } from "
 import { mapOptionToMarketRow } from "./utils/marketSnapshot";
 import fs from "fs";
 import path from "path";
+
+const STALE_MAX_AGE_DAYS = 7;
+
+function computeIsStale(latestTimestamp: Date | string | null | undefined) {
+  if (!latestTimestamp) return { isStale: true, staleReason: "no_recent_quotes" };
+  const ts = new Date(latestTimestamp).getTime();
+  if (Number.isNaN(ts)) return { isStale: true, staleReason: "invalid_timestamp" };
+  const ageMs = Date.now() - ts;
+  const thresholdMs = STALE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+  const isStale = ageMs > thresholdMs;
+  return { isStale, staleReason: isStale ? `no_updates_since:${new Date(ts).toISOString()}` : null };
+}
+
+async function getIndexWithLatestById(indexId: string) {
+  const [index] = await db.select().from(indexes).where(eq(indexes.id, indexId)).limit(1);
+  if (!index) return null;
+  const [latestPrice] = await db
+    .select()
+    .from(commodityIndexPrices)
+    .where(eq(commodityIndexPrices.indexId, index.id))
+    .orderBy(desc(commodityIndexPrices.timestamp))
+    .limit(1);
+  return { index, latestPrice: latestPrice || null };
+}
+
+async function getIndexWithLatestBySlug(slug: string) {
+  const [index] = await db.select().from(indexes).where(eq(indexes.slug, slug)).limit(1);
+  if (!index) return null;
+  const [latestPrice] = await db
+    .select()
+    .from(commodityIndexPrices)
+    .where(eq(commodityIndexPrices.indexId, index.id))
+    .orderBy(desc(commodityIndexPrices.timestamp))
+    .limit(1);
+  return { index, latestPrice: latestPrice || null };
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth routes
@@ -716,6 +752,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               delta: latestPrice[0].delta ? parseFloat(latestPrice[0].delta) : null,
               timestamp: latestPrice[0].timestamp,
             } : null,
+            ...(() => {
+              const { isStale, staleReason } = computeIsStale(latestPrice[0]?.timestamp || null);
+              return { isStale, staleReason };
+            })(),
             createdAt: index.createdAt,
             updatedAt: index.updatedAt,
           };
@@ -767,6 +807,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           delta: p.delta ? parseFloat(p.delta) : null,
           timestamp: p.timestamp,
         })),
+        ...(() => {
+          const latestTs = priceHistory[0]?.timestamp || null;
+          const { isStale, staleReason } = computeIsStale(latestTs);
+          return { isStale, staleReason };
+        })(),
       };
 
       res.json(response);
@@ -854,6 +899,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Spot orderbook (aggregated)
+  app.get("/api/spot/orderbook", authenticateToken, async (req: AuthRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { commodity, depth } = req.query as { commodity?: string; depth?: string };
+    if (!commodity) {
+      return res.status(400).json({ error: "commodity is required" });
+    }
+
+    const depthNum = Math.min(Math.max(Number(depth) || 5, 1), 50);
+
+    try {
+      const rows = await db
+        .select({
+          price: sql`COALESCE(${spotPositions.avgEntryPrice}, '0')`,
+          qty: spotPositions.quantityKg,
+        })
+        .from(spotPositions)
+        .where(eq(spotPositions.commoditySlug, commodity));
+
+      const asksMap = new Map<string, number>();
+      for (const row of rows) {
+        const price = Number(row.price);
+        const qty = Number(row.qty);
+        if (!Number.isFinite(price) || !Number.isFinite(qty)) continue;
+        const current = asksMap.get(price.toString()) || 0;
+        asksMap.set(price.toString(), current + qty);
+      }
+
+      const asks = Array.from(asksMap.entries())
+        .map(([p, q]) => ({ price: Number(p), quantity: q }))
+        .sort((a, b) => a.price - b.price)
+        .slice(0, depthNum);
+
+      const response = {
+        commodity,
+        bids: [] as { price: number; quantity: number }[],
+        asks,
+      };
+
+      console.info("[Orderbook Spot]", { commodity, depth: depthNum, bids: response.bids.length, asks: response.asks.length });
+      res.json(response);
+    } catch (error: any) {
+      console.error("[Orderbook Spot] Error", { commodity, error: error?.message });
+      res.status(500).json({ error: error?.message || "Failed to fetch spot orderbook" });
+    }
+  });
+
+  // Options orderbook (aggregated)
+  app.get("/api/options/orderbook", authenticateToken, async (req: AuthRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { commodity, window, depth } = req.query as { commodity?: string; window?: string; depth?: string };
+    if (!commodity) {
+      return res.status(400).json({ error: "commodity is required" });
+    }
+    const depthNum = Math.min(Math.max(Number(depth) || 5, 1), 50);
+
+    try {
+      const rows = await db
+        .select({
+          id: options.id,
+          strike: options.strike,
+          qty: options.qty,
+          type: options.type,
+          status: options.status,
+          commodity: options.commodity,
+          expirationDate: options.expirationDate,
+        })
+        .from(options)
+        .where(eq(options.status, "OPEN"));
+
+      const filtered = rows.filter((opt) => {
+        const matchesCommodity = opt.commodity?.toLowerCase() === commodity.toLowerCase();
+        const matchesWindow = window
+          ? opt.expirationDate && new Date(opt.expirationDate).toISOString().startsWith(window)
+          : true;
+        return matchesCommodity && matchesWindow;
+      });
+
+      const asksMap = new Map<string, number>();
+      for (const opt of filtered) {
+        const price = Number(opt.strike);
+        const qty = Number(opt.qty);
+        if (!Number.isFinite(price) || !Number.isFinite(qty)) continue;
+        const key = `${price}-${opt.type}`;
+        const current = asksMap.get(key) || 0;
+        asksMap.set(key, current + qty);
+      }
+
+      const asks = Array.from(asksMap.entries())
+        .map(([key, quantity]) => {
+          const [priceStr, type] = key.split("-");
+          return { price: Number(priceStr), quantity, type };
+        })
+        .sort((a, b) => {
+          if (a.price === b.price) return 0;
+          return a.price - b.price;
+        })
+        .slice(0, depthNum);
+
+      const windowLabel = filtered[0]?.expirationDate
+        ? new Date(filtered[0].expirationDate!).toISOString()
+        : undefined;
+
+      const response = {
+        commodity,
+        windowLabel,
+        bids: [] as { price: number; quantity: number }[],
+        asks,
+      };
+
+      console.info("[Orderbook Options]", { commodity, window: windowLabel || window, depth: depthNum, bids: response.bids.length, asks: response.asks.length });
+      res.json(response);
+    } catch (error: any) {
+      console.error("[Orderbook Options] Error", { commodity, error: error?.message });
+      res.status(500).json({ error: error?.message || "Failed to fetch options orderbook" });
+    }
+  });
+
   // Market snapshot for open options (authenticated users)
   app.get("/api/options/market", authenticateToken, async (req: AuthRequest, res) => {
     try {
@@ -917,9 +1086,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       const rows = (rowsResult as any).rows ?? [];
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run3',hypothesisId:'S1',location:'routes.ts:901',message:'/api/options/market rows',data:{count:rows.length,sample:rows[0]},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
 
       const marketRows = rows.map((opt) => mapOptionToMarketRow(opt as any));
 
@@ -970,21 +1136,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Lookup commodity name from index if indexId is provided
       let commodityName = result.data.commodity;
+      let selectedIndex: any = null;
+      let selectedLatest: any = null;
       if (result.data.indexId) {
-        const [index] = await db
-          .select()
-          .from(indexes)
-          .where(eq(indexes.id, result.data.indexId))
-          .limit(1);
-        
-        if (!index) {
+        const found = await getIndexWithLatestById(result.data.indexId);
+        if (!found) {
           return res.status(400).json({ 
             error: "Invalid commodity index" 
           });
         }
-        
+        selectedIndex = found.index;
+        selectedLatest = found.latestPrice;
+        const { isStale } = computeIsStale(selectedLatest?.timestamp || null);
+        if (isStale) {
+          return res.status(400).json({ error: "Trading disabled for this commodity (index is stale)" });
+        }
         // Populate commodity field with index name for backward compatibility
-        commodityName = index.name;
+        commodityName = selectedIndex.name;
+      } else if (commodityName) {
+        const foundBySlug = await getIndexWithLatestBySlug(commodityName.toLowerCase());
+        if (foundBySlug) {
+          const { isStale } = computeIsStale(foundBySlug.latestPrice?.timestamp || null);
+          if (isStale) {
+            return res.status(400).json({ error: "Trading disabled for this commodity (index is stale)" });
+          }
+        }
       }
 
       // Compute expiry window if provided (prefer half/month/year over raw dates)

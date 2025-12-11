@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
 import { useLocation } from "wouter";
 import { SpotMarketCard } from "./SpotMarketCard";
 import { SpotBuyModal } from "./SpotBuyModal";
@@ -23,16 +24,6 @@ interface CommodityIndex {
     timestamp: Date;
   } | null;
 }
-
-const SPOT_COMMODITIES = [
-  'corn',
-  'wheat-115',
-  'feed-wheat',
-  'gmo-soybeans',
-  'gmo-soybeans-processing',
-  'rapeseed',
-  'sunflower-seed'
-];
 
 interface SelectedCommodity {
   slug: string;
@@ -126,8 +117,8 @@ export function SpotMarketGrid() {
   }
 
   const spotIndexes = indexes?.filter(index => 
-    SPOT_COMMODITIES.includes(index.slug)
-  ) || [];
+    SPOT_ALLOWED_SLUGS.includes(index.slug) && !index.isStale
+  ).sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug)) || [];
 
   if (spotIndexes.length === 0) {
     return (

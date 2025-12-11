@@ -25,6 +25,9 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
 import { Plus } from "lucide-react";
 import { format } from "date-fns";
+import { OrderBook } from "@/components/trading/OrderBook";
+import { SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
+import { MARGIN_PROFILES, MarginProfileId, getMarginProfile } from "@/lib/marginProfiles";
 
 type ViewMode = "all" | "my";
 type AnalyticsTab = "chain" | "volume" | "openInterest";
@@ -36,7 +39,9 @@ export default function OptionChain() {
   const [viewMode, setViewMode] = useState<ViewMode>("all");
   const [analyticsTab, setAnalyticsTab] = useState<AnalyticsTab>("chain");
   const [selectedCommodity, setSelectedCommodity] = useState<string>("ALL");
-  const [selectedExpiry, setSelectedExpiry] = useState<string>("");
+  const [selectedExpiry, setSelectedExpiry] = useState<string>("ALL");
+  const [selectedType, setSelectedType] = useState<string>("ALL");
+  const [marginProfileId, setMarginProfileId] = useState<MarginProfileId>("standard");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [prefillOption, setPrefillOption] = useState<Option | null>(null);
 
@@ -56,10 +61,16 @@ export default function OptionChain() {
 
   const user = userData?.user;
   const userId = user?.id;
+  const hasToken = !!localStorage.getItem("cropto_token");
 
   // Fetch options
   const { data: options = [], isLoading, error } = useQuery<Option[]>({
     queryKey: ["/api/options"],
+  });
+
+  // Trades for simple volume count per option
+  const { data: trades = [] } = useQuery<{ optionId: string }[]>({
+    queryKey: ["/api/trades"],
   });
 
   // Fetch analytics data for Volume and Open Interest tabs
@@ -78,38 +89,79 @@ export default function OptionChain() {
   const displayCommodity =
     selectedCommodity === "ALL" ? "All" : selectedCommodity || "All";
   const displayExpiry =
-    selectedExpiry && selectedExpiry !== ""
-      ? format(new Date(selectedExpiry), "MMM dd, yyyy")
+    selectedExpiry && selectedExpiry !== "ALL"
+      ? selectedExpiry
       : "All";
   const analyticsFiltersLabel = `Commodity: ${displayCommodity} • Expiry: ${displayExpiry}`;
 
   // Use the first available expiry as default if none selected
   const availableExpiries = volumeAnalytics.availableExpiries;
   const availableCommodities = volumeAnalytics.availableCommodities;
-  
-  // Set default expiry when expiries become available
-  useEffect(() => {
-    if (!selectedExpiry && availableExpiries.length > 0) {
-      setSelectedExpiry(availableExpiries[0]);
-    }
-  }, [availableExpiries, selectedExpiry]);
 
   // Filter options based on view mode
-  const filteredOptions = useMemo(() => {
-    if (viewMode === "all") {
-      return options;
-    }
-    
-    // My Options: filter by current user's ID
-    // User can be either buyer (buyerId) or issuer/seller (issuerId)
-    if (!userId) {
-      return [];
-    }
-    
-    return options.filter((option) => {
-      return option.buyerId === userId || option.issuerId === userId;
+  const expiryOptions = useMemo(() => {
+    const set = new Set<string>();
+    options.forEach((opt) => {
+      const label =
+        (opt as any).expiryWindow && (opt as any).expiryWindow.length > 0
+          ? (opt as any).expiryWindow
+          : opt.expirationDate
+          ? format(new Date(opt.expirationDate), "MMM dd, yyyy")
+          : "";
+      if (label) set.add(label);
     });
-  }, [options, viewMode, userId]);
+    return Array.from(set).sort();
+  }, [options]);
+
+  const commodityOptions = useMemo(() => {
+    const set = new Set<string>();
+    options.forEach((opt) => {
+      const commodityName = (opt as any).commodityName || opt.commodity;
+      if (commodityName) set.add(commodityName);
+    });
+    // Keep ordering aligned with known spot commodities when possible
+    const ordered = Array.from(set).sort((a, b) => {
+      const aIdx = SPOT_ALLOWED_SLUGS.findIndex((slug) => a.toLowerCase().includes(slug));
+      const bIdx = SPOT_ALLOWED_SLUGS.findIndex((slug) => b.toLowerCase().includes(slug));
+      if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
+      if (aIdx === -1) return 1;
+      if (bIdx === -1) return -1;
+      return aIdx - bIdx;
+    });
+    return ordered;
+  }, [options]);
+
+  const volumeMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    trades.forEach((t) => {
+      if (t.optionId) {
+        map[t.optionId] = (map[t.optionId] || 0) + 1;
+      }
+    });
+    return map;
+  }, [trades]);
+
+
+  const filteredOptions = useMemo(() => {
+    let base = options;
+    if (viewMode === "my") {
+      base = userId ? options.filter((option) => option.buyerId === userId || option.issuerId === userId) : [];
+    }
+
+    return base.filter((opt) => {
+      const commodityName = (opt as any).commodityName || opt.commodity || "";
+      const expiryLabel =
+        (opt as any).expiryWindow && (opt as any).expiryWindow.length > 0
+          ? (opt as any).expiryWindow
+          : opt.expirationDate
+          ? format(new Date(opt.expirationDate), "MMM dd, yyyy")
+          : "";
+      const matchesCommodity = selectedCommodity === "ALL" || commodityName === selectedCommodity;
+      const matchesExpiry = selectedExpiry === "ALL" || expiryLabel === selectedExpiry;
+      const matchesType = selectedType === "ALL" || opt.type === selectedType;
+      return matchesCommodity && matchesExpiry && matchesType;
+    });
+  }, [options, viewMode, userId, selectedCommodity, selectedExpiry, selectedType]);
 
   // Create option mutation
   const createOptionMutation = useMutation({
@@ -351,8 +403,8 @@ export default function OptionChain() {
             <TabsTrigger value="openInterest">Open Interest</TabsTrigger>
           </TabsList>
 
-          {/* Chain Tab - Current Options Table */}
-          <TabsContent value="chain" className="mt-6">
+        {/* Chain Tab - Current Options Table */}
+        <TabsContent value="chain" className="mt-6 space-y-6">
             {error ? (
           <Alert variant="destructive">
             <AlertDescription>
@@ -407,60 +459,155 @@ export default function OptionChain() {
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Option Chain {viewMode === "my" && `(${filteredOptions.length} contracts)`}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <Card className="xl:col-span-2">
+              <CardHeader>
+                <CardTitle>
+                  Option Chain {viewMode === "my" && `(${filteredOptions.length} contracts)`}
+                </CardTitle>
+                {/* Chain-like view: extend here with IV/Greeks once available */}
+              </CardHeader>
+              <CardContent>
+                {/* Chain-like filters: commodity, expiry window, type, margin profile (display-only mapping to usePremiumAsMargin) */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="space-y-2">
+                    <Label>Commodity</Label>
+                    <Select value={selectedCommodity} onValueChange={setSelectedCommodity}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All commodities" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All</SelectItem>
+                        {commodityOptions.map((commodity) => (
+                          <SelectItem key={commodity} value={commodity}>
+                            {commodity}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Expiry window</Label>
+                    <Select value={selectedExpiry} onValueChange={setSelectedExpiry}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All expiries" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All</SelectItem>
+                        {expiryOptions.map((expiry) => (
+                          <SelectItem key={expiry} value={expiry}>
+                            {expiry}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Type</Label>
+                    <Select value={selectedType} onValueChange={setSelectedType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All</SelectItem>
+                        <SelectItem value="CALL">Call</SelectItem>
+                        <SelectItem value="PUT">Put</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Margin profile</Label>
+                    <Select value={marginProfileId} onValueChange={(v) => setMarginProfileId(v as MarginProfileId)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Margin profile" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MARGIN_PROFILES.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Display-only: maps to usePremiumAsMargin and optional risk multiplier.
+                    </p>
+                  </div>
                 </div>
-              ) : viewMode === "my" && !userId ? (
-                <Alert>
-                  <AlertDescription>
-                    Connect wallet to see your options
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <OptionsTable
-                  options={filteredOptions}
-                  isLoading={isLoading}
-                  onMatch={async (optionId, counterpartyId) => {
-                    await matchOptionMutation.mutateAsync({ optionId, counterpartyId });
-                  }}
-                  isMatching={matchOptionMutation.isPending}
-                  onExercise={async (optionId, spotPrice) => {
-                    await exerciseOptionMutation.mutateAsync({ optionId, spotPrice });
-                  }}
-                  isExercising={exerciseOptionMutation.isPending}
-                  onSimulate={async (optionId, indexPrice, commodity) => {
-                    await simulateMarginCallMutation.mutateAsync({ indexPrice, commodity });
-                  }}
-                  isSimulating={simulateMarginCallMutation.isPending}
-                  onForceSettle={async (optionId, reason) => {
-                    await forceSettleMutation.mutateAsync({ optionId, reason });
-                  }}
-                  isForceSettling={forceSettleMutation.isPending}
-                  onTopUp={async (marginCallId, amount, currency) => {
-                    await topUpMarginCallMutation.mutateAsync({ marginCallId, amount, currency });
-                  }}
-                  isTopping={topUpMarginCallMutation.isPending}
-                  onWithdraw={async (data) => {
-                    return await withdrawMutation.mutateAsync(data);
-                  }}
-                  isWithdrawing={withdrawMutation.isPending}
-                  onCreateFromOption={handleCreateFromOption}
-                  userRole={user?.role}
-                  userId={userId}
-                />
-              )}
-            </CardContent>
-          </Card>
+
+                {isLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                ) : viewMode === "my" && !userId ? (
+                  <Alert>
+                    <AlertDescription>
+                      Connect wallet to see your options
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <OptionsTable
+                    options={filteredOptions}
+                    isLoading={isLoading}
+                    onMatch={async (optionId, counterpartyId) => {
+                      await matchOptionMutation.mutateAsync({ optionId, counterpartyId });
+                    }}
+                    isMatching={matchOptionMutation.isPending}
+                    onExercise={async (optionId, spotPrice) => {
+                      await exerciseOptionMutation.mutateAsync({ optionId, spotPrice });
+                    }}
+                    isExercising={exerciseOptionMutation.isPending}
+                    onSimulate={async (optionId, indexPrice, commodity) => {
+                      await simulateMarginCallMutation.mutateAsync({ indexPrice, commodity });
+                    }}
+                    isSimulating={simulateMarginCallMutation.isPending}
+                    onForceSettle={async (optionId, reason) => {
+                      await forceSettleMutation.mutateAsync({ optionId, reason });
+                    }}
+                    isForceSettling={forceSettleMutation.isPending}
+                    onTopUp={async (marginCallId, amount, currency) => {
+                      await topUpMarginCallMutation.mutateAsync({ marginCallId, amount, currency });
+                    }}
+                    isTopping={topUpMarginCallMutation.isPending}
+                    onWithdraw={async (data) => {
+                      return await withdrawMutation.mutateAsync(data);
+                    }}
+                    isWithdrawing={withdrawMutation.isPending}
+                    onCreateFromOption={handleCreateFromOption}
+                    userRole={user?.role}
+                    userId={userId}
+                    volumeMap={volumeMap}
+                    marginProfile={getMarginProfile(marginProfileId)}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Options Order Book (by expiry window)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {hasToken ? (
+                  <OrderBook
+                    mode="options"
+                    commodity={selectedCommodity !== "ALL" ? selectedCommodity : (availableCommodities[0] || "")}
+                    window={selectedExpiry || undefined}
+                    depth={5}
+                  />
+                ) : (
+                  <div className="space-y-3 text-sm text-muted-foreground">
+                    <p>Log in to view the options order book.</p>
+                    <Button size="sm" onClick={() => setLocation("/login")}>
+                      Login
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
             )}
           </TabsContent>
 
@@ -496,6 +643,7 @@ export default function OptionChain() {
                         <SelectValue placeholder="Select expiry" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="ALL">All</SelectItem>
                         {availableExpiries.map((expiry) => (
                           <SelectItem key={expiry} value={expiry}>
                             {format(new Date(expiry), "MMM dd, yyyy")}

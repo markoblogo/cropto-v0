@@ -44,6 +44,12 @@ type SortDirection = "asc" | "desc" | null;
 interface OptionsTableProps {
   options: Option[];
   isLoading: boolean;
+  volumeMap?: Record<string, number>;
+  marginProfile?: {
+    label: string;
+    usePremiumAsMargin: boolean;
+    riskMultiplier: number;
+  };
   onMatch?: (optionId: string, seller: string) => Promise<void>;
   isMatching?: boolean;
   onExercise?: (optionId: string, spotPrice: number) => Promise<void>;
@@ -69,6 +75,8 @@ function canExercise(option: Option, currentUserId?: string) {
 export function OptionsTable({ 
   options, 
   isLoading, 
+  volumeMap,
+  marginProfile,
   onMatch, 
   isMatching = false, 
   onExercise, 
@@ -328,24 +336,24 @@ export function OptionsTable({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={() => handleSort("qty")}
-                      className="hover-elevate gap-1 h-8"
-                      data-testid="button-sort-qty"
-                    >
-                      Qty (t)
-                      {getSortIcon("qty")}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="font-semibold text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
                       onClick={() => handleSort("premium")}
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-premium"
                     >
                       Premium
                       {getSortIcon("premium")}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="font-semibold text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleSort("qty")}
+                      className="hover-elevate gap-1 h-8"
+                      data-testid="button-sort-qty"
+                    >
+                      Qty (t)
+                      {getSortIcon("qty")}
                     </Button>
                   </TableHead>
                   <TableHead className="font-semibold">
@@ -360,6 +368,8 @@ export function OptionsTable({
                       {getSortIcon("createdAt")}
                     </Button>
                   </TableHead>
+                  <TableHead className="font-semibold text-right">IV (stub)</TableHead>
+                  <TableHead className="font-semibold text-right">Volume</TableHead>
                   <TableHead className="font-semibold">
                     <Button 
                       variant="ghost" 
@@ -378,6 +388,24 @@ export function OptionsTable({
               </TableHeader>
               <TableBody>
                 {filteredAndSortedOptions.map((option) => {
+                  const expiryLabel =
+                    (option as any).expiryWindow && (option as any).expiryWindow.length > 0
+                      ? (option as any).expiryWindow
+                      : option.expirationDate
+                      ? format(new Date(option.expirationDate), "MMM dd, yyyy")
+                      : "-";
+                  const volCount = volumeMap?.[option.id] || 0;
+                  const premiumNum = parseFloat(option.premium);
+                  const strikeNum = Number(option.strike);
+                  const qtyNum = Number(option.qty);
+                  const ivApprox =
+                    Number.isFinite(strikeNum) && strikeNum > 0
+                      ? Math.max(0, (premiumNum / strikeNum) * 100)
+                      : 0;
+                  const baseMargin = Number((option as any).initialMargin || option.collateralAmount || 0);
+                  const displayMargin = marginProfile
+                    ? baseMargin * marginProfile.riskMultiplier
+                    : baseMargin;
                   const isMine = option.issuerId && userId ? option.issuerId === userId : false;
                   const canMatchAsOther =
                     option.status === "OPEN" &&
@@ -398,8 +426,19 @@ export function OptionsTable({
                   const ssiAvg = (option as any).ssiAvg || (option as any).settlementPrice;
                   const finalPnl = (option as any).finalPnl;
 
+                  const isClickable = !!onMatch && option.status === "OPEN";
                   return (
-                <TableRow key={option.id} data-testid={`row-option-${option.id}`}>
+                <TableRow
+                  key={option.id}
+                  data-testid={`row-option-${option.id}`}
+                  className={isClickable ? "cursor-pointer hover:bg-muted/50" : ""}
+                  onClick={() => {
+                    if (isClickable) {
+                      setSelectedOption(option);
+                      setIsMatchDialogOpen(true);
+                    }
+                  }}
+                >
                   <TableCell data-testid={`cell-commodity-${option.id}`}>
                     <div className="flex items-center gap-2 whitespace-nowrap">
                       {(option as any).commoditySlug && (
@@ -420,22 +459,32 @@ export function OptionsTable({
                   <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-strike-${option.id}`}>
                     ${parseFloat(option.strike).toLocaleString()}/t
                   </TableCell>
-                  <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-qty-${option.id}`}>
-                    {Number(option.qty).toLocaleString(undefined, { maximumFractionDigits: 2 })} t
-                  </TableCell>
                   <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-premium-${option.id}`}>
-                    {parseFloat(option.premium).toLocaleString()} CROPT
+                    {premiumNum.toLocaleString()} CROPT
+                  </TableCell>
+                  <TableCell className="text-right font-mono font-semibold whitespace-nowrap" data-testid={`text-qty-${option.id}`}>
+                    {qtyNum.toLocaleString(undefined, { maximumFractionDigits: 2 })} t
                   </TableCell>
                   <TableCell className="text-sm whitespace-nowrap" data-testid={`text-expiry-${option.id}`}>
-                    {option.expirationDate 
-                      ? format(new Date(option.expirationDate), "MMM dd, yyyy")
-                      : "-"}
+                    {expiryLabel}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs whitespace-nowrap">
+                    {ivApprox ? `${ivApprox.toFixed(1)}%` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono whitespace-nowrap">
+                    {volCount}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1 text-sm">
+                      {marginProfile && (
+                        <div className="text-xs text-muted-foreground">
+                          Margin ({marginProfile.label}): {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : "—"}
+                          {marginProfile.usePremiumAsMargin ? " (premium as margin)" : ""}
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge
                           variant={
@@ -471,7 +520,7 @@ export function OptionsTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2 flex-wrap whitespace-nowrap">
                       {option.status === "OPEN" && onMatch && userRole === "broker" && isMine && (
                         <MatchOptionDialog

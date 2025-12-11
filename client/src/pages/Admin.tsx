@@ -31,6 +31,7 @@ interface CommodityIndex {
   slug: string;
   category: string;
   hasVat: boolean;
+  isStale?: boolean;
   latestPrice: {
     price: number;
     delta: number | null;

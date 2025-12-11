@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePolling } from "@/hooks/usePolling";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
+import { Footer } from "@/components/Footer";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -298,7 +299,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header 
         onCreateOption={() => setIsCreateDialogOpen(true)}
         onOpenLogin={handleOpenLogin}
@@ -313,7 +314,7 @@ export default function Dashboard() {
         onOpenWalletModal={handleOpenWalletModal}
       />
 
-      <main className="py-12">
+      <main className="py-12 flex-1 w-full">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Trading Status Banner */}
           <TradingStatusBanner onOpenWalletModal={handleOpenWalletModal} />
@@ -404,6 +405,8 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       {/* Create Option Dialog */}
       <CreateOptionDialog 

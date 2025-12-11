@@ -14,11 +14,12 @@ import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { WalletSummary } from "@/components/WalletSummary";
 import { useWalletSummary } from "@/hooks/useWalletSummary";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
-import { getTradingPairs, getIndexMetadata } from "@/lib/indexMapping";
+import { getTradingPairs, getIndexMetadata, SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
 import { SpotMiniChart } from "@/components/SpotMiniChart";
 import { SpotTradeHistory } from "@/components/SpotTradeHistory";
 import { SpotOrderForm } from "@/components/SpotOrderForm";
 import { SpotPositionCard } from "@/components/SpotPositionCard";
+import { OrderBook } from "@/components/trading/OrderBook";
 import { format } from "date-fns";
 
 interface CommodityIndex {
@@ -27,6 +28,8 @@ interface CommodityIndex {
   slug: string;
   category: string;
   hasVat: boolean;
+  isStale?: boolean;
+  staleReason?: string | null;
   latestPrice: {
     price: number;
     delta: number | null;
@@ -39,6 +42,16 @@ interface PriceHistoryEntry {
   price: number;
   delta: number | null;
   timestamp: string;
+}
+
+interface TradeEntry {
+  id: string;
+  optionId?: string | null;
+  commodity?: string | null;
+  price: number;
+  qty: number;
+  type: string;
+  createdAt: string;
 }
 
 interface IndexDataWithHistory {
@@ -86,8 +99,14 @@ export default function SpotTrading() {
     refetchInterval: 30000,
   });
 
-  // Get trading pairs from indexes
-  const tradingPairs = indexes ? getTradingPairs(indexes) : [];
+  const [chartRange, setChartRange] = useState<"7d" | "30d">("7d");
+
+  // Get trading pairs from indexes (only allowed spot commodities, ordered)
+  const tradingPairsRaw = indexes ? getTradingPairs(indexes) : [];
+  const tradingPairsOrdered = tradingPairsRaw
+    .filter((p) => SPOT_ALLOWED_SLUGS.includes(p.slug))
+    .sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug));
+  const tradingPairs = tradingPairsOrdered.filter((p) => !p.isStale);
   
   // Get selected pair from query params or default to first pair
   const searchParams = new URLSearchParams(window.location.search);
@@ -103,10 +122,10 @@ export default function SpotTrading() {
       if (found) return found.slug;
     }
     if (indexIdParam) {
-      const found = indexes?.find(idx => idx.id === indexIdParam);
+      const found = indexes?.find(idx => idx.id === indexIdParam && !idx.isStale);
       if (found) return found.slug;
     }
-    // Default to first pair (prefer Corn if available)
+    // Default to first non-stale pair (prefer Corn if available)
     const corn = tradingPairs.find(p => p.slug.includes("corn"));
     return corn?.slug || tradingPairs[0]?.slug || null;
   }, [commodityParam, indexIdParam, tradingPairs, indexes]);
@@ -164,6 +183,46 @@ export default function SpotTrading() {
     refetchInterval: 30000,
   });
 
+  // Executed trades (separate from index updates)
+  const { data: trades = [], isLoading: isTradesLoading, error: tradesError } = useQuery<TradeEntry[]>({
+    queryKey: ["/api/trades", selectedPairSlug],
+    enabled: !!selectedPairSlug,
+    queryFn: async () => {
+      const res = await fetch(`/api/trades?commodity=${selectedPairSlug}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch trades");
+      }
+      const raw = await res.json();
+      if (!Array.isArray(raw)) return [];
+      const mapped = raw.map((t) => {
+        const strikeRaw = typeof t.strike === "string" ? parseFloat(t.strike) : Number(t.strike);
+        const priceField = typeof t.price === "string" ? parseFloat(t.price) : Number(t.price);
+        // Trades API returns option trades with strike; fall back to strike if price is missing.
+        const price = Number.isFinite(priceField)
+          ? priceField
+          : Number.isFinite(strikeRaw)
+            ? strikeRaw / 100 // stored as cents -> dollars per ton
+            : 0;
+        const qty = typeof t.qty === "string" ? parseFloat(t.qty) : Number(t.qty || t.quantity || 0);
+        return {
+          id: t.id,
+          optionId: t.optionId,
+          commodity: t.commodity,
+          price: Number.isFinite(price) ? price : 0,
+          qty: Number.isFinite(qty) ? qty : 0,
+          // No explicit side in payload; display aggregated trade direction
+          type: t.type || t.side || "BUY/SELL",
+          createdAt: t.createdAt || t.timestamp || new Date().toISOString(),
+        };
+      });
+      const hasUnknown = mapped.some((m) => !m.type || m.type === "UNKNOWN");
+      if (hasUnknown) {
+      }
+      return mapped;
+    },
+    refetchInterval: 30000,
+  });
+
   // Prepare chart data from price history
   const chartData = useMemo(() => {
     if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
@@ -177,6 +236,22 @@ export default function SpotTrading() {
         price: entry.price,
       }));
   }, [indexDataWithHistory]);
+
+  const priceChartData = useMemo(() => {
+    if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
+      return [];
+    }
+    const now = Date.now();
+    const days = chartRange === "7d" ? 7 : 30;
+    const cutoff = now - days * 24 * 60 * 60 * 1000;
+    // Reuse Market Data history transform: priceHistory -> {timestamp, price}
+    return indexDataWithHistory.priceHistory
+      .filter((entry) => new Date(entry.timestamp).getTime() >= cutoff)
+      .map((entry) => ({
+        timestamp: entry.timestamp,
+        price: entry.price,
+      }));
+  }, [indexDataWithHistory, chartRange]);
 
   // Prepare trade history data
   const tradeHistoryData = useMemo(() => {
@@ -243,29 +318,32 @@ export default function SpotTrading() {
           </Card>
         ) : (
           <>
-            {/* Instrument Selector */}
-            <Card>
-              <CardContent className="pt-6">
-                <Tabs value={selectedPairSlug || ""} onValueChange={handlePairChange}>
-                  <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 h-auto">
-                    {tradingPairs.map((pair) => (
-                      <TabsTrigger 
-                        key={pair.slug} 
-                        value={pair.slug}
-                        className="flex flex-col items-start gap-1 p-3 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                      >
-                        <span className="text-xs font-mono text-muted-foreground data-[state=active]:text-primary-foreground/80">
-                          {pair.pairCode}
-                        </span>
-                        <span className="text-sm font-semibold truncate w-full">
-                          {pair.name}
-                        </span>
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </CardContent>
-            </Card>
+            {/* Instrument Selector near header */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <span className="text-sm font-medium text-muted-foreground">Spot markets</span>
+                <div className="w-full md:w-auto overflow-x-auto">
+                  <Tabs value={selectedPairSlug || ""} onValueChange={handlePairChange}>
+                    <TabsList className="flex w-full md:w-auto flex-wrap gap-2 bg-muted p-1 rounded-lg h-auto">
+                      {tradingPairs.map((pair) => (
+                        <TabsTrigger 
+                          key={pair.slug} 
+                          value={pair.slug}
+                          className="flex flex-col items-start gap-1 px-3 py-2 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md"
+                        >
+                          <span className="text-[11px] font-mono text-muted-foreground data-[state=active]:text-primary-foreground/80">
+                            {pair.pairCode}
+                          </span>
+                          <span className="text-sm font-semibold truncate w-full">
+                            {pair.name}
+                          </span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </div>
+            </div>
 
             {/* Instrument Overview */}
             {selectedPair && selectedIndex && (
@@ -339,7 +417,7 @@ export default function SpotTrading() {
 
             {/* Order Form and Recent Updates Grid */}
             {selectedPair && selectedIndex && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Order Form */}
                 <SpotOrderForm
                   commoditySlug={selectedPair.slug}
@@ -349,10 +427,11 @@ export default function SpotTrading() {
                   onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
                 />
 
-                {/* Recent Price Updates */}
+                {/* Recent Price Updates (index quotes, not trades) */}
                 <Card>
                   <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Recent Price Updates</h3>
+                    <h3 className="text-lg font-semibold mb-4">Recent Price Updates (index quotes)</h3>
+                    {/* Index updates from commodity index history */}
                     {isHistoryLoading ? (
                       <Skeleton className="h-64 w-full" />
                     ) : historyError ? (
@@ -362,12 +441,123 @@ export default function SpotTrading() {
                         </AlertDescription>
                       </Alert>
                     ) : (
-                      <div className="max-h-64 overflow-y-auto">
-                        <SpotTradeHistory data={tradeHistoryData} maxRows={10} />
+                      <div className="space-y-4">
+                        <div className="max-h-64 overflow-y-auto">
+                          <SpotTradeHistory data={tradeHistoryData} maxRows={10} />
+                        </div>
+                        <div className="border-t pt-4 space-y-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <h4 className="text-sm font-semibold">Price Chart</h4>
+                            <div className="flex gap-2">
+                              <Button
+                                size="xs"
+                                variant={chartRange === "7d" ? "default" : "outline"}
+                                onClick={() => setChartRange("7d")}
+                              >
+                                7d
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant={chartRange === "30d" ? "default" : "outline"}
+                                onClick={() => setChartRange("30d")}
+                              >
+                                30d
+                              </Button>
+                            </div>
+                          </div>
+                          {isHistoryLoading ? (
+                            <Skeleton className="h-32 w-full" />
+                          ) : historyError ? (
+                            <Alert variant="destructive">
+                              <AlertDescription>Failed to load price chart</AlertDescription>
+                            </Alert>
+                          ) : priceChartData.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No price data for this range.</p>
+                          ) : (
+                            <div className="h-32">
+                              {/* Reuse Market Data chart logic via SpotMiniChart with the same data shape */}
+                              <SpotMiniChart
+                                data={priceChartData}
+                                height={128}
+                                color={
+                                  isPositive
+                                    ? "hsl(142, 76%, 36%)"
+                                    : isNegative
+                                    ? "hsl(0, 84%, 60%)"
+                                    : "hsl(var(--muted-foreground))"
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Trade History (executed trades) */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Trade History</h3>
+                    {/* Executed trades from /api/trades filtered by commodity */}
+                    {isTradesLoading ? (
+                      <Skeleton className="h-64 w-full" />
+                    ) : tradesError ? (
+                      <Alert variant="destructive">
+                        <AlertDescription>Failed to load trades</AlertDescription>
+                      </Alert>
+                    ) : trades.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No trades yet.</p>
+                    ) : (
+                      <div className="max-h-64 overflow-y-auto text-sm">
+                        <table className="w-full">
+                          <thead className="text-xs uppercase text-muted-foreground">
+                            <tr className="text-left">
+                              <th className="py-1">Time</th>
+                              <th className="py-1">Price</th>
+                              <th className="py-1">Qty (t)</th>
+                              <th className="py-1">Side</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {trades.slice(0, 20).map((trade) => {
+                              const priceSafe = Number.isFinite(trade.price) ? trade.price : 0;
+                              const qtySafe = Number.isFinite(trade.qty) ? trade.qty : 0;
+                              return (
+                                <tr key={trade.id || `${priceSafe}-${trade.createdAt}`} className="text-sm">
+                                  <td className="py-1">
+                                    {format(new Date(trade.createdAt), "HH:mm:ss")}
+                                  </td>
+                                  <td className="py-1 font-mono text-right pr-2">
+                                    ${priceSafe.toFixed(2)}
+                                  </td>
+                                  <td className="py-1 font-mono text-right pr-2">
+                                    {qtySafe.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                  </td>
+                                  <td className="py-1">
+                                    <span className={trade.type === "SELL" ? "text-destructive" : "text-emerald-600"}>
+                                      {trade.type}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Order Book */}
+                <div className="lg:col-span-1">
+                  <OrderBook
+                    title="Order Book"
+                    commodity={selectedPair.slug}
+                    mode="spot"
+                    depth={5}
+                  />
+                </div>
               </div>
             )}
 

@@ -18,7 +18,7 @@ import { SpotBuyModal } from "./SpotBuyModal";
 import { SpotSellModal } from "./SpotSellModal";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
-import { getTradingPairs } from "@/lib/indexMapping";
+import { getTradingPairs, SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
 import { SpotMiniChart } from "./SpotMiniChart";
 import { SpotTradeHistory } from "./SpotTradeHistory";
 
@@ -28,6 +28,8 @@ interface CommodityIndex {
   slug: string;
   category: string;
   hasVat: boolean;
+  isStale?: boolean;
+  staleReason?: string | null;
   latestPrice: {
     price: number;
     delta: number | null;
@@ -72,7 +74,11 @@ export function SpotTradingBlock() {
   });
 
   // Get trading pairs from indexes
-  const tradingPairs = indexes ? getTradingPairs(indexes) : [];
+  const tradingPairsRaw = indexes ? getTradingPairs(indexes) : [];
+  const tradingPairsOrdered = tradingPairsRaw
+    .filter((p) => SPOT_ALLOWED_SLUGS.includes(p.slug))
+    .sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug));
+  const tradingPairs = tradingPairsOrdered.filter((p) => !p.isStale);
   
   // Set default selected pair if none selected and pairs are available
   useEffect(() => {
@@ -221,9 +227,9 @@ export function SpotTradingBlock() {
                 <SelectValue placeholder={t('spot.trading.selectPair', 'Select trading pair')} />
               </SelectTrigger>
               <SelectContent>
-                {tradingPairs.map((pair) => (
-                  <SelectItem key={pair.slug} value={pair.slug}>
-                    {pair.pairCode} - {pair.name}
+                {tradingPairsOrdered.map((pair) => (
+                  <SelectItem key={pair.slug} value={pair.slug} disabled={!!pair.isStale}>
+                    {pair.pairCode} - {pair.name} {pair.isStale ? "(Paused)" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layouts/MainLayout";
@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { getIndexMetadata } from "@/lib/indexMapping";
+import { apiRequest } from "@/lib/queryClient";
 
 interface CommodityIndex {
   id: string;
@@ -18,6 +19,8 @@ interface CommodityIndex {
   slug: string;
   category: string;
   hasVat: boolean;
+  isStale?: boolean;
+  staleReason?: string | null;
   latestPrice: {
     price: number;
     delta: number | null;
@@ -43,6 +46,18 @@ interface IndexDataWithHistory {
   updatedAt: string;
 }
 
+interface PortfolioData {
+  positions: Array<{
+    commoditySlug?: string;
+    underlying?: string;
+  }>;
+}
+
+interface SpotPosition {
+  commoditySlug: string;
+  quantityKg: string;
+}
+
 export default function MarketData() {
   const [, setLocation] = useLocation();
   const [selectedIndexSlug, setSelectedIndexSlug] = useState<string | null>(null);
@@ -51,6 +66,21 @@ export default function MarketData() {
   const { data: indexes, isLoading, error } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
     refetchInterval: 30000,
+  });
+
+  const hasToken = !!localStorage.getItem("cropto_token");
+
+  // Positions to show "Position" badge
+  const { data: portfolio } = useQuery<PortfolioData>({
+    queryKey: ["/api/portfolio/me"],
+    enabled: hasToken,
+    retry: false,
+  });
+
+  const { data: spotPositions = [] } = useQuery<SpotPosition[]>({
+    queryKey: ["/api/spot/positions"],
+    enabled: hasToken,
+    retry: false,
   });
 
   // Set default selected index when indexes load
@@ -74,6 +104,54 @@ export default function MarketData() {
   if (!selectedIndexSlug && indexes && indexes.length > 0) {
     setSelectedIndexSlug(indexes[0].slug);
   }
+
+  const { data: historiesMap = {} } = useQuery<Record<string, PriceHistoryEntry[]>>({
+    queryKey: ["/api/indexes/history-map", indexes?.map((i) => i.slug)],
+    enabled: !!indexes && indexes.length > 0,
+    queryFn: async () => {
+      if (!indexes) return {};
+      const entries = await Promise.all(
+        indexes.map(async (idx) => {
+          const res = await apiRequest("GET", `/api/indexes/${idx.slug}`);
+          const json = (await res.json()) as IndexDataWithHistory;
+          return [idx.slug, json?.priceHistory || []] as const;
+        })
+      );
+      return Object.fromEntries(entries);
+    },
+    staleTime: 60_000,
+  });
+
+  const positionsSlugs = useMemo(() => {
+    const set = new Set<string>();
+    portfolio?.positions?.forEach((p) => {
+      const slug = (p.commoditySlug || p.underlying || "").toLowerCase();
+      if (slug) set.add(slug);
+    });
+    spotPositions.forEach((p) => {
+      const slug = p.commoditySlug?.toLowerCase();
+      if (slug) set.add(slug);
+    });
+    return set;
+  }, [portfolio?.positions, spotPositions]);
+
+  const computeChangePercent = (history: PriceHistoryEntry[] | undefined, days: number): number | null => {
+    if (!history || history.length === 0) return null;
+    const sorted = [...history].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const latest = sorted[sorted.length - 1];
+    const now = Date.now();
+    const cutoff = now - days * 24 * 60 * 60 * 1000;
+    const ref = sorted.find((h) => new Date(h.timestamp).getTime() >= cutoff) || sorted[0];
+    const refPrice = ref.price;
+    if (!refPrice) return null;
+    return ((latest.price - refPrice) / refPrice) * 100;
+  };
+
+  const getCategoryLabel = (index: CommodityIndex): string => {
+    const name = index.name.toLowerCase();
+    if (name.includes("soy") || name.includes("rape") || name.includes("sunflower")) return "Oilseeds";
+    return "Grains";
+  };
 
   const handleViewDetails = (slug: string) => {
     setLocation(`/index/${slug}`);
@@ -170,6 +248,9 @@ export default function MarketData() {
                         : null;
 
                     const metadata = getIndexMetadata(index.slug, index.category);
+                    const history = historiesMap[index.slug];
+                    const change7d = computeChangePercent(history, 7);
+                    const change30d = computeChangePercent(history, 30);
 
                     return (
                       <CommodityIndexCard
@@ -177,6 +258,10 @@ export default function MarketData() {
                         index={index}
                         change24hPercent={changePercent}
                         indexType={metadata.type}
+                        categoryLabel={getCategoryLabel(index)}
+                        change7dPercent={change7d}
+                        change30dPercent={change30d}
+                        hasPosition={positionsSlugs.has(index.slug.toLowerCase())}
                         onViewDetails={handleViewDetails}
                       />
                     );
@@ -210,6 +295,9 @@ export default function MarketData() {
                         : null;
 
                     const metadata = getIndexMetadata(index.slug, index.category);
+                    const history = historiesMap[index.slug];
+                    const change7d = computeChangePercent(history, 7);
+                    const change30d = computeChangePercent(history, 30);
 
                     return (
                       <CommodityIndexCard
@@ -217,6 +305,10 @@ export default function MarketData() {
                         index={index}
                         change24hPercent={changePercent}
                         indexType={metadata.type}
+                        categoryLabel={getCategoryLabel(index)}
+                        change7dPercent={change7d}
+                        change30dPercent={change30d}
+                        hasPosition={positionsSlugs.has(index.slug.toLowerCase())}
                         onViewDetails={handleViewDetails}
                       />
                     );

@@ -26,6 +26,9 @@ import RiskDashboard from "@/pages/RiskDashboard";
 import IndexDetail from "@/pages/IndexDetail";
 import Feedback from "@/pages/Feedback";
 import NotFound from "@/pages/not-found";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfUse from "@/pages/TermsOfUse";
+import RiskDisclosure from "@/pages/RiskDisclosure";
 import { useEffect } from "react";
 
 function RedirectToAbout() {
@@ -62,6 +65,9 @@ function Router() {
       <Route path="/admin/index" component={AdminIndex} />
       <Route path="/index/:slug" component={IndexDetail} />
       <Route path="/feedback" component={Feedback} />
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfUse} />
+      <Route path="/risk-disclosure" component={RiskDisclosure} />
       <Route component={NotFound} />
     </Switch>
   );

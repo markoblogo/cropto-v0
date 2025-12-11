@@ -55,6 +55,7 @@ import {
   monthsBetween,
   calculatePnLPreview,
 } from "@/lib/optionCalculations";
+import { MARGIN_PROFILES, MarginProfileId, getMarginProfile } from "@/lib/marginProfiles";
 
 interface CreateOptionDialogProps {
   onSubmit: (data: InsertOption) => Promise<void>;
@@ -191,6 +192,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
   const strike = form.watch("strike");
   const premium = form.watch("premium");
   const usePremiumAsMargin = form.watch("usePremiumAsMargin");
+  const [marginProfileId, setMarginProfileId] = useState<MarginProfileId>("standard");
 
   // Compute expiry window derived dates
   const { windowLabel, windowStart, windowEnd, settlementDate, derivedExpirationDate } = useMemo(() => {
@@ -243,6 +245,12 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
     }
   }, [selectedCommodity, qty, derivedExpirationDate, form]);
 
+  // Sync margin profile -> usePremiumAsMargin (display/UX only)
+  useEffect(() => {
+    const profile = getMarginProfile(marginProfileId);
+    form.setValue("usePremiumAsMargin", profile.usePremiumAsMargin);
+  }, [marginProfileId, form]);
+
   const handleSubmit = async (data: InsertOption) => {
     try {
       const payload = {
@@ -271,6 +279,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
   const strikeNum = parseFloat(strike) || 0;
   const premiumNum = parseFloat(premium) || 0;
   const notional = computeNotional(strikeNum, qtyNum);
+  const marginProfile = getMarginProfile(marginProfileId);
 
   const expiryMonths = useMemo(() => {
     if (!derivedExpirationDate) return 0;
@@ -282,19 +291,19 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
   const effectiveInitialMargin = usePremiumAsMargin
     ? Math.max(0, collateralAmount - totalPremium)
     : collateralAmount;
-  const totalRequired = totalPremium + effectiveInitialMargin;
+  const effectiveInitialMarginDisplay = effectiveInitialMargin * marginProfile.riskMultiplier;
+  const totalRequired = totalPremium + effectiveInitialMarginDisplay;
 
-  // PnL Preview calculations
+  // PnL Preview calculations (0%, +10%, -10% moves)
   const pnlPreview = useMemo(() => {
-    if (!strikeNum || !qtyNum || !premiumNum || !currentMarketPrice) {
+    if (!strikeNum || !qtyNum || !premiumNum) {
       return null;
     }
-    // Show preview at current market price and at strike ±20%
+    const basePrice = currentMarketPrice || strikeNum;
     const scenarios = [
-      { label: "Current Price", price: currentMarketPrice },
-      { label: "Strike -20%", price: strikeNum * 0.8 },
-      { label: "Strike", price: strikeNum },
-      { label: "Strike +20%", price: strikeNum * 1.2 },
+      { label: "Spot (0%)", price: basePrice },
+      { label: "Spot +10%", price: basePrice * 1.1 },
+      { label: "Spot -10%", price: basePrice * 0.9 },
     ];
     return scenarios.map(scenario => ({
       ...scenario,
@@ -332,9 +341,9 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
             {/* Block 1: Contract Terms */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Block 1: Contract Terms</CardTitle>
+                <CardTitle className="text-lg">Contract Terms</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Define the basic terms of the option contract
+                  Define the basic terms of the option contract.
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -357,8 +366,8 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                           </FormControl>
                           <SelectContent>
                             {commodities.map((commodity) => (
-                              <SelectItem key={commodity.id} value={commodity.id}>
-                                {commodity.name}
+                              <SelectItem key={commodity.id} value={commodity.id} disabled={!!commodity.isStale}>
+                                {commodity.name} {commodity.isStale ? "(Paused)" : ""}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -575,13 +584,13 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
               </CardContent>
             </Card>
 
-            {/* Block 2 & 3: Collateral Model and Price Preview (side by side) */}
+            {/* Block 2 & 3: Collateral & Pricing */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Block 2: Collateral Model */}
+              {/* Block 2: Collateral & Margin */}
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">Block 2: Collateral Model</CardTitle>
+                    <CardTitle className="text-lg">Collateral & Margin</CardTitle>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -624,6 +633,11 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                             data-testid="checkbox-use-premium-as-margin"
                           />
                         </div>
+                        {usePremiumAsMargin && (
+                          <p className="text-xs text-muted-foreground">
+                            Premium offsets the margin you need to lock; any shortfall is provided as collateral.
+                          </p>
+                        )}
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Estimated collateral:</span>
                           <span className="font-mono font-semibold">
@@ -633,8 +647,38 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Expected initial margin:</span>
                           <span className="font-mono font-semibold">
-                            {effectiveInitialMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
+                            {effectiveInitialMarginDisplay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} CROPT
                           </span>
+                        </div>
+                        <div className="space-y-2 pt-2 border-t">
+                          <div className="flex items-center gap-2">
+                            <Label className="text-xs">Margin profile</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="w-4 h-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  Standard = current rules; Premium as margin = apply premium to margin; Conservative = display-only +20% buffer. Backend settlement logic unchanged.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <Select value={marginProfileId} onValueChange={(v) => setMarginProfileId(v as MarginProfileId)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select profile" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {MARGIN_PROFILES.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            Maps to usePremiumAsMargin; riskMultiplier is display-only (no backend margin change).
+                          </p>
                         </div>
                       </div>
                     )}
@@ -642,10 +686,10 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
                 </CardContent>
               </Card>
 
-              {/* Block 3: Price & PnL Preview */}
+              {/* Block 3: Pricing Preview */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Block 3: Price & PnL Preview</CardTitle>
+                  <CardTitle className="text-lg">Pricing Preview</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="rounded-md border bg-muted/30 p-3 space-y-1">
@@ -690,7 +734,7 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
 
                   {pnlPreview && pnlPreview.length > 0 && (
                     <div className="pt-2 border-t space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">PnL Scenarios (as Seller):</p>
+                      <p className="text-xs font-medium text-muted-foreground">PnL Scenarios (Seller): 0%, +10%, -10% move</p>
                       <div className="space-y-1 text-xs">
                         {pnlPreview.map((scenario, idx) => (
                           <div key={idx} className="flex justify-between">
@@ -721,10 +765,10 @@ export function CreateOptionDialog({ onSubmit, isPending, open: externalOpen, on
               </Card>
             </div>
 
-            {/* Block 4: Transaction & Signature */}
+            {/* Block 4: Wallet & Confirmation */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Block 4: Transaction & Signature</CardTitle>
+                <CardTitle className="text-lg">Wallet & Confirmation</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!walletAddress ? (

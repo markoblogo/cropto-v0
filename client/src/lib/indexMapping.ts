@@ -19,6 +19,18 @@ export interface IndexMetadata {
   indexCode: string;
 }
 
+// Spot commodities allowed in the selector and spot UI.
+// Keep this single source of truth in sync with backend index slugs.
+export const SPOT_ALLOWED_SLUGS = [
+  "corn",
+  "wheat-115",
+  "feed-wheat",
+  "gmo-soybeans",
+  "gmo-soybeans-processing",
+  "sunflower-seed",
+  "rapeseed",
+];
+
 /**
  * Generate pair code from slug
  * Example: "feed-wheat" -> "FWTEX" or "FWTEXPR" for processing
@@ -80,11 +92,12 @@ export function getIndexMetadata(
 /**
  * Get all available trading pairs from indexes
  */
-export function getTradingPairs(indexes: Array<{ slug: string; category: string; name: string }>): Array<{
+export function getTradingPairs(indexes: Array<{ slug: string; category: string; name: string; isStale?: boolean }>): Array<{
   slug: string;
   name: string;
   pairCode: string;
   type: IndexType;
+  isStale?: boolean;
 }> {
   return indexes.map(index => {
     const metadata = getIndexMetadata(index.slug, index.category);
@@ -93,6 +106,7 @@ export function getTradingPairs(indexes: Array<{ slug: string; category: string;
       name: index.name,
       pairCode: metadata.pairCode,
       type: metadata.type,
+      isStale: index.isStale,
     };
   });
 }
