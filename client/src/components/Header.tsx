@@ -101,6 +101,7 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
     { to: "/admin", label: t("nav.admin"), testId: "button-nav-admin", requiresAdmin: true },
+    { to: "/markets/chain", label: "Option & Forward Chain", testId: "button-nav-chain" },
   ];
 
   const handleLogout = () => {

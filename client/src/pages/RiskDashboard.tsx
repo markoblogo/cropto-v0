@@ -127,6 +127,73 @@ export default function RiskDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Forward Positions Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Forward Positions</CardTitle>
+            <CardDescription>Active forward contracts and margin requirements</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Active Positions</CardTitle>
+                  <CardDescription>Forward contracts</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">{data?.forwards?.positionsCount ?? 0}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Total Notional</CardTitle>
+                  <CardDescription>USD exposure</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">${data?.forwards?.notional?.toLocaleString() ?? "0"}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Required Margin</CardTitle>
+                  <CardDescription>CROPT needed</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">{data?.forwards?.requiredMargin?.toFixed(2) ?? "0"}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Margin Health</CardTitle>
+                  <CardDescription>Current vs required</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const required = data?.forwards?.requiredMargin ?? 0;
+                    const current = data?.forwards?.currentMargin ?? 0;
+                    const health = required > 0 ? (current / required) * 100 : 100;
+                    const isLowHealth = health < 80; // Consider < 80% as concerning
+
+                    return (
+                      <div className="space-y-1">
+                        <p className={`text-3xl font-bold ${isLowHealth ? "text-destructive" : "text-green-600"}`}>
+                          {health.toFixed(1)}%
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {current.toFixed(2)} / {required.toFixed(2)} CROPT
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );

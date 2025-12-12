@@ -59,6 +59,47 @@ interface ForwardSpread {
   status: string;
 }
 
+interface CalendarSpread {
+  leg1: {
+    commodity: string;
+    window: string;
+    windowStart: Date | null;
+    windowEnd: Date | null;
+  };
+  leg2: {
+    commodity: string;
+    window: string;
+    windowStart: Date | null;
+    windowEnd: Date | null;
+  };
+  spreadPrice: number;
+  contractCount: number;
+  lastUpdated: Date;
+}
+
+interface CrossCommoditySpread {
+  leg1: {
+    commodity: string;
+    window: string;
+    windowStart: Date | null;
+    windowEnd: Date | null;
+  };
+  leg2: {
+    commodity: string;
+    window: string;
+    windowStart: Date | null;
+    windowEnd: Date | null;
+  };
+  spreadPrice: number;
+  contractCount: number;
+  lastUpdated: Date;
+}
+
+interface SpreadsData {
+  calendar: CalendarSpread[];
+  crossCommodity: CrossCommoditySpread[];
+}
+
 export default function ForwardMarket() {
   const [commodityFilter, setCommodityFilter] = useState<string>("ALL");
   const [windowFilter, setWindowFilter] = useState<string>("ALL");
@@ -166,7 +207,7 @@ export default function ForwardMarket() {
   });
 
   // Forward spreads (analytics)
-  const { data: spreads = [] } = useQuery<ForwardSpread[]>({
+  const { data: spreadsData } = useQuery<SpreadsData>({
     queryKey: ["/api/forward/spreads"],
     queryFn: async () => {
       const resp = await apiRequest("GET", "/api/forward/spreads");
@@ -176,12 +217,12 @@ export default function ForwardMarket() {
   });
 
   const calendarSpreads = useMemo(
-    () => spreads.filter((s) => s.spreadType === "CALENDAR" && s.status === "OPEN"),
-    [spreads]
+    () => spreadsData?.calendar || [],
+    [spreadsData]
   );
   const crossSpreads = useMemo(
-    () => spreads.filter((s) => s.spreadType === "CROSS_COMMODITY" && s.status === "OPEN"),
-    [spreads]
+    () => spreadsData?.crossCommodity || [],
+    [spreadsData]
   );
 
   // Forward curve data from grouped mid prices for selected commodity (or all if "ALL")
@@ -482,8 +523,8 @@ export default function ForwardMarket() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Spreads</CardTitle>
-            <CardDescription>Calendar and cross-commodity spreads (analytics)</CardDescription>
+            <CardTitle>Analytics: Spreads</CardTitle>
+            <CardDescription>Real-time calendar and cross-commodity spreads calculated from active forward contracts</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Tabs defaultValue="calendar">
@@ -493,23 +534,33 @@ export default function ForwardMarket() {
               </TabsList>
               <TabsContent value="calendar">
                 {calendarSpreads.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No calendar spreads recorded.</p>
+                  <p className="text-muted-foreground text-sm">No calendar spreads available.</p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Commodity</TableHead>
                         <TableHead>Leg 1 Window</TableHead>
                         <TableHead>Leg 2 Window</TableHead>
                         <TableHead>Spread Price</TableHead>
+                        <TableHead>Contracts</TableHead>
+                        <TableHead>Last Updated</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {calendarSpreads.map((s) => (
-                        <TableRow key={s.id}>
-                          <TableCell>{s.leg1Window || "TBD"}</TableCell>
-                          <TableCell>{s.leg2Window || "TBD"}</TableCell>
+                      {calendarSpreads.map((s, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{s.leg1.commodity}</TableCell>
+                          <TableCell>{s.leg1.window}</TableCell>
+                          <TableCell>{s.leg2.window}</TableCell>
                           <TableCell className="font-mono">
-                            {parseFloat(s.spreadPrice).toFixed(2)} CROPT/t
+                            <span className={s.spreadPrice >= 0 ? "text-green-600" : "text-red-600"}>
+                              {s.spreadPrice >= 0 ? "+" : ""}{s.spreadPrice.toFixed(2)}
+                            </span> CROPT/t
+                          </TableCell>
+                          <TableCell>{s.contractCount}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(s.lastUpdated).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -519,23 +570,33 @@ export default function ForwardMarket() {
               </TabsContent>
               <TabsContent value="cross">
                 {crossSpreads.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No cross-commodity spreads recorded.</p>
+                  <p className="text-muted-foreground text-sm">No cross-commodity spreads available.</p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Leg 1 Index</TableHead>
-                        <TableHead>Leg 2 Index</TableHead>
+                        <TableHead>Window</TableHead>
+                        <TableHead>Leg 1 Commodity</TableHead>
+                        <TableHead>Leg 2 Commodity</TableHead>
                         <TableHead>Spread Price</TableHead>
+                        <TableHead>Contracts</TableHead>
+                        <TableHead>Last Updated</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {crossSpreads.map((s) => (
-                        <TableRow key={s.id}>
-                          <TableCell>{s.leg1IndexId || "TBD"}</TableCell>
-                          <TableCell>{s.leg2IndexId || "TBD"}</TableCell>
+                      {crossSpreads.map((s, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{s.leg1.window}</TableCell>
+                          <TableCell>{s.leg1.commodity}</TableCell>
+                          <TableCell>{s.leg2.commodity}</TableCell>
                           <TableCell className="font-mono">
-                            {parseFloat(s.spreadPrice).toFixed(2)} CROPT/t
+                            <span className={s.spreadPrice >= 0 ? "text-green-600" : "text-red-600"}>
+                              {s.spreadPrice >= 0 ? "+" : ""}{s.spreadPrice.toFixed(2)}
+                            </span> CROPT/t
+                          </TableCell>
+                          <TableCell>{s.contractCount}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(s.lastUpdated).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
                       ))}

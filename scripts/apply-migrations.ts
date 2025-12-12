@@ -19,9 +19,16 @@ if (!process.env.DATABASE_URL) {
 }
 
 async function applyMigration(pool: Pool, migrationFile: string) {
-  const migrationPath = join(process.cwd(), 'db', 'migrations', migrationFile);
+  // Try db/migrations first, then migrations directory
+  let migrationPath = join(process.cwd(), 'db', 'migrations', migrationFile);
+  try {
+    readFileSync(migrationPath, 'utf-8');
+  } catch {
+    migrationPath = join(process.cwd(), 'migrations', migrationFile);
+  }
+
   console.log(`\n📄 Reading migration: ${migrationFile}`);
-  
+
   let sql = readFileSync(migrationPath, 'utf-8');
   
   // Remove comments (lines starting with --)
@@ -46,7 +53,8 @@ async function applyMigration(pool: Pool, migrationFile: string) {
       console.log(`⚠️  Migration ${migrationFile} already applied or skipped (${error.message})`);
       return true;
     }
-    throw error;
+    console.log(`❌ Migration ${migrationFile} failed: ${error.message}`);
+    return false;
   }
 }
 
@@ -64,13 +72,25 @@ async function main() {
       '002c_add_notional_amount.sql',
       '003_add_locked_collateral.sql',
       '004_add_partners_and_contracts.sql',
+      '012_add_partner_fee_share_percent.sql',
+      '005_forward_schema.sql',
+      '006_add_option_window_fields.sql',
+      '007_add_option_contract_json.sql',
+      '007_margin_calls_forward.sql',
+      '008_expiry_window_not_null.sql',
+      '008_transactions_onchain_hash.sql',
+      '009_add_expiry_window_column.sql',
+      '010_add_margin_fields.sql',
+      '011_add_margin_call_fields.sql',
     ];
 
+    let successCount = 0;
     for (const migration of migrations) {
-      await applyMigration(pool, migration);
+      const success = await applyMigration(pool, migration);
+      if (success) successCount++;
     }
 
-    console.log('\n✅ All migrations applied successfully!');
+    console.log(`\n✅ ${successCount}/${migrations.length} migrations applied successfully!`);
   } catch (error: any) {
     console.error('\n❌ Migration failed:', error.message);
     process.exit(1);

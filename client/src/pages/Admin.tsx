@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,18 +98,29 @@ export default function Admin() {
 
 type FeeType = "matching_fee" | "settlement_fee" | "exercise_fee" | string;
 interface FeesSummary {
-  totalFees: string;
-  byType: Record<FeeType, string>;
-  byRole: Record<string, string>;
-  platformShare?: string;
-  partnerShares?: Array<{ id: string; name: string; feeSharePercent: number; partnerShare: string }>;
-  byInstrument?: Record<string, string>;
+  totalFees: number | string;
+  byInstrument: { OPTION?: number | string; FORWARD?: number | string } | Record<string, number | string>;
+  byType: Record<FeeType, number | string>;
+  byRole: Record<string, number | string>;
+  period?: { from: string; to: string };
+  // Revenue share model (reporting only; not attribution)
+  platformShare?: number | string;
+  partnerShares?: Array<{ id: string; name: string; feeSharePercent: number; partnerShare: number | string }>;
 }
 
 const { data: feesSummary } = useQuery<FeesSummary>({
   queryKey: ["/api/admin/fees"],
   enabled: !!isAdminLevelUser,
 });
+
+  const feeNumber = (v: unknown) => {
+    const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
+    return Number.isFinite(n) ? n : null;
+  };
+  const feeFixed = (v: unknown, digits = 2) => {
+    const n = feeNumber(v);
+    return n === null ? "—" : n.toFixed(digits);
+  };
 
   // Calculate overview stats (always computed at top level, never conditionally)
   const overviewStats = useMemo(() => {
@@ -275,18 +286,25 @@ const { data: feesSummary } = useQuery<FeesSummary>({
           <p className="text-muted-foreground">
             Platform overview, markets, options, and risk monitoring
           </p>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" size="sm">
               <Link href="/admin/risk">Open Risk Dashboard</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/fees">Open Revenue Dashboard</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/audit">Audit & Export</Link>
             </Button>
           </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="markets">Markets</TabsTrigger>
             <TabsTrigger value="options">Options</TabsTrigger>
+            <TabsTrigger value="partners">Partners</TabsTrigger>
             <TabsTrigger value="risk">Risk & Margin</TabsTrigger>
           </TabsList>
 
@@ -598,6 +616,75 @@ const { data: feesSummary } = useQuery<FeesSummary>({
             </Card>
           </TabsContent>
 
+          {/* Partners Tab */}
+          <TabsContent value="partners" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Partner Organizations</CardTitle>
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    <Button variant="outline" className="w-full" onClick={() => setLocation("/admin/partners")}>
+                      Manage Partners →
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">View and manage partner relationships</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Service Contracts</CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    <Button variant="outline" className="w-full" onClick={() => setLocation("/admin/partners")}>
+                      View Contracts →
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Active and completed contracts</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Partner Analytics</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    <Button variant="outline" className="w-full" onClick={() => setLocation("/admin/partners")}>
+                      View Analytics →
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Revenue and performance metrics</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Partner Overview</CardTitle>
+                <CardDescription>Summary of partner ecosystem</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Partner Management</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Comprehensive partner and contract management system
+                  </p>
+                  <Button size="lg" onClick={() => setLocation("/admin/partners")}>
+                    Go to Partners Dashboard →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Risk & Margin Tab */}
           <TabsContent value="risk" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -643,14 +730,14 @@ const { data: feesSummary } = useQuery<FeesSummary>({
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="text-2xl font-bold">
-                  {feesSummary ? `${parseFloat(feesSummary.totalFees).toFixed(2)} CROPT` : "—"}
+                  {feesSummary ? `${feeFixed((feesSummary as any).totalFees, 2)} CROPT` : "—"}
                 </div>
                 <div className="text-xs text-muted-foreground">Grouped by type</div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {feesSummary &&
                     Object.entries(feesSummary.byType || {}).map(([type, amt]) => (
                       <Badge key={type} variant="outline">
-                        {type}: {parseFloat(amt).toFixed(2)}
+                        {type}: {feeFixed(amt, 2)}
                       </Badge>
                     ))}
                 </div>
@@ -659,28 +746,28 @@ const { data: feesSummary } = useQuery<FeesSummary>({
                   {feesSummary &&
                     Object.entries(feesSummary.byRole || {}).map(([role, amt]) => (
                       <Badge key={role} variant="secondary">
-                        {role}: {parseFloat(amt).toFixed(2)}
+                        {role}: {feeFixed(amt, 2)}
                       </Badge>
                     ))}
                 </div>
                 <div className="text-xs text-muted-foreground">Platform vs partners</div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {feesSummary?.platformShare && (
-                    <Badge variant="outline">Platform: {parseFloat(feesSummary.platformShare).toFixed(2)}</Badge>
+                    <Badge variant="outline">Platform: {feeFixed(feesSummary.platformShare, 2)}</Badge>
                   )}
                   {feesSummary?.partnerShares &&
                     feesSummary.partnerShares.map((p) => (
                       <Badge key={p.id} variant="secondary">
-                        {p.name}: {parseFloat(p.partnerShare).toFixed(2)} ({p.feeSharePercent}%)
+                        {p.name}: {feeFixed(p.partnerShare, 2)} ({p.feeSharePercent}%)
                       </Badge>
                     ))}
                 </div>
                 <div className="text-xs text-muted-foreground">By instrument</div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {feesSummary?.byInstrument &&
-                    Object.entries(feesSummary.byInstrument).map(([inst, amt]) => (
+                    Object.entries(feesSummary.byInstrument as any).map(([inst, amt]) => (
                       <Badge key={inst} variant="outline">
-                        {inst}: {parseFloat(amt).toFixed(2)}
+                        {inst}: {feeFixed(amt, 2)}
                       </Badge>
                     ))}
                 </div>

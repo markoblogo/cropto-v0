@@ -469,6 +469,10 @@ export const insertForwardOrderSchema = createInsertSchema(forwardOrders).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  expiryHalf: z.enum(["H1", "H2"]).optional(),
+  expiryMonth: z.coerce.number().min(1).max(12).optional(),
+  expiryYear: z.coerce.number().min(2024).optional(),
 });
 
 export const insertForwardContractSchema = createInsertSchema(forwardContracts).omit({

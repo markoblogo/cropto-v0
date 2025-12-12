@@ -1007,38 +1007,119 @@ export class DatabaseStorage implements IStorage {
 
   // Partner Organizations
   async getPartnerOrganizations(): Promise<PartnerOrganization[]> {
-    return await db
-      .select()
-      .from(partnerOrganizations)
-      .orderBy(desc(partnerOrganizations.createdAt));
+    try {
+      return await db
+        .select()
+        .from(partnerOrganizations)
+        .orderBy(desc(partnerOrganizations.createdAt));
+    } catch (error: any) {
+      // Backward-compatible fallback: older DB schemas may miss fee_share_percent column
+      if (String(error?.message || "").includes("fee_share_percent")) {
+        const rows = await db
+          .select({
+            id: partnerOrganizations.id,
+            name: partnerOrganizations.name,
+            contactEmail: partnerOrganizations.contactEmail,
+            relationship: partnerOrganizations.relationship,
+            status: partnerOrganizations.status,
+            notes: partnerOrganizations.notes,
+            createdAt: partnerOrganizations.createdAt,
+            updatedAt: partnerOrganizations.updatedAt,
+          })
+          .from(partnerOrganizations)
+          .orderBy(desc(partnerOrganizations.createdAt));
+
+        return rows.map((r) => ({
+          ...(r as any),
+          feeSharePercent: "0",
+        })) as PartnerOrganization[];
+      }
+      throw error;
+    }
   }
 
   async getPartnerById(id: string): Promise<PartnerOrganization | undefined> {
-    const [partner] = await db
-      .select()
-      .from(partnerOrganizations)
-      .where(eq(partnerOrganizations.id, id))
-      .limit(1);
-    return partner;
+    try {
+      const [partner] = await db
+        .select()
+        .from(partnerOrganizations)
+        .where(eq(partnerOrganizations.id, id))
+        .limit(1);
+      return partner;
+    } catch (error: any) {
+      if (String(error?.message || "").includes("fee_share_percent")) {
+        const [partner] = await db
+          .select({
+            id: partnerOrganizations.id,
+            name: partnerOrganizations.name,
+            contactEmail: partnerOrganizations.contactEmail,
+            relationship: partnerOrganizations.relationship,
+            status: partnerOrganizations.status,
+            notes: partnerOrganizations.notes,
+            createdAt: partnerOrganizations.createdAt,
+            updatedAt: partnerOrganizations.updatedAt,
+          })
+          .from(partnerOrganizations)
+          .where(eq(partnerOrganizations.id, id))
+          .limit(1);
+        if (!partner) return undefined;
+        return {
+          ...(partner as any),
+          feeSharePercent: "0",
+        } as PartnerOrganization;
+      }
+      throw error;
+    }
   }
 
   async createOrUpdatePartner(partner: InsertPartnerOrganization, id?: string): Promise<PartnerOrganization> {
-    if (id) {
-      const [updated] = await db
-        .update(partnerOrganizations)
-        .set({
-          ...partner,
-          updatedAt: new Date(),
-        })
-        .where(eq(partnerOrganizations.id, id))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(partnerOrganizations)
-        .values(partner)
-        .returning();
-      return created;
+    try {
+      if (id) {
+        const [updated] = await db
+          .update(partnerOrganizations)
+          .set({
+            ...partner,
+            updatedAt: new Date(),
+          })
+          .where(eq(partnerOrganizations.id, id))
+          .returning();
+        return updated;
+      } else {
+        const [created] = await db
+          .insert(partnerOrganizations)
+          .values(partner)
+          .returning();
+        return created;
+      }
+    } catch (error: any) {
+      // Backward-compatible fallback: omit feeSharePercent if column is missing
+      if (String(error?.message || "").includes("fee_share_percent")) {
+        const { feeSharePercent: _omit, ...rest } = (partner as any) ?? {};
+        if (id) {
+          const [updated] = await db
+            .update(partnerOrganizations)
+            .set({
+              ...rest,
+              updatedAt: new Date(),
+            })
+            .where(eq(partnerOrganizations.id, id))
+            .returning();
+          return {
+            ...(updated as any),
+            feeSharePercent: "0",
+          } as PartnerOrganization;
+        } else {
+          const [created] = await db
+            .insert(partnerOrganizations)
+            .values(rest)
+            .returning();
+          return {
+            ...(created as any),
+            feeSharePercent: "0",
+          } as PartnerOrganization;
+        }
+      }
+      throw error;
     }
   }
 

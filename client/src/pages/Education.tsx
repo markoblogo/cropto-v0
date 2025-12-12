@@ -9,7 +9,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { MarkdownSection } from "@/components/MarkdownSection";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { intrinsic, computeNotional, calculatePnLPreview } from "@/lib/optionCalculations";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+// Simple component to render markdown content
+function MarkdownContent({ content, title }: { content: string; title: string }) {
+  return (
+    <div className="prose prose-neutral dark:prose-invert max-w-none">
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+// Import markdown files as strings
+import farmerHedgeContent from "./../assets/markdown/farmer-hedge-scenario.md?raw";
+import traderSpreadContent from "./../assets/markdown/trader-spread-scenario.md?raw";
+import brokerOverviewContent from "./../assets/markdown/broker-overview-scenario.md?raw";
 
 interface CommodityIndex {
   id: string;
@@ -27,8 +48,33 @@ const DOCS = [
   { key: "faq", label: "FAQ", src: "/docs/education-faq.md" },
 ];
 
+const SCENARIOS = [
+  {
+    key: "farmer-hedge",
+    title: "Farmer Hedge",
+    description: "How farmers protect their harvest prices using options and forwards",
+    summary: "A corn farmer with 1000 tons secures minimum price while keeping upside potential",
+    content: farmerHedgeContent
+  },
+  {
+    key: "trader-spread",
+    title: "Trader Spread",
+    description: "Calendar and cross-commodity spreads for professional traders",
+    summary: "Profiting from price relationships between different time periods or commodities",
+    content: traderSpreadContent
+  },
+  {
+    key: "broker-overview",
+    title: "Broker Overview",
+    description: "How brokers manage client relationships, risk, and fee revenue",
+    summary: "Running a successful brokerage business in the Cropto ecosystem",
+    content: brokerOverviewContent
+  }
+];
+
 export default function Education() {
   const { t } = useTranslation();
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
   const { data: indexes = [] } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
@@ -107,6 +153,43 @@ export default function Education() {
                 </TabsContent>
               ))}
             </Tabs>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Scenarios</CardTitle>
+            <CardDescription>Real-world use cases showing how different market participants use Cropto platform</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {SCENARIOS.map((scenario) => (
+                <Card key={scenario.key} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{scenario.title}</CardTitle>
+                    <CardDescription>{scenario.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {scenario.summary}
+                    </p>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                          Read scenario
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>{scenario.title}</DialogTitle>
+                        </DialogHeader>
+                        <MarkdownContent content={scenario.content} title={scenario.title} />
+                      </DialogContent>
+                    </Dialog>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </CardContent>
         </Card>
 

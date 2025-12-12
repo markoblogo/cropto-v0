@@ -23,9 +23,13 @@ import AdminFeedback from "@/pages/AdminFeedback";
 import AdminReconciliation from "@/pages/AdminReconciliation";
 import AdminIndex from "@/pages/AdminIndex";
 import RiskDashboard from "@/pages/RiskDashboard";
+import AdminPartners from "@/pages/AdminPartners";
+import AdminFees from "@/pages/AdminFees";
+import AdminAudit from "@/pages/AdminAudit";
 import IndexDetail from "@/pages/IndexDetail";
 import Feedback from "@/pages/Feedback";
 import ForwardMarket from "@/pages/ForwardMarket";
+import OptionForwardChainPage from "@/pages/OptionForwardChainPage";
 import NotFound from "@/pages/not-found";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -49,6 +53,7 @@ function Router() {
       <Route path="/spot-trading" component={SpotTrading} />
       <Route path="/market-data" component={MarketData} />
       <Route path="/forward-market" component={ForwardMarket} />
+      <Route path="/markets/chain" component={OptionForwardChainPage} />
       <Route path="/wallet" component={Wallet} />
       <Route path="/education" component={Education} />
       <Route path="/login" component={Login} />
@@ -65,6 +70,9 @@ function Router() {
       <Route path="/admin/reconciliation" component={AdminReconciliation} />
       <Route path="/admin/risk" component={RiskDashboard} />
       <Route path="/admin/index" component={AdminIndex} />
+      <Route path="/admin/partners" component={AdminPartners} />
+      <Route path="/admin/fees" component={AdminFees} />
+      <Route path="/admin/audit" component={AdminAudit} />
       <Route path="/index/:slug" component={IndexDetail} />
       <Route path="/feedback" component={Feedback} />
       <Route path="/privacy" component={PrivacyPolicy} />

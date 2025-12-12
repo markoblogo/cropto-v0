@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { usePolling } from "@/hooks/usePolling";
 import { Header } from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import { TrendingUp, TrendingDown, Briefcase, AlertTriangle, DollarSign, Shield 
 import { format, differenceInDays, formatDistanceToNow } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
 import { OptionTypeBadge } from "@/components/OptionTypeBadge";
+import { PortfolioHealthGauge } from "@/components/PortfolioHealthGauge";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SpotBuyModal } from "@/components/SpotBuyModal";
@@ -32,6 +33,8 @@ import { WalletSummary } from "@/components/WalletSummary";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { useWalletSummary } from "@/hooks/useWalletSummary";
+import { usePortfolioSummary } from "@/hooks/usePortfolioSummary";
+import { useForwardPortfolio } from "@/hooks/useForwardPortfolio";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
@@ -238,6 +241,7 @@ export default function Portfolio() {
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
   const [focusedCommodity, setFocusedCommodity] = useState<string | null>(null);
   const [optionFilterTab, setOptionFilterTab] = useState<OptionFilterTab>("active");
+  const [mainTab, setMainTab] = useState<"options" | "forwards" | "all">("all");
   const [hedgeModalState, setHedgeModalState] = useState<{
     mode: "buy" | "sell";
     commoditySlug: string;
@@ -359,6 +363,12 @@ export default function Portfolio() {
     retry: false,
     enabled: !!user,
   });
+
+  // Fetch portfolio summary for aggregated metrics
+  const { data: portfolioSummary, isLoading: isSummaryLoading } = usePortfolioSummary(!!user);
+
+  // Fetch forward portfolio
+  const { data: forwardPositions = [], isLoading: isForwardLoading } = useForwardPortfolio(!!user);
 
   const { data: marginCallsList = [] } = useQuery<any[]>({
     queryKey: ["/api/margin-calls"],
@@ -694,7 +704,7 @@ export default function Portfolio() {
 
   // Derived values - computed after all hooks
   // All summary values come directly from /api/portfolio/me response
-  const isLoading = isAuthLoading || isPortfolioLoading;
+  const isLoading = isAuthLoading || isPortfolioLoading || isSummaryLoading || isForwardLoading;
   const shouldRedirect = !isAuthLoading && !user;
   const hasError = error || (!isPortfolioLoading && !portfolioData);
   
@@ -809,11 +819,20 @@ export default function Portfolio() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">Portfolio</h1>
-            <p className="text-muted-foreground">Your options positions and performance</p>
+            <p className="text-muted-foreground">Your options and forward positions overview</p>
           </div>
         </div>
 
-        {/* Metrics Cards */}
+        {/* Main Tabs */}
+        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "options" | "forwards" | "all")}>
+          <TabsList>
+            <TabsTrigger value="all">All Positions</TabsTrigger>
+            <TabsTrigger value="options">Options</TabsTrigger>
+            <TabsTrigger value="forwards">Forwards</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all" className="space-y-6">
+            {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
           {/* Total PnL */}
           <Card data-testid="card-total-pnl">
@@ -935,6 +954,19 @@ export default function Portfolio() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Portfolio Health Gauge (full width, aligned with wallet card) */}
+        {portfolioSummary && (
+          <div className="mt-6 w-full">
+            <PortfolioHealthGauge
+              healthPct={portfolioSummary.healthPct}
+              totalNotionalUsd={portfolioSummary.totalNotionalUsd}
+              requiredMargin={portfolioSummary.requiredMargin}
+              realizedPnl={portfolioSummary.realizedPnl}
+              unrealizedPnl={portfolioSummary.unrealizedPnl}
+            />
+          </div>
+        )}
 
         {/* Wallet Summary Bar */}
         {user?.walletAddress && (
@@ -1339,92 +1371,482 @@ export default function Portfolio() {
             )}
           </CardContent>
         </Card>
-      </div>
+          </TabsContent>
 
-      {/* Linked options modal for focused commodity */}
-      {focusedCommodity && (
-        <Dialog open={true} onOpenChange={(open) => !open && setFocusedCommodity(null)}>
-          <DialogContent className="sm:max-w-[700px]">
-            <DialogHeader>
-              <DialogTitle>Options for {indexPriceMap[focusedCommodity]?.name || focusedCommodity}</DialogTitle>
-            </DialogHeader>
-            <div className="mt-2">
-              {optionsByCommodityList[focusedCommodity] && optionsByCommodityList[focusedCommodity].length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Side</TableHead>
-                        <TableHead className="text-right">Strike ($/t)</TableHead>
-                        <TableHead className="text-right">Qty (t)</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Premium (CROPT)</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {optionsByCommodityList[focusedCommodity].map((opt) => {
-                        if (!user) return null;
-                        const isBuyer = opt.buyerId === user.id;
-                        const isSeller = opt.issuerId === user.id;
-                        const side = isBuyer ? 'LONG' : isSeller ? 'SHORT' : null;
-                        const premium = parseFloat(opt.qty) * parseFloat(opt.premium);
-                        const entryPremium = isBuyer ? -premium : isSeller ? premium : 0;
-                        const strikePerTon = parseFloat(opt.strike); // Already in $/ton, no conversion needed
 
-                        return (
-                          <TableRow key={opt.id}>
-                            <TableCell>
-                              <OptionTypeBadge type={opt.type as "CALL" | "PUT"} />
-                            </TableCell>
-                            <TableCell>
-                              {side && (
-                                <Badge 
-                                  variant={side === 'LONG' ? 'default' : 'secondary'} 
-                                  className={side === 'LONG' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
-                                >
-                                  {side}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                              ${strikePerTon.toFixed(2)}
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                              {parseFloat(opt.qty).toFixed(2)}
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={opt.status as any} />
-                            </TableCell>
-                            <TableCell className={`text-right font-mono ${entryPremium < 0 ? 'text-red-600 dark:text-red-400' : entryPremium > 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
-                              {entryPremium !== 0 ? (entryPremium < 0 ? '' : '+') : ''}{entryPremium.toFixed(2)} CROPT
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+          <TabsContent value="options" className="space-y-6">
+            {/* Collateral & Risk Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Collateral & Risk (Options)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Available Margin</p>
+                    <p className="text-2xl font-bold">
+                      ${estimatedAvailableMargin.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Free collateral for new positions
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Used Margin</p>
+                    <p className="text-2xl font-bold">
+                      ${usedMargin.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Locked in active positions
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Risk Level</p>
+                    <p className={`text-2xl font-bold ${riskColor}`}>
+                      {(riskRatio * 100).toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {riskRatio >= 0.85 ? "High risk" : riskRatio >= 0.60 ? "Moderate risk" : "Low risk"}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No options linked to this commodity yet.
-                </p>
-              )}
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setFocusedCommodity(null);
-                  setLocation("/#options-table");
-                }}
-              >
-                Open Options Marketplace
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Margin Utilization</span>
+                    <span className={riskColor}>
+                      ${usedMargin.toFixed(2)} / ${totalMargin.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className={`h-full transition-all ${riskBarColor}`}
+                      style={{ width: `${riskRatio * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>0%</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+                {marginCalls > 0 && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Margin Calls Active</AlertTitle>
+                    <AlertDescription>
+                      You have {marginCalls} active margin call{marginCalls !== 1 ? 's' : ''}. Please top up your collateral to avoid liquidation.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {myMarginCalls.length > 0 && (
+                  <div className="mt-3 rounded-md border bg-muted/30 p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">Your Margin Calls</div>
+                      <div className="text-xs text-muted-foreground">Deadlines and status</div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Option</TableHead>
+                            <TableHead>Required</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Deadline</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {myMarginCalls.map((mc: any) => {
+                            const deadline = mc.deadline ? new Date(mc.deadline) : null;
+                            const now = new Date();
+                            const hoursLeft = deadline ? (deadline.getTime() - now.getTime()) / (1000 * 60 * 60) : null;
+                            const isOverdue = deadline ? deadline.getTime() < now.getTime() : false;
+                            const isLiquidated = String(mc.status || "").toUpperCase() === "LIQUIDATED";
+                            const badgeClass =
+                              isLiquidated && isOverdue
+                                ? "bg-red-100 text-red-900"
+                                : hoursLeft !== null && hoursLeft < 24
+                                ? "bg-amber-100 text-amber-900"
+                                : "bg-muted text-foreground";
+                            return (
+                              <TableRow key={mc.id}>
+                                <TableCell className="font-mono text-xs">{mc.optionId}</TableCell>
+                                <TableCell className="font-mono text-sm">
+                                  ${parseFloat(mc.amountRequired || mc.amount || 0).toFixed(2)}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="text-xs">
+                                    {mc.status || "PENDING"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {deadline ? (
+                                    <div className="flex items-center gap-2">
+                                      <Badge className={`text-[11px] ${badgeClass}`}>
+                                        {isOverdue ? "Overdue" : hoursLeft !== null ? `${Math.max(0, Math.floor(hoursLeft))}h left` : "—"}
+                                      </Badge>
+                                      <span className="font-mono text-xs">
+                                        {format(deadline, "MMM dd HH:mm")}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    "-"
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Option Positions Table */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Option Positions</CardTitle>
+                  <Tabs value={optionFilterTab} onValueChange={(v) => setOptionFilterTab(v as OptionFilterTab)}>
+                    <TabsList>
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="active">Active</TabsTrigger>
+                      <TabsTrigger value="settled">Settled</TabsTrigger>
+                      <TabsTrigger value="expired">Expired</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {filteredPositions.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Commodity</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Side</TableHead>
+                          <TableHead className="text-right">Qty (t)</TableHead>
+                          <TableHead className="text-right">Strike ($/t)</TableHead>
+                          <TableHead className="text-right">Entry Premium (CROPT)</TableHead>
+                          <TableHead className="text-right">Current Price ($/t)</TableHead>
+                          <TableHead className="text-right">P&L</TableHead>
+                          <TableHead>Expiry</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredPositions.map((position) => {
+                          const positionPnL = parseFloat(position.pnl);
+                          const isProfitablePosition = positionPnL >= 0;
+
+                          // Quantity is already in tons (per user's note)
+                          const quantityTonnes = parseFloat(position.qty);
+
+                          // Use strikePerTon from API (already in $/ton, no conversion needed)
+                          const strikePerTon = position.strikePerTon
+                            ? parseFloat(position.strikePerTon)
+                            : 0;
+
+                          return (
+                            <TableRow key={position.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{position.underlying}</span>
+                                  {position.impliedPnlNow !== null && (
+                                    <Badge
+                                      variant={position.impliedPnlNow >= 0 ? "default" : "destructive"}
+                                      className="text-xs"
+                                    >
+                                      {position.impliedPnlNow >= 0 ? "+" : ""}{position.impliedPnlNow.toFixed(2)}%
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <OptionTypeBadge type={position.type as "CALL" | "PUT"} />
+                              </TableCell>
+                              <TableCell>
+                                {position.role === 'buyer' ? (
+                                  <Badge className="bg-green-600 text-white">LONG</Badge>
+                                ) : position.role === 'seller' ? (
+                                  <Badge className="bg-red-600 text-white">SHORT</Badge>
+                                ) : (
+                                  <Badge variant="outline">—</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {quantityTonnes.toFixed(2)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                ${strikePerTon.toFixed(2)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-muted-foreground">
+                                {position.entryPremiumCROPT ? position.entryPremiumCROPT.toFixed(2) : "—"}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {position.currentPrice ? `$${position.currentPrice.toFixed(2)}` : "—"}
+                              </TableCell>
+                              <TableCell className={`text-right font-mono ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {isProfitablePosition ? '+' : ''}${positionPnL.toFixed(2)}
+                              </TableCell>
+                              <TableCell>
+                                {position.expirationDate ? (
+                                  <div className="text-sm">
+                                    <div className="font-medium">
+                                      {formatTimeToExpiry(position.expirationDate)}
+                                    </div>
+                                    <div className="text-muted-foreground text-xs">
+                                      {format(new Date(position.expirationDate), "MMM dd, yyyy")}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <StatusBadge status={position.status as any} />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  {position.canExercise && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setExerciseOptionId(position.id)}
+                                      className="text-xs"
+                                    >
+                                      Exercise
+                                    </Button>
+                                  )}
+                                  {position.canExercise && position.canSettle && " / "}
+                                  {position.canSettle && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleSettleOption(position.id)}
+                                      className="text-xs"
+                                    >
+                                      Settle
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : userTier === "user_no_login" ? (
+                  <>
+                    <p className="text-lg font-medium mb-2">Log in to see your options portfolio</p>
+                    <Link href="/login">
+                      <Button size="sm" data-testid="button-empty-sign-in">
+                        Sign in
+                      </Button>
+                    </Link>
+                  </>
+                ) : userTier === "user_no_wallet" ? (
+                  <>
+                    <p className="text-lg font-medium mb-2">Connect your wallet to start trading options</p>
+                    <Button size="sm" onClick={handleOpenWalletModal} data-testid="button-empty-connect-wallet">
+                      Connect wallet
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-lg font-medium mb-2">No positions yet</p>
+                    <p className="text-sm">Start trading options to see your portfolio here</p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="forwards" className="space-y-6">
+            {/* Forward Positions Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Forward Positions</CardTitle>
+                <CardDescription>Your active forward contracts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {forwardPositions.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Commodity</TableHead>
+                          <TableHead>Window</TableHead>
+                          <TableHead>Side</TableHead>
+                          <TableHead className="text-right">Contract Price ($/t)</TableHead>
+                          <TableHead className="text-right">Qty (t)</TableHead>
+                          <TableHead className="text-right">Notional ($)</TableHead>
+                          <TableHead className="text-right">Initial Margin</TableHead>
+                          <TableHead className="text-right">Realized P&L</TableHead>
+                          <TableHead className="text-right">Total P&L</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Settlement Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {forwardPositions.map((position) => {
+                          const realizedPnL = parseFloat(position.realizedPnL);
+                          const totalPnL = parseFloat(position.totalPnL);
+
+                          return (
+                            <TableRow key={position.contractId}>
+                              <TableCell className="font-medium">{position.commodity}</TableCell>
+                              <TableCell>{position.window}</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={position.role === 'long' ? 'default' : 'secondary'}
+                                  className={position.role === 'long' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
+                                >
+                                  {position.role.toUpperCase()}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                ${parseFloat(position.contractPrice).toFixed(2)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {parseFloat(position.qtyTon).toFixed(2)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                ${parseFloat(position.notional).toLocaleString()}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {parseFloat(position.initialMargin).toFixed(2)} CROPT
+                              </TableCell>
+                              <TableCell className={`text-right font-mono ${realizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {realizedPnL >= 0 ? '+' : ''}${realizedPnL.toFixed(2)}
+                              </TableCell>
+                              <TableCell className={`text-right font-mono ${totalPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {totalPnL >= 0 ? '+' : ''}${totalPnL.toFixed(2)}
+                              </TableCell>
+                              <TableCell>
+                                <StatusBadge status={position.status as any} />
+                              </TableCell>
+                              <TableCell>
+                                {position.settlementDate ? (
+                                  <div className="text-sm">
+                                    <div className="font-medium">
+                                      {formatTimeToExpiry(position.settlementDate)}
+                                    </div>
+                                    <div className="text-muted-foreground text-xs">
+                                      {format(new Date(position.settlementDate), "MMM dd, yyyy")}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-lg font-medium mb-2">No forward positions yet</p>
+                    <p className="text-sm">Start trading forwards to see your portfolio here</p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Linked options modal for focused commodity */}
+        {focusedCommodity && (
+          <Dialog open={true} onOpenChange={(open) => !open && setFocusedCommodity(null)}>
+            <DialogContent className="sm:max-w-[700px]">
+              <DialogHeader>
+                <DialogTitle>Options for {indexPriceMap[focusedCommodity]?.name || focusedCommodity}</DialogTitle>
+              </DialogHeader>
+              <div className="mt-2">
+                {optionsByCommodityList[focusedCommodity] && optionsByCommodityList[focusedCommodity].length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Side</TableHead>
+                          <TableHead className="text-right">Strike ($/t)</TableHead>
+                          <TableHead className="text-right">Qty (t)</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Premium (CROPT)</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {optionsByCommodityList[focusedCommodity].map((opt: any) => {
+                          if (!user) return null;
+                          const isBuyer = opt.buyerId === user.id;
+                          const isSeller = opt.issuerId === user.id;
+                          const side = isBuyer ? 'LONG' : isSeller ? 'SHORT' : null;
+                          const premium = parseFloat(opt.qty) * parseFloat(opt.premium);
+                          const entryPremium = isBuyer ? -premium : isSeller ? premium : 0;
+                          const strikePerTon = parseFloat(opt.strike); // Already in $/ton, no conversion needed
+
+                          return (
+                            <TableRow key={opt.id}>
+                              <TableCell>
+                                <OptionTypeBadge type={opt.type as "CALL" | "PUT"} />
+                              </TableCell>
+                              <TableCell>
+                                {side && (
+                                  <Badge
+                                    variant={side === 'LONG' ? 'default' : 'secondary'}
+                                    className={side === 'LONG' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
+                                  >
+                                    {side}
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                ${strikePerTon.toFixed(2)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {parseFloat(opt.qty).toFixed(2)}
+                              </TableCell>
+                              <TableCell>
+                                <StatusBadge status={opt.status as any} />
+                              </TableCell>
+                              <TableCell className={`text-right font-mono ${entryPremium < 0 ? 'text-red-600 dark:text-red-400' : entryPremium > 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                                {entryPremium !== 0 ? (entryPremium < 0 ? '' : '+') : ''}{entryPremium.toFixed(2)} CROPT
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No options linked to this commodity yet.
+                  </p>
+                )}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFocusedCommodity(null);
+                    setLocation("/#options-table");
+                  }}
+                >
+                  Open Options Marketplace
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
       {/* Wallet Authentication Modal */}
       <WalletAuthModal
@@ -1456,6 +1878,7 @@ export default function Portfolio() {
           onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
         />
       )}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
@@ -34,9 +34,10 @@ import { computeExpiryWindow } from "./expiryWindows";
 import { serializeOptionToJson } from "./optionJson";
 import { calculateInitialMargin, checkMarginCall, autoLiquidateIfNeeded } from "./marginEngine";
 import { mapOptionToMarketRow } from "./utils/marketSnapshot";
+import { calculateCalendarSpreads, calculateCrossCommoditySpreads, getAllSpreads } from "./utils/spreads";
 import fs from "fs";
 import path from "path";
-import { AVAILABLE_COMMODITIES, COMMODITY_MAP } from "@shared/commodities";
+import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
 import { createHash } from "crypto";
 
 const STALE_MAX_AGE_DAYS = 7;
@@ -321,6 +322,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return sum + (Number.isFinite(collateral) ? collateral : 0);
       }, 0);
 
+      // Calculate forward contracts metrics
+      const activeForwardContracts = await db
+        .select({
+          id: forwardContracts.id,
+          contractPrice: forwardContracts.contractPrice,
+          qtyTon: forwardContracts.qtyTon,
+          settlementDate: forwardContracts.settlementDate,
+          initialMargin: forwardContracts.initialMargin,
+          status: forwardContracts.status,
+        })
+        .from(forwardContracts)
+        .where(eq(forwardContracts.status, "ACTIVE"));
+
+      let forwardNotional = 0;
+      let forwardRequiredMargin = 0;
+      let forwardCurrentMargin = 0; // For now, assume current margin equals required
+
+      for (const contract of activeForwardContracts) {
+        const contractPrice = parseFloat(contract.contractPrice || "0");
+        const qtyTon = parseFloat(contract.qtyTon || "0");
+        const settlementDate = contract.settlementDate ? new Date(contract.settlementDate) : undefined;
+
+        // Calculate notional value
+        const notional = contractPrice * qtyTon;
+        forwardNotional += Number.isFinite(notional) ? notional : 0;
+
+        // Use stored initialMargin if available, otherwise calculate it
+        let margin = parseFloat(contract.initialMargin || "0");
+        if (!Number.isFinite(margin) || margin <= 0) {
+          // Fallback: calculate margin using the same logic as in contract creation
+          margin = calculateInitialMargin({
+            strike: contractPrice,
+            quantityTon: qtyTon,
+            settlementDate: settlementDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days fallback
+            currentDate: new Date(),
+          });
+        }
+
+        forwardRequiredMargin += margin;
+        forwardCurrentMargin += margin; // For now, current margin equals required
+      }
+
       const response = {
         userRole: req.user?.role,
         metrics: {
@@ -328,6 +371,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           openMarginCalls: openMarginCalls.length,
           overdueMarginCalls: overdueMarginCalls.length,
           totalLockedCollateral: totalLockedCollateral.toFixed(2),
+        },
+        forwards: {
+          notional: Math.round(forwardNotional * 100) / 100, // Round to 2 decimal places
+          requiredMargin: Math.round(forwardRequiredMargin * 100) / 100,
+          currentMargin: Math.round(forwardCurrentMargin * 100) / 100,
+          positionsCount: activeForwardContracts.length,
         },
       };
 
@@ -2381,7 +2430,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
       
-      const allFees = await db.select().from(platformFees);
+      const toRaw = typeof req.query.to === "string" ? req.query.to : undefined;
+      const fromRaw = typeof req.query.from === "string" ? req.query.from : undefined;
+
+      const now = new Date();
+      const to = toRaw ? new Date(toRaw) : now;
+      const from = fromRaw ? new Date(fromRaw) : new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const validTo = Number.isFinite(to.getTime()) ? to : now;
+      const validFrom = Number.isFinite(from.getTime())
+        ? from
+        : new Date(validTo.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const allFees = await db
+        .select()
+        .from(platformFees)
+        .where(and(gte(platformFees.createdAt, validFrom), lte(platformFees.createdAt, validTo)));
       const partners = await storage.getPartnerOrganizations();
 
       const totals = {
@@ -2390,6 +2454,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         byRole: {} as Record<string, number>,
         byInstrument: {} as Record<string, number>,
       };
+
+      const seriesByDay = new Map<string, { total: number; OPTION: number; FORWARD: number }>();
 
       for (const fee of allFees) {
         const amount = parseFloat(fee.amount);
@@ -2402,8 +2468,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const role = fee.role || "unknown";
         totals.byRole[role] = (totals.byRole[role] || 0) + amount;
 
-        const instrumentType = (fee as any).instrumentType || "OPTION";
+        const instrumentTypeRaw = (fee as any).instrumentType || "OPTION";
+        const instrumentType = String(instrumentTypeRaw).toUpperCase() === "FORWARD" ? "FORWARD" : "OPTION";
         totals.byInstrument[instrumentType] = (totals.byInstrument[instrumentType] || 0) + amount;
+
+        const dayKey = new Date(fee.createdAt).toISOString().slice(0, 10);
+        const existing = seriesByDay.get(dayKey) || { total: 0, OPTION: 0, FORWARD: 0 };
+        existing.total += amount;
+        existing[instrumentType] += amount;
+        seriesByDay.set(dayKey, existing);
       }
 
       // Partner fee sharing (reporting only)
@@ -2422,23 +2495,377 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalPartnerShare = partnerShares.reduce((sum, p) => sum + p.partnerShare, 0);
       const platformShare = Math.max(0, totals.totalFees - totalPartnerShare);
 
-      const formatTotals = (obj: Record<string, number>) =>
-        Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v.toFixed(8)]));
+      const round2 = (n: number) => Math.round(n * 100) / 100;
+      const byInstrument = {
+        OPTION: round2(totals.byInstrument["OPTION"] || 0),
+        FORWARD: round2(totals.byInstrument["FORWARD"] || 0),
+      };
+
+      const byType = Object.fromEntries(
+        Object.entries(totals.byType).map(([k, v]) => [k, round2(v)])
+      ) as Record<string, number>;
+
+      const byRole = Object.fromEntries(
+        Object.entries(totals.byRole).map(([k, v]) => [k, round2(v)])
+      ) as Record<string, number>;
+
+      const series = Array.from(seriesByDay.entries())
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+        .map(([date, v]) => ({
+          date,
+          totalFees: round2(v.total),
+          byInstrument: {
+            OPTION: round2(v.OPTION),
+            FORWARD: round2(v.FORWARD),
+          },
+        }));
 
       res.json({
-        totalFees: totals.totalFees.toFixed(8),
-        byType: formatTotals(totals.byType),
-        byRole: formatTotals(totals.byRole),
-        byInstrument: formatTotals(totals.byInstrument),
-        platformShare: platformShare.toFixed(8),
+        totalFees: round2(totals.totalFees),
+        byInstrument,
+        byType,
+        byRole,
+        period: {
+          from: validFrom.toISOString(),
+          to: validTo.toISOString(),
+        },
+        // Optional time series for charts (daily)
+        series,
+        // Revenue share model (NOT an attribution model; attribution needs fee->partner mapping)
+        // TODO: if platformFees gets partnerId/orgId, replace this with real attribution.
+        platformShare: round2(platformShare),
         partnerShares: partnerShares.map((p) => ({
           ...p,
-          partnerShare: p.partnerShare.toFixed(8),
+          partnerShare: round2(p.partnerShare),
         })),
       });
     } catch (error: any) {
       console.error("Error fetching platform fees:", error);
       res.status(500).json({ error: error.message || "Failed to fetch platform fees" });
+    }
+  });
+
+  type AuditInstrumentFilter = "spot" | "options" | "forward" | "all";
+  type AuditEntityFilter = "trades" | "settlements" | "marginCalls" | "fees" | "all";
+  type AuditInstrumentType = "SPOT" | "OPTION" | "FORWARD";
+  type AuditRecord = {
+    timestamp: string;
+    type: string;
+    instrumentType: AuditInstrumentType;
+    userIds: string[];
+    price?: number;
+    qty?: number;
+    fee?: number;
+    status?: string;
+    entityId?: string;
+    details?: Record<string, any>;
+  };
+
+  function parseDateOrNull(v: unknown) {
+    if (typeof v !== "string") return null;
+    const d = new Date(v);
+    return Number.isFinite(d.getTime()) ? d : null;
+  }
+
+  function csvEscape(value: unknown) {
+    const s = value === null || value === undefined ? "" : String(value);
+    const escaped = s.replace(/"/g, '""');
+    return /[",\n\r]/.test(escaped) ? `"${escaped}"` : escaped;
+  }
+
+  function toNum(v: unknown): number | undefined {
+    const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
+    return Number.isFinite(n) ? n : undefined;
+  }
+
+  async function buildAuditRecords(params: {
+    from: Date;
+    to: Date;
+    instrument: AuditInstrumentFilter;
+    entity: AuditEntityFilter;
+    limit: number;
+  }): Promise<AuditRecord[]> {
+    const { from, to, instrument, entity, limit } = params;
+    const records: AuditRecord[] = [];
+
+    const includeEntity = (e: Exclude<AuditEntityFilter, "all">) => entity === "all" || entity === e;
+    const includeInstrument = (i: AuditInstrumentFilter) => instrument === "all" || instrument === i;
+
+    // OPTIONS trades
+    if (includeEntity("trades") && includeInstrument("options")) {
+      const optionTrades = await db
+        .select()
+        .from(trades)
+        .where(and(gte(trades.createdAt, from), lte(trades.createdAt, to)))
+        .orderBy(desc(trades.createdAt))
+        .limit(limit);
+
+      for (const t of optionTrades) {
+        records.push({
+          timestamp: new Date(t.createdAt).toISOString(),
+          type: "trade",
+          instrumentType: "OPTION",
+          userIds: [t.buyer, t.seller].filter(Boolean),
+          price: toNum(t.strike),
+          qty: toNum(t.qty),
+          status: "FILLED",
+          entityId: t.id,
+          details: {
+            optionId: t.optionId,
+            premium: toNum(t.premium),
+            totalValue: toNum(t.totalValue),
+          },
+        });
+      }
+    }
+
+    // FORWARD contracts (treated as trades)
+    if (includeEntity("trades") && includeInstrument("forward")) {
+      const fwContracts = await db
+        .select()
+        .from(forwardContracts)
+        .where(and(gte(forwardContracts.createdAt, from), lte(forwardContracts.createdAt, to)))
+        .orderBy(desc(forwardContracts.createdAt))
+        .limit(limit);
+
+      for (const c of fwContracts) {
+        records.push({
+          timestamp: new Date(c.createdAt).toISOString(),
+          type: "trade",
+          instrumentType: "FORWARD",
+          userIds: [c.longUserId || "", c.shortUserId || ""].filter(Boolean),
+          price: toNum(c.contractPrice),
+          qty: toNum(c.qtyTon),
+          status: c.status,
+          entityId: c.id,
+          details: {
+            commodity: c.commodity,
+            window: c.window,
+            settlementDate: c.settlementDate ? new Date(c.settlementDate).toISOString() : null,
+          },
+        });
+      }
+    }
+
+    // OPTIONS settlements
+    if (includeEntity("settlements") && includeInstrument("options")) {
+      const optionSettlements = await db
+        .select()
+        .from(settlements)
+        .where(and(gte(settlements.createdAt, from), lte(settlements.createdAt, to)))
+        .orderBy(desc(settlements.createdAt))
+        .limit(limit);
+
+      for (const s of optionSettlements) {
+        records.push({
+          timestamp: new Date(s.createdAt).toISOString(),
+          type: "settlement",
+          instrumentType: "OPTION",
+          userIds: [s.exercisedBy].filter(Boolean),
+          price: toNum(s.spotPrice),
+          qty: toNum(s.qty),
+          status: "SETTLED",
+          entityId: s.id,
+          details: {
+            optionId: s.optionId,
+            strike: toNum(s.strike),
+            payout: toNum(s.payout),
+            profitLoss: toNum(s.profitLoss),
+          },
+        });
+      }
+    }
+
+    // FORWARD settlements (join to contract to get user ids)
+    if (includeEntity("settlements") && includeInstrument("forward")) {
+      const fwSettles = await db
+        .select({
+          s: forwardSettlements,
+          c: forwardContracts,
+        })
+        .from(forwardSettlements)
+        .leftJoin(forwardContracts, eq(forwardSettlements.forwardContractId, forwardContracts.id))
+        .where(and(gte(forwardSettlements.createdAt, from), lte(forwardSettlements.createdAt, to)))
+        .orderBy(desc(forwardSettlements.createdAt))
+        .limit(limit);
+
+      for (const row of fwSettles) {
+        records.push({
+          timestamp: new Date(row.s.createdAt).toISOString(),
+          type: "settlement",
+          instrumentType: "FORWARD",
+          userIds: [row.c?.longUserId || "", row.c?.shortUserId || ""].filter(Boolean),
+          price: toNum(row.s.settlementPrice),
+          qty: toNum(row.s.qtyTon),
+          status: "SETTLED",
+          entityId: row.s.id,
+          fee: toNum(row.s.feesTotal),
+          details: {
+            forwardContractId: row.s.forwardContractId,
+            contractPrice: toNum(row.s.contractPrice),
+            pnlLong: toNum(row.s.pnlLong),
+            pnlShort: toNum(row.s.pnlShort),
+            commodity: row.c?.commodity || null,
+            window: row.c?.window || null,
+          },
+        });
+      }
+    }
+
+    // Margin calls (option + forward)
+    if (includeEntity("marginCalls")) {
+      const mcRows = await db
+        .select()
+        .from(marginCalls)
+        .where(and(gte(marginCalls.createdAt, from), lte(marginCalls.createdAt, to)))
+        .orderBy(desc(marginCalls.createdAt))
+        .limit(limit);
+
+      for (const mc of mcRows) {
+        const inst = (mc.instrumentType || "OPTION") === "FORWARD" ? "FORWARD" : "OPTION";
+        if (inst === "OPTION" && !includeInstrument("options")) continue;
+        if (inst === "FORWARD" && !includeInstrument("forward")) continue;
+        records.push({
+          timestamp: new Date(mc.createdAt).toISOString(),
+          type: "margin_call",
+          instrumentType: inst,
+          userIds: [mc.userId].filter(Boolean),
+          fee: undefined,
+          status: mc.status,
+          entityId: mc.id,
+          details: {
+            optionId: mc.optionId,
+            forwardContractId: mc.forwardContractId,
+            amountRequired: toNum(mc.amountRequired),
+            collateralAmount: toNum(mc.collateralAmount),
+            reservedCollateral: toNum(mc.reservedCollateral),
+            intrinsicValue: toNum(mc.intrinsicValue),
+            deadline: mc.deadline ? new Date(mc.deadline).toISOString() : null,
+          },
+        });
+      }
+    }
+
+    // Platform fees
+    if (includeEntity("fees")) {
+      const feeRows = await db
+        .select()
+        .from(platformFees)
+        .where(and(gte(platformFees.createdAt, from), lte(platformFees.createdAt, to)))
+        .orderBy(desc(platformFees.createdAt))
+        .limit(limit);
+
+      for (const f of feeRows) {
+        const inst = (f.instrumentType || "OPTION") === "FORWARD" ? "FORWARD" : "OPTION";
+        if (inst === "OPTION" && !includeInstrument("options")) continue;
+        if (inst === "FORWARD" && !includeInstrument("forward")) continue;
+        records.push({
+          timestamp: new Date(f.createdAt).toISOString(),
+          type: "fee",
+          instrumentType: inst,
+          userIds: [f.userId].filter(Boolean),
+          fee: toNum(f.amount),
+          status: f.type,
+          entityId: f.id,
+          details: {
+            feeType: f.type,
+            role: f.role || null,
+            notionalAmount: toNum(f.notionalAmount),
+            currency: f.currency,
+            instrument: f.instrument || null,
+            txId: f.txId || null,
+          },
+        });
+      }
+    }
+
+    // TODO: SPOT audit (trades/settlements/fees) once spot trades are modeled (currently only spot_positions exist).
+
+    records.sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0));
+    return records.slice(0, limit);
+  }
+
+  // GET /api/admin/audit - Unified audit feed
+  app.get("/api/admin/audit", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const from = parseDateOrNull(req.query.from) || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const to = parseDateOrNull(req.query.to) || new Date();
+      const instrument = (typeof req.query.instrument === "string" ? req.query.instrument : "all") as AuditInstrumentFilter;
+      const entity = (typeof req.query.entity === "string" ? req.query.entity : "all") as AuditEntityFilter;
+      const limitRaw = typeof req.query.limit === "string" ? Number(req.query.limit) : 500;
+      const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(5000, Math.floor(limitRaw))) : 500;
+
+      const safeInstrument: AuditInstrumentFilter = ["spot", "options", "forward", "all"].includes(instrument)
+        ? instrument
+        : "all";
+      const safeEntity: AuditEntityFilter = ["trades", "settlements", "marginCalls", "fees", "all"].includes(entity)
+        ? entity
+        : "all";
+
+      const records = await buildAuditRecords({ from, to, instrument: safeInstrument, entity: safeEntity, limit });
+
+      res.json(records);
+    } catch (error: any) {
+      console.error("Error fetching audit records:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch audit records" });
+    }
+  });
+
+  // GET /api/admin/audit/export - CSV export
+  app.get("/api/admin/audit/export", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const from = parseDateOrNull(req.query.from) || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const to = parseDateOrNull(req.query.to) || new Date();
+      const instrument = (typeof req.query.instrument === "string" ? req.query.instrument : "all") as AuditInstrumentFilter;
+      const entity = (typeof req.query.entity === "string" ? req.query.entity : "all") as AuditEntityFilter;
+      const limitRaw = typeof req.query.limit === "string" ? Number(req.query.limit) : 5000;
+      const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(20000, Math.floor(limitRaw))) : 5000;
+
+      const safeInstrument: AuditInstrumentFilter = ["spot", "options", "forward", "all"].includes(instrument)
+        ? instrument
+        : "all";
+      const safeEntity: AuditEntityFilter = ["trades", "settlements", "marginCalls", "fees", "all"].includes(entity)
+        ? entity
+        : "all";
+
+      const records = await buildAuditRecords({ from, to, instrument: safeInstrument, entity: safeEntity, limit });
+
+      const headers = ["timestamp", "instrument", "action", "user", "details"].join(",") + "\n";
+      const rows = records
+        .map((r) => {
+          const user = r.userIds.length ? r.userIds.join(";") : "";
+          const details = JSON.stringify({
+            price: r.price,
+            qty: r.qty,
+            fee: r.fee,
+            status: r.status,
+            ...(r.details || {}),
+          });
+          return [
+            csvEscape(r.timestamp),
+            csvEscape(r.instrumentType),
+            csvEscape(r.type),
+            csvEscape(user),
+            csvEscape(details),
+          ].join(",");
+        })
+        .join("\n");
+
+      const filename = `audit_${safeEntity}_${safeInstrument}_${new Date().toISOString().slice(0, 10)}.csv`;
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.send(headers + rows + (rows.length ? "\n" : ""));
+    } catch (error: any) {
+      console.error("Error exporting audit CSV:", error);
+      res.status(500).json({ error: error.message || "Failed to export audit CSV" });
     }
   });
 
@@ -2724,6 +3151,356 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forward portfolio for the current user
+  app.get("/api/portfolio/forwards/me", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Get all forward contracts where user is long or short
+      const userForwardContracts = await db
+        .select({
+          id: forwardContracts.id,
+          commodity: forwardContracts.commodity,
+          contractPrice: forwardContracts.contractPrice,
+          qtyTon: forwardContracts.qtyTon,
+          window: forwardContracts.window,
+          windowStart: forwardContracts.windowStart,
+          windowEnd: forwardContracts.windowEnd,
+          settlementDate: forwardContracts.settlementDate,
+          longUserId: forwardContracts.longUserId,
+          shortUserId: forwardContracts.shortUserId,
+          initialMargin: forwardContracts.initialMargin,
+          status: forwardContracts.status,
+          contractHash: forwardContracts.contractHash,
+          createdAt: forwardContracts.createdAt,
+          updatedAt: forwardContracts.updatedAt,
+        })
+        .from(forwardContracts)
+        .where(
+          or(
+            eq(forwardContracts.longUserId, userId),
+            eq(forwardContracts.shortUserId, userId)
+          )
+        )
+        .orderBy(desc(forwardContracts.createdAt));
+
+      // Get settlements for realized PnL
+      const forwardSettlements = await db.select().from(forwardSettlements);
+
+      const positions = await Promise.all(userForwardContracts.map(async (contract) => {
+        const isLong = contract.longUserId === userId;
+        const isShort = contract.shortUserId === userId;
+
+        // Calculate notional
+        const contractPrice = parseFloat(contract.contractPrice || "0");
+        const qtyTon = parseFloat(contract.qtyTon || "0");
+        const notional = contractPrice * qtyTon;
+
+        // Calculate PnL from settlements
+        let realizedPnL = 0;
+        const contractSettlements = forwardSettlements.filter(
+          (s) => s.forwardContractId === contract.id
+        );
+
+        for (const settlement of contractSettlements) {
+          const settlementPrice = parseFloat(settlement.settlementPrice || "0");
+          const contractPriceSettled = parseFloat(settlement.contractPrice || "0");
+          const qtySettled = parseFloat(settlement.qtyTon || "0");
+
+          const pnlPerTon = (settlementPrice - contractPriceSettled) * qtySettled;
+
+          if (isLong) {
+            // Long position: profit when price rises
+            realizedPnL += pnlPerTon;
+          } else {
+            // Short position: profit when price falls
+            realizedPnL -= pnlPerTon;
+          }
+        }
+
+        // Calculate unrealized PnL if contract is still active
+        let unrealizedPnL = 0;
+        const isActive = ['ACTIVE', 'MARGIN_CALL'].includes(contract.status);
+
+        if (isActive) {
+          // For unrealized PnL, we would need current market prices
+          // For now, set to 0 (could be enhanced later)
+          unrealizedPnL = 0;
+        }
+
+        return {
+          contractId: contract.id,
+          commodity: contract.commodity,
+          window: contract.window,
+          windowStart: contract.windowStart,
+          windowEnd: contract.windowEnd,
+          settlementDate: contract.settlementDate,
+          role: isLong ? 'long' : 'short',
+          contractPrice: contract.contractPrice,
+          qtyTon: contract.qtyTon,
+          notional: notional.toFixed(2),
+          initialMargin: contract.initialMargin,
+          status: contract.status,
+          realizedPnL: realizedPnL.toFixed(2),
+          unrealizedPnL: unrealizedPnL.toFixed(2),
+          totalPnL: (realizedPnL + unrealizedPnL).toFixed(2),
+          createdAt: contract.createdAt,
+          updatedAt: contract.updatedAt,
+        };
+      }));
+
+      res.json(positions);
+    } catch (error: any) {
+      console.error("Forward portfolio query failed", error);
+      res.status(500).json({ error: error.message || "Failed to fetch forward portfolio" });
+    }
+  });
+
+  // Compact portfolio summary for the current user
+  app.get("/api/portfolio/summary", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const userId = req.user.id;
+
+      let optionNotional = 0;
+      let optionMargin = 0;
+      let forwardNotional = 0;
+      let forwardMargin = 0;
+      let realizedPnl = 0;
+      let unrealizedPnl = 0; // TODO: reuse risk dashboard logic when available
+
+      // Options: active positions where user is buyer/issuer/counterparty
+      const userOptions = await storage.getOptionsByUser(userId);
+      const activeOptionStatuses = new Set(["OPEN", "FILLED", "MARGIN_CALL", "ACTIVE"]);
+      const activeOptions = userOptions.filter((o) => activeOptionStatuses.has(o.status));
+
+      // Settlements for realized PnL on options
+      const optionSettlements = await storage.listSettlements();
+
+      for (const opt of activeOptions) {
+        const strike = parseFloat(opt.strike || "0");
+        const qty = parseFloat(opt.qty || "0");
+        const initMargin = parseFloat((opt as any).initialMargin || "0");
+        optionNotional += computeNotional(strike, qty);
+        optionMargin += Number.isFinite(initMargin) ? initMargin : 0;
+      }
+
+      // Realized PnL from settled options
+      for (const sett of optionSettlements) {
+        const opt = userOptions.find((o) => o.id === sett.optionId);
+        if (!opt) continue;
+        const isBuyer = opt.buyerId === userId || (opt as any).buyer === userId;
+        const isSeller = opt.issuerId === userId || (opt as any).seller === userId;
+        if (!isBuyer && !isSeller) continue;
+        const pnl = parseFloat((sett as any).profitLoss || "0");
+        realizedPnl += isBuyer ? pnl : -pnl;
+      }
+
+      // Forward contracts (if available)
+      try {
+        const activeForwardStatuses = new Set(["ACTIVE", "MARGIN_CALL"]);
+        const forwards = await db
+          .select()
+          .from(forwardContracts)
+          .where(
+            or(
+              eq(forwardContracts.longUserId, userId),
+              eq(forwardContracts.shortUserId, userId)
+            )
+          );
+
+        const forwardSettles = await db.select().from(forwardSettlements);
+
+        for (const fc of forwards) {
+          if (activeForwardStatuses.has(fc.status)) {
+            const price = parseFloat(fc.contractPrice || "0");
+            const qty = parseFloat(fc.qtyTon || "0");
+            const initMargin = parseFloat((fc as any).initialMargin || "0");
+            forwardNotional += computeNotional(price, qty);
+            forwardMargin += Number.isFinite(initMargin) ? initMargin : 0;
+          }
+          const settlesForContract = forwardSettles.filter(
+            (s) => s.forwardContractId === fc.id
+          );
+          for (const s of settlesForContract) {
+            const pnlLong = parseFloat(s.pnlLong || "0");
+            const pnlShort = parseFloat(s.pnlShort || "0");
+            if (fc.longUserId === userId) {
+              realizedPnl += pnlLong;
+            }
+            if (fc.shortUserId === userId) {
+              realizedPnl += pnlShort;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[PORTFOLIO_SUMMARY] Forward module unavailable, using stubs", {
+          error: (err as Error)?.message,
+        });
+      }
+
+      const requiredMargin = optionMargin + forwardMargin;
+      const currentMargin = requiredMargin; // placeholder until live balances are wired
+
+      const healthPct =
+        requiredMargin === 0
+          ? 100
+          : Math.min(200, Math.max(0, (currentMargin / requiredMargin) * 100));
+
+      res.json({
+        totalNotionalUsd: Number((optionNotional + forwardNotional).toFixed(8)),
+        requiredMargin: Number(requiredMargin.toFixed(8)),
+        currentMargin: Number(currentMargin.toFixed(8)),
+        realizedPnl: Number(realizedPnl.toFixed(8)),
+        unrealizedPnl: Number(unrealizedPnl.toFixed(8)),
+        healthPct: Number(healthPct.toFixed(2)),
+      });
+    } catch (error: any) {
+      console.error("Error building portfolio summary:", error);
+      res.status(500).json({ error: error.message || "Failed to build portfolio summary" });
+    }
+  });
+
+  // Option & Forward chain for a single index/window
+  app.get("/api/markets/chain", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { indexId, commodity, window, includeForwards } = req.query;
+      if (!indexId && !commodity) {
+        return res.status(400).json({ error: "indexId or commodity is required" });
+      }
+      if (!window || typeof window !== "string") {
+        return res.status(400).json({ error: "window is required" });
+      }
+      const includeFw = includeForwards === undefined ? true : String(includeForwards) === "true";
+
+      // Resolve index info
+      const commoditySlug = typeof commodity === "string" ? commodity : undefined;
+      const commodityInfo = commoditySlug ? COMMODITY_MAP[commoditySlug as any] : undefined;
+
+      let indexRow: any = null;
+      if (indexId && typeof indexId === "string") {
+        const [idx] = await db.select().from(indexes).where(eq(indexes.id, indexId));
+        indexRow = idx || null;
+      } else if (commoditySlug) {
+        const [idx] = await db.select().from(indexes).where(eq(indexes.slug, commoditySlug));
+        indexRow = idx || null;
+      }
+
+      // If not found in DB but commodity is known, build a minimal stub so the API doesn't 404
+      if (!indexRow && commoditySlug && commodityInfo) {
+        indexRow = {
+          id: null,
+          name: commodityInfo.indexName || commodityInfo.name,
+          slug: commoditySlug,
+        };
+      }
+
+      if (!indexRow) {
+        return res.status(404).json({ error: "Index not found" });
+      }
+
+      const indexIdFilter = indexRow.id ? eq(options.indexId, indexRow.id) : null;
+      // Build filters with column-existence guards to avoid 42703
+      const hasExpiryWindow = !!(options as any).expiryWindow;
+      const optionWhereParts = [
+        hasExpiryWindow && window ? eq((options as any).expiryWindow, window) : sql`true`,
+        indexIdFilter
+          ? or(indexIdFilter, commoditySlug ? eq(options.commodity as any, commoditySlug) : sql`false`)
+          : commoditySlug
+          ? eq(options.commodity as any, commoditySlug)
+          : sql`true`,
+      ].filter(Boolean) as any[];
+
+      let optionRows: any[] = [];
+      try {
+        optionRows = await db.select().from(options).where(and(...optionWhereParts));
+      } catch (err: any) {
+        if (err?.code === "42703") {
+          console.warn("[CHAIN] expiry_window column missing at runtime, returning empty options");
+          optionRows = [];
+        } else {
+          throw err;
+        }
+      }
+
+      const optionsMapped = optionRows.map((o) => {
+        const strike = parseFloat(o.strike || "0");
+        const premium = parseFloat(o.premium || "0");
+        const qty = parseFloat(o.qty || "0");
+        let side: "LONG" | "SHORT" | null = null;
+        if (req.user) {
+          if (o.buyerId === req.user.id || (o as any).buyer === req.user.id) side = "LONG";
+          else if (o.issuerId === req.user.id || (o as any).seller === req.user.id) side = "SHORT";
+        }
+        return {
+          id: o.id,
+          type: o.type,
+          strike,
+          premium,
+          qtyTon: qty,
+          status: o.status,
+          side,
+          volume: null,
+          iv: null,
+        };
+      });
+
+      let forwardsMapped: any[] = [];
+      if (includeFw) {
+        const forwardWhere = [
+          window ? eq(forwardContracts.window, window) : sql`true`,
+          indexRow.id
+            ? or(eq(forwardContracts.indexId, indexRow.id), commoditySlug ? eq(forwardContracts.commodity as any, commoditySlug) : sql`false`)
+            : commoditySlug
+            ? eq(forwardContracts.commodity as any, commoditySlug)
+            : sql`true`,
+        ];
+        const fwRows = await db.select().from(forwardContracts).where(and(...forwardWhere));
+
+        forwardsMapped = fwRows.map((f) => {
+          const price = parseFloat(f.contractPrice || "0");
+          const qty = parseFloat(f.qtyTon || "0");
+          let side: "LONG" | "SHORT" | null = null;
+          if (req.user) {
+            if (f.longUserId === req.user.id) side = "LONG";
+            else if (f.shortUserId === req.user.id) side = "SHORT";
+          }
+          return {
+            id: f.id,
+            contractPrice: price,
+            qtyTon: qty,
+            status: f.status,
+            side,
+          };
+        });
+      }
+
+      res.json({
+        index: {
+          id: indexRow.id,
+          name: indexRow.name || commodityInfo?.indexName || commodityInfo?.name || commoditySlug,
+          slug: indexRow.slug || commoditySlug,
+          basis: BASIS_CPT_ODESA,
+        },
+        window,
+        options: optionsMapped,
+        forwards: forwardsMapped,
+      });
+    } catch (error: any) {
+      console.error("Error fetching market chain:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch market chain" });
+    }
+  });
+
   // Admin: run margin checks for active SHORT positions
   app.post("/api/admin/run-margin-check", authenticateToken, async (req: AuthRequest, res) => {
     try {
@@ -2892,6 +3669,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[ADMIN] Liquidation run failed", error);
       res.status(500).json({ error: "Failed to run liquidations" });
+    }
+  });
+
+  // ===== FORWARD ORDERS =====
+
+  // Get forward orders
+  app.get("/api/forward/orders", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { commodity, status, side } = req.query;
+      let whereConditions = [];
+
+      if (commodity) {
+        whereConditions.push(eq(forwardOrders.commodity, commodity as string));
+      }
+      if (status) {
+        whereConditions.push(eq(forwardOrders.status, status as string));
+      }
+      if (side) {
+        whereConditions.push(eq(forwardOrders.side, side as string));
+      }
+
+      const orders = await db
+        .select()
+        .from(forwardOrders)
+        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+        .orderBy(desc(forwardOrders.createdAt));
+
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Error fetching forward orders:", error);
+      res.status(500).json({ error: "Failed to fetch forward orders" });
+    }
+  });
+
+  // Create forward order
+  app.post("/api/forward/orders", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const parsed = insertForwardOrderSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const orderData = parsed.data;
+
+      // Compute expiry window if expiryHalf, expiryMonth, expiryYear provided
+      let windowComputed: {
+        window?: string;
+        windowStart?: Date;
+        windowEnd?: Date;
+        settlementDate?: Date;
+      } = {};
+
+      if (parsed.data.expiryHalf && parsed.data.expiryMonth && parsed.data.expiryYear) {
+        try {
+          const window = computeExpiryWindow({
+            half: parsed.data.expiryHalf,
+            month: parsed.data.expiryMonth,
+            year: parsed.data.expiryYear,
+          });
+          windowComputed = {
+            window: window.label,
+            windowStart: window.windowStart,
+            windowEnd: window.windowEnd,
+            settlementDate: window.settlementDate,
+          };
+        } catch (err) {
+          console.error("[CREATE_FORWARD_ORDER] Invalid expiry window input", err);
+          return res.status(400).json({ error: "Invalid expiry window parameters" });
+        }
+      }
+
+      const [order] = await db
+        .insert(forwardOrders)
+        .values({
+          ...orderData,
+          userId: req.user.id,
+          ...windowComputed,
+        })
+        .returning();
+
+      res.json(order);
+    } catch (error: any) {
+      console.error("Error creating forward order:", error);
+      res.status(500).json({ error: "Failed to create forward order" });
     }
   });
 
@@ -3224,10 +4093,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     status: z.enum(["OPEN", "CANCELLED"]).optional(),
   });
 
-  app.get("/api/forward/spreads", async (_req, res) => {
+  app.get("/api/forward/spreads", async (req, res) => {
     try {
-      const rows = await db.select().from(forwardSpreads).orderBy(desc(forwardSpreads.createdAt));
-      res.json(rows);
+      const { type, commodity, window } = req.query;
+
+      if (type === "calendar") {
+        const spreads = await calculateCalendarSpreads(commodity as string);
+        res.json({ type: "calendar", spreads });
+      } else if (type === "cross") {
+        const spreads = await calculateCrossCommoditySpreads(window as string);
+        res.json({ type: "cross", spreads });
+      } else {
+        // Return both types if no specific type requested
+        const allSpreads = await getAllSpreads(commodity as string, window as string);
+        res.json(allSpreads);
+      }
     } catch (error: any) {
       console.error("Error fetching forward spreads:", error);
       res.status(500).json({ error: error.message || "Failed to fetch forward spreads" });
@@ -3311,6 +4191,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching partners:", error);
       res.status(500).json({ error: error.message || "Failed to fetch partners" });
+    }
+  });
+
+  // GET /api/admin/partners/:id - Partner details
+  app.get("/api/admin/partners/:id", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: admin access required" });
+      }
+
+      const partnerId = req.params.id;
+
+      // Get partner details
+      const partners = await storage.getPartnerOrganizations();
+      const partner = partners.find(p => p.id === partnerId);
+
+      if (!partner) {
+        return res.status(404).json({ error: "Partner not found" });
+      }
+
+      // Get service contracts for this partner
+      const contracts = await storage.getServiceContracts();
+      const partnerContracts = contracts.filter(c => c.partnerId === partnerId);
+
+      // Get platform fees for fee stats
+      const allFees = await db
+        .select()
+        .from(platformFees)
+        .orderBy(desc(platformFees.createdAt));
+
+      const feeStats = await getPartnerFeeStats(
+        partnerId,
+        allFees.map(f => ({ amount: f.amount, currency: f.currency, createdAt: f.createdAt }))
+      );
+
+      // Calculate additional stats
+      const activeContracts = partnerContracts.filter(c => c.status === 'active');
+      const totalContractValue = partnerContracts.reduce((sum, c) => sum + parseFloat(c.valueUsd), 0);
+      const completedContracts = partnerContracts.filter(c => c.status === 'completed');
+
+      // Mock modules based on relationship type
+      const modules = [];
+      if (partner.relationship === 'prime_broker') {
+        modules.push('Options Trading', 'Forward Trading', 'Portfolio Management');
+      } else if (partner.relationship === 'custody') {
+        modules.push('Asset Custody', 'Wallet Management');
+      } else if (partner.relationship === 'liquidity_provider') {
+        modules.push('Market Making', 'Liquidity Provision');
+      } else if (partner.relationship === 'security_auditor') {
+        modules.push('Security Auditing', 'Compliance Monitoring');
+      } else {
+        modules.push('General Services');
+      }
+
+      const response = {
+        partner: {
+          ...partner,
+          modules,
+          contractsCount: partnerContracts.length,
+          activeContractsCount: activeContracts.length,
+          completedContractsCount: completedContracts.length,
+          totalContractValueUsd: totalContractValue.toFixed(2),
+        },
+        contracts: partnerContracts,
+        stats: {
+          totalFeesUsd: feeStats.totalFeesUsd.toFixed(2),
+          totalVolumeUsd: feeStats.totalVolumeUsd.toFixed(2),
+          contractCount: feeStats.contractCount,
+          activeContractValue: activeContracts.reduce((sum, c) => sum + parseFloat(c.valueUsd), 0).toFixed(2),
+          completedContractValue: completedContracts.reduce((sum, c) => sum + parseFloat(c.valueUsd), 0).toFixed(2),
+        }
+      };
+
+      res.json(response);
+    } catch (error: any) {
+      console.error("Error fetching partner details:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch partner details" });
     }
   });
 

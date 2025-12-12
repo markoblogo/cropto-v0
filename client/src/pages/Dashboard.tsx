@@ -21,6 +21,8 @@ import { usePolling } from "@/hooks/usePolling";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Option, InsertOption } from "@shared/schema";
 import { Footer } from "@/components/Footer";
+import { PortfolioHealthGauge } from "@/components/PortfolioHealthGauge";
+import { usePortfolioSummary } from "@/hooks/usePortfolioSummary";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -48,6 +50,8 @@ export default function Dashboard() {
   });
 
   const user = userData?.user;
+
+  const { data: portfolioSummary, isLoading: summaryLoading, error: summaryError } = usePortfolioSummary(!!user);
 
   // Get wallet summary data
   const walletData = useWalletSummary(user?.walletAddress || null);
@@ -325,6 +329,29 @@ export default function Dashboard() {
             openPositions={openOptions}
             totalVolume={totalVolume}
           />
+
+          {/* Portfolio Health (placed directly above Wallet) */}
+          {user ? (
+            <div>
+              {summaryLoading ? (
+                <div className="text-sm text-muted-foreground">Loading portfolio health…</div>
+              ) : summaryError ? (
+                <div className="text-sm text-destructive">Failed to load portfolio health.</div>
+              ) : portfolioSummary ? (
+                <PortfolioHealthGauge
+                  healthPct={portfolioSummary.healthPct}
+                  totalNotionalUsd={portfolioSummary.totalNotionalUsd}
+                  requiredMargin={portfolioSummary.requiredMargin}
+                  realizedPnl={portfolioSummary.realizedPnl}
+                  unrealizedPnl={portfolioSummary.unrealizedPnl}
+                />
+              ) : null}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              Sign in to see your portfolio health.
+            </div>
+          )}
 
           {/* Wallet Summary Bar */}
           {user?.walletAddress && (

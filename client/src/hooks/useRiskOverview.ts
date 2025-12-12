@@ -9,6 +9,12 @@ export interface RiskOverviewResponse {
     overdueMarginCalls: number;
     totalLockedCollateral: string;
   };
+  forwards?: {
+    notional: number;
+    requiredMargin: number;
+    currentMargin: number;
+    positionsCount: number;
+  };
 }
 
 interface UseRiskOverviewOptions {

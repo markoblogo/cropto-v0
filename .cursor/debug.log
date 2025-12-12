@@ -1,0 +1,2 @@
+{"sessionId":"debug-audit","runId":"pre-fix","hypothesisId":"H4","location":"server/routes.ts:/api/admin/audit","message":"audit params","data":{"role":"SUPER_ADMIN","instrument":"all","entity":"all","limit":1000,"from":"2025-11-12T00:00:00.000Z","to":"2025-12-12T23:59:59.999Z"},"timestamp":1765495978887}
+{"sessionId":"debug-audit","runId":"pre-fix","hypothesisId":"H5","location":"server/routes.ts:/api/admin/audit","message":"audit records built","data":{"count":2},"timestamp":1765495979029}
