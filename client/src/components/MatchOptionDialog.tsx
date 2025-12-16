@@ -140,15 +140,15 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]" data-testid="dialog-trade-option">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col" data-testid="dialog-trade-option">
+          <DialogHeader className="shrink-0">
             <DialogTitle>Trade option</DialogTitle>
             <DialogDescription>
               You are about to take the other side of this option. Please review the details before confirming.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
             {/* Option Summary Card */}
             <Card>
               <CardContent className="pt-6">
@@ -285,7 +285,7 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0 pt-4">
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
