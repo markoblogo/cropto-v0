@@ -82,6 +82,7 @@ async function main() {
       '009_add_expiry_window_column.sql',
       '010_add_margin_fields.sql',
       '011_add_margin_call_fields.sql',
+      '009_waitlist_signups.sql',
     ];
 
     let successCount = 0;

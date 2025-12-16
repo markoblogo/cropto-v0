@@ -331,6 +331,24 @@ export const serviceContracts = pgTable("service_contracts", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Waitlist signups (early-access)
+export const waitlistSignups = pgTable("waitlist_signups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  userId: text("user_id"),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  country: text("country").notNull(),
+  // Allowed: "trader" | "broker" | "farmer" | "other"
+  role: text("role").notNull(),
+  company: text("company").notNull(),
+  linkedinUrl: text("linkedin_url"),
+  websiteUrl: text("website_url"),
+  source: text("source").notNull().default("hero"),
+  verificationToken: text("verification_token"),
+  verifiedAt: timestamp("verified_at"),
+});
+
 export const insertOptionSchema = createInsertSchema(options).omit({
   id: true,
   createdAt: true,

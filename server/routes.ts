@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
@@ -38,7 +38,7 @@ import { calculateCalendarSpreads, calculateCrossCommoditySpreads, getAllSpreads
 import fs from "fs";
 import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 
 const STALE_MAX_AGE_DAYS = 7;
 
@@ -118,6 +118,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });
+  });
+
+  // Waitlist endpoints (early-access)
+
+  const waitlistSchema = z.object({
+    name: z.string().min(2),
+    email: z.string().email(),
+    country: z.string().min(2),
+    role: z.enum(["trader", "broker", "farmer", "other"]),
+    company: z.string().min(2),
+    linkedinUrl: z.string().url().optional().nullable(),
+    websiteUrl: z.string().url().optional().nullable(),
+    source: z.string().optional(),
+  });
+
+  // Create waitlist signup (no authenticateToken; but if req.user exists we associate it)
+  app.post("/api/waitlist", async (req: AuthRequest, res) => {
+    try {
+      const parsed = waitlistSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: fromZodError(parsed.error).message,
+        });
+      }
+
+      const body = parsed.data;
+      const verificationToken = randomUUID();
+
+      await db
+        .insert(waitlistSignups)
+        .values({
+          userId: req.user?.id ?? null,
+          name: body.name,
+          email: body.email,
+          country: body.country,
+          role: body.role,
+          company: body.company,
+          linkedinUrl: body.linkedinUrl ?? null,
+          websiteUrl: body.websiteUrl ?? null,
+          source: body.source || "hero",
+          verificationToken,
+          verifiedAt: null,
+        })
+        .returning();
+
+      const baseUrl = process.env.APP_BASE_URL || "http://localhost:5173";
+      const verifyLink = `${baseUrl}/waitlist/verify?token=${verificationToken}`;
+
+      try {
+        await emailService.sendEmail(
+          body.email,
+          "Cropto: confirm your waitlist signup",
+          `Please confirm your waitlist signup by clicking the link below:\n\n${verifyLink}\n\nIf you did not request this, you can ignore this email.`
+        );
+      } catch (emailError) {
+        console.error("[Waitlist] Failed to send verification email:", emailError);
+        // IMPORTANT: do not fail the request if email delivery/logging fails
+      }
+
+      return res.status(200).json({
+        ok: true,
+        message: "Waitlist signup created. Please check your email to confirm.",
+      });
+    } catch (error: any) {
+      console.error("Error creating waitlist signup:", error);
+      return res.status(500).json({ error: error.message || "Failed to create waitlist signup" });
+    }
+  });
+
+  // Verify waitlist signup by token (email confirmation)
+  app.get("/api/waitlist/verify", async (req, res) => {
+    try {
+      const token = typeof req.query.token === "string" ? req.query.token.trim() : "";
+      if (!token) {
+        return res.status(400).json({ error: "Missing token" });
+      }
+
+      const [signup] = await db
+        .select()
+        .from(waitlistSignups)
+        .where(eq(waitlistSignups.verificationToken, token))
+        .limit(1);
+
+      if (!signup) {
+        return res.status(404).send("Verification link is invalid or has already been used.");
+      }
+
+      await db
+        .update(waitlistSignups)
+        .set({ verifiedAt: new Date(), verificationToken: null })
+        .where(eq(waitlistSignups.id, signup.id));
+
+      const baseUrl = process.env.APP_BASE_URL || "http://localhost:5173";
+      const backUrl = baseUrl;
+
+      return res.send(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Waitlist confirmed</title>
+  </head>
+  <body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 32px; line-height: 1.45;">
+    <h2>Your email has been confirmed.</h2>
+    <p>You are on the Cropto early-access waitlist.</p>
+    <p><a href="${backUrl}">Back to app</a></p>
+  </body>
+</html>`);
+    } catch (error) {
+      console.error("Error verifying waitlist signup:", error);
+      return res.status(500).send("Failed to verify token. Please try again later.");
+    }
   });
 
   // Serve markdown documentation files
@@ -2866,6 +2979,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error exporting audit CSV:", error);
       res.status(500).json({ error: error.message || "Failed to export audit CSV" });
+    }
+  });
+
+  // GET /api/admin/waitlist/summary - Aggregated waitlist stats
+  app.get("/api/admin/waitlist/summary", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const coerceCount = (v: unknown) => {
+        if (typeof v === "number") return v;
+        if (typeof v === "string") {
+          const n = Number(v);
+          return Number.isFinite(n) ? n : 0;
+        }
+        return 0;
+      };
+
+      const total = await db.select({ count: sql<number>`count(*)` }).from(waitlistSignups);
+
+      const verified = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(waitlistSignups)
+        .where(sql`${waitlistSignups.verifiedAt} IS NOT NULL`);
+
+      const byRole = await db
+        .select({
+          role: waitlistSignups.role,
+          count: sql<number>`count(*)`,
+        })
+        .from(waitlistSignups)
+        .groupBy(waitlistSignups.role);
+
+      const byCountry = await db
+        .select({
+          country: waitlistSignups.country,
+          count: sql<number>`count(*)`,
+        })
+        .from(waitlistSignups)
+        .groupBy(waitlistSignups.country);
+
+      res.json({
+        total: coerceCount(total[0]?.count ?? 0),
+        verified: coerceCount(verified[0]?.count ?? 0),
+        byRole: byRole.map((r) => ({ ...r, count: coerceCount(r.count) })),
+        byCountry: byCountry.map((r) => ({ ...r, count: coerceCount(r.count) })),
+      });
+    } catch (error: any) {
+      console.error("Error fetching waitlist summary:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch waitlist summary" });
+    }
+  });
+
+  // GET /api/admin/waitlist - Waitlist list with pagination/filtering/sorting
+  app.get("/api/admin/waitlist", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const {
+        page = "1",
+        pageSize = "50",
+        sortBy = "createdAt",
+        sortDir = "desc",
+        role,
+        country,
+        verified,
+        q,
+      } = req.query as Record<string, string>;
+
+      const pageNum = Math.max(parseInt(page) || 1, 1);
+      const sizeNum = Math.min(Math.max(parseInt(pageSize) || 50, 10), 200);
+
+      const sortableColumns: Record<string, any> = {
+        createdAt: waitlistSignups.createdAt,
+        country: waitlistSignups.country,
+        role: waitlistSignups.role,
+        name: waitlistSignups.name,
+      };
+
+      const sortColumn = sortableColumns[sortBy] || waitlistSignups.createdAt;
+      const direction = sortDir === "asc" ? "asc" : "desc";
+
+      const conditions: any[] = [];
+
+      if (role) {
+        conditions.push(eq(waitlistSignups.role, role));
+      }
+
+      if (country) {
+        const c = country.trim();
+        if (c) {
+          conditions.push(sql`${waitlistSignups.country} ILIKE ${"%" + c + "%"}`);
+        }
+      }
+
+      if (verified === "true") {
+        conditions.push(sql`${waitlistSignups.verifiedAt} IS NOT NULL`);
+      } else if (verified === "false") {
+        conditions.push(sql`${waitlistSignups.verifiedAt} IS NULL`);
+      }
+
+      if (q) {
+        const query = q.trim();
+        if (query) {
+          const pattern = "%" + query + "%";
+          conditions.push(
+            sql`${waitlistSignups.name} ILIKE ${pattern}
+              OR ${waitlistSignups.email} ILIKE ${pattern}
+              OR ${waitlistSignups.company} ILIKE ${pattern}`
+          );
+        }
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      let baseQuery = db.select().from(waitlistSignups);
+      if (whereClause) {
+        baseQuery = baseQuery.where(whereClause) as any;
+      }
+
+      const rows = await baseQuery
+        .orderBy(direction === "asc" ? asc(sortColumn) : desc(sortColumn))
+        .limit(sizeNum)
+        .offset((pageNum - 1) * sizeNum);
+
+      let totalCountQuery = db.select({ count: sql<number>`count(*)` }).from(waitlistSignups);
+      if (whereClause) {
+        totalCountQuery = totalCountQuery.where(whereClause) as any;
+      }
+      const totalRows = await totalCountQuery;
+
+      const totalCountRaw = totalRows[0]?.count ?? 0;
+      const totalCount =
+        typeof totalCountRaw === "number"
+          ? totalCountRaw
+          : typeof totalCountRaw === "string"
+            ? Number(totalCountRaw) || 0
+            : 0;
+
+      res.json({
+        items: rows,
+        page: pageNum,
+        pageSize: sizeNum,
+        total: totalCount,
+      });
+    } catch (error: any) {
+      console.error("Error fetching waitlist list:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch waitlist list" });
     }
   });
 

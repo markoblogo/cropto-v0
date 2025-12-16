@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Web3Provider } from "@/contexts/Web3Context";
+import { WaitlistProvider } from "@/contexts/WaitlistContext";
+import DemoBanner from "@/components/DemoBanner";
 import Dashboard from "@/pages/Dashboard";
 import Portfolio from "@/pages/Portfolio";
 import OptionChain from "@/pages/OptionChain";
@@ -30,6 +32,7 @@ import IndexDetail from "@/pages/IndexDetail";
 import Feedback from "@/pages/Feedback";
 import ForwardMarket from "@/pages/ForwardMarket";
 import OptionForwardChainPage from "@/pages/OptionForwardChainPage";
+import AdminWaitlist from "@/pages/AdminWaitlist";
 import NotFound from "@/pages/not-found";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -73,6 +76,7 @@ function Router() {
       <Route path="/admin/partners" component={AdminPartners} />
       <Route path="/admin/fees" component={AdminFees} />
       <Route path="/admin/audit" component={AdminAudit} />
+      <Route path="/admin/waitlist" component={AdminWaitlist} />
       <Route path="/index/:slug" component={IndexDetail} />
       <Route path="/feedback" component={Feedback} />
       <Route path="/privacy" component={PrivacyPolicy} />
@@ -88,8 +92,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Web3Provider>
-          <Toaster />
-          <Router />
+          <WaitlistProvider>
+            <Toaster />
+            <DemoBanner />
+            <Router />
+          </WaitlistProvider>
         </Web3Provider>
       </TooltipProvider>
     </QueryClientProvider>

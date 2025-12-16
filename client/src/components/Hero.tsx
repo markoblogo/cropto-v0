@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, TrendingUp, ArrowRightCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { useLocation } from "wouter";
+import { useWaitlist } from "@/contexts/WaitlistContext";
 
 interface HeroProps {
   onCreateOption: () => void;
@@ -16,13 +16,20 @@ const formatAddress = (address: string) => {
   return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 };
 
-export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletAddress, onOpenLogin, onOpenWalletModal }: HeroProps) {
+export function Hero({
+  onCreateOption: _onCreateOption,
+  onConnectWallet,
+  walletAddress,
+  onOpenLogin: _onOpenLogin,
+  onOpenWalletModal: _onOpenWalletModal,
+}: HeroProps) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const guardTradingAction = useTradingGuard({
-    onOpenLogin,
-    onOpenWalletModal,
-  });
+  const { openWaitlist } = useWaitlist();
+
+  const isDemoMode =
+    (import.meta.env.VITE_MOCK_ONCHAIN || "").toLowerCase() === "true" ||
+    (import.meta.env.VITE_ENABLE_MINT || "").toLowerCase() !== "true";
   
   const navigateToSpotTrading = () => {
     setLocation("/spot-trading");
@@ -64,11 +71,12 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4">
+            {/* Unified hero actions palette: light amber -> deep green */}
             <Button
               size="lg"
-              className="bg-primary text-primary-foreground font-semibold w-full sm:w-auto"
-              onClick={() => guardTradingAction(() => navigateToOptions())}
+              className="w-full sm:w-auto font-semibold bg-amber-200 text-amber-950 hover:bg-amber-300 shadow-sm"
+              onClick={() => navigateToOptions()}
               data-testid="button-hero-option-trading"
             >
               <ArrowRightCircle className="mr-2 h-5 w-5" />
@@ -77,8 +85,7 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
 
             <Button
               size="lg"
-              variant="secondary"
-              className="font-semibold w-full sm:w-auto"
+              className="w-full sm:w-auto font-semibold bg-amber-300 text-amber-950 hover:bg-amber-400 shadow-sm"
               onClick={navigateToSpotTrading}
               data-testid="button-hero-spot-trading"
             >
@@ -86,10 +93,19 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
               Spot Trading
             </Button>
 
+            <Button
+              size="lg"
+              className="w-full sm:w-auto font-semibold bg-lime-400 text-emerald-950 hover:bg-lime-500 shadow-sm"
+              onClick={() => openWaitlist("hero")}
+              data-testid="button-hero-join-waitlist"
+            >
+              Join waitlist
+            </Button>
+
             {walletAddress ? (
               <Button
                 size="lg"
-                className="font-semibold w-full sm:w-auto font-mono bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
+                className="w-full sm:w-auto font-semibold font-mono bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
                 onClick={onConnectWallet}
                 data-testid="badge-hero-wallet-connected"
               >
@@ -99,7 +115,7 @@ export function Hero({ onCreateOption: _onCreateOption, onConnectWallet, walletA
             ) : (
               <Button
                 size="lg"
-                className="font-semibold w-full sm:w-auto font-mono bg-amber-300 text-slate-900 hover:bg-amber-200 shadow-md"
+                className="w-full sm:w-auto font-semibold font-mono bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
                 onClick={onConnectWallet}
                 data-testid="button-hero-connect-wallet"
               >

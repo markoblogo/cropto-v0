@@ -9,7 +9,6 @@ import { NotificationsDropdown } from "./NotificationsDropdown";
 import FlagSwitcher from "./FlagSwitcher";
 import { useTranslation } from "react-i18next";
 import { useUserTier } from "@/hooks/useUserTier";
-import { useTradingGuard } from "@/hooks/useTradingGuard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,16 +24,12 @@ interface HeaderProps {
   onOpenWalletModal?: () => void;
 }
 
-export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: HeaderProps) {
+export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLogin, onOpenWalletModal: _onOpenWalletModal }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
   const userTier = useUserTier();
-  const guardTradingAction = useTradingGuard({
-    onOpenLogin,
-    onOpenWalletModal,
-  });
 
   // Fetch current user
   const { data: userData } = useQuery<{ 
@@ -101,6 +96,7 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
     { to: "/admin", label: t("nav.admin"), testId: "button-nav-admin", requiresAdmin: true },
+    { to: "/admin/waitlist", label: "Waitlist", testId: "button-nav-admin-waitlist", requiresAdmin: true },
     { to: "/markets/chain", label: "Option & Forward Chain", testId: "button-nav-chain" },
   ];
 
@@ -211,16 +207,14 @@ export function Header({ onCreateOption, onOpenLogin, onOpenWalletModal }: Heade
                   {statusBadge.text}
                 </Badge>
 
-                {/* Create Option CTA */}
-                <Button
-                  size="sm"
-                  onClick={() => guardTradingAction(onCreateOption)}
-                  className="bg-primary text-primary-foreground font-semibold"
-                  data-testid="button-header-create-option"
+                {/* Demo environment badge (replaces Create Option) */}
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap"
+                  data-testid="badge-demo-environment"
                 >
-                  <span className="hidden sm:inline">{t('button.createOption')}</span>
-                  <span className="sm:hidden">{t('button.create')}</span>
-                </Button>
+                  Demo environment
+                </Badge>
 
                 {/* Logout Button */}
                 <Button

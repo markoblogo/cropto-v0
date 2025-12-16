@@ -79,6 +79,10 @@ Create a `.env` file with the following:
 # Database
 DATABASE_URL=postgresql://user:password@host:port/database
 
+# Public app base URL (used for building absolute links in emails, e.g. waitlist verification)
+# Optional: if not set, the backend falls back to http://localhost:5173
+APP_BASE_URL=http://localhost:5173
+
 # Session Management
 SESSION_SECRET=your-secure-random-string
 
