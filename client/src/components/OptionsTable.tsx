@@ -34,7 +34,7 @@ import { TopUpMarginCallDialog } from "./TopUpMarginCallDialog";
 import { WithdrawDialog } from "./WithdrawDialog";
 import { MintNFTDialog } from "./MintNFTDialog";
 import type { Option } from "@shared/schema";
-import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Plus } from "lucide-react";
+import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Plus, Info } from "lucide-react";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,30 @@ interface OptionsTableProps {
 function canExercise(option: Option, currentUserId?: string) {
   if (!currentUserId) return false;
   return option.buyerId === currentUserId || option.issuerId === currentUserId;
+}
+
+function getMarginHealth({
+  marginBalance,
+  initialMargin,
+  isInMarginCall,
+  isLiquidated,
+}: {
+  marginBalance: number;
+  initialMargin: number;
+  isInMarginCall: boolean;
+  isLiquidated: boolean;
+}) {
+  if (isLiquidated) {
+    return { label: "Liquidated", className: "bg-red-100 text-red-800 border border-red-200" };
+  }
+  if (isInMarginCall) {
+    return { label: "Margin Call", className: "bg-amber-100 text-amber-800 border border-amber-200" };
+  }
+  const healthPct = initialMargin > 0 ? (marginBalance / initialMargin) * 100 : 100;
+  if (healthPct < 80) {
+    return { label: "At Risk", className: "bg-yellow-100 text-yellow-800 border border-yellow-200" };
+  }
+  return { label: "Normal", className: "bg-emerald-100 text-emerald-800 border border-emerald-200" };
 }
 
 export function OptionsTable({ 
@@ -432,7 +456,7 @@ export function OptionsTable({
                 <TableRow
                   key={option.id}
                   data-testid={`row-option-${option.id}`}
-                  className={isClickable ? "cursor-pointer hover:bg-muted/50" : ""}
+                  className={`${isClickable ? "cursor-pointer hover:bg-muted/50" : ""} min-h-[64px]`}
                   onClick={() => {
                     if (isClickable) {
                       setSelectedOption(option);
@@ -479,46 +503,56 @@ export function OptionsTable({
                     <StatusBadge status={option.status as "OPEN" | "FILLED" | "EXPIRED" | "CANCELLED" | "EXERCISED" | "DEFAULTED" | "MARGIN_CALL"} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-1 text-sm">
-                      {marginProfile && (
-                        <div className="text-xs text-muted-foreground">
-                          Margin ({marginProfile.label}): {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : "—"}
-                          {marginProfile.usePremiumAsMargin ? " (premium as margin)" : ""}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge
-                          variant={
-                            isLiquidated
-                              ? "destructive"
-                              : isInMarginCall
-                              ? "warning"
-                              : "outline"
-                          }
-                        >
-                          {isLiquidated ? "Liquidated" : isInMarginCall ? "Margin Call" : "Normal"}
-                        </Badge>
-                        {isInMarginCall && timeLeft && !isLiquidated && (
-                          <span className="text-xs text-muted-foreground">Due in {timeLeft}</span>
-                        )}
-                        {isLiquidated && (
-                          <span className="text-xs text-muted-foreground">Auto-closed</span>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <div>Margin Balance: {Number.isFinite(marginBalance) ? marginBalance.toFixed(2) : "-"}</div>
-                        <div>Floating Loss: {Number.isFinite(floatingLoss) ? floatingLoss.toFixed(2) : "-"}</div>
-                        <div>Top-up Needed: {Number.isFinite(initialMargin) ? topUp.toFixed(2) : "-"}</div>
-                        {isLiquidated && (
-                          <>
-                            <div>SSI avg: {ssiAvg ? Number(ssiAvg).toFixed(2) : "N/A"}</div>
-                            <div>Final PnL: {finalPnl !== undefined ? Number(finalPnl).toFixed(2) : "N/A"}</div>
-                            <div className="text-[11px] text-muted-foreground">
-                              Position auto-closed due to unresolved margin call
+                    <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+                      <span className="font-mono">
+                        {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : "—"} CROPT
+                      </span>
+                      {(() => {
+                        const health = getMarginHealth({
+                          marginBalance,
+                          initialMargin,
+                          isInMarginCall,
+                          isLiquidated,
+                        });
+                        return (
+                          <Badge className={`h-6 rounded-full px-2 text-xs font-semibold ${health.className}`}>
+                            {health.label}
+                          </Badge>
+                        );
+                      })()}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center"
+                              aria-label="Margin details"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-xs space-y-1">
+                            <div>
+                              Margin ({marginProfile?.label || "Standard"}):{" "}
+                              {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : "—"} CROPT
+                              {marginProfile?.usePremiumAsMargin ? " (premium as margin)" : ""}
                             </div>
-                          </>
-                        )}
-                      </div>
+                            <div>Balance: {Number.isFinite(marginBalance) ? marginBalance.toFixed(2) : "-"}</div>
+                            <div>Floating loss: {Number.isFinite(floatingLoss) ? floatingLoss.toFixed(2) : "-"}</div>
+                            <div>Top-up needed: {Number.isFinite(initialMargin) ? topUp.toFixed(2) : "-"}</div>
+                            {isInMarginCall && timeLeft && !isLiquidated && (
+                              <div>Margin call due in {timeLeft}</div>
+                            )}
+                            {isLiquidated && (
+                              <>
+                                <div>SSI avg: {ssiAvg ? Number(ssiAvg).toFixed(2) : "N/A"}</div>
+                                <div>Final PnL: {finalPnl !== undefined ? Number(finalPnl).toFixed(2) : "N/A"}</div>
+                              </>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
