@@ -13,6 +13,7 @@ import {
   spotPositions,
   partnerOrganizations,
   serviceContracts,
+  commodityIndexPrices,
   type Option,
   type InsertOption,
   type Trade,
@@ -255,6 +256,7 @@ export class DatabaseStorage implements IStorage {
         .set({
           status: "FILLED",
           counterpartyId: counterpartyId,
+          buyerId: counterpartyId, // Counterparty becomes the buyer
           matchedBy: matchedBy,
           matchedAt: new Date(),
           lastUpdated: new Date(),
@@ -343,6 +345,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async exerciseOption(optionId: string, exercisedBy: string, spotPrice: string): Promise<Settlement> {
+    const demoRelaxCROPTCheck = (process.env.DEMO_RELAX_CROPT_CHECK || "").toLowerCase() === "true";
+    
     return await db.transaction(async (tx) => {
       const [option] = await tx
         .select()
@@ -462,9 +466,18 @@ export class DatabaseStorage implements IStorage {
         if (isHolderBuyer) {
           // Buyer exercises: pays strike, receives underlying
           if (holderCurrent < costAtStrike) {
-            const error: any = new Error("Insufficient CROPT balance to exercise option");
-            error.statusCode = 400;
-            throw error;
+            if (demoRelaxCROPTCheck) {
+              console.warn("[EXERCISE_DEMO] Relaxed CROPT check: holder balance insufficient but continuing", {
+                holderId,
+                holderCurrent,
+                costAtStrike,
+                optionId,
+              });
+            } else {
+              const error: any = new Error("Insufficient CROPT balance to exercise option");
+              error.statusCode = 400;
+              throw error;
+            }
           }
           holderNew = holderCurrent - costAtStrike;
           sellerNew = sellerCurrent + costAtStrike;
@@ -479,9 +492,18 @@ export class DatabaseStorage implements IStorage {
         } else {
           // Seller is exercising (unusual but possible): seller pays, buyer receives
           if (sellerCurrent < costAtStrike) {
-            const error: any = new Error("Insufficient CROPT balance to exercise option");
-            error.statusCode = 400;
-            throw error;
+            if (demoRelaxCROPTCheck) {
+              console.warn("[EXERCISE_DEMO] Relaxed CROPT check: seller balance insufficient but continuing", {
+                sellerId,
+                sellerCurrent,
+                costAtStrike,
+                optionId,
+              });
+            } else {
+              const error: any = new Error("Insufficient CROPT balance to exercise option");
+              error.statusCode = 400;
+              throw error;
+            }
           }
           holderNew = holderCurrent + costAtStrike;
           sellerNew = sellerCurrent - costAtStrike;
@@ -501,9 +523,18 @@ export class DatabaseStorage implements IStorage {
         if (isHolderBuyer) {
           // Buyer exercises: delivers underlying, receives strike
           if (sellerCurrent < costAtStrike) {
-            const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
-            error.statusCode = 400;
-            throw error;
+            if (demoRelaxCROPTCheck) {
+              console.warn("[EXERCISE_DEMO] Relaxed CROPT check: seller balance insufficient but continuing", {
+                sellerId,
+                sellerCurrent,
+                costAtStrike,
+                optionId,
+              });
+            } else {
+              const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
+              error.statusCode = 400;
+              throw error;
+            }
           }
           holderNew = holderCurrent + costAtStrike;
           sellerNew = sellerCurrent - costAtStrike;
@@ -518,9 +549,18 @@ export class DatabaseStorage implements IStorage {
         } else {
           // Seller is exercising: seller delivers, buyer receives
           if (holderCurrent < costAtStrike) {
-            const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
-            error.statusCode = 400;
-            throw error;
+            if (demoRelaxCROPTCheck) {
+              console.warn("[EXERCISE_DEMO] Relaxed CROPT check: holder balance insufficient but continuing", {
+                holderId,
+                holderCurrent,
+                costAtStrike,
+                optionId,
+              });
+            } else {
+              const error: any = new Error("Counterparty has insufficient CROPT balance for settlement");
+              error.statusCode = 400;
+              throw error;
+            }
           }
           holderNew = holderCurrent - costAtStrike;
           sellerNew = sellerCurrent + costAtStrike;
@@ -542,9 +582,18 @@ export class DatabaseStorage implements IStorage {
         const payoutFromFree = Math.max(0, payout - payoutFromCollateral);
 
         if (payoutFromFree > 0 && sellerNew < payoutFromFree) {
-          const error: any = new Error("Seller has insufficient balance to cover payout");
-          error.statusCode = 400;
-          throw error;
+          if (demoRelaxCROPTCheck) {
+            console.warn("[EXERCISE_DEMO] Relaxed CROPT check: seller balance insufficient for payout but continuing", {
+              sellerId,
+              sellerNew,
+              payoutFromFree,
+              optionId,
+            });
+          } else {
+            const error: any = new Error("Seller has insufficient balance to cover payout");
+            error.statusCode = 400;
+            throw error;
+          }
         }
 
         holderNew += payout;

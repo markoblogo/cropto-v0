@@ -39,6 +39,7 @@ import fs from "fs";
 import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
 import { createHash, randomUUID } from "crypto";
+import { getMockMarketDataBR, getMockMarketDataAR, type MarketIndexDto } from "./services/mockMarketData";
 
 const STALE_MAX_AGE_DAYS = 7;
 
@@ -996,6 +997,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/market-dashboard - Market dashboard view by country (UA, BR, AR)
+  app.get("/api/market-dashboard", async (req, res) => {
+    try {
+      // Helper function to extract commodity name and grade from index name
+      function extractCommodityAndGrade(indexName: string): { commodity: string; grade: string | null } {
+        const lower = indexName.toLowerCase();
+        let commodity = "";
+        let grade: string | null = null;
+
+        if (lower.includes("corn")) {
+          commodity = "corn";
+        } else if (lower.includes("wheat")) {
+          commodity = "wheat";
+          // Extract grade like "11.5%" or "11.5pro"
+          const gradeMatch = indexName.match(/11\.?5/);
+          if (gradeMatch) {
+            grade = "11.5pro";
+          }
+          if (lower.includes("feed")) {
+            grade = "feed";
+          }
+        } else if (lower.includes("soy")) {
+          commodity = "soybeans";
+          if (lower.includes("gmo")) {
+            grade = "GMO";
+          }
+        } else if (lower.includes("sunflower")) {
+          commodity = "sunflower";
+        } else if (lower.includes("rapeseed")) {
+          commodity = "rapeseed";
+        } else {
+          // Fallback: use lowercase slug
+          commodity = indexName.toLowerCase().replace(/\s+/g, "-");
+        }
+
+        return { commodity, grade };
+      }
+
+      // Helper function to map category to basis string
+      function categoryToBasis(category: string): string {
+        if (category === "CPT ODESA") {
+          return "CPT Odesa (export)";
+        } else if (category === "CPT PARITET ODESA") {
+          return "CPT Paritet Odesa (processing)";
+        }
+        return category;
+      }
+
+      // Fetch UA indexes (those with category starting with "CPT")
+      const uaIndexes = await db
+        .select()
+        .from(indexes)
+        .where(sql`${indexes.category} LIKE 'CPT%'`)
+        .orderBy(indexes.category, indexes.name);
+
+      // For each UA index, get latest price and convert to MarketIndexDto
+      const uaData: MarketIndexDto[] = await Promise.all(
+        uaIndexes.map(async (index) => {
+          const [latestPrice] = await db
+            .select()
+            .from(commodityIndexPrices)
+            .where(eq(commodityIndexPrices.indexId, index.id))
+            .orderBy(desc(commodityIndexPrices.timestamp))
+            .limit(1);
+
+          const { commodity, grade } = extractCommodityAndGrade(index.name);
+          const basis = categoryToBasis(index.category);
+          const price = latestPrice ? parseFloat(latestPrice.price) : 0;
+          const asOf = latestPrice?.timestamp ? new Date(latestPrice.timestamp).toISOString() : new Date().toISOString();
+
+          // For now, set change values to 0 (we can calculate them later from price history)
+          return {
+            commodity,
+            grade,
+            country: "UA" as const,
+            basis,
+            price,
+            currency: "USD" as const,
+            change24h: latestPrice?.delta ? parseFloat(latestPrice.delta) : 0,
+            change7d: 0,
+            change30d: 0,
+            asOf,
+            source: "spike_telegram" as const,
+          };
+        })
+      );
+
+      // Filter out entries with zero price (no data available)
+      const uaDataFiltered = uaData.filter((item) => item.price > 0);
+
+      // Get mock data for BR and AR
+      const brData = getMockMarketDataBR();
+      const arData = getMockMarketDataAR();
+
+      res.json({
+        ua: uaDataFiltered.length > 0 ? uaDataFiltered : [
+          // Fallback sample data if no real data available
+          {
+            commodity: "corn",
+            grade: null,
+            country: "UA" as const,
+            basis: "CPT Odesa (export)",
+            price: 240.0,
+            currency: "USD" as const,
+            change24h: 0,
+            change7d: 0,
+            change30d: 0,
+            asOf: new Date().toISOString(),
+            source: "manual" as const,
+          },
+        ],
+        br: brData,
+        ar: arData,
+      });
+    } catch (error: any) {
+      console.error("Error fetching market dashboard:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // POST /api/indexes/:slug/price - Add new price for an index
   app.post("/api/indexes/:slug/price", authenticateToken, async (req: AuthRequest, res) => {
     try {
@@ -1617,7 +1738,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Only brokers/admin can manually match options
-      if (!hasBrokerPermissions(req.user?.role)) {
+      const hasAccess = hasBrokerPermissions(req.user?.role);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H2-match-role',location:'routes.ts:/api/options/:id/match',message:'match attempt role check',data:{user:req.user,hasAccess},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      if (!hasAccess) {
         return res.status(403).json({ error: "Only brokers can match options" });
       }
 

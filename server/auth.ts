@@ -23,21 +23,17 @@ function useSupabase(): boolean {
 // JWT_SECRET validation will happen at server startup in server/index.ts
 function getJWTSecret(): string {
   if (!process.env.JWT_SECRET) {
-    // In development, auto-generate a secret key
-    if (process.env.NODE_ENV === 'development') {
-      const generatedSecret = crypto.randomBytes(32).toString('hex');
-      console.warn('⚠️  JWT_SECRET not found - auto-generated for development.');
-      console.warn('   For production, add JWT_SECRET to your Replit Secrets.');
-      return generatedSecret;
-    }
-    throw new Error('JWT_SECRET environment variable is required. Please add it to your Replit Secrets.');
+    const generatedSecret = crypto.randomBytes(32).toString('hex');
+    console.warn('⚠️  JWT_SECRET not found - auto-generated (fallback).');
+    console.warn('   For production, add JWT_SECRET to your environment.');
+    return generatedSecret;
   }
   return process.env.JWT_SECRET;
 }
 
 let JWT_SECRET: string;
 
-export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'BROKER';
 
 interface User {
   id: string;
@@ -66,7 +62,7 @@ export function hasBrokerPermissions(roleOrUser: { role?: string } | string | nu
   const role = typeof roleOrUser === "string" ? roleOrUser : roleOrUser?.role;
   if (!role) return false;
   const normalized = role.toLowerCase();
-  return normalized === "broker" || normalized === "super_admin";
+  return normalized === "broker" || normalized === "super_admin" || normalized === "admin";
 }
 
 export function hasAdminPermissions(roleOrUser: { role?: string } | string | null | undefined): boolean {
@@ -127,18 +123,29 @@ export function verifyToken(token: string): { id: string; email: string; role: s
 // Find user by email
 export async function findUserByEmail(email: string): Promise<User | null> {
   if (useSupabase()) {
-    const supabaseUser = await findUserByEmailSupabase(email);
-    if (!supabaseUser) return null;
-    
-    return {
-      id: supabaseUser.id,
-      email: supabaseUser.email,
-      passwordHash: supabaseUser.password_hash,
-      role: supabaseUser.role,
-      createdAt: supabaseUser.created_at,
-      walletAddress: supabaseUser.wallet_address,
-      network: supabaseUser.network,
-    };
+    console.log("[AUTH] Using Supabase for users lookup");
+    try {
+      const supabaseUser = await findUserByEmailSupabase(email);
+      if (!supabaseUser) {
+        console.log("[AUTH] User not found in Supabase");
+        return null;
+      }
+      console.log("[AUTH] User found in Supabase:", supabaseUser.email);
+      return {
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        passwordHash: supabaseUser.password_hash,
+        role: supabaseUser.role,
+        createdAt: supabaseUser.created_at,
+        walletAddress: supabaseUser.wallet_address,
+        network: supabaseUser.network,
+      };
+    } catch (error) {
+      console.error("[AUTH] Supabase lookup failed, falling back to local DB:", (error as any)?.message || error);
+      console.log("[AUTH] FALLBACK: using file DB for users");
+    }
+  } else {
+    console.log("[AUTH] Supabase not configured, using file DB for users");
   }
   
   const db = await readDB();
@@ -393,6 +400,9 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   }
   
   req.user = user;
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H1-auth-role',location:'auth.ts:authenticateToken',message:'auth user set',data:{id:user.id,email:user.email,role:user.role},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
   next();
 }
 

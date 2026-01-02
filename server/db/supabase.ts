@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'BROKER';
 
 export interface SupabaseUser {
   id: string;

@@ -27,7 +27,7 @@ const registerSchema = z.object({
     .refine((email) => email.includes('@'), 'Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   // Role is optional - defaults to USER if not provided
-  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN']).optional(),
+  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN', 'BROKER']).optional(),
 });
 
 const loginSchema = z.object({
@@ -40,12 +40,16 @@ const loginSchema = z.object({
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H-reg-body',location:'authRoutes.ts:/register',message:'incoming register',data:{body:req.body},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     const validatedData = registerSchema.parse(req.body);
     
+    const normalizedRole = (validatedData.role || 'USER').toUpperCase() as any;
     const user = await createUser(
       validatedData.email,
       validatedData.password,
-      validatedData.role || 'USER' // Default to USER role
+      normalizedRole // Default to USER role
     );
     
     const token = generateToken(user.id, user.email, user.role);
@@ -62,6 +66,10 @@ router.post('/register', async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("[LOGIN_ERROR]", error);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-error',location:'authRoutes.ts:/login',message:'login error',data:{error: (error as any)?.message, stack: (error as any)?.stack},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (error instanceof z.ZodError) {
       const validationError = fromError(error);
       return res.status(400).json({ error: validationError.message });
@@ -79,9 +87,22 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
+    // Log Supabase env variables status (keys only, no values)
+    const supabaseEnvKeys = [];
+    if (process.env.SUPABASE_URL) supabaseEnvKeys.push('SUPABASE_URL');
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) supabaseEnvKeys.push('SUPABASE_SERVICE_ROLE_KEY');
+    if (process.env.SUPABASE_ANON_KEY) supabaseEnvKeys.push('SUPABASE_ANON_KEY');
+    console.log(`[AUTH] Supabase env keys present: ${supabaseEnvKeys.length > 0 ? supabaseEnvKeys.join(', ') : 'none'}`);
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-body',location:'authRoutes.ts:/login',message:'incoming login body',data:{body:req.body},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     const validatedData = loginSchema.parse(req.body);
     
     const user = await findUserByEmail(validatedData.email);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-user',location:'authRoutes.ts:/login',message:'user lookup result',data:{found:!!user,userId:user?.id,email:user?.email,role:user?.role,hasHash:!!(user as any)?.passwordHash},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }

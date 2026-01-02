@@ -72,6 +72,7 @@ async function main() {
       '002c_add_notional_amount.sql',
       '003_add_locked_collateral.sql',
       '004_add_partners_and_contracts.sql',
+      '005_fix_platform_fees.sql',
       '012_add_partner_fee_share_percent.sql',
       '005_forward_schema.sql',
       '006_add_option_window_fields.sql',
@@ -83,6 +84,7 @@ async function main() {
       '010_add_margin_fields.sql',
       '011_add_margin_call_fields.sql',
       '009_waitlist_signups.sql',
+      '013_extend_user_role_broker.sql',
     ];
 
     let successCount = 0;
