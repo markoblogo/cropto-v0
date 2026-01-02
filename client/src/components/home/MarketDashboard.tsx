@@ -4,11 +4,101 @@ import { useMarketDashboard, type MarketIndexDto } from "@/hooks/useMarketDashbo
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, ArrowDown, Minus, TrendingUp, ExternalLink } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, TrendingUp, ExternalLink, LineChart as LineChartIcon } from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface HistoryDataPoint {
+  date: string;
+  price: number;
+}
+
+function MarketHistoryDialog({
+  open,
+  onClose,
+  item,
+}: {
+  open: boolean;
+  onClose: () => void;
+  item: MarketIndexDto;
+}) {
+  const { t } = useTranslation();
+
+  const { data: history, isLoading } = useQuery<HistoryDataPoint[]>({
+    queryKey: ["/api/index/history", item.country, item.commodity, item.basis],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        country: item.country,
+        commodity: item.commodity,
+        basis: item.basis,
+      });
+      const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
+      return response.json();
+    },
+    enabled: open,
+  });
+
+  const chartData = history?.map((point) => ({
+    date: new Date(point.date).toLocaleDateString(),
+    price: point.price,
+  })) || [];
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>
+            {item.country} {item.commodity} {item.grade ? `(${item.grade})` : ""} - {item.basis}
+          </DialogTitle>
+          <DialogDescription>Price history chart</DialogDescription>
+        </DialogHeader>
+        <div className="mt-4">
+          {isLoading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : chartData.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No history data available</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip
+                  formatter={(value: number) => [`$${value.toFixed(2)}/t`, "Price"]}
+                  labelFormatter={(label) => `Date: ${label}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="price"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function MarketCard({ item }: { item: MarketIndexDto }) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const [showHistory, setShowHistory] = useState(false);
 
   const changeValue = item.change24h;
   const changeColor = changeValue > 0 ? "text-emerald-600" : changeValue < 0 ? "text-red-600" : "text-muted-foreground";
@@ -46,9 +136,10 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           variant="outline"
           size="sm"
           className="flex-1"
-          onClick={() => setLocation("/portfolio")}
+          onClick={() => setShowHistory(true)}
         >
-          {t('home.market.card.viewIndex')}
+          <LineChartIcon className="mr-2 h-3 w-3" />
+          {t('home.market.card.viewHistory')}
         </Button>
         <Button
           variant="default"
@@ -60,6 +151,11 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
       </CardFooter>
+      <MarketHistoryDialog
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+        item={item}
+      />
     </Card>
   );
 }

@@ -28,6 +28,14 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Plus, TrendingUp, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { MainLayout } from "@/components/layouts/MainLayout";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 interface IndexPrice {
   id: string;
@@ -41,6 +49,16 @@ interface IndexPrice {
   createdAt: string;
 }
 
+interface MarketIndex {
+  country: string;
+  commodity: string;
+  grade: string | null;
+  basis: string;
+  price: number;
+  asOf: string;
+  source: string;
+}
+
 interface UserData {
   user: {
     id: string;
@@ -50,13 +68,23 @@ interface UserData {
 }
 
 export default function AdminIndex() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isAddMarketIndexDialogOpen, setIsAddMarketIndexDialogOpen] = useState(false);
   const [commodity, setCommodity] = useState("Wheat 11.5%");
   const [price, setPrice] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterCommodity, setFilterCommodity] = useState("");
+  
+  // New market index form state
+  const [marketCountry, setMarketCountry] = useState<"UA" | "BR" | "AR">("BR");
+  const [marketCommodity, setMarketCommodity] = useState("");
+  const [marketGrade, setMarketGrade] = useState("");
+  const [marketBasis, setMarketBasis] = useState("");
+  const [marketPrice, setMarketPrice] = useState("");
+  const [marketAsOf, setMarketAsOf] = useState(new Date().toISOString().split('T')[0]);
 
   // Check authentication and role
   const { data: userData, isLoading: isAuthLoading } = useQuery<UserData | null>({
@@ -75,6 +103,12 @@ export default function AdminIndex() {
   // Fetch index prices (call all hooks before early returns)
   const { data: indexPrices, isLoading: isPricesLoading } = useQuery<IndexPrice[]>({
     queryKey: ["/api/admin/index", filterCommodity],
+    enabled: !!isAdminLevelUser,
+  });
+
+  // Fetch market indexes (new endpoint)
+  const { data: marketIndexes, isLoading: isMarketIndexesLoading } = useQuery<MarketIndex[]>({
+    queryKey: ["/api/admin/indexes"],
     enabled: !!isAdminLevelUser,
   });
 
@@ -112,6 +146,44 @@ export default function AdminIndex() {
     },
   });
 
+  // Add market index mutation
+  const addMarketIndexMutation = useMutation({
+    mutationFn: async (data: {
+      country: "UA" | "BR" | "AR";
+      commodity: string;
+      basis: string;
+      price: number;
+      currency?: string;
+      asOf?: string;
+      grade?: string | null;
+    }) => {
+      const response = await apiRequest("POST", "/api/admin/indexes", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/indexes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/market-dashboard"] });
+      setIsAddMarketIndexDialogOpen(false);
+      setMarketCountry("BR");
+      setMarketCommodity("");
+      setMarketGrade("");
+      setMarketBasis("");
+      setMarketPrice("");
+      setMarketAsOf(new Date().toISOString().split('T')[0]);
+      toast({
+        title: t('common.success'),
+        description: t('home.admin.indexes.success'),
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('common.error'),
+        description: error.message || t('home.admin.indexes.error'),
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddIndex = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -141,7 +213,40 @@ export default function AdminIndex() {
     });
   };
 
-  if (isAuthLoading || isPricesLoading) {
+  const handleAddMarketIndex = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!marketCommodity || !marketBasis || !marketPrice) {
+      toast({
+        title: "Validation Error",
+        description: "Commodity, basis, and price are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const priceNum = parseFloat(marketPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Price must be a positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addMarketIndexMutation.mutate({
+      country: marketCountry,
+      commodity: marketCommodity,
+      basis: marketBasis,
+      price: priceNum,
+      currency: "USD",
+      asOf: marketAsOf,
+      grade: marketGrade || null,
+    });
+  };
+
+  if (isAuthLoading || isPricesLoading || isMarketIndexesLoading) {
     return (
       <MainLayout>
         <div className="space-y-8">
@@ -179,9 +284,17 @@ export default function AdminIndex() {
             <Button
               onClick={() => setIsAddDialogOpen(true)}
               data-testid="button-add-index"
+              variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Index Price
+              Add Legacy Index
+            </Button>
+            <Button
+              onClick={() => setIsAddMarketIndexDialogOpen(true)}
+              data-testid="button-add-market-index"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {t('home.admin.indexes.addMarketIndex')}
             </Button>
           </div>
         </div>
@@ -275,10 +388,64 @@ export default function AdminIndex() {
           </div>
         </div>
 
+        {/* Market Indexes Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('home.admin.indexes.title')}</CardTitle>
+            <CardDescription>
+              {t('home.admin.indexes.description')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!marketIndexes || marketIndexes.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">{t('home.admin.indexes.noIndexes')}</p>
+                <p className="text-sm">{t('home.admin.indexes.noIndexesDescription')}</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Commodity</TableHead>
+                      <TableHead>Grade</TableHead>
+                      <TableHead>Basis</TableHead>
+                      <TableHead className="text-right">Price (USD/t)</TableHead>
+                      <TableHead>As Of</TableHead>
+                      <TableHead>Source</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {marketIndexes.map((index, idx) => (
+                      <TableRow key={`${index.country}-${index.commodity}-${index.basis}-${idx}`}>
+                        <TableCell className="font-medium">{index.country}</TableCell>
+                        <TableCell>{index.commodity}</TableCell>
+                        <TableCell>{index.grade || "—"}</TableCell>
+                        <TableCell>{index.basis}</TableCell>
+                        <TableCell className="text-right font-mono">
+                          ${index.price.toFixed(2)}
+                        </TableCell>
+                        <TableCell>{format(new Date(index.asOf), "MMM dd, yyyy")}</TableCell>
+                        <TableCell>
+                          <code className="text-xs bg-muted px-2 py-1 rounded">
+                            {index.source}
+                          </code>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Index Prices Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Index Price History</CardTitle>
+            <CardTitle>Index Price History (Legacy)</CardTitle>
             <CardDescription>
               Latest {indexPrices?.length || 0} index prices
             </CardDescription>
@@ -391,6 +558,102 @@ export default function AdminIndex() {
                   data-testid="button-submit-index"
                 >
                   {addIndexMutation.isPending ? "Adding..." : "Add Price"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Market Index Dialog */}
+        <Dialog open={isAddMarketIndexDialogOpen} onOpenChange={setIsAddMarketIndexDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t('home.admin.indexes.addMarketIndexTitle')}</DialogTitle>
+              <DialogDescription>
+                {t('home.admin.indexes.addMarketIndexDescription')}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddMarketIndex} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="market-country">{t('home.admin.indexes.country')}</Label>
+                <Select
+                  value={marketCountry}
+                  onValueChange={(value: "UA" | "BR" | "AR") => setMarketCountry(value)}
+                >
+                  <SelectTrigger id="market-country">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UA">Ukraine (UA)</SelectItem>
+                    <SelectItem value="BR">Brazil (BR)</SelectItem>
+                    <SelectItem value="AR">Argentina (AR)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="market-commodity">{t('home.admin.indexes.commodity')}</Label>
+                <Input
+                  id="market-commodity"
+                  placeholder="e.g. corn, wheat, soybeans"
+                  value={marketCommodity}
+                  onChange={(e) => setMarketCommodity(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="market-grade">{t('home.admin.indexes.grade')}</Label>
+                <Input
+                  id="market-grade"
+                  placeholder="e.g. 11.5pro, GMO, feed"
+                  value={marketGrade}
+                  onChange={(e) => setMarketGrade(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="market-basis">{t('home.admin.indexes.basis')}</Label>
+                <Input
+                  id="market-basis"
+                  placeholder="e.g. FOB Santos, CPT Odesa (export)"
+                  value={marketBasis}
+                  onChange={(e) => setMarketBasis(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="market-price">{t('home.admin.indexes.price')}</Label>
+                <Input
+                  id="market-price"
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 245.80"
+                  value={marketPrice}
+                  onChange={(e) => setMarketPrice(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="market-asof">{t('home.admin.indexes.asOf')}</Label>
+                <Input
+                  id="market-asof"
+                  type="date"
+                  value={marketAsOf}
+                  onChange={(e) => setMarketAsOf(e.target.value)}
+                  required
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAddMarketIndexDialogOpen(false)}
+                >
+                  {t('button.cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={addMarketIndexMutation.isPending}
+                >
+                  {addMarketIndexMutation.isPending ? t('home.admin.indexes.adding') : t('home.admin.indexes.addButton')}
                 </Button>
               </DialogFooter>
             </form>

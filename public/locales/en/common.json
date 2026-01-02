@@ -138,7 +138,29 @@
       },
       "card": {
         "viewIndex": "View Index Market",
-        "viewOptions": "View Options Market"
+        "viewOptions": "View Options Market",
+        "viewHistory": "View History"
+      }
+    },
+    "admin": {
+      "indexes": {
+        "title": "Market Indexes (Latest)",
+        "description": "Current index values by country, commodity, and basis",
+        "addMarketIndex": "Add Market Index",
+        "addMarketIndexTitle": "Add Market Index",
+        "addMarketIndexDescription": "Add or update an index value for a specific country, commodity, and basis",
+        "country": "Country",
+        "commodity": "Commodity",
+        "grade": "Grade (optional)",
+        "basis": "Basis",
+        "price": "Price (USD/t)",
+        "asOf": "As Of Date",
+        "addButton": "Add Index",
+        "adding": "Adding...",
+        "success": "Market index added successfully",
+        "error": "Failed to add market index",
+        "noIndexes": "No market indexes yet",
+        "noIndexesDescription": "Add a market index using the form above"
       }
     },
     "how": {

@@ -997,6 +997,273 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/admin/indexes - Get latest index values per (country, commodity, basis)
+  app.get("/api/admin/indexes", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Access denied. Broker role required." });
+      }
+
+      // Get UA indexes from commodityIndexPrices
+      const uaIndexes = await db
+        .select()
+        .from(indexes)
+        .where(sql`${indexes.category} LIKE 'CPT%'`);
+
+      const uaLatest: Array<{
+        country: string;
+        commodity: string;
+        grade: string | null;
+        basis: string;
+        price: number;
+        asOf: string;
+        source: string;
+      }> = [];
+
+      for (const index of uaIndexes) {
+        const [latestPrice] = await db
+          .select()
+          .from(commodityIndexPrices)
+          .where(eq(commodityIndexPrices.indexId, index.id))
+          .orderBy(desc(commodityIndexPrices.timestamp))
+          .limit(1);
+
+        if (latestPrice) {
+          // Extract commodity and grade from index name (simplified)
+          const lowerName = index.name.toLowerCase();
+          let commodity = "";
+          let grade: string | null = null;
+          if (lowerName.includes("corn")) commodity = "corn";
+          else if (lowerName.includes("wheat")) {
+            commodity = "wheat";
+            if (index.name.match(/11\.?5/)) grade = "11.5pro";
+            if (lowerName.includes("feed")) grade = "feed";
+          } else if (lowerName.includes("soy")) {
+            commodity = "soybeans";
+            if (lowerName.includes("gmo")) grade = "GMO";
+          } else if (lowerName.includes("sunflower")) commodity = "sunflower";
+          else if (lowerName.includes("rapeseed")) commodity = "rapeseed";
+
+          const basis = index.category === "CPT ODESA" 
+            ? "CPT Odesa (export)"
+            : index.category === "CPT PARITET ODESA"
+            ? "CPT Paritet Odesa (processing)"
+            : index.category;
+
+          uaLatest.push({
+            country: "UA",
+            commodity,
+            grade,
+            basis,
+            price: parseFloat(latestPrice.price),
+            asOf: new Date(latestPrice.timestamp).toISOString(),
+            source: "spike_telegram",
+          });
+        }
+      }
+
+      // Get BR/AR indexes from indexPrices with meta
+      const allIndexPrices = await db
+        .select()
+        .from(indexPrices)
+        .orderBy(desc(indexPrices.date));
+
+      const brArLatest: Array<{
+        country: string;
+        commodity: string;
+        grade: string | null;
+        basis: string;
+        price: number;
+        asOf: string;
+        source: string;
+      }> = [];
+
+      // Group by (country, commodity, basis) and get latest
+      const brArMap = new Map<string, typeof allIndexPrices[0] & { meta: any }>();
+      for (const price of allIndexPrices) {
+        try {
+          const meta = price.meta ? JSON.parse(price.meta) : {};
+          if (meta.country && (meta.country === "BR" || meta.country === "AR")) {
+            const key = `${meta.country}:${meta.commodity || price.commodity.toLowerCase()}:${meta.basis || ""}`;
+            if (!brArMap.has(key)) {
+              brArMap.set(key, { ...price, meta });
+            }
+          }
+        } catch {
+          // Skip invalid meta
+        }
+      }
+
+      for (const price of brArMap.values()) {
+        const meta = price.meta || {};
+        brArLatest.push({
+          country: meta.country,
+          commodity: meta.commodity || price.commodity.toLowerCase(),
+          grade: meta.grade || null,
+          basis: meta.basis || "",
+          price: parseFloat(price.price),
+          asOf: new Date(price.date).toISOString(),
+          source: "manual",
+        });
+      }
+
+      res.json([...uaLatest, ...brArLatest]);
+    } catch (error: any) {
+      console.error("Error fetching admin indexes:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // POST /api/admin/indexes - Create/update index value
+  app.post("/api/admin/indexes", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Access denied. Broker role required." });
+      }
+
+      const schema = z.object({
+        country: z.enum(["UA", "BR", "AR"]),
+        commodity: z.string().min(1),
+        basis: z.string().min(1),
+        price: z.coerce.number().positive(),
+        currency: z.string().default("USD"),
+        asOf: z.string().optional(),
+        grade: z.string().nullable().optional(),
+      });
+
+      const result = schema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: validationError.message,
+          details: result.error.issues,
+        });
+      }
+
+      const { country, commodity, basis, price, currency, asOf, grade } = result.data;
+      const date = asOf ? new Date(asOf) : new Date();
+      const userName = req.user?.email || "admin";
+
+      if (country === "UA") {
+        // For UA, find matching index by commodity/basis and use commodityIndexPrices
+        // This is more complex, so for now we'll store it in indexPrices with meta
+        // (In a full implementation, we'd match to indexes table)
+      }
+
+      // Store in indexPrices with metadata
+      const meta = JSON.stringify({
+        country,
+        commodity: commodity.toLowerCase(),
+        basis,
+        grade: grade || null,
+        currency,
+        createdBy: userName,
+      });
+
+      const [newPrice] = await db
+        .insert(indexPrices)
+        .values({
+          commodity: commodity.toUpperCase(),
+          price: price.toFixed(8),
+          date,
+          source: `admin:${userName}`,
+          raw: `Manual entry: ${country} ${commodity} @ ${basis}`,
+          meta,
+        })
+        .returning();
+
+      res.json({
+        success: true,
+        message: `Index price added: ${country} ${commodity} @ ${basis} = $${price}`,
+        data: newPrice,
+      });
+    } catch (error: any) {
+      console.error("Error creating admin index:", error);
+      res.status(500).json({ error: error.message || "Internal server error" });
+    }
+  });
+
+  // GET /api/index/history - Get price history for a specific instrument
+  app.get("/api/index/history", async (req, res) => {
+    try {
+      const { country, commodity, basis } = req.query;
+
+      if (!country || !commodity || !basis) {
+        return res.status(400).json({
+          error: "Missing required parameters: country, commodity, basis",
+        });
+      }
+
+      const history: Array<{ date: string; price: number }> = [];
+
+      if (country === "UA") {
+        // Query from commodityIndexPrices via indexes table
+        const uaIndexes = await db
+          .select()
+          .from(indexes)
+          .where(sql`${indexes.category} LIKE 'CPT%'`);
+
+        // Find matching index (simplified matching)
+        let matchingIndex = null;
+        for (const index of uaIndexes) {
+          const indexBasis = index.category === "CPT ODESA"
+            ? "CPT Odesa (export)"
+            : index.category === "CPT PARITET ODESA"
+            ? "CPT Paritet Odesa (processing)"
+            : index.category;
+          if (indexBasis === basis && index.name.toLowerCase().includes(commodity.toLowerCase())) {
+            matchingIndex = index;
+            break;
+          }
+        }
+
+        if (matchingIndex) {
+          const prices = await db
+            .select()
+            .from(commodityIndexPrices)
+            .where(eq(commodityIndexPrices.indexId, matchingIndex.id))
+            .orderBy(asc(commodityIndexPrices.timestamp));
+
+          for (const price of prices) {
+            history.push({
+              date: new Date(price.timestamp).toISOString().split("T")[0],
+              price: parseFloat(price.price),
+            });
+          }
+        }
+      } else {
+        // Query from indexPrices with meta
+        const allPrices = await db
+          .select()
+          .from(indexPrices)
+          .orderBy(asc(indexPrices.date));
+
+        for (const price of allPrices) {
+          try {
+            const meta = price.meta ? JSON.parse(price.meta) : {};
+            if (
+              meta.country === country &&
+              (meta.commodity || price.commodity.toLowerCase()) === commodity.toLowerCase() &&
+              meta.basis === basis
+            ) {
+              history.push({
+                date: new Date(price.date).toISOString().split("T")[0],
+                price: parseFloat(price.price),
+              });
+            }
+          } catch {
+            // Skip invalid meta
+          }
+        }
+      }
+
+      res.json(history);
+    } catch (error: any) {
+      console.error("Error fetching index history:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // GET /api/market-dashboard - Market dashboard view by country (UA, BR, AR)
   app.get("/api/market-dashboard", async (req, res) => {
     try {
@@ -1087,9 +1354,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter out entries with zero price (no data available)
       const uaDataFiltered = uaData.filter((item) => item.price > 0);
 
-      // Get mock data for BR and AR
-      const brData = getMockMarketDataBR();
-      const arData = getMockMarketDataAR();
+      // Get BR/AR data from database (indexPrices with meta)
+      const allIndexPrices = await db
+        .select()
+        .from(indexPrices)
+        .orderBy(desc(indexPrices.date));
+
+      const brMap = new Map<string, MarketIndexDto>();
+      const arMap = new Map<string, MarketIndexDto>();
+
+      for (const price of allIndexPrices) {
+        try {
+          const meta = price.meta ? JSON.parse(price.meta) : {};
+          if (meta.country && (meta.country === "BR" || meta.country === "AR")) {
+            const commodity = meta.commodity || price.commodity.toLowerCase();
+            const basis = meta.basis || "";
+            const key = `${commodity}:${basis}`;
+
+            const country = meta.country;
+            const targetMap = country === "BR" ? brMap : arMap;
+
+            // Only keep the latest entry per (commodity, basis)
+            if (!targetMap.has(key)) {
+              // Calculate change24h (simplified: compare with previous day)
+              const priceValue = parseFloat(price.price);
+              let change24h = 0;
+              
+              // Find previous price for same commodity+basis
+              for (const prevPrice of allIndexPrices) {
+                if (prevPrice.id === price.id) continue;
+                try {
+                  const prevMeta = prevPrice.meta ? JSON.parse(prevPrice.meta) : {};
+                  if (
+                    prevMeta.country === country &&
+                    (prevMeta.commodity || prevPrice.commodity.toLowerCase()) === commodity &&
+                    prevMeta.basis === basis
+                  ) {
+                    const prevPriceValue = parseFloat(prevPrice.price);
+                    const prevDate = new Date(prevPrice.date);
+                    const currentDate = new Date(price.date);
+                    const daysDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+                    
+                    if (daysDiff <= 1.5 && daysDiff > 0) {
+                      change24h = ((priceValue - prevPriceValue) / prevPriceValue) * 100;
+                    }
+                    break;
+                  }
+                } catch {
+                  // Skip invalid meta
+                }
+              }
+
+              targetMap.set(key, {
+                commodity,
+                grade: meta.grade || null,
+                country: country as "BR" | "AR",
+                basis,
+                price: priceValue,
+                currency: "USD" as const,
+                change24h,
+                change7d: 0,
+                change30d: 0,
+                asOf: new Date(price.date).toISOString(),
+                source: "manual" as const,
+              });
+            }
+          }
+        } catch {
+          // Skip invalid meta
+        }
+      }
+
+      const brData = Array.from(brMap.values());
+      const arData = Array.from(arMap.values());
+
+      // Fallback to mock data if no database entries
+      const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR();
+      const finalArData = arData.length > 0 ? arData : getMockMarketDataAR();
 
       res.json({
         ua: uaDataFiltered.length > 0 ? uaDataFiltered : [
@@ -1108,8 +1449,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             source: "manual" as const,
           },
         ],
-        br: brData,
-        ar: arData,
+        br: finalBrData,
+        ar: finalArData,
       });
     } catch (error: any) {
       console.error("Error fetching market dashboard:", error);
