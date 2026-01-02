@@ -40,12 +40,14 @@ interface CommodityIndex {
 
 type OptionType = "CALL" | "PUT";
 
-const DOCS = [
-  { key: "indexes", label: "Commodity Indexes", src: "/docs/education-indexes.md" },
-  { key: "options", label: "Options 101", src: "/docs/education-options101.md" },
-  { key: "margin", label: "Margin & Collateral", src: "/docs/education-margin.md" },
-  { key: "spot", label: "Spot vs Forward vs Options", src: "/docs/education-spot-vs-forwards.md" },
-  { key: "faq", label: "FAQ", src: "/docs/education-faq.md" },
+// DOCS array will be created dynamically based on currentLang
+// This is defined as a function to use currentLang
+const getDocs = (currentLang: string) => [
+  { key: "indexes", label: "Commodity Indexes", src: `/api/docs/education.indices.${currentLang}.md` },
+  { key: "options", label: "Options 101", src: `/api/docs/education.options.${currentLang}.md` },
+  { key: "margin", label: "Margin & Collateral", src: `/api/docs/education-margin.md` }, // No localized version yet
+  { key: "spot", label: "Spot vs Forward vs Options", src: `/api/docs/education-spot-vs-forwards.md` }, // No localized version yet
+  { key: "faq", label: "FAQ", src: `/api/docs/education.faq.${currentLang}.md` },
 ];
 
 const SCENARIOS = [
@@ -119,8 +121,9 @@ export default function Education() {
     });
   }, [calculator.type, priceNum, premiumNum, qtyNum, strikeNum]);
 
-  const aboutSrc = `/docs/about.${currentLang}.md`;
-  const faqSrc = `/docs/faq.${currentLang}.md`;
+  const aboutSrc = `/api/docs/about.${currentLang}.md`;
+  const faqSrc = `/api/docs/faq.${currentLang}.md`;
+  const docs = getDocs(currentLang);
 
   return (
     <MainLayout>
@@ -168,15 +171,15 @@ export default function Education() {
             <CardDescription>{t('page.education.topicsDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Tabs defaultValue={DOCS[0].key} className="space-y-4">
+            <Tabs defaultValue={docs[0].key} className="space-y-4">
               <TabsList className="flex flex-wrap gap-2">
-                {DOCS.map((doc) => (
+                {docs.map((doc) => (
                   <TabsTrigger key={doc.key} value={doc.key}>
                     {doc.label}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {DOCS.map((doc) => (
+              {docs.map((doc) => (
                 <TabsContent key={doc.key} value={doc.key}>
                   <MarkdownSection src={doc.src} />
                 </TabsContent>

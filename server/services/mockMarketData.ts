@@ -1,12 +1,12 @@
 /**
- * Mock market data for BR (Brazil) and AR (Argentina) countries.
+ * Mock market data for BR (Brazil), AR (Argentina), and US (USA) countries.
  * This is a temporary solution until real parsers are implemented.
  */
 
 export interface MarketIndexDto {
   commodity: string;
   grade: string | null;
-  country: "UA" | "BR" | "AR";
+  country: "UA" | "BR" | "AR" | "US";
   basis: string;
   price: number;
   currency: "USD";
@@ -107,6 +107,54 @@ export function getMockMarketDataAR(): MarketIndexDto[] {
       change24h: 1.2,
       change7d: 3.1,
       change30d: -1.2,
+      asOf: now,
+      source: "mock",
+    },
+  ];
+}
+
+/**
+ * Mock market data for USA (US)
+ */
+export function getMockMarketDataUS(): MarketIndexDto[] {
+  const now = new Date().toISOString();
+  return [
+    {
+      commodity: "corn",
+      grade: null,
+      country: "US",
+      basis: "FOB Gulf",
+      price: 250.00,
+      currency: "USD",
+      change24h: 0.8,
+      change7d: 1.5,
+      change30d: -2.0,
+      asOf: now,
+      source: "mock",
+    },
+    {
+      commodity: "wheat",
+      grade: null,
+      country: "US",
+      basis: "FOB Gulf",
+      price: 290.00,
+      currency: "USD",
+      change24h: -0.5,
+      change7d: 2.1,
+      change30d: 3.5,
+      asOf: now,
+      source: "mock",
+    },
+    {
+      commodity: "soybeans",
+      grade: "GMO",
+      country: "US",
+      basis: "FOB Gulf",
+      price: 495.00,
+      currency: "USD",
+      change24h: 1.2,
+      change7d: -1.0,
+      change30d: 4.2,
       asOf: now,
       source: "mock",
     },

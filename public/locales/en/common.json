@@ -133,14 +133,16 @@
     },
     "market": {
       "title": "Market Dashboard",
-      "subtitle": "Real-time commodity prices from Ukraine, Brazil, and Argentina",
+      "subtitle": "Real-time commodity prices from Ukraine, Brazil, Argentina, and USA",
       "tabs": {
         "ua": "Ukraine",
         "uaDescription": "Reference prices are based on CPT Odesa export markets and domestic processing indices for soy and sunflower in Ukraine normalised to CPT Odesa parity (powered by Spike Spot Index).",
         "br": "Brazil",
         "brDescription": "Reference prices are based on export market quotes from key Brazilian ports (Santos, Paranaguá).",
         "ar": "Argentina",
-        "arDescription": "Reference prices are based on FOB Up-River export values for corn, wheat, soy and soymeal."
+        "arDescription": "Reference prices are based on FOB Up-River export values for corn, wheat, soy and soymeal.",
+        "us": "USA",
+        "usDescription": "Reference prices are based on export market quotes from key US ports (Gulf, Pacific)."
       },
       "card": {
         "viewIndex": "View Index Market",
@@ -306,15 +308,25 @@
       "subtitle": "Learn how to test the Cropto platform features"
     },
     "education": {
-      "title": "Education & Learn",
-      "subtitle": "Understand how Cropto works: indices, spot tokens, options and risk.",
+      "title": "Education & Training",
+      "subtitle": "Central hub for learning Cropto",
       "sections": {
         "intro": "How Cropto works",
         "indices": "Indices & Spot Tokens",
         "options": "Options & Hedging",
         "risk": "Risk & Collateral",
         "faq": "Mini-FAQ"
-      }
+      },
+      "aboutTitle": "About Cropto",
+      "faqTitle": "Frequently Asked Questions",
+      "topicsTitle": "Educational Topics",
+      "topicsDescription": "Learn about commodity indices, options, margin, and trading strategies",
+      "scenariosTitle": "Trading Scenarios",
+      "scenariosDescription": "Real-world examples of how different users interact with Cropto",
+      "calculatorTitle": "Options Calculator",
+      "calculatorDescription": "Calculate premium, notional, and intrinsic value for educational purposes",
+      "readScenario": "Read Scenario",
+      "heroDescription": "Cropto is a platform for trading tokenized grain indices and options, designed for farmers (hedging), traders (speculation), and brokers. It combines on-chain settlement with off-chain index price feeds."
     },
     "dashboard": {
       "title": "Options Marketplace",

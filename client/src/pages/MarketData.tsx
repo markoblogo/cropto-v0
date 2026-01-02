@@ -169,20 +169,35 @@ export default function MarketData() {
         basis: primaryWheatIndex.basis,
       });
       const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
-      return response.json();
+      const data = await response.json();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketData.tsx:queryFn',message:'API response for primaryWheatHistory',data:{region:selectedRegion,commodity:primaryWheatIndex?.commodity,basis:primaryWheatIndex?.basis,dataType:typeof data,isArray:Array.isArray(data),dataValue:JSON.stringify(data).substring(0,200),responseOk:response.ok,responseStatus:response.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
+      // #endregion
+      if (!Array.isArray(data)) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketData.tsx:queryFn-non-array',message:'API returned non-array data for primaryWheatHistory',data:{region:selectedRegion,commodity:primaryWheatIndex?.commodity,basis:primaryWheatIndex?.basis,dataValue:JSON.stringify(data),dataType:typeof data},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        return [];
+      }
+      return data;
     },
     enabled: !!primaryWheatIndex,
   });
 
   // Prepare chart data for primary wheat index
   const volatilityChartData = useMemo(() => {
-    if (!primaryWheatHistory || primaryWheatHistory.length === 0) return [];
+    // #region agent log
+    if (primaryWheatHistory !== undefined) {
+      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketData.tsx:useMemo-before-slice',message:'primaryWheatHistory value before slice operation',data:{historyType:typeof primaryWheatHistory,isArray:Array.isArray(primaryWheatHistory),historyLength:Array.isArray(primaryWheatHistory)?primaryWheatHistory.length:null,region:selectedRegion},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
+    }
+    // #endregion
+    if (!primaryWheatHistory || !Array.isArray(primaryWheatHistory) || primaryWheatHistory.length === 0) return [];
     return primaryWheatHistory.slice(-30).map(entry => ({
       date: format(new Date(entry.date), "MMM dd HH:mm"),
       price: entry.price,
       timestamp: entry.date,
     }));
-  }, [primaryWheatHistory]);
+  }, [primaryWheatHistory, selectedRegion]);
 
   // Calculate Y-axis domain for volatility chart
   const volatilityPrices = volatilityChartData.map(d => d.price);

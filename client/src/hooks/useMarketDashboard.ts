@@ -4,7 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 export interface MarketIndexDto {
   commodity: string;
   grade: string | null;
-  country: "UA" | "BR" | "AR";
+  country: "UA" | "BR" | "AR" | "US";
   basis: string;
   price: number;
   currency: "USD";
@@ -19,6 +19,7 @@ export interface MarketDashboardResponse {
   ua: MarketIndexDto[];
   br: MarketIndexDto[];
   ar: MarketIndexDto[];
+  us: MarketIndexDto[];
 }
 
 export function useMarketDashboard() {

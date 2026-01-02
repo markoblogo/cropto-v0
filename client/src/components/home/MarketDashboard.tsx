@@ -105,7 +105,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   const ChangeIcon = changeValue > 0 ? ArrowUp : changeValue < 0 ? ArrowDown : Minus;
 
   const commodityLabel = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
-  const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : "🇦🇷";
+  const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : item.country === "AR" ? "🇦🇷" : "🇺🇸";
 
   // Fetch history for sparkline
   const { data: history } = useQuery<HistoryDataPoint[]>({
@@ -117,14 +117,29 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
         basis: item.basis,
       });
       const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
-      return response.json();
+      const data = await response.json();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDashboard.tsx:queryFn',message:'API response for history',data:{country:item.country,commodity:item.commodity,basis:item.basis,dataType:typeof data,isArray:Array.isArray(data),dataValue:JSON.stringify(data).substring(0,200),responseOk:response.ok,responseStatus:response.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
+      // #endregion
+      if (!Array.isArray(data)) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDashboard.tsx:queryFn-non-array',message:'API returned non-array data',data:{country:item.country,commodity:item.commodity,basis:item.basis,dataValue:JSON.stringify(data),dataType:typeof data},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        return [];
+      }
+      return data;
     },
   });
 
-  const sparklineData = history?.slice(-20).map((point) => ({
+  // #region agent log
+  if (history !== undefined) {
+    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDashboard.tsx:before-slice',message:'History value before slice operation',data:{historyType:typeof history,isArray:Array.isArray(history),historyLength:Array.isArray(history)?history.length:null,country:item.country,commodity:item.commodity},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
+  }
+  // #endregion
+  const sparklineData = Array.isArray(history) ? history.slice(-20).map((point) => ({
     date: point.date,
     price: point.price,
-  })) || [];
+  })) : [];
 
   const handleViewIndexMarket = () => {
     setLocation(`/forward-market?country=${item.country.toLowerCase()}`);
@@ -298,10 +313,11 @@ export function MarketDashboard() {
         </div>
 
         <Tabs defaultValue="ua" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-lg grid-cols-4">
             <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
             <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
             <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+            <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ua" className="mt-6">
@@ -325,6 +341,14 @@ export function MarketDashboard() {
               items={data?.ar || []} 
               isLoading={isLoading}
               description={t('home.market.tabs.arDescription')}
+            />
+          </TabsContent>
+
+          <TabsContent value="us" className="mt-6">
+            <MarketTab 
+              items={data?.us || []} 
+              isLoading={isLoading}
+              description={t('home.market.tabs.usDescription')}
             />
           </TabsContent>
         </Tabs>

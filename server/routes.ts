@@ -39,7 +39,7 @@ import fs from "fs";
 import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
 import { createHash, randomUUID } from "crypto";
-import { getMockMarketDataBR, getMockMarketDataAR, type MarketIndexDto } from "./services/mockMarketData";
+import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
 
 const STALE_MAX_AGE_DAYS = 7;
 
@@ -1122,7 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const schema = z.object({
-        country: z.enum(["UA", "BR", "AR"]),
+        country: z.enum(["UA", "BR", "AR", "US"]),
         commodity: z.string().min(1),
         basis: z.string().min(1),
         price: z.coerce.number().positive(),
@@ -1266,7 +1266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to get latest index for a country/commodity
   async function getLatestIndexForCountryCommodity(
-    country: "UA" | "BR" | "AR",
+    country: "UA" | "BR" | "AR" | "US",
     commodity: string
   ): Promise<{ price: number; basis: string; asOf: string } | null> {
     if (country === "UA") {
@@ -1362,6 +1362,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             asOf: mock.asOf,
           };
         }
+      } else if (country === "US") {
+        const mockData = getMockMarketDataUS();
+        const mock = mockData.find((m) => m.commodity === commodityLower);
+        if (mock) {
+          return {
+            price: mock.price,
+            basis: mock.basis,
+            asOf: mock.asOf,
+          };
+        }
       }
     }
 
@@ -1379,12 +1389,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const baseCountryTyped = baseCountry as "UA" | "BR" | "AR";
-      const targetCountryTyped = targetCountry as "UA" | "BR" | "AR";
+      const baseCountryTyped = baseCountry as "UA" | "BR" | "AR" | "US";
+      const targetCountryTyped = targetCountry as "UA" | "BR" | "AR" | "US";
 
-      if (!["UA", "BR", "AR"].includes(baseCountryTyped) || !["UA", "BR", "AR"].includes(targetCountryTyped)) {
+      if (!["UA", "BR", "AR", "US"].includes(baseCountryTyped) || !["UA", "BR", "AR", "US"].includes(targetCountryTyped)) {
         return res.status(400).json({
-          error: "Invalid country. Must be UA, BR, or AR",
+          error: "Invalid country. Must be UA, BR, AR, or US",
         });
       }
 
@@ -1535,7 +1545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/market-dashboard - Market dashboard view by country (UA, BR, AR)
+  // GET /api/market-dashboard - Market dashboard view by country (UA, BR, AR, US)
   app.get("/api/market-dashboard", async (req, res) => {
     try {
       // Helper function to extract commodity name and grade from index name
@@ -1633,17 +1643,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const brMap = new Map<string, MarketIndexDto>();
       const arMap = new Map<string, MarketIndexDto>();
+      const usMap = new Map<string, MarketIndexDto>();
 
       for (const price of allIndexPrices) {
         try {
           const meta = price.meta ? JSON.parse(price.meta) : {};
-          if (meta.country && (meta.country === "BR" || meta.country === "AR")) {
+          if (meta.country && (meta.country === "BR" || meta.country === "AR" || meta.country === "US")) {
             const commodity = meta.commodity || price.commodity.toLowerCase();
             const basis = meta.basis || "";
             const key = `${commodity}:${basis}`;
 
             const country = meta.country;
-            const targetMap = country === "BR" ? brMap : arMap;
+            const targetMap = country === "BR" ? brMap : country === "AR" ? arMap : usMap;
 
             // Only keep the latest entry per (commodity, basis)
             if (!targetMap.has(key)) {
@@ -1679,7 +1690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               targetMap.set(key, {
                 commodity,
                 grade: meta.grade || null,
-                country: country as "BR" | "AR",
+                country: country as "BR" | "AR" | "US",
                 basis,
                 price: priceValue,
                 currency: "USD" as const,
@@ -1698,10 +1709,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const brData = Array.from(brMap.values());
       const arData = Array.from(arMap.values());
+      const usData = Array.from(usMap.values());
 
       // Fallback to mock data if no database entries
       const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR();
       const finalArData = arData.length > 0 ? arData : getMockMarketDataAR();
+      const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS();
 
       res.json({
         ua: uaDataFiltered.length > 0 ? uaDataFiltered : [
@@ -1722,6 +1735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         br: finalBrData,
         ar: finalArData,
+        us: finalUsData,
       });
     } catch (error: any) {
       console.error("Error fetching market dashboard:", error);
