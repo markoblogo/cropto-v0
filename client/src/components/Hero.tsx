@@ -23,18 +23,37 @@ export function Hero({
   onOpenWalletModal: _onOpenWalletModal,
 }: HeroProps) {
   const { t } = useTranslation();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
-  const navigateToSpotTrading = () => {
-    setLocation("/spot-trading");
+  // Start Index Trading → forward market (forward orderbook)
+  const navigateToForwardMarket = () => {
+    setLocation("/forward-market");
   };
 
+  // Start Options Trading → options chain
   const navigateToOptions = () => {
     setLocation("/options");
   };
 
-  const navigateToMarketData = () => {
-    setLocation("/market-data");
+  // View Markets → scroll to Market Dashboard section on homepage (or navigate to home if not on home)
+  const navigateToMarketDashboard = () => {
+    if (location === "/") {
+      // Already on homepage, scroll to Market Dashboard section
+      const marketSection = document.getElementById("market-dashboard");
+      if (marketSection) {
+        marketSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      // Navigate to homepage - Market Dashboard section will be visible
+      setLocation("/");
+      // Scroll after navigation (use setTimeout to allow page render)
+      setTimeout(() => {
+        const marketSection = document.getElementById("market-dashboard");
+        if (marketSection) {
+          marketSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -74,7 +93,7 @@ export function Hero({
             <Button
               size="lg"
               className="w-full sm:w-auto font-semibold bg-amber-200 text-amber-950 hover:bg-amber-300 shadow-sm"
-              onClick={navigateToSpotTrading}
+              onClick={navigateToForwardMarket}
               data-testid="button-hero-start-index-trading"
             >
               <BarChart3 className="mr-2 h-5 w-5" />
@@ -84,7 +103,7 @@ export function Hero({
             <Button
               size="lg"
               className="w-full sm:w-auto font-semibold bg-amber-300 text-amber-950 hover:bg-amber-400 shadow-sm"
-              onClick={() => navigateToOptions()}
+              onClick={navigateToOptions}
               data-testid="button-hero-start-options-trading"
             >
               <ArrowRightCircle className="mr-2 h-5 w-5" />
@@ -94,7 +113,7 @@ export function Hero({
             <Button
               size="lg"
               className="w-full sm:w-auto font-semibold bg-lime-400 text-emerald-950 hover:bg-lime-500 shadow-sm"
-              onClick={navigateToMarketData}
+              onClick={navigateToMarketDashboard}
               data-testid="button-hero-view-markets"
             >
               <Eye className="mr-2 h-5 w-5" />

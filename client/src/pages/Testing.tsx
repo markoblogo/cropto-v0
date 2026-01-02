@@ -7,7 +7,7 @@ import MockModeBanner from "@/components/MockModeBanner";
 import { FileText } from "lucide-react";
 
 export default function TestingPage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
   
   const testingSrc = `/docs/testing.${currentLang}.md`;
@@ -17,13 +17,20 @@ export default function TestingPage() {
       <div className="max-w-4xl mx-auto">
         <MockModeBanner />
 
+        {/* Header Section */}
+        <div className="mb-4">
+          <h1 className="text-3xl font-bold tracking-tight">{t('page.testing.title')}</h1>
+          <p className="text-muted-foreground mt-2">
+            {t('page.testing.subtitle')}
+          </p>
+        </div>
+
         <Card className="mt-4">
           <CardHeader>
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <CardTitle className="text-3xl font-bold flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <FileText className="w-8 h-8" />
-                {currentLang === 'uk' ? 'Інструкція з тестування' : 'Testing Guide'}
-              </CardTitle>
+              </div>
               <FlagSwitcher />
             </div>
           </CardHeader>

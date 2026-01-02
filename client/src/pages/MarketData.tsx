@@ -1,17 +1,20 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { CommodityIndexCard } from "@/components/CommodityIndexCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ExternalLink } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { getIndexMetadata } from "@/lib/indexMapping";
 import { apiRequest } from "@/lib/queryClient";
+import { useMarketDashboard, type MarketIndexDto } from "@/hooks/useMarketDashboard";
+import { Button } from "@/components/ui/button";
 
 interface CommodityIndex {
   id: string;
@@ -59,10 +62,14 @@ interface SpotPosition {
 }
 
 export default function MarketData() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const [selectedIndexSlug, setSelectedIndexSlug] = useState<string | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar">("ua");
+  
+  // Fetch market dashboard data for regional indexes
+  const { data: marketDashboardData, isLoading: isMarketDashboardLoading } = useMarketDashboard();
 
-  // Fetch all indexes
+  // Fetch all indexes (for the Index Overview Grid section)
   const { data: indexes, isLoading, error } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
     refetchInterval: 30000,
@@ -83,27 +90,6 @@ export default function MarketData() {
     retry: false,
   });
 
-  // Set default selected index when indexes load
-  const effectiveSelectedSlug = selectedIndexSlug || (indexes && indexes.length > 0 ? indexes[0].slug : null);
-
-  // Fetch price history for selected index (for preview chart)
-  const { data: selectedIndexData, isLoading: isHistoryLoading } = useQuery<IndexDataWithHistory>({
-    queryKey: ["/api/indexes", effectiveSelectedSlug],
-    queryFn: async () => {
-      if (!effectiveSelectedSlug) return null;
-      const response = await fetch(`/api/indexes/${effectiveSelectedSlug}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch index: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    enabled: !!effectiveSelectedSlug,
-  });
-
-  // Set default selected index when indexes first load
-  if (!selectedIndexSlug && indexes && indexes.length > 0) {
-    setSelectedIndexSlug(indexes[0].slug);
-  }
 
   const { data: historiesMap = {} } = useQuery<Record<string, PriceHistoryEntry[]>>({
     queryKey: ["/api/indexes/history-map", indexes?.map((i) => i.slug)],
@@ -157,23 +143,60 @@ export default function MarketData() {
     setLocation(`/index/${slug}`);
   };
 
-  // Prepare chart data for selected index
-  const chartData = selectedIndexData?.priceHistory
-    ? [...selectedIndexData.priceHistory]
-        .reverse()
-        .slice(-30) // Last 30 points for preview
-        .map(entry => ({
-          date: format(new Date(entry.timestamp), "MMM dd HH:mm"),
-          price: entry.price,
-          timestamp: entry.timestamp,
-        }))
-    : [];
+  // Get regional indexes for selected region
+  const regionalIndexes = useMemo(() => {
+    if (!marketDashboardData) return [];
+    return marketDashboardData[selectedRegion] || [];
+  }, [marketDashboardData, selectedRegion]);
 
-  // Calculate Y-axis domain for chart
-  const allPrices = chartData.map(d => d.price);
-  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
-  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
-  const padding = (maxPrice - minPrice) * 0.1 || 10;
+  // Find primary wheat index for selected region
+  const primaryWheatIndex = useMemo(() => {
+    if (!regionalIndexes || regionalIndexes.length === 0) return null;
+    // Find first wheat-related index (commodity contains "wheat" case-insensitive)
+    return regionalIndexes.find(item => 
+      item.commodity.toLowerCase().includes("wheat")
+    ) || regionalIndexes[0]; // Fallback to first index if no wheat found
+  }, [regionalIndexes]);
+
+  // Fetch history for primary wheat index
+  const { data: primaryWheatHistory, isLoading: isPrimaryWheatHistoryLoading } = useQuery<Array<{ date: string; price: number }>>({
+    queryKey: ["/api/index/history", selectedRegion, primaryWheatIndex?.commodity, primaryWheatIndex?.basis],
+    queryFn: async () => {
+      if (!primaryWheatIndex) return [];
+      const params = new URLSearchParams({
+        country: selectedRegion.toUpperCase(),
+        commodity: primaryWheatIndex.commodity,
+        basis: primaryWheatIndex.basis,
+      });
+      const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
+      return response.json();
+    },
+    enabled: !!primaryWheatIndex,
+  });
+
+  // Prepare chart data for primary wheat index
+  const volatilityChartData = useMemo(() => {
+    if (!primaryWheatHistory || primaryWheatHistory.length === 0) return [];
+    return primaryWheatHistory.slice(-30).map(entry => ({
+      date: format(new Date(entry.date), "MMM dd HH:mm"),
+      price: entry.price,
+      timestamp: entry.date,
+    }));
+  }, [primaryWheatHistory]);
+
+  // Calculate Y-axis domain for volatility chart
+  const volatilityPrices = volatilityChartData.map(d => d.price);
+  const volatilityMinPrice = volatilityPrices.length > 0 ? Math.min(...volatilityPrices) : 0;
+  const volatilityMaxPrice = volatilityPrices.length > 0 ? Math.max(...volatilityPrices) : 100;
+  const volatilityPadding = (volatilityMaxPrice - volatilityMinPrice) * 0.1 || 10;
+
+  // Get country flag and label
+  const countryFlag = selectedRegion === "ua" ? "🇺🇦" : selectedRegion === "br" ? "🇧🇷" : "🇦🇷";
+  const countryLabel = selectedRegion.toUpperCase();
+
+  const handleViewOptionsMarket = () => {
+    setLocation(`/options?country=${selectedRegion}`);
+  };
 
   return (
     <MainLayout>
@@ -181,9 +204,9 @@ export default function MarketData() {
         {/* Header Section */}
         <div className="space-y-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Market Data</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('page.marketData.title')}</h1>
             <p className="text-muted-foreground mt-2 text-lg">
-              Commodity index prices, volatility and history for CROPT-linked markets.
+              {t('page.marketData.subtitle')}
             </p>
           </div>
           <div className="prose prose-sm max-w-none text-muted-foreground">
@@ -222,7 +245,7 @@ export default function MarketData() {
         ) : (
           <div className="space-y-6">
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-muted-foreground">GRAINS</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t('page.marketData.grains')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {indexes
                   .filter((index) => {
@@ -270,7 +293,7 @@ export default function MarketData() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-muted-foreground">OILSEEDS</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t('page.marketData.oilseeds')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {indexes
                   .filter((index) => {
@@ -321,86 +344,93 @@ export default function MarketData() {
         {/* Volatility & History Preview */}
         <Card>
           <CardHeader>
-            <CardTitle>Volatility & History (MVP)</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CardTitle className="flex items-center gap-2">
+                  <span>{countryFlag}</span>
+                  <span>{t('page.marketData.volatilityTitle')} - {countryLabel}</span>
+                </CardTitle>
+              </div>
+              {primaryWheatIndex && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewOptionsMarket}
+                >
+                  {t('page.marketData.viewOptionsMarket')}
+                  <ExternalLink className="ml-2 h-3 w-3" />
+                </Button>
+              )}
+            </div>
             <CardDescription>
-              Simple historical charts per index. Full volatility surfaces will be available in future updates.
+              {t('page.marketData.volatilityHistoryDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {indexes && indexes.length > 0 ? (
-              <Tabs 
-                value={effectiveSelectedSlug || indexes[0].slug} 
-                onValueChange={setSelectedIndexSlug}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
-                  {indexes.map((index) => {
-                    const metadata = getIndexMetadata(index.slug, index.category);
-                    return (
-                      <TabsTrigger key={index.id} value={index.slug} className="text-xs">
-                        {metadata.pairCode.split('/')[1]}
-                      </TabsTrigger>
-                    );
-                  })}
-                </TabsList>
-                {indexes.map((index) => (
-                  <TabsContent key={index.id} value={index.slug} className="mt-4">
-                    {isHistoryLoading ? (
-                      <Skeleton className="h-64 w-full" />
-                    ) : selectedIndexData && chartData.length > 0 ? (
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                            <XAxis 
-                              dataKey="date" 
-                              tick={{ fontSize: 10 }}
-                              className="text-muted-foreground"
-                            />
-                            <YAxis 
-                              domain={[minPrice - padding, maxPrice + padding]}
-                              tick={{ fontSize: 10 }}
-                              className="text-muted-foreground"
-                              tickFormatter={(value) => `$${value.toFixed(0)}`}
-                            />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: 'hsl(var(--card))',
-                                border: '1px solid hsl(var(--border))',
-                                borderRadius: '6px',
-                              }}
-                              labelFormatter={(label, payload) => {
-                                if (payload && payload[0]) {
-                                  return format(new Date(payload[0].payload.timestamp), "MMM dd, yyyy HH:mm");
-                                }
-                                return label;
-                              }}
-                              formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="price" 
-                              stroke="hsl(var(--primary))" 
-                              strokeWidth={2}
-                              dot={false}
-                              activeDot={{ r: 4 }}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    ) : (
-                      <div className="h-64 flex items-center justify-center text-muted-foreground">
-                        <p className="text-sm">No price history available for this index</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                <p className="text-sm">No indexes available</p>
-              </div>
-            )}
+            <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar")} className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-3">
+                <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
+                <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
+                <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value={selectedRegion} className="mt-6">
+                {isMarketDashboardLoading || isPrimaryWheatHistoryLoading ? (
+                  <Skeleton className="h-64 w-full" />
+                ) : primaryWheatIndex && volatilityChartData.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{countryFlag}</span>
+                      <span>{primaryWheatIndex.commodity} {primaryWheatIndex.grade ? `(${primaryWheatIndex.grade})` : ''} - {primaryWheatIndex.basis}</span>
+                    </div>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={volatilityChartData}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="date" 
+                            tick={{ fontSize: 10 }}
+                            className="text-muted-foreground"
+                          />
+                          <YAxis 
+                            domain={[volatilityMinPrice - volatilityPadding, volatilityMaxPrice + volatilityPadding]}
+                            tick={{ fontSize: 10 }}
+                            className="text-muted-foreground"
+                            tickFormatter={(value) => `$${value.toFixed(0)}`}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '6px',
+                            }}
+                            labelFormatter={(label, payload) => {
+                              if (payload && payload[0]) {
+                                return format(new Date(payload[0].payload.timestamp), "MMM dd, yyyy HH:mm");
+                              }
+                              return label;
+                            }}
+                            formatter={(value: number) => [`$${value.toFixed(2)}`, t('page.marketData.price')]}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="price" 
+                            stroke="hsl(var(--primary))" 
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-muted-foreground">
+                    <p className="text-sm">{t('page.marketData.noPriceHistory')}</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>

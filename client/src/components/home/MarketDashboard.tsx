@@ -4,7 +4,7 @@ import { useMarketDashboard, type MarketIndexDto } from "@/hooks/useMarketDashbo
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, ArrowDown, Minus, TrendingUp, ExternalLink, LineChart as LineChartIcon } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, TrendingUp, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -107,6 +107,38 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   const commodityLabel = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
   const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : "🇦🇷";
 
+  // Fetch history for sparkline
+  const { data: history } = useQuery<HistoryDataPoint[]>({
+    queryKey: ["/api/index/history", item.country, item.commodity, item.basis],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        country: item.country,
+        commodity: item.commodity,
+        basis: item.basis,
+      });
+      const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
+      return response.json();
+    },
+  });
+
+  const sparklineData = history?.slice(-20).map((point) => ({
+    date: point.date,
+    price: point.price,
+  })) || [];
+
+  const handleViewIndexMarket = () => {
+    setLocation(`/forward-market?country=${item.country.toLowerCase()}`);
+  };
+
+  const handleViewOptionsMarket = () => {
+    setLocation(`/options?country=${item.country.toLowerCase()}`);
+  };
+
+  const handleSparklineClick = () => {
+    // Navigate to Market Data page for this index
+    setLocation(`/market-data?country=${item.country.toLowerCase()}&commodity=${item.commodity}`);
+  };
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
@@ -114,14 +146,20 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           <span>{countryFlag}</span>
           <span>{commodityLabel}</span>
         </CardTitle>
-        <CardDescription>{item.basis}</CardDescription>
+        <CardDescription>
+          <span className="font-medium">{t('home.market.card.source')}: </span>
+          {item.basis}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
         <div className="space-y-3">
+          {/* Current Price */}
           <div>
             <div className="text-3xl font-bold">{item.price.toFixed(2)}</div>
             <div className="text-sm text-muted-foreground">{item.currency}/t</div>
           </div>
+
+          {/* Change 24h */}
           <div className="flex items-center gap-2">
             <ChangeIcon className={`h-4 w-4 ${changeColor}`} />
             <span className={`text-sm font-medium ${changeColor}`}>
@@ -129,6 +167,27 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
             </span>
             <span className="text-xs text-muted-foreground">24h</span>
           </div>
+
+          {/* Sparkline Chart */}
+          {sparklineData.length > 1 && (
+            <div 
+              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={handleSparklineClick}
+              title={t('home.market.card.clickForMarketData')}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={sparklineData}>
+                  <Line
+                    type="monotone"
+                    dataKey="price"
+                    stroke={changeValue > 0 ? "#16a34a" : changeValue < 0 ? "#dc2626" : "hsl(var(--muted-foreground))"}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 sm:flex-row">
@@ -136,16 +195,16 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           variant="outline"
           size="sm"
           className="flex-1"
-          onClick={() => setShowHistory(true)}
+          onClick={handleViewIndexMarket}
         >
-          <LineChartIcon className="mr-2 h-3 w-3" />
-          {t('home.market.card.viewHistory')}
+          {t('home.market.card.viewIndex')}
+          <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
         <Button
           variant="default"
           size="sm"
           className="flex-1"
-          onClick={() => setLocation("/options")}
+          onClick={handleViewOptionsMarket}
         >
           {t('home.market.card.viewOptions')}
           <ExternalLink className="ml-2 h-3 w-3" />
@@ -160,7 +219,15 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   );
 }
 
-function MarketTab({ items, isLoading }: { items: MarketIndexDto[]; isLoading: boolean }) {
+function MarketTab({ 
+  items, 
+  isLoading, 
+  description 
+}: { 
+  items: MarketIndexDto[]; 
+  isLoading: boolean;
+  description?: string;
+}) {
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -180,10 +247,15 @@ function MarketTab({ items, isLoading }: { items: MarketIndexDto[]; isLoading: b
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {items.map((item, index) => (
-        <MarketCard key={`${item.country}-${item.commodity}-${index}`} item={item} />
-      ))}
+    <div className="space-y-6">
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((item, index) => (
+          <MarketCard key={`${item.country}-${item.commodity}-${index}`} item={item} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -233,15 +305,27 @@ export function MarketDashboard() {
           </TabsList>
 
           <TabsContent value="ua" className="mt-6">
-            <MarketTab items={data?.ua || []} isLoading={isLoading} />
+            <MarketTab 
+              items={data?.ua || []} 
+              isLoading={isLoading}
+              description={t('home.market.tabs.uaDescription')}
+            />
           </TabsContent>
 
           <TabsContent value="br" className="mt-6">
-            <MarketTab items={data?.br || []} isLoading={isLoading} />
+            <MarketTab 
+              items={data?.br || []} 
+              isLoading={isLoading}
+              description={t('home.market.tabs.brDescription')}
+            />
           </TabsContent>
 
           <TabsContent value="ar" className="mt-6">
-            <MarketTab items={data?.ar || []} isLoading={isLoading} />
+            <MarketTab 
+              items={data?.ar || []} 
+              isLoading={isLoading}
+              description={t('home.market.tabs.arDescription')}
+            />
           </TabsContent>
         </Tabs>
       </div>

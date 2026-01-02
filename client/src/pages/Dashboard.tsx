@@ -321,7 +321,9 @@ export default function Dashboard() {
       />
 
       {/* Market Dashboard Section */}
-      <MarketDashboard />
+      <div id="market-dashboard">
+        <MarketDashboard />
+      </div>
 
       {/* How Cropto Works Section */}
       <HowCroptoWorks />

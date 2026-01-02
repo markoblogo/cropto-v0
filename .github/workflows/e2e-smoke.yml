@@ -1,0 +1,39 @@
+name: E2E Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: 'API Base URL (e.g., http://localhost:5000 or staging URL)'
+        required: false
+        default: 'http://localhost:5000'
+        type: string
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run E2E Smoke Test
+        env:
+          API_BASE_URL: ${{ inputs.api_base_url || 'http://localhost:5000' }}
+        run: npm run e2e:smoke
+        continue-on-error: false
+      
+      - name: Report results
+        if: always()
+        run: |
+          echo "E2E Smoke Test completed"
+          echo "See logs above for detailed results"

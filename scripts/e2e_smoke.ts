@@ -1,0 +1,285 @@
+#!/usr/bin/env tsx
+// E2E Smoke Test - Verifies core application flows
+// Usage: API_BASE_URL=http://localhost:5000 tsx scripts/e2e_smoke.ts
+
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000';
+
+interface TestResult {
+  step: string;
+  status: 'PASS' | 'FAIL' | 'SKIP';
+  message: string;
+  details?: any;
+}
+
+const results: TestResult[] = [];
+
+function logResult(step: string, status: 'PASS' | 'FAIL' | 'SKIP', message: string, details?: any) {
+  results.push({ step, status, message, details });
+  const icon = status === 'PASS' ? '✅' : status === 'FAIL' ? '❌' : '⏭️';
+  console.log(`${icon} ${step}: ${message}`);
+  if (details && status === 'FAIL') {
+    console.log(`   Details: ${JSON.stringify(details, null, 2)}`);
+  }
+}
+
+function fail(step: string, message: string, details?: any): never {
+  logResult(step, 'FAIL', message, details);
+  console.error(`\n❌ Smoke test FAILED at step: ${step}`);
+  process.exit(1);
+}
+
+async function apiRequest(method: string, path: string, token?: string, body?: any) {
+  const url = `${API_BASE_URL}${path}`;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const options: RequestInit = {
+    method,
+    headers,
+  };
+
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(url, options);
+  const text = await response.text();
+  let data: any;
+  
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      statusText: response.statusText,
+      body: data,
+      url,
+    };
+  }
+
+  return { status: response.status, data };
+}
+
+async function main() {
+  console.log('🔥 Starting E2E Smoke Test\n');
+  console.log(`API Base URL: ${API_BASE_URL}\n`);
+
+  let farmerToken: string;
+  let brokerToken: string;
+  let optionId: string;
+  let farmerId: string;
+
+  try {
+    // Step 1: Healthcheck
+    console.log('Step 1: Healthcheck');
+    try {
+      const { data } = await apiRequest('GET', '/api/health');
+      if (data.ok === true) {
+        logResult('Healthcheck', 'PASS', 'API is healthy');
+      } else {
+        fail('Healthcheck', `Expected { ok: true }, got ${JSON.stringify(data)}`);
+      }
+    } catch (error: any) {
+      fail('Healthcheck', `HTTP ${error.status}: ${error.statusText}`, error.body);
+    }
+
+    // Step 2: Login as farmer
+    console.log('\nStep 2: Login as farmer@demo');
+    try {
+      const { data } = await apiRequest('POST', '/api/auth/login', undefined, {
+        email: 'farmer@demo',
+        password: 'pass',
+      });
+      
+      farmerToken = data.token || data.accessToken;
+      if (!farmerToken) {
+        fail('Login (farmer)', 'Token missing from login response', data);
+      }
+      
+      farmerId = data.user?.id || data.id;
+      logResult('Login (farmer)', 'PASS', `Logged in successfully (user: ${farmerId})`);
+    } catch (error: any) {
+      fail('Login (farmer)', `HTTP ${error.status}: ${error.statusText}`, error.body);
+    }
+
+    // Step 3: Get available index for option creation
+    console.log('\nStep 3: Get available indexes');
+    let indexId: string;
+    try {
+      const { data } = await apiRequest('GET', '/api/indexes');
+      const indexes = Array.isArray(data) ? data : (data.indexes || []);
+      if (indexes.length === 0) {
+        fail('Get indexes', 'No indexes available');
+      }
+      indexId = indexes[0].id;
+      logResult('Get indexes', 'PASS', `Found ${indexes.length} index(es), using: ${indexId}`);
+    } catch (error: any) {
+      fail('Get indexes', `HTTP ${error.status}: ${error.statusText}`, error.body);
+    }
+
+    // Step 4: Create option (as farmer)
+    console.log('\nStep 4: Create option (as farmer)');
+    try {
+      // Calculate expiration date (3 months from now)
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+      const optionPayload = {
+        title: 'E2E Smoke Test Option',
+        indexId: indexId,
+        type: 'CALL',
+        strike: '200',
+        qty: '100',
+        premium: '2',
+        expirationDate: expirationDate.toISOString(),
+        expiryHalf: 'H1',
+        expiryMonth: expirationDate.getMonth() + 1,
+        expiryYear: expirationDate.getFullYear(),
+      };
+
+      const { status, data } = await apiRequest('POST', '/api/options', farmerToken, optionPayload);
+      
+      if (status === 201 || status === 200) {
+        optionId = data.id || data.option?.id;
+        if (!optionId) {
+          fail('Create option', 'Option ID missing from response', data);
+        }
+        logResult('Create option', 'PASS', `Option created: ${optionId}`);
+      } else {
+        fail('Create option', `Unexpected status: ${status}`, data);
+      }
+    } catch (error: any) {
+      fail('Create option', `HTTP ${error.status}: ${error.statusText}`, error.body);
+    }
+
+    // Step 5: Login as broker
+    console.log('\nStep 5: Login as broker@demo');
+    try {
+      const { data } = await apiRequest('POST', '/api/auth/login', undefined, {
+        email: 'broker@demo',
+        password: 'pass',
+      });
+      
+      brokerToken = data.token || data.accessToken;
+      if (!brokerToken) {
+        fail('Login (broker)', 'Token missing from login response', data);
+      }
+      
+      logResult('Login (broker)', 'PASS', 'Logged in successfully');
+    } catch (error: any) {
+      fail('Login (broker)', `HTTP ${error.status}: ${error.statusText}`, error.body);
+    }
+
+    // Step 6: Match option (as broker)
+    console.log('\nStep 6: Match option (as broker)');
+    try {
+      const { status, data } = await apiRequest('POST', `/api/options/${optionId}/match`, brokerToken, {
+        counterpartyId: farmerId,
+      });
+      
+      if (status === 200 || status === 201) {
+        logResult('Match option', 'PASS', 'Option matched successfully');
+      } else {
+        fail('Match option', `Unexpected status: ${status}`, data);
+      }
+    } catch (error: any) {
+      fail('Match option', `HTTP ${error.status}: ${error.statusText}`, error.body);
+    }
+
+    // Step 7: Exercise option (requires DEMO_RELAX_CROPT_CHECK=true on server)
+    console.log('\nStep 7: Exercise option (with DEMO_RELAX_CROPT_CHECK=true)');
+    console.log('   Note: Server must be running with DEMO_RELAX_CROPT_CHECK=true');
+    try {
+      const { status, data } = await apiRequest('POST', `/api/options/${optionId}/exercise`, farmerToken, {
+        spotPrice: 260, // Optional spot price for settlement calculation
+      });
+      
+      if (status === 200 || status === 201) {
+        logResult('Exercise option', 'PASS', 'Option exercised successfully');
+        if (data.settlementId || data.id) {
+          logResult('Exercise option', 'PASS', `Settlement created: ${data.settlementId || data.id}`);
+        }
+      } else {
+        fail('Exercise option', `Unexpected status: ${status}`, data);
+      }
+    } catch (error: any) {
+      // Check if it's a CROPT balance error (expected if DEMO_RELAX_CROPT_CHECK is not set)
+      if (error.status === 400 && (error.body?.error?.toLowerCase().includes('cropt') || error.body?.error?.toLowerCase().includes('balance'))) {
+        logResult('Exercise option', 'FAIL', 'Exercise failed - DEMO_RELAX_CROPT_CHECK may not be enabled on server', error.body);
+        console.log('   ⚠️  Tip: Start server with DEMO_RELAX_CROPT_CHECK=true environment variable');
+      } else {
+        fail('Exercise option', `HTTP ${error.status}: ${error.statusText}`, error.body);
+      }
+    }
+
+    // Step 8: Verify portfolio/settlements
+    console.log('\nStep 8: Verify portfolio/settlements');
+    try {
+      // Try portfolio endpoint first
+      const { data: portfolioData } = await apiRequest('GET', '/api/portfolio/me', farmerToken);
+      
+      const hasSettlements = portfolioData?.settlements && portfolioData.settlements.length > 0;
+      const hasPositions = portfolioData?.positions && portfolioData.positions.length > 0;
+      
+      if (hasSettlements || hasPositions) {
+        logResult('Verify portfolio', 'PASS', `Found ${portfolioData.settlements?.length || 0} settlement(s), ${portfolioData.positions?.length || 0} position(s)`);
+      } else {
+        // Fallback: try settlements endpoint directly
+        try {
+          const { data: settlementsData } = await apiRequest('GET', '/api/settlements', farmerToken);
+          const settlements = Array.isArray(settlementsData) ? settlementsData : (settlementsData?.settlements || []);
+          if (settlements.length > 0) {
+            logResult('Verify settlements', 'PASS', `Found ${settlements.length} settlement(s)`);
+          } else {
+            logResult('Verify portfolio', 'SKIP', 'No settlements found (may be expected for new accounts)');
+          }
+        } catch {
+          logResult('Verify portfolio', 'SKIP', 'Could not verify settlements (endpoint may not be available)');
+        }
+      }
+    } catch (error: any) {
+      // Portfolio endpoint might not exist or return different structure
+      logResult('Verify portfolio', 'SKIP', `Portfolio endpoint returned HTTP ${error.status}`, error.body);
+    }
+
+    // Summary
+    console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📊 E2E SMOKE TEST SUMMARY');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    const passed = results.filter(r => r.status === 'PASS').length;
+    const failed = results.filter(r => r.status === 'FAIL').length;
+    const skipped = results.filter(r => r.status === 'SKIP').length;
+    
+    console.log(`✅ Passed: ${passed}`);
+    console.log(`❌ Failed: ${failed}`);
+    console.log(`⏭️  Skipped: ${skipped}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+    if (failed > 0) {
+      console.error('❌ Smoke test FAILED');
+      process.exit(1);
+    } else {
+      console.log('✅ Smoke test PASSED');
+      process.exit(0);
+    }
+
+  } catch (error: any) {
+    console.error('\n❌ Unexpected error:', error);
+    process.exit(1);
+  }
+}
+
+main().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

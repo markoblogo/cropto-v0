@@ -83,7 +83,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
 
   // Define navigation items
   const primaryNav = [
-    { to: "/wallet", label: "Wallet", testId: "button-nav-wallet" },
+    { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
     { to: "/portfolio", label: t("nav.portfolio"), testId: "button-nav-portfolio" },
     { to: "/spot-trading", label: t("nav.spot"), testId: "button-nav-spot" },
     { to: "/options", label: t("nav.options"), testId: "button-nav-options" },
@@ -96,8 +96,8 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
     { to: "/admin", label: t("nav.admin"), testId: "button-nav-admin", requiresAdmin: true },
-    { to: "/admin/waitlist", label: "Waitlist", testId: "button-nav-admin-waitlist", requiresAdmin: true },
-    { to: "/markets/chain", label: "Option & Forward Chain", testId: "button-nav-chain" },
+    { to: "/admin/waitlist", label: t("nav.waitlist"), testId: "button-nav-admin-waitlist", requiresAdmin: true },
+    { to: "/markets/chain", label: t("nav.chain"), testId: "button-nav-chain" },
   ];
 
   const handleLogout = () => {

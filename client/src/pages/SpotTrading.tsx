@@ -21,6 +21,7 @@ import { SpotOrderForm } from "@/components/SpotOrderForm";
 import { SpotPositionCard } from "@/components/SpotPositionCard";
 import { OrderBook } from "@/components/trading/OrderBook";
 import { format } from "date-fns";
+import { TabsContent } from "@/components/ui/tabs";
 
 interface CommodityIndex {
   id: string;
@@ -70,6 +71,20 @@ export default function SpotTrading() {
   const [location, setLocation] = useLocation();
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
 
+  // Read country query param
+  const initialSearchParams = new URLSearchParams(window.location.search);
+  const countryParam = initialSearchParams.get("country")?.toLowerCase();
+  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar">(
+    (countryParam === "ua" || countryParam === "br" || countryParam === "ar") ? countryParam : "ua"
+  );
+
+  // Update URL when region changes
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(window.location.search);
+    newSearchParams.set("country", selectedRegion);
+    setLocation(`/spot-trading?${newSearchParams.toString()}`, { replace: true });
+  }, [selectedRegion, setLocation]);
+
   const guardTradingAction = useTradingGuard({
     onOpenLogin: () => setLocation("/login"),
     onOpenWalletModal: () => setIsWalletAuthModalOpen(true),
@@ -106,7 +121,18 @@ export default function SpotTrading() {
   const tradingPairsOrdered = tradingPairsRaw
     .filter((p) => SPOT_ALLOWED_SLUGS.includes(p.slug))
     .sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug));
-  const tradingPairs = tradingPairsOrdered.filter((p) => !p.isStale);
+  
+  // Filter by region: UA = CPT ODESA/PARITET ODESA, BR/AR = coming soon (empty for now)
+  const tradingPairsFiltered = tradingPairsOrdered.filter((p) => {
+    if (selectedRegion === "ua") {
+      const index = indexes?.find(idx => idx.slug === p.slug);
+      return index && (index.category.includes("CPT ODESA") || index.category.includes("CPT PARITET ODESA"));
+    }
+    // BR/AR don't have indexes yet, will be filtered out
+    return false;
+  });
+  
+  const tradingPairs = tradingPairsFiltered.filter((p) => !p.isStale);
   
   // Get selected pair from query params or default to first pair
   const searchParams = new URLSearchParams(window.location.search);
@@ -284,11 +310,22 @@ export default function SpotTrading() {
     <MainLayout>
       <div className="space-y-6">
         {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Spot Trading</h1>
-          <p className="text-muted-foreground mt-2">
-            Buy and sell grain index tokens using your CROPT balance.
-          </p>
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t('page.spot.title')}</h1>
+            <p className="text-muted-foreground mt-2">
+              {t('page.spot.subtitle')}
+            </p>
+          </div>
+          
+          {/* Region Selector */}
+          <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar")} className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
+              <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
+              <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Wallet Summary Bar */}
@@ -306,12 +343,26 @@ export default function SpotTrading() {
             <Skeleton className="h-40 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
+        ) : selectedRegion !== "ua" ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="text-4xl mb-4">
+                  {selectedRegion === "br" ? "🇧🇷" : "🇦🇷"}
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{t('page.spot.comingSoon')}</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  {t('page.spot.comingSoonDesc')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         ) : !tradingPairs.length ? (
           <Card>
             <CardContent className="pt-6">
               <Alert>
                 <AlertDescription>
-                  No trading pairs available
+                  {t('page.spot.noTradingPairs')}
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -321,7 +372,7 @@ export default function SpotTrading() {
             {/* Instrument Selector near header */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <span className="text-sm font-medium text-muted-foreground">Spot markets</span>
+                <span className="text-sm font-medium text-muted-foreground">{t('page.spot.spotMarkets')}</span>
                 <div className="w-full md:w-auto overflow-x-auto">
                   <Tabs value={selectedPairSlug || ""} onValueChange={handlePairChange}>
                     <TabsList className="flex w-full md:w-auto flex-wrap gap-2 bg-muted p-1 rounded-lg h-auto">
@@ -359,7 +410,7 @@ export default function SpotTrading() {
                             <Badge 
                               variant={indexMetadata.type === "export" ? "default" : "secondary"}
                             >
-                              {indexMetadata.type === "export" ? "Export" : "Processing"}
+                              {indexMetadata.type === "export" ? t('page.spot.export') : t('page.spot.processing')}
                             </Badge>
                           )}
                         </div>
@@ -373,7 +424,7 @@ export default function SpotTrading() {
                           <span className="text-4xl font-bold font-mono">
                             ${currentPrice.toFixed(2)}
                           </span>
-                          <span className="text-sm text-muted-foreground">/ ton</span>
+                          <span className="text-sm text-muted-foreground">{t('page.spot.perTon')}</span>
                         </div>
 
                         {changePercent !== null && (
@@ -388,7 +439,7 @@ export default function SpotTrading() {
 
                         {lastUpdate && (
                           <p className="text-xs text-muted-foreground">
-                            Last updated: {format(lastUpdate, "MMM dd, yyyy HH:mm")}
+                            {t('page.spot.lastUpdated')} {format(lastUpdate, "MMM dd, yyyy HH:mm")}
                           </p>
                         )}
                       </div>
@@ -430,14 +481,14 @@ export default function SpotTrading() {
                 {/* Recent Price Updates (index quotes, not trades) */}
                 <Card>
                   <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Recent Price Updates (index quotes)</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('page.spot.recentPriceUpdates')}</h3>
                     {/* Index updates from commodity index history */}
                     {isHistoryLoading ? (
                       <Skeleton className="h-64 w-full" />
                     ) : historyError ? (
                       <Alert variant="destructive">
                         <AlertDescription>
-                          Failed to load price history
+                          {t('page.spot.failedToLoadPriceHistory')}
                         </AlertDescription>
                       </Alert>
                     ) : (
@@ -447,17 +498,17 @@ export default function SpotTrading() {
                         </div>
                         <div className="border-t pt-4 space-y-2">
                           <div className="flex items-center justify-between gap-3">
-                            <h4 className="text-sm font-semibold">Price Chart</h4>
+                            <h4 className="text-sm font-semibold">{t('page.spot.priceChart')}</h4>
                             <div className="flex gap-2">
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant={chartRange === "7d" ? "default" : "outline"}
                                 onClick={() => setChartRange("7d")}
                               >
                                 7d
                               </Button>
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant={chartRange === "30d" ? "default" : "outline"}
                                 onClick={() => setChartRange("30d")}
                               >
@@ -469,10 +520,10 @@ export default function SpotTrading() {
                             <Skeleton className="h-32 w-full" />
                           ) : historyError ? (
                             <Alert variant="destructive">
-                              <AlertDescription>Failed to load price chart</AlertDescription>
+                              <AlertDescription>{t('page.spot.failedToLoadPriceChart')}</AlertDescription>
                             </Alert>
                           ) : priceChartData.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No price data for this range.</p>
+                            <p className="text-sm text-muted-foreground">{t('page.spot.noPriceData')}</p>
                           ) : (
                             <div className="h-32">
                               {/* Reuse Market Data chart logic via SpotMiniChart with the same data shape */}
@@ -498,16 +549,16 @@ export default function SpotTrading() {
                 {/* Trade History (executed trades) */}
                 <Card>
                   <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Trade History</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('page.spot.tradeHistory')}</h3>
                     {/* Executed trades from /api/trades filtered by commodity */}
                     {isTradesLoading ? (
                       <Skeleton className="h-64 w-full" />
                     ) : tradesError ? (
                       <Alert variant="destructive">
-                        <AlertDescription>Failed to load trades</AlertDescription>
+                        <AlertDescription>{t('common.error')}</AlertDescription>
                       </Alert>
                     ) : trades.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No trades yet.</p>
+                      <p className="text-sm text-muted-foreground">{t('page.spot.noTrades')}</p>
                     ) : (
                       <div className="max-h-64 overflow-y-auto text-sm">
                         <table className="w-full">
@@ -552,7 +603,7 @@ export default function SpotTrading() {
                 {/* Order Book */}
                 <div className="lg:col-span-1">
                   <OrderBook
-                    title="Order Book"
+                    title={t('page.spot.orderBook')}
                     commodity={selectedPair.slug}
                     mode="spot"
                     depth={5}

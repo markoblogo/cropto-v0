@@ -73,7 +73,8 @@ const SCENARIOS = [
 ];
 
 export default function Education() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
   const { data: indexes = [] } = useQuery<CommodityIndex[]>({
@@ -118,25 +119,53 @@ export default function Education() {
     });
   }, [calculator.type, priceNum, premiumNum, qtyNum, strikeNum]);
 
+  const aboutSrc = `/docs/about.${currentLang}.md`;
+  const faqSrc = `/docs/faq.${currentLang}.md`;
+
   return (
     <MainLayout>
       <div className="max-w-6xl mx-auto space-y-8">
+        {/* Hero Section */}
         <div>
-          <h1 className="text-3xl font-bold">
-            {t("education.title", "Education & Learn")}
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t('page.education.title')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t(
-              "education.subtitle",
-              "Central hub to learn Cropto: indexes, options, margin, and simple calculators."
-            )}
+            {t('page.education.subtitle')}
+          </p>
+          <p className="text-muted-foreground mt-4 max-w-3xl">
+            {t('page.education.heroDescription')}
           </p>
         </div>
 
+        {/* About Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Topics</CardTitle>
-            <CardDescription>Side navigation for key topics. Markdown is loaded via /docs.</CardDescription>
+            <CardTitle>{t('page.education.aboutTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div key={`about-${currentLang}`}>
+              <MarkdownSection src={aboutSrc} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* FAQ Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('page.education.faqTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div key={`faq-${currentLang}`}>
+              <MarkdownSection src={faqSrc} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('page.education.topicsTitle')}</CardTitle>
+            <CardDescription>{t('page.education.topicsDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Tabs defaultValue={DOCS[0].key} className="space-y-4">
@@ -158,8 +187,8 @@ export default function Education() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Scenarios</CardTitle>
-            <CardDescription>Real-world use cases showing how different market participants use Cropto platform</CardDescription>
+            <CardTitle>{t('page.education.scenariosTitle')}</CardTitle>
+            <CardDescription>{t('page.education.scenariosDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -176,7 +205,7 @@ export default function Education() {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="w-full">
-                          Read scenario
+                          {t('page.education.readScenario')}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -195,10 +224,8 @@ export default function Education() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Option Calculator</CardTitle>
-            <CardDescription>
-              Educational-only calculator — does not place trades. Uses optionCalculations helpers.
-            </CardDescription>
+            <CardTitle>{t('page.education.calculatorTitle')}</CardTitle>
+            <CardDescription>{t('page.education.calculatorDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

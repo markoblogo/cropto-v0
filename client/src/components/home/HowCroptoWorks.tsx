@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
-import { Wallet, Search, Target, FileText, DollarSign, BarChart3 } from "lucide-react";
+import { useLocation } from "wouter";
+import { Wallet, Search, Calendar, FileText, DollarSign, BarChart3 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const stepIcons = {
   1: Wallet,
   2: Search,
-  3: Target,
+  3: Calendar,
   4: FileText,
   5: DollarSign,
   6: BarChart3,
@@ -13,6 +15,7 @@ const stepIcons = {
 
 export function HowCroptoWorks() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
 
   const steps = [1, 2, 3, 4, 5, 6].map((num) => {
     const Icon = stepIcons[num as keyof typeof stepIcons];
@@ -23,6 +26,11 @@ export function HowCroptoWorks() {
       description: t(`home.how.steps.${num}.description`),
     };
   });
+
+  const handleStartTrading = () => {
+    // Navigate to forward market (Index Trading)
+    setLocation("/forward-market");
+  };
 
   return (
     <section className="py-12 bg-muted/50">
@@ -36,7 +44,7 @@ export function HowCroptoWorks() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {steps.map((step) => (
             <Card key={step.num} className="flex flex-col">
               <CardHeader>
@@ -57,6 +65,17 @@ export function HowCroptoWorks() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* CTA Button */}
+        <div className="text-center">
+          <Button
+            size="lg"
+            onClick={handleStartTrading}
+            className="font-semibold"
+          >
+            {t('home.how.cta.startTrading')}
+          </Button>
         </div>
       </div>
     </section>

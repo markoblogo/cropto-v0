@@ -45,6 +45,20 @@ export default function OptionChain() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [prefillOption, setPrefillOption] = useState<Option | null>(null);
 
+  // Read country query param
+  const searchParams = new URLSearchParams(window.location.search);
+  const countryParam = searchParams.get("country")?.toLowerCase();
+  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar">(
+    (countryParam === "ua" || countryParam === "br" || countryParam === "ar") ? countryParam : "ua"
+  );
+
+  // Update URL when region changes
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(window.location.search);
+    newSearchParams.set("country", selectedRegion);
+    setLocation(`/options?${newSearchParams.toString()}`, { replace: true });
+  }, [selectedRegion, setLocation]);
+
   // Fetch current user
   const { data: userData } = useQuery<{ 
     user: { 
@@ -68,6 +82,11 @@ export default function OptionChain() {
     queryKey: ["/api/options"],
   });
 
+  // Fetch indexes to filter options by region
+  const { data: indexes } = useQuery<Array<{ id: string; slug: string; category: string }>>({
+    queryKey: ["/api/indexes"],
+  });
+
   // Trades for simple volume count per option
   const { data: trades = [] } = useQuery<{ optionId: string }[]>({
     queryKey: ["/api/trades"],
@@ -87,12 +106,12 @@ export default function OptionChain() {
   });
 
   const displayCommodity =
-    selectedCommodity === "ALL" ? "All" : selectedCommodity || "All";
+    selectedCommodity === "ALL" ? t('page.options.all') : selectedCommodity || t('page.options.all');
   const displayExpiry =
     selectedExpiry && selectedExpiry !== "ALL"
       ? selectedExpiry
-      : "All";
-  const analyticsFiltersLabel = `Commodity: ${displayCommodity} • Expiry: ${displayExpiry}`;
+      : t('page.options.all');
+  const analyticsFiltersLabel = `${t('page.options.analytics.commodityLabel')} ${displayCommodity} • ${t('page.options.analytics.expiryLabel')} ${displayExpiry}`;
 
   // Use the first available expiry as default if none selected
   const availableExpiries = volumeAnalytics.availableExpiries;
@@ -148,7 +167,22 @@ export default function OptionChain() {
       base = userId ? options.filter((option) => option.buyerId === userId || option.issuerId === userId) : [];
     }
 
-    return base.filter((opt) => {
+    // Filter by region: UA = options linked to CPT ODESA/PARITET ODESA indexes, BR/AR = coming soon
+    if (selectedRegion !== "ua") {
+      // BR/AR don't have options yet
+      return [];
+    }
+
+    // For UA, filter options that are linked to Ukraine indexes (CPT ODESA/PARITET ODESA)
+    const filteredByRegion = base.filter((opt) => {
+      if (!opt.indexId || !indexes) return false;
+      const index = indexes.find(idx => idx.id === opt.indexId);
+      if (!index) return false;
+      // Only include options linked to Ukraine indexes
+      return index.category.includes("CPT ODESA") || index.category.includes("CPT PARITET ODESA");
+    });
+
+    return filteredByRegion.filter((opt) => {
       const commodityName = (opt as any).commodityName || opt.commodity || "";
       const expiryLabel =
         (opt as any).expiryWindow && (opt as any).expiryWindow.length > 0
@@ -161,7 +195,7 @@ export default function OptionChain() {
       const matchesType = selectedType === "ALL" || opt.type === selectedType;
       return matchesCommodity && matchesExpiry && matchesType;
     });
-  }, [options, viewMode, userId, selectedCommodity, selectedExpiry, selectedType]);
+  }, [options, viewMode, userId, selectedCommodity, selectedExpiry, selectedType, selectedRegion, indexes]);
 
   // Create option mutation
   const createOptionMutation = useMutation({
@@ -364,23 +398,34 @@ export default function OptionChain() {
     <MainLayout>
       <div className="space-y-6">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Options</h1>
-            <p className="text-muted-foreground mt-2">
-              Browse and trade commodity options contracts
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{t('page.options.title')}</h1>
+              <p className="text-muted-foreground mt-2">
+                {t('page.options.subtitle')}
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setPrefillOption(null);
+                setIsCreateDialogOpen(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              {t('button.createOption')}
+            </Button>
           </div>
-          <Button
-            onClick={() => {
-              setPrefillOption(null);
-              setIsCreateDialogOpen(true);
-            }}
-            className="gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Create Option
-          </Button>
+          
+          {/* Region Selector */}
+          <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar")} className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
+              <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
+              <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* View Mode Tabs */}
@@ -398,9 +443,9 @@ export default function OptionChain() {
         {/* Main Analytics Tabs */}
         <Tabs value={analyticsTab} onValueChange={(v) => setAnalyticsTab(v as AnalyticsTab)}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="chain">Chain</TabsTrigger>
-            <TabsTrigger value="volume">Volume</TabsTrigger>
-            <TabsTrigger value="openInterest">Open Interest</TabsTrigger>
+            <TabsTrigger value="chain">{t('page.options.analytics.chain')}</TabsTrigger>
+            <TabsTrigger value="volume">{t('page.options.analytics.volume')}</TabsTrigger>
+            <TabsTrigger value="openInterest">{t('page.options.analytics.openInterest')}</TabsTrigger>
           </TabsList>
 
         {/* Chain Tab - Current Options Table */}
@@ -411,6 +456,20 @@ export default function OptionChain() {
               Failed to load options. Please try again.
             </AlertDescription>
           </Alert>
+        ) : selectedRegion !== "ua" ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="text-4xl mb-4">
+                  {selectedRegion === "br" ? "🇧🇷" : "🇦🇷"}
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{t('page.options.comingSoon')}</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  {t('page.options.comingSoonDesc')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         ) : showMyOptionsEmpty ? (
           <Card>
             <CardContent className="pt-6">
@@ -430,7 +489,7 @@ export default function OptionChain() {
                   }}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Create Option
+                  {t('button.createOption')}
                 </Button>
               </div>
             </CardContent>
@@ -442,9 +501,9 @@ export default function OptionChain() {
                 <div className="rounded-full bg-muted p-6 mb-4">
                   <Plus className="w-12 h-12 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">No Options Found</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('page.options.noOptionsFound')}</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mb-4">
-                  Get started by creating your first option contract.
+                  {t('page.options.getStarted')}
                 </p>
                 <Button
                   onClick={() => {
@@ -453,7 +512,7 @@ export default function OptionChain() {
                   }}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Create Option
+                  {t('button.createOption')}
                 </Button>
               </div>
             </CardContent>
@@ -463,7 +522,7 @@ export default function OptionChain() {
             <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle>
-                  Option Chain {viewMode === "my" && `(${filteredOptions.length} contracts)`}
+                  {t('page.options.optionChain')} {viewMode === "my" && `(${filteredOptions.length} ${t('page.options.contracts')})`}
                 </CardTitle>
                 {/* Chain-like view: extend here with IV/Greeks once available */}
               </CardHeader>
@@ -487,13 +546,13 @@ export default function OptionChain() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Expiry window</Label>
+                    <Label>{t('page.options.expiryWindow')}</Label>
                     <Select value={selectedExpiry} onValueChange={setSelectedExpiry}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All expiries" />
+                        <SelectValue placeholder={t('page.options.allExpiries')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ALL">All</SelectItem>
+                        <SelectItem value="ALL">{t('page.options.all')}</SelectItem>
                         {expiryOptions.map((expiry) => (
                           <SelectItem key={expiry} value={expiry}>
                             {expiry}
@@ -503,23 +562,23 @@ export default function OptionChain() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Type</Label>
+                    <Label>{t('page.options.type')}</Label>
                     <Select value={selectedType} onValueChange={setSelectedType}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All types" />
+                        <SelectValue placeholder={t('page.options.allTypes')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ALL">All</SelectItem>
-                        <SelectItem value="CALL">Call</SelectItem>
-                        <SelectItem value="PUT">Put</SelectItem>
+                        <SelectItem value="ALL">{t('page.options.all')}</SelectItem>
+                        <SelectItem value="CALL">{t('page.options.call')}</SelectItem>
+                        <SelectItem value="PUT">{t('page.options.put')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Margin profile</Label>
+                    <Label>{t('page.options.marginProfile')}</Label>
                     <Select value={marginProfileId} onValueChange={(v) => setMarginProfileId(v as MarginProfileId)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Margin profile" />
+                        <SelectValue placeholder={t('page.options.marginProfile')} />
                       </SelectTrigger>
                       <SelectContent>
                         {MARGIN_PROFILES.map((p) => (
@@ -544,7 +603,7 @@ export default function OptionChain() {
                 ) : viewMode === "my" && !userId ? (
                   <Alert>
                     <AlertDescription>
-                      Connect wallet to see your options
+                      {t('page.options.connectWalletToSee')}
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -587,7 +646,7 @@ export default function OptionChain() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Options Order Book (by expiry window)</CardTitle>
+                <CardTitle>{t('page.options.optionsOrderBook')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {hasToken ? (
@@ -599,9 +658,9 @@ export default function OptionChain() {
                   />
                 ) : (
                   <div className="space-y-3 text-sm text-muted-foreground">
-                    <p>Log in to view the options order book.</p>
+                    <p>{t('page.options.loginToViewOrderBook')}</p>
                     <Button size="sm" onClick={() => setLocation("/login")}>
-                      Login
+                      {t('button.login')}
                     </Button>
                   </div>
                 )}
@@ -616,7 +675,7 @@ export default function OptionChain() {
             {/* Filters */}
             <Card>
               <CardHeader>
-                <CardTitle>Filters</CardTitle>
+                <CardTitle>{t('page.options.filters')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -685,7 +744,7 @@ export default function OptionChain() {
             {/* Filters */}
             <Card>
               <CardHeader>
-                <CardTitle>Filters</CardTitle>
+                <CardTitle>{t('page.options.filters')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -755,7 +814,7 @@ export default function OptionChain() {
           isPending={createOptionMutation.isPending}
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
-          defaultIndexId={prefillOption?.indexId}
+          defaultIndexId={prefillOption?.indexId || undefined}
           prefillOption={prefillOption ? {
             indexId: prefillOption.indexId || undefined,
             type: prefillOption.type as "CALL" | "PUT" | undefined,

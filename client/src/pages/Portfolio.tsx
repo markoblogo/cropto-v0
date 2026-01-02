@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { usePolling } from "@/hooks/usePolling";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -139,7 +140,7 @@ function parseExpirationFromTitle(title: string, createdAt: string): Date | null
 /**
  * Calculate time to expiry and format it nicely
  */
-function formatTimeToExpiry(expirationDate: string | Date | undefined | null): string {
+function formatTimeToExpiry(expirationDate: string | Date | undefined | null, t: (key: string, options?: any) => string): string {
   let expiry: Date | null = null;
   
   if (expirationDate instanceof Date) {
@@ -148,12 +149,12 @@ function formatTimeToExpiry(expirationDate: string | Date | undefined | null): s
     try {
       expiry = new Date(expirationDate);
     } catch {
-      return "N/A";
+      return t('page.portfolio.timeToExpiry.na');
     }
   }
   
   if (!expiry || isNaN(expiry.getTime())) {
-    return "N/A";
+    return t('page.portfolio.timeToExpiry.na');
   }
 
   try {
@@ -162,18 +163,19 @@ function formatTimeToExpiry(expirationDate: string | Date | undefined | null): s
 
     if (daysDiff < 0) {
       // Expired
-      return `Expired ${Math.abs(daysDiff)} day${Math.abs(daysDiff) !== 1 ? 's' : ''} ago`;
+      const days = Math.abs(daysDiff);
+      return t('page.portfolio.timeToExpiry.expiredAgo', { count: days, days });
     } else if (daysDiff === 0) {
-      return "Expires today";
+      return t('page.portfolio.timeToExpiry.expiresToday');
     } else if (daysDiff === 1) {
-      return "Expires tomorrow";
+      return t('page.portfolio.timeToExpiry.expiresTomorrow');
     } else if (daysDiff <= 7) {
-      return `${daysDiff} days left`;
+      return t('page.portfolio.timeToExpiry.daysLeft', { count: daysDiff, days: daysDiff });
     } else {
-      return `in ${daysDiff} days`;
+      return t('page.portfolio.timeToExpiry.inDays', { count: daysDiff, days: daysDiff });
     }
   } catch {
-    return "N/A";
+    return t('page.portfolio.timeToExpiry.na');
   }
 }
 
@@ -237,6 +239,7 @@ function getOptionStatusCategory(status: string): "active" | "settled" | "expire
 }
 
 export default function Portfolio() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
   const [focusedCommodity, setFocusedCommodity] = useState<string | null>(null);
@@ -467,7 +470,7 @@ export default function Portfolio() {
         timeToExpiryMs = expirationDate.getTime() - now.getTime();
         if (timeToExpiryMs <= 0) {
           isExpired = true;
-          timeToExpiryLabel = "Expired";
+          timeToExpiryLabel = t('page.portfolio.timeToExpiry.expired');
         } else {
           const totalMinutes = Math.floor(timeToExpiryMs / (1000 * 60));
           const totalHours = Math.floor(totalMinutes / 60);
@@ -563,7 +566,7 @@ export default function Portfolio() {
         impliedPnlSign,
       };
     });
-  }, [portfolioData, indexPriceMap]);
+  }, [portfolioData, indexPriceMap, t]);
 
   // Build options exposure map by underlying commodity (in tonnes)
   const optionsExposure = useMemo(() => {
@@ -819,16 +822,16 @@ export default function Portfolio() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">Portfolio</h1>
-            <p className="text-muted-foreground">Your options and forward positions overview</p>
+            <p className="text-muted-foreground">{t('page.portfolio.overviewSubtitle')}</p>
           </div>
         </div>
 
         {/* Main Tabs */}
         <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "options" | "forwards" | "all")}>
           <TabsList>
-            <TabsTrigger value="all">All Positions</TabsTrigger>
-            <TabsTrigger value="options">Options</TabsTrigger>
-            <TabsTrigger value="forwards">Forwards</TabsTrigger>
+            <TabsTrigger value="all">{t('page.portfolio.tabs.allPositions')}</TabsTrigger>
+            <TabsTrigger value="options">{t('page.portfolio.tabs.options')}</TabsTrigger>
+            <TabsTrigger value="forwards">{t('page.portfolio.tabs.forwards')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-6">
@@ -837,7 +840,7 @@ export default function Portfolio() {
           {/* Total PnL */}
           <Card data-testid="card-total-pnl">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('page.portfolio.metrics.totalPnl')}</CardTitle>
               {isProfitable ? (
                 <TrendingUp className="h-4 w-4 text-success" />
               ) : (
@@ -852,7 +855,7 @@ export default function Portfolio() {
                 {isProfitable ? '+' : ''}${totalPnL.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Realized + Unrealized
+                {t('page.portfolio.metrics.totalPnlDesc')}
               </p>
             </CardContent>
           </Card>
@@ -860,7 +863,7 @@ export default function Portfolio() {
           {/* Realized PnL */}
           <Card data-testid="card-realized-pnl">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Realized P&L</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('page.portfolio.metrics.realizedPnl')}</CardTitle>
               {realizedPnL >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-success" />
               ) : (
@@ -875,7 +878,7 @@ export default function Portfolio() {
                 {realizedPnL >= 0 ? '+' : ''}${realizedPnL.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Settled options
+                {t('page.portfolio.metrics.realizedPnlDesc')}
               </p>
             </CardContent>
           </Card>
@@ -883,7 +886,7 @@ export default function Portfolio() {
           {/* Unrealized PnL */}
           <Card data-testid="card-unrealized-pnl">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unrealized P&L</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('page.portfolio.metrics.unrealizedPnl')}</CardTitle>
               {unrealizedPnL >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-success" />
               ) : (
@@ -898,7 +901,7 @@ export default function Portfolio() {
                 {unrealizedPnL >= 0 ? '+' : ''}${unrealizedPnL.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Open positions
+                {t('page.portfolio.metrics.unrealizedPnlDesc')}
               </p>
             </CardContent>
           </Card>
@@ -906,7 +909,7 @@ export default function Portfolio() {
           {/* Open Positions */}
           <Card data-testid="card-open-positions">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Open Positions</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('page.portfolio.metrics.openPositions')}</CardTitle>
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -914,7 +917,7 @@ export default function Portfolio() {
                 {openPositions}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Active contracts
+                {t('page.portfolio.metrics.openPositionsDesc')}
               </p>
             </CardContent>
           </Card>
@@ -922,7 +925,7 @@ export default function Portfolio() {
           {/* Locked Collateral */}
           <Card data-testid="card-locked-collateral">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Locked Collateral</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('page.portfolio.metrics.lockedCollateral')}</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -930,7 +933,7 @@ export default function Portfolio() {
                 ${lockedCollateral.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Reserved funds
+                {t('page.portfolio.metrics.lockedCollateralDesc')}
               </p>
             </CardContent>
           </Card>
@@ -938,7 +941,7 @@ export default function Portfolio() {
           {/* Margin Calls */}
           <Card data-testid="card-margin-calls">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Margin Calls</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('page.portfolio.metrics.marginCalls')}</CardTitle>
               <AlertTriangle className={`h-4 w-4 ${marginCalls > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
             </CardHeader>
             <CardContent>
@@ -949,7 +952,7 @@ export default function Portfolio() {
                 {marginCalls}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {marginCalls > 0 ? 'Action required' : 'All clear'}
+                {marginCalls > 0 ? t('page.portfolio.metrics.actionRequired') : t('page.portfolio.metrics.allClear')}
               </p>
             </CardContent>
           </Card>
@@ -989,30 +992,30 @@ export default function Portfolio() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Available Margin</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('page.portfolio.collateralRisk.availableMargin')}</p>
                 <p className="text-2xl font-bold">
                   ${estimatedAvailableMargin.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Free collateral for new positions
+                  {t('page.portfolio.collateralRisk.availableMarginDesc')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Used Margin</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('page.portfolio.collateralRisk.usedMargin')}</p>
                 <p className="text-2xl font-bold">
                   ${usedMargin.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Locked in active positions
+                  {t('page.portfolio.collateralRisk.usedMarginDesc')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Risk Level</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('page.portfolio.collateralRisk.riskLevel')}</p>
                 <p className={`text-2xl font-bold ${riskColor}`}>
                   {(riskRatio * 100).toFixed(1)}%
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {riskRatio >= 0.85 ? "High risk" : riskRatio >= 0.60 ? "Moderate risk" : "Low risk"}
+                  {riskRatio >= 0.85 ? t('page.portfolio.collateralRisk.riskLevelHigh') : riskRatio >= 0.60 ? t('page.portfolio.collateralRisk.riskLevelModerate') : t('page.portfolio.collateralRisk.riskLevelLow')}
                 </p>
               </div>
             </div>
@@ -1037,26 +1040,26 @@ export default function Portfolio() {
             {marginCalls > 0 && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Margin Calls Active</AlertTitle>
+                <AlertTitle>{t('page.portfolio.collateralRisk.marginCallsActive')}</AlertTitle>
                 <AlertDescription>
-                  You have {marginCalls} active margin call{marginCalls !== 1 ? 's' : ''}. Please top up your collateral to avoid liquidation.
+                  {t('page.portfolio.collateralRisk.marginCallsActiveDesc', { count: marginCalls })}
                 </AlertDescription>
               </Alert>
             )}
             {myMarginCalls.length > 0 && (
               <div className="mt-3 rounded-md border bg-muted/30 p-3 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">Your Margin Calls</div>
-                  <div className="text-xs text-muted-foreground">Deadlines and status</div>
+                  <div className="text-sm font-medium">{t('page.portfolio.marginCalls.yourMarginCalls')}</div>
+                  <div className="text-xs text-muted-foreground">{t('page.portfolio.marginCalls.deadlinesAndStatus')}</div>
                 </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Option</TableHead>
-                        <TableHead>Required</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Deadline</TableHead>
+                        <TableHead>{t('page.portfolio.marginCalls.table.option')}</TableHead>
+                        <TableHead>{t('page.portfolio.marginCalls.table.required')}</TableHead>
+                        <TableHead>{t('page.portfolio.marginCalls.table.status')}</TableHead>
+                        <TableHead>{t('page.portfolio.marginCalls.table.deadline')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1112,13 +1115,13 @@ export default function Portfolio() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Option Positions</CardTitle>
+              <CardTitle>{t('page.portfolio.positions.title')}</CardTitle>
               <Tabs value={optionFilterTab} onValueChange={(v) => setOptionFilterTab(v as OptionFilterTab)}>
                 <TabsList>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="active">Active</TabsTrigger>
-                  <TabsTrigger value="settled">Settled</TabsTrigger>
-                  <TabsTrigger value="expired">Expired</TabsTrigger>
+                  <TabsTrigger value="all">{t('page.portfolio.filters.all')}</TabsTrigger>
+                  <TabsTrigger value="active">{t('page.portfolio.filters.active')}</TabsTrigger>
+                  <TabsTrigger value="settled">{t('page.portfolio.filters.settled')}</TabsTrigger>
+                  <TabsTrigger value="expired">{t('page.portfolio.filters.expired')}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -1155,17 +1158,17 @@ export default function Portfolio() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Commodity</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Side</TableHead>
-                      <TableHead className="text-right">Qty (t)</TableHead>
-                      <TableHead className="text-right">Strike ($/t)</TableHead>
-                      <TableHead className="text-right">Entry Premium (CROPT)</TableHead>
-                      <TableHead className="text-right">Current Price ($/t)</TableHead>
-                      <TableHead className="text-right">P&L</TableHead>
-                      <TableHead>Expiry</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t('page.portfolio.positions.table.commodity')}</TableHead>
+                      <TableHead>{t('page.portfolio.positions.table.type')}</TableHead>
+                      <TableHead>{t('page.portfolio.positions.table.side')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.positions.table.qty')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.positions.table.strike')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.positions.table.entryPremium')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.positions.table.currentPrice')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.positions.table.pnl')}</TableHead>
+                      <TableHead>{t('page.portfolio.positions.table.expiry')}</TableHead>
+                      <TableHead>{t('page.portfolio.positions.table.status')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.positions.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1215,7 +1218,7 @@ export default function Portfolio() {
                               className={position.role === 'buyer' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
                               data-testid={`badge-side-${position.optionId}`}
                             >
-                              {position.role === 'buyer' ? 'LONG' : 'SHORT'}
+                              {position.role === 'buyer' ? t('page.portfolio.positions.table.long') : t('page.portfolio.positions.table.short')}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right font-mono" data-testid={`text-size-${position.optionId}`}>
@@ -1512,10 +1515,10 @@ export default function Portfolio() {
                   <CardTitle>Option Positions</CardTitle>
                   <Tabs value={optionFilterTab} onValueChange={(v) => setOptionFilterTab(v as OptionFilterTab)}>
                     <TabsList>
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="active">Active</TabsTrigger>
-                      <TabsTrigger value="settled">Settled</TabsTrigger>
-                      <TabsTrigger value="expired">Expired</TabsTrigger>
+                      <TabsTrigger value="all">{t('page.portfolio.filters.all')}</TabsTrigger>
+                      <TabsTrigger value="active">{t('page.portfolio.filters.active')}</TabsTrigger>
+                      <TabsTrigger value="settled">{t('page.portfolio.filters.settled')}</TabsTrigger>
+                      <TabsTrigger value="expired">{t('page.portfolio.filters.expired')}</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -1598,7 +1601,7 @@ export default function Portfolio() {
                                 {position.expirationDate ? (
                                   <div className="text-sm">
                                     <div className="font-medium">
-                                      {formatTimeToExpiry(position.expirationDate)}
+                                      {formatTimeToExpiry(position.expirationDate, t)}
                                     </div>
                                     <div className="text-muted-foreground text-xs">
                                       {format(new Date(position.expirationDate), "MMM dd, yyyy")}
@@ -1644,24 +1647,24 @@ export default function Portfolio() {
                   </div>
                 ) : userTier === "user_no_login" ? (
                   <>
-                    <p className="text-lg font-medium mb-2">Log in to see your options portfolio</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.loginRequired')}</p>
                     <Link href="/login">
                       <Button size="sm" data-testid="button-empty-sign-in">
-                        Sign in
+                        {t('button.login')}
                       </Button>
                     </Link>
                   </>
                 ) : userTier === "user_no_wallet" ? (
                   <>
-                    <p className="text-lg font-medium mb-2">Connect your wallet to start trading options</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.walletRequired')}</p>
                     <Button size="sm" onClick={handleOpenWalletModal} data-testid="button-empty-connect-wallet">
-                      Connect wallet
+                      {t('button.connectWallet')}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <p className="text-lg font-medium mb-2">No positions yet</p>
-                    <p className="text-sm">Start trading options to see your portfolio here</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.positions.empty')}</p>
+                    <p className="text-sm">{t('page.portfolio.positions.emptySubtitle')}</p>
                   </>
                 )}
               </CardContent>
@@ -1736,7 +1739,7 @@ export default function Portfolio() {
                                 {position.settlementDate ? (
                                   <div className="text-sm">
                                     <div className="font-medium">
-                                      {formatTimeToExpiry(position.settlementDate)}
+                                      {formatTimeToExpiry(position.settlementDate, t)}
                                     </div>
                                     <div className="text-muted-foreground text-xs">
                                       {format(new Date(position.settlementDate), "MMM dd, yyyy")}
@@ -1755,7 +1758,7 @@ export default function Portfolio() {
                 ) : (
                   <>
                     <p className="text-lg font-medium mb-2">No forward positions yet</p>
-                    <p className="text-sm">Start trading forwards to see your portfolio here</p>
+                    <p className="text-sm">{t('page.portfolio.positions.emptyForwards')}</p>
                   </>
                 )}
               </CardContent>
