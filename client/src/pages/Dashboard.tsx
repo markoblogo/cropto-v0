@@ -9,6 +9,8 @@ import { MetricCards } from "@/components/MetricCards";
 import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
 import { OptionsMarketStrip } from "@/components/home/OptionsMarketStrip";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
+import { MarketDashboard } from "@/components/home/MarketDashboard";
+import { HowCroptoWorks } from "@/components/home/HowCroptoWorks";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { WalletSummary } from "@/components/WalletSummary";
 import { useWalletSummary } from "@/hooks/useWalletSummary";
@@ -317,6 +319,12 @@ export default function Dashboard() {
         onOpenLogin={handleOpenLogin}
         onOpenWalletModal={handleOpenWalletModal}
       />
+
+      {/* Market Dashboard Section */}
+      <MarketDashboard />
+
+      {/* How Cropto Works Section */}
+      <HowCroptoWorks />
 
       <main className="py-12 flex-1 w-full">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">

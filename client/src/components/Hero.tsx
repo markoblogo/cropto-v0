@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, TrendingUp, ArrowRightCircle } from "lucide-react";
+import { Wallet, TrendingUp, ArrowRightCircle, BarChart3, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
-import { useWaitlist } from "@/contexts/WaitlistContext";
 
 interface HeroProps {
   onCreateOption: () => void;
@@ -25,18 +24,17 @@ export function Hero({
 }: HeroProps) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const { openWaitlist } = useWaitlist();
 
-  const isDemoMode =
-    (import.meta.env.VITE_MOCK_ONCHAIN || "").toLowerCase() === "true" ||
-    (import.meta.env.VITE_ENABLE_MINT || "").toLowerCase() !== "true";
-  
   const navigateToSpotTrading = () => {
     setLocation("/spot-trading");
   };
 
   const navigateToOptions = () => {
     setLocation("/options");
+  };
+
+  const navigateToMarketData = () => {
+    setLocation("/market-data");
   };
 
   return (
@@ -62,44 +60,45 @@ export function Hero({
                   data-testid="img-hero-logo"
                 />
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight text-center md:text-left" data-testid="text-hero-headline">
-                  CROPTO – Trade Commodities. On-Chain.
+                  {t('home.hero.title')}
                 </h1>
               </div>
               <p className="text-base sm:text-lg text-white/80 max-w-3xl">
-                Where physical grain markets meet digital trading infrastructure.
+                {t('home.hero.subtitle')}
               </p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4">
-            {/* Unified hero actions palette: light amber -> deep green */}
+            {/* Four CTA buttons: light amber -> deep green */}
             <Button
               size="lg"
               className="w-full sm:w-auto font-semibold bg-amber-200 text-amber-950 hover:bg-amber-300 shadow-sm"
-              onClick={() => navigateToOptions()}
-              data-testid="button-hero-option-trading"
+              onClick={navigateToSpotTrading}
+              data-testid="button-hero-start-index-trading"
             >
-              <ArrowRightCircle className="mr-2 h-5 w-5" />
-              Option Trading
+              <BarChart3 className="mr-2 h-5 w-5" />
+              {t('home.hero.cta.startIndexTrading')}
             </Button>
 
             <Button
               size="lg"
               className="w-full sm:w-auto font-semibold bg-amber-300 text-amber-950 hover:bg-amber-400 shadow-sm"
-              onClick={navigateToSpotTrading}
-              data-testid="button-hero-spot-trading"
+              onClick={() => navigateToOptions()}
+              data-testid="button-hero-start-options-trading"
             >
-              <TrendingUp className="mr-2 h-5 w-5" />
-              Spot Trading
+              <ArrowRightCircle className="mr-2 h-5 w-5" />
+              {t('home.hero.cta.startOptionsTrading')}
             </Button>
 
             <Button
               size="lg"
               className="w-full sm:w-auto font-semibold bg-lime-400 text-emerald-950 hover:bg-lime-500 shadow-sm"
-              onClick={() => openWaitlist("hero")}
-              data-testid="button-hero-join-waitlist"
+              onClick={navigateToMarketData}
+              data-testid="button-hero-view-markets"
             >
-              Join waitlist
+              <Eye className="mr-2 h-5 w-5" />
+              {t('home.hero.cta.viewMarkets')}
             </Button>
 
             {walletAddress ? (
@@ -110,7 +109,7 @@ export function Hero({
                 data-testid="badge-hero-wallet-connected"
               >
                 <Wallet className="mr-2 h-5 w-5" />
-                Wallet: Connected
+                {t('home.hero.cta.walletConnected')}
               </Button>
             ) : (
               <Button
@@ -120,7 +119,7 @@ export function Hero({
                 data-testid="button-hero-connect-wallet"
               >
                 <Wallet className="mr-2 h-5 w-5" />
-                {t('button.connectWallet')}
+                {t('home.hero.cta.connectWallet')}
               </Button>
             )}
           </div>

@@ -116,6 +116,62 @@
       "connectWallet": "Connect Wallet"
     }
   },
+  "home": {
+    "hero": {
+      "title": "Cropto – NFT-Options Platform for Grain",
+      "subtitle": "Trade agricultural commodity options linked to Spike Spot Commodity Index with blockchain-backed transparency and NFT settlement",
+      "cta": {
+        "startIndexTrading": "Start Index Trading",
+        "startOptionsTrading": "Start Options Trading",
+        "viewMarkets": "View Markets",
+        "connectWallet": "Connect Wallet",
+        "walletConnected": "Wallet: Connected"
+      }
+    },
+    "market": {
+      "title": "Market Dashboard",
+      "subtitle": "Real-time commodity prices from Ukraine, Brazil, and Argentina",
+      "tabs": {
+        "ua": "Ukraine",
+        "br": "Brazil",
+        "ar": "Argentina"
+      },
+      "card": {
+        "viewIndex": "View Index Market",
+        "viewOptions": "View Options Market"
+      }
+    },
+    "how": {
+      "title": "How Cropto Works",
+      "subtitle": "Trade grain options in 6 simple steps",
+      "steps": {
+        "1": {
+          "title": "Connect Wallet / Create Account",
+          "description": "Sign in with your wallet or create an account to access the platform"
+        },
+        "2": {
+          "title": "Choose Market (Country + Commodity)",
+          "description": "Select your preferred market: Ukraine, Brazil, or Argentina, and the commodity you want to trade"
+        },
+        "3": {
+          "title": "Select Delivery Window & Strike",
+          "description": "Pick the expiration date and strike price for your option contract"
+        },
+        "4": {
+          "title": "Place Option (Farmer/Trader)",
+          "description": "Create your option as a farmer (hedge) or trader (speculate) based on your role"
+        },
+        "5": {
+          "title": "Fund & Activate (Collateral/Premium)",
+          "description": "Deposit collateral (seller) or pay premium (buyer) to activate your option"
+        },
+        "6": {
+          "title": "Monitor PnL & Settlements",
+          "description": "Track your position performance, margin calls, exercise options, and mint NFTs upon settlement"
+        }
+      }
+    }
+  },
   "spot": {
     "market": {
       "title": "Spot Market",
