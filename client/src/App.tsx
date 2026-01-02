@@ -33,6 +33,7 @@ import Feedback from "@/pages/Feedback";
 import ForwardMarket from "@/pages/ForwardMarket";
 import OptionForwardChainPage from "@/pages/OptionForwardChainPage";
 import AdminWaitlist from "@/pages/AdminWaitlist";
+import Arbitrage from "@/pages/Arbitrage";
 import NotFound from "@/pages/not-found";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/options" component={OptionChain} />
       <Route path="/spot-trading" component={SpotTrading} />
       <Route path="/market-data" component={MarketData} />
+      <Route path="/arbitrage" component={Arbitrage} />
       <Route path="/forward-market" component={ForwardMarket} />
       <Route path="/markets/chain" component={OptionForwardChainPage} />
       <Route path="/wallet" component={Wallet} />

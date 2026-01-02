@@ -140,7 +140,8 @@
         "viewIndex": "View Index Market",
         "viewOptions": "View Options Market",
         "viewHistory": "View History"
-      }
+      },
+      "compareMarkets": "Compare Markets"
     },
     "admin": {
       "indexes": {
@@ -687,5 +688,44 @@
     "title": "404 Page Not Found",
     "subtitle": "The page you're looking for doesn't exist",
     "backLink": "Back to Dashboard"
+  },
+  "arbitrage": {
+    "title": "Index Arbitrage",
+    "subtitle": "Compare commodity prices across different countries",
+    "form": {
+      "title": "Comparison Parameters",
+      "description": "Select two countries and a commodity to compare prices",
+      "baseCountry": "Base Country",
+      "targetCountry": "Target Country",
+      "commodity": "Commodity",
+      "compare": "Compare",
+      "includeHistory": "Include price history"
+    },
+    "countries": {
+      "ua": "Ukraine (UA)",
+      "br": "Brazil (BR)",
+      "ar": "Argentina (AR)"
+    },
+    "results": {
+      "title": "Comparison Results",
+      "description": "Price comparison for {{commodity}} between {{base}} and {{target}}",
+      "base": "Base Market",
+      "target": "Target Market",
+      "asOf": "As of",
+      "spread": "Price Spread",
+      "spreadDescription": "Difference between {{target}} and {{base}} prices"
+    },
+    "history": {
+      "title": "Historical Spread",
+      "description": "Spread over time between the two markets",
+      "spread": "Spread"
+    },
+    "empty": {
+      "title": "No comparison yet",
+      "description": "Select countries and commodity, then click Compare to see price differences"
+    },
+    "error": {
+      "generic": "Failed to fetch comparison data. Please try again."
+    }
   }
 }

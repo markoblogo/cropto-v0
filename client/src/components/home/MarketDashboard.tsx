@@ -190,6 +190,7 @@ function MarketTab({ items, isLoading }: { items: MarketIndexDto[]; isLoading: b
 
 export function MarketDashboard() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const { data, isLoading, error } = useMarketDashboard();
 
   if (error) {
@@ -206,13 +207,22 @@ export function MarketDashboard() {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight mb-2">
-            {t('home.market.title')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('home.market.subtitle')}
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight mb-2">
+              {t('home.market.title')}
+            </h2>
+            <p className="text-muted-foreground">
+              {t('home.market.subtitle')}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setLocation("/arbitrage")}
+          >
+            <TrendingUp className="mr-2 h-4 w-4" />
+            {t('home.market.compareMarkets')}
+          </Button>
         </div>
 
         <Tabs defaultValue="ua" className="w-full">

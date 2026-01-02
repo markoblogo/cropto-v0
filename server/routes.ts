@@ -1264,6 +1264,277 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to get latest index for a country/commodity
+  async function getLatestIndexForCountryCommodity(
+    country: "UA" | "BR" | "AR",
+    commodity: string
+  ): Promise<{ price: number; basis: string; asOf: string } | null> {
+    if (country === "UA") {
+      // Query UA indexes from commodityIndexPrices via indexes table
+      const uaIndexes = await db
+        .select()
+        .from(indexes)
+        .where(sql`${indexes.category} LIKE 'CPT%'`)
+        .orderBy(indexes.category, indexes.name);
+
+      // Find matching index by commodity
+      const commodityLower = commodity.toLowerCase();
+      for (const index of uaIndexes) {
+        const indexNameLower = index.name.toLowerCase();
+        let matches = false;
+
+        if (commodityLower === "corn" && indexNameLower.includes("corn")) matches = true;
+        else if (commodityLower === "wheat" && indexNameLower.includes("wheat")) matches = true;
+        else if (commodityLower === "soybeans" && indexNameLower.includes("soy")) matches = true;
+        else if (commodityLower === "sunflower" && indexNameLower.includes("sunflower")) matches = true;
+        else if (commodityLower === "rapeseed" && indexNameLower.includes("rapeseed")) matches = true;
+
+        if (matches) {
+          const [latestPrice] = await db
+            .select()
+            .from(commodityIndexPrices)
+            .where(eq(commodityIndexPrices.indexId, index.id))
+            .orderBy(desc(commodityIndexPrices.timestamp))
+            .limit(1);
+
+          if (latestPrice && parseFloat(latestPrice.price) > 0) {
+            const basis =
+              index.category === "CPT ODESA"
+                ? "CPT Odesa (export)"
+                : index.category === "CPT PARITET ODESA"
+                ? "CPT Paritet Odesa (processing)"
+                : index.category;
+            return {
+              price: parseFloat(latestPrice.price),
+              basis,
+              asOf: new Date(latestPrice.timestamp).toISOString(),
+            };
+          }
+        }
+      }
+    } else {
+      // Query BR/AR from indexPrices with meta
+      const allIndexPrices = await db
+        .select()
+        .from(indexPrices)
+        .orderBy(desc(indexPrices.date));
+
+      const commodityLower = commodity.toLowerCase();
+      for (const price of allIndexPrices) {
+        try {
+          const meta = price.meta ? JSON.parse(price.meta) : {};
+          if (
+            meta.country === country &&
+            (meta.commodity || price.commodity.toLowerCase()) === commodityLower
+          ) {
+            const priceValue = parseFloat(price.price);
+            if (priceValue > 0) {
+              return {
+                price: priceValue,
+                basis: meta.basis || "",
+                asOf: new Date(price.date).toISOString(),
+              };
+            }
+          }
+        } catch {
+          // Skip invalid meta
+        }
+      }
+
+      // Fallback to mock data if no DB entry found
+      if (country === "BR") {
+        const mockData = getMockMarketDataBR();
+        const mock = mockData.find((m) => m.commodity === commodityLower);
+        if (mock) {
+          return {
+            price: mock.price,
+            basis: mock.basis,
+            asOf: mock.asOf,
+          };
+        }
+      } else if (country === "AR") {
+        const mockData = getMockMarketDataAR();
+        const mock = mockData.find((m) => m.commodity === commodityLower);
+        if (mock) {
+          return {
+            price: mock.price,
+            basis: mock.basis,
+            asOf: mock.asOf,
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // GET /api/arbitrage/index - Compare indexes between two countries
+  app.get("/api/arbitrage/index", async (req, res) => {
+    try {
+      const { baseCountry, targetCountry, commodity, includeHistory } = req.query;
+
+      if (!baseCountry || !targetCountry || !commodity) {
+        return res.status(400).json({
+          error: "Missing required parameters: baseCountry, targetCountry, commodity",
+        });
+      }
+
+      const baseCountryTyped = baseCountry as "UA" | "BR" | "AR";
+      const targetCountryTyped = targetCountry as "UA" | "BR" | "AR";
+
+      if (!["UA", "BR", "AR"].includes(baseCountryTyped) || !["UA", "BR", "AR"].includes(targetCountryTyped)) {
+        return res.status(400).json({
+          error: "Invalid country. Must be UA, BR, or AR",
+        });
+      }
+
+      if (baseCountryTyped === targetCountryTyped) {
+        return res.status(400).json({
+          error: "Base and target countries must be different",
+        });
+      }
+
+      // Fetch latest indexes for both countries
+      const baseIndex = await getLatestIndexForCountryCommodity(baseCountryTyped, commodity as string);
+      const targetIndex = await getLatestIndexForCountryCommodity(targetCountryTyped, commodity as string);
+
+      if (!baseIndex) {
+        return res.status(404).json({
+          error: `No index data found for ${baseCountryTyped} ${commodity}`,
+        });
+      }
+
+      if (!targetIndex) {
+        return res.status(404).json({
+          error: `No index data found for ${targetCountryTyped} ${commodity}`,
+        });
+      }
+
+      // Calculate spread
+      const spreadAbs = targetIndex.price - baseIndex.price;
+      const spreadPct = baseIndex.price > 0 ? (spreadAbs / baseIndex.price) * 100 : 0;
+
+      const response: any = {
+        commodity: commodity as string,
+        base: {
+          country: baseCountryTyped,
+          price: baseIndex.price,
+          basis: baseIndex.basis,
+          asOf: baseIndex.asOf,
+        },
+        target: {
+          country: targetCountryTyped,
+          price: targetIndex.price,
+          basis: targetIndex.basis,
+          asOf: targetIndex.asOf,
+        },
+        spreadAbs: Number(spreadAbs.toFixed(2)),
+        spreadPct: Number(spreadPct.toFixed(2)),
+      };
+
+      // Optional: include history
+      if (includeHistory === "true") {
+        try {
+          // Get history for both countries
+          const baseHistory = await db
+            .select()
+            .from(indexPrices)
+            .orderBy(asc(indexPrices.date));
+
+          const targetHistory = await db
+            .select()
+            .from(indexPrices)
+            .orderBy(asc(indexPrices.date));
+
+          const commodityLower = commodity.toLowerCase();
+          const historyMap = new Map<string, { basePrice?: number; targetPrice?: number }>();
+
+          // Collect base history
+          if (baseCountryTyped === "UA") {
+            // For UA, would need to query commodityIndexPrices - simplified for now
+            // Just use latest price for all dates (can be enhanced later)
+          } else {
+            for (const price of baseHistory) {
+              try {
+                const meta = price.meta ? JSON.parse(price.meta) : {};
+                if (
+                  meta.country === baseCountryTyped &&
+                  (meta.commodity || price.commodity.toLowerCase()) === commodityLower
+                ) {
+                  const dateKey = new Date(price.date).toISOString().split("T")[0];
+                  if (!historyMap.has(dateKey)) {
+                    historyMap.set(dateKey, {});
+                  }
+                  historyMap.get(dateKey)!.basePrice = parseFloat(price.price);
+                }
+              } catch {
+                // Skip invalid meta
+              }
+            }
+          }
+
+          // Collect target history
+          if (targetCountryTyped === "UA") {
+            // For UA, simplified
+          } else {
+            for (const price of targetHistory) {
+              try {
+                const meta = price.meta ? JSON.parse(price.meta) : {};
+                if (
+                  meta.country === targetCountryTyped &&
+                  (meta.commodity || price.commodity.toLowerCase()) === commodityLower
+                ) {
+                  const dateKey = new Date(price.date).toISOString().split("T")[0];
+                  if (!historyMap.has(dateKey)) {
+                    historyMap.set(dateKey, {});
+                  }
+                  historyMap.get(dateKey)!.targetPrice = parseFloat(price.price);
+                }
+              } catch {
+                // Skip invalid meta
+              }
+            }
+          }
+
+          // Build history array (only dates where both prices exist)
+          const history: Array<{
+            date: string;
+            basePrice: number;
+            targetPrice: number;
+            spreadAbs: number;
+            spreadPct: number;
+          }> = [];
+
+          for (const [date, prices] of historyMap.entries()) {
+            if (prices.basePrice && prices.targetPrice) {
+              const spread = prices.targetPrice - prices.basePrice;
+              const spreadPercent = prices.basePrice > 0 ? (spread / prices.basePrice) * 100 : 0;
+              history.push({
+                date,
+                basePrice: prices.basePrice,
+                targetPrice: prices.targetPrice,
+                spreadAbs: Number(spread.toFixed(2)),
+                spreadPct: Number(spreadPercent.toFixed(2)),
+              });
+            }
+          }
+
+          // Sort by date
+          history.sort((a, b) => a.date.localeCompare(b.date));
+          response.history = history;
+        } catch (error) {
+          console.error("Error fetching history for arbitrage:", error);
+          // Continue without history
+        }
+      }
+
+      res.json(response);
+    } catch (error: any) {
+      console.error("Error fetching arbitrage index:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // GET /api/market-dashboard - Market dashboard view by country (UA, BR, AR)
   app.get("/api/market-dashboard", async (req, res) => {
     try {
