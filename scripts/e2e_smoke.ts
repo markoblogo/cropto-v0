@@ -152,14 +152,24 @@ async function main() {
         if (hasMock) {
           fail("Market dashboard", `${tab.toUpperCase()} includes mock fallback (unexpected)`, { tab, sources });
         }
+        const strictIgc = String(process.env.E2E_STRICT_IGC || "").toLowerCase() === "true";
+
         const hasAllowed = rows.some((r: any) => allowedIgcSources.includes(String(r?.source)));
         if (!hasAllowed) {
-          fail("Market dashboard", `${tab.toUpperCase()} has no allowed IGC source rows`, {
+          fail("Market dashboard", `${tab.toUpperCase()} has no allowed source rows`, {
             tab,
             sources,
-            allowedIgcSources,
+            allowedSources: allowedIgcSources,
           });
         }
+
+        if (strictIgc && !rows.some((r: any) => String(r?.source) === "IGC")) {
+          fail("Market dashboard", `${tab.toUpperCase()} is missing IGC source rows (strict)`, {
+            tab,
+            sources,
+          });
+        }
+
         return sources;
       };
 
