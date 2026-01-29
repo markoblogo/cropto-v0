@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
+import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
 
 interface ForwardOrder {
   id: string;
@@ -194,7 +194,7 @@ export default function ForwardMarket() {
     setOrderQty(best.qtyTon);
   };
 
-  const selectedCommodity = orderCommodity && COMMODITY_MAP[orderCommodity as any];
+  const selectedCommodity = orderCommodity && COMMODITY_MAP[orderCommodity as CommoditySlug];
 
   // Forward contracts (soft proof)
   const { data: contracts = [], isLoading: contractsLoading } = useQuery<ForwardContract[]>({
@@ -229,10 +229,15 @@ export default function ForwardMarket() {
   const curvePoints = useMemo(() => {
     const byCommodity = grouped.filter((g) => commodityFilter === "ALL" || g.commodity === commodityFilter);
     return byCommodity
-      .map((g) => ({
-        x: g.window,
-        y: g.mid || null,
-      }))
+      .map((g) => {
+        const bestBid = g.bids[0] ? parseFloat(g.bids[0].price) : null;
+        const bestAsk = g.asks[0] ? parseFloat(g.asks[0].price) : null;
+        const mid = bestBid !== null && bestAsk !== null ? (bestBid + bestAsk) / 2 : null;
+        return {
+          x: g.window,
+          y: mid,
+        };
+      })
       .filter((p) => p.y !== null) as { x: string; y: number }[];
   }, [grouped, commodityFilter]);
 
@@ -333,13 +338,13 @@ export default function ForwardMarket() {
                     const bestBidPrice = bestBid ? parseFloat(bestBid.price) : null;
                     const bestAskPrice = bestAsk ? parseFloat(bestAsk.price) : null;
                     const mid = bestBidPrice !== null && bestAskPrice !== null ? (bestBidPrice + bestAskPrice) / 2 : null;
-                    (g as any).mid = mid;
+                    // mid computed locally
                     return (
                       <TableRow key={`${g.commodity}-${g.window}`}>
                         <TableCell>
-                          <div className="font-medium">{COMMODITY_MAP[g.commodity as any]?.name || g.commodity}</div>
+                          <div className="font-medium">{COMMODITY_MAP[g.commodity as CommoditySlug]?.name || g.commodity}</div>
                           <div className="text-xs text-muted-foreground">
-                            {COMMODITY_MAP[g.commodity as any]?.indexName || "Index"} · {BASIS_CPT_ODESA}
+                            {COMMODITY_MAP[g.commodity as CommoditySlug]?.indexName || "Index"} · {BASIS_CPT_ODESA}
                           </div>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{g.window}</TableCell>
@@ -497,7 +502,7 @@ export default function ForwardMarket() {
                       <TableCell>
                         {c.onchainTxHash ? (
                           <Button
-                            variant="link"
+                            variant="ghost"
                             className="px-0"
                             asChild
                           >

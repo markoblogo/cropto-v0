@@ -34,7 +34,6 @@ import {
   type ServiceContract,
   type InsertServiceContract,
 } from "@shared/schema";
-import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { desc, eq, and, lt, or, sql, gte, lte } from "drizzle-orm";
 import { serializeOptionToJson } from "./optionJson";
@@ -260,7 +259,6 @@ export class DatabaseStorage implements IStorage {
           matchedBy: matchedBy,
           matchedAt: new Date(),
           lastUpdated: new Date(),
-          matchingFeePerSide: matchingFee.toFixed(8),
         })
         .where(eq(options.id, optionId))
         .returning();
@@ -649,7 +647,6 @@ export class DatabaseStorage implements IStorage {
           qty: option.qty,
           payout: payout.toFixed(8),
           profitLoss: (isHolderBuyer ? buyerPnL : sellerPnL).toFixed(8),
-          settlementFeePerSide: settlementFeePerSide.toFixed(8),
         })
         .returning();
 
@@ -671,7 +668,6 @@ export class DatabaseStorage implements IStorage {
           payoutAccumulated: payout.toFixed(8),
           contractJson,
           schemaVersion: "v1",
-          settlementFeePerSide: settlementFeePerSide.toFixed(8),
         })
         .where(eq(options.id, optionId));
 
@@ -818,7 +814,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(marginCalls)
       .where(eq(marginCalls.id, id));
-    return marginCall;
+    return marginCall as any;
   }
 
   async listMarginCalls(): Promise<MarginCall[]> {
@@ -840,7 +836,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(marginCalls)
       .orderBy(desc(marginCalls.createdAt));
-    return allMarginCalls;
+    return allMarginCalls as any;
   }
 
   async getMarginCallsByUser(userId: string): Promise<MarginCall[]> {
@@ -863,7 +859,7 @@ export class DatabaseStorage implements IStorage {
       .from(marginCalls)
       .where(eq(marginCalls.userId, userId))
       .orderBy(desc(marginCalls.createdAt));
-    return userMarginCalls;
+    return userMarginCalls as any;
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
@@ -918,7 +914,7 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(marginCalls.createdAt));
-    return expiredMarginCalls;
+    return expiredMarginCalls as any;
   }
 
   async getExpiredOptions(): Promise<Option[]> {
@@ -1123,11 +1119,19 @@ export class DatabaseStorage implements IStorage {
 
   async createOrUpdatePartner(partner: InsertPartnerOrganization, id?: string): Promise<PartnerOrganization> {
     try {
+      const normalizedPartner: any = {
+        ...partner,
+        feeSharePercent:
+          typeof (partner as any).feeSharePercent === "number"
+            ? String((partner as any).feeSharePercent)
+            : (partner as any).feeSharePercent,
+      };
+
       if (id) {
         const [updated] = await db
           .update(partnerOrganizations)
           .set({
-            ...partner,
+            ...normalizedPartner,
             updatedAt: new Date(),
           })
           .where(eq(partnerOrganizations.id, id))
@@ -1136,7 +1140,7 @@ export class DatabaseStorage implements IStorage {
       } else {
         const [created] = await db
           .insert(partnerOrganizations)
-          .values(partner)
+          .values(normalizedPartner)
           .returning();
         return created;
       }

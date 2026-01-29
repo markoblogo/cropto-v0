@@ -14,6 +14,7 @@ import { startTransactionPoller } from "./onchain/poller";
 import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
 import { runScraper } from "./jobs/telegramScraper";
+import { MATCHING_FEE_PER_TON, SETTLEMENT_FEE_PER_TON } from "./fees";
 import { authenticateToken, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions } from "./auth";
 import { 
   intrinsic, 
@@ -37,7 +38,7 @@ import { mapOptionToMarketRow } from "./utils/marketSnapshot";
 import { calculateCalendarSpreads, calculateCrossCommoditySpreads, getAllSpreads } from "./utils/spreads";
 import fs from "fs";
 import path from "path";
-import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
+import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
 import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
 
@@ -372,9 +373,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const response: HealthUpdateResponse = {
         lastSync: nextCursor, // Use pre-captured cursor to prevent race condition
-        options: changedOptions,
-        marginCalls: changedMarginCalls,
-        transactions: changedTransactions,
+        options: changedOptions as any,
+        marginCalls: changedMarginCalls as any,
+        transactions: changedTransactions as any,
       };
 
       res.json(response);
@@ -1187,8 +1188,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/index/history", async (req, res) => {
     try {
       const { country, commodity, basis } = req.query;
+      const countryStr = typeof country === "string" ? country : "";
+      const commodityStr = typeof commodity === "string" ? commodity : "";
+      const basisStr = typeof basis === "string" ? basis : "";
 
-      if (!country || !commodity || !basis) {
+      if (!countryStr || !commodityStr || !basisStr) {
         return res.status(400).json({
           error: "Missing required parameters: country, commodity, basis",
         });
@@ -1196,7 +1200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const history: Array<{ date: string; price: number }> = [];
 
-      if (country === "UA") {
+      if (countryStr === "UA") {
         // Query from commodityIndexPrices via indexes table
         const uaIndexes = await db
           .select()
@@ -1211,7 +1215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : index.category === "CPT PARITET ODESA"
             ? "CPT Paritet Odesa (processing)"
             : index.category;
-          if (indexBasis === basis && index.name.toLowerCase().includes(commodity.toLowerCase())) {
+          if (indexBasis === basisStr && index.name.toLowerCase().includes(commodityStr.toLowerCase())) {
             matchingIndex = index;
             break;
           }
@@ -1242,9 +1246,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             const meta = price.meta ? JSON.parse(price.meta) : {};
             if (
-              meta.country === country &&
-              (meta.commodity || price.commodity.toLowerCase()) === commodity.toLowerCase() &&
-              meta.basis === basis
+              meta.country === countryStr &&
+              (meta.commodity || price.commodity.toLowerCase()) === commodityStr.toLowerCase() &&
+              meta.basis === basisStr
             ) {
               history.push({
                 date: new Date(price.date).toISOString().split("T")[0],
@@ -1456,7 +1460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .from(indexPrices)
             .orderBy(asc(indexPrices.date));
 
-          const commodityLower = commodity.toLowerCase();
+          const commodityLower = (typeof commodity === "string" ? commodity : "").toLowerCase();
           const historyMap = new Map<string, { basePrice?: number; targetPrice?: number }>();
 
           // Collect base history
@@ -2009,7 +2013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const rows = (rowsResult as any).rows ?? [];
 
-      const marketRows = rows.map((opt) => mapOptionToMarketRow(opt as any));
+      const marketRows = rows.map((opt: any) => mapOptionToMarketRow(opt as any));
 
       res.json({ options: marketRows });
     } catch (error: any) {
@@ -2951,6 +2955,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If resolved, update option status back to OPEN
       if (shouldResolve) {
+        if (!marginCall.optionId) {
+          throw new Error("Margin call is missing optionId");
+        }
         await storage.updateOption(marginCall.optionId, {
           status: "OPEN",
         });
@@ -3070,6 +3077,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const reason = `Margin call deadline expired (${marginCall.deadline}). Collateral insufficient.`;
           
+          if (!marginCall.optionId) {
+            throw new Error(`Margin call ${marginCall.id} is missing optionId`);
+          }
           const result = await storage.forceSettleOption(
             marginCall.optionId,
             "system",
@@ -3132,6 +3142,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each expired margin call
       for (const marginCall of expiredMarginCalls) {
         try {
+          if (!marginCall.optionId) {
+            throw new Error(`Margin call ${marginCall.id} is missing optionId`);
+          }
           // Get the option
           const option = await storage.getOptionById(marginCall.optionId);
           if (!option) {
@@ -4012,7 +4025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch margin calls for user's options
       const marginCalls = await storage.getMarginCallsByUser(userId);
       const activeMarginCalls = marginCalls.filter(mc => 
-        mc.status === "PENDING" || mc.status === "OPEN"
+        mc.status === "PENDING"
       );
 
       // Get all indexes for price lookup
@@ -4203,7 +4216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(forwardContracts.createdAt));
 
       // Get settlements for realized PnL
-      const forwardSettlements = await db.select().from(forwardSettlements);
+      const forwardSettlementRows = await db.select().from(forwardSettlements);
 
       const positions = await Promise.all(userForwardContracts.map(async (contract) => {
         const isLong = contract.longUserId === userId;
@@ -4216,8 +4229,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Calculate PnL from settlements
         let realizedPnL = 0;
-        const contractSettlements = forwardSettlements.filter(
-          (s) => s.forwardContractId === contract.id
+        const contractSettlements = forwardSettlementRows.filter(
+          (s: any) => s.forwardContractId === contract.id
         );
 
         for (const settlement of contractSettlements) {
@@ -4399,7 +4412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Resolve index info
       const commoditySlug = typeof commodity === "string" ? commodity : undefined;
-      const commodityInfo = commoditySlug ? COMMODITY_MAP[commoditySlug as any] : undefined;
+      const commodityInfo = commoditySlug ? COMMODITY_MAP[commoditySlug as CommoditySlug] : undefined;
 
       let indexRow: any = null;
       if (indexId && typeof indexId === "string") {
@@ -4697,16 +4710,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { commodity, status, side } = req.query;
-      let whereConditions = [];
+      const commodityStr = typeof commodity === "string" ? commodity : null;
+      const statusStr = typeof status === "string" ? status : null;
+      const sideStr = typeof side === "string" ? side : null;
+      const whereConditions: any[] = [];
 
-      if (commodity) {
-        whereConditions.push(eq(forwardOrders.commodity, commodity as string));
+      if (commodityStr) {
+        whereConditions.push(eq(forwardOrders.commodity, commodityStr));
       }
-      if (status) {
-        whereConditions.push(eq(forwardOrders.status, status as string));
+      if (statusStr) {
+        whereConditions.push(eq(forwardOrders.status, statusStr as any));
       }
-      if (side) {
-        whereConditions.push(eq(forwardOrders.side, side as string));
+      if (sideStr) {
+        whereConditions.push(eq(forwardOrders.side, sideStr as any));
       }
 
       const orders = await db
@@ -4747,7 +4763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (parsed.data.expiryHalf && parsed.data.expiryMonth && parsed.data.expiryYear) {
         try {
           const window = computeExpiryWindow({
-            half: parsed.data.expiryHalf,
+            half: parsed.data.expiryHalf === "H1" ? "1H" : "2H",
             month: parsed.data.expiryMonth,
             year: parsed.data.expiryYear,
           });
@@ -4805,8 +4821,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(
           and(
             eq(forwardOrders.side, oppositeSide),
-            eq(forwardOrders.indexId, order.indexId),
-            eq(forwardOrders.window, order.window),
+            eq(forwardOrders.indexId, order.indexId as any),
+            eq(forwardOrders.window, order.window as any),
             eq(forwardOrders.price, order.price),
             eq(forwardOrders.status, "OPEN")
           )

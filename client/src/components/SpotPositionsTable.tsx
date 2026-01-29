@@ -246,7 +246,7 @@ export function SpotPositionsTable({
                       {optionsByCommodity?.[position.commoditySlug] ? (
                         <Button
                           variant="ghost"
-                          size="xs"
+                          size="sm"
                           onClick={() => onShowOptionsForCommodity?.(position.commoditySlug)}
                           data-testid={`button-show-options-${position.commoditySlug}`}
                         >

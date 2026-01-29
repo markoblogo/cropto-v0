@@ -1534,8 +1534,8 @@ export default function Portfolio() {
                           <TableHead>Side</TableHead>
                           <TableHead className="text-right">Qty (t)</TableHead>
                           <TableHead className="text-right">Strike ($/t)</TableHead>
-                          <TableHead className="text-right">Entry Premium (CROPT)</TableHead>
-                          <TableHead className="text-right">Current Price ($/t)</TableHead>
+                          <TableHead className="text-right">Premium ($/t)</TableHead>
+                          <TableHead className="text-right">Implied PnL</TableHead>
                           <TableHead className="text-right">P&L</TableHead>
                           <TableHead>Expiry</TableHead>
                           <TableHead>Status</TableHead>
@@ -1556,7 +1556,7 @@ export default function Portfolio() {
                             : 0;
 
                           return (
-                            <TableRow key={position.id}>
+                            <TableRow key={position.optionId}>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{position.underlying}</span>
@@ -1589,10 +1589,10 @@ export default function Portfolio() {
                                 ${strikePerTon.toFixed(2)}
                               </TableCell>
                               <TableCell className="text-right font-mono text-muted-foreground">
-                                {position.entryPremiumCROPT ? position.entryPremiumCROPT.toFixed(2) : "—"}
+                                {position.premium ? `$${parseFloat(position.premium).toFixed(2)}` : "—"}
                               </TableCell>
                               <TableCell className="text-right font-mono">
-                                {position.currentPrice ? `$${position.currentPrice.toFixed(2)}` : "—"}
+                                {position.impliedPnlNow !== null ? `${position.impliedPnlNow >= 0 ? '+' : ''}${position.impliedPnlNow.toFixed(2)}%` : "—"}
                               </TableCell>
                               <TableCell className={`text-right font-mono ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                 {isProfitablePosition ? '+' : ''}${positionPnL.toFixed(2)}
@@ -1615,29 +1615,7 @@ export default function Portfolio() {
                                 <StatusBadge status={position.status as any} />
                               </TableCell>
                               <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-1">
-                                  {position.canExercise && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => setExerciseOptionId(position.id)}
-                                      className="text-xs"
-                                    >
-                                      Exercise
-                                    </Button>
-                                  )}
-                                  {position.canExercise && position.canSettle && " / "}
-                                  {position.canSettle && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleSettleOption(position.id)}
-                                      className="text-xs"
-                                    >
-                                      Settle
-                                    </Button>
-                                  )}
-                                </div>
+                                <span className="text-muted-foreground">—</span>
                               </TableCell>
                             </TableRow>
                           );
@@ -1645,7 +1623,7 @@ export default function Portfolio() {
                       </TableBody>
                     </Table>
                   </div>
-                ) : userTier === "user_no_login" ? (
+                ) : userTier === "guest" ? (
                   <>
                     <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.loginRequired')}</p>
                     <Link href="/login">

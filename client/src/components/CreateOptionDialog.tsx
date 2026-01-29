@@ -85,6 +85,7 @@ interface CommodityIndex {
     delta: number | null;
     timestamp: string;
   } | null;
+  isStale?: boolean;
 }
 
 const monthOptions = [

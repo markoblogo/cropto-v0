@@ -45,7 +45,12 @@ export interface CrossCommoditySpread {
 export async function calculateCalendarSpreads(commodity?: string): Promise<CalendarSpread[]> {
   try {
     // Get active forward contracts
-    let contractsQuery = db
+    const baseWhere: any[] = [eq(forwardContracts.status, "ACTIVE")];
+    if (commodity) {
+      baseWhere.push(eq(forwardContracts.commodity, commodity));
+    }
+
+    const contracts = await db
       .select({
         id: forwardContracts.id,
         commodity: forwardContracts.commodity,
@@ -58,13 +63,7 @@ export async function calculateCalendarSpreads(commodity?: string): Promise<Cale
         updatedAt: forwardContracts.updatedAt,
       })
       .from(forwardContracts)
-      .where(eq(forwardContracts.status, "ACTIVE"));
-
-    if (commodity) {
-      contractsQuery = contractsQuery.where(eq(forwardContracts.commodity, commodity));
-    }
-
-    const contracts = await contractsQuery;
+      .where(and(...baseWhere));
 
     // Group by commodity and window
     const windowGroups: Record<string, Record<string, typeof contracts>> = {};
@@ -143,7 +142,12 @@ export async function calculateCalendarSpreads(commodity?: string): Promise<Cale
 export async function calculateCrossCommoditySpreads(window?: string): Promise<CrossCommoditySpread[]> {
   try {
     // Get active forward contracts
-    let contractsQuery = db
+    const baseWhere: any[] = [eq(forwardContracts.status, "ACTIVE")];
+    if (window) {
+      baseWhere.push(eq(forwardContracts.window, window));
+    }
+
+    const contracts = await db
       .select({
         id: forwardContracts.id,
         commodity: forwardContracts.commodity,
@@ -156,13 +160,7 @@ export async function calculateCrossCommoditySpreads(window?: string): Promise<C
         updatedAt: forwardContracts.updatedAt,
       })
       .from(forwardContracts)
-      .where(eq(forwardContracts.status, "ACTIVE"));
-
-    if (window) {
-      contractsQuery = contractsQuery.where(eq(forwardContracts.window, window));
-    }
-
-    const contracts = await contractsQuery;
+      .where(and(...baseWhere));
 
     // Group by window and commodity
     const commodityGroups: Record<string, Record<string, typeof contracts>> = {};

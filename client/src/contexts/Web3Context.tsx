@@ -95,7 +95,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (window.ethereum) {
+    if (window.ethereum?.on) {
       window.ethereum.on("accountsChanged", (accounts: string[]) => {
         if (accounts.length === 0) {
           disconnectWallet();
