@@ -1691,6 +1691,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
+              const detectedSource = (meta.source || price.source || "manual") as string;
+
               targetMap.set(key, {
                 commodity,
                 grade: meta.grade || null,
@@ -1702,7 +1704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 change7d: 0,
                 change30d: 0,
                 asOf: new Date(price.date).toISOString(),
-                source: "manual" as const,
+                source: detectedSource as any,
               });
             }
           }
