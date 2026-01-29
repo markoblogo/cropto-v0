@@ -23,6 +23,7 @@ interface CommodityIndex {
     delta: number | null;
     timestamp: Date;
   } | null;
+  isStale?: boolean;
 }
 
 interface SelectedCommodity {

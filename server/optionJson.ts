@@ -24,6 +24,7 @@ export type OptionContractJsonV1 = {
   contractType: string;
   strike: number;
   premium: number;
+  windowLegacy?: string | null;
   windowStart: string | null;
   windowEnd: string | null;
   settlementDate: string | null;
@@ -101,7 +102,7 @@ export function serializeOptionToJson(option: Option): OptionContractJsonV1 {
     contractType,
     strike: strikePrice,
     premium: premiumPerTon,
-    window: windowLabel,
+    windowLegacy: windowLabel,
     windowStart: windowStartIso,
     windowEnd: windowEndIso,
     settlementDate: settlementDateIso,

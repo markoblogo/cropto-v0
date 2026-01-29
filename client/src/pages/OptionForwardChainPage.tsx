@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { apiRequest } from "@/lib/queryClient";
-import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA } from "@shared/commodities";
+import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
 
 type ChainOption = {
   id: string;
@@ -105,7 +105,7 @@ export default function OptionForwardChainPage() {
                 <SelectContent>
                   {commodityOptions.map((slug) => (
                     <SelectItem key={slug} value={slug}>
-                      {COMMODITY_MAP[slug as any]?.name || slug}
+                      {COMMODITY_MAP[slug as CommoditySlug]?.name || slug}
                     </SelectItem>
                   ))}
                 </SelectContent>

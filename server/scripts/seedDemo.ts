@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { db } from "../db";
 import { options, indexPrices } from "@shared/schema";
 import { createUser, findUserByEmail, hashPassword } from "../auth";

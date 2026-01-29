@@ -216,7 +216,7 @@ export default function AdminPartners() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {partners.filter(p => p.status === 'active').length}
+                {partners.filter((p: any) => p.status === 'active').length}
               </div>
             </CardContent>
           </Card>
@@ -228,7 +228,7 @@ export default function AdminPartners() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {partners.reduce((sum, p) => sum + p.contractsCount, 0)}
+                {partners.reduce((sum: number, p: any) => sum + p.contractsCount, 0)}
               </div>
             </CardContent>
           </Card>
@@ -240,7 +240,7 @@ export default function AdminPartners() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${partners.reduce((sum, p) => sum + parseFloat(p.totalContractValueUsd), 0).toLocaleString()}
+                ${partners.reduce((sum: number, p: any) => sum + parseFloat(p.totalContractValueUsd), 0).toLocaleString()}
               </div>
             </CardContent>
           </Card>
@@ -268,7 +268,7 @@ export default function AdminPartners() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {partners.map((partner) => (
+                {partners.map((partner: any) => (
                   <TableRow
                     key={partner.id}
                     className="cursor-pointer hover:bg-muted/50"
@@ -451,7 +451,7 @@ export default function AdminPartners() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {partnerDetail.contracts.map((contract) => (
+                          {partnerDetail.contracts.map((contract: any) => (
                             <TableRow key={contract.id}>
                               <TableCell className="font-mono text-sm">{contract.contractCode}</TableCell>
                               <TableCell className="text-right font-mono">

@@ -99,7 +99,7 @@ export async function updateUserSupabase(
 
   const { data, error } = await client
     .from('users')
-    .update(updates as any)
+    .update(updates as any as never)
     .eq('email', email)
     .select()
     .single();

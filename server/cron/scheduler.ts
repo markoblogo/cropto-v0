@@ -1,6 +1,6 @@
 import { storage } from "../storage";
 import { db } from "../db";
-import { indexes, commodityIndexPrices, options } from "../../shared/schema";
+import { indexes, commodityIndexPrices, options } from "@shared/schema";
 import { eq, desc, or } from "drizzle-orm";
 import { shouldTriggerMargin, calculateMarginCallAmount, computeIntrinsicValueUSDCorrected } from "../utils/finance";
 
@@ -37,6 +37,10 @@ export async function processDeadlines() {
       try {
         const reason = `Margin call deadline expired (${marginCall.deadline?.toISOString() || 'unknown'}). Collateral insufficient.`;
         
+        if (!marginCall.optionId) {
+          throw new Error(`Margin call ${marginCall.id} is missing optionId`);
+        }
+
         const result = await storage.forceSettleOption(
           marginCall.optionId,
           "system",
@@ -61,7 +65,7 @@ export async function processDeadlines() {
         console.error(`  ❌ Error processing margin call ${marginCall.id}:`, error);
         results.errors.push({
           marginCallId: marginCall.id,
-          optionId: marginCall.optionId,
+          optionId: marginCall.optionId ?? "unknown",
           error: error?.message || 'Unknown error',
         });
       }
@@ -110,7 +114,7 @@ export async function processDeadlines() {
           ? Math.max(0, (currentPricePerTon - strikePerTon) * quantityTons)
           : Math.max(0, (strikePerTon - currentPricePerTon) * quantityTons);
 
-        const finalStatus = intrinsicValue > 0 ? "SETTLED" : "EXPIRED";
+        const finalStatus = intrinsicValue > 0 ? "EXERCISED" : "EXPIRED";
         await storage.updateOption(option.id, {
           status: finalStatus,
           lastUpdated: new Date(),
@@ -204,7 +208,7 @@ export async function processDeadlines() {
           const existingMarginCalls = await storage.getMarginCallsByUser(option.issuerId);
           const existingCall = existingMarginCalls.find(mc => 
             mc.optionId === option.id && 
-            (mc.status === "PENDING" || mc.status === "OPEN")
+            mc.status === "PENDING"
           );
 
           if (!existingCall) {
@@ -219,7 +223,6 @@ export async function processDeadlines() {
               amountRequired: marginCallAmount.toFixed(8),
               intrinsicValue: intrinsicValue.toFixed(8),
               collateralAmount: collateral.toFixed(8),
-              status: "PENDING",
               deadline: deadline,
             });
 

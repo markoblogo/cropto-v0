@@ -208,9 +208,9 @@ export function registerSpotRoutes(app: Express) {
       const cost = kgAmount * pricePerKg;
       
       // Wrap in transaction for atomicity and to prevent race conditions
-      let newBalance: number;
-      let newQuantity: number;
-      let newAvgPrice: number;
+      let newBalance = 0;
+      let newQuantity = 0;
+      let newAvgPrice = 0;
       
       await db.transaction(async (tx) => {
         // Get user's CROPT balance with row-level lock (FOR UPDATE)
@@ -297,28 +297,7 @@ export function registerSpotRoutes(app: Express) {
             avgEntryPrice: pricePerKg.toFixed(8),
           });
         
-        // TODO: Re-enable platform fee logging for spot buy once fee logic is finalized
-        if (false) {
-          const feeAmount = 0; // placeholder
-          if (cost == null || Number.isNaN(cost) || cost < 0) {
-            console.error('[SPOT_BUY] Invalid cost for notionalAmount', { cost, commoditySlug, userId });
-            throw new Error('Invalid cost for platform fee notional amount');
-          }
-          const notionalAmount = cost.toFixed(8);
-          
-          await tx
-            .insert(platformFees)
-            .values({
-              userId,
-              role: req.user.role || 'trader',
-              type: 'spot_buy',
-              amount: feeAmount.toFixed(8),
-              notionalAmount: notionalAmount,
-              currency: 'CROPT',
-              instrument: commoditySlug,
-              txId: null,
-            });
-        }
+        // Platform fee logging for spot buy is currently disabled (not modeled in platformFees enum).
       });
       
       // Calculate current P&L based on aggregated position
@@ -379,9 +358,9 @@ export function registerSpotRoutes(app: Express) {
       const pricePerKg = await getPricePerKgOrThrow(commoditySlug);
       
       // Wrap in transaction for atomicity and to prevent race conditions
-      let newBalance: number;
-      let payout: number;
-      let realizedPnL: number;
+      let newBalance = 0;
+      let payout = 0;
+      let realizedPnL = 0;
       
       await db.transaction(async (tx) => {
         // Get user's CROPT balance with row-level lock (FOR UPDATE)
@@ -495,28 +474,7 @@ export function registerSpotRoutes(app: Express) {
           }
         }
         
-        // TODO: Re-enable platform fee logging for spot sell once fee logic is finalized
-        if (false) {
-          const feeAmount = 0; // placeholder
-          if (payout == null || Number.isNaN(payout) || payout < 0) {
-            console.error('[SPOT_SELL] Invalid payout for notionalAmount', { payout, commoditySlug, userId });
-            throw new Error('Invalid payout for platform fee notional amount');
-          }
-          const notionalAmount = payout.toFixed(8);
-          
-          await tx
-            .insert(platformFees)
-            .values({
-              userId,
-              role: req.user.role || 'trader',
-              type: 'spot_sell',
-              amount: feeAmount.toFixed(8),
-              notionalAmount: notionalAmount,
-              currency: 'CROPT',
-              instrument: commoditySlug,
-              txId: null,
-            });
-        }
+        // Platform fee logging for spot sell is currently disabled (not modeled in platformFees enum).
       });
       
       // Get remaining positions
@@ -773,18 +731,7 @@ export function registerSpotRoutes(app: Express) {
         }
         const notionalAmount = depositAmount.toFixed(8);
         
-        await tx
-          .insert(platformFees)
-          .values({
-            userId,
-            role: req.user?.role || 'trader',
-            type: 'deposit',
-            amount: feeAmount.toFixed(8),
-            notionalAmount: notionalAmount,
-            currency: 'CROPT',
-            instrument: null,
-            txId: null,
-          });
+        // Platform fee logging for deposit is currently disabled (not modeled in platformFees enum).
       });
 
       // Get updated balance

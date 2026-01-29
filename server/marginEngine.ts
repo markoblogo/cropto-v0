@@ -2,7 +2,7 @@ import { Option } from "@shared/schema";
 
 export interface MarginCheckResult {
   updated: Option & {
-    floatingLoss?: number;
+    floatingLoss?: string | null;
     isInMarginCall?: boolean;
     marginCallTimestamp?: Date | null;
     marginCallDeadline?: Date | null;
@@ -56,7 +56,7 @@ export function checkMarginCall(
     marginCallTriggered,
     updated: {
       ...position,
-      floatingLoss,
+      floatingLoss: floatingLoss.toFixed(8),
       isInMarginCall,
       marginCallTimestamp,
       marginCallDeadline,
@@ -118,11 +118,11 @@ export interface AutoLiquidationResult {
   shouldLiquidate: boolean;
   payoutToBuyer: number;
   updated: Option & {
-    floatingLoss?: number;
+    floatingLoss?: string | null;
     isInMarginCall?: boolean;
     marginCallTimestamp?: Date | null;
     marginCallDeadline?: Date | null;
-    marginBalance?: number;
+    marginBalance?: string | null;
     status?: string;
   };
 }
@@ -154,8 +154,8 @@ export function autoLiquidateIfNeeded(
 
   const updated: any = {
     ...position,
-    floatingLoss: pnl,
-    marginBalance: 0,
+    floatingLoss: pnl.toFixed(8),
+    marginBalance: "0",
     isInMarginCall: false,
     marginCallTimestamp: position.marginCallTimestamp || null,
     marginCallDeadline: position.marginCallDeadline || null,

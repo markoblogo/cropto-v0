@@ -58,7 +58,7 @@ export async function autoImportDemoData(db: any): Promise<void> {
       transactions: 0,
     };
 
-    await db.transaction(async (tx) => {
+    await db.transaction(async (tx: any) => {
       // Import index prices first (no dependencies)
       if (exportData.indexPrices.length > 0) {
         console.log(`  📊 Importing ${exportData.indexPrices.length} index prices...`);

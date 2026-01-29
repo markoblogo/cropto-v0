@@ -431,8 +431,9 @@ export default function AdminReconciliation() {
                           {filteredSettlements.map((settlement) => {
                             const qty = parseFloat(settlement.qty);
                             const payout = parseFloat(settlement.payout);
-                            const feePerSide = settlement.settlementFeePerSide
-                              ? parseFloat(settlement.settlementFeePerSide)
+                            const feePerSideRaw = (settlement as any).settlementFeePerSide;
+                            const feePerSide = feePerSideRaw
+                              ? parseFloat(feePerSideRaw)
                               : qty * 0.125;
                             const netPayoutBuyer = payout - feePerSide;
                             const pnl = parseFloat(settlement.profitLoss);

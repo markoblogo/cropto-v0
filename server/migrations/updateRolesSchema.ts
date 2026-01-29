@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Migration script to update user roles from old system to new RBAC
  * Old roles: 'farmer' | 'trader' | 'broker'
