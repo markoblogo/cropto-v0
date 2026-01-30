@@ -1,6 +1,5 @@
+# Cropto v0
 
+Internal/private MVP repository.
 
-<!-- YOLO achievement PR (main): no functional changes -->
-
-
-<!-- Pair Extraordinaire achievement PR: co-author credit -->
+**License:** All rights reserved. See [LICENSE](LICENSE).
