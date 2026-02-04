@@ -423,6 +423,51 @@
         "loadError": "Failed to load index data",
         "lastUpdated": "Last updated:",
         "priceHistory": "Price History"
+      },
+      "toast": {
+        "optionCreated": "Option created successfully",
+        "optionCreateFailed": "Failed to create option",
+        "optionMatchedTitle": "Option matched successfully",
+        "optionMatchedDesc": "Your position is now updated in the portfolio.",
+        "optionMatchFailedTitle": "Failed to match option",
+        "optionMatchFailedDesc": "Please try again later.",
+        "exerciseSuccessTitle": "Exercise successful",
+        "exerciseSuccessDesc": "Your option has been exercised and your spot position and CROPT balance are updated.",
+        "exerciseFailedTitle": "Exercise failed",
+        "exerciseFailedDesc": "Failed to exercise option. Please check your CROPT balance and try again.",
+        "marginCheckCompleteTitle": "Margin Check Complete",
+        "marginCheckCompleteDesc": "Processed {{processed}} options. Created {{count}} margin calls.",
+        "marginCheckFailedTitle": "Margin Check Failed",
+        "marginCheckFailedDesc": "Failed to run margin check",
+        "forceSettleCompleteTitle": "Force Settlement Complete",
+        "forceSettleCompleteDesc": "Option has been force-settled. Status: {{status}}. {{count}} notifications sent.",
+        "forceSettleFailedTitle": "Force Settlement Failed",
+        "forceSettleFailedDesc": "Failed to force-settle option",
+        "topUpResolvedTitle": "Margin Call Resolved",
+        "topUpResolvedDesc": "Margin call has been resolved. Option status restored to OPEN.",
+        "topUpSuccessTitle": "Top-up Successful",
+        "topUpSuccessDesc": "Added {{reserved}} to collateral. Total available: {{total}}",
+        "topUpFailedTitle": "Top-up Failed",
+        "topUpFailedDesc": "Failed to top up margin call",
+        "withdrawInitiatedTitle": "Withdrawal Initiated",
+        "withdrawInitiatedDesc": "Transaction: {{tx}}...",
+        "withdrawFailedTitle": "Withdrawal Failed",
+        "withdrawFailedDesc": "Failed to initiate withdrawal",
+        "welcomeBackTitle": "Welcome back!",
+        "welcomeBackDesc": "You've been successfully authenticated",
+        "roleCompleteTitle": "Account Setup Complete",
+        "roleCompleteDesc": "You're all set! Start exploring grain options.",
+        "noPendingMarginCall": "No pending margin call found for this option"
+      },
+      "portfolioHealth": {
+        "loading": "Loading portfolio health…",
+        "error": "Failed to load portfolio health.",
+        "signInPrompt": "Sign in to see your portfolio health."
+      },
+      "optionsPreview": {
+        "title": "Option Chain",
+        "subtitle": "Browse and trade commodity options contracts",
+        "viewAll": "View Full Option Chain"
       }
     },
     "login": {

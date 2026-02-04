@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { CreateOptionDialog } from "@/components/CreateOptionDialog";
 import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
@@ -29,6 +30,7 @@ import { usePortfolioSummary } from "@/hooks/usePortfolioSummary";
 export default function Dashboard() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
   const [isRoleSelectionOpen, setIsRoleSelectionOpen] = useState(false);
@@ -101,14 +103,14 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
       toast({
-        title: "Success",
-        description: "Option created successfully",
+        title: t("common.success"),
+        description: t("page.dashboard.toast.optionCreated"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create option",
+        title: t("common.error"),
+        description: error.message || t("page.dashboard.toast.optionCreateFailed"),
         variant: "destructive",
       });
     },
@@ -125,14 +127,14 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
       queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
       toast({
-        title: "Option matched successfully",
-        description: "Your position is now updated in the portfolio.",
+        title: t("page.dashboard.toast.optionMatchedTitle"),
+        description: t("page.dashboard.toast.optionMatchedDesc"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to match option",
-        description: error.message || "Please try again later.",
+        title: t("page.dashboard.toast.optionMatchFailedTitle"),
+        description: error.message || t("page.dashboard.toast.optionMatchFailedDesc"),
         variant: "destructive",
       });
     },
@@ -150,14 +152,14 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
       toast({
-        title: "Exercise successful",
-        description: "Your option has been exercised and your spot position and CROPT balance are updated.",
+        title: t("page.dashboard.toast.exerciseSuccessTitle"),
+        description: t("page.dashboard.toast.exerciseSuccessDesc"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Exercise failed",
-        description: error.message || "Failed to exercise option. Please check your CROPT balance and try again.",
+        title: t("page.dashboard.toast.exerciseFailedTitle"),
+        description: error.message || t("page.dashboard.toast.exerciseFailedDesc"),
         variant: "destructive",
       });
     },
@@ -176,14 +178,17 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       toast({
-        title: "Margin Check Complete",
-        description: `Processed ${data.optionsProcessed} options. Created ${data.marginCalls?.length || 0} margin calls.`,
+        title: t("page.dashboard.toast.marginCheckCompleteTitle"),
+        description: t("page.dashboard.toast.marginCheckCompleteDesc", {
+          processed: data.optionsProcessed,
+          count: data.marginCalls?.length || 0,
+        }),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Margin Check Failed",
-        description: error.message || "Failed to run margin check",
+        title: t("page.dashboard.toast.marginCheckFailedTitle"),
+        description: error.message || t("page.dashboard.toast.marginCheckFailedDesc"),
         variant: "destructive",
       });
     },
@@ -201,14 +206,17 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       toast({
-        title: "Force Settlement Complete",
-        description: `Option has been force-settled. Status: ${data.option?.status}. ${data.notificationsCreated} notifications sent.`,
+        title: t("page.dashboard.toast.forceSettleCompleteTitle"),
+        description: t("page.dashboard.toast.forceSettleCompleteDesc", {
+          status: data.option?.status,
+          count: data.notificationsCreated,
+        }),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Force Settlement Failed",
-        description: error.message || "Failed to force-settle option",
+        title: t("page.dashboard.toast.forceSettleFailedTitle"),
+        description: error.message || t("page.dashboard.toast.forceSettleFailedDesc"),
         variant: "destructive",
       });
     },
@@ -226,16 +234,21 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
       queryClient.invalidateQueries({ queryKey: ["/api/margin-calls"] });
       toast({
-        title: data.resolved ? "Margin Call Resolved" : "Top-up Successful",
-        description: data.resolved 
-          ? "Margin call has been resolved. Option status restored to OPEN." 
-          : `Added ${data.marginCall.reservedCollateral} to collateral. Total available: ${data.totalAvailable}`,
+        title: data.resolved
+          ? t("page.dashboard.toast.topUpResolvedTitle")
+          : t("page.dashboard.toast.topUpSuccessTitle"),
+        description: data.resolved
+          ? t("page.dashboard.toast.topUpResolvedDesc")
+          : t("page.dashboard.toast.topUpSuccessDesc", {
+              reserved: data.marginCall.reservedCollateral,
+              total: data.totalAvailable,
+            }),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Top-up Failed",
-        description: error.message || "Failed to top up margin call",
+        title: t("page.dashboard.toast.topUpFailedTitle"),
+        description: error.message || t("page.dashboard.toast.topUpFailedDesc"),
         variant: "destructive",
       });
     },
@@ -254,14 +267,16 @@ export default function Dashboard() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/onchain/transactions"] });
       toast({
-        title: "Withdrawal Initiated",
-        description: `Transaction: ${data.txHash.substring(0, 10)}...`,
+        title: t("page.dashboard.toast.withdrawInitiatedTitle"),
+        description: t("page.dashboard.toast.withdrawInitiatedDesc", {
+          tx: data.txHash.substring(0, 10),
+        }),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Withdrawal Failed",
-        description: error.message || "Failed to initiate withdrawal",
+        title: t("page.dashboard.toast.withdrawFailedTitle"),
+        description: error.message || t("page.dashboard.toast.withdrawFailedDesc"),
         variant: "destructive",
       });
     },
@@ -282,16 +297,16 @@ export default function Dashboard() {
       setIsRoleSelectionOpen(true);
     } else {
       toast({
-        title: "Welcome back!",
-        description: "You've been successfully authenticated",
+        title: t("page.dashboard.toast.welcomeBackTitle"),
+        description: t("page.dashboard.toast.welcomeBackDesc"),
       });
     }
   };
 
   const handleRoleSelectionSuccess = () => {
     toast({
-      title: "Account Setup Complete",
-      description: "You're all set! Start exploring grain options.",
+      title: t("page.dashboard.toast.roleCompleteTitle"),
+      description: t("page.dashboard.toast.roleCompleteDesc"),
     });
   };
 
@@ -344,9 +359,9 @@ export default function Dashboard() {
           {user ? (
             <div>
               {summaryLoading ? (
-                <div className="text-sm text-muted-foreground">Loading portfolio health…</div>
+                <div className="text-sm text-muted-foreground">{t("page.dashboard.portfolioHealth.loading")}</div>
               ) : summaryError ? (
-                <div className="text-sm text-destructive">Failed to load portfolio health.</div>
+                <div className="text-sm text-destructive">{t("page.dashboard.portfolioHealth.error")}</div>
               ) : portfolioSummary ? (
                 <PortfolioHealthGauge
                   healthPct={portfolioSummary.healthPct}
@@ -359,7 +374,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="text-sm text-muted-foreground">
-              Sign in to see your portfolio health.
+              {t("page.dashboard.portfolioHealth.signInPrompt")}
             </div>
           )}
 
@@ -386,16 +401,16 @@ export default function Dashboard() {
           <div id="options-table">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Option Chain</h2>
+                <h2 className="text-2xl font-bold mb-2">{t("page.dashboard.optionsPreview.title")}</h2>
                 <p className="text-muted-foreground">
-                  Browse and trade commodity options contracts
+                  {t("page.dashboard.optionsPreview.subtitle")}
                 </p>
               </div>
               <Button
                 variant="outline"
                 onClick={() => setLocation("/options")}
               >
-                View Full Option Chain
+                {t("page.dashboard.optionsPreview.viewAll")}
               </Button>
             </div>
             
@@ -423,8 +438,8 @@ export default function Dashboard() {
                 const marginCall = marginCalls.find(mc => mc.optionId === optionId && mc.status === "PENDING");
                 if (!marginCall) {
                   toast({
-                    title: "Error",
-                    description: "No pending margin call found for this option",
+                    title: t("common.error"),
+                    description: t("page.dashboard.toast.noPendingMarginCall"),
                     variant: "destructive",
                   });
                   return;
