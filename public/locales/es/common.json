@@ -876,6 +876,30 @@
         "title": "Ley aplicable y resolución de disputas",
         "body": "Las relaciones pueden estar sujetas a la ley de una jurisdicción seleccionada por Cropto. La jurisdicción específica y los procedimientos de resolución de disputas pueden definirse en acuerdos individuales con socios."
       }
+    },
+    "risk": {
+      "title": "Divulgación de riesgos",
+      "lastUpdated": "Última actualización: 2/4/2026",
+      "general": {
+        "title": "Advertencia general de riesgo",
+        "body": "Las transacciones con derivados sobre commodities agrícolas, índices de precios y otros instrumentos derivados conllevan un alto nivel de riesgo. Son posibles fluctuaciones significativas de precio y la pérdida total de los fondos invertidos."
+      },
+      "market": {
+        "title": "Riesgos de mercado y liquidez",
+        "body": "Los precios de granos y oleaginosas dependen del clima, la logística, restricciones regulatorias y otros factores. Algunos instrumentos pueden carecer de liquidez suficiente."
+      },
+      "counterparty": {
+        "title": "Riesgos de contraparte y operativos",
+        "body": "En el trading real pueden existir riesgos de incumplimiento de la contraparte, fallos técnicos y errores contables o de liquidación. La versión actual de Cropto modela estos procesos en un entorno de prueba."
+      },
+      "performance": {
+        "title": "Sin garantía de desempeño",
+        "body": "Los datos históricos, escenarios simulados y gráficos no garantizan resultados similares en el futuro."
+      },
+      "demo": {
+        "title": "Descargo sobre entorno demo",
+        "body": "La versión actual de Cropto está destinada a prototipado y pruebas. Cualquier operación y métrica mostrada es condicional y no crea obligaciones ni derechos legalmente vinculantes."
+      }
     }
   },
   "component": {

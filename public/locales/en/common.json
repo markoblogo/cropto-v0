@@ -888,6 +888,30 @@
         "title": "Governing Law and Dispute Resolution",
         "body": "Relationships may be subject to the law of a jurisdiction selected by Cropto. Specific jurisdiction and dispute resolution procedures may be defined in individual agreements with partners."
       }
+    },
+    "risk": {
+      "title": "Risk Disclosure",
+      "lastUpdated": "Last updated: 2/4/2026",
+      "general": {
+        "title": "General Risk Warning",
+        "body": "Transactions with derivatives on agricultural commodities, price indexes, and other derivative instruments carry a high level of risk. Significant price fluctuations and total loss of invested funds are possible."
+      },
+      "market": {
+        "title": "Market and Liquidity Risks",
+        "body": "Prices for grains and oilseeds depend on weather, logistics, regulatory constraints, and other factors. Certain instruments may lack sufficient liquidity."
+      },
+      "counterparty": {
+        "title": "Counterparty and Operational Risks",
+        "body": "In real trading there may be risks of counterparty default, technical failures, and accounting or settlement errors. The current Cropto version models such processes in a test environment."
+      },
+      "performance": {
+        "title": "No Guarantee of Performance",
+        "body": "Historical data, simulated scenarios, and charts do not guarantee similar results in the future."
+      },
+      "demo": {
+        "title": "Demo Environment Disclaimer",
+        "body": "The current Cropto version is intended for prototyping and testing. Any displayed trades and metrics are conditional and do not create legally binding obligations or rights."
+      }
     }
   },
   "component": {

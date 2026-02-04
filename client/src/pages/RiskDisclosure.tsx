@@ -1,56 +1,54 @@
 import { MainLayout } from "@/components/layouts/MainLayout";
+import { useTranslation } from "react-i18next";
 
 export default function RiskDisclosure() {
+  const { t } = useTranslation();
+
   return (
     <MainLayout>
       <div className="space-y-8">
         <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Risk Disclosure</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("page.risk.title")}</h1>
           <p className="text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            {t("page.risk.lastUpdated")}
           </p>
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">General Risk Warning</h2>
+          <h2 className="text-xl font-semibold">{t("page.risk.general.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Transactions with derivatives on agricultural commodities, price indexes, and other derivative instruments
-            carry a high level of risk. Significant price fluctuations and total loss of invested funds are possible.
+            {t("page.risk.general.body")}
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Market and Liquidity Risks</h2>
+          <h2 className="text-xl font-semibold">{t("page.risk.market.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Prices for grains and oilseeds depend on weather, logistics, regulatory constraints, and other factors.
-            Certain instruments may lack sufficient liquidity.
+            {t("page.risk.market.body")}
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Counterparty and Operational Risks</h2>
+          <h2 className="text-xl font-semibold">{t("page.risk.counterparty.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            In real trading there may be risks of counterparty default, technical failures, and accounting or settlement
-            errors. The current Cropto version models such processes in a test environment.
+            {t("page.risk.counterparty.body")}
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">No Guarantee of Performance</h2>
+          <h2 className="text-xl font-semibold">{t("page.risk.performance.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Historical data, simulated scenarios, and charts do not guarantee similar results in the future.
+            {t("page.risk.performance.body")}
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Demo Environment Disclaimer</h2>
+          <h2 className="text-xl font-semibold">{t("page.risk.demo.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            The current Cropto version is intended for prototyping and testing. Any displayed trades and metrics are
-            conditional and do not create legally binding obligations or rights.
+            {t("page.risk.demo.body")}
           </p>
         </section>
       </div>
     </MainLayout>
   );
 }
-
