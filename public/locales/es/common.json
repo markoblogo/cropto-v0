@@ -1319,8 +1319,8 @@
     }
   },
   "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Common questions about the Cropto platform and crypto options trading",
+    "title": "Preguntas frecuentes",
+    "subtitle": "Preguntas frecuentes sobre la plataforma Cropto y el trading de opciones cripto",
     "q1": {
       "question": "¿Qué es Cropto?",
       "answer": "Cropto es una plataforma de trading de opciones sobre criptomonedas que permite crear, operar y gestionar contratos de opciones (calls y puts). Usa un libro de órdenes off-chain con un motor de emparejamiento para facilitar una operativa eficiente."
@@ -1375,13 +1375,13 @@
       "note": "Asegúrate de estar en la testnet Polygon Amoy para funciones on-chain."
     },
     "q9": {
-      "question": "How do I track my portfolio?",
+      "question": "¿Cómo hago seguimiento de mi portafolio?",
       "answer": "La página de Portafolio muestra un resumen completo de tus posiciones, incluyendo:",
       "features": {
         "1": "Posiciones totales y P&L en todas las opciones",
         "2": "Métricas de rendimiento de cada opción",
-        "3": "Unrealized and realized gains/losses",
-        "4": "Position breakdown by status"
+        "3": "Ganancias/pérdidas no realizadas y realizadas",
+        "4": "Desglose de posiciones por estado"
       }
     },
     "q10": {
@@ -1395,35 +1395,35 @@
     }
   },
   "footer": {
-    "tagline": "Trade Commodities. On-Chain.",
-    "description": "Prototype platform for commodity derivatives trading. For demonstration and testing purposes only.",
-    "indexTrading": "Index Trading",
-    "tradeIndexUA": "Trade Index UA",
-    "tradeIndexBR": "Trade Index BR",
-    "tradeIndexAR": "Trade Index AR",
-    "tradeArbitrage": "Trade Arbitrage Index UA/BR/AR",
-    "optionsTrading": "Options Trading",
-    "tradeOptionsUA": "Trade Options UA",
-    "tradeOptionsBR": "Trade Options BR",
-    "tradeOptionsAR": "Trade Options AR",
-    "marketData": "Market Data",
-    "indexUA": "Index UA",
-    "indexBR": "Index BR",
-    "indexAR": "Index AR",
+    "tagline": "Opera commodities. On-chain.",
+    "description": "Plataforma prototipo para el trading de derivados sobre commodities. Solo para demostración y pruebas.",
+    "indexTrading": "Trading de índices",
+    "tradeIndexUA": "Operar índice UA",
+    "tradeIndexBR": "Operar índice BR",
+    "tradeIndexAR": "Operar índice AR",
+    "tradeArbitrage": "Operar arbitraje del índice UA/BR/AR",
+    "optionsTrading": "Trading de opciones",
+    "tradeOptionsUA": "Operar opciones UA",
+    "tradeOptionsBR": "Operar opciones BR",
+    "tradeOptionsAR": "Operar opciones AR",
+    "marketData": "Datos de mercado",
+    "indexUA": "Índice UA",
+    "indexBR": "Índice BR",
+    "indexAR": "Índice AR",
     "other": "Other",
-    "documentation": "Documentation",
+    "documentation": "Documentación",
     "wallet": "Wallet",
     "faq": "FAQ",
-    "aboutCropto": "About Cropto",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfUse": "Terms of Use",
-    "riskDisclosure": "Risk Disclosure",
-    "allRightsReserved": "All rights reserved."
+    "aboutCropto": "Sobre Cropto",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfUse": "Términos de uso",
+    "riskDisclosure": "Divulgación de riesgos",
+    "allRightsReserved": "Todos los derechos reservados."
   },
   "notFound": {
-    "title": "404 Page Not Found",
-    "subtitle": "The page you're looking for doesn't exist",
-    "backLink": "Back to Dashboard"
+    "title": "404 Página no encontrada",
+    "subtitle": "La página que buscas no existe",
+    "backLink": "Volver al panel"
   },
   "arbitrage": {
     "title": "Arbitraje de índices",

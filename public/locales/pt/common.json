@@ -1319,8 +1319,8 @@
     }
   },
   "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Common questions about the Cropto platform and crypto options trading",
+    "title": "Perguntas frequentes",
+    "subtitle": "Perguntas comuns sobre a plataforma Cropto e a negociação de opções cripto",
     "q1": {
       "question": "O que é a Cropto?",
       "answer": "Cropto é uma plataforma de negociação de opções de criptomoedas que permite criar, negociar e gerenciar contratos de opções (calls e puts). Ela usa um livro de ordens off-chain com um motor de matching para facilitar uma negociação eficiente."
@@ -1375,13 +1375,13 @@
       "note": "Certifique-se de estar na testnet Polygon Amoy para recursos on-chain."
     },
     "q9": {
-      "question": "How do I track my portfolio?",
+      "question": "Como acompanho meu portfólio?",
       "answer": "A página de Portfólio mostra uma visão completa das suas posições, incluindo:",
       "features": {
         "1": "Posições totais e P&L em todas as opções",
         "2": "Métricas de desempenho de cada opção",
-        "3": "Unrealized and realized gains/losses",
-        "4": "Position breakdown by status"
+        "3": "Ganhos/perdas não realizados e realizados",
+        "4": "Detalhamento das posições por status"
       }
     },
     "q10": {
@@ -1395,35 +1395,35 @@
     }
   },
   "footer": {
-    "tagline": "Trade Commodities. On-Chain.",
-    "description": "Prototype platform for commodity derivatives trading. For demonstration and testing purposes only.",
-    "indexTrading": "Index Trading",
-    "tradeIndexUA": "Trade Index UA",
-    "tradeIndexBR": "Trade Index BR",
-    "tradeIndexAR": "Trade Index AR",
-    "tradeArbitrage": "Trade Arbitrage Index UA/BR/AR",
-    "optionsTrading": "Options Trading",
-    "tradeOptionsUA": "Trade Options UA",
-    "tradeOptionsBR": "Trade Options BR",
-    "tradeOptionsAR": "Trade Options AR",
-    "marketData": "Market Data",
-    "indexUA": "Index UA",
-    "indexBR": "Index BR",
-    "indexAR": "Index AR",
+    "tagline": "Negocie commodities. On-chain.",
+    "description": "Plataforma protótipo para negociação de derivativos de commodities. Apenas para demonstração e testes.",
+    "indexTrading": "Negociação de índices",
+    "tradeIndexUA": "Negociar índice UA",
+    "tradeIndexBR": "Negociar índice BR",
+    "tradeIndexAR": "Negociar índice AR",
+    "tradeArbitrage": "Negociar arbitragem do índice UA/BR/AR",
+    "optionsTrading": "Negociação de opções",
+    "tradeOptionsUA": "Negociar opções UA",
+    "tradeOptionsBR": "Negociar opções BR",
+    "tradeOptionsAR": "Negociar opções AR",
+    "marketData": "Dados de mercado",
+    "indexUA": "Índice UA",
+    "indexBR": "Índice BR",
+    "indexAR": "Índice AR",
     "other": "Other",
-    "documentation": "Documentation",
+    "documentation": "Documentação",
     "wallet": "Wallet",
     "faq": "FAQ",
-    "aboutCropto": "About Cropto",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfUse": "Terms of Use",
-    "riskDisclosure": "Risk Disclosure",
-    "allRightsReserved": "All rights reserved."
+    "aboutCropto": "Sobre a Cropto",
+    "privacyPolicy": "Política de privacidade",
+    "termsOfUse": "Termos de uso",
+    "riskDisclosure": "Divulgação de riscos",
+    "allRightsReserved": "Todos os direitos reservados."
   },
   "notFound": {
-    "title": "404 Page Not Found",
-    "subtitle": "The page you're looking for doesn't exist",
-    "backLink": "Back to Dashboard"
+    "title": "404 Página não encontrada",
+    "subtitle": "A página que você procura não existe",
+    "backLink": "Voltar ao painel"
   },
   "arbitrage": {
     "title": "Arbitragem de índices",
@@ -1584,7 +1584,7 @@
       "title": "Bem-vindo à Cropto!",
       "body": "Assine esta mensagem para se autenticar com sua carteira. Esta solicitação não acionará uma transação na blockchain nem custará taxas de gas.",
       "walletAddress": "Endereço da carteira: {{address}}",
-      "timestamp": "Timestamp: {{timestamp}}",
+      "timestamp": "Carimbo de data/hora: {{timestamp}}",
       "nonce": "Nonce: {{nonce}}"
     }
   },
