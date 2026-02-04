@@ -20,7 +20,7 @@
 Потім додайте тестову мережу **Polygon Amoy** вручну:
 
 - **Network Name:** Polygon Amoy  
-- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/5dHU6PKEJFVq2RRWHdVux  
+- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/<YOUR_KEY>  
 - **Chain ID:** 80002  
 - **Currency Symbol:** CROPT  
 

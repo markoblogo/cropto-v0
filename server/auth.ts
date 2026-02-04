@@ -23,9 +23,11 @@ function useSupabase(): boolean {
 // JWT_SECRET validation will happen at server startup in server/index.ts
 function getJWTSecret(): string {
   if (!process.env.JWT_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET is required in production');
+    }
     const generatedSecret = crypto.randomBytes(32).toString('hex');
-    console.warn('⚠️  JWT_SECRET not found - auto-generated (fallback).');
-    console.warn('   For production, add JWT_SECRET to your environment.');
+    console.warn('⚠️  JWT_SECRET not found - auto-generated (development fallback).');
     return generatedSecret;
   }
   return process.env.JWT_SECRET;

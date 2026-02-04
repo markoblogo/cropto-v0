@@ -2499,9 +2499,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Only brokers/admin can manually match options
       const hasAccess = hasBrokerPermissions(req.user?.role);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H2-match-role',location:'routes.ts:/api/options/:id/match',message:'match attempt role check',data:{user:req.user,hasAccess},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (!hasAccess) {
         return res.status(403).json({ error: "Only brokers can match options" });
       }

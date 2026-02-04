@@ -64,7 +64,7 @@ contract Cropt is ERC20, ERC20Burnable, AccessControl {
 
 3. Убедитесь, что MetaMask подключен к Polygon Amoy:
    - Network Name: `Polygon Amoy Testnet`
-   - RPC URL: `https://polygon-amoy.g.alchemy.com/v2/5dHU6PKEJFVq2RRWHdVux`
+   - RPC URL: `https://polygon-amoy.g.alchemy.com/v2/<YOUR_KEY>`
    - Chain ID: `80002`
    - Currency: `MATIC`
    - Block Explorer: `https://amoy.polygonscan.com`

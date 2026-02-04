@@ -20,7 +20,7 @@ First, make sure test networks are enabled in MetaMask.
 Then add the **Polygon Amoy** testnet network manually:
 
 - **Network Name:** Polygon Amoy  
-- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/5dHU6PKEJFVq2RRWHdVux  
+- **RPC URL:** https://polygon-amoy.g.alchemy.com/v2/<YOUR_KEY>  
 - **Chain ID:** 80002  
 - **Currency Symbol:** CROPT  
 
