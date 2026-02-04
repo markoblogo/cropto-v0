@@ -309,14 +309,14 @@ export default function Portfolio() {
       queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
       toast({
-        title: "Exercise successful",
-        description: "Your option has been exercised and your spot position and CROPT balance are updated.",
+        title: t('page.portfolio.toast.exerciseSuccessTitle'),
+        description: t('page.portfolio.toast.exerciseSuccessDesc'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Exercise failed",
-        description: error.message || "Failed to exercise option. Please check your CROPT balance and try again.",
+        title: t('page.portfolio.toast.exerciseFailedTitle'),
+        description: error.message || t('page.portfolio.toast.exerciseFailedDesc'),
         variant: "destructive",
       });
     },
@@ -332,14 +332,14 @@ export default function Portfolio() {
       queryClient.invalidateQueries({ queryKey: ["/api/options"] });
       queryClient.invalidateQueries({ queryKey: ["/api/portfolio/me"] });
       toast({
-        title: "Withdraw successful",
-        description: "Funds have been withdrawn to your wallet.",
+        title: t('page.portfolio.toast.withdrawSuccessTitle'),
+        description: t('page.portfolio.toast.withdrawSuccessDesc'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Withdraw failed",
-        description: error.message || "Failed to withdraw funds.",
+        title: t('page.portfolio.toast.withdrawFailedTitle'),
+        description: error.message || t('page.portfolio.toast.withdrawFailedDesc'),
         variant: "destructive",
       });
     },
@@ -463,7 +463,7 @@ export default function Portfolio() {
       }
 
       let timeToExpiryMs = 0;
-      let timeToExpiryLabel = "N/A";
+      let timeToExpiryLabel = t('page.portfolio.timeToExpiry.na');
       let isExpired = false;
 
       if (expirationDate && !isNaN(expirationDate.getTime())) {
@@ -479,18 +479,22 @@ export default function Portfolio() {
           const minutes = totalMinutes % 60;
 
           if (days >= 1) {
-            timeToExpiryLabel = `${days}d${hours > 0 ? ` ${hours}h` : ""}`;
+            timeToExpiryLabel = hours > 0
+              ? t('page.portfolio.timeToExpiry.shortDaysHours', { days, hours })
+              : t('page.portfolio.timeToExpiry.shortDays', { days });
           } else if (hours >= 1) {
-            timeToExpiryLabel = `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
+            timeToExpiryLabel = minutes > 0
+              ? t('page.portfolio.timeToExpiry.shortHoursMinutes', { hours, minutes })
+              : t('page.portfolio.timeToExpiry.shortHours', { hours });
           } else {
-            timeToExpiryLabel = `${minutes}m`;
+            timeToExpiryLabel = t('page.portfolio.timeToExpiry.shortMinutes', { minutes });
           }
         }
       }
 
       // Implied PnL (very simplified, intrinsic-only approximation)
       let impliedPnlNow: number | null = null;
-      let impliedPnlLabel = "—";
+      let impliedPnlLabel = t('page.portfolio.values.dash');
       let impliedPnlSign: "positive" | "negative" | "flat" = "flat";
 
       const indexKey = underlying.toLowerCase();
@@ -768,10 +772,10 @@ export default function Portfolio() {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="container mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Portfolio</h1>
-            <p className="text-muted-foreground">Your options positions and performance</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{t('page.portfolio.title')}</h1>
+          <p className="text-muted-foreground">{t('page.portfolio.subtitle')}</p>
+        </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
@@ -799,9 +803,9 @@ export default function Portfolio() {
         <div className="container mx-auto">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t('common.error')}</AlertTitle>
             <AlertDescription>
-              {error instanceof Error ? error.message : "Failed to load portfolio data. Please try again."}
+              {error instanceof Error ? error.message : t('page.portfolio.loadError')}
             </AlertDescription>
           </Alert>
         </div>
@@ -821,7 +825,7 @@ export default function Portfolio() {
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">Portfolio</h1>
+            <h1 className="text-3xl font-bold mb-2" data-testid="heading-portfolio">{t('page.portfolio.title')}</h1>
             <p className="text-muted-foreground">{t('page.portfolio.overviewSubtitle')}</p>
           </div>
         </div>
@@ -986,7 +990,7 @@ export default function Portfolio() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Collateral & Risk
+              {t('page.portfolio.collateralRisk.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -1021,7 +1025,7 @@ export default function Portfolio() {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Margin Utilization</span>
+                <span className="text-muted-foreground">{t('page.portfolio.collateralRisk.marginUtilization')}</span>
                 <span className={riskColor}>
                   ${usedMargin.toFixed(2)} / ${totalMargin.toFixed(2)}
                 </span>
@@ -1083,14 +1087,18 @@ export default function Portfolio() {
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
-                                {mc.status || "PENDING"}
+                                {mc.status || t('common.pending')}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-sm">
                               {deadline ? (
                                 <div className="flex items-center gap-2">
                                   <Badge className={`text-[11px] ${badgeClass}`}>
-                                    {isOverdue ? "Overdue" : hoursLeft !== null ? `${Math.max(0, Math.floor(hoursLeft))}h left` : "—"}
+                                    {isOverdue
+                                      ? t('page.portfolio.marginCalls.overdue')
+                                      : hoursLeft !== null
+                                      ? t('page.portfolio.marginCalls.hoursLeft', { hours: Math.max(0, Math.floor(hoursLeft)) })
+                                      : t('page.portfolio.values.dash')}
                                   </Badge>
                                   <span className="font-mono text-xs">
                                     {format(deadline, "MMM dd HH:mm")}
@@ -1132,24 +1140,24 @@ export default function Portfolio() {
                 <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 {userTier === "guest" ? (
                   <>
-                    <p className="text-lg font-medium mb-2">Log in to see your options portfolio</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.loginRequired')}</p>
                     <Link href="/login">
                       <Button size="sm" data-testid="button-empty-sign-in">
-                        Sign in
+                        {t('button.login')}
                       </Button>
                     </Link>
                   </>
                 ) : userTier === "user_no_wallet" ? (
                   <>
-                    <p className="text-lg font-medium mb-2">Connect your wallet to start trading options</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.walletRequired')}</p>
                     <Button size="sm" onClick={handleOpenWalletModal} data-testid="button-empty-connect-wallet">
-                      Connect wallet
+                      {t('button.connectWallet')}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <p className="text-lg font-medium mb-2">No positions yet</p>
-                    <p className="text-sm">Start trading options to see your portfolio here</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.positions.empty')}</p>
+                    <p className="text-sm">{t('page.portfolio.positions.emptySubtitle')}</p>
                   </>
                 )}
               </div>
@@ -1231,7 +1239,7 @@ export default function Portfolio() {
                             {entryPremium < 0 ? '' : '+'}{entryPremium.toFixed(2)} CROPT
                           </TableCell>
                           <TableCell className="text-right font-mono whitespace-nowrap" data-testid={`text-current-price-${position.optionId}`}>
-                            {currentPricePerTon !== undefined ? `$${currentPricePerTon.toFixed(2)}` : "—"}
+                            {currentPricePerTon !== undefined ? `$${currentPricePerTon.toFixed(2)}` : t('page.portfolio.values.dash')}
                           </TableCell>
                           <TableCell className="text-right whitespace-nowrap">
                             <div className="flex flex-col items-end gap-1">
@@ -1254,7 +1262,7 @@ export default function Portfolio() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">Not specified</span>
+                              <span className="text-muted-foreground">{t('page.portfolio.values.notSpecified')}</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -1296,7 +1304,7 @@ export default function Portfolio() {
 
         {/* Spot Positions */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">Spot Positions</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('page.portfolio.sections.spotPositions')}</h2>
           <SpotPositionsTable 
             positions={spotPositions} 
             isLoading={isSpotLoading}
@@ -1312,24 +1320,24 @@ export default function Portfolio() {
         {/* Net Exposure / Hedged Positions */}
         <Card>
           <CardHeader>
-            <CardTitle>Net Exposure</CardTitle>
+            <CardTitle>{t('page.portfolio.sections.netExposure')}</CardTitle>
           </CardHeader>
           <CardContent>
             {netExposure.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">No exposure yet. Trade options or spot to see your net positions here.</p>
+                <p className="text-sm">{t('page.portfolio.netExposure.empty')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Commodity</TableHead>
-                      <TableHead className="text-right">Spot (t)</TableHead>
-                      <TableHead className="text-right">Options (t)</TableHead>
-                      <TableHead className="text-right">Net (t)</TableHead>
-                      <TableHead className="text-right">Current Price ($/t)</TableHead>
-                      <TableHead className="text-right">Net Value ($)</TableHead>
+                      <TableHead>{t('page.portfolio.netExposure.table.commodity')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.netExposure.table.spot')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.netExposure.table.options')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.netExposure.table.net')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.netExposure.table.currentPrice')}</TableHead>
+                      <TableHead className="text-right">{t('page.portfolio.netExposure.table.netValue')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1358,12 +1366,12 @@ export default function Portfolio() {
                           <TableCell className="text-right font-mono">
                             {entry.currentPricePerT !== undefined
                               ? `$${entry.currentPricePerT.toFixed(2)}`
-                              : "—"}
+                              : t('page.portfolio.values.dash')}
                           </TableCell>
                           <TableCell className="text-right font-mono">
                             {entry.totalValueUsd !== undefined
                               ? `$${entry.totalValueUsd.toFixed(2)}`
-                              : "—"}
+                              : t('page.portfolio.values.dash')}
                           </TableCell>
                         </TableRow>
                       );
@@ -1383,42 +1391,42 @@ export default function Portfolio() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Collateral & Risk (Options)
+                  {t('page.portfolio.sections.collateralRiskOptions')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Available Margin</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('page.portfolio.collateralRisk.availableMargin')}</p>
                     <p className="text-2xl font-bold">
                       ${estimatedAvailableMargin.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Free collateral for new positions
+                      {t('page.portfolio.collateralRisk.availableMarginDesc')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Used Margin</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('page.portfolio.collateralRisk.usedMargin')}</p>
                     <p className="text-2xl font-bold">
                       ${usedMargin.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Locked in active positions
+                      {t('page.portfolio.collateralRisk.usedMarginDesc')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Risk Level</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('page.portfolio.collateralRisk.riskLevel')}</p>
                     <p className={`text-2xl font-bold ${riskColor}`}>
                       {(riskRatio * 100).toFixed(1)}%
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {riskRatio >= 0.85 ? "High risk" : riskRatio >= 0.60 ? "Moderate risk" : "Low risk"}
+                      {riskRatio >= 0.85 ? t('page.portfolio.collateralRisk.riskLevelHigh') : riskRatio >= 0.60 ? t('page.portfolio.collateralRisk.riskLevelModerate') : t('page.portfolio.collateralRisk.riskLevelLow')}
                     </p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Margin Utilization</span>
+                    <span className="text-muted-foreground">{t('page.portfolio.collateralRisk.marginUtilization')}</span>
                     <span className={riskColor}>
                       ${usedMargin.toFixed(2)} / ${totalMargin.toFixed(2)}
                     </span>
@@ -1437,26 +1445,26 @@ export default function Portfolio() {
                 {marginCalls > 0 && (
                   <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Margin Calls Active</AlertTitle>
+                    <AlertTitle>{t('page.portfolio.collateralRisk.marginCallsActive')}</AlertTitle>
                     <AlertDescription>
-                      You have {marginCalls} active margin call{marginCalls !== 1 ? 's' : ''}. Please top up your collateral to avoid liquidation.
+                      {t('page.portfolio.collateralRisk.marginCallsActiveDesc', { count: marginCalls })}
                     </AlertDescription>
                   </Alert>
                 )}
                 {myMarginCalls.length > 0 && (
                   <div className="mt-3 rounded-md border bg-muted/30 p-3 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium">Your Margin Calls</div>
-                      <div className="text-xs text-muted-foreground">Deadlines and status</div>
+                      <div className="text-sm font-medium">{t('page.portfolio.marginCalls.yourMarginCalls')}</div>
+                      <div className="text-xs text-muted-foreground">{t('page.portfolio.marginCalls.deadlinesAndStatus')}</div>
                     </div>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Option</TableHead>
-                            <TableHead>Required</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Deadline</TableHead>
+                            <TableHead>{t('page.portfolio.marginCalls.table.option')}</TableHead>
+                            <TableHead>{t('page.portfolio.marginCalls.table.required')}</TableHead>
+                            <TableHead>{t('page.portfolio.marginCalls.table.status')}</TableHead>
+                            <TableHead>{t('page.portfolio.marginCalls.table.deadline')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1480,21 +1488,25 @@ export default function Portfolio() {
                                 </TableCell>
                                 <TableCell>
                                   <Badge variant="outline" className="text-xs">
-                                    {mc.status || "PENDING"}
+                                    {mc.status || t('common.pending')}
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="text-sm">
                                   {deadline ? (
                                     <div className="flex items-center gap-2">
                                       <Badge className={`text-[11px] ${badgeClass}`}>
-                                        {isOverdue ? "Overdue" : hoursLeft !== null ? `${Math.max(0, Math.floor(hoursLeft))}h left` : "—"}
+                                        {isOverdue
+                                          ? t('page.portfolio.marginCalls.overdue')
+                                          : hoursLeft !== null
+                                          ? t('page.portfolio.marginCalls.hoursLeft', { hours: Math.max(0, Math.floor(hoursLeft)) })
+                                          : t('page.portfolio.values.dash')}
                                       </Badge>
                                       <span className="font-mono text-xs">
                                         {format(deadline, "MMM dd HH:mm")}
                                       </span>
                                     </div>
                                   ) : (
-                                    "-"
+                                    t('page.portfolio.values.dash')
                                   )}
                                 </TableCell>
                               </TableRow>
@@ -1510,9 +1522,9 @@ export default function Portfolio() {
 
             {/* Option Positions Table */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Option Positions</CardTitle>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                  <CardTitle>{t('page.portfolio.sections.optionPositions')}</CardTitle>
                   <Tabs value={optionFilterTab} onValueChange={(v) => setOptionFilterTab(v as OptionFilterTab)}>
                     <TabsList>
                       <TabsTrigger value="all">{t('page.portfolio.filters.all')}</TabsTrigger>
@@ -1529,17 +1541,17 @@ export default function Portfolio() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Commodity</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Side</TableHead>
-                          <TableHead className="text-right">Qty (t)</TableHead>
-                          <TableHead className="text-right">Strike ($/t)</TableHead>
-                          <TableHead className="text-right">Premium ($/t)</TableHead>
-                          <TableHead className="text-right">Implied PnL</TableHead>
-                          <TableHead className="text-right">P&L</TableHead>
-                          <TableHead>Expiry</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.commodity')}</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.type')}</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.side')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.qty')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.strike')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.premiumPerTon')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.impliedPnl')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.pnl')}</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.expiry')}</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.status')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1575,11 +1587,11 @@ export default function Portfolio() {
                               </TableCell>
                               <TableCell>
                                 {position.role === 'buyer' ? (
-                                  <Badge className="bg-green-600 text-white">LONG</Badge>
+                                  <Badge className="bg-green-600 text-white">{t('page.portfolio.positions.table.long')}</Badge>
                                 ) : position.role === 'seller' ? (
-                                  <Badge className="bg-red-600 text-white">SHORT</Badge>
+                                  <Badge className="bg-red-600 text-white">{t('page.portfolio.positions.table.short')}</Badge>
                                 ) : (
-                                  <Badge variant="outline">—</Badge>
+                                  <Badge variant="outline">{t('page.portfolio.values.dash')}</Badge>
                                 )}
                               </TableCell>
                               <TableCell className="text-right font-mono">
@@ -1589,10 +1601,10 @@ export default function Portfolio() {
                                 ${strikePerTon.toFixed(2)}
                               </TableCell>
                               <TableCell className="text-right font-mono text-muted-foreground">
-                                {position.premium ? `$${parseFloat(position.premium).toFixed(2)}` : "—"}
+                                {position.premium ? `$${parseFloat(position.premium).toFixed(2)}` : t('page.portfolio.values.dash')}
                               </TableCell>
                               <TableCell className="text-right font-mono">
-                                {position.impliedPnlNow !== null ? `${position.impliedPnlNow >= 0 ? '+' : ''}${position.impliedPnlNow.toFixed(2)}%` : "—"}
+                                {position.impliedPnlNow !== null ? `${position.impliedPnlNow >= 0 ? '+' : ''}${position.impliedPnlNow.toFixed(2)}%` : t('page.portfolio.values.dash')}
                               </TableCell>
                               <TableCell className={`text-right font-mono ${isProfitablePosition ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                 {isProfitablePosition ? '+' : ''}${positionPnL.toFixed(2)}
@@ -1608,14 +1620,14 @@ export default function Portfolio() {
                                     </div>
                                   </div>
                                 ) : (
-                                  <span className="text-muted-foreground">—</span>
+                                  <span className="text-muted-foreground">{t('page.portfolio.values.dash')}</span>
                                 )}
                               </TableCell>
                               <TableCell>
                                 <StatusBadge status={position.status as any} />
                               </TableCell>
                               <TableCell className="text-right">
-                                <span className="text-muted-foreground">—</span>
+                                <span className="text-muted-foreground">{t('page.portfolio.values.dash')}</span>
                               </TableCell>
                             </TableRow>
                           );
@@ -1653,8 +1665,8 @@ export default function Portfolio() {
             {/* Forward Positions Table */}
             <Card>
               <CardHeader>
-                <CardTitle>Forward Positions</CardTitle>
-                <CardDescription>Your active forward contracts</CardDescription>
+                <CardTitle>{t('page.portfolio.forwards.title')}</CardTitle>
+                <CardDescription>{t('page.portfolio.forwards.subtitle')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {forwardPositions.length > 0 ? (
@@ -1662,17 +1674,17 @@ export default function Portfolio() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Commodity</TableHead>
-                          <TableHead>Window</TableHead>
-                          <TableHead>Side</TableHead>
-                          <TableHead className="text-right">Contract Price ($/t)</TableHead>
-                          <TableHead className="text-right">Qty (t)</TableHead>
-                          <TableHead className="text-right">Notional ($)</TableHead>
-                          <TableHead className="text-right">Initial Margin</TableHead>
-                          <TableHead className="text-right">Realized P&L</TableHead>
-                          <TableHead className="text-right">Total P&L</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Settlement Date</TableHead>
+                          <TableHead>{t('page.portfolio.forwards.table.commodity')}</TableHead>
+                          <TableHead>{t('page.portfolio.forwards.table.window')}</TableHead>
+                          <TableHead>{t('page.portfolio.forwards.table.side')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.forwards.table.contractPrice')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.forwards.table.qty')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.forwards.table.notional')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.forwards.table.initialMargin')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.forwards.table.realizedPnl')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.forwards.table.totalPnl')}</TableHead>
+                          <TableHead>{t('page.portfolio.forwards.table.status')}</TableHead>
+                          <TableHead>{t('page.portfolio.forwards.table.settlementDate')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1689,7 +1701,7 @@ export default function Portfolio() {
                                   variant={position.role === 'long' ? 'default' : 'secondary'}
                                   className={position.role === 'long' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
                                 >
-                                  {position.role.toUpperCase()}
+                                  {position.role === 'long' ? t('page.portfolio.forwards.roles.long') : t('page.portfolio.forwards.roles.short')}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right font-mono">
@@ -1724,7 +1736,7 @@ export default function Portfolio() {
                                     </div>
                                   </div>
                                 ) : (
-                                  <span className="text-muted-foreground">—</span>
+                                  <span className="text-muted-foreground">{t('page.portfolio.values.dash')}</span>
                                 )}
                               </TableCell>
                             </TableRow>
@@ -1735,7 +1747,7 @@ export default function Portfolio() {
                   </div>
                 ) : (
                   <>
-                    <p className="text-lg font-medium mb-2">No forward positions yet</p>
+                    <p className="text-lg font-medium mb-2">{t('page.portfolio.positions.emptyForwardsTitle')}</p>
                     <p className="text-sm">{t('page.portfolio.positions.emptyForwards')}</p>
                   </>
                 )}
@@ -1749,7 +1761,9 @@ export default function Portfolio() {
           <Dialog open={true} onOpenChange={(open) => !open && setFocusedCommodity(null)}>
             <DialogContent className="sm:max-w-[700px]">
               <DialogHeader>
-                <DialogTitle>Options for {indexPriceMap[focusedCommodity]?.name || focusedCommodity}</DialogTitle>
+                <DialogTitle>
+                  {t('page.portfolio.linkedOptions.title', { commodity: indexPriceMap[focusedCommodity]?.name || focusedCommodity })}
+                </DialogTitle>
               </DialogHeader>
               <div className="mt-2">
                 {optionsByCommodityList[focusedCommodity] && optionsByCommodityList[focusedCommodity].length > 0 ? (
@@ -1757,12 +1771,12 @@ export default function Portfolio() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Side</TableHead>
-                          <TableHead className="text-right">Strike ($/t)</TableHead>
-                          <TableHead className="text-right">Qty (t)</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Premium (CROPT)</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.type')}</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.side')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.strike')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.positions.table.qty')}</TableHead>
+                          <TableHead>{t('page.portfolio.positions.table.status')}</TableHead>
+                          <TableHead className="text-right">{t('page.portfolio.linkedOptions.table.premium')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1786,7 +1800,7 @@ export default function Portfolio() {
                                     variant={side === 'LONG' ? 'default' : 'secondary'}
                                     className={side === 'LONG' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}
                                   >
-                                    {side}
+                                    {side === 'LONG' ? t('page.portfolio.positions.table.long') : t('page.portfolio.positions.table.short')}
                                   </Badge>
                                 )}
                               </TableCell>
@@ -1810,7 +1824,7 @@ export default function Portfolio() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    No options linked to this commodity yet.
+                    {t('page.portfolio.linkedOptions.empty')}
                   </p>
                 )}
               </div>
@@ -1822,7 +1836,7 @@ export default function Portfolio() {
                     setLocation("/#options-table");
                   }}
                 >
-                  Open Options Marketplace
+                  {t('page.portfolio.linkedOptions.openMarket')}
                 </Button>
               </div>
             </DialogContent>

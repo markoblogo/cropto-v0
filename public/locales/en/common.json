@@ -511,7 +511,9 @@
           "expiry": "Expiry",
           "actions": "Actions",
           "long": "LONG",
-          "short": "SHORT"
+          "short": "SHORT",
+          "premiumPerTon": "Premium ($/t)",
+          "impliedPnl": "Implied PnL"
         },
         "emptyForwards": "Start trading forwards to see your portfolio here",
         "emptyForwardsTitle": "No forward positions yet"
@@ -541,7 +543,9 @@
       },
       "sections": {
         "optionPositions": "Option Positions",
-        "spotPositions": "Spot Positions"
+        "spotPositions": "Spot Positions",
+        "netExposure": "Net Exposure",
+        "collateralRiskOptions": "Collateral & Risk (Options)"
       },
       "loadError": "Failed to load portfolio data. Please try again.",
       "tabs": {
@@ -559,7 +563,12 @@
         "inDays": "in {{days}} days",
         "expired": "Expired",
         "expiredAgo_one": "Expired {{days}} day ago",
-        "expiredAgo_other": "Expired {{days}} days ago"
+        "expiredAgo_other": "Expired {{days}} days ago",
+        "shortDays": "{{days}}d",
+        "shortDaysHours": "{{days}}d {{hours}}h",
+        "shortHours": "{{hours}}h",
+        "shortHoursMinutes": "{{hours}}h {{minutes}}m",
+        "shortMinutes": "{{minutes}}m"
       },
       "empty": {
         "loginRequired": "Log in to see your options portfolio",
@@ -577,7 +586,61 @@
         "overdue": "Overdue",
         "hoursLeft": "{{hours}}h left"
       },
-      "overviewSubtitle": "Your options and forward positions overview"
+      "overviewSubtitle": "Your options and forward positions overview",
+      "values": {
+        "dash": "—",
+        "notSpecified": "Not specified"
+      },
+      "toast": {
+        "exerciseSuccessTitle": "Exercise successful",
+        "exerciseSuccessDesc": "Your option has been exercised and your spot position and CROPT balance are updated.",
+        "exerciseFailedTitle": "Exercise failed",
+        "exerciseFailedDesc": "Failed to exercise option. Please check your CROPT balance and try again.",
+        "withdrawSuccessTitle": "Withdraw successful",
+        "withdrawSuccessDesc": "Funds have been withdrawn to your wallet.",
+        "withdrawFailedTitle": "Withdraw failed",
+        "withdrawFailedDesc": "Failed to withdraw funds."
+      },
+      "netExposure": {
+        "table": {
+          "commodity": "Commodity",
+          "spot": "Spot (t)",
+          "options": "Options (t)",
+          "net": "Net (t)",
+          "currentPrice": "Current Price ($/t)",
+          "netValue": "Net Value ($)"
+        },
+        "empty": "No exposure yet. Trade options or spot to see your net positions here."
+      },
+      "forwards": {
+        "table": {
+          "commodity": "Commodity",
+          "window": "Window",
+          "side": "Side",
+          "contractPrice": "Contract Price ($/t)",
+          "qty": "Qty (t)",
+          "notional": "Notional ($)",
+          "initialMargin": "Initial Margin",
+          "realizedPnl": "Realized P&L",
+          "totalPnl": "Total P&L",
+          "status": "Status",
+          "settlementDate": "Settlement Date"
+        },
+        "roles": {
+          "long": "LONG",
+          "short": "SHORT"
+        },
+        "title": "Forward Positions",
+        "subtitle": "Your active forward contracts"
+      },
+      "linkedOptions": {
+        "table": {
+          "premium": "Premium (CROPT)"
+        },
+        "title": "Options for {{commodity}}",
+        "empty": "No options linked to this commodity yet.",
+        "openMarket": "Open Options Marketplace"
+      }
     },
     "admin": {
       "title": "Admin Panel",
