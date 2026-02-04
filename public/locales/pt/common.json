@@ -613,64 +613,64 @@
           "commodity": "Commodity",
           "side": "Lado",
           "qty": "Qtd. (t)",
-          "entryPremium": "Entry Premium (CROPT)",
-          "currentPrice": "Current Price ($/t)",
-          "expiry": "Expiry",
-          "actions": "Actions",
+          "entryPremium": "Prêmio de entrada (CROPT)",
+          "currentPrice": "Preço atual ($/t)",
+          "expiry": "Vencimento",
+          "actions": "Ações",
           "long": "LONG",
           "short": "SHORT",
           "premiumPerTon": "Prêmio ($/t)",
           "impliedPnl": "PnL implícito"
         },
-        "emptyForwards": "Start trading forwards to see your portfolio here",
-        "emptyForwardsTitle": "No forward positions yet"
+        "emptyForwards": "Comece a negociar forwards para ver seu portfólio aqui",
+        "emptyForwardsTitle": "Ainda não há posições forward"
       },
       "collateralRisk": {
-        "title": "Collateral & Risk",
-        "availableMargin": "Available Margin",
-        "availableMarginDesc": "Free collateral for new positions",
-        "usedMargin": "Used Margin",
-        "usedMarginDesc": "Locked in active positions",
-        "riskLevel": "Risk Level",
-        "riskLevelHigh": "High risk",
-        "riskLevelModerate": "Moderate risk",
-        "riskLevelLow": "Low risk",
-        "marginUtilization": "Margin Utilization",
-        "liquidationThreshold": "Liquidation Threshold",
-        "marginCallsActive": "Margin Calls Active",
-        "marginCallsActiveDesc": "You have {{count}} active margin call{{plural}}. Please top up your collateral to avoid liquidation.",
-        "marginCallsActiveDesc_one": "You have {{count}} active margin call. Please top up your collateral to avoid liquidation.",
-        "marginCallsActiveDesc_other": "You have {{count}} active margin calls. Please top up your collateral to avoid liquidation."
+        "title": "Colateral e risco",
+        "availableMargin": "Margem disponível",
+        "availableMarginDesc": "Colateral livre para novas posições",
+        "usedMargin": "Margem utilizada",
+        "usedMarginDesc": "Bloqueado em posições ativas",
+        "riskLevel": "Nível de risco",
+        "riskLevelHigh": "Alto risco",
+        "riskLevelModerate": "Risco moderado",
+        "riskLevelLow": "Baixo risco",
+        "marginUtilization": "Utilização de margem",
+        "liquidationThreshold": "Limiar de liquidação",
+        "marginCallsActive": "Margin calls ativas",
+        "marginCallsActiveDesc": "Você tem {{count}} margin call{{plural}} ativa{{plural}}. Recarregue seu colateral para evitar a liquidação.",
+        "marginCallsActiveDesc_one": "Você tem {{count}} margin call ativa. Recarregue seu colateral para evitar a liquidação.",
+        "marginCallsActiveDesc_other": "Você tem {{count}} margin calls ativas. Recarregue seu colateral para evitar a liquidação."
       },
       "filters": {
-        "all": "All",
-        "active": "Active",
-        "settled": "Settled",
-        "expired": "Expired"
+        "all": "Todas",
+        "active": "Ativas",
+        "settled": "Liquidadas",
+        "expired": "Expiradas"
       },
       "sections": {
-        "optionPositions": "Option Positions",
-        "spotPositions": "Spot Positions",
+        "optionPositions": "Posições de opções",
+        "spotPositions": "Posições spot",
         "netExposure": "Exposição líquida",
         "collateralRiskOptions": "Colateral e risco (opções)"
       },
-      "loadError": "Failed to load portfolio data. Please try again.",
+      "loadError": "Não foi possível carregar os dados do portfólio. Tente novamente.",
       "tabs": {
-        "all": "All",
-        "options": "Options",
+        "all": "Todas",
+        "options": "Opções",
         "forwards": "Forwards",
-        "allPositions": "All Positions"
+        "allPositions": "Todas as posições"
       },
       "timeToExpiry": {
-        "na": "N/A",
-        "expiredAgo": "Expired {{days}} day ago",
-        "expiresToday": "Expires today",
-        "expiresTomorrow": "Expires tomorrow",
-        "daysLeft": "{{days}} days left",
-        "inDays": "in {{days}} days",
-        "expired": "Expired",
-        "expiredAgo_one": "Expired {{days}} day ago",
-        "expiredAgo_other": "Expired {{days}} days ago",
+        "na": "N/D",
+        "expiredAgo": "Venceu há {{days}} dia",
+        "expiresToday": "Vence hoje",
+        "expiresTomorrow": "Vence amanhã",
+        "daysLeft": "Faltam {{days}} dias",
+        "inDays": "em {{days}} dias",
+        "expired": "Expirado",
+        "expiredAgo_one": "Venceu há {{days}} dia",
+        "expiredAgo_other": "Venceu há {{days}} dias",
         "shortDays": "{{days}}d",
         "shortDaysHours": "{{days}}d {{hours}}h",
         "shortHours": "{{hours}}h",
@@ -678,22 +678,22 @@
         "shortMinutes": "{{minutes}}m"
       },
       "empty": {
-        "loginRequired": "Log in to see your options portfolio",
-        "walletRequired": "Connect your wallet to start trading options"
+        "loginRequired": "Entre para ver seu portfólio de opções",
+        "walletRequired": "Conecte sua carteira para começar a negociar opções"
       },
       "marginCalls": {
-        "yourMarginCalls": "Your Margin Calls",
-        "deadlinesAndStatus": "Deadlines and status",
+        "yourMarginCalls": "Suas margin calls",
+        "deadlinesAndStatus": "Prazos e status",
         "table": {
-          "option": "Option",
-          "required": "Required",
+          "option": "Opção",
+          "required": "Necessário",
           "status": "Status",
-          "deadline": "Deadline"
+          "deadline": "Prazo"
         },
-        "overdue": "Overdue",
-        "hoursLeft": "{{hours}}h left"
+        "overdue": "Atrasado",
+        "hoursLeft": "Faltam {{hours}}h"
       },
-      "overviewSubtitle": "Your options and forward positions overview",
+      "overviewSubtitle": "Visão geral das suas posições de opções e forwards",
       "values": {
         "dash": "—",
         "notSpecified": "Não especificado"

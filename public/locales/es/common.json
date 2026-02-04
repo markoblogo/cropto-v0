@@ -613,64 +613,64 @@
           "commodity": "Commodity",
           "side": "Lado",
           "qty": "Cant. (t)",
-          "entryPremium": "Entry Premium (CROPT)",
-          "currentPrice": "Current Price ($/t)",
-          "expiry": "Expiry",
-          "actions": "Actions",
+          "entryPremium": "Prima de entrada (CROPT)",
+          "currentPrice": "Precio actual ($/t)",
+          "expiry": "Vencimiento",
+          "actions": "Acciones",
           "long": "LONG",
           "short": "SHORT",
           "premiumPerTon": "Prima ($/t)",
           "impliedPnl": "PnL implícito"
         },
-        "emptyForwards": "Start trading forwards to see your portfolio here",
-        "emptyForwardsTitle": "No forward positions yet"
+        "emptyForwards": "Empieza a operar forwards para ver tu portafolio aquí",
+        "emptyForwardsTitle": "Aún no hay posiciones forward"
       },
       "collateralRisk": {
-        "title": "Collateral & Risk",
-        "availableMargin": "Available Margin",
-        "availableMarginDesc": "Free collateral for new positions",
-        "usedMargin": "Used Margin",
-        "usedMarginDesc": "Locked in active positions",
-        "riskLevel": "Risk Level",
-        "riskLevelHigh": "High risk",
-        "riskLevelModerate": "Moderate risk",
-        "riskLevelLow": "Low risk",
-        "marginUtilization": "Margin Utilization",
-        "liquidationThreshold": "Liquidation Threshold",
-        "marginCallsActive": "Margin Calls Active",
-        "marginCallsActiveDesc": "You have {{count}} active margin call{{plural}}. Please top up your collateral to avoid liquidation.",
-        "marginCallsActiveDesc_one": "You have {{count}} active margin call. Please top up your collateral to avoid liquidation.",
-        "marginCallsActiveDesc_other": "You have {{count}} active margin calls. Please top up your collateral to avoid liquidation."
+        "title": "Colateral y riesgo",
+        "availableMargin": "Margen disponible",
+        "availableMarginDesc": "Colateral libre para nuevas posiciones",
+        "usedMargin": "Margen utilizado",
+        "usedMarginDesc": "Bloqueado en posiciones activas",
+        "riskLevel": "Nivel de riesgo",
+        "riskLevelHigh": "Alto riesgo",
+        "riskLevelModerate": "Riesgo moderado",
+        "riskLevelLow": "Bajo riesgo",
+        "marginUtilization": "Utilización de margen",
+        "liquidationThreshold": "Umbral de liquidación",
+        "marginCallsActive": "Margin calls activas",
+        "marginCallsActiveDesc": "Tienes {{count}} margin call{{plural}} activa{{plural}}. Recarga tu colateral para evitar la liquidación.",
+        "marginCallsActiveDesc_one": "Tienes {{count}} margin call activa. Recarga tu colateral para evitar la liquidación.",
+        "marginCallsActiveDesc_other": "Tienes {{count}} margin calls activas. Recarga tu colateral para evitar la liquidación."
       },
       "filters": {
-        "all": "All",
-        "active": "Active",
-        "settled": "Settled",
-        "expired": "Expired"
+        "all": "Todas",
+        "active": "Activas",
+        "settled": "Liquidadas",
+        "expired": "Vencidas"
       },
       "sections": {
-        "optionPositions": "Option Positions",
-        "spotPositions": "Spot Positions",
+        "optionPositions": "Posiciones de opciones",
+        "spotPositions": "Posiciones spot",
         "netExposure": "Exposición neta",
         "collateralRiskOptions": "Colateral y riesgo (opciones)"
       },
-      "loadError": "Failed to load portfolio data. Please try again.",
+      "loadError": "No se pudieron cargar los datos del portafolio. Inténtalo de nuevo.",
       "tabs": {
-        "all": "All",
-        "options": "Options",
+        "all": "Todas",
+        "options": "Opciones",
         "forwards": "Forwards",
-        "allPositions": "All Positions"
+        "allPositions": "Todas las posiciones"
       },
       "timeToExpiry": {
-        "na": "N/A",
-        "expiredAgo": "Expired {{days}} day ago",
-        "expiresToday": "Expires today",
-        "expiresTomorrow": "Expires tomorrow",
-        "daysLeft": "{{days}} days left",
-        "inDays": "in {{days}} days",
-        "expired": "Expired",
-        "expiredAgo_one": "Expired {{days}} day ago",
-        "expiredAgo_other": "Expired {{days}} days ago",
+        "na": "N/D",
+        "expiredAgo": "Venció hace {{days}} día",
+        "expiresToday": "Vence hoy",
+        "expiresTomorrow": "Vence mañana",
+        "daysLeft": "Quedan {{days}} días",
+        "inDays": "en {{days}} días",
+        "expired": "Vencido",
+        "expiredAgo_one": "Venció hace {{days}} día",
+        "expiredAgo_other": "Venció hace {{days}} días",
         "shortDays": "{{days}}d",
         "shortDaysHours": "{{days}}d {{hours}}h",
         "shortHours": "{{hours}}h",
@@ -678,22 +678,22 @@
         "shortMinutes": "{{minutes}}m"
       },
       "empty": {
-        "loginRequired": "Log in to see your options portfolio",
-        "walletRequired": "Connect your wallet to start trading options"
+        "loginRequired": "Inicia sesión para ver tu portafolio de opciones",
+        "walletRequired": "Conecta tu billetera para empezar a operar opciones"
       },
       "marginCalls": {
-        "yourMarginCalls": "Your Margin Calls",
-        "deadlinesAndStatus": "Deadlines and status",
+        "yourMarginCalls": "Tus margin calls",
+        "deadlinesAndStatus": "Plazos y estado",
         "table": {
-          "option": "Option",
-          "required": "Required",
-          "status": "Status",
-          "deadline": "Deadline"
+          "option": "Opción",
+          "required": "Requerido",
+          "status": "Estado",
+          "deadline": "Plazo"
         },
-        "overdue": "Overdue",
-        "hoursLeft": "{{hours}}h left"
+        "overdue": "Vencido",
+        "hoursLeft": "Quedan {{hours}}h"
       },
-      "overviewSubtitle": "Your options and forward positions overview",
+      "overviewSubtitle": "Resumen de tus posiciones de opciones y forwards",
       "values": {
         "dash": "—",
         "notSpecified": "No especificado"
