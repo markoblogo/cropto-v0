@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,22 +33,24 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 
-const registerSchema = z.object({
-  email: z.string()
-    .min(1, "Email is required")
-    .refine((email) => email.includes("@"), "Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["farmer", "trader", "broker"], {
-    errorMap: () => ({ message: "Please select a role" }),
-  }),
-});
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
+
+  const registerSchema = z.object({
+    email: z
+      .string()
+      .min(1, t("auth.register.validation.emailRequired"))
+      .refine((email) => email.includes("@"), t("auth.register.validation.emailInvalid")),
+    password: z.string().min(6, t("auth.register.validation.passwordMin")),
+    role: z.enum(["farmer", "trader", "broker"], {
+      errorMap: () => ({ message: t("auth.register.validation.roleRequired") }),
+    }),
+  });
+
+  type RegisterFormValues = z.infer<typeof registerSchema>;
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -68,16 +71,16 @@ export default function Register() {
       localStorage.setItem("cropto_token", result.token);
 
       toast({
-        title: "Success",
-        description: "Account created successfully",
+        title: t("auth.register.toast.successTitle"),
+        description: t("auth.register.toast.successDesc"),
       });
 
       // Redirect to dashboard
       setLocation("/");
     } catch (error: any) {
       toast({
-        title: "Registration Failed",
-        description: error.message || "Failed to create account",
+        title: t("auth.register.toast.failedTitle"),
+        description: error.message || t("auth.register.toast.failedDesc"),
         variant: "destructive",
       });
     } finally {
@@ -90,9 +93,9 @@ export default function Register() {
       <div className="w-full max-w-md">
         <Card className="w-full">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t("auth.register.title")}</CardTitle>
           <CardDescription>
-            Register to start trading grain options on Cropto
+            {t("auth.register.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,12 +106,12 @@ export default function Register() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("auth.register.emailLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
-                        placeholder="farmer@example.com"
+                        placeholder={t("auth.register.emailPlaceholder")}
                         data-testid="input-email"
                       />
                     </FormControl>
@@ -122,12 +125,12 @@ export default function Register() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("auth.register.passwordLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="password"
-                        placeholder="Minimum 6 characters"
+                        placeholder={t("auth.register.passwordPlaceholder")}
                         data-testid="input-password"
                       />
                     </FormControl>
@@ -141,25 +144,25 @@ export default function Register() {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t("auth.register.roleLabel")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-role">
-                          <SelectValue placeholder="Select your role" />
+                          <SelectValue placeholder={t("auth.register.rolePlaceholder")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="farmer" data-testid="option-farmer">
-                          Farmer
+                          {t("auth.register.roleFarmer")}
                         </SelectItem>
                         <SelectItem value="trader" data-testid="option-trader">
-                          Trader
+                          {t("auth.register.roleTrader")}
                         </SelectItem>
                         <SelectItem value="broker" data-testid="option-broker">
-                          Broker
+                          {t("auth.register.roleBroker")}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -174,16 +177,20 @@ export default function Register() {
                 disabled={isLoading}
                 data-testid="button-register"
               >
-                {isLoading ? "Creating account..." : "Create Account"}
+                {isLoading ? t("auth.register.buttonLoading") : t("auth.register.button")}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline" data-testid="link-login">
-              Login
+            {t("auth.register.alreadyAccount")}{" "}
+            <Link
+              href="/login"
+              className="text-primary hover:underline"
+              data-testid="link-login"
+            >
+              {t("auth.register.loginLink")}
             </Link>
           </p>
         </CardFooter>

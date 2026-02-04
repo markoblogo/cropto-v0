@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Coins, Loader2, ArrowDownToLine } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 interface WalletSummaryProps {
   variant?: 'card' | 'bar';
@@ -35,6 +36,16 @@ export function WalletSummary({
   isRequesting,
   isDepositing,
 }: WalletSummaryProps) {
+  const { t } = useTranslation();
+
+  const infoMessage = !mintEnabled
+    ? t("wallet.summary.info.mintDisabled")
+    : hasPendingTx
+      ? t("wallet.summary.info.pending")
+      : !hasPendingTx && !canDeposit && onChainBalance === 0
+        ? t("wallet.summary.info.requestFirst")
+        : t("wallet.summary.info.depositToInternal");
+
   if (variant === 'bar') {
     return (
       <div className="w-full rounded-xl border bg-card px-6 py-4 flex flex-wrap items-center justify-between gap-4">
@@ -42,15 +53,15 @@ export function WalletSummary({
         <div className="flex items-center gap-3">
           <Coins className="w-5 h-5 text-muted-foreground" />
           <div>
-            <h3 className="font-semibold">Wallet</h3>
-            <p className="text-xs text-muted-foreground">On-chain and internal balances</p>
+            <h3 className="font-semibold">{t("wallet.summary.title")}</h3>
+            <p className="text-xs text-muted-foreground">{t("wallet.summary.subtitle")}</p>
           </div>
         </div>
 
         {/* Middle: balances */}
         <div className="flex items-center gap-6 flex-wrap">
           <div>
-            <div className="text-xs text-muted-foreground mb-1">On-chain (Blockchain)</div>
+            <div className="text-xs text-muted-foreground mb-1">{t("wallet.summary.onChain")}</div>
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-mono font-bold">
                 {isLoadingBalance ? (
@@ -59,24 +70,24 @@ export function WalletSummary({
                   onChainBalance.toFixed(2)
                 )}
               </span>
-              <span className="text-sm text-muted-foreground">CROPT</span>
+              <span className="text-sm text-muted-foreground">{t("wallet.summary.token")}</span>
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Internal (Spot Trading)</div>
+            <div className="text-xs text-muted-foreground mb-1">{t("wallet.summary.internal")}</div>
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-mono font-semibold">
                 {internalBalance.toFixed(2)}
               </span>
-              <span className="text-sm text-muted-foreground">CROPT</span>
+              <span className="text-sm text-muted-foreground">{t("wallet.summary.token")}</span>
             </div>
           </div>
 
           {hasPendingTx && (
             <Badge variant="secondary" className="gap-1">
               <Loader2 className="w-3 h-3 animate-spin" />
-              {pendingTxsCount} pending transaction{pendingTxsCount > 1 ? 's' : ''}
+              {t("wallet.summary.pendingTx", { count: pendingTxsCount })}
             </Badge>
           )}
         </div>
@@ -93,12 +104,12 @@ export function WalletSummary({
             {isRequesting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Minting...
+                {t("wallet.summary.button.minting")}
               </>
             ) : (
               <>
                 <Coins className="w-4 h-4 mr-2" />
-                Request 1 CROPT
+                {t("wallet.summary.button.request")}
               </>
             )}
           </Button>
@@ -113,12 +124,12 @@ export function WalletSummary({
             {isDepositing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Depositing...
+                {t("wallet.summary.button.depositing")}
               </>
             ) : (
               <>
                 <ArrowDownToLine className="w-4 h-4 mr-2" />
-                Deposit to Internal
+                {t("wallet.summary.button.deposit")}
               </>
             )}
           </Button>
@@ -133,17 +144,17 @@ export function WalletSummary({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Coins className="w-5 h-5" />
-          CROPT Balance
+          {t("wallet.summary.cardTitle")}
         </CardTitle>
         <CardDescription>
-          Test CROPT tokens for Polygon Amoy testnet
+          {t("wallet.summary.cardSubtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
           {/* On-chain balance */}
           <div>
-            <div className="text-xs text-muted-foreground mb-1">On-chain (Blockchain)</div>
+            <div className="text-xs text-muted-foreground mb-1">{t("wallet.summary.onChain")}</div>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-mono font-bold" data-testid="text-cropt-balance">
                 {isLoadingBalance ? (
@@ -152,18 +163,18 @@ export function WalletSummary({
                   onChainBalance.toFixed(2)
                 )}
               </span>
-              <span className="text-muted-foreground">CROPT</span>
+              <span className="text-muted-foreground">{t("wallet.summary.token")}</span>
             </div>
           </div>
 
           {/* Internal balance */}
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Internal (Spot Trading)</div>
+            <div className="text-xs text-muted-foreground mb-1">{t("wallet.summary.internal")}</div>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-mono font-semibold" data-testid="text-internal-balance">
                 {internalBalance.toFixed(2)}
               </span>
-              <span className="text-sm text-muted-foreground">CROPT</span>
+              <span className="text-sm text-muted-foreground">{t("wallet.summary.token")}</span>
             </div>
           </div>
         </div>
@@ -171,7 +182,7 @@ export function WalletSummary({
         {hasPendingTx && (
           <Badge variant="secondary" className="gap-1" data-testid="badge-pending-tx">
             <Loader2 className="w-3 h-3 animate-spin" />
-            {pendingTxsCount} pending transaction{pendingTxsCount > 1 ? 's' : ''}
+            {t("wallet.summary.pendingTx", { count: pendingTxsCount })}
           </Badge>
         )}
 
@@ -188,12 +199,12 @@ export function WalletSummary({
             {isRequesting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Minting...
+                {t("wallet.summary.button.minting")}
               </>
             ) : (
               <>
                 <Coins className="w-4 h-4 mr-2" />
-                Request 1 CROPT
+                {t("wallet.summary.button.request")}
               </>
             )}
           </Button>
@@ -208,25 +219,21 @@ export function WalletSummary({
             {isDepositing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Depositing...
+                {t("wallet.summary.button.depositing")}
               </>
             ) : (
               <>
                 <ArrowDownToLine className="w-4 h-4 mr-2" />
-                Deposit to Internal
+                {t("wallet.summary.button.deposit")}
               </>
             )}
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          {!mintEnabled && 'Minting disabled. Set ENABLE_MINT=true'}
-          {hasPendingTx && 'Wait for pending transactions to complete'}
-          {!hasPendingTx && !canDeposit && onChainBalance === 0 && 'Request CROPT first to deposit'}
-          {mintEnabled && !hasPendingTx && canDeposit && 'Deposit on-chain CROPT to internal balance for spot trading'}
+          {infoMessage}
         </p>
       </CardContent>
     </Card>
   );
 }
-

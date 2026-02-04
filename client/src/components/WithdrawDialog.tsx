@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowDownToLine, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWeb3 } from "@/contexts/Web3Context";
+import { useTranslation } from "react-i18next";
 
 interface WithdrawDialogProps {
   optionId: string;
@@ -28,6 +29,7 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
   const [txHash, setTxHash] = useState<string | null>(null);
   const { toast } = useToast();
   const web3 = useWeb3();
+  const { t } = useTranslation();
 
   // Fetch user's linked wallet from server as fallback
   const { data: walletData } = useQuery<{ walletAddress?: string } | null>({
@@ -43,8 +45,8 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
 
     if (!walletAddress) {
       toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet or link an address first",
+        title: t("withdraw.toast.walletNotConnected.title"),
+        description: t("withdraw.toast.walletNotConnected.desc"),
         variant: "destructive",
       });
       return;
@@ -52,8 +54,8 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
 
     if (!amount || parseFloat(amount) <= 0) {
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount to withdraw",
+        title: t("withdraw.toast.invalidAmount.title"),
+        description: t("withdraw.toast.invalidAmount.desc"),
         variant: "destructive",
       });
       return;
@@ -69,15 +71,15 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
       setTxHash(result.txHash);
       
       toast({
-        title: "Withdrawal Initiated",
-        description: "Transaction submitted to blockchain",
+        title: t("withdraw.toast.initiated.title"),
+        description: t("withdraw.toast.initiated.desc"),
       });
 
       await web3.refreshBalances();
     } catch (error: any) {
       toast({
-        title: "Withdrawal Failed",
-        description: error.message || "Failed to initiate withdrawal",
+        title: t("withdraw.toast.failed.title"),
+        description: error.message || t("withdraw.toast.failed.desc"),
         variant: "destructive",
       });
     }
@@ -93,8 +95,8 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
     if (txHash) {
       navigator.clipboard.writeText(txHash);
       toast({
-        title: "Copied",
-        description: "Transaction hash copied to clipboard",
+        title: t("withdraw.toast.copied.title"),
+        description: t("withdraw.toast.copied.desc"),
       });
     }
   };
@@ -114,26 +116,26 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
           data-testid={`button-withdraw-${optionId}`}
         >
           <ArrowDownToLine className="h-4 w-4 mr-1" />
-          Withdraw
+          {t("withdraw.button.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Withdraw On-Chain</DialogTitle>
+          <DialogTitle>{t("withdraw.title")}</DialogTitle>
           <DialogDescription>
-            {txHash 
-              ? "Withdrawal transaction submitted successfully"
-              : "Mint CROPT tokens to your connected wallet"}
+            {txHash
+              ? t("withdraw.desc.submitted")
+              : t("withdraw.desc.default")}
           </DialogDescription>
         </DialogHeader>
 
         {!txHash ? (
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="withdraw-address">Recipient Address</Label>
+              <Label htmlFor="withdraw-address">{t("withdraw.label.recipient")}</Label>
               <Input
                 id="withdraw-address"
-                value={walletAddress || "Not connected"}
+                value={walletAddress || t("withdraw.value.notConnected")}
                 disabled
                 className="font-mono"
                 data-testid="input-withdraw-address"
@@ -141,13 +143,13 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="withdraw-amount">Amount (CROPT)</Label>
+              <Label htmlFor="withdraw-amount">{t("withdraw.label.amount")}</Label>
               <Input
                 id="withdraw-amount"
                 type="number"
                 step="0.01"
                 min="0.01"
-                placeholder="0.00"
+                placeholder={t("withdraw.placeholder.amount")}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={isPending}
@@ -164,21 +166,21 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
                 disabled={isPending}
                 data-testid="button-cancel-withdraw"
               >
-                Cancel
+                {t("button.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isPending || !walletAddress}
                 data-testid="button-submit-withdraw"
               >
-                {isPending ? "Processing..." : "Withdraw"}
+                {isPending ? t("withdraw.button.processing") : t("withdraw.button.submit")}
               </Button>
             </DialogFooter>
           </form>
         ) : (
           <div className="space-y-4 pt-4">
             <div className="p-4 bg-muted rounded-lg space-y-2">
-              <Label className="text-sm text-muted-foreground">Transaction Hash</Label>
+              <Label className="text-sm text-muted-foreground">{t("withdraw.label.txHash")}</Label>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-xs font-mono break-all">
                   {txHash}
@@ -202,14 +204,14 @@ export function WithdrawDialog({ optionId, onWithdraw, isPending }: WithdrawDial
                 data-testid="button-view-explorer"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                View on Explorer
+                {t("withdraw.button.viewExplorer")}
               </Button>
               <Button
                 onClick={handleClose}
                 className="flex-1"
                 data-testid="button-close-withdraw"
               >
-                Close
+                {t("withdraw.button.close")}
               </Button>
             </div>
           </div>

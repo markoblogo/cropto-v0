@@ -970,6 +970,234 @@
         "failedTitle": "Login failed",
         "failedDesc": "Invalid email or password"
       }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Register to start trading grain options on Cropto",
+      "emailLabel": "Email",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Minimum 6 characters",
+      "roleLabel": "Role",
+      "rolePlaceholder": "Select your role",
+      "roleFarmer": "Farmer",
+      "roleTrader": "Trader",
+      "roleBroker": "Broker",
+      "button": "Create Account",
+      "buttonLoading": "Creating account...",
+      "alreadyAccount": "Already have an account?",
+      "loginLink": "Login",
+      "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email format",
+        "passwordMin": "Password must be at least 6 characters",
+        "roleRequired": "Please select a role"
+      },
+      "toast": {
+        "successTitle": "Success",
+        "successDesc": "Account created successfully",
+        "failedTitle": "Registration Failed",
+        "failedDesc": "Failed to create account"
+      }
+    }
+  },
+  "banner": {
+    "guest": {
+      "lockLabel": "Lock",
+      "message": "You're not signed in. Sign in or create an account to start trading.",
+      "cta": "Sign in or create account"
+    },
+    "wallet": {
+      "plugLabel": "Plug",
+      "message": "Your account is ready, but you need to connect your wallet to start trading.",
+      "cta": "Connect wallet"
+    }
+  },
+  "walletAuth": {
+    "title": "Connect Wallet to Continue",
+    "description": {
+      "default": "Sign a message with your wallet to authenticate",
+      "manual": "MetaMask is required for wallet signature authentication"
+    },
+    "button": {
+      "connecting": "Connecting...",
+      "signIn": "Sign in with MetaMask",
+      "back": "Back"
+    },
+    "note": "Note",
+    "signature": {
+      "title": "Signature-based authentication",
+      "desc": "You'll be asked to sign a message to prove wallet ownership. This is free and does not send a transaction."
+    },
+    "manual": {
+      "addressLabel": "Wallet Address",
+      "addressPlaceholder": "0x...",
+      "notSupported": "Manual address input is not supported for authentication. Please install MetaMask to continue."
+    },
+    "toast": {
+      "metaMaskNotFound": {
+        "title": "MetaMask Not Found",
+        "desc": "Please install MetaMask or use manual address input"
+      },
+      "connected": {
+        "title": "Wallet Connected",
+        "desc": "Successfully authenticated with {{address}}"
+      },
+      "rejected": {
+        "title": "Connection Rejected",
+        "desc": "You rejected the connection request"
+      },
+      "failed": {
+        "title": "Connection Failed",
+        "desc": "Failed to connect wallet"
+      },
+      "manualMissing": {
+        "title": "Error",
+        "desc": "Please enter a wallet address"
+      },
+      "manualNotSupported": {
+        "title": "Manual Mode Not Supported",
+        "desc": "Please use MetaMask to sign a message for authentication"
+      }
+    },
+    "errors": {
+      "nonce": "Failed to get nonce",
+      "loginFailed": "Login failed"
+    },
+    "signMessage": {
+      "title": "Welcome to Cropto!",
+      "body": "Sign this message to authenticate with your wallet. This request will not trigger a blockchain transaction or cost any gas fees.",
+      "walletAddress": "Wallet address: {{address}}",
+      "timestamp": "Timestamp: {{timestamp}}",
+      "nonce": "Nonce: {{nonce}}"
+    }
+  },
+  "withdraw": {
+    "button": {
+      "trigger": "Withdraw",
+      "processing": "Processing...",
+      "submit": "Withdraw",
+      "viewExplorer": "View on Explorer",
+      "close": "Close"
+    },
+    "title": "Withdraw On-Chain",
+    "desc": {
+      "submitted": "Withdrawal transaction submitted successfully",
+      "default": "Mint CROPT tokens to your connected wallet"
+    },
+    "label": {
+      "recipient": "Recipient Address",
+      "amount": "Amount (CROPT)",
+      "txHash": "Transaction Hash"
+    },
+    "placeholder": {
+      "amount": "0.00"
+    },
+    "value": {
+      "notConnected": "Not connected"
+    },
+    "toast": {
+      "walletNotConnected": {
+        "title": "Wallet Not Connected",
+        "desc": "Please connect your wallet or link an address first"
+      },
+      "invalidAmount": {
+        "title": "Invalid Amount",
+        "desc": "Please enter a valid amount to withdraw"
+      },
+      "initiated": {
+        "title": "Withdrawal Initiated",
+        "desc": "Transaction submitted to blockchain"
+      },
+      "failed": {
+        "title": "Withdrawal Failed",
+        "desc": "Failed to initiate withdrawal"
+      },
+      "copied": {
+        "title": "Copied",
+        "desc": "Transaction hash copied to clipboard"
+      }
+    }
+  },
+  "wallet": {
+    "summary": {
+      "title": "Wallet",
+      "subtitle": "On-chain and internal balances",
+      "onChain": "On-chain (Blockchain)",
+      "internal": "Internal (Spot Trading)",
+      "token": "CROPT",
+      "pendingTx": "{{count}} pending transaction",
+      "pendingTx_one": "{{count}} pending transaction",
+      "pendingTx_other": "{{count}} pending transactions",
+      "button": {
+        "minting": "Minting...",
+        "request": "Request 1 CROPT",
+        "depositing": "Depositing...",
+        "deposit": "Deposit to Internal"
+      },
+      "cardTitle": "CROPT Balance",
+      "cardSubtitle": "Test CROPT tokens for Polygon Amoy testnet",
+      "info": {
+        "mintDisabled": "Minting disabled. Set ENABLE_MINT=true",
+        "pending": "Wait for pending transactions to complete",
+        "requestFirst": "Request CROPT first to deposit",
+        "depositToInternal": "Deposit on-chain CROPT to internal balance for spot trading"
+      }
+    },
+    "page": {
+      "title": "Wallet",
+      "subtitle": "Manage your CROPT balances, collateral and transfers."
+    },
+    "tabs": {
+      "overview": "Overview",
+      "activity": "On-chain Activity",
+      "transfers": "Transfers"
+    },
+    "balances": {
+      "title": "Balances",
+      "subtitle": "Overview of your CROPT balances across on-chain and internal accounts.",
+      "table": {
+        "type": "Type",
+        "amount": "Amount",
+        "source": "Source"
+      },
+      "rows": {
+        "onChain": "On-chain CROPT",
+        "onChainSource": "Polygon Amoy testnet",
+        "internal": "Internal (Spot Trading)",
+        "internalSource": "Internal ledger",
+        "lockedCollateral": "Locked collateral",
+        "comingSoon": "Coming soon",
+        "lockedCollateralSource": "Active option positions",
+        "lockedCollateralEmpty": "Collateral from options will appear here"
+      },
+      "loading": "—"
+    },
+    "risk": {
+      "title": "Collateral & Risk",
+      "lockedInfo": "Locked collateral is reserved for your active short option positions. If your margin approaches liquidation levels, you’ll see alerts on the Portfolio page.",
+      "lockedLabel": "Locked Collateral (USD)",
+      "moreInfo": "For a more detailed breakdown of margin usage and risk per position, visit the Portfolio page.",
+      "cta": "Go to Portfolio",
+      "emptyInfo": "Margin & risk analytics live on the Portfolio page. There you can see exposure, locked collateral and P&L per option."
+    },
+    "moreWallets": {
+      "title": "More wallet & on-ramp options (coming soon)",
+      "subtitle": "MetaMask is already supported for testnet trading. We’re working on more wallet connections and fiat on-ramps so you can top up CROPT using bank cards, USDT or PayPal.",
+      "items": {
+        "trustWallet": "Trust Wallet",
+        "walletConnect": "WalletConnect",
+        "buyCropt": "Buy CROPT with card / USDT / PayPal"
+      },
+      "comingSoon": "Coming soon"
+    },
+    "activity": {
+      "title": "On-chain Transactions",
+      "subtitle": "Recent settlements, deposits and other on-chain activity for your account."
+    },
+    "transfers": {
+      "title": "Transfers (coming soon)",
+      "subtitle": "Here you will see deposits, withdrawals and internal transfers history once we start logging them."
     }
   }
 }

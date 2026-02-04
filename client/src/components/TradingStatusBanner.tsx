@@ -2,6 +2,7 @@ import { useUserTier } from "@/hooks/useUserTier";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 interface TradingStatusBannerProps {
   onOpenWalletModal?: () => void;
@@ -9,6 +10,7 @@ interface TradingStatusBannerProps {
 
 export function TradingStatusBanner({ onOpenWalletModal }: TradingStatusBannerProps) {
   const userTier = useUserTier();
+  const { t } = useTranslation();
 
   // Don't show banner for trader_full
   if (userTier === "trader_full") {
@@ -27,15 +29,15 @@ export function TradingStatusBanner({ onOpenWalletModal }: TradingStatusBannerPr
     return (
       <Card className="rounded-xl border bg-muted/40 p-4">
         <div className="flex items-center gap-3">
-          <span className="text-2xl" role="img" aria-label="Lock">🔒</span>
+          <span className="text-2xl" role="img" aria-label={t("banner.guest.lockLabel")}>🔒</span>
           <div className="flex-1">
             <p className="text-sm font-medium">
-              You're not signed in. Sign in or create an account to start trading.
+              {t("banner.guest.message")}
             </p>
           </div>
           <Link href="/login">
             <Button size="sm" data-testid="button-banner-sign-in">
-              Sign in or create account
+              {t("banner.guest.cta")}
             </Button>
           </Link>
         </div>
@@ -47,14 +49,14 @@ export function TradingStatusBanner({ onOpenWalletModal }: TradingStatusBannerPr
     return (
       <Card className="rounded-xl border bg-muted/40 p-4">
         <div className="flex items-center gap-3">
-          <span className="text-2xl" role="img" aria-label="Plug">🔌</span>
+          <span className="text-2xl" role="img" aria-label={t("banner.wallet.plugLabel")}>🔌</span>
           <div className="flex-1">
             <p className="text-sm font-medium">
-              Your account is ready, but you need to connect your wallet to start trading.
+              {t("banner.wallet.message")}
             </p>
           </div>
           <Button size="sm" onClick={handleConnectWallet} data-testid="button-banner-connect-wallet">
-            Connect wallet
+            {t("banner.wallet.cta")}
           </Button>
         </div>
       </Card>
@@ -63,4 +65,3 @@ export function TradingStatusBanner({ onOpenWalletModal }: TradingStatusBannerPr
 
   return null;
 }
-
