@@ -195,7 +195,7 @@ export function registerSpotRoutes(app: Express) {
       const { quantityKg } = req.body;
       
       if (!quantityKg || isNaN(parseFloat(quantityKg)) || parseFloat(quantityKg) <= 0) {
-        return res.status(400).json({ error: "Valid kg amount is required" });
+        return res.status(400).json({ error: "Valid quantity is required" });
       }
       
       const kgAmount = parseFloat(quantityKg);
@@ -348,7 +348,7 @@ export function registerSpotRoutes(app: Express) {
       const { quantityKg } = req.body;
       
       if (!quantityKg || isNaN(parseFloat(quantityKg)) || parseFloat(quantityKg) <= 0) {
-        return res.status(400).json({ error: "Valid kg amount is required" });
+        return res.status(400).json({ error: "Valid quantity is required" });
       }
       
       const kgAmount = parseFloat(quantityKg);

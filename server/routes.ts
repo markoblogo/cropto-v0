@@ -1977,14 +1977,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(spotPositions)
         .where(eq(spotPositions.commoditySlug, commodity));
 
+      // Spot storage uses $/kg and kg internally; convert to $/t and tons for API/UI.
+      const bidsMap = new Map<string, number>();
       const asksMap = new Map<string, number>();
       for (const row of rows) {
-        const price = Number(row.price);
-        const qty = Number(row.qty);
-        if (!Number.isFinite(price) || !Number.isFinite(qty)) continue;
-        const current = asksMap.get(price.toString()) || 0;
-        asksMap.set(price.toString(), current + qty);
+        const pricePerKg = Number(row.price);
+        const qtyKg = Number(row.qty);
+        if (!Number.isFinite(pricePerKg) || !Number.isFinite(qtyKg) || qtyKg === 0) continue;
+
+        const pricePerTon = pricePerKg * 1000;
+        const qtyTon = Math.abs(qtyKg) / 1000;
+        const key = pricePerTon.toString();
+
+        if (qtyKg > 0) {
+          const current = bidsMap.get(key) || 0;
+          bidsMap.set(key, current + qtyTon);
+        } else {
+          const current = asksMap.get(key) || 0;
+          asksMap.set(key, current + qtyTon);
+        }
       }
+
+      const bids = Array.from(bidsMap.entries())
+        .map(([p, q]) => ({ price: Number(p), quantity: q }))
+        .sort((a, b) => b.price - a.price)
+        .slice(0, depthNum);
 
       const asks = Array.from(asksMap.entries())
         .map(([p, q]) => ({ price: Number(p), quantity: q }))
@@ -1993,7 +2010,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const response = {
         commodity,
-        bids: [] as { price: number; quantity: number }[],
+        bids,
         asks,
       };
 
