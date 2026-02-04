@@ -1033,11 +1033,11 @@
       "open": "OPEN",
       "selected": "SELECTED",
       "filled": "FILLED",
-      "exercised": "EXERCISED",
-      "settled": "SETTLED",
-      "expired": "EXPIRED",
-      "cancelled": "CANCELLED",
-      "defaulted": "DEFAULTED",
+      "exercised": "EXERCIDA",
+      "settled": "LIQUIDADA",
+      "expired": "EXPIRADA",
+      "cancelled": "CANCELADA",
+      "defaulted": "INADIMPLENTE",
       "marginCall": "MARGIN CALL"
     },
     "optionAnalytics": {
@@ -1227,13 +1227,13 @@
       }
     },
     "withdraw": {
-      "title": "Withdraw CROPT",
-      "subtitle": "Transfer CROPT tokens to your wallet address",
-      "addressLabel": "Wallet Address",
+      "title": "Sacar CROPT",
+      "subtitle": "Transfira tokens CROPT para o endereço da sua carteira",
+      "addressLabel": "Endereço da carteira",
       "addressPlaceholder": "0x...",
       "amountLabel": "Amount",
-      "amountPlaceholder": "Amount to withdraw",
-      "button": "Withdraw"
+      "amountPlaceholder": "Valor a sacar",
+      "button": "Sacar"
     },
     "mintNft": {
       "title": "Mintar NFT da opção",
@@ -1258,41 +1258,41 @@
       "view": "Ver"
     },
     "walletAuth": {
-      "title": "Connect Wallet",
-      "subtitle": "Choose how you want to connect",
+      "title": "Conectar carteira",
+      "subtitle": "Escolha como você quer conectar",
       "metamask": {
         "title": "MetaMask",
-        "subtitle": "Connect using MetaMask browser extension",
-        "button": "Connect MetaMask",
-        "buttonPending": "Connecting..."
+        "subtitle": "Conecte usando a extensão do navegador MetaMask",
+        "button": "Conectar MetaMask",
+        "buttonPending": "Conectando…"
       },
       "manual": {
-        "title": "Manual Entry",
-        "subtitle": "Enter wallet address manually",
-        "addressLabel": "Wallet Address",
+        "title": "Entrada manual",
+        "subtitle": "Insira o endereço da carteira manualmente",
+        "addressLabel": "Endereço da carteira",
         "addressPlaceholder": "0x...",
-        "button": "Connect",
-        "buttonPending": "Connecting..."
+        "button": "Conectar",
+        "buttonPending": "Conectando…"
       }
     },
     "roleSelection": {
-      "title": "Select Your Role",
-      "subtitle": "Choose how you'll participate in the Cropto platform",
+      "title": "Selecione seu papel",
+      "subtitle": "Escolha como você vai participar da plataforma Cropto",
       "roles": {
         "farmer": {
           "title": "Farmer",
-          "subtitle": "Hedge grain production with options"
+          "subtitle": "Faça hedge da produção de grãos com opções"
         },
         "trader": {
           "title": "Trader",
-          "subtitle": "Trade and speculate on commodity prices"
+          "subtitle": "Negocie e especule com preços de commodities"
         },
         "broker": {
           "title": "Broker",
-          "subtitle": "Facilitate trades and manage platform"
+          "subtitle": "Facilite negociações e gerencie a plataforma"
         }
       },
-      "button": "Continue"
+      "button": "Continuar"
     },
     "priceHistory": {
       "title": "Histórico de preços",
@@ -1322,75 +1322,75 @@
     "title": "Frequently Asked Questions",
     "subtitle": "Common questions about the Cropto platform and crypto options trading",
     "q1": {
-      "question": "What is Cropto?",
-      "answer": "Cropto is a cryptocurrency options trading platform that enables users to create, trade, and manage crypto options contracts (calls and puts). It uses an off-chain order book system with a matching engine to facilitate efficient trading."
+      "question": "O que é a Cropto?",
+      "answer": "Cropto é uma plataforma de negociação de opções de criptomoedas que permite criar, negociar e gerenciar contratos de opções (calls e puts). Ela usa um livro de ordens off-chain com um motor de matching para facilitar uma negociação eficiente."
     },
     "q2": {
-      "question": "How do I create an option?",
-      "answer": "To create an option:",
+      "question": "Como eu crio uma opção?",
+      "answer": "Para criar uma opção:",
       "steps": {
-        "1": "Log in to your account",
-        "2": "Click the \"Create Option\" button in the header",
-        "3": "Fill in the option details (title, strike price, quantity, premium, buyer address)",
-        "4": "Submit the form - your option will be created with OPEN status"
+        "1": "Entre na sua conta",
+        "2": "Clique no botão “Create Option” no cabeçalho",
+        "3": "Preencha os detalhes da opção (título, preço de strike, quantidade, prêmio, endereço do comprador)",
+        "4": "Envie o formulário: sua opção será criada com status OPEN"
       }
     },
     "q3": {
-      "question": "What is the matching process?",
-      "answer": "The matching engine connects buyers and sellers for options contracts. When an option is in OPEN status, a broker can match it by providing a seller's Ethereum address. Once matched, the option status changes to FILLED and becomes exercisable."
+      "question": "O que é o processo de matching?",
+      "answer": "O motor de matching conecta compradores e vendedores de contratos de opções. Quando uma opção está em status OPEN, um corretor pode casá-la informando o endereço Ethereum do vendedor. Após o matching, o status muda para FILLED e a opção pode ser exercida."
     },
     "q4": {
-      "question": "How does NFT minting work?",
-      "answer": "After an option is FILLED or EXERCISED, the option owner (issuer or buyer) can mint it as an ERC-721 NFT on the Polygon Amoy testnet. The NFT includes metadata about the option and can be viewed on PolygonScan. Each option can only be minted once."
+      "question": "Como funciona o minting de NFT?",
+      "answer": "Depois que uma opção estiver em FILLED ou EXERCISED, o titular (emissor ou comprador) pode mintá-la como um NFT ERC-721 na testnet Polygon Amoy. O NFT inclui metadados da opção e pode ser visualizado no PolygonScan. Cada opção só pode ser mintada uma vez."
     },
     "q5": {
-      "question": "What are margin calls?",
-      "answer": "Margin calls occur when the collateral value of an option position falls below the required threshold. The system automatically monitors positions and issues margin calls when needed. Users can top up their collateral to meet the margin requirement or the position may be force-settled."
+      "question": "O que são margin calls?",
+      "answer": "Margin calls ocorrem quando o valor do colateral de uma posição de opções cai abaixo do limite exigido. O sistema monitora automaticamente as posições e emite margin calls quando necessário. Os usuários podem adicionar colateral para atender ao requisito, ou a posição pode ser liquidada/encerrada forçadamente."
     },
     "q6": {
-      "question": "What are the different user roles?",
-      "answer": "Cropto has three user roles:",
+      "question": "Quais são os diferentes papéis de usuário?",
+      "answer": "A Cropto tem três papéis de usuário:",
       "roles": {
-        "farmer": "Can create and trade options, exercise positions",
-        "trader": "Can trade options and participate in the marketplace",
-        "broker": "Admin role with access to matching, reconciliation, and index management"
+        "farmer": "Pode criar e negociar opções e exercer posições",
+        "trader": "Pode negociar opções e participar do marketplace",
+        "broker": "Papel de admin com acesso a matching, reconciliação e gestão de índices"
       }
     },
     "q7": {
-      "question": "Which blockchain does Cropto use?",
-      "answer": "Cropto uses the Polygon Amoy testnet for on-chain features. This includes:",
+      "question": "Qual blockchain a Cropto usa?",
+      "answer": "A Cropto usa a testnet Polygon Amoy para recursos on-chain. Isso inclui:",
       "features": {
-        "1": "CROPT ERC-20 token for platform currency",
-        "2": "CroptOptionNFT ERC-721 contract for tokenizing options",
-        "3": "All transactions can be viewed on PolygonScan"
+        "1": "Token CROPT ERC-20 como moeda da plataforma",
+        "2": "Contrato CroptOptionNFT ERC-721 para tokenizar opções",
+        "3": "Todas as transações podem ser vistas no PolygonScan"
       }
     },
     "q8": {
-      "question": "How do I connect my wallet?",
-      "answer": "You can connect your wallet in two ways:",
+      "question": "Como conecto minha carteira?",
+      "answer": "Você pode conectar sua carteira de duas maneiras:",
       "methods": {
-        "metamask": "MetaMask: Click \"Connect Web3\" and approve the connection in MetaMask",
-        "manual": "Manual: Enter your Ethereum address directly in the wallet input field"
+        "metamask": "MetaMask: clique em “Connect Web3” e aprove a conexão no MetaMask",
+        "manual": "Manual: insira seu endereço Ethereum diretamente no campo da carteira"
       },
-      "note": "Make sure you're on the Polygon Amoy testnet for on-chain features."
+      "note": "Certifique-se de estar na testnet Polygon Amoy para recursos on-chain."
     },
     "q9": {
       "question": "How do I track my portfolio?",
-      "answer": "The Portfolio page shows your complete position overview including:",
+      "answer": "A página de Portfólio mostra uma visão completa das suas posições, incluindo:",
       "features": {
-        "1": "Total positions and P&L across all options",
-        "2": "Individual option performance metrics",
+        "1": "Posições totais e P&L em todas as opções",
+        "2": "Métricas de desempenho de cada opção",
         "3": "Unrealized and realized gains/losses",
         "4": "Position breakdown by status"
       }
     },
     "q10": {
-      "question": "Are there demo accounts available?",
-      "answer": "Yes! You can use these demo accounts to explore the platform:",
+      "question": "Há contas demo disponíveis?",
+      "answer": "Sim! Você pode usar estas contas demo para explorar a plataforma:",
       "accounts": {
-        "farmer": "farmer@demo (password: pass) - Farmer role",
-        "trader": "trader@demo (password: pass) - Trader role",
-        "broker": "broker@demo (password: pass) - Broker role with admin access"
+        "farmer": "farmer@demo (senha: pass) - papel de agricultor",
+        "trader": "trader@demo (senha: pass) - papel de trader",
+        "broker": "broker@demo (senha: pass) - papel de corretor com acesso de admin"
       }
     }
   },
@@ -1426,42 +1426,42 @@
     "backLink": "Back to Dashboard"
   },
   "arbitrage": {
-    "title": "Index Arbitrage",
-    "subtitle": "Compare commodity prices across different countries",
+    "title": "Arbitragem de índices",
+    "subtitle": "Compare preços de commodities entre diferentes países",
     "form": {
-      "title": "Comparison Parameters",
-      "description": "Select two countries and a commodity to compare prices",
-      "baseCountry": "Base Country",
-      "targetCountry": "Target Country",
+      "title": "Parâmetros de comparação",
+      "description": "Selecione dois países e uma commodity para comparar preços",
+      "baseCountry": "País base",
+      "targetCountry": "País alvo",
       "commodity": "Commodity",
-      "compare": "Compare",
-      "includeHistory": "Include price history"
+      "compare": "Comparar",
+      "includeHistory": "Incluir histórico de preços"
     },
     "countries": {
-      "ua": "Ukraine (UA)",
-      "br": "Brazil (BR)",
+      "ua": "Ucrânia (UA)",
+      "br": "Brasil (BR)",
       "ar": "Argentina (AR)"
     },
     "results": {
-      "title": "Comparison Results",
-      "description": "Price comparison for {{commodity}} between {{base}} and {{target}}",
-      "base": "Base Market",
-      "target": "Target Market",
-      "asOf": "As of",
-      "spread": "Price Spread",
-      "spreadDescription": "Difference between {{target}} and {{base}} prices"
+      "title": "Resultados da comparação",
+      "description": "Comparação de preços de {{commodity}} entre {{base}} e {{target}}",
+      "base": "Mercado base",
+      "target": "Mercado alvo",
+      "asOf": "Em",
+      "spread": "Spread de preços",
+      "spreadDescription": "Diferença entre os preços de {{target}} e {{base}}"
     },
     "history": {
-      "title": "Historical Spread",
-      "description": "Spread over time between the two markets",
+      "title": "Spread histórico",
+      "description": "Spread ao longo do tempo entre os dois mercados",
       "spread": "Spread"
     },
     "empty": {
-      "title": "No comparison yet",
-      "description": "Select countries and commodity, then click Compare to see price differences"
+      "title": "Ainda não há comparação",
+      "description": "Selecione os países e a commodity e, em seguida, clique em Comparar para ver as diferenças de preço"
     },
     "error": {
-      "generic": "Failed to fetch comparison data. Please try again."
+      "generic": "Não foi possível obter os dados de comparação. Tente novamente."
     }
   },
   "auth": {
