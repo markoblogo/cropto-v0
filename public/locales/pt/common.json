@@ -113,35 +113,37 @@
   },
   "hero": {
     "headline": "Cropto: precificação, hedge e trading de grãos",
-    "tagline": "pricing, hedging and trading grain",
-    "subheadline": "Trade agricultural commodity options with blockchain-backed transparency",
+    "tagline": "precificação, hedge e trading de grãos",
+    "subheadline": "Negocie opções de commodities agrícolas com transparência garantida por blockchain",
     "cta": {
-      "createOption": "Create Option",
-      "connectWallet": "Connect Wallet"
+      "createOption": "Criar opção",
+      "connectWallet": "Conectar carteira"
     }
   },
   "home": {
     "hero": {
-      "title": "Trade Tokenized Grain Indices & Options. The global tokenized commodity market.",
-      "subtitle": "Tokenized grain indices and options across Ukraine, Argentina and Brazil. Forward curves up to 12 months. Settlement by index — no physical delivery.",
+      "title": "Negocie índices de grãos tokenizados e opções. O mercado global de commodities tokenizadas.",
+      "subtitle": "Índices de grãos tokenizados e opções em Ucrânia, Argentina e Brasil. Curvas a termo de até 12 meses. Liquidação por índice — sem entrega física.",
       "cta": {
-        "startIndexTrading": "Start Index Trading",
-        "startOptionsTrading": "Start Options Trading",
-        "viewMarkets": "View Markets",
-        "connectWallet": "Connect Wallet",
-        "walletConnected": "Wallet: Connected"
+        "startIndexTrading": "Começar a negociar índices",
+        "startOptionsTrading": "Começar a negociar opções",
+        "viewMarkets": "Ver mercados",
+        "connectWallet": "Conectar carteira",
+        "walletConnected": "Carteira: conectada"
       }
     },
     "market": {
-      "title": "Market Dashboard",
+      "title": "Painel de mercado",
       "subtitle": "Real-time commodity prices from Ukraine, Brazil, and Argentina",
       "tabs": {
-        "ua": "Ukraine",
-        "uaDescription": "Reference prices are based on CPT Odesa export markets and domestic processing indices for soy and sunflower in Ukraine normalised to CPT Odesa parity (powered by Spike Spot Index).",
-        "br": "Brazil",
-        "brDescription": "Reference prices are based on export market quotes from key Brazilian ports (Santos, Paranaguá).",
+        "ua": "Ucrânia",
+        "uaDescription": "Os preços de referência são baseados nos mercados de exportação CPT Odesa e em índices domésticos de processamento de soja e girassol na Ucrânia, normalizados à paridade CPT Odesa (powered by Spike Spot Index).",
+        "br": "Brasil",
+        "brDescription": "Os preços de referência são baseados em cotações de exportação de portos brasileiros-chave (Santos, Paranaguá).",
         "ar": "Argentina",
-        "arDescription": "Reference prices are based on FOB Up-River export values for corn, wheat, soy and soymeal."
+        "arDescription": "Os preços de referência são baseados em valores de exportação FOB Up-River para milho, trigo, soja e farelo de soja.",
+        "us": "EUA",
+        "usDescription": "Os preços de referência são baseados em cotações de exportação de portos-chave dos EUA (Golfo, Pacífico)."
       },
       "card": {
         "viewIndex": "Ver mercado de índices",
@@ -405,70 +407,80 @@
       "call": "Call",
       "put": "Put",
       "marginProfile": "Perfil de margem",
-      "view": "View:",
-      "viewAll": "All",
-      "viewMy": "My",
+      "view": "Ver:",
+      "viewAll": "Todas",
+      "viewMy": "Minhas",
       "analytics": {
         "volume": "Volume",
-        "openInterest": "Open Interest",
+        "openInterest": "Interesse em aberto",
         "commodityLabel": "Commodity:",
-        "expiryLabel": "Expiry:",
-        "chain": "Chain"
+        "expiryLabel": "Vencimento:",
+        "chain": "Cadeia"
       },
-      "optionsOrderBook": "Options Order Book (by expiry window)",
-      "loginToViewOrderBook": "Log in to view the options order book.",
-      "filters": "Filters",
-      "connectWalletToSee": "Connect wallet to see your options",
-      "chain": "Chain",
-      "comingSoon": "Coming Soon",
-      "comingSoonDesc": "Options trading for this region is coming soon. Currently available for Ukraine only."
+      "optionsOrderBook": "Livro de ordens de opções (por janela de vencimento)",
+      "loginToViewOrderBook": "Entre para ver o livro de ordens de opções.",
+      "filters": "Filtros",
+      "connectWalletToSee": "Conecte a carteira para ver suas opções",
+      "chain": "Cadeia",
+      "comingSoon": "Em breve",
+      "comingSoonDesc": "A negociação de opções para esta região estará disponível em breve. No momento, está disponível apenas para a Ucrânia."
     },
     "marketData": {
-      "title": "Market Data",
-      "subtitle": "Commodity index prices, volatility and history for CROPT-linked markets",
-      "grains": "GRAINS",
-      "oilseeds": "OILSEEDS",
-      "volatilityHistoryTitle": "Volatility & History (MVP)",
-      "volatilityHistoryDesc": "Simple historical charts per index. Full volatility surfaces will be available in future updates.",
-      "noPriceHistory": "No price history available for this index",
-      "noIndexes": "No indexes available",
-      "price": "Price",
+      "title": "Dados de mercado",
+      "subtitle": "Preços de índices de commodities, volatilidade e histórico para mercados vinculados a CROPT",
+      "grains": "GRÃOS",
+      "oilseeds": "OLEAGINOSAS",
+      "volatilityHistoryTitle": "Volatilidade e histórico (MVP)",
+      "volatilityHistoryDesc": "Gráficos históricos simples por índice. Superfícies completas de volatilidade estarão disponíveis em atualizações futuras.",
+      "noPriceHistory": "Não há histórico de preços disponível para este índice",
+      "noIndexes": "Não há índices disponíveis",
+      "price": "Preço",
       "region": {
-        "ua": "Ukraine",
-        "br": "Brazil",
+        "ua": "Ucrânia",
+        "br": "Brasil",
         "ar": "Argentina"
       },
-      "volatilityTitle": "Volatility & History",
-      "viewOptionsMarket": "View options market"
+      "volatilityTitle": "Volatilidade e histórico",
+      "viewOptionsMarket": "Ver mercado de opções"
     },
     "testing": {
-      "title": "Testing Guide",
-      "subtitle": "Learn how to test the Cropto platform features"
+      "title": "Guia de testes",
+      "subtitle": "Saiba como testar os recursos da plataforma Cropto"
     },
     "education": {
       "title": "Education & Learn",
       "subtitle": "Understand how Cropto works: indices, spot tokens, options and risk.",
       "sections": {
-        "intro": "How Cropto works",
-        "indices": "Indices & Spot Tokens",
-        "options": "Options & Hedging",
-        "risk": "Risk & Collateral",
+        "intro": "Como a Cropto funciona",
+        "indices": "Índices e tokens spot",
+        "options": "Opções e hedge",
+        "risk": "Risco e colateral",
         "faq": "Mini-FAQ"
-      }
+      },
+      "aboutTitle": "Sobre a Cropto",
+      "faqTitle": "Perguntas frequentes",
+      "topicsTitle": "Tópicos educativos",
+      "topicsDescription": "Aprenda sobre índices de commodities, opções, margem e estratégias de trading",
+      "scenariosTitle": "Cenários de trading",
+      "scenariosDescription": "Exemplos reais de como diferentes usuários interagem com a Cropto",
+      "calculatorTitle": "Calculadora de opções",
+      "calculatorDescription": "Calcule o prêmio, o notional e o valor intrínseco para fins educacionais",
+      "readScenario": "Ler cenário",
+      "heroDescription": "A Cropto é uma plataforma para negociar índices de grãos tokenizados e opções, criada para agricultores (hedge), traders (especulação) e corretores. Ela combina liquidação on-chain com feeds off-chain de preços de índices."
     },
     "dashboard": {
-      "title": "Options Marketplace",
-      "subtitle": "Browse, create, and trade grain commodity options",
+      "title": "Marketplace de opções",
+      "subtitle": "Navegue, crie e negocie opções de commodities de grãos",
       "metrics": {
-        "totalOptions": "Total Options",
-        "totalOptionsDesc": "All time contracts",
-        "openPositions": "Open Positions",
-        "openPositionsDesc": "Currently active",
-        "totalVolume": "Total Volume",
-        "totalVolumeDesc": "Aggregate value"
+        "totalOptions": "Total de opções",
+        "totalOptionsDesc": "Contratos de todo o período",
+        "openPositions": "Posições abertas",
+        "openPositionsDesc": "Atualmente ativas",
+        "totalVolume": "Volume total",
+        "totalVolumeDesc": "Valor agregado"
       },
       "indexWidget": {
-        "title": "Index Price",
+        "title": "Preço do índice",
         "loading": "Loading...",
         "loadError": "Failed to load index data",
         "lastUpdated": "Last updated:",
