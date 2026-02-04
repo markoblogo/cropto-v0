@@ -942,42 +942,42 @@
       "block4": {
         "title": "Transacción y firma",
         "walletNotConnected": "Billetera no conectada",
-        "connectWallet": "Connect Wallet",
-        "wallet": "Wallet:",
-        "croptBalance": "CROPT Balance:"
+        "connectWallet": "Conectar billetera",
+        "wallet": "Billetera:",
+        "croptBalance": "Saldo CROPT:"
       }
     },
     "optionsTable": {
-      "title": "Option Chain",
-      "subtitle": "Browse and trade commodity options contracts",
-      "empty": "No Options Found",
-      "emptyCreate": "Get started by creating your first option contract.",
-      "emptyFilter": "No options match your current filters. Try adjusting them.",
+      "title": "Cadena de opciones",
+      "subtitle": "Explora y opera contratos de opciones sobre commodities",
+      "empty": "No se encontraron opciones",
+      "emptyCreate": "Empieza creando tu primer contrato de opción.",
+      "emptyFilter": "Ninguna opción coincide con tus filtros actuales. Prueba a ajustarlos.",
       "filters": {
-        "type": "Filter Type",
-        "status": "Filter Status",
-        "allTypes": "All Types",
-        "allStatus": "All Status",
+        "type": "Filtrar por tipo",
+        "status": "Filtrar por estado",
+        "allTypes": "Todos los tipos",
+        "allStatus": "Todos los estados",
         "call": "Call",
         "put": "Put",
-        "open": "Open",
-        "filled": "Filled",
-        "expired": "Expired",
-        "cancelled": "Cancelled",
+        "open": "Abierta",
+        "filled": "Completada",
+        "expired": "Vencida",
+        "cancelled": "Cancelada",
         "commodity": "Filtrar commodity",
         "allCommodities": "Todas las commodities"
       },
       "headers": {
-        "title": "Title",
-        "type": "Type",
+        "title": "Título",
+        "type": "Tipo",
         "strike": "Strike",
-        "qty": "Qty (t)",
-        "premium": "Premium",
-        "expiry": "Expiry",
-        "status": "Status",
+        "qty": "Cant. (t)",
+        "premium": "Prima",
+        "expiry": "Vencimiento",
+        "status": "Estado",
         "actions": "Acciones",
         "commodity": "Commodity",
-        "iv": "IV (stub)",
+        "iv": "IV (marcador)",
         "volume": "Volumen",
         "margin": "Margen"
       },
@@ -1016,18 +1016,18 @@
       }
     },
     "notifications": {
-      "title": "Notifications",
-      "new": "{{count}} new",
-      "loading": "Loading notifications...",
-      "empty": "No notifications yet",
+      "title": "Notificaciones",
+      "new": "{{count}} nuevas",
+      "loading": "Cargando notificaciones…",
+      "empty": "Aún no hay notificaciones",
       "types": {
-        "marginCall": "Margin Call",
-        "optionMatched": "Option Matched",
-        "optionExercised": "Option Exercised",
-        "liquidation": "Liquidation",
-        "notification": "Notification"
+        "marginCall": "Margin call",
+        "optionMatched": "Opción emparejada",
+        "optionExercised": "Opción ejecutada",
+        "liquidation": "Liquidación",
+        "notification": "Notificación"
       },
-      "newBadge": "New"
+      "newBadge": "Nuevo"
     },
     "statusBadge": {
       "open": "OPEN",
