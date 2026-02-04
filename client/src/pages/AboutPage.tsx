@@ -8,8 +8,9 @@ import FlagSwitcher from "@/components/FlagSwitcher";
 import { FileText } from "lucide-react";
 
 export default function AboutPage() {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
+  const { i18n, t } = useTranslation();
+  const normalizedLang = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0];
+  const currentLang = normalizedLang === 'uk' ? 'uk' : 'en';
   
   const aboutSrc = `/docs/about.${currentLang}.md`;
   const faqSrc = `/docs/faq.${currentLang}.md`;
@@ -29,7 +30,7 @@ export default function AboutPage() {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <CardTitle className="text-3xl font-bold flex items-center gap-2">
                 <FileText className="w-8 h-8" />
-                {currentLang === 'uk' ? 'Про платформу' : 'About'}
+                {t('page.about.title')}
               </CardTitle>
               <div className="flex items-center gap-3">
                 <FlagSwitcher />
@@ -39,7 +40,7 @@ export default function AboutPage() {
                   onClick={scrollToFaq}
                   data-testid="button-scroll-to-faq"
                 >
-                  {currentLang === 'uk' ? 'FAQ ↓' : 'View FAQ ↓'}
+                  {t('page.about.viewFaq')}
                 </Button>
               </div>
             </div>

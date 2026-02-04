@@ -8,7 +8,8 @@ import { FileText } from "lucide-react";
 
 export default function TestingPage() {
   const { t, i18n } = useTranslation();
-  const currentLang = i18n.language === 'uk' ? 'uk' : 'en';
+  const normalizedLang = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0];
+  const currentLang = normalizedLang === 'uk' ? 'uk' : 'en';
   
   const testingSrc = `/docs/testing.${currentLang}.md`;
 

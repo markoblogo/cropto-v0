@@ -779,6 +779,10 @@
         "note": "Note",
         "noteDesc": "This feature is broker-only. The demo scenario is idempotent and can be run multiple times. Existing users will be preserved, and new options/index prices will be added to the database."
       }
+    },
+    "about": {
+      "title": "About",
+      "viewFaq": "View FAQ ↓"
     }
   },
   "component": {
