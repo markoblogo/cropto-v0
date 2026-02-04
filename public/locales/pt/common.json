@@ -820,6 +820,62 @@
         "title": "Uso de e-mails e identificadores",
         "body": "Usamos endereços de e-mail, IDs de usuário e identificadores de carteira para operar a plataforma: processar ações de opções, enviar notificações (por exemplo, margin calls, liquidações) e manter trilhas de auditoria. Não vendemos nem compartilhamos esses identificadores para marketing."
       }
+    },
+    "terms": {
+      "title": "Termos de Uso",
+      "lastUpdated": "Última atualização: 2/4/2026",
+      "scope": {
+        "title": "Escopo e aceitação",
+        "body": "Estes Termos de Uso regem o acesso e o uso da plataforma protótipo da Cropto. Ao acessar o site ou utilizar as funcionalidades, você confirma sua concordância com estes Termos."
+      },
+      "nonProduction": {
+        "title": "Ambiente não produtivo",
+        "body": "A plataforma é fornecida “como está” exclusivamente para fins de demonstração e testes. Ela não é um local de negociação licenciado, nem uma corretora, nem um consultor financeiro."
+      },
+      "noAdvice": {
+        "title": "Sem recomendação de investimento",
+        "body": "Quaisquer informações, preços, índices, análises ou negociações simuladas são apenas informativas e educacionais e não constituem recomendação individual de investimento."
+      },
+      "responsibilities": {
+        "title": "Responsabilidades do usuário",
+        "list": {
+          "accurateInfo": "Fornecer informações corretas durante o cadastro.",
+          "noAbuse": "Não realizar ações que comprometam a segurança ou a estabilidade da plataforma.",
+          "demoOnly": "Usar a plataforma somente para fins de teste e demonstração."
+        }
+      },
+      "ip": {
+        "title": "Propriedade intelectual",
+        "body": "Todos os direitos sobre código, design, logotipos, índices e materiais relacionados pertencem à Cropto ou a seus licenciadores. Qualquer cópia ou uso não autorizado é proibido."
+      },
+      "liability": {
+        "title": "Limitação de responsabilidade",
+        "body": "A Cropto não se responsabiliza por quaisquer danos diretos ou indiretos decorrentes do uso ou da incapacidade de usar a plataforma, incluindo erros de cotação, atrasos, indisponibilidade, interrupções ou perda de dados."
+      },
+      "payment": {
+        "title": "Termos de pagamento e liquidação",
+        "body": "Os valores na plataforma são cotados e liquidados em CROPT. Os instrumentos são vinculados a índices e liquidados em dinheiro (cash-settled) contra o Spike Spot Index (CPT Odesa). Não há entrega física de commodities nem obrigações pós-entrega. Contratos tipo forward em CROPT não são entregáveis; quaisquer referências são descritivas e não representam compromisso de fornecer liquidação física."
+      },
+      "product": {
+        "title": "Descrição do produto",
+        "body": "As opções da Cropto são contratos indexados e liquidados em dinheiro sobre índices de grãos (por exemplo, Spike Spot CPT Odesa). A liquidação usa preços do índice; não há entrega física de grãos nem risco pós-entrega."
+      },
+      "spotForward": {
+        "title": "Mercado spot-forward",
+        "body": "Os contratos a termo (forward) na plataforma são forwards sem entrega (cash-settled) sobre índices de grãos como Corn, Wheat 11.5, Feed Wheat, Soy GMO e Sunflower processing. A liquidação ocorre em CROPT versus o índice Spike Spot (CPT Odesa) pela fórmula: PnL = (SettlementPrice – ContractPrice) × Quantity. As posições usam margem (margem inicial mais chamadas de margem), e a margem em atraso pode ser auto-liquidada. A força legal é um acordo eletrônico dentro da plataforma, não um contrato de entrega física no estilo GAFTA; disputas são tratadas off-chain, sem arbitragem incorporada."
+      },
+      "fees": {
+        "title": "Comissões",
+        "body": "Se aplicam comissões de matching e liquidação por lado em operações a termo: matching_fee = 0.125 CROPT/ton e settlement_fee = 0.125 CROPT/ton. Com ambas as partes pagando ambas as comissões, a plataforma ganha 0.50 CROPT/ton no total em uma operação a termo concluída. As comissões aplicáveis são exibidas na interface antes de confirmar ações."
+      },
+      "disclaimer": {
+        "title": "Descargo de responsabilidade",
+        "body": "A plataforma é um ambiente demo/não regulado fornecido “como está”. Não há garantias. Os produtos são para fins educacionais/de teste e não constituem recomendação de investimento nem um local de negociação licenciado. Use por sua conta e risco."
+      },
+      "governingLaw": {
+        "title": "Lei aplicável e resolução de disputas",
+        "body": "As relações podem estar sujeitas à lei de uma jurisdição selecionada pela Cropto. A jurisdição específica e os procedimentos de resolução de disputas podem ser definidos em acordos individuais com parceiros."
+      }
     }
   },
   "component": {
