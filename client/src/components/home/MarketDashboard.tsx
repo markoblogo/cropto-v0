@@ -163,7 +163,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
         </CardTitle>
         <CardDescription>
           <span className="font-medium">{t('home.market.card.source')}: </span>
-          {item.basis}
+          {item.source === "IGC" ? "IGC export prices" : item.basis}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">

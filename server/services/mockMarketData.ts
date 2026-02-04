@@ -14,11 +14,18 @@ export interface MarketIndexDto {
   change7d: number;
   change30d: number;
   asOf: string; // ISO string
-  source: "spike_telegram" | "mock" | "manual";
+  source: "spike_telegram" | "mock" | "manual" | "IGC";
+  // Optional IGC-specific fields
+  dailyChange?: number; // from dailyChangePct (alias for change24h, for backward compatibility)
+  annualChange?: number; // from annualChangePct
+  low52w?: number;
+  high52w?: number;
 }
 
 /**
  * Mock market data for Brazil (BR)
+ * Note: These are demo placeholders only, used as fallback when IGC parser is unavailable.
+ * IGC parser supports: wheat, maize/corn, soybeans, barley, rice (no sugar).
  */
 export function getMockMarketDataBR(): MarketIndexDto[] {
   const now = new Date().toISOString();
@@ -46,19 +53,6 @@ export function getMockMarketDataBR(): MarketIndexDto[] {
       change24h: 0.5,
       change7d: 1.2,
       change30d: -3.1,
-      asOf: now,
-      source: "mock",
-    },
-    {
-      commodity: "sugar",
-      grade: "Raw",
-      country: "BR",
-      basis: "FOB Santos",
-      price: 520.00,
-      currency: "USD",
-      change24h: -0.8,
-      change7d: 2.1,
-      change30d: 8.5,
       asOf: now,
       source: "mock",
     },

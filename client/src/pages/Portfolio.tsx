@@ -60,7 +60,7 @@ interface PortfolioPosition {
   optionId: string;
   title: string;
   type: 'CALL' | 'PUT';
-  strike: string; // Original strike in $/kg (for backward compatibility)
+  strike: string; // Strike in $/ton
   strikePerTon?: string; // Strike in $/ton (for display)
   qty: string; // Quantity in tons
   premium: string; // Premium per ton
@@ -627,8 +627,8 @@ export default function Portfolio() {
     spotPositions.forEach((spot) => {
       const slug = spot.commoditySlug.toLowerCase();
       const name = spot.commodityName;
-      const qtyT = parseFloat(spot.quantityKg) / 1000; // kg -> tonnes
-      const currentPricePerT = parseFloat(spot.currentPricePerKg) * 1000; // $/kg -> $/t
+      const qtyT = parseFloat(spot.quantityKg) / 1000; // Spot quantities are stored in kg; convert to tonnes
+      const currentPricePerT = parseFloat(spot.currentPricePerKg) * 1000; // Spot prices are per kg; convert to $/ton
       const spotValueUsd = qtyT * currentPricePerT;
 
       if (!map[slug]) {

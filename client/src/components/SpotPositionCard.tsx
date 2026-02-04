@@ -68,8 +68,8 @@ export function SpotPositionCard({ commoditySlug, commodityName }: SpotPositionC
   }
 
   const quantityTons = kgToTons(parseFloat(position.quantityKg));
-  const avgEntryPricePerTon = parseFloat(position.avgEntryPrice) * 1000; // Convert from $/kg to $/ton
-  const currentPricePerTon = parseFloat(position.currentPricePerKg) * 1000; // Convert from $/kg to $/ton
+  const avgEntryPricePerTon = parseFloat(position.avgEntryPrice) * 1000; // Spot prices are stored per kg; convert to $/ton for UI
+  const currentPricePerTon = parseFloat(position.currentPricePerKg) * 1000; // Spot prices are stored per kg; convert to $/ton for UI
   const pnl = parseFloat(position.pnl);
   const pnlPercent = parseFloat(position.pnlPercent);
   const isPositive = pnl >= 0;
@@ -117,4 +117,3 @@ export function SpotPositionCard({ commoditySlug, commodityName }: SpotPositionC
     </Card>
   );
 }
-

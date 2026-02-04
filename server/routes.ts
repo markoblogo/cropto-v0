@@ -21,7 +21,6 @@ import {
   shouldTriggerMargin, 
   calculateMarginCallAmount,
   computeIntrinsicValueUSD,
-  computeIntrinsicValueUSDCorrected,
   computePremiumUSD,
   computeUnrealizedPnLUSD,
   collateralPct,
@@ -41,6 +40,7 @@ import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
 import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
+import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 
 const STALE_MAX_AGE_DAYS = 7;
 
@@ -116,6 +116,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     runScraper(false).catch((error) => {
       console.error("[TelegramScraper] Fatal error:", error);
     });
+  }
+
+  // Start IGC poller if enabled
+  if (process.env.ENABLE_IGC_POLLING === "true") {
+    const { startPoller } = await import("./jobs/igcPoller");
+    startPoller();
+  } else {
+    console.log("[IGC Poller] ENABLE_IGC_POLLING not set to 'true', poller disabled.");
   }
 
   app.get("/api/health", (req, res) => {
@@ -1645,71 +1653,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(indexPrices)
         .orderBy(desc(indexPrices.date));
 
+      console.log(`[Market Dashboard] Loaded ${allIndexPrices.length} indexPrices from DB`);
+      console.log(`[Market Dashboard] IGC records: ${allIndexPrices.filter(p => p.source === "IGC").length}`);
+      console.log(`[Market Dashboard] AR IGC: ${allIndexPrices.filter(p => p.country === "AR" && p.source === "IGC").length}`);
+      console.log(`[Market Dashboard] US IGC: ${allIndexPrices.filter(p => p.country === "US" && p.source === "IGC").length}`);
+      console.log(`[Market Dashboard] BR IGC: ${allIndexPrices.filter(p => p.country === "BR" && p.source === "IGC").length}`);
+
+      // IGC series mapping is imported at the top - only these series will be shown on Market Dashboard
+
       const brMap = new Map<string, MarketIndexDto>();
       const arMap = new Map<string, MarketIndexDto>();
       const usMap = new Map<string, MarketIndexDto>();
 
       for (const price of allIndexPrices) {
         try {
-          const meta = price.meta ? JSON.parse(price.meta) : {};
-          if (meta.country && (meta.country === "BR" || meta.country === "AR" || meta.country === "US")) {
-            const commodity = meta.commodity || price.commodity.toLowerCase();
-            const basis = meta.basis || "";
-            const key = `${commodity}:${basis}`;
-
-            const country = meta.country;
-            const targetMap = country === "BR" ? brMap : country === "AR" ? arMap : usMap;
-
-            // Only keep the latest entry per (commodity, basis)
-            if (!targetMap.has(key)) {
-              // Calculate change24h (simplified: compare with previous day)
-              const priceValue = parseFloat(price.price);
-              let change24h = 0;
+          // Check if this is IGC data (has country field directly and source = IGC)
+          // IGC export prices, source: International Grains Council, see https://www.igc.int/en/markets/marketinfo-prices.aspx
+          const hasCountry = !!price.country;
+          const countryMatches = price.country === "BR" || price.country === "AR" || price.country === "US";
+          const sourceMatches = price.source === "IGC";
+          const isIgcRecord = hasCountry && countryMatches && sourceMatches;
+          
+          // Debug log for IGC records
+          if (hasCountry && countryMatches && price.source) {
+            console.log(`[Market Dashboard DEBUG] Record: country=${price.country}, source="${price.source}", sourceMatches=${sourceMatches}, isIgcRecord=${isIgcRecord}, commodity=${price.commodity}`);
+          }
+          
+          if (isIgcRecord) {
+            try {
+              const commodity = price.commodity.toLowerCase();
+              const country = price.country as "BR" | "AR" | "US"; // Already validated by isIgcRecord check
+              const label = price.label || "";
               
-              // Find previous price for same commodity+basis
-              for (const prevPrice of allIndexPrices) {
-                if (prevPrice.id === price.id) continue;
-                try {
-                  const prevMeta = prevPrice.meta ? JSON.parse(prevPrice.meta) : {};
-                  if (
-                    prevMeta.country === country &&
-                    (prevMeta.commodity || prevPrice.commodity.toLowerCase()) === commodity &&
-                    prevMeta.basis === basis
-                  ) {
-                    const prevPriceValue = parseFloat(prevPrice.price);
-                    const prevDate = new Date(prevPrice.date);
-                    const currentDate = new Date(price.date);
-                    const daysDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
-                    
-                    if (daysDiff <= 1.5 && daysDiff > 0) {
-                      change24h = ((priceValue - prevPriceValue) / prevPriceValue) * 100;
-                    }
-                    break;
-                  }
-                } catch {
-                  // Skip invalid meta
-                }
+              // Get preferred label for this country+commodity combination
+              const preferredLabel = IGC_SERIES_MAPPING[country]?.[commodity];
+              
+              // Skip if this country+commodity combination is not in the mapping
+              if (!preferredLabel) {
+                // This commodity for this country should not be shown on dashboard
+                continue;
               }
+              
+              // Filter by label: allow startsWith to handle minor formatting changes
+              if (!label.startsWith(preferredLabel)) {
+                // This is not the preferred series - skip it
+                continue;
+              }
+              
+              // For IGC data, use label as basis identifier
+              const basis = label;
+              const key = `${commodity}:${basis}`;
 
-              const detectedSource = (meta.source || price.source || "manual") as string;
+              const targetMap = country === "BR" ? brMap : country === "AR" ? arMap : usMap;
 
-              targetMap.set(key, {
-                commodity,
-                grade: meta.grade || null,
-                country: country as "BR" | "AR" | "US",
-                basis,
-                price: priceValue,
-                currency: "USD" as const,
-                change24h,
-                change7d: 0,
-                change30d: 0,
-                asOf: new Date(price.date).toISOString(),
-                source: detectedSource as any,
-              });
+              // Only keep the latest entry per (commodity, basis)
+              if (!targetMap.has(key)) {
+                const priceValue = parseFloat(price.price);
+                const change24h = price.dailyChangePct ? parseFloat(price.dailyChangePct.toString()) : 0;
+                
+                // IGC export prices, source: International Grains Council, see https://www.igc.int/en/markets/marketinfo-prices.aspx
+                // Safely get date: use asOfDate if valid, otherwise fallback to date field
+                let asOfDate: Date;
+                if (price.asOfDate) {
+                  const dateObj = typeof price.asOfDate === 'string' ? new Date(price.asOfDate) : price.asOfDate;
+                  if (!isNaN(dateObj.getTime())) {
+                    asOfDate = dateObj;
+                  } else {
+                    asOfDate = new Date(price.date);
+                  }
+                } else {
+                  asOfDate = new Date(price.date);
+                }
+                
+                // Final fallback to current date if date is still invalid
+                if (isNaN(asOfDate.getTime())) {
+                  asOfDate = new Date();
+                }
+                
+                const result: MarketIndexDto = {
+                  commodity,
+                  grade: null, // IGC data doesn't use grade field
+                  country: country as "BR" | "AR" | "US",
+                  basis: price.label || basis,
+                  price: priceValue,
+                  currency: "USD" as const,
+                  change24h,
+                  change7d: 0,
+                  change30d: 0,
+                  asOf: asOfDate.toISOString(),
+                  source: "IGC" as const,
+                };
+                
+                // Add optional IGC-specific fields (explicitly set, not via TypeScript defaults)
+                if (price.annualChangePct !== null && price.annualChangePct !== undefined) {
+                  result.annualChange = parseFloat(price.annualChangePct.toString());
+                }
+                if (price.low52w !== null && price.low52w !== undefined) {
+                  result.low52w = parseFloat(price.low52w.toString());
+                }
+                if (price.high52w !== null && price.high52w !== undefined) {
+                  result.high52w = parseFloat(price.high52w.toString());
+                }
+                
+                targetMap.set(key, result);
+                console.log(`[Market Dashboard] Added IGC record: country=${country}, key=${key}, commodity=${commodity}, price=${priceValue}`);
+              } else {
+                console.log(`[Market Dashboard] Skipped IGC record (duplicate key): country=${country}, key=${key}`);
+              }
+            } catch (error) {
+              console.error(`[Market Dashboard] Error processing IGC record:`, error);
+            }
+          } else {
+            // Legacy meta-based data (for backward compatibility)
+            const meta = price.meta ? JSON.parse(price.meta) : {};
+            if (meta.country && (meta.country === "BR" || meta.country === "AR" || meta.country === "US")) {
+              const commodity = meta.commodity || price.commodity.toLowerCase();
+              const basis = meta.basis || "";
+              const key = `${commodity}:${basis}`;
+
+              const country = meta.country;
+              const targetMap = country === "BR" ? brMap : country === "AR" ? arMap : usMap;
+
+              // Only keep the latest entry per (commodity, basis)
+              if (!targetMap.has(key)) {
+                // Calculate change24h (simplified: compare with previous day)
+                const priceValue = parseFloat(price.price);
+                let change24h = 0;
+                
+                // Find previous price for same commodity+basis
+                for (const prevPrice of allIndexPrices) {
+                  if (prevPrice.id === price.id) continue;
+                  try {
+                    const prevMeta = prevPrice.meta ? JSON.parse(prevPrice.meta) : {};
+                    if (
+                      prevMeta.country === country &&
+                      (prevMeta.commodity || prevPrice.commodity.toLowerCase()) === commodity &&
+                      prevMeta.basis === basis
+                    ) {
+                      const prevPriceValue = parseFloat(prevPrice.price);
+                      const prevDate = new Date(prevPrice.date);
+                      const currentDate = new Date(price.date);
+                      const daysDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+                      
+                      if (daysDiff <= 1.5 && daysDiff > 0) {
+                        change24h = ((priceValue - prevPriceValue) / prevPriceValue) * 100;
+                      }
+                      break;
+                    }
+                  } catch {
+                    // Skip invalid meta
+                  }
+                }
+
+                const detectedSource = (meta.source || price.source || "manual") as string;
+
+                targetMap.set(key, {
+                  commodity,
+                  grade: meta.grade || null,
+                  country: country as "BR" | "AR" | "US",
+                  basis,
+                  price: priceValue,
+                  currency: "USD" as const,
+                  change24h,
+                  change7d: 0,
+                  change30d: 0,
+                  asOf: new Date(price.date).toISOString(),
+                  source: detectedSource as any,
+                });
+              }
+            }
+          }
             }
           }
         } catch {
-          // Skip invalid meta
+          // Skip invalid data
         }
       }
 
@@ -1717,10 +1834,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const arData = Array.from(arMap.values());
       const usData = Array.from(usMap.values());
 
-      // Fallback to mock data if no database entries
+      // Debug logging
+      console.log(`[Market Dashboard] Before fallback - BR: ${brData.length}, AR: ${arData.length}, US: ${usData.length} records from DB`);
+      console.log(`[Market Dashboard] BR sources:`, brData.map(d => d.source));
+      console.log(`[Market Dashboard] AR sources:`, arData.map(d => d.source));
+      console.log(`[Market Dashboard] US sources:`, usData.map(d => d.source));
+
+      // Use IGC data from database if available, otherwise fallback to mock data
+      // Mock data is only used when NO IGC records exist for a specific country
+      // If there are some IGC records (even if fewer than expected), we use them without mock fallback
       const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR();
       const finalArData = arData.length > 0 ? arData : getMockMarketDataAR();
       const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS();
+
+      console.log(`[Market Dashboard] Final - BR: ${finalBrData.length}, AR: ${finalArData.length}, US: ${finalUsData.length} records`);
+      console.log(`[Market Dashboard] Final BR sources:`, finalBrData.map(d => d.source));
+      console.log(`[Market Dashboard] Final AR sources:`, finalArData.map(d => d.source));
+      console.log(`[Market Dashboard] Final US sources:`, finalUsData.map(d => d.source));
 
       res.json({
         ua: uaDataFiltered.length > 0 ? uaDataFiltered : [
@@ -4098,7 +4228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           unrealized = true;
           
           // Calculate intrinsic value and premium using corrected helpers (no * 1000 conversion)
-          const intrinsicValue = computeIntrinsicValueUSDCorrected(
+          const intrinsicValue = computeIntrinsicValueUSD(
             option.type,
             strikePerTon,        // Already in $/ton
             currentPricePerTon,  // Already in $/ton

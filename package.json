@@ -10,6 +10,8 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:migrate": "tsx scripts/apply-migrations.ts",
+    "migrate": "tsx db/migrate.ts",
+    "debug:igc": "tsx scripts/debugIgcIndexPrices.ts",
     "e2e:smoke": "tsx scripts/e2e_smoke.ts"
   },
   "dependencies": {
@@ -78,6 +80,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
+    "playwright": "^1.57.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",

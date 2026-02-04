@@ -227,7 +227,7 @@ export default function SpotTrading() {
         const price = Number.isFinite(priceField)
           ? priceField
           : Number.isFinite(strikeRaw)
-            ? strikeRaw / 100 // stored as cents -> dollars per ton
+            ? strikeRaw // strike is already in $/ton
             : 0;
         const qty = typeof t.qty === "string" ? parseFloat(t.qty) : Number(t.qty || t.quantity || 0);
         return {

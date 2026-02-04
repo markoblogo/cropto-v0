@@ -69,14 +69,14 @@ export function SpotSellModal({
   });
 
   // Pre-fill quantity when modal opens or initialQuantity changes
-  // initialQuantity is in kg, convert to tonnes for display
+  // Spot quantities are stored in kg; convert to tonnes for display
   useEffect(() => {
     if (isOpen && initialQuantity !== undefined && initialQuantity !== 0) {
       const qtyTonnes = kgToTons(initialQuantity);
       setQuantityTonnes(formatTons(Math.abs(qtyTonnes)));
     } else if (isOpen && initialQuantity === undefined && positionData?.position) {
       // If no initialQuantity provided, use position quantity as default
-      // position quantity is in kg, convert to tonnes
+      // Spot position quantity is in kg; convert to tonnes
       const positionQtyKg = parseFloat(positionData.position.quantityKg);
       if (positionQtyKg !== 0) {
         const qtyTonnes = kgToTons(positionQtyKg);
@@ -119,7 +119,7 @@ export function SpotSellModal({
   });
 
   // ---- количественная логика ----
-  // positionQty is in kg from backend, convert to tonnes for display
+  // Spot position quantity is in kg from backend; convert to tonnes for display
   const positionQtyKg = positionData?.position
     ? parseFloat(positionData.position.quantityKg)
     : 0;
@@ -127,7 +127,7 @@ export function SpotSellModal({
 
   const parsedQtyTonnes = parseFloat(quantityTonnes);
   const qtyTonnesNum = isNaN(parsedQtyTonnes) ? 0 : parsedQtyTonnes;
-  const qtyKgNum = tonsToKg(qtyTonnesNum); // Convert to kg for validation
+  const qtyKgNum = tonsToKg(qtyTonnesNum); // Spot API expects kg; convert for validation
 
   const isLong = positionQtyKg > 0;
   const hasInsufficientPosition = isLong && qtyKgNum > positionQtyKg;

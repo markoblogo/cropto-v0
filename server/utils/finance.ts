@@ -121,42 +121,19 @@ export function calculateExercisePL(
 
 /**
  * Compute intrinsic value in USD for an option
- * Handles unit conversion: strike is stored in $/kg, converts to $/ton for calculation
- * @param optionType - 'CALL' or 'PUT'
- * @param strikePerKg - Strike price per kg (as stored in DB)
- * @param currentPricePerTon - Current index price per ton
- * @param quantityTons - Quantity in tons (as stored in DB)
- * @returns Intrinsic value in USD
- */
-export function computeIntrinsicValueUSD(
-  optionType: 'CALL' | 'PUT',
-  strikePerKg: number,
-  currentPricePerTon: number,
-  quantityTons: number
-): number {
-  // Convert strike from $/kg to $/ton (single conversion point)
-  const strikePerTon = strikePerKg * 1000;
-  
-  // Use existing intrinsic function with all values in $/ton
-  return intrinsic(optionType, currentPricePerTon, strikePerTon, quantityTons);
-}
-
-/**
- * Compute intrinsic value in USD for an option (corrected version)
- * Assumes strike is already stored in $/ton (no conversion needed)
+ * All option values are stored in $/ton (strike & premium) and tons (qty)
  * @param optionType - 'CALL' or 'PUT'
  * @param strikePerTon - Strike price per ton (as stored in DB)
  * @param currentPricePerTon - Current index price per ton
  * @param quantityTons - Quantity in tons (as stored in DB)
  * @returns Intrinsic value in USD
  */
-export function computeIntrinsicValueUSDCorrected(
+export function computeIntrinsicValueUSD(
   optionType: 'CALL' | 'PUT',
   strikePerTon: number,
   currentPricePerTon: number,
   quantityTons: number
 ): number {
-  // All values already in $/ton - no conversion needed
   return intrinsic(optionType, currentPricePerTon, strikePerTon, quantityTons);
 }
 
@@ -178,7 +155,7 @@ export function computePremiumUSD(
  * Compute unrealized P&L for an option position
  * @param optionType - 'CALL' or 'PUT'
  * @param isBuyer - True if user is buyer (LONG), false if seller (SHORT)
- * @param strikePerKg - Strike price per kg (as stored in DB)
+ * @param strikePerTon - Strike price per ton (as stored in DB)
  * @param currentPricePerTon - Current index price per ton
  * @param quantityTons - Quantity in tons (as stored in DB)
  * @param premiumPerTon - Premium per ton (as stored in DB)
@@ -187,14 +164,14 @@ export function computePremiumUSD(
 export function computeUnrealizedPnLUSD(
   optionType: 'CALL' | 'PUT',
   isBuyer: boolean,
-  strikePerKg: number,
+  strikePerTon: number,
   currentPricePerTon: number,
   quantityTons: number,
   premiumPerTon: number
 ): number {
   const intrinsicValue = computeIntrinsicValueUSD(
     optionType,
-    strikePerKg,
+    strikePerTon,
     currentPricePerTon,
     quantityTons
   );

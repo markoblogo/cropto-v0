@@ -2,7 +2,7 @@ import { storage } from "../storage";
 import { db } from "../db";
 import { indexes, commodityIndexPrices, options } from "@shared/schema";
 import { eq, desc, or } from "drizzle-orm";
-import { shouldTriggerMargin, calculateMarginCallAmount, computeIntrinsicValueUSDCorrected } from "../utils/finance";
+import { shouldTriggerMargin, calculateMarginCallAmount, computeIntrinsicValueUSD } from "../utils/finance";
 
 interface ProcessedOption {
   optionId: string;
@@ -195,7 +195,7 @@ export async function processDeadlines() {
         const collateral = parseFloat(option.collateralAmount);
 
         // Calculate intrinsic value
-        const intrinsicValue = computeIntrinsicValueUSDCorrected(
+        const intrinsicValue = computeIntrinsicValueUSD(
           option.type,
           strikePerTon,
           currentPricePerTon,

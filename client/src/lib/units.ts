@@ -1,6 +1,6 @@
 /**
  * Unit conversion utilities for spot trading
- * Frontend works in tonnes (t), backend works in kilograms (kg)
+ * Spot backend stores quantities in kilograms (kg); UI displays tonnes (t)
  */
 
 /**
@@ -29,4 +29,3 @@ export function tonsToKg(tons: number): number {
 export function formatTons(tons: number): string {
   return tons.toFixed(3);
 }
-

@@ -157,6 +157,15 @@ export const indexPrices = pgTable("index_prices", {
   meta: text("meta"),
   messageId: text("message_id"),
   isDemo: text("is_demo", { enum: ["true", "false"] }).default("false"),
+  // IGC-specific fields
+  country: text("country"),
+  label: text("label"),
+  asOfDate: timestamp("as_of_date"),
+  dailyChangePct: decimal("daily_change_pct", { precision: 10, scale: 4 }),
+  annualChangePct: decimal("annual_change_pct", { precision: 10, scale: 4 }),
+  low52w: decimal("low_52w", { precision: 18, scale: 8 }),
+  high52w: decimal("high_52w", { precision: 18, scale: 8 }),
+  rawRow: text("raw_row"), // JSONB in DB, stored as text/JSON string in Drizzle
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -12,7 +12,12 @@ export interface MarketIndexDto {
   change7d: number;
   change30d: number;
   asOf: string;
-  source: "spike_telegram" | "mock" | "manual";
+  source: "spike_telegram" | "mock" | "manual" | "IGC";
+  // Optional IGC-specific fields
+  dailyChange?: number; // alias for change24h (for backward compatibility)
+  annualChange?: number;
+  low52w?: number;
+  high52w?: number;
 }
 
 export interface MarketDashboardResponse {

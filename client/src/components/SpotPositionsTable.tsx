@@ -175,7 +175,7 @@ export function SpotPositionsTable({
                   ? "text-red-600 dark:text-red-400"
                   : "text-muted-foreground";
 
-                // Convert from kg to tonnes for display
+                // Spot positions are stored in kg on the backend; convert to tonnes for display
                 const quantityKg = parseFloat(position.quantityKg);
                 const quantityTonnes = kgToTons(quantityKg);
                 const entryPricePerTon = parseFloat(position.avgEntryPrice) * 1000;
@@ -284,8 +284,8 @@ export function SpotPositionsTable({
           onClose={handleSellModalClose}
           commoditySlug={selectedPosition.commoditySlug}
           commodityName={selectedPosition.commodityName}
-          currentPrice={parseFloat(selectedPosition.currentPricePerKg) * 1000} // Convert kg to ton (price per ton)
-          initialQuantity={Math.abs(parseFloat(selectedPosition.quantityKg))} // Pass absolute value in kg, modal will convert to tonnes for display
+          currentPrice={parseFloat(selectedPosition.currentPricePerKg) * 1000} // Spot price is per kg; convert to $/ton for UI
+          initialQuantity={Math.abs(parseFloat(selectedPosition.quantityKg))} // Pass kg; modal converts to tonnes for display
           onOpenLogin={onOpenLogin}
           onOpenWalletModal={onOpenWalletModal}
         />

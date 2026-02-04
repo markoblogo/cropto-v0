@@ -131,7 +131,7 @@ export function SpotBuyModal({
     }
     // Guard wraps the actual trading action
     guardTradingAction(() => {
-      // Convert tonnes to kg for API
+      // Spot API expects kg; convert tonnes to kg
       const qtyKg = tonsToKg(qtyTonnes);
       buyMutation.mutate({ quantityKg: qtyKg });
     });
