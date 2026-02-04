@@ -17,6 +17,9 @@ i18n
       es: { common: es },
       pt: { common: pt }
     },
+    supportedLngs: ['en', 'uk', 'es', 'pt'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     fallbackLng: 'en',
     ns: ['common'],
     defaultNS: 'common',
