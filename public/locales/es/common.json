@@ -1345,7 +1345,7 @@
     },
     "q5": {
       "question": "¿Qué son los margin calls?",
-      "answer": "Los margin calls ocurren cuando el valor del colateral de una позиция de opciones cae por debajo del umbral requerido. El sistema monitorea automáticamente las posiciones y emite margin calls cuando es necesario. Los usuarios pueden recargar el colateral para cumplir el requisito o la posición может ser liquidada/forzada."
+      "answer": "Los margin calls ocurren cuando el valor del colateral de una posición de opciones cae por debajo del umbral requerido. El sistema supervisa automáticamente las posiciones y emite margin calls cuando es necesario. Los usuarios pueden recargar su colateral para cumplir el requisito de margen o la posición puede liquidarse de forma forzosa."
     },
     "q6": {
       "question": "¿Cuáles son los distintos roles de usuario?",
