@@ -685,45 +685,192 @@
       "cancelled": "CANCELLED",
       "defaulted": "DEFAULTED",
       "marginCall": "MARGIN CALL"
+    },
+    "optionAnalytics": {
+      "axis": {
+        "openInterest": "Interesse em aberto (t)",
+        "volume": "Volume (t)"
+      },
+      "empty": {
+        "cta": "Tente outro vencimento ou commodity.",
+        "openInterest": "Não há dados de interesse em aberto para os filtros selecionados.",
+        "volume": "Não há dados de volume para os filtros selecionados."
+      },
+      "filters": {
+        "commodity": "Commodity: {{commodity}}",
+        "expiry": "Vencimento: {{date}}"
+      },
+      "legend": {
+        "calls": "Calls",
+        "puts": "Puts"
+      },
+      "title": {
+        "analytics": "Análises",
+        "openInterest": "Interesse em aberto",
+        "volume": "Volume"
+      },
+      "tooltip": {
+        "calls": "Calls:",
+        "puts": "Puts:",
+        "strike": "Strike: ${{strike}}",
+        "tons": "{{value}} t"
+      }
+    },
+    "optionChainTable": {
+      "action": {
+        "view": "Ver"
+      },
+      "empty": "Nenhuma opção encontrada",
+      "headers": {
+        "action": "Ação",
+        "commodity": "Commodity",
+        "expiry": "Vencimento",
+        "premium": "Prêmio",
+        "qty": "Qtd. (t)",
+        "side": "Lado",
+        "status": "Status",
+        "strike": "Strike ($/t)",
+        "type": "Tipo"
+      },
+      "loading": "Carregando opções…",
+      "side": {
+        "long": "LONG",
+        "short": "SHORT"
+      },
+      "time": {
+        "days": "{{days}}d",
+        "months": "{{months}}m",
+        "oneDay": "1d",
+        "weeks": "{{weeks}}w"
+      },
+      "values": {
+        "dash": "—",
+        "premiumPerTon": "{{premium}} CROPT/t",
+        "premiumTotal": "Total: {{total}} CROPT",
+        "unknown": "Desconhecido"
+      }
     }
   },
   "dialog": {
     "match": {
-      "title": "Match Option",
-      "subtitle": "Enter the counterparty ID to complete this trade",
-      "counterpartyLabel": "Counterparty ID",
-      "counterpartyPlaceholder": "Enter user ID"
+      "title": "Casar opção",
+      "subtitle": "Digite o ID da contraparte para concluir esta negociação",
+      "counterpartyLabel": "ID da contraparte",
+      "counterpartyPlaceholder": "Digite o ID do usuário",
+      "button": "Confirmar match",
+      "buttonProcessing": "Casando…",
+      "info": "{{side}}. Se o preço de mercado no vencimento for pior que o strike para o seu lado, você pagará a diferença; se for melhor, você a receberá.",
+      "labels": {
+        "basis": "Base",
+        "expiry": "Vencimento",
+        "index": "Índice",
+        "lifecycle": "Ciclo de vida",
+        "premiumPayout": "Prêmio / Pagamento esperado",
+        "quantity": "Quantidade",
+        "settlementDate": "Data de liquidação",
+        "settlementType": "Tipo de liquidação",
+        "strikePrice": "Preço de strike",
+        "type": "Tipo",
+        "underlying": "Subjacente",
+        "window": "Janela",
+        "windowDates": "Datas da janela"
+      },
+      "timeline": {
+        "created": "Criado",
+        "createdDesc": "A opção foi criada.",
+        "liquidated": "Liquidado",
+        "liquidatedDesc": "Auto-liquidado / em default.",
+        "marginCall": "Margin call",
+        "marginCallActive": "Margin call ativo.",
+        "marginCallDeadline": "Margin call ativo. Prazo: {{deadline}}",
+        "matched": "Casado",
+        "matchedDesc": "Contraparte casada; status FILLED.",
+        "settled": "Liquidado",
+        "settledDesc": "Exercida e liquidada."
+      },
+      "tradeConfirm": "Confirmar negociação",
+      "tradeConfirming": "Confirmando…",
+      "tradeSubtitle": "Você está prestes a assumir o outro lado desta opção. Revise os detalhes antes de confirmar.",
+      "tradeTitle": "Negociar opção",
+      "trigger": "Casar",
+      "validation": {
+        "counterpartyRequired": "O ID da contraparte é obrigatório"
+      },
+      "values": {
+        "basis": "CPT Odesa",
+        "callDesc": "Opção call (direito de comprar)",
+        "dash": "—",
+        "indexFallback": "Spike Spot Grain Index",
+        "notSpecified": "Não especificado",
+        "premiumValue": "${{premium}} CROPT",
+        "putDesc": "Opção put (direito de vender)",
+        "quantityT": "{{qty}} t",
+        "settlementType": "Liquidação em dinheiro por índice (Spike Spot)",
+        "strikePerTon": "${{price}} por tonelada",
+        "unknown": "Desconhecido",
+        "userCounterparty": "Você assumirá o papel de contraparte",
+        "userIssuer": "Você é o emissor"
+      }
     },
     "exercise": {
-      "title": "Exercise Option",
-      "subtitle": "Enter the current spot price to exercise this option. Strike: ${{strike}}",
-      "spotPriceLabel": "Current Spot Price",
-      "spotPricePlaceholder": "Enter current price",
-      "spotPriceDesc": "The current market price of the asset"
+      "title": "Exercer opção",
+      "subtitle": "Digite o preço spot atual para exercer esta opção. Strike: ${{strike}}",
+      "spotPriceLabel": "Preço spot atual",
+      "spotPricePlaceholder": "0.00",
+      "spotPriceDesc": "O preço de mercado atual do ativo",
+      "button": "Exercer opção",
+      "buttonProcessing": "Processando…",
+      "callDesc": "Você comprará o ativo subjacente ao preço de strike e abrirá/atualizará uma posição spot longa.",
+      "putDesc": "Você venderá o ativo subjacente ao preço de strike e abrirá/atualizará uma posição spot curta.",
+      "titleWithType": "Exercer opção {{type}}",
+      "trigger": "Exercer",
+      "validation": {
+        "spotPricePositive": "O preço spot deve ser positivo"
+      }
     },
     "simulate": {
-      "title": "Simulate Margin Check",
-      "subtitle": "Run a margin check calculation for this option using a custom index price",
-      "indexPriceLabel": "Index Price",
-      "indexPricePlaceholder": "Enter index price",
-      "indexPriceDesc": "The current commodity index price for P&L calculation"
+      "title": "Simular verificação de margem",
+      "subtitle": "Execute o cálculo de verificação de margem para esta opção usando um preço de índice personalizado",
+      "indexPriceLabel": "Preço do índice",
+      "indexPricePlaceholder": "Digite o preço do índice",
+      "indexPriceDesc": "O preço do índice atual da commodity para cálculo de P&L",
+      "button": "Executar verificação de margem",
+      "buttonProcessing": "Simulando…",
+      "trigger": "Simular",
+      "validation": {
+        "min": "O preço do índice deve ser maior que 0",
+        "positive": "O preço do índice deve ser positivo"
+      }
     },
     "forceSettle": {
-      "title": "Force Settle Option",
-      "subtitle": "This will force-settle the option \"{{title}}\" and update its status to EXERCISED or DEFAULTED. This action cannot be undone.",
-      "reasonLabel": "Reason for Force Settlement",
-      "reasonPlaceholder": "Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)",
-      "button": "Force Settle"
+      "title": "Liquidar opção à força",
+      "subtitle": "Isso liquidará à força a opção “{{title}}” e atualizará seu status para EXERCISED ou DEFAULTED. Esta ação não pode ser desfeita.",
+      "reasonLabel": "Motivo da liquidação forçada",
+      "reasonPlaceholder": "Informe o motivo detalhado para liquidar esta opção à força (por exemplo, prazo do margin call expirou, colateral insuficiente etc.).",
+      "button": "Liquidar à força",
+      "buttonProcessing": "Processando…",
+      "validation": {
+        "reasonMax": "O motivo deve ter menos de 500 caracteres",
+        "reasonMin": "O motivo deve ter pelo menos 10 caracteres"
+      }
     },
     "topup": {
-      "title": "Top Up Collateral",
-      "subtitle": "Add additional collateral to resolve the margin call for option \"{{title}}\"",
-      "amountLabel": "Top-up Amount",
-      "amountPlaceholder": "Enter amount to add",
-      "currencyLabel": "Currency",
-      "currencyPlaceholder": "Select currency",
+      "title": "Recarregar colateral",
+      "subtitle": "Adicione colateral extra para resolver o margin call da opção “{{title}}”",
+      "amountLabel": "Valor de recarga",
+      "amountPlaceholder": "Digite o valor a adicionar",
+      "currencyLabel": "Moeda",
+      "currencyPlaceholder": "Selecione a moeda",
       "usd": "USD",
-      "button": "Top Up"
+      "button": "Recarregar",
+      "buttonProcessing": "Processando…",
+      "fiat": "FIAT",
+      "trigger": "Recarregar",
+      "validation": {
+        "currencyRequired": "Selecione uma moeda",
+        "min": "O valor deve ser maior que 0",
+        "positive": "O valor deve ser positivo"
+      }
     },
     "withdraw": {
       "title": "Withdraw CROPT",
@@ -735,17 +882,26 @@
       "button": "Withdraw"
     },
     "mintNft": {
-      "title": "Mint Option NFT",
-      "subtitle": "Mint this option as an ERC-721 NFT on Polygon Amoy testnet",
-      "recipientLabel": "Recipient Address",
-      "recipientPlaceholder": "0x...",
-      "recipientDesc": "The Ethereum address that will receive the NFT",
-      "success": "NFT Minted Successfully!",
-      "tokenId": "Token ID:",
-      "viewExplorer": "View on Explorer",
+      "title": "Mintar NFT da opção",
+      "subtitle": "Minte esta opção como um NFT ERC-721 na testnet Polygon Amoy",
+      "recipientLabel": "Endereço do destinatário",
+      "recipientPlaceholder": "0x…",
+      "recipientDesc": "O endereço Ethereum que receberá o NFT",
+      "success": "NFT mintado com sucesso!",
+      "tokenId": "ID do token:",
+      "viewExplorer": "Ver no explorador",
       "nftLabel": "NFT #{{id}}",
-      "button": "Mint NFT",
-      "buttonPending": "Minting..."
+      "button": "Mintar NFT",
+      "buttonPending": "Mintando…",
+      "errorTitle": "Falha ao mintar",
+      "errors": {
+        "failed": "Não foi possível mintar o NFT"
+      },
+      "validation": {
+        "addressInvalid": "Endereço Ethereum inválido",
+        "addressLength": "O endereço deve ter 42 caracteres"
+      },
+      "view": "Ver"
     },
     "walletAuth": {
       "title": "Connect Wallet",
@@ -785,9 +941,27 @@
       "button": "Continue"
     },
     "priceHistory": {
-      "title": "Price History",
-      "subtitle": "View historical index price data for {{commodity}}",
-      "close": "Close"
+      "title": "Histórico de preços",
+      "subtitle": "Ver dados históricos do preço do índice para {{commodity}}",
+      "close": "Fechar",
+      "empty": "Sem dados para exibir",
+      "labels": {
+        "lastYear": "Ano passado",
+        "lastYearComparison": "Ano passado (comparação)",
+        "thisYear": "Este ano"
+      },
+      "period": {
+        "30d": "30 dias",
+        "365d": "1 ano",
+        "90d": "90 dias",
+        "all": "Todo o período"
+      },
+      "summary": {
+        "max": "Máximo",
+        "min": "Mínimo",
+        "points": "Pontos de dados"
+      },
+      "titleWithCommodity": "Histórico de preços — {{commodity}}"
     }
   },
   "faq": {

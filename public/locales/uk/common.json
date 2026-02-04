@@ -694,45 +694,192 @@
       "cancelled": "СКАСОВАНИЙ",
       "defaulted": "ДЕФОЛТ",
       "marginCall": "МАРЖИН-КОЛ"
+    },
+    "optionAnalytics": {
+      "axis": {
+        "openInterest": "Відкритий інтерес (т)",
+        "volume": "Обсяг (т)"
+      },
+      "empty": {
+        "cta": "Спробуйте іншу дату експірації або товар.",
+        "openInterest": "Немає даних про відкритий інтерес для вибраних фільтрів.",
+        "volume": "Немає даних про обсяг для вибраних фільтрів."
+      },
+      "filters": {
+        "commodity": "Товар: {{commodity}}",
+        "expiry": "Експірація: {{date}}"
+      },
+      "legend": {
+        "calls": "Calls",
+        "puts": "Puts"
+      },
+      "title": {
+        "analytics": "Аналітика",
+        "openInterest": "Відкритий інтерес",
+        "volume": "Обсяг"
+      },
+      "tooltip": {
+        "calls": "Calls:",
+        "puts": "Puts:",
+        "strike": "Страйк: ${{strike}}",
+        "tons": "{{value}} т"
+      }
+    },
+    "optionChainTable": {
+      "action": {
+        "view": "Переглянути"
+      },
+      "empty": "Опціони не знайдено",
+      "headers": {
+        "action": "Дія",
+        "commodity": "Товар",
+        "expiry": "Експірація",
+        "premium": "Премія",
+        "qty": "К-сть (т)",
+        "side": "Сторона",
+        "status": "Статус",
+        "strike": "Страйк ($/т)",
+        "type": "Тип"
+      },
+      "loading": "Завантаження опціонів…",
+      "side": {
+        "long": "LONG",
+        "short": "SHORT"
+      },
+      "time": {
+        "days": "{{days}}д",
+        "months": "{{months}}м",
+        "oneDay": "1д",
+        "weeks": "{{weeks}}т"
+      },
+      "values": {
+        "dash": "—",
+        "premiumPerTon": "{{premium}} CROPT/т",
+        "premiumTotal": "Разом: {{total}} CROPT",
+        "unknown": "Невідомо"
+      }
     }
   },
   "dialog": {
     "match": {
-      "title": "Зʼєднати опціон",
-      "subtitle": "Введіть ID контрагента щоб завершити цю угоду",
+      "title": "Зіставити опціон",
+      "subtitle": "Введіть ID контрагента, щоб завершити цю угоду",
       "counterpartyLabel": "ID контрагента",
-      "counterpartyPlaceholder": "Введіть ID користувача"
+      "counterpartyPlaceholder": "Введіть ID користувача",
+      "button": "Підтвердити матч",
+      "buttonProcessing": "Матчинг…",
+      "info": "{{side}}. Якщо ринкова ціна на момент експірації гірша за страйк для вашої сторони, ви сплатите різницю; якщо краща — отримаєте її.",
+      "labels": {
+        "basis": "Базис",
+        "expiry": "Експірація",
+        "index": "Індекс",
+        "lifecycle": "Життєвий цикл",
+        "premiumPayout": "Премія / Очікувана виплата",
+        "quantity": "Кількість",
+        "settlementDate": "Дата розрахунку",
+        "settlementType": "Тип розрахунку",
+        "strikePrice": "Ціна страйку",
+        "type": "Тип",
+        "underlying": "Базовий актив",
+        "window": "Вікно",
+        "windowDates": "Дати вікна"
+      },
+      "timeline": {
+        "created": "Створено",
+        "createdDesc": "Опціон було створено.",
+        "liquidated": "Ліквідовано",
+        "liquidatedDesc": "Автоматично ліквідовано / дефолт.",
+        "marginCall": "Маржин-кол",
+        "marginCallActive": "Маржин-кол активний.",
+        "marginCallDeadline": "Маржин-кол активний. Дедлайн: {{deadline}}",
+        "matched": "Зіставлено",
+        "matchedDesc": "Контрагента зіставлено; статус FILLED.",
+        "settled": "Розраховано",
+        "settledDesc": "Виконано та розраховано."
+      },
+      "tradeConfirm": "Підтвердити угоду",
+      "tradeConfirming": "Підтвердження…",
+      "tradeSubtitle": "Ви збираєтеся зайняти іншу сторону цього опціону. Перевірте деталі перед підтвердженням.",
+      "tradeTitle": "Торгувати опціоном",
+      "trigger": "Зіставити",
+      "validation": {
+        "counterpartyRequired": "ID контрагента обов’язковий"
+      },
+      "values": {
+        "basis": "CPT Odesa",
+        "callDesc": "Call-опціон (право купити)",
+        "dash": "—",
+        "indexFallback": "Spike Spot Grain Index",
+        "notSpecified": "Не вказано",
+        "premiumValue": "${{premium}} CROPT",
+        "putDesc": "Put-опціон (право продати)",
+        "quantityT": "{{qty}} т",
+        "settlementType": "Грошовий розрахунок за індексом (Spike Spot)",
+        "strikePerTon": "${{price}} за тонну",
+        "unknown": "Невідомо",
+        "userCounterparty": "Ви будете контрагентом",
+        "userIssuer": "Ви — емітент"
+      }
     },
     "exercise": {
       "title": "Виконати опціон",
-      "subtitle": "Введіть поточну спот-ціну для виконання цього опціону. Страйк: ${{strike}}",
-      "spotPriceLabel": "Поточна спот-ціна",
-      "spotPricePlaceholder": "Введіть поточну ціну",
-      "spotPriceDesc": "Поточна ринкова ціна активу"
+      "subtitle": "Введіть поточну спотову ціну, щоб виконати цей опціон. Страйк: ${{strike}}",
+      "spotPriceLabel": "Поточна спотова ціна",
+      "spotPricePlaceholder": "0.00",
+      "spotPriceDesc": "Поточна ринкова ціна активу",
+      "button": "Виконати опціон",
+      "buttonProcessing": "Обробка…",
+      "callDesc": "Ви купите базовий актив за ціною страйку та відкриєте/оновите довгу спотову позицію.",
+      "putDesc": "Ви продасте базовий актив за ціною страйку та відкриєте/оновите коротку спотову позицію.",
+      "titleWithType": "Виконати опціон {{type}}",
+      "trigger": "Виконати",
+      "validation": {
+        "spotPricePositive": "Спотова ціна має бути додатною"
+      }
     },
     "simulate": {
-      "title": "Симулювати перевірку маржі",
-      "subtitle": "Виконати розрахунок перевірки маржі для цього опціону з використанням користувацької індексної ціни",
+      "title": "Симуляція перевірки маржі",
+      "subtitle": "Запустіть розрахунок перевірки маржі для цього опціону з власною індексною ціною",
       "indexPriceLabel": "Індексна ціна",
       "indexPricePlaceholder": "Введіть індексну ціну",
-      "indexPriceDesc": "Поточна індексна ціна товару для розрахунку P&L"
+      "indexPriceDesc": "Поточна індексна ціна товару для розрахунку P&L",
+      "button": "Запустити перевірку маржі",
+      "buttonProcessing": "Симуляція…",
+      "trigger": "Симулювати",
+      "validation": {
+        "min": "Індексна ціна має бути більшою за 0",
+        "positive": "Індексна ціна має бути додатною"
+      }
     },
     "forceSettle": {
-      "title": "Примусове погашення опціону",
-      "subtitle": "Це примусово погасить опціон \"{{title}}\" та оновить його статус до ВИКОНАНИЙ або ДЕФОЛТ. Цю дію не можна скасувати.",
-      "reasonLabel": "Причина примусового погашення",
-      "reasonPlaceholder": "Введіть детальну причину примусового погашення цього опціону (напр., термін маржин-колу закінчився, недостатнє забезпечення тощо)",
-      "button": "Примусове погашення"
+      "title": "Примусово розрахувати опціон",
+      "subtitle": "Це примусово розрахує опціон “{{title}}” і змінить його статус на EXERCISED або DEFAULTED. Цю дію неможливо скасувати.",
+      "reasonLabel": "Причина примусового розрахунку",
+      "reasonPlaceholder": "Вкажіть детальну причину примусового розрахунку цього опціону (наприклад, сплив дедлайн маржин-колу, недостатня застава тощо).",
+      "button": "Примусово розрахувати",
+      "buttonProcessing": "Обробка…",
+      "validation": {
+        "reasonMax": "Причина має бути меншою за 500 символів",
+        "reasonMin": "Причина має містити щонайменше 10 символів"
+      }
     },
     "topup": {
-      "title": "Поповнити забезпечення",
-      "subtitle": "Додайте додаткове забезпечення для вирішення маржин-колу для опціону \"{{title}}\"",
+      "title": "Поповнити заставу",
+      "subtitle": "Додайте додаткову заставу, щоб закрити маржин-кол за опціоном “{{title}}”",
       "amountLabel": "Сума поповнення",
-      "amountPlaceholder": "Введіть суму для додавання",
+      "amountPlaceholder": "Введіть суму для поповнення",
       "currencyLabel": "Валюта",
       "currencyPlaceholder": "Виберіть валюту",
       "usd": "USD",
-      "button": "Поповнити"
+      "button": "Поповнити",
+      "buttonProcessing": "Обробка…",
+      "fiat": "FIAT",
+      "trigger": "Поповнити",
+      "validation": {
+        "currencyRequired": "Будь ласка, виберіть валюту",
+        "min": "Сума має бути більшою за 0",
+        "positive": "Сума має бути додатною"
+      }
     },
     "withdraw": {
       "title": "Вивести CROPT",
@@ -744,17 +891,26 @@
       "button": "Вивести"
     },
     "mintNft": {
-      "title": "Створити NFT опціону",
-      "subtitle": "Створіть цей опціон як ERC-721 NFT на тестовій мережі Polygon Amoy",
+      "title": "Мінтити NFT опціону",
+      "subtitle": "Замінтити цей опціон як ERC-721 NFT у тестнеті Polygon Amoy",
       "recipientLabel": "Адреса отримувача",
-      "recipientPlaceholder": "0x...",
-      "recipientDesc": "Адреса Ethereum, яка отримає NFT",
-      "success": "NFT успішно створено!",
-      "tokenId": "ID токену:",
+      "recipientPlaceholder": "0x…",
+      "recipientDesc": "Ethereum-адреса, яка отримає NFT",
+      "success": "NFT успішно замінчено!",
+      "tokenId": "ID токена:",
       "viewExplorer": "Переглянути в Explorer",
       "nftLabel": "NFT #{{id}}",
-      "button": "Створити NFT",
-      "buttonPending": "Створення..."
+      "button": "Мінтити NFT",
+      "buttonPending": "Мінтинг…",
+      "errorTitle": "Помилка мінтингу",
+      "errors": {
+        "failed": "Не вдалося мінтити NFT"
+      },
+      "validation": {
+        "addressInvalid": "Некоректна Ethereum-адреса",
+        "addressLength": "Адреса має містити 42 символи"
+      },
+      "view": "Переглянути"
     },
     "walletAuth": {
       "title": "Підʼєднати гаманець",
@@ -795,8 +951,26 @@
     },
     "priceHistory": {
       "title": "Історія цін",
-      "subtitle": "Переглянути історичні дані індексних цін для {{commodity}}",
-      "close": "Закрити"
+      "subtitle": "Переглянути історичні дані індексної ціни для {{commodity}}",
+      "close": "Закрити",
+      "empty": "Немає даних для відображення",
+      "labels": {
+        "lastYear": "Минулого року",
+        "lastYearComparison": "Минулого року (порівняння)",
+        "thisYear": "Цього року"
+      },
+      "period": {
+        "30d": "30 днів",
+        "365d": "1 рік",
+        "90d": "90 днів",
+        "all": "За весь час"
+      },
+      "summary": {
+        "max": "Максимум",
+        "min": "Мінімум",
+        "points": "Точки даних"
+      },
+      "titleWithCommodity": "Історія цін — {{commodity}}"
     }
   },
   "faq": {
