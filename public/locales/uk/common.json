@@ -367,8 +367,8 @@
       },
       "indexWidget": {
         "title": "Індексна ціна",
-        "loading": "Завантаження...",
-        "loadError": "Не вдалося завантажити індексні дані",
+        "loading": "Завантаження…",
+        "loadError": "Не вдалося завантажити дані індексу",
         "lastUpdated": "Останнє оновлення:",
         "priceHistory": "Історія цін"
       },
@@ -420,24 +420,24 @@
     },
     "login": {
       "title": "Вхід до Cropto",
-      "subtitle": "Введіть свої облікові дані для доступу до облікового запису",
+      "subtitle": "Введіть свої облікові дані, щоб отримати доступ до облікового запису",
       "emailLabel": "Email",
       "emailPlaceholder": "farmer@example.com",
       "passwordLabel": "Пароль",
       "passwordPlaceholder": "Введіть ваш пароль",
       "loginButton": "Увійти",
-      "loginButtonPending": "Вхід...",
+      "loginButtonPending": "Вхід…",
       "noAccount": "Немає облікового запису?",
-      "registerLink": "Реєстрація",
+      "registerLink": "Зареєструватися",
       "validation": {
-        "emailRequired": "Email обовʼязковий",
+        "emailRequired": "Email обов’язковий",
         "emailInvalid": "Невірний формат email",
-        "passwordRequired": "Пароль обовʼязковий"
+        "passwordRequired": "Пароль обов’язковий"
       }
     },
     "register": {
       "title": "Створити обліковий запис",
-      "subtitle": "Зареєструйтеся щоб почати торгувати опціонами на зерно на Cropto",
+      "subtitle": "Зареєструйтеся, щоб почати торгувати опціонами на зерно на Cropto",
       "emailLabel": "Email",
       "emailPlaceholder": "farmer@example.com",
       "passwordLabel": "Пароль",
@@ -450,13 +450,13 @@
         "broker": "Брокер"
       },
       "registerButton": "Створити обліковий запис",
-      "registerButtonPending": "Створення облікового запису...",
+      "registerButtonPending": "Створення облікового запису…",
       "haveAccount": "Вже маєте обліковий запис?",
       "loginLink": "Увійти",
       "validation": {
-        "emailRequired": "Email обовʼязковий",
+        "emailRequired": "Email обов’язковий",
         "emailInvalid": "Невірний формат email",
-        "passwordMin": "Пароль повинен містити щонайменше 6 символів",
+        "passwordMin": "Пароль має містити щонайменше 6 символів",
         "roleRequired": "Будь ласка, виберіть роль"
       }
     },
@@ -465,24 +465,24 @@
       "subtitle": "Ваші опціонні позиції та результативність",
       "metrics": {
         "totalPnl": "Загальний P&L",
-        "totalPnlDesc": "Реалізований + Нереалізований",
+        "totalPnlDesc": "Реалізований + нереалізований",
         "realizedPnl": "Реалізований P&L",
-        "realizedPnlDesc": "Погашені опціони",
+        "realizedPnlDesc": "Розраховані опціони",
         "unrealizedPnl": "Нереалізований P&L",
         "unrealizedPnlDesc": "Відкриті позиції",
         "openPositions": "Відкриті позиції",
         "openPositionsDesc": "Активні контракти",
-        "lockedCollateral": "Заблоковане забезпечення",
+        "lockedCollateral": "Заблокована застава",
         "lockedCollateralDesc": "Зарезервовані кошти",
         "marginCalls": "Маржин-коли",
         "marginCallsDesc": "{{count}} {{action}}",
-        "actionRequired": "Потрібні дії",
-        "allClear": "Все в порядку"
+        "actionRequired": "Потрібна дія",
+        "allClear": "Все гаразд"
       },
       "positions": {
         "title": "Позиції",
         "empty": "Поки що немає позицій",
-        "emptySubtitle": "Почніть торгувати опціонами щоб побачити ваш портфель тут",
+        "emptySubtitle": "Почніть торгувати опціонами, щоб побачити свій портфель тут",
         "table": {
           "title": "Назва",
           "type": "Тип",
@@ -498,7 +498,7 @@
           "unrealized": "Нереалізований",
           "commodity": "Товар",
           "side": "Сторона",
-          "qty": "Кількість (т)",
+          "qty": "К-сть (т)",
           "entryPremium": "Вхідна премія (CROPT)",
           "currentPrice": "Поточна ціна ($/т)",
           "expiry": "Експірація",
