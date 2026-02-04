@@ -412,7 +412,9 @@
           "expiry": "Експірація",
           "actions": "Дії",
           "long": "LONG",
-          "short": "SHORT"
+          "short": "SHORT",
+          "premiumPerTon": "Премія ($/т)",
+          "impliedPnl": "Очікуваний PnL"
         },
         "emptyForwards": "Почніть торгувати форвардами, щоб побачити свій портфель тут",
         "emptyForwardsTitle": "Поки що немає форвардних позицій"
@@ -444,7 +446,9 @@
       },
       "sections": {
         "optionPositions": "Опціонні позиції",
-        "spotPositions": "Спотові позиції"
+        "spotPositions": "Спотові позиції",
+        "netExposure": "Чиста експозиція",
+        "collateralRiskOptions": "Застава та ризик (опціони)"
       },
       "loadError": "Не вдалося завантажити дані портфелю. Спробуйте ще раз.",
       "tabs": {
@@ -464,7 +468,12 @@
         "expiredAgo_one": "Закінчився {{days}} день тому",
         "expiredAgo_few": "Закінчився {{days}} дні тому",
         "expiredAgo_many": "Закінчився {{days}} днів тому",
-        "expiredAgo_other": "Закінчився {{days}} днів тому"
+        "expiredAgo_other": "Закінчився {{days}} днів тому",
+        "shortDays": "{{days}}д",
+        "shortDaysHours": "{{days}}д {{hours}}г",
+        "shortHours": "{{hours}}г",
+        "shortHoursMinutes": "{{hours}}г {{minutes}}хв",
+        "shortMinutes": "{{minutes}}хв"
       },
       "empty": {
         "loginRequired": "Увійдіть, щоб побачити свій портфель опціонів",
@@ -482,7 +491,61 @@
         "overdue": "Прострочено",
         "hoursLeft": "{{hours}}год залишилося"
       },
-      "overviewSubtitle": "Огляд ваших позицій по опціонах та форвардах"
+      "overviewSubtitle": "Огляд ваших позицій по опціонах та форвардах",
+      "values": {
+        "dash": "—",
+        "notSpecified": "Не вказано"
+      },
+      "toast": {
+        "exerciseSuccessTitle": "Виконання успішне",
+        "exerciseSuccessDesc": "Ваш опціон виконано, а спотову позицію та баланс CROPT оновлено.",
+        "exerciseFailedTitle": "Помилка виконання",
+        "exerciseFailedDesc": "Не вдалося виконати опціон. Перевірте баланс CROPT і спробуйте ще раз.",
+        "withdrawSuccessTitle": "Виведення успішне",
+        "withdrawSuccessDesc": "Кошти виведено на ваш гаманець.",
+        "withdrawFailedTitle": "Помилка виведення",
+        "withdrawFailedDesc": "Не вдалося вивести кошти."
+      },
+      "netExposure": {
+        "empty": "Поки немає експозиції. Торгуйте опціонами або спотом, щоб побачити тут чисті позиції.",
+        "table": {
+          "commodity": "Товар",
+          "spot": "Спот (т)",
+          "options": "Опціони (т)",
+          "net": "Чисто (т)",
+          "currentPrice": "Поточна ціна ($/т)",
+          "netValue": "Чиста вартість ($)"
+        }
+      },
+      "forwards": {
+        "title": "Форвардні позиції",
+        "subtitle": "Ваші активні форвардні контракти",
+        "table": {
+          "commodity": "Товар",
+          "window": "Вікно",
+          "side": "Сторона",
+          "contractPrice": "Ціна контракту ($/т)",
+          "qty": "К-сть (т)",
+          "notional": "Номінал ($)",
+          "initialMargin": "Початкова маржа",
+          "realizedPnl": "Реалізований P&L",
+          "totalPnl": "Загальний P&L",
+          "status": "Статус",
+          "settlementDate": "Дата розрахунку"
+        },
+        "roles": {
+          "long": "LONG",
+          "short": "SHORT"
+        }
+      },
+      "linkedOptions": {
+        "title": "Опціони для {{commodity}}",
+        "empty": "Поки немає опціонів, пов’язаних із цим товаром.",
+        "openMarket": "Відкрити маркетплейс опціонів",
+        "table": {
+          "premium": "Премія (CROPT)"
+        }
+      }
     },
     "education": {
       "title": "Освіта та навчання",

@@ -499,7 +499,9 @@
           "expiry": "Expiry",
           "actions": "Actions",
           "long": "LONG",
-          "short": "SHORT"
+          "short": "SHORT",
+          "premiumPerTon": "Prima ($/t)",
+          "impliedPnl": "PnL implícito"
         },
         "emptyForwards": "Start trading forwards to see your portfolio here",
         "emptyForwardsTitle": "No forward positions yet"
@@ -529,7 +531,9 @@
       },
       "sections": {
         "optionPositions": "Option Positions",
-        "spotPositions": "Spot Positions"
+        "spotPositions": "Spot Positions",
+        "netExposure": "Exposición neta",
+        "collateralRiskOptions": "Colateral y riesgo (opciones)"
       },
       "loadError": "Failed to load portfolio data. Please try again.",
       "tabs": {
@@ -547,7 +551,12 @@
         "inDays": "in {{days}} days",
         "expired": "Expired",
         "expiredAgo_one": "Expired {{days}} day ago",
-        "expiredAgo_other": "Expired {{days}} days ago"
+        "expiredAgo_other": "Expired {{days}} days ago",
+        "shortDays": "{{days}}d",
+        "shortDaysHours": "{{days}}d {{hours}}h",
+        "shortHours": "{{hours}}h",
+        "shortHoursMinutes": "{{hours}}h {{minutes}}m",
+        "shortMinutes": "{{minutes}}m"
       },
       "empty": {
         "loginRequired": "Log in to see your options portfolio",
@@ -565,7 +574,61 @@
         "overdue": "Overdue",
         "hoursLeft": "{{hours}}h left"
       },
-      "overviewSubtitle": "Your options and forward positions overview"
+      "overviewSubtitle": "Your options and forward positions overview",
+      "values": {
+        "dash": "—",
+        "notSpecified": "No especificado"
+      },
+      "toast": {
+        "exerciseSuccessTitle": "Ejecución exitosa",
+        "exerciseSuccessDesc": "Tu opción se ha ejecutado y tu posición spot y saldo de CROPT se han actualizado.",
+        "exerciseFailedTitle": "Error de ejecución",
+        "exerciseFailedDesc": "No se pudo ejecutar la opción. Revisa tu saldo de CROPT e inténtalo de nuevo.",
+        "withdrawSuccessTitle": "Retiro exitoso",
+        "withdrawSuccessDesc": "Los fondos se han retirado a tu billetera.",
+        "withdrawFailedTitle": "Error de retiro",
+        "withdrawFailedDesc": "No se pudo retirar los fondos."
+      },
+      "netExposure": {
+        "empty": "Aún no hay exposición. Opera opciones o spot para ver aquí tus posiciones netas.",
+        "table": {
+          "commodity": "Commodity",
+          "spot": "Spot (t)",
+          "options": "Opciones (t)",
+          "net": "Neto (t)",
+          "currentPrice": "Precio actual ($/t)",
+          "netValue": "Valor neto ($)"
+        }
+      },
+      "forwards": {
+        "title": "Posiciones forward",
+        "subtitle": "Tus contratos forward activos",
+        "table": {
+          "commodity": "Commodity",
+          "window": "Ventana",
+          "side": "Lado",
+          "contractPrice": "Precio del contrato ($/t)",
+          "qty": "Cant. (t)",
+          "notional": "Nocional ($)",
+          "initialMargin": "Margen inicial",
+          "realizedPnl": "P&L realizado",
+          "totalPnl": "P&L total",
+          "status": "Estado",
+          "settlementDate": "Fecha de liquidación"
+        },
+        "roles": {
+          "long": "LONG",
+          "short": "SHORT"
+        }
+      },
+      "linkedOptions": {
+        "title": "Opciones para {{commodity}}",
+        "empty": "Aún no hay opciones vinculadas a este commodity.",
+        "openMarket": "Abrir el mercado de opciones",
+        "table": {
+          "premium": "Prima (CROPT)"
+        }
+      }
     },
     "admin": {
       "title": "Admin Panel",
