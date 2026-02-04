@@ -20,20 +20,24 @@ export function getSupabaseClient() {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  
-  // SECURITY: Prefer service_role key for backend operations
-  // This key has full access and bypasses RLS policies
-  // NEVER expose this key to the client!
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+  // SECURITY: backend must use service_role by default.
+  // ANON fallback is allowed only with explicit opt-in for local/dev recovery.
+  const allowAnonFallback = process.env.ALLOW_SUPABASE_ANON_BACKEND === 'true';
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseKey = serviceRoleKey || (allowAnonFallback ? anonKey : undefined);
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('SUPABASE_URL and either SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY must be configured');
+    throw new Error(
+      'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured. ' +
+      'Set ALLOW_SUPABASE_ANON_BACKEND=true only for temporary local/dev fallback.'
+    );
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('⚠️  WARNING: Using SUPABASE_ANON_KEY for backend operations.');
-    console.warn('   This is INSECURE in production as it exposes user data including password hashes.');
-    console.warn('   Add SUPABASE_SERVICE_ROLE_KEY to Replit Secrets for secure production deployment.');
+  if (!serviceRoleKey && allowAnonFallback) {
+    console.warn('⚠️  WARNING: Using SUPABASE_ANON_KEY for backend operations (fallback mode).');
+    console.warn('   This mode is unsafe for production and should be temporary.');
   }
 
   supabase = createClient(supabaseUrl, supabaseKey);
@@ -41,7 +45,10 @@ export function getSupabaseClient() {
 }
 
 export function isSupabaseConfigured(): boolean {
-  return !!(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY));
+  const allowAnonFallback = process.env.ALLOW_SUPABASE_ANON_BACKEND === 'true';
+  const hasSecureConfig = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const hasFallbackConfig = !!(process.env.SUPABASE_URL && allowAnonFallback && process.env.SUPABASE_ANON_KEY);
+  return hasSecureConfig || hasFallbackConfig;
 }
 
 export async function findUserByEmailSupabase(email: string): Promise<SupabaseUser | null> {

@@ -85,6 +85,9 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users FORCE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE public.users FROM anon, authenticated;
 
 DROP POLICY IF EXISTS "Service role has full access" ON public.users;
 CREATE POLICY "Service role has full access" ON public.users

@@ -88,7 +88,13 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
 -- Enable Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- RLS Policy: Service role has full access (backend only)
+-- Enforce RLS
+ALTER TABLE public.users FORCE ROW LEVEL SECURITY;
+
+-- Never expose this table directly via PostgREST
+REVOKE ALL ON TABLE public.users FROM anon, authenticated;
+
+-- RLS Policy: Backend service role only
 DROP POLICY IF EXISTS "Service role has full access" ON public.users;
 CREATE POLICY "Service role has full access" ON public.users
   FOR ALL
@@ -96,34 +102,9 @@ CREATE POLICY "Service role has full access" ON public.users
   USING (true)
   WITH CHECK (true);
 
--- RLS Policy: Users can only view their own data
-DROP POLICY IF EXISTS "Users can only view own data" ON public.users;
-CREATE POLICY "Users can only view own data" ON public.users
-  FOR SELECT
-  TO authenticated
-  USING (id = auth.uid()::text);
-
--- RLS Policy: Users can only update themselves
-DROP POLICY IF EXISTS "Users can only update themselves" ON public.users;
-CREATE POLICY "Users can only update themselves" ON public.users
-  FOR UPDATE
-  TO authenticated
-  USING (id = auth.uid()::text)
-  WITH CHECK (id = auth.uid()::text);
-
--- RLS Policy: Prevent users from deleting themselves
-DROP POLICY IF EXISTS "Prevent user deletion" ON public.users;
-CREATE POLICY "Prevent user deletion" ON public.users
-  FOR DELETE
-  TO authenticated
-  USING (false);
-
 -- Comments
 COMMENT ON TABLE public.users IS 'User authentication and profile data with RLS';
 COMMENT ON POLICY "Service role has full access" ON public.users IS 'Backend service using service_role key has full access';
-COMMENT ON POLICY "Users can only view own data" ON public.users IS 'Users can only SELECT their own row';
-COMMENT ON POLICY "Users can only update themselves" ON public.users IS 'Users can only UPDATE their own data';
-COMMENT ON POLICY "Prevent user deletion" ON public.users IS 'Prevent users from deleting any accounts';
 `.trim();
 }
 
