@@ -66,14 +66,14 @@ export function SpotBuyModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spot/balance"] });
       toast({
-        title: "Deposit successful",
-        description: "CROPT deposited to internal balance",
+        title: t("spot.buyModal.depositSuccessTitle"),
+        description: t("spot.buyModal.depositSuccessDesc"),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Deposit failed",
-        description: error.message || "Failed to deposit CROPT",
+        title: t("spot.buyModal.depositFailedTitle"),
+        description: error.message || t("spot.buyModal.depositFailedDesc"),
         variant: "destructive",
       });
     },
@@ -95,16 +95,19 @@ export function SpotBuyModal({
       queryClient.invalidateQueries({ queryKey: ["/api/spot", commoditySlug] });
       const qtyTonnes = parseFloat(quantityTonnes);
       toast({
-        title: "Success",
-        description: `Successfully bought ${formatTons(qtyTonnes)}t of ${commodityName}`,
+        title: t("toast.success"),
+        description: t("spot.buyModal.successDesc", {
+          qty: formatTons(qtyTonnes),
+          commodity: commodityName,
+        }),
       });
       setQuantityTonnes("");
       onClose();
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to buy commodity",
+        title: t("toast.error"),
+        description: error.message || t("spot.buyModal.errorDesc"),
         variant: "destructive",
       });
     },
@@ -115,16 +118,21 @@ export function SpotBuyModal({
     const qtyTonnes = parseFloat(quantityTonnes);
     if (!qtyTonnes || qtyTonnes < MIN_TRADE_TONS) {
       toast({
-        title: "Invalid quantity",
-        description: `Minimum quantity is ${MIN_TRADE_TONS.toFixed(3)} t`,
+        title: t("spot.buyModal.invalidQuantityTitle"),
+        description: t("spot.buyModal.invalidQuantityDesc", {
+          min: MIN_TRADE_TONS.toFixed(3),
+        }),
         variant: "destructive",
       });
       return;
     }
     if (!canAfford) {
       toast({
-        title: "Insufficient balance",
-        description: `You need ${totalCost.toFixed(2)} CROPT but only have ${availableBalance.toFixed(2)} CROPT`,
+        title: t("spot.buyModal.insufficientBalanceTitle"),
+        description: t("spot.buyModal.insufficientBalanceDesc", {
+          needed: totalCost.toFixed(2),
+          available: availableBalance.toFixed(2),
+        }),
         variant: "destructive",
       });
       return;
@@ -149,9 +157,9 @@ export function SpotBuyModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent data-testid="dialog-spot-buy">
         <DialogHeader>
-          <DialogTitle>Buy {commodityName}</DialogTitle>
+          <DialogTitle>{t("spot.buyModal.title", { commodity: commodityName })}</DialogTitle>
           <DialogDescription>
-            Purchase commodity using your internal CROPT balance
+            {t("spot.buyModal.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -160,7 +168,7 @@ export function SpotBuyModal({
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="flex flex-col gap-2">
-                <span>You need to deposit CROPT from your on-chain balance to your internal trading balance first.</span>
+                <span>{t("spot.buyModal.depositNotice")}</span>
                 <Button
                   type="button"
                   size="sm"
@@ -172,12 +180,12 @@ export function SpotBuyModal({
                   {depositMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Depositing...
+                      {t("spot.buyModal.depositing")}
                     </>
                   ) : (
                     <>
                       <ArrowDownToLine className="mr-2 h-4 w-4" />
-                      Deposit 3 CROPT
+                      {t("spot.buyModal.depositButton", { amount: 3 })}
                     </>
                   )}
                 </Button>
@@ -187,34 +195,34 @@ export function SpotBuyModal({
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Current Price:</span>
+              <span className="text-muted-foreground">{t("spot.buyModal.currentPriceLabel")}</span>
               <span className="font-mono font-medium" data-testid="text-current-price">
-                ${pricePerTon.toFixed(2)} / ton
+                {t("spot.buyModal.pricePerTon", { price: pricePerTon.toFixed(2) })}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Internal Balance:</span>
+              <span className="text-muted-foreground">{t("spot.buyModal.internalBalanceLabel")}</span>
               <span className="font-mono font-medium" data-testid="text-available-balance">
-                {availableBalance.toFixed(2)} CROPT
+                {t("spot.buyModal.internalBalanceValue", { balance: availableBalance.toFixed(2) })}
               </span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity (t)</Label>
+            <Label htmlFor="quantity">{t("spot.buyModal.quantityLabel")}</Label>
             <Input
               id="quantity"
               type="number"
               step="0.001"
               min={MIN_TRADE_TONS}
-              placeholder="Enter quantity in tonnes"
+              placeholder={t("spot.buyModal.quantityPlaceholder")}
               value={quantityTonnes}
               onChange={(e) => setQuantityTonnes(e.target.value)}
               data-testid="input-quantity"
             />
             {!isQuantityValid && quantityTonnes && (
               <p className="text-xs text-destructive">
-                Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+                {t("spot.buyModal.minimumQuantity", { min: MIN_TRADE_TONS.toFixed(3) })}
               </p>
             )}
           </div>
@@ -222,14 +230,14 @@ export function SpotBuyModal({
           {quantityTonnes && parseFloat(quantityTonnes) > 0 && (
             <div className="space-y-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Cost:</span>
+                <span className="text-muted-foreground">{t("spot.buyModal.totalCostLabel")}</span>
                 <span className="font-mono font-medium" data-testid="text-total-cost">
-                  {totalCost.toFixed(2)} CROPT
+                  {t("spot.buyModal.totalCostValue", { total: totalCost.toFixed(2) })}
                 </span>
               </div>
               {!canAfford && (
                 <p className="text-sm text-destructive" data-testid="text-insufficient-balance">
-                  Insufficient balance
+                  {t("spot.buyModal.insufficientBalanceInline")}
                 </p>
               )}
             </div>
@@ -243,7 +251,7 @@ export function SpotBuyModal({
               disabled={buyMutation.isPending}
               data-testid="button-cancel"
             >
-              Cancel
+              {t("button.cancel")}
             </Button>
             <Button
               type="submit"
@@ -253,7 +261,7 @@ export function SpotBuyModal({
               {buyMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Buy
+              {t("spot.market.buy")}
             </Button>
           </div>
         </form>

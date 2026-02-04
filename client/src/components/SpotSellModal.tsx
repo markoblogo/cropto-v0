@@ -103,16 +103,19 @@ export function SpotSellModal({
       queryClient.invalidateQueries({ queryKey: ["/api/spot", commoditySlug] });
       const qtyTonnes = parseFloat(quantityTonnes);
       toast({
-        title: "Success",
-        description: `Successfully sold ${formatTons(qtyTonnes)}t of ${commodityName}`,
+        title: t("toast.success"),
+        description: t("spot.sellModal.successDesc", {
+          qty: formatTons(qtyTonnes),
+          commodity: commodityName,
+        }),
       });
       setQuantityTonnes("");
       onClose();
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to sell commodity",
+        title: t("toast.error"),
+        description: error.message || t("spot.sellModal.errorDesc"),
         variant: "destructive",
       });
     },
@@ -144,8 +147,10 @@ export function SpotSellModal({
 
     if (!qtyTonnes || qtyTonnes < MIN_TRADE_TONS) {
       toast({
-        title: "Invalid quantity",
-        description: `Minimum quantity is ${MIN_TRADE_TONS.toFixed(3)} t`,
+        title: t("spot.sellModal.invalidQuantityTitle"),
+        description: t("spot.sellModal.invalidQuantityDesc", {
+          min: MIN_TRADE_TONS.toFixed(3),
+        }),
         variant: "destructive",
       });
       return;
@@ -153,8 +158,11 @@ export function SpotSellModal({
 
     if (hasInsufficientPosition) {
       toast({
-        title: "Insufficient position",
-        description: `You are trying to sell ${formatTons(qtyTonnes)}t but only have ${formatTons(positionQtyTonnes)}t`,
+        title: t("spot.sellModal.insufficientPositionTitle"),
+        description: t("spot.sellModal.insufficientPositionDesc", {
+          sell: formatTons(qtyTonnes),
+          available: formatTons(positionQtyTonnes),
+        }),
         variant: "destructive",
       });
       return;
@@ -172,35 +180,35 @@ export function SpotSellModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent data-testid="dialog-spot-sell">
         <DialogHeader>
-          <DialogTitle>Sell {commodityName}</DialogTitle>
+          <DialogTitle>{t("spot.sellModal.title", { commodity: commodityName })}</DialogTitle>
           <DialogDescription>
-            Sell your commodity position and receive CROPT
+            {t("spot.sellModal.description")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Current Price:</span>
+              <span className="text-muted-foreground">{t("spot.sellModal.currentPriceLabel")}</span>
               <span
                 className="font-mono font-medium"
                 data-testid="text-current-price"
               >
-                ${pricePerTon.toFixed(2)} / ton
+                {t("spot.sellModal.pricePerTon", { price: pricePerTon.toFixed(2) })}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Your Position:</span>
+              <span className="text-muted-foreground">{t("spot.sellModal.yourPositionLabel")}</span>
               <span
                 className="font-mono font-medium"
                 data-testid="text-your-position"
               >
-                {formatTons(positionQtyTonnes)} t
+                {t("spot.sellModal.yourPositionValue", { qty: formatTons(positionQtyTonnes) })}
               </span>
             </div>
             {positionData?.position && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Unrealized P&L:</span>
+                <span className="text-muted-foreground">{t("spot.sellModal.unrealizedPnlLabel")}</span>
                 <span
                   className={`font-mono font-medium ${
                     parseFloat(positionData.position.unrealizedPnL) >= 0
@@ -212,17 +220,17 @@ export function SpotSellModal({
                   {parseFloat(positionData.position.unrealizedPnL) >= 0
                     ? "+"
                     : ""}
-                  {parseFloat(
-                    positionData.position.unrealizedPnL,
-                  ).toFixed(2)}{" "}
-                  CROPT ({positionData.position.unrealizedPnLPercent}%)
+                  {t("spot.sellModal.unrealizedPnlValue", {
+                    value: parseFloat(positionData.position.unrealizedPnL).toFixed(2),
+                    percent: positionData.position.unrealizedPnLPercent,
+                  })}
                 </span>
               </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity (t)</Label>
+            <Label htmlFor="quantity">{t("spot.sellModal.quantityLabel")}</Label>
             <Input
               id="quantity"
               type="number"
@@ -230,14 +238,14 @@ export function SpotSellModal({
               min={MIN_TRADE_TONS}
               // ограничиваем max только для лонга; для шорта/нуля — без лимита по UI
               max={isLong ? positionQtyTonnes : undefined}
-              placeholder="Enter quantity in tonnes"
+              placeholder={t("spot.sellModal.quantityPlaceholder")}
               value={quantityTonnes}
               onChange={(e) => setQuantityTonnes(e.target.value)}
               data-testid="input-quantity"
             />
             {invalidQty && quantityTonnes && (
               <p className="text-xs text-destructive">
-                Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+                {t("spot.sellModal.minimumQuantity", { min: MIN_TRADE_TONS.toFixed(3) })}
               </p>
             )}
             {isLong && positionQtyTonnes > 0 && (
@@ -247,7 +255,7 @@ export function SpotSellModal({
                 onClick={() => setQuantityTonnes(formatTons(positionQtyTonnes))}
                 data-testid="link-max-quantity"
               >
-                Max: {formatTons(positionQtyTonnes)} t
+                {t("spot.sellModal.maxQuantity", { qty: formatTons(positionQtyTonnes) })}
               </button>
             )}
           </div>
@@ -255,12 +263,12 @@ export function SpotSellModal({
           {qtyTonnesNum > 0 && (
             <div className="space-y-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Payout:</span>
+                <span className="text-muted-foreground">{t("spot.sellModal.totalPayoutLabel")}</span>
                 <span
                   className="font-mono font-medium"
                   data-testid="text-total-payout"
                 >
-                  {totalPayout.toFixed(2)} CROPT
+                  {t("spot.sellModal.totalPayoutValue", { total: totalPayout.toFixed(2) })}
                 </span>
               </div>
 
@@ -269,7 +277,9 @@ export function SpotSellModal({
                   className="text-sm text-destructive"
                   data-testid="text-insufficient-position"
                 >
-                  Insufficient position (available: {formatTons(positionQtyTonnes)} t)
+                  {t("spot.sellModal.insufficientPositionInline", {
+                    available: formatTons(positionQtyTonnes),
+                  })}
                 </p>
               )}
 
@@ -278,8 +288,7 @@ export function SpotSellModal({
                   className="text-sm text-amber-700 dark:text-amber-400"
                   data-testid="text-short-info"
                 >
-                  You don&apos;t own this commodity yet — this order will open
-                  or increase a short position.
+                  {t("spot.sellModal.shortInfo")}
                 </p>
               )}
             </div>
@@ -293,7 +302,7 @@ export function SpotSellModal({
               disabled={sellMutation.isPending}
               data-testid="button-cancel"
             >
-              Cancel
+              {t("button.cancel")}
             </Button>
             <Button
               type="submit"
@@ -303,7 +312,7 @@ export function SpotSellModal({
               {sellMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Sell
+              {t("spot.market.sell")}
             </Button>
           </div>
         </form>

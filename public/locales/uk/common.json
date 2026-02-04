@@ -226,6 +226,84 @@
     "index": {
       "export": "Експортний індекс",
       "processing": "Індекс переробки"
+    },
+    "positions": {
+      "title": "Spot Positions",
+      "emptyGuestTitle": "Log in to see your spot positions",
+      "emptyNoWalletTitle": "Connect your wallet to start spot trading",
+      "emptyDefault": "No spot positions yet. Visit the Spot Market on the homepage to start trading.",
+      "headers": {
+        "commodity": "Commodity",
+        "quantity": "Quantity (t)",
+        "entryPrice": "Entry Price ($/t)",
+        "currentPrice": "Current Price ($/t)",
+        "currentValue": "Current Value",
+        "pnl": "P&L",
+        "options": "Options",
+        "actions": "Actions"
+      },
+      "badge": {
+        "long": "LONG",
+        "short": "SHORT"
+      }
+    },
+    "positionCard": {
+      "title": "Your Position in {{commodity}}",
+      "empty": "No spot position in this commodity yet",
+      "headers": {
+        "avgEntryPrice": "Avg Entry Price ($/t)"
+      }
+    },
+    "buyModal": {
+      "title": "Buy {{commodity}}",
+      "description": "Purchase commodity using your internal CROPT balance",
+      "depositNotice": "You need to deposit CROPT from your on-chain balance to your internal trading balance first.",
+      "depositButton": "Deposit {{amount}} CROPT",
+      "depositing": "Depositing...",
+      "depositSuccessTitle": "Deposit successful",
+      "depositSuccessDesc": "CROPT deposited to internal balance",
+      "depositFailedTitle": "Deposit failed",
+      "depositFailedDesc": "Failed to deposit CROPT",
+      "currentPriceLabel": "Current Price:",
+      "pricePerTon": "$ {{price}} / ton",
+      "internalBalanceLabel": "Internal Balance:",
+      "internalBalanceValue": "{{balance}} CROPT",
+      "quantityLabel": "Quantity (t)",
+      "quantityPlaceholder": "Enter quantity in tonnes",
+      "minimumQuantity": "Minimum quantity is {{min}} t",
+      "totalCostLabel": "Total Cost:",
+      "totalCostValue": "{{total}} CROPT",
+      "invalidQuantityTitle": "Invalid quantity",
+      "invalidQuantityDesc": "Minimum quantity is {{min}} t",
+      "insufficientBalanceTitle": "Insufficient balance",
+      "insufficientBalanceDesc": "You need {{needed}} CROPT but only have {{available}} CROPT",
+      "insufficientBalanceInline": "Insufficient balance",
+      "successDesc": "Successfully bought {{qty}}t of {{commodity}}",
+      "errorDesc": "Failed to buy commodity"
+    },
+    "sellModal": {
+      "title": "Sell {{commodity}}",
+      "description": "Sell your commodity position and receive CROPT",
+      "currentPriceLabel": "Current Price:",
+      "pricePerTon": "$ {{price}} / ton",
+      "yourPositionLabel": "Your Position:",
+      "yourPositionValue": "{{qty}} t",
+      "unrealizedPnlLabel": "Unrealized P&L:",
+      "unrealizedPnlValue": "{{value}} CROPT ({{percent}}%)",
+      "quantityLabel": "Quantity (t)",
+      "quantityPlaceholder": "Enter quantity in tonnes",
+      "minimumQuantity": "Minimum quantity is {{min}} t",
+      "maxQuantity": "Max: {{qty}} t",
+      "totalPayoutLabel": "Total Payout:",
+      "totalPayoutValue": "{{total}} CROPT",
+      "invalidQuantityTitle": "Invalid quantity",
+      "invalidQuantityDesc": "Minimum quantity is {{min}} t",
+      "insufficientPositionTitle": "Insufficient position",
+      "insufficientPositionDesc": "You are trying to sell {{sell}}t but only have {{available}}t",
+      "insufficientPositionInline": "Insufficient position (available: {{available}} t)",
+      "shortInfo": "You don't own this commodity yet — this order will open or increase a short position.",
+      "successDesc": "Successfully sold {{qty}}t of {{commodity}}",
+      "errorDesc": "Failed to sell commodity"
     }
   },
   "page": {

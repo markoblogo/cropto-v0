@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { kgToTons } from "@/lib/units";
+import { useTranslation } from "react-i18next";
 
 interface SpotPosition {
   id: string;
@@ -32,6 +33,7 @@ interface SpotPositionCardProps {
 }
 
 export function SpotPositionCard({ commoditySlug, commodityName }: SpotPositionCardProps) {
+  const { t } = useTranslation();
   const { data: positions = [], isLoading } = useQuery<SpotPosition[]>({
     queryKey: ["/api/spot/positions"],
   });
@@ -43,7 +45,7 @@ export function SpotPositionCard({ commoditySlug, commodityName }: SpotPositionC
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Your Position in {commodityName}</CardTitle>
+          <CardTitle>{t("spot.positionCard.title", { commodity: commodityName })}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-32 w-full" />
@@ -56,11 +58,11 @@ export function SpotPositionCard({ commoditySlug, commodityName }: SpotPositionC
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Your Position in {commodityName}</CardTitle>
+          <CardTitle>{t("spot.positionCard.title", { commodity: commodityName })}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            No spot position in this commodity yet
+            {t("spot.positionCard.empty")}
           </div>
         </CardContent>
       </Card>
@@ -77,16 +79,16 @@ export function SpotPositionCard({ commoditySlug, commodityName }: SpotPositionC
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your Position in {commodityName}</CardTitle>
+        <CardTitle>{t("spot.positionCard.title", { commodity: commodityName })}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Quantity (t)</TableHead>
-              <TableHead>Avg Entry Price ($/t)</TableHead>
-              <TableHead>Current Price ($/t)</TableHead>
-              <TableHead>P&L</TableHead>
+              <TableHead>{t("spot.positions.headers.quantity")}</TableHead>
+              <TableHead>{t("spot.positionCard.headers.avgEntryPrice")}</TableHead>
+              <TableHead>{t("spot.positions.headers.currentPrice")}</TableHead>
+              <TableHead>{t("spot.positions.headers.pnl")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

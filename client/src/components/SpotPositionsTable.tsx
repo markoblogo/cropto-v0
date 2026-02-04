@@ -19,6 +19,7 @@ import { useUserTier } from "@/hooks/useUserTier";
 import { queryClient } from "@/lib/queryClient";
 import { kgToTons, formatTons } from "@/lib/units";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 interface SpotPosition {
   id: string;
@@ -52,6 +53,7 @@ export function SpotPositionsTable({
   optionsByCommodity,
   onShowOptionsForCommodity,
 }: SpotPositionsTableProps) {
+  const { t } = useTranslation();
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<SpotPosition | null>(null);
   const userTier = useUserTier();
@@ -79,7 +81,7 @@ export function SpotPositionsTable({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Spot Positions
+            {t("spot.positions.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -103,32 +105,32 @@ export function SpotPositionsTable({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Spot Positions
+            {t("spot.positions.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {userTier === "guest" ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm font-medium mb-3">Log in to see your spot positions</p>
+              <p className="text-sm font-medium mb-3">{t("spot.positions.emptyGuestTitle")}</p>
               <Link href="/login">
                 <Button size="sm" data-testid="button-spot-empty-sign-in">
-                  Sign in
+                  {t("button.login")}
                 </Button>
               </Link>
             </div>
           ) : userTier === "user_no_wallet" ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm font-medium mb-3">Connect your wallet to start spot trading</p>
+              <p className="text-sm font-medium mb-3">{t("spot.positions.emptyNoWalletTitle")}</p>
               {onOpenWalletModal && (
                 <Button size="sm" onClick={onOpenWalletModal} data-testid="button-spot-empty-connect-wallet">
-                  Connect wallet
+                  {t("button.connectWallet")}
                 </Button>
               )}
             </div>
           ) : (
             <Alert>
               <AlertDescription>
-                No spot positions yet. Visit the Spot Market on the homepage to start trading.
+                {t("spot.positions.emptyDefault")}
               </AlertDescription>
             </Alert>
           )}
@@ -142,7 +144,7 @@ export function SpotPositionsTable({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Spot Positions
+          {t("spot.positions.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -150,14 +152,14 @@ export function SpotPositionsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Commodity</TableHead>
-                <TableHead className="text-right">Quantity (t)</TableHead>
-                <TableHead className="text-right">Entry Price ($/t)</TableHead>
-                <TableHead className="text-right">Current Price ($/t)</TableHead>
-                <TableHead className="text-right">Current Value</TableHead>
-                <TableHead className="text-right">P&L</TableHead>
-                <TableHead className="text-right">Options</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("spot.positions.headers.commodity")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.quantity")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.entryPrice")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.currentPrice")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.currentValue")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.pnl")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.options")}</TableHead>
+                <TableHead className="text-right">{t("spot.positions.headers.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -207,7 +209,7 @@ export function SpotPositionsTable({
                             className="text-xs text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950"
                             data-testid={`badge-long-${position.commoditySlug}`}
                           >
-                            LONG
+                            {t("spot.positions.badge.long")}
                           </Badge>
                         )}
                         {isShort && (
@@ -216,7 +218,7 @@ export function SpotPositionsTable({
                             className="text-xs text-red-700 dark:text-red-300 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950"
                             data-testid={`badge-short-${position.commoditySlug}`}
                           >
-                            SHORT
+                            {t("spot.positions.badge.short")}
                           </Badge>
                         )}
                       </div>
@@ -265,7 +267,7 @@ export function SpotPositionsTable({
                           onClick={() => handleSellClick(position)}
                           data-testid={`button-sell-${position.commoditySlug}`}
                         >
-                          Sell
+                          {t("spot.market.sell")}
                         </Button>
                       )}
                     </TableCell>
