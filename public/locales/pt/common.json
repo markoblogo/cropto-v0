@@ -648,7 +648,9 @@
         "open": "Open",
         "filled": "Filled",
         "expired": "Expired",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "commodity": "Filtrar commodity",
+        "allCommodities": "Todas as commodities"
       },
       "headers": {
         "title": "Title",
@@ -658,7 +660,44 @@
         "premium": "Premium",
         "expiry": "Expiry",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Ações",
+        "commodity": "Commodity",
+        "iv": "IV (stub)",
+        "volume": "Volume",
+        "margin": "Margem"
+      },
+      "bookTitle": "Livro de opções",
+      "values": {
+        "dash": "—",
+        "na": "N/D",
+        "commodityAlt": "Commodity"
+      },
+      "marginHealth": {
+        "liquidated": "Liquidado",
+        "marginCall": "Margin call",
+        "atRisk": "Em risco",
+        "normal": "Normal"
+      },
+      "marginToast": {
+        "title": "Margin call",
+        "desc": "A posição {{id}} está em margin call"
+      },
+      "margin": {
+        "detailsLabel": "Detalhes da margem",
+        "standard": "Padrão",
+        "line": "Margem ({{label}}): {{value}} CROPT",
+        "premiumAsMargin": "(prêmio como margem)",
+        "balance": "Saldo: {{value}}",
+        "floatingLoss": "Prejuízo flutuante: {{value}}",
+        "topUp": "Recarga necessária: {{value}}",
+        "dueIn": "Margin call vence em {{time}}",
+        "ssiAvg": "Média de SSI: {{value}}",
+        "finalPnl": "PnL final: {{value}}"
+      },
+      "actions": {
+        "viewSettlement": "Ver liquidação / transação",
+        "takeOffer": "Aceitar esta oferta",
+        "takeOfferHint": "Aceite esta oferta e torne-se a contraparte desta opção."
       }
     },
     "notifications": {

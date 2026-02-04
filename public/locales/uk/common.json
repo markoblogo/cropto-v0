@@ -657,7 +657,9 @@
         "open": "Відкритий",
         "filled": "Заповнений",
         "expired": "Закінчився",
-        "cancelled": "Скасований"
+        "cancelled": "Скасований",
+        "commodity": "Фільтр товару",
+        "allCommodities": "Усі товари"
       },
       "headers": {
         "title": "Назва",
@@ -667,7 +669,44 @@
         "premium": "Премія",
         "expiry": "Термін дії",
         "status": "Статус",
-        "actions": "Дії"
+        "actions": "Дії",
+        "commodity": "Товар",
+        "iv": "IV (заглушка)",
+        "volume": "Обсяг",
+        "margin": "Маржа"
+      },
+      "bookTitle": "Книга опціонів",
+      "values": {
+        "dash": "—",
+        "na": "Н/Д",
+        "commodityAlt": "Товар"
+      },
+      "marginHealth": {
+        "liquidated": "Ліквідовано",
+        "marginCall": "Маржин-кол",
+        "atRisk": "Під ризиком",
+        "normal": "Нормально"
+      },
+      "marginToast": {
+        "title": "Маржин-кол",
+        "desc": "Позиція {{id}} у маржин-колі"
+      },
+      "margin": {
+        "detailsLabel": "Деталі маржі",
+        "standard": "Стандарт",
+        "line": "Маржа ({{label}}): {{value}} CROPT",
+        "premiumAsMargin": "(премія як маржа)",
+        "balance": "Баланс: {{value}}",
+        "floatingLoss": "Плаваючий збиток: {{value}}",
+        "topUp": "Потрібне поповнення: {{value}}",
+        "dueIn": "Дедлайн маржин-колу через {{time}}",
+        "ssiAvg": "Середнє SSI: {{value}}",
+        "finalPnl": "Підсумковий PnL: {{value}}"
+      },
+      "actions": {
+        "viewSettlement": "Переглянути розрахунок / транзакцію",
+        "takeOffer": "Прийняти цю пропозицію",
+        "takeOfferHint": "Прийміть цю пропозицію та станьте контрагентом за цим опціоном."
       }
     },
     "notifications": {
