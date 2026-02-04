@@ -958,6 +958,234 @@
         "failedTitle": "Error al iniciar sesión",
         "failedDesc": "Correo electrónico o contraseña incorrectos"
       }
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Regístrate para empezar a operar opciones de granos en Cropto",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Mínimo 6 caracteres",
+      "roleLabel": "Rol",
+      "rolePlaceholder": "Selecciona tu rol",
+      "roleFarmer": "Agricultor",
+      "roleTrader": "Operador",
+      "roleBroker": "Bróker",
+      "button": "Crear cuenta",
+      "buttonLoading": "Creando cuenta…",
+      "alreadyAccount": "¿Ya tienes una cuenta?",
+      "loginLink": "Iniciar sesión",
+      "validation": {
+        "emailRequired": "El correo electrónico es obligatorio",
+        "emailInvalid": "Formato de correo electrónico inválido",
+        "passwordMin": "La contraseña debe tener al menos 6 caracteres",
+        "roleRequired": "Por favor, selecciona un rol"
+      },
+      "toast": {
+        "successTitle": "Éxito",
+        "successDesc": "Cuenta creada correctamente",
+        "failedTitle": "Error de registro",
+        "failedDesc": "No se pudo crear la cuenta"
+      }
+    }
+  },
+  "banner": {
+    "guest": {
+      "lockLabel": "Bloqueo",
+      "message": "No has iniciado sesión. Inicia sesión o crea una cuenta para empezar a operar.",
+      "cta": "Iniciar sesión o crear cuenta"
+    },
+    "wallet": {
+      "plugLabel": "Conector",
+      "message": "Tu cuenta está lista, pero necesitas conectar tu billetera para empezar a operar.",
+      "cta": "Conectar billetera"
+    }
+  },
+  "walletAuth": {
+    "title": "Conecta la billetera para continuar",
+    "description": {
+      "default": "Firma un mensaje con tu billetera para autenticarte",
+      "manual": "Se requiere MetaMask para la autenticación por firma de billetera"
+    },
+    "button": {
+      "connecting": "Conectando…",
+      "signIn": "Iniciar sesión con MetaMask",
+      "back": "Volver"
+    },
+    "note": "Nota",
+    "signature": {
+      "title": "Autenticación por firma",
+      "desc": "Se te pedirá firmar un mensaje para demostrar la propiedad de la billetera. Es gratis y no envía una transacción."
+    },
+    "manual": {
+      "addressLabel": "Dirección de la billetera",
+      "addressPlaceholder": "0x…",
+      "notSupported": "La entrada manual de la dirección no es compatible para la autenticación. Instala MetaMask para continuar."
+    },
+    "toast": {
+      "metaMaskNotFound": {
+        "title": "MetaMask no encontrado",
+        "desc": "Instala MetaMask o usa la entrada manual de la dirección"
+      },
+      "connected": {
+        "title": "Billetera conectada",
+        "desc": "Autenticación exitosa con {{address}}"
+      },
+      "rejected": {
+        "title": "Conexión rechazada",
+        "desc": "Rechazaste la solicitud de conexión"
+      },
+      "failed": {
+        "title": "Error de conexión",
+        "desc": "No se pudo conectar la billetera"
+      },
+      "manualMissing": {
+        "title": "Error",
+        "desc": "Ingresa una dirección de billetera"
+      },
+      "manualNotSupported": {
+        "title": "Modo manual no compatible",
+        "desc": "Usa MetaMask para firmar un mensaje para la autenticación"
+      }
+    },
+    "errors": {
+      "nonce": "No se pudo obtener el nonce",
+      "loginFailed": "Error al iniciar sesión"
+    },
+    "signMessage": {
+      "title": "¡Bienvenido a Cropto!",
+      "body": "Firma este mensaje para autenticarte con tu billetera. Esta solicitud no iniciará una transacción en la blockchain ni costará comisiones de gas.",
+      "walletAddress": "Dirección de la billetera: {{address}}",
+      "timestamp": "Marca de tiempo: {{timestamp}}",
+      "nonce": "Nonce: {{nonce}}"
+    }
+  },
+  "withdraw": {
+    "button": {
+      "trigger": "Retirar",
+      "processing": "Procesando…",
+      "submit": "Retirar",
+      "viewExplorer": "Ver en el explorador",
+      "close": "Cerrar"
+    },
+    "title": "Retiro on-chain",
+    "desc": {
+      "submitted": "La transacción de retiro se envió correctamente",
+      "default": "Mintea tokens CROPT en tu billetera conectada"
+    },
+    "label": {
+      "recipient": "Dirección del destinatario",
+      "amount": "Cantidad (CROPT)",
+      "txHash": "Hash de la transacción"
+    },
+    "placeholder": {
+      "amount": "0.00"
+    },
+    "value": {
+      "notConnected": "No conectado"
+    },
+    "toast": {
+      "walletNotConnected": {
+        "title": "Billetera no conectada",
+        "desc": "Primero conecta tu billetera o vincula una dirección"
+      },
+      "invalidAmount": {
+        "title": "Cantidad inválida",
+        "desc": "Ingresa una cantidad válida para retirar"
+      },
+      "initiated": {
+        "title": "Retiro iniciado",
+        "desc": "Transacción enviada a la blockchain"
+      },
+      "failed": {
+        "title": "Error de retiro",
+        "desc": "No se pudo iniciar el retiro"
+      },
+      "copied": {
+        "title": "Copiado",
+        "desc": "Hash de la transacción copiado al portapapeles"
+      }
+    }
+  },
+  "wallet": {
+    "summary": {
+      "title": "Billetera",
+      "subtitle": "Saldos on-chain e internos",
+      "onChain": "On-chain (blockchain)",
+      "internal": "Interno (trading spot)",
+      "token": "CROPT",
+      "pendingTx": "{{count}} transacción pendiente",
+      "pendingTx_one": "{{count}} transacción pendiente",
+      "pendingTx_other": "{{count}} transacciones pendientes",
+      "button": {
+        "minting": "Minteando…",
+        "request": "Solicitar 1 CROPT",
+        "depositing": "Depositando…",
+        "deposit": "Depositar en interno"
+      },
+      "cardTitle": "Balance de CROPT",
+      "cardSubtitle": "Tokens CROPT de prueba para la testnet Polygon Amoy",
+      "info": {
+        "mintDisabled": "Minteo deshabilitado. Establece ENABLE_MINT=true",
+        "pending": "Espera a que se completen las transacciones pendientes",
+        "requestFirst": "Solicita CROPT primero para depositar",
+        "depositToInternal": "Deposita CROPT on-chain en el saldo interno para trading spot"
+      }
+    },
+    "page": {
+      "title": "Billetera",
+      "subtitle": "Administra tus saldos de CROPT, colateral y transferencias."
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "activity": "Actividad on-chain",
+      "transfers": "Transferencias"
+    },
+    "balances": {
+      "title": "Saldos",
+      "subtitle": "Resumen de tus saldos de CROPT en cuentas on-chain e internas.",
+      "table": {
+        "type": "Tipo",
+        "amount": "Cantidad",
+        "source": "Origen"
+      },
+      "rows": {
+        "onChain": "CROPT on-chain",
+        "onChainSource": "Testnet Polygon Amoy",
+        "internal": "Interno (trading spot)",
+        "internalSource": "Libro mayor interno",
+        "lockedCollateral": "Colateral bloqueado",
+        "comingSoon": "Próximamente",
+        "lockedCollateralSource": "Posiciones de opciones activas",
+        "lockedCollateralEmpty": "El colateral de las opciones aparecerá aquí"
+      },
+      "loading": "—"
+    },
+    "risk": {
+      "title": "Colateral y riesgo",
+      "lockedInfo": "El colateral bloqueado está reservado para tus posiciones activas de opciones cortas. Si tu margen se acerca a niveles de liquidación, verás alertas en la página de Portafolio.",
+      "lockedLabel": "Colateral bloqueado (USD)",
+      "moreInfo": "Para un desglose más detallado del uso de margen y riesgo por posición, visita la página de Portafolio.",
+      "cta": "Ir al Portafolio",
+      "emptyInfo": "El análisis de margen y riesgo está en la página de Portafolio. Allí puedes ver exposición, colateral bloqueado y P&L por opción."
+    },
+    "moreWallets": {
+      "title": "Más billeteras y opciones de entrada (próximamente)",
+      "subtitle": "MetaMask ya es compatible para operar en testnet. Estamos trabajando en más conexiones de billeteras y rampas fiat para que puedas recargar CROPT con tarjetas bancarias, USDT o PayPal.",
+      "items": {
+        "trustWallet": "Trust Wallet",
+        "walletConnect": "WalletConnect",
+        "buyCropt": "Comprar CROPT con tarjeta / USDT / PayPal"
+      },
+      "comingSoon": "Próximamente"
+    },
+    "activity": {
+      "title": "Transacciones on-chain",
+      "subtitle": "Liquidaciones recientes, depósitos y otra actividad on-chain de tu cuenta."
+    },
+    "transfers": {
+      "title": "Transferencias (próximamente)",
+      "subtitle": "Aquí verás el historial de depósitos, retiros y transferencias internas cuando empecemos a registrarlos."
     }
   }
 }

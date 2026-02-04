@@ -958,6 +958,234 @@
         "failedTitle": "Falha no login",
         "failedDesc": "E-mail ou senha inválidos"
       }
+    },
+    "register": {
+      "title": "Criar conta",
+      "subtitle": "Cadastre-se para começar a negociar opções de grãos na Cropto",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "farmer@example.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Mínimo de 6 caracteres",
+      "roleLabel": "Função",
+      "rolePlaceholder": "Selecione sua função",
+      "roleFarmer": "Agricultor",
+      "roleTrader": "Trader",
+      "roleBroker": "Corretor",
+      "button": "Criar conta",
+      "buttonLoading": "Criando conta…",
+      "alreadyAccount": "Já tem uma conta?",
+      "loginLink": "Entrar",
+      "validation": {
+        "emailRequired": "O e-mail é obrigatório",
+        "emailInvalid": "Formato de e-mail inválido",
+        "passwordMin": "A senha deve ter pelo menos 6 caracteres",
+        "roleRequired": "Selecione uma função"
+      },
+      "toast": {
+        "successTitle": "Sucesso",
+        "successDesc": "Conta criada com sucesso",
+        "failedTitle": "Falha no cadastro",
+        "failedDesc": "Não foi possível criar a conta"
+      }
+    }
+  },
+  "banner": {
+    "guest": {
+      "lockLabel": "Bloqueio",
+      "message": "Você não entrou. Entre ou crie uma conta para começar a negociar.",
+      "cta": "Entrar ou criar conta"
+    },
+    "wallet": {
+      "plugLabel": "Plug",
+      "message": "Sua conta está pronta, mas você precisa conectar sua carteira para começar a negociar.",
+      "cta": "Conectar carteira"
+    }
+  },
+  "walletAuth": {
+    "title": "Conecte a carteira para continuar",
+    "description": {
+      "default": "Assine uma mensagem com sua carteira para autenticar",
+      "manual": "É necessário o MetaMask para autenticação por assinatura da carteira"
+    },
+    "button": {
+      "connecting": "Conectando…",
+      "signIn": "Entrar com MetaMask",
+      "back": "Voltar"
+    },
+    "note": "Nota",
+    "signature": {
+      "title": "Autenticação por assinatura",
+      "desc": "Você será solicitado a assinar uma mensagem para comprovar a posse da carteira. Isso é gratuito e não envia uma transação."
+    },
+    "manual": {
+      "addressLabel": "Endereço da carteira",
+      "addressPlaceholder": "0x…",
+      "notSupported": "A inserção manual do endereço não é compatível para autenticação. Instale o MetaMask para continuar."
+    },
+    "toast": {
+      "metaMaskNotFound": {
+        "title": "MetaMask não encontrado",
+        "desc": "Instale o MetaMask ou use a inserção manual do endereço"
+      },
+      "connected": {
+        "title": "Carteira conectada",
+        "desc": "Autenticado com sucesso com {{address}}"
+      },
+      "rejected": {
+        "title": "Conexão recusada",
+        "desc": "Você recusou a solicitação de conexão"
+      },
+      "failed": {
+        "title": "Falha na conexão",
+        "desc": "Não foi possível conectar a carteira"
+      },
+      "manualMissing": {
+        "title": "Erro",
+        "desc": "Digite um endereço de carteira"
+      },
+      "manualNotSupported": {
+        "title": "Modo manual não suportado",
+        "desc": "Use o MetaMask para assinar uma mensagem para autenticação"
+      }
+    },
+    "errors": {
+      "nonce": "Falha ao obter o nonce",
+      "loginFailed": "Falha no login"
+    },
+    "signMessage": {
+      "title": "Bem-vindo à Cropto!",
+      "body": "Assine esta mensagem para se autenticar com sua carteira. Esta solicitação não acionará uma transação na blockchain nem custará taxas de gas.",
+      "walletAddress": "Endereço da carteira: {{address}}",
+      "timestamp": "Timestamp: {{timestamp}}",
+      "nonce": "Nonce: {{nonce}}"
+    }
+  },
+  "withdraw": {
+    "button": {
+      "trigger": "Sacar",
+      "processing": "Processando…",
+      "submit": "Sacar",
+      "viewExplorer": "Ver no explorador",
+      "close": "Fechar"
+    },
+    "title": "Saque on-chain",
+    "desc": {
+      "submitted": "Transação de saque enviada com sucesso",
+      "default": "Minte tokens CROPT para sua carteira conectada"
+    },
+    "label": {
+      "recipient": "Endereço do destinatário",
+      "amount": "Quantia (CROPT)",
+      "txHash": "Hash da transação"
+    },
+    "placeholder": {
+      "amount": "0.00"
+    },
+    "value": {
+      "notConnected": "Não conectado"
+    },
+    "toast": {
+      "walletNotConnected": {
+        "title": "Carteira não conectada",
+        "desc": "Primeiro conecte sua carteira ou vincule um endereço"
+      },
+      "invalidAmount": {
+        "title": "Quantia inválida",
+        "desc": "Digite uma quantia válida para sacar"
+      },
+      "initiated": {
+        "title": "Saque iniciado",
+        "desc": "Transação enviada à blockchain"
+      },
+      "failed": {
+        "title": "Falha no saque",
+        "desc": "Não foi possível iniciar o saque"
+      },
+      "copied": {
+        "title": "Copiado",
+        "desc": "Hash da transação copiado para a área de transferência"
+      }
+    }
+  },
+  "wallet": {
+    "summary": {
+      "title": "Carteira",
+      "subtitle": "Saldos on-chain e internos",
+      "onChain": "On-chain (blockchain)",
+      "internal": "Interno (trading spot)",
+      "token": "CROPT",
+      "pendingTx": "{{count}} transação pendente",
+      "pendingTx_one": "{{count}} transação pendente",
+      "pendingTx_other": "{{count}} transações pendentes",
+      "button": {
+        "minting": "Mintando…",
+        "request": "Solicitar 1 CROPT",
+        "depositing": "Depositando…",
+        "deposit": "Depositar no interno"
+      },
+      "cardTitle": "Saldo de CROPT",
+      "cardSubtitle": "Tokens CROPT de teste para a testnet Polygon Amoy",
+      "info": {
+        "mintDisabled": "Mint desativado. Defina ENABLE_MINT=true",
+        "pending": "Aguarde a conclusão das transações pendentes",
+        "requestFirst": "Solicite CROPT primeiro para depositar",
+        "depositToInternal": "Deposite CROPT on-chain no saldo interno para trading spot"
+      }
+    },
+    "page": {
+      "title": "Carteira",
+      "subtitle": "Gerencie seus saldos de CROPT, colateral e transferências."
+    },
+    "tabs": {
+      "overview": "Visão geral",
+      "activity": "Atividade on-chain",
+      "transfers": "Transferências"
+    },
+    "balances": {
+      "title": "Saldos",
+      "subtitle": "Visão geral dos seus saldos de CROPT em contas on-chain e internas.",
+      "table": {
+        "type": "Tipo",
+        "amount": "Quantia",
+        "source": "Fonte"
+      },
+      "rows": {
+        "onChain": "CROPT on-chain",
+        "onChainSource": "Testnet Polygon Amoy",
+        "internal": "Interno (trading spot)",
+        "internalSource": "Ledger interno",
+        "lockedCollateral": "Colateral bloqueado",
+        "comingSoon": "Em breve",
+        "lockedCollateralSource": "Posições de opções ativas",
+        "lockedCollateralEmpty": "O colateral das opções aparecerá aqui"
+      },
+      "loading": "—"
+    },
+    "risk": {
+      "title": "Colateral e risco",
+      "lockedInfo": "O colateral bloqueado é reservado para suas posições ativas de opções vendidas. Se sua margem se aproximar dos níveis de liquidação, você verá alertas na página de Portfólio.",
+      "lockedLabel": "Colateral bloqueado (USD)",
+      "moreInfo": "Para uma análise mais detalhada do uso de margem e risco por posição, visite a página de Portfólio.",
+      "cta": "Ir para o Portfólio",
+      "emptyInfo": "As análises de margem e risco ficam na página de Portfólio. Lá você pode ver exposição, colateral bloqueado e P&L por opção."
+    },
+    "moreWallets": {
+      "title": "Mais carteiras e opções de on-ramp (em breve)",
+      "subtitle": "O MetaMask já é compatível para negociação em testnet. Estamos trabalhando em mais conexões de carteiras e on-ramps fiat para você recarregar CROPT com cartões bancários, USDT ou PayPal.",
+      "items": {
+        "trustWallet": "Trust Wallet",
+        "walletConnect": "WalletConnect",
+        "buyCropt": "Comprar CROPT com cartão / USDT / PayPal"
+      },
+      "comingSoon": "Em breve"
+    },
+    "activity": {
+      "title": "Transações on-chain",
+      "subtitle": "Liquidações recentes, depósitos e outras atividades on-chain da sua conta."
+    },
+    "transfers": {
+      "title": "Transferências (em breve)",
+      "subtitle": "Aqui você verá o histórico de depósitos, saques e transferências internas quando começarmos a registrá-los."
     }
   }
 }
