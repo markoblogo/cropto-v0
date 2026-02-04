@@ -1823,8 +1823,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
           }
-            }
-          }
         } catch {
           // Skip invalid data
         }
