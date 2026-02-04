@@ -771,6 +771,55 @@
     "about": {
       "title": "Sobre",
       "viewFaq": "Ver FAQ ↓"
+    },
+    "privacy": {
+      "title": "Política de Privacidade",
+      "lastUpdated": "Última atualização: 2/4/2026",
+      "introduction": {
+        "title": "Introdução",
+        "body": "A Cropto é uma plataforma protótipo para negociação e gestão de risco de instrumentos vinculados a commodities. Esta Política de Privacidade explica como coletamos, usamos e protegemos os dados pessoais de usuários que acessam ou testam a plataforma."
+      },
+      "data": {
+        "title": "Dados que coletamos",
+        "list": {
+          "identification": "Dados de identificação (nome, e-mail, organização).",
+          "technical": "Dados técnicos (endereço IP, tipo de navegador, informações do dispositivo, arquivos de log).",
+          "usage": "Dados de uso (páginas visitadas, interações com módulos de negociação e análises). Durante o desenvolvimento, os dados podem ser armazenados com provedores terceiros de infraestrutura (hospedagem, bancos de dados, analytics)."
+        }
+      },
+      "legal": {
+        "title": "Base legal e finalidade do tratamento",
+        "list": {
+          "demoAccess": "Fornecer acesso às funcionalidades de demonstração da plataforma.",
+          "support": "Suporte, depuração e melhoria do serviço.",
+          "compliance": "Cumprimento de requisitos regulatórios, quando aplicável."
+        },
+        "note": "Dados pessoais não são usados para comunicações de marketing sem consentimento separado."
+      },
+      "sharing": {
+        "title": "Compartilhamento e transferências de dados",
+        "body": "O acesso aos dados é limitado a pessoal autorizado da Cropto e a parceiros envolvidos no desenvolvimento e suporte da plataforma. Os dados não são vendidos nem transferidos a terceiros para fins próprios de marketing."
+      },
+      "security": {
+        "title": "Segurança e retenção de dados",
+        "body": "Os dados são protegidos por medidas técnicas e organizacionais. A retenção é limitada ao período necessário para desenvolvimento e testes, após o qual os dados podem ser anonimizados ou excluídos."
+      },
+      "rights": {
+        "title": "Direitos do usuário",
+        "body": "Os usuários podem solicitar acesso, correção ou exclusão de seus dados entrando em contato com a equipe da Cropto no endereço de contato designado."
+      },
+      "changes": {
+        "title": "Alterações nesta política",
+        "body": "Podemos atualizar esta política periodicamente. A versão atual está sempre disponível nesta página."
+      },
+      "settlement": {
+        "title": "Termos de pagamento e liquidação",
+        "body": "Os instrumentos da Cropto são cotados e liquidados em CROPT e são liquidados por índice (liquidação em dinheiro) contra o Spike Spot Index (CPT Odesa). Não há entrega física de commodities. Contratos tipo forward em CROPT permanecem em desenvolvimento (WIP); as referências são apenas descritivas."
+      },
+      "identifiers": {
+        "title": "Uso de e-mails e identificadores",
+        "body": "Usamos endereços de e-mail, IDs de usuário e identificadores de carteira para operar a plataforma: processar ações de opções, enviar notificações (por exemplo, margin calls, liquidações) e manter trilhas de auditoria. Não vendemos nem compartilhamos esses identificadores para marketing."
+      }
     }
   },
   "component": {

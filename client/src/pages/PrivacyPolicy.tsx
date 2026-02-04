@@ -1,98 +1,89 @@
 import { MainLayout } from "@/components/layouts/MainLayout";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyPolicy() {
+  const { t } = useTranslation();
+
   return (
     <MainLayout>
       <div className="space-y-8">
         <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("page.privacy.title")}</h1>
           <p className="text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            {t("page.privacy.lastUpdated")}
           </p>
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Introduction</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.introduction.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Cropto is a prototype platform for trading and risk-management of commodity-linked instruments. This Privacy
-            Policy explains how we collect, use and protect personal data of users who access or test the platform.
+            {t("page.privacy.introduction.body")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Data We Collect</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.data.title")}</h2>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
-            <li>Identification data (name, email address, organization).</li>
-            <li>Technical data (IP address, browser type, device information, log files).</li>
-            <li>
-              Usage data (visited pages, interactions with trading and analytics modules). During development data may be
-              stored with third-party infrastructure providers (hosting, databases, analytics).
-            </li>
+            <li>{t("page.privacy.data.list.identification")}</li>
+            <li>{t("page.privacy.data.list.technical")}</li>
+            <li>{t("page.privacy.data.list.usage")}</li>
           </ul>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Legal Basis and Purpose of Processing</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.legal.title")}</h2>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
-            <li>Providing access to demo functionality of the platform.</li>
-            <li>Support, debugging, and enhancement of the service.</li>
-            <li>Compliance with regulatory requirements, where applicable.</li>
+            <li>{t("page.privacy.legal.list.demoAccess")}</li>
+            <li>{t("page.privacy.legal.list.support")}</li>
+            <li>{t("page.privacy.legal.list.compliance")}</li>
           </ul>
           <p className="text-muted-foreground leading-relaxed">
-            Personal data is not used for marketing communications without separate consent.
+            {t("page.privacy.legal.note")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Data Sharing and Transfers</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.sharing.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Access to data is limited to authorized Cropto personnel and partners involved in development and support of
-            the platform. Data is not sold or transferred to third parties for their own marketing purposes.
+            {t("page.privacy.sharing.body")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Data Security and Retention</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.security.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Data is protected by technical and organizational measures. Retention is limited to the period necessary for
-            development and testing, after which data may be anonymized or deleted.
+            {t("page.privacy.security.body")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">User Rights</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.rights.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Users may request access, correction, or deletion of their data by contacting the Cropto team at the
-            designated contact address.
+            {t("page.privacy.rights.body")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Changes to This Policy</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.changes.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            We may update this policy periodically. The current version is always available on this page.
+            {t("page.privacy.changes.body")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Payment Terms and Settlement</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.settlement.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Cropto instruments are quoted and settled in CROPT and are index-settled (cash-settled) against the Spike
-            Spot Index (CPT Odesa). There is no physical delivery of commodities. Forward-style CROPT contracts remain
-            in development (WIP); references are descriptive only.
+            {t("page.privacy.settlement.body")}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Use of Emails and Identifiers</h2>
+          <h2 className="text-xl font-semibold">{t("page.privacy.identifiers.title")}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            We use email addresses, user IDs, and wallet identifiers to operate the platform: processing option actions,
-            sending notifications (e.g., margin calls, settlements), and keeping audit trails. We do not sell or share
-            these identifiers for marketing.
+            {t("page.privacy.identifiers.body")}
           </p>
         </section>
       </div>
     </MainLayout>
   );
 }
-
