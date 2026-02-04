@@ -750,34 +750,34 @@
       }
     },
     "admin": {
-      "title": "Admin Panel",
-      "subtitle": "Manage demo scenarios and system operations",
+      "title": "Panel de administración",
+      "subtitle": "Administra escenarios demo y operaciones del sistema",
       "demo": {
-        "title": "Demo Scenario",
-        "subtitle": "Run a one-click demo to seed the platform with sample data for partner presentations",
-        "creates": "This will create:",
-        "users": "3 demo users: farmer@demo, trader@demo, broker@demo (password: pass)",
-        "options": "3 options contracts with various strikes, quantities, and statuses",
-        "indexPrices": "2 index price entries (Wheat 11.5% @ 210, Wheat 11.5% @ 240)",
-        "button": "Run Demo Scenario",
-        "buttonPending": "Seeding demo data...",
-        "success": "Demo seeded successfully!",
-        "successToast": "Demo scenario created! ✨",
-        "successDesc": "Created {{users}} users, {{options}} options, and {{prices}} index prices.{{deleted}}",
-        "deleted": " Cleaned {{count}} existing records.",
-        "failedToast": "Failed to run demo",
-        "failedDesc": "An error occurred while seeding demo data",
+        "title": "Escenario demo",
+        "subtitle": "Ejecuta una demo con un clic para poblar la plataforma con datos de ejemplo para presentaciones a socios",
+        "creates": "Esto creará:",
+        "users": "3 usuarios demo: farmer@demo, trader@demo, broker@demo (contraseña: pass)",
+        "options": "3 contratos de opciones con distintos strikes, cantidades y estados",
+        "indexPrices": "2 registros de precios de índice (Wheat 11.5% @ 210, Wheat 11.5% @ 240)",
+        "button": "Ejecutar escenario demo",
+        "buttonPending": "Cargando datos demo…",
+        "success": "¡Demo poblada con éxito!",
+        "successToast": "¡Escenario demo creado!",
+        "successDesc": "Se crearon {{users}} usuarios, {{options}} opciones y {{prices}} precios de índice.{{deleted}}",
+        "deleted": "Se limpiaron {{count}} registros existentes.",
+        "failedToast": "No se pudo ejecutar la demo",
+        "failedDesc": "Ocurrió un error al cargar datos demo",
         "results": {
-          "users": "Users: {{count}} ({{created}} new, {{existing}} existing)",
-          "options": "Options: {{count}} created{{replaced}}",
-          "optionsReplaced": " (replaced {{count}} existing)",
-          "indexPrices": "Index Prices: {{count}} created{{replaced}}",
-          "indexPricesReplaced": " (replaced {{count}} existing)",
-          "credentials": "Login credentials:",
+          "users": "Usuarios: {{count}} ({{created}} nuevos, {{existing}} existentes)",
+          "options": "Opciones: {{count}} creadas{{replaced}}",
+          "optionsReplaced": "(se reemplazaron {{count}} existentes)",
+          "indexPrices": "Precios de índice: {{count}} creados{{replaced}}",
+          "indexPricesReplaced": "(se reemplazaron {{count}} existentes)",
+          "credentials": "Credenciales de acceso:",
           "credentialEntry": "{{email}} / pass ({{role}})"
         },
-        "note": "Note",
-        "noteDesc": "This feature is broker-only. The demo scenario is idempotent and can be run multiple times. Existing users will be preserved, and new options/index prices will be added to the database."
+        "note": "Nota",
+        "noteDesc": "Esta función es solo para brókers. El escenario demo es idempotente y puede ejecutarse varias veces. Se conservarán los usuarios existentes y se añadirán nuevas opciones/precios de índice a la base de datos."
       }
     },
     "about": {
@@ -917,31 +917,31 @@
   "component": {
     "createOption": {
       "block1": {
-        "title": "Contract Terms",
-        "description": "Define the basic terms of the option contract",
-        "commodity": "Commodity / Index",
-        "type": "Option Type",
-        "quantity": "Quantity (tons)",
-        "strike": "Strike Price ($/t)",
-        "expiry": "Expiration Date",
-        "premium": "Premium (CROPT)"
+        "title": "Términos del contrato",
+        "description": "Define los términos básicos del contrato de opción",
+        "commodity": "Commodity / Índice",
+        "type": "Tipo de opción",
+        "quantity": "Cantidad (toneladas)",
+        "strike": "Precio de strike ($/t)",
+        "expiry": "Fecha de vencimiento",
+        "premium": "Prima (CROPT)"
       },
       "block2": {
-        "title": "Collateral Model",
-        "description": "Standard collateral model (calculated automatically based on expiry duration)",
-        "tooltip": "Collateral is required from the seller to cover potential obligations. For MVP, we use a simplified model based on expiry duration (5% for ≤3 months, 10% for 4-6 months, 20% for 7+ months)."
+        "title": "Modelo de colateral",
+        "description": "Modelo estándar de colateral (se calcula automáticamente según la duración hasta el vencimiento)",
+        "tooltip": "Se exige colateral al vendedor para cubrir posibles obligaciones. Para el MVP usamos un modelo simplificado según la duración hasta el vencimiento (5% para ≤3 meses, 10% para 4–6 meses, 20% para 7+ meses)."
       },
       "block3": {
-        "title": "Price Preview",
-        "premium": "Premium:",
-        "notional": "Notional Value:",
-        "settlement": "Settlement Logic:",
-        "callSettlement": "If index at expiry is above strike, buyer receives (index - strike) × quantity. Otherwise, no payout.",
-        "putSettlement": "If index at expiry is below strike, seller pays (strike - index) × quantity. Otherwise, no payout."
+        "title": "Vista previa de precio",
+        "premium": "Prima:",
+        "notional": "Valor nocional:",
+        "settlement": "Lógica de liquidación:",
+        "callSettlement": "Si el índice al vencimiento está por encima del strike, el comprador recibe (índice - strike) × cantidad. En caso contrario, no hay pago.",
+        "putSettlement": "Si el índice al vencimiento está por debajo del strike, el vendedor paga (strike - índice) × cantidad. En caso contrario, no hay pago."
       },
       "block4": {
-        "title": "Transaction & Signature",
-        "walletNotConnected": "Wallet not connected",
+        "title": "Transacción y firma",
+        "walletNotConnected": "Billetera no conectada",
         "connectWallet": "Connect Wallet",
         "wallet": "Wallet:",
         "croptBalance": "CROPT Balance:"
