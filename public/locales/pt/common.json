@@ -144,89 +144,89 @@
         "arDescription": "Reference prices are based on FOB Up-River export values for corn, wheat, soy and soymeal."
       },
       "card": {
-        "viewIndex": "View Index Market",
-        "viewOptions": "View Options Market",
-        "viewHistory": "View History",
-        "source": "Source",
-        "clickForMarketData": "Click to view market data for this index"
+        "viewIndex": "Ver mercado de índices",
+        "viewOptions": "Ver mercado de opções",
+        "viewHistory": "Ver histórico",
+        "source": "Fonte",
+        "clickForMarketData": "Clique para ver os dados de mercado deste índice"
       },
-      "compareMarkets": "Compare Markets"
+      "compareMarkets": "Comparar mercados"
     },
     "admin": {
       "indexes": {
-        "title": "Market Indexes (Latest)",
-        "description": "Current index values by country, commodity, and basis",
-        "addMarketIndex": "Add Market Index",
-        "addMarketIndexTitle": "Add Market Index",
-        "addMarketIndexDescription": "Add or update an index value for a specific country, commodity, and basis",
-        "country": "Country",
+        "title": "Índices de mercado (últimos)",
+        "description": "Valores atuais do índice por país, commodity e base",
+        "addMarketIndex": "Adicionar índice de mercado",
+        "addMarketIndexTitle": "Adicionar índice de mercado",
+        "addMarketIndexDescription": "Adicione ou atualize um valor do índice para um país, commodity e base específicos",
+        "country": "País",
         "commodity": "Commodity",
-        "grade": "Grade (optional)",
-        "basis": "Basis",
-        "price": "Price (USD/t)",
-        "asOf": "As Of Date",
-        "addButton": "Add Index",
-        "adding": "Adding...",
-        "success": "Market index added successfully",
-        "error": "Failed to add market index",
-        "noIndexes": "No market indexes yet",
-        "noIndexesDescription": "Add a market index using the form above"
+        "grade": "Grau (opcional)",
+        "basis": "Base",
+        "price": "Preço (USD/t)",
+        "asOf": "Data de referência",
+        "addButton": "Adicionar índice",
+        "adding": "Adicionando…",
+        "success": "Índice de mercado adicionado com sucesso",
+        "error": "Não foi possível adicionar o índice de mercado",
+        "noIndexes": "Ainda não há índices de mercado",
+        "noIndexesDescription": "Adicione um índice de mercado usando o formulário acima"
       }
     },
     "how": {
-      "title": "How Cropto Works",
-      "subtitle": "Trade tokenized grain indices and options in 6 simple steps",
+      "title": "Como a Cropto funciona",
+      "subtitle": "Negocie índices de grãos tokenizados e opções em 6 passos simples",
       "cta": {
-        "startTrading": "Start Trading"
+        "startTrading": "Começar a negociar"
       },
       "steps": {
         "1": {
-          "title": "Connect Wallet",
-          "description": "Connect MetaMask, WalletConnect, or Coinbase Wallet to open a Web3 session. Without a wallet, only viewing is possible."
+          "title": "Conectar carteira",
+          "description": "Conecte MetaMask, WalletConnect ou Coinbase Wallet para iniciar uma sessão Web3. Sem uma carteira, apenas a visualização é possível."
         },
         "2": {
-          "title": "Choose Market & Product",
-          "description": "Select a country (UA/BR/AR) → Choose: Index Trading or Options Trading."
+          "title": "Escolha mercado e produto",
+          "description": "Selecione um país (UA/BR/AR) → Escolha: negociação de índices ou negociação de opções."
         },
         "3": {
-          "title": "Select Delivery Window (H1/H2)",
-          "description": "Each month is divided into H1 (1–15) and H2 (16–30/31). Forward available up to 12 months."
+          "title": "Selecione a janela de entrega (H1/H2)",
+          "description": "Cada mês é dividido em H1 (1–15) e H2 (16–30/31). O forward está disponível por até 12 meses."
         },
         "4": {
-          "title": "Place Order",
-          "description": "Limit order → order enters the on-chain orderbook."
+          "title": "Fazer ordem",
+          "description": "Ordem limitada → a ordem entra no livro de ordens on-chain."
         },
         "5": {
-          "title": "Fund & Activate",
-          "description": "Add collateral in CROPT/USDC. After that, the order activates → counterparty search begins."
+          "title": "Financiar e ativar",
+          "description": "Adicione colateral em CROPT/USDC. Depois, a ordem é ativada → começa a busca por contraparte."
         },
         "6": {
-          "title": "Manage or Wait for Settlement",
-          "description": "Monitor margin, PnL, Greeks, health bar. Settlement = average index price of the delivery period."
+          "title": "Gerencie ou aguarde a liquidação",
+          "description": "Monitore margem, PnL, gregas e barra de saúde. Liquidação = preço médio do índice no período de entrega."
         }
       }
     }
   },
   "spot": {
     "market": {
-      "title": "Spot Market",
-      "subtitle": "Buy and sell commodities using your CROPT balance",
-      "buy": "Buy",
-      "sell": "Sell",
-      "pricePerKg": "Price per ton",
+      "title": "Mercado spot",
+      "subtitle": "Compre e venda commodities usando seu saldo de CROPT",
+      "buy": "Comprar",
+      "sell": "Vender",
+      "pricePerKg": "Preço por tonelada",
       "error": "Não foi possível carregar os dados do mercado spot. Por favor, tente novamente mais tarde.",
       "noData": "Não há dados do mercado spot disponíveis no momento."
     },
     "trading": {
-      "title": "Spot Trading",
-      "pair": "Pair",
-      "selectPair": "Select trading pair",
-      "price": "Price",
-      "change24h": "24h change"
+      "title": "Trading spot",
+      "pair": "Par",
+      "selectPair": "Selecione o par de trading",
+      "price": "Preço",
+      "change24h": "Variação 24 h"
     },
     "index": {
-      "export": "Export index",
-      "processing": "Processing index"
+      "export": "Índice de exportação",
+      "processing": "Índice de processamento"
     },
     "positions": {
       "title": "Posições Spot",
@@ -353,25 +353,25 @@
   },
   "page": {
     "spot": {
-      "title": "Index Trading",
-      "subtitle": "Trade tokenized grain indices using forward contracts",
-      "noTradingPairs": "No trading pairs available",
-      "spotMarkets": "Spot markets",
-      "recentPriceUpdates": "Recent Price Updates (index quotes)",
-      "failedToLoadPriceHistory": "Failed to load price history",
-      "priceChart": "Price Chart",
-      "failedToLoadPriceChart": "Failed to load price chart",
-      "noPriceData": "No price data for this range.",
-      "tradeHistory": "Trade History",
-      "noTrades": "No trades yet.",
-      "orderBook": "Order Book",
-      "yourPosition": "Your Position",
-      "lastUpdated": "Last updated:",
-      "export": "Export",
-      "processing": "Processing",
-      "perTon": "/ ton",
-      "comingSoon": "Coming Soon",
-      "comingSoonDesc": "Trading for this region is coming soon. Currently available for Ukraine only.",
+      "title": "Negociação de índices",
+      "subtitle": "Negocie índices de grãos tokenizados usando contratos a termo",
+      "noTradingPairs": "Não há pares de trading disponíveis",
+      "spotMarkets": "Mercados spot",
+      "recentPriceUpdates": "Atualizações recentes de preços (cotações do índice)",
+      "failedToLoadPriceHistory": "Não foi possível carregar o histórico de preços",
+      "priceChart": "Gráfico de preços",
+      "failedToLoadPriceChart": "Não foi possível carregar o gráfico de preços",
+      "noPriceData": "Não há dados de preços para este intervalo.",
+      "tradeHistory": "Histórico de negociações",
+      "noTrades": "Ainda não há negociações.",
+      "orderBook": "Livro de ordens",
+      "yourPosition": "Sua posição",
+      "lastUpdated": "Última atualização:",
+      "export": "Exportação",
+      "processing": "Processamento",
+      "perTon": "/ t",
+      "comingSoon": "Em breve",
+      "comingSoonDesc": "A negociação para esta região estará disponível em breve. No momento, está disponível apenas para a Ucrânia.",
       "failedToLoadTrades": "Não foi possível carregar as negociações",
       "tradeTypeFallback": "Negociação",
       "failedToLoadChart": "Não foi possível carregar o gráfico",
@@ -389,22 +389,22 @@
       }
     },
     "options": {
-      "title": "Options Trading",
-      "subtitle": "Trade grain commodity options with customizable strikes and expiry windows",
-      "noOptionsFound": "No Options Found",
-      "getStarted": "Get started by creating your first option contract.",
-      "optionChain": "Option Chain",
-      "contracts": "contracts",
+      "title": "Negociação de opções",
+      "subtitle": "Negocie opções de commodities de grãos com strikes e janelas de vencimento personalizáveis",
+      "noOptionsFound": "Nenhuma opção encontrada",
+      "getStarted": "Comece criando seu primeiro contrato de opção.",
+      "optionChain": "Cadeia de opções",
+      "contracts": "contratos",
       "commodity": "Commodity",
-      "allCommodities": "All commodities",
-      "all": "All",
-      "expiryWindow": "Expiry window",
-      "allExpiries": "All expiries",
-      "type": "Type",
-      "allTypes": "All types",
+      "allCommodities": "Todas as commodities",
+      "all": "Todas",
+      "expiryWindow": "Janela de vencimento",
+      "allExpiries": "Todos os vencimentos",
+      "type": "Tipo",
+      "allTypes": "Todos os tipos",
       "call": "Call",
       "put": "Put",
-      "marginProfile": "Margin profile",
+      "marginProfile": "Perfil de margem",
       "view": "View:",
       "viewAll": "All",
       "viewMy": "My",
