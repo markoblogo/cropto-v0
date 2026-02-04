@@ -25,15 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Coins, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const mintNFTSchema = z.object({
-  toAddress: z.string()
-    .min(42, "Address must be 42 characters")
-    .max(42, "Address must be 42 characters")
-    .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
-});
-
-type MintNFTFormData = z.infer<typeof mintNFTSchema>;
+import { useTranslation } from "react-i18next";
 
 interface MintNFTDialogProps {
   optionId: string;
@@ -53,6 +45,17 @@ export function MintNFTDialog({
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
+
+  const mintNFTSchema = z.object({
+    toAddress: z
+      .string()
+      .min(42, t("dialog.mintNft.validation.addressLength"))
+      .max(42, t("dialog.mintNft.validation.addressLength"))
+      .regex(/^0x[a-fA-F0-9]{40}$/, t("dialog.mintNft.validation.addressInvalid")),
+  });
+
+  type MintNFTFormData = z.infer<typeof mintNFTSchema>;
 
   const form = useForm<MintNFTFormData>({
     resolver: zodResolver(mintNFTSchema),
@@ -83,21 +86,21 @@ export function MintNFTDialog({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || result.error || "Failed to mint NFT");
+        throw new Error(result.message || result.error || t("dialog.mintNft.errors.failed"));
       }
 
       toast({
-        title: "NFT Minted Successfully!",
+        title: t("dialog.mintNft.success"),
         description: (
           <div className="space-y-2">
-            <p>Token ID: {result.tokenId}</p>
+            <p>{t("dialog.mintNft.tokenId")} {result.tokenId}</p>
             <a 
               href={result.explorerUrl} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-primary hover:underline"
             >
-              View on Explorer <ExternalLink className="w-3 h-3" />
+              {t("dialog.mintNft.viewExplorer")} <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         ),
@@ -113,8 +116,8 @@ export function MintNFTDialog({
       console.error("Mint NFT error:", error);
       toast({
         variant: "destructive",
-        title: "Mint Failed",
-        description: error.message || "Failed to mint NFT",
+        title: t("dialog.mintNft.errorTitle"),
+        description: error.message || t("dialog.mintNft.errors.failed"),
       });
     } finally {
       setIsPending(false);
@@ -127,7 +130,7 @@ export function MintNFTDialog({
       <div className="flex items-center gap-2">
         <Badge variant="outline" className="gap-1">
           <Coins className="w-3 h-3" />
-          NFT #{nftTokenId}
+          {t("dialog.mintNft.nftLabel", { id: nftTokenId })}
         </Badge>
         <a
           href={`https://amoy.polygonscan.com/tx/${nftMintTx}`}
@@ -141,7 +144,7 @@ export function MintNFTDialog({
             data-testid={`button-view-nft-${optionId}`}
           >
             <ExternalLink className="w-3 h-3" />
-            View
+            {t("dialog.mintNft.view")}
           </Button>
         </a>
       </div>
@@ -153,7 +156,7 @@ export function MintNFTDialog({
     return (
       <Badge variant="outline" className="gap-1">
         <Coins className="w-3 h-3 animate-pulse" />
-        Minting...
+        {t("dialog.mintNft.buttonPending")}
       </Badge>
     );
   }
@@ -169,14 +172,14 @@ export function MintNFTDialog({
           data-testid={`button-mint-nft-${optionId}`}
         >
           <Coins className="w-4 h-4" />
-          Mint NFT
+          {t("dialog.mintNft.button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" data-testid="dialog-mint-nft">
         <DialogHeader>
-          <DialogTitle>Mint Option NFT</DialogTitle>
+          <DialogTitle>{t("dialog.mintNft.title")}</DialogTitle>
           <DialogDescription>
-            Mint this option as an ERC-721 NFT on Polygon Amoy testnet
+            {t("dialog.mintNft.subtitle")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -186,16 +189,16 @@ export function MintNFTDialog({
               name="toAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Recipient Address</FormLabel>
+                  <FormLabel>{t("dialog.mintNft.recipientLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="0x..."
+                      placeholder={t("dialog.mintNft.recipientPlaceholder")}
                       {...field}
                       data-testid="input-nft-address"
                     />
                   </FormControl>
                   <FormDescription>
-                    The Ethereum address that will receive the NFT
+                    {t("dialog.mintNft.recipientDesc")}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -207,7 +210,7 @@ export function MintNFTDialog({
                 disabled={isPending}
                 data-testid="button-confirm-mint-nft"
               >
-                {isPending ? "Minting..." : "Mint NFT"}
+                {isPending ? t("dialog.mintNft.buttonPending") : t("dialog.mintNft.button")}
               </Button>
             </DialogFooter>
           </form>

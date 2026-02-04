@@ -28,18 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, TrendingUp } from "lucide-react";
-
-const topUpSchema = z.object({
-  amount: z.coerce
-    .number()
-    .positive("Amount must be positive")
-    .min(0.00000001, "Amount must be greater than 0"),
-  currency: z.enum(["CROPT", "FIAT"], {
-    required_error: "Please select a currency",
-  }),
-});
-
-type TopUpFormValues = z.infer<typeof topUpSchema>;
+import { useTranslation } from "react-i18next";
 
 interface TopUpMarginCallDialogProps {
   marginCallId: string;
@@ -53,6 +42,19 @@ export function TopUpMarginCallDialog({
   isPending = false,
 }: TopUpMarginCallDialogProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const topUpSchema = z.object({
+    amount: z.coerce
+      .number()
+      .positive(t("dialog.topup.validation.positive"))
+      .min(0.00000001, t("dialog.topup.validation.min")),
+    currency: z.enum(["CROPT", "FIAT"], {
+      required_error: t("dialog.topup.validation.currencyRequired"),
+    }),
+  });
+
+  type TopUpFormValues = z.infer<typeof topUpSchema>;
 
   const form = useForm<TopUpFormValues>({
     resolver: zodResolver(topUpSchema),
@@ -78,14 +80,14 @@ export function TopUpMarginCallDialog({
           className="gap-1.5"
         >
           <TrendingUp className="w-3.5 h-3.5" />
-          Top-up
+          {t("dialog.topup.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent data-testid="dialog-topup">
         <DialogHeader>
-          <DialogTitle>Top-up Margin Call</DialogTitle>
+          <DialogTitle>{t("dialog.topup.title")}</DialogTitle>
           <DialogDescription>
-            Add funds to meet the margin call requirement
+            {t("dialog.topup.subtitle")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -95,13 +97,13 @@ export function TopUpMarginCallDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>{t("dialog.topup.amountLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       type="number"
                       step="0.00000001"
-                      placeholder="Enter amount to top-up"
+                      placeholder={t("dialog.topup.amountPlaceholder")}
                       data-testid="input-topup-amount"
                       disabled={isPending}
                     />
@@ -115,7 +117,7 @@ export function TopUpMarginCallDialog({
               name="currency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Currency</FormLabel>
+                  <FormLabel>{t("dialog.topup.currencyLabel")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -123,7 +125,7 @@ export function TopUpMarginCallDialog({
                   >
                     <FormControl>
                       <SelectTrigger data-testid="select-currency">
-                        <SelectValue placeholder="Select currency" />
+                        <SelectValue placeholder={t("dialog.topup.currencyPlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -131,7 +133,7 @@ export function TopUpMarginCallDialog({
                         CROPT
                       </SelectItem>
                       <SelectItem value="FIAT" data-testid="option-currency-fiat">
-                        FIAT
+                        {t("dialog.topup.fiat")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -147,7 +149,7 @@ export function TopUpMarginCallDialog({
                 disabled={isPending}
                 data-testid="button-cancel-topup"
               >
-                Cancel
+                {t("button.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -155,7 +157,7 @@ export function TopUpMarginCallDialog({
                 data-testid="button-submit-topup"
               >
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Top-up
+                {isPending ? t("dialog.topup.buttonProcessing") : t("dialog.topup.button")}
               </Button>
             </div>
           </form>

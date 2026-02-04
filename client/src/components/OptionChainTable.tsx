@@ -13,6 +13,7 @@ import { StatusBadge } from "./StatusBadge";
 import { OptionTypeBadge } from "./OptionTypeBadge";
 import type { Option } from "@shared/schema";
 import { Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface OptionChainTableProps {
   options: Option[];
@@ -20,70 +21,72 @@ interface OptionChainTableProps {
   onView?: (option: Option) => void;
 }
 
-/**
- * Calculate time to expiry and format it nicely
- */
-function formatTimeToExpiry(expirationDate: string | Date | undefined | null): string {
-  let expiry: Date | null = null;
-  
-  if (expirationDate instanceof Date) {
-    expiry = expirationDate;
-  } else if (typeof expirationDate === 'string') {
-    try {
-      expiry = new Date(expirationDate);
-    } catch {
-      return "N/A";
-    }
-  }
-  
-  if (!expiry || isNaN(expiry.getTime())) {
-    return "N/A";
-  }
-
-  try {
-    const now = new Date();
-    const daysDiff = differenceInDays(expiry, now);
-
-    if (daysDiff < 0) {
-      return `Expired ${Math.abs(daysDiff)}d ago`;
-    } else if (daysDiff === 0) {
-      return "Expires today";
-    } else if (daysDiff === 1) {
-      return "1d";
-    } else if (daysDiff < 7) {
-      return `${daysDiff}d`;
-    } else if (daysDiff < 30) {
-      const weeks = Math.floor(daysDiff / 7);
-      return `${weeks}w`;
-    } else {
-      const months = Math.floor(daysDiff / 30);
-      return `${months}m`;
-    }
-  } catch {
-    return "N/A";
-  }
-}
-
-/**
- * Extract commodity name from option title or use indexId
- */
-function getCommodityName(option: Option): string {
-  // Try to extract from title (format: COMMODITY-QTY-CREATED-EXPIRES-VOLUME-ID)
-  if (option.title) {
-    const parts = option.title.split('-');
-    if (parts.length > 0 && parts[0]) {
-      return parts[0].replace(/_/g, ' ');
-    }
-  }
-  // Fallback to indexId or a default
-  return option.indexId || "Unknown";
-}
-
 export function OptionChainTable({ options, isLoading, onView }: OptionChainTableProps) {
+  const { t } = useTranslation();
+
+  /**
+   * Calculate time to expiry and format it nicely
+   */
+  function formatTimeToExpiry(expirationDate: string | Date | undefined | null): string {
+    let expiry: Date | null = null;
+    
+    if (expirationDate instanceof Date) {
+      expiry = expirationDate;
+    } else if (typeof expirationDate === 'string') {
+      try {
+        expiry = new Date(expirationDate);
+      } catch {
+        return t("page.portfolio.timeToExpiry.na");
+      }
+    }
+    
+    if (!expiry || isNaN(expiry.getTime())) {
+      return t("page.portfolio.timeToExpiry.na");
+    }
+
+    try {
+      const now = new Date();
+      const daysDiff = differenceInDays(expiry, now);
+
+      if (daysDiff < 0) {
+        return t("page.portfolio.timeToExpiry.expiredAgo", { count: Math.abs(daysDiff), days: Math.abs(daysDiff) });
+      } else if (daysDiff === 0) {
+        return t("page.portfolio.timeToExpiry.expiresToday");
+      } else if (daysDiff === 1) {
+        return t("component.optionChainTable.time.oneDay");
+      } else if (daysDiff < 7) {
+        return t("component.optionChainTable.time.days", { days: daysDiff });
+      } else if (daysDiff < 30) {
+        const weeks = Math.floor(daysDiff / 7);
+        return t("component.optionChainTable.time.weeks", { weeks });
+      } else {
+        const months = Math.floor(daysDiff / 30);
+        return t("component.optionChainTable.time.months", { months });
+      }
+    } catch {
+      return t("page.portfolio.timeToExpiry.na");
+    }
+  }
+
+  /**
+   * Extract commodity name from option title or use indexId
+   */
+  function getCommodityName(option: Option): string {
+    // Try to extract from title (format: COMMODITY-QTY-CREATED-EXPIRES-VOLUME-ID)
+    if (option.title) {
+      const parts = option.title.split('-');
+      if (parts.length > 0 && parts[0]) {
+        return parts[0].replace(/_/g, ' ');
+      }
+    }
+    // Fallback to indexId or a default
+    return option.indexId || t("component.optionChainTable.values.unknown");
+  }
+
   if (isLoading) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        Loading options...
+        {t("component.optionChainTable.loading")}
       </div>
     );
   }
@@ -91,7 +94,7 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
   if (options.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No options found
+        {t("component.optionChainTable.empty")}
       </div>
     );
   }
@@ -101,15 +104,15 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Commodity</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Side</TableHead>
-            <TableHead>Strike ($/t)</TableHead>
-            <TableHead>Qty (t)</TableHead>
-            <TableHead>Premium</TableHead>
-            <TableHead>Expiry</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Action</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.commodity")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.type")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.side")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.strike")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.qty")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.premium")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.expiry")}</TableHead>
+            <TableHead>{t("component.optionChainTable.headers.status")}</TableHead>
+            <TableHead className="text-right">{t("component.optionChainTable.headers.action")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -120,7 +123,11 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
             const totalPremium = premiumPerTon * quantityTons;
             
             // Determine side (LONG if buyer, SHORT if issuer/seller)
-            const side = option.buyerId ? "LONG" : option.issuerId ? "SHORT" : "—";
+            const side = option.buyerId
+              ? t("component.optionChainTable.side.long")
+              : option.issuerId
+              ? t("component.optionChainTable.side.short")
+              : t("component.optionChainTable.values.dash");
             
             // Format expiration date
             const expiryDate = option.expirationDate 
@@ -131,11 +138,11 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
             
             const expiryFormatted = expiryDate 
               ? format(expiryDate, "MMM dd, yyyy")
-              : "N/A";
+              : t("page.portfolio.timeToExpiry.na");
             
             const timeToExpiry = expiryDate 
               ? formatTimeToExpiry(expiryDate)
-              : "N/A";
+              : t("page.portfolio.timeToExpiry.na");
 
             return (
               <TableRow key={option.id}>
@@ -157,10 +164,10 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="font-mono text-sm">
-                      {premiumPerTon.toFixed(2)} CROPT/t
+                      {t("component.optionChainTable.values.premiumPerTon", { premium: premiumPerTon.toFixed(2) })}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Total: {totalPremium.toFixed(2)} CROPT
+                      {t("component.optionChainTable.values.premiumTotal", { total: totalPremium.toFixed(2) })}
                     </span>
                   </div>
                 </TableCell>
@@ -182,7 +189,7 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
                     onClick={() => onView?.(option)}
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    View
+                    {t("component.optionChainTable.action.view")}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -193,4 +200,3 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
     </div>
   );
 }
-

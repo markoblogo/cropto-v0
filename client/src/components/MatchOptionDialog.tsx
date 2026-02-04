@@ -26,13 +26,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Option } from "@shared/schema";
+import { useTranslation } from "react-i18next";
 
-// Schema for broker mode (old mode with form)
-const matchFormSchema = z.object({
-  counterpartyId: z.string().min(1, "Counterparty ID is required"),
-});
-
-type MatchFormData = z.infer<typeof matchFormSchema>;
+type MatchFormData = {
+  counterpartyId: string;
+};
 
 // New friendly mode props
 interface TradeOptionDialogProps {
@@ -61,6 +59,12 @@ function isTradeOptionMode(props: MatchOptionDialogProps): props is TradeOptionD
 }
 
 export function MatchOptionDialog(props: MatchOptionDialogProps) {
+  const { t } = useTranslation();
+
+  const matchFormSchema = z.object({
+    counterpartyId: z.string().min(1, t("dialog.match.validation.counterpartyRequired")),
+  });
+
   // New friendly mode for regular users
   if (isTradeOptionMode(props)) {
     const { option, userId, onMatch, isPending, open, onOpenChange } = props;
@@ -75,18 +79,18 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
     };
 
     // Extract commodity name
-    const commodityName = (option as any).commodityName || option.commodity || "Unknown";
+    const commodityName = (option as any).commodityName || option.commodity || t("dialog.match.values.unknown");
     const commoditySlug = (option as any).commoditySlug || option.commodity?.toLowerCase() || "";
-    const indexName = commodityName || "Spike Spot Grain Index";
-    const basis = "CPT Odesa";
-    const windowLabel = (option as any).expiryWindow || (option as any).windowLabel || "Not specified";
-    const windowStart = (option as any).windowStart ? format(new Date((option as any).windowStart), "dd MMM yyyy") : "—";
-    const windowEnd = (option as any).windowEnd ? format(new Date((option as any).windowEnd), "dd MMM yyyy") : "—";
+    const indexName = commodityName || t("dialog.match.values.indexFallback");
+    const basis = t("dialog.match.values.basis");
+    const windowLabel = (option as any).expiryWindow || (option as any).windowLabel || t("dialog.match.values.notSpecified");
+    const windowStart = (option as any).windowStart ? format(new Date((option as any).windowStart), "dd MMM yyyy") : t("dialog.match.values.dash");
+    const windowEnd = (option as any).windowEnd ? format(new Date((option as any).windowEnd), "dd MMM yyyy") : t("dialog.match.values.dash");
     const settlementDate = option.settlementDate
       ? format(new Date(option.settlementDate), "dd MMM yyyy")
       : option.expirationDate
       ? format(new Date(option.expirationDate), "dd MMM yyyy")
-      : "Not specified";
+      : t("dialog.match.values.notSpecified");
     const createdAt = option.createdAt ? new Date(option.createdAt) : null;
     const matchedAt = (option as any).matchedAt ? new Date((option as any).matchedAt) : null;
     const marginDeadline = (option as any).marginCallDeadline ? new Date((option as any).marginCallDeadline) : null;
@@ -97,26 +101,26 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
 
     const timeline = [
       createdAt && {
-        label: "Created",
+        label: t("dialog.match.timeline.created"),
         date: createdAt,
-        description: "Option was created.",
+        description: t("dialog.match.timeline.createdDesc"),
       },
       matchedAt && {
-        label: "Matched",
+        label: t("dialog.match.timeline.matched"),
         date: matchedAt,
-        description: "Counterparty matched; status FILLED.",
+        description: t("dialog.match.timeline.matchedDesc"),
       },
       (isInMarginCall || marginDeadline) && {
-        label: "Margin Call",
+        label: t("dialog.match.timeline.marginCall"),
         date: marginDeadline || null,
         description: marginDeadline
-          ? `Margin call active. Deadline: ${format(marginDeadline, "dd MMM yyyy HH:mm")}`
-          : "Margin call active.",
+          ? t("dialog.match.timeline.marginCallDeadline", { deadline: format(marginDeadline, "dd MMM yyyy HH:mm") })
+          : t("dialog.match.timeline.marginCallActive"),
       },
       (isSettled || isLiquidated) && {
-        label: isLiquidated ? "Liquidated" : "Settled",
+        label: isLiquidated ? t("dialog.match.timeline.liquidated") : t("dialog.match.timeline.settled"),
         date: option.settlementDate ? new Date(option.settlementDate) : null,
-        description: isLiquidated ? "Auto-liquidated / defaulted." : "Exercised and settled.",
+        description: isLiquidated ? t("dialog.match.timeline.liquidatedDesc") : t("dialog.match.timeline.settledDesc"),
       },
     ].filter(Boolean) as { label: string; date: Date | null; description: string }[];
 
@@ -126,25 +130,25 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
     // Format expiry date
     const expiryDate = option.expirationDate 
       ? format(new Date(option.expirationDate), "dd MMM yyyy")
-      : "Not specified";
+      : t("dialog.match.values.notSpecified");
 
     // Determine role description
     const roleDescription = option.type === "CALL" 
-      ? "Call option (right to buy)"
-      : "Put option (right to sell)";
+      ? t("dialog.match.values.callDesc")
+      : t("dialog.match.values.putDesc");
 
     // Determine user's side
     const userSide = option.issuerId === userId 
-      ? "You are the issuer"
-      : "You will take the counterparty role";
+      ? t("dialog.match.values.userIssuer")
+      : t("dialog.match.values.userCounterparty");
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col" data-testid="dialog-trade-option">
           <DialogHeader className="shrink-0">
-            <DialogTitle>Trade option</DialogTitle>
+            <DialogTitle>{t("dialog.match.tradeTitle")}</DialogTitle>
             <DialogDescription>
-              You are about to take the other side of this option. Please review the details before confirming.
+              {t("dialog.match.tradeSubtitle")}
             </DialogDescription>
           </DialogHeader>
 
@@ -162,7 +166,7 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
                       />
                     )}
                     <div className="min-w-0">
-                      <div className="font-semibold text-sm text-muted-foreground">Underlying</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.underlying")}</div>
                       <div className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                         {commodityName}
                       </div>
@@ -173,7 +177,7 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
 
                   {timeline.length > 0 && (
                     <div className="space-y-3">
-                      <div className="font-semibold text-sm text-muted-foreground">Lifecycle</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.lifecycle")}</div>
                       <div className="space-y-3">
                         {timeline.map((step, idx) => (
                           <div key={idx} className="flex items-start gap-3">
@@ -197,11 +201,11 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-semibold text-sm text-muted-foreground">Index</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.index")}</div>
                       <div className="font-medium break-words">{indexName}</div>
                     </div>
                     <div>
-                      <div className="font-semibold text-sm text-muted-foreground">Basis</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.basis")}</div>
                       <div className="font-medium">{basis}</div>
                     </div>
                   </div>
@@ -210,11 +214,11 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-semibold text-sm text-muted-foreground">Settlement type</div>
-                      <div className="font-medium break-words">Index cash-settled (Spike Spot)</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.settlementType")}</div>
+                      <div className="font-medium break-words">{t("dialog.match.values.settlementType")}</div>
                     </div>
                     <div>
-                      <div className="font-semibold text-sm text-muted-foreground">Basis</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.basis")}</div>
                       <div className="font-medium">{basis}</div>
                     </div>
                   </div>
@@ -223,11 +227,11 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-semibold text-sm text-muted-foreground">Window</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.window")}</div>
                       <div className="font-medium break-words">{windowLabel}</div>
                     </div>
                     <div>
-                      <div className="font-semibold text-sm text-muted-foreground">Window dates</div>
+                      <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.windowDates")}</div>
                       <div className="font-medium text-sm">{windowStart} → {windowEnd}</div>
                     </div>
                   </div>
@@ -235,43 +239,43 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
                   <Separator />
 
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground">Settlement date</div>
+                    <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.settlementDate")}</div>
                     <div className="font-medium">{settlementDate}</div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground">Type</div>
+                    <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.type")}</div>
                     <div className="font-medium">{roleDescription}</div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground">Quantity</div>
-                    <div className="font-medium">{quantityT.toFixed(2)} t</div>
+                    <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.quantity")}</div>
+                    <div className="font-medium">{t("dialog.match.values.quantityT", { qty: quantityT.toFixed(2) })}</div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground">Strike price</div>
-                    <div className="font-medium">${parseFloat(option.strike).toLocaleString()} per ton</div>
+                    <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.strikePrice")}</div>
+                    <div className="font-medium">{t("dialog.match.values.strikePerTon", { price: parseFloat(option.strike).toLocaleString() })}</div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground">Expiry</div>
+                    <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.expiry")}</div>
                     <div className="font-medium">{expiryDate}</div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground">Premium / Expected payout</div>
-                    <div className="font-medium text-lg">${parseFloat(option.premium).toLocaleString()} CROPT</div>
+                    <div className="font-semibold text-sm text-muted-foreground">{t("dialog.match.labels.premiumPayout")}</div>
+                    <div className="font-medium text-lg">{t("dialog.match.values.premiumValue", { premium: parseFloat(option.premium).toLocaleString() })}</div>
                   </div>
                 </div>
               </CardContent>
@@ -280,7 +284,7 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
             {/* Information Block */}
             <div className="bg-muted/50 rounded-lg p-4 text-sm">
               <p className="text-muted-foreground">
-                {userSide}. If the market price at expiry is worse than the strike for your side, you will pay the difference; if it is better, you will receive it.
+                {t("dialog.match.info", { side: userSide })}
               </p>
             </div>
           </div>
@@ -291,7 +295,7 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Cancel
+              {t("button.cancel")}
             </Button>
             <Button
               onClick={handleConfirm}
@@ -302,10 +306,10 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
               {isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Confirming...
+                  {t("dialog.match.tradeConfirming")}
                 </>
               ) : (
-                "Confirm trade"
+                t("dialog.match.tradeConfirm")
               )}
             </Button>
           </DialogFooter>
@@ -350,14 +354,14 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
           data-testid={`button-match-${optionId}`}
         >
           <Handshake className="w-4 h-4" />
-          Match
+          {t("dialog.match.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" data-testid="dialog-match-option">
         <DialogHeader>
-          <DialogTitle>Match Option</DialogTitle>
+          <DialogTitle>{t("dialog.match.title")}</DialogTitle>
           <DialogDescription>
-            Enter the counterparty ID to complete this trade
+            {t("dialog.match.subtitle")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -367,10 +371,10 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
               name="counterpartyId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Counterparty ID</FormLabel>
+                  <FormLabel>{t("dialog.match.counterpartyLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="user_id_123abc"
+                      placeholder={t("dialog.match.counterpartyPlaceholder")}
                       {...field}
                       data-testid="input-counterparty-id"
                     />
@@ -385,7 +389,7 @@ export function MatchOptionDialog(props: MatchOptionDialogProps) {
                 disabled={isPending}
                 data-testid="button-confirm-match"
               >
-                {isPending ? "Matching..." : "Confirm Match"}
+                {isPending ? t("dialog.match.buttonProcessing") : t("dialog.match.button")}
               </Button>
             </DialogFooter>
           </form>

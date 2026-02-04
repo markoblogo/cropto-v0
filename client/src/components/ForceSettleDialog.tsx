@@ -22,14 +22,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AlertTriangle } from "lucide-react";
-
-const forceSettleFormSchema = z.object({
-  reason: z.string()
-    .min(10, "Reason must be at least 10 characters")
-    .max(500, "Reason must be less than 500 characters"),
-});
-
-type ForceSettleFormData = z.infer<typeof forceSettleFormSchema>;
+import { useTranslation } from "react-i18next";
 
 interface ForceSettleDialogProps {
   optionId: string;
@@ -45,6 +38,16 @@ export function ForceSettleDialog({
   isPending 
 }: ForceSettleDialogProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const forceSettleFormSchema = z.object({
+    reason: z
+      .string()
+      .min(10, t("dialog.forceSettle.validation.reasonMin"))
+      .max(500, t("dialog.forceSettle.validation.reasonMax")),
+  });
+
+  type ForceSettleFormData = z.infer<typeof forceSettleFormSchema>;
 
   const form = useForm<ForceSettleFormData>({
     resolver: zodResolver(forceSettleFormSchema),
@@ -69,18 +72,17 @@ export function ForceSettleDialog({
           data-testid={`button-force-settle-${optionId}`}
         >
           <AlertTriangle className="w-4 h-4" />
-          Force Settle
+          {t("dialog.forceSettle.button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]" data-testid="dialog-force-settle">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-destructive" />
-            Force Settle Option
+            {t("dialog.forceSettle.title")}
           </DialogTitle>
           <DialogDescription>
-            This will force-settle the option "{optionTitle}" and update its status to EXERCISED or DEFAULTED. 
-            This action cannot be undone.
+            {t("dialog.forceSettle.subtitle", { title: optionTitle })}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -90,10 +92,10 @@ export function ForceSettleDialog({
               name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reason for Force Settlement</FormLabel>
+                  <FormLabel>{t("dialog.forceSettle.reasonLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)"
+                      placeholder={t("dialog.forceSettle.reasonPlaceholder")}
                       className="min-h-[100px] resize-none"
                       {...field}
                       data-testid="textarea-force-settle-reason"
@@ -111,7 +113,7 @@ export function ForceSettleDialog({
                 disabled={isPending}
                 data-testid="button-cancel-force-settle"
               >
-                Cancel
+                {t("button.cancel")}
               </Button>
               <Button 
                 type="submit" 
@@ -119,7 +121,7 @@ export function ForceSettleDialog({
                 disabled={isPending}
                 data-testid="button-confirm-force-settle"
               >
-                {isPending ? "Processing..." : "Force Settle"}
+                {isPending ? t("dialog.forceSettle.buttonProcessing") : t("dialog.forceSettle.button")}
               </Button>
             </DialogFooter>
           </form>

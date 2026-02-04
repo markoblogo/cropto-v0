@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface PriceHistoryDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ type PeriodOption = '30d' | '90d' | '365d' | 'all';
 
 export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDialogProps) {
   const [period, setPeriod] = useState<PeriodOption>('30d');
+  const { t } = useTranslation();
 
   const { data: historyData, isLoading } = useQuery<HistoryResponse>({
     queryKey: [`/api/index/history?commodity=${commodity}&period=${period}&interval=day&comparison=true`],
@@ -38,10 +40,10 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
   });
 
   const periodOptions: Array<{ value: PeriodOption; label: string }> = [
-    { value: '30d', label: '30 days' },
-    { value: '90d', label: '90 days' },
-    { value: '365d', label: '1 year' },
-    { value: 'all', label: 'All time' },
+    { value: '30d', label: t("dialog.priceHistory.period.30d") },
+    { value: '90d', label: t("dialog.priceHistory.period.90d") },
+    { value: '365d', label: t("dialog.priceHistory.period.365d") },
+    { value: 'all', label: t("dialog.priceHistory.period.all") },
   ];
 
   // Prepare chart data by normalizing dates for comparison
@@ -82,7 +84,7 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-4xl" data-testid="dialog-price-history">
         <DialogHeader>
-          <DialogTitle>Price History — {commodity}</DialogTitle>
+          <DialogTitle>{t("dialog.priceHistory.titleWithCommodity", { commodity })}</DialogTitle>
         </DialogHeader>
 
         {/* Period Selector */}
@@ -137,7 +139,9 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
                   }}
                   formatter={(value: number, name: string) => {
                     if (value === null) return null;
-                    const label = name === 'currentYear' ? 'This Year' : 'Last Year';
+                    const label = name === 'currentYear'
+                      ? t("dialog.priceHistory.labels.thisYear")
+                      : t("dialog.priceHistory.labels.lastYear");
                     return [`$${value.toFixed(2)}`, label];
                   }}
                   labelFormatter={(label) => {
@@ -152,13 +156,15 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
                 {historyData?.hasPreviousYear && (
                   <Legend 
                     wrapperStyle={{ paddingTop: '10px' }}
-                    formatter={(value) => value === 'currentYear' ? 'This Year' : 'Last Year'}
+                    formatter={(value) => value === 'currentYear'
+                      ? t("dialog.priceHistory.labels.thisYear")
+                      : t("dialog.priceHistory.labels.lastYear")}
                   />
                 )}
                 <Line
                   type="monotone"
                   dataKey="currentYear"
-                  name="This Year"
+                  name={t("dialog.priceHistory.labels.thisYear")}
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={{ fill: 'hsl(var(--primary))', r: 3 }}
@@ -168,7 +174,7 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
                   <Line
                     type="monotone"
                     dataKey="previousYear"
-                    name="Last Year"
+                    name={t("dialog.priceHistory.labels.lastYear")}
                     stroke="hsl(var(--muted-foreground))"
                     strokeWidth={2}
                     strokeDasharray="5 5"
@@ -181,7 +187,7 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-              <p>No data to display</p>
+              <p>{t("dialog.priceHistory.empty")}</p>
             </div>
           )}
         </div>
@@ -191,15 +197,15 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
           <div className="space-y-3 pt-4 border-t">
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Data Points</p>
+                <p className="text-sm text-muted-foreground">{t("dialog.priceHistory.summary.points")}</p>
                 <p className="text-lg font-semibold">{chartData.length}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Minimum</p>
+                <p className="text-sm text-muted-foreground">{t("dialog.priceHistory.summary.min")}</p>
                 <p className="text-lg font-semibold">${minPrice.toFixed(2)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Maximum</p>
+                <p className="text-sm text-muted-foreground">{t("dialog.priceHistory.summary.max")}</p>
                 <p className="text-lg font-semibold">${maxPrice.toFixed(2)}</p>
               </div>
             </div>
@@ -207,12 +213,12 @@ export function PriceHistoryDialog({ open, onClose, commodity }: PriceHistoryDia
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-0.5 bg-primary"></div>
-                  <span>This Year</span>
+                  <span>{t("dialog.priceHistory.labels.thisYear")}</span>
                 </div>
                 <span>•</span>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-0.5 bg-muted-foreground" style={{ borderTop: '2px dashed' }}></div>
-                  <span>Last Year (Comparison)</span>
+                  <span>{t("dialog.priceHistory.labels.lastYearComparison")}</span>
                 </div>
               </div>
             )}

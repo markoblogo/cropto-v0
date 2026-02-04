@@ -697,6 +697,70 @@
       "cancelled": "CANCELLED",
       "defaulted": "DEFAULTED",
       "marginCall": "MARGIN CALL"
+    },
+    "optionAnalytics": {
+      "title": {
+        "volume": "Volume",
+        "openInterest": "Open Interest",
+        "analytics": "Analytics"
+      },
+      "filters": {
+        "commodity": "Commodity: {{commodity}}",
+        "expiry": "Expiry: {{date}}"
+      },
+      "empty": {
+        "volume": "No volume data for the selected filters.",
+        "openInterest": "No open interest data for the selected filters.",
+        "cta": "Try another expiry or commodity."
+      },
+      "tooltip": {
+        "strike": "Strike: ${{strike}}",
+        "calls": "Calls:",
+        "puts": "Puts:",
+        "tons": "{{value}} t"
+      },
+      "legend": {
+        "calls": "Calls",
+        "puts": "Puts"
+      },
+      "axis": {
+        "volume": "Volume (t)",
+        "openInterest": "Open Interest (t)"
+      }
+    },
+    "optionChainTable": {
+      "loading": "Loading options...",
+      "empty": "No options found",
+      "headers": {
+        "commodity": "Commodity",
+        "type": "Type",
+        "side": "Side",
+        "strike": "Strike ($/t)",
+        "qty": "Qty (t)",
+        "premium": "Premium",
+        "expiry": "Expiry",
+        "status": "Status",
+        "action": "Action"
+      },
+      "side": {
+        "long": "LONG",
+        "short": "SHORT"
+      },
+      "values": {
+        "unknown": "Unknown",
+        "dash": "—",
+        "premiumPerTon": "{{premium}} CROPT/t",
+        "premiumTotal": "Total: {{total}} CROPT"
+      },
+      "action": {
+        "view": "View"
+      },
+      "time": {
+        "oneDay": "1d",
+        "days": "{{days}}d",
+        "weeks": "{{weeks}}w",
+        "months": "{{months}}m"
+      }
     }
   },
   "dialog": {
@@ -704,28 +768,103 @@
       "title": "Match Option",
       "subtitle": "Enter the counterparty ID to complete this trade",
       "counterpartyLabel": "Counterparty ID",
-      "counterpartyPlaceholder": "Enter user ID"
+      "counterpartyPlaceholder": "Enter user ID",
+      "trigger": "Match",
+      "button": "Confirm Match",
+      "buttonProcessing": "Matching...",
+      "tradeTitle": "Trade option",
+      "tradeSubtitle": "You are about to take the other side of this option. Please review the details before confirming.",
+      "tradeConfirm": "Confirm trade",
+      "tradeConfirming": "Confirming...",
+      "labels": {
+        "underlying": "Underlying",
+        "lifecycle": "Lifecycle",
+        "index": "Index",
+        "basis": "Basis",
+        "settlementType": "Settlement type",
+        "window": "Window",
+        "windowDates": "Window dates",
+        "settlementDate": "Settlement date",
+        "type": "Type",
+        "quantity": "Quantity",
+        "strikePrice": "Strike price",
+        "expiry": "Expiry",
+        "premiumPayout": "Premium / Expected payout"
+      },
+      "values": {
+        "unknown": "Unknown",
+        "indexFallback": "Spike Spot Grain Index",
+        "basis": "CPT Odesa",
+        "notSpecified": "Not specified",
+        "dash": "—",
+        "settlementType": "Index cash-settled (Spike Spot)",
+        "callDesc": "Call option (right to buy)",
+        "putDesc": "Put option (right to sell)",
+        "userIssuer": "You are the issuer",
+        "userCounterparty": "You will take the counterparty role",
+        "quantityT": "{{qty}} t",
+        "strikePerTon": "${{price}} per ton",
+        "premiumValue": "${{premium}} CROPT"
+      },
+      "timeline": {
+        "created": "Created",
+        "createdDesc": "Option was created.",
+        "matched": "Matched",
+        "matchedDesc": "Counterparty matched; status FILLED.",
+        "marginCall": "Margin Call",
+        "marginCallDeadline": "Margin call active. Deadline: {{deadline}}",
+        "marginCallActive": "Margin call active.",
+        "liquidated": "Liquidated",
+        "liquidatedDesc": "Auto-liquidated / defaulted.",
+        "settled": "Settled",
+        "settledDesc": "Exercised and settled."
+      },
+      "info": "{{side}}. If the market price at expiry is worse than the strike for your side, you will pay the difference; if it is better, you will receive it.",
+      "validation": {
+        "counterpartyRequired": "Counterparty ID is required"
+      }
     },
     "exercise": {
       "title": "Exercise Option",
       "subtitle": "Enter the current spot price to exercise this option. Strike: ${{strike}}",
       "spotPriceLabel": "Current Spot Price",
-      "spotPricePlaceholder": "Enter current price",
-      "spotPriceDesc": "The current market price of the asset"
+      "spotPricePlaceholder": "0.00",
+      "spotPriceDesc": "The current market price of the asset",
+      "trigger": "Exercise",
+      "titleWithType": "Exercise {{type}} Option",
+      "callDesc": "You will buy the underlying at the strike price and open/update a long spot position.",
+      "putDesc": "You will sell the underlying at the strike price and open/update a short spot position.",
+      "button": "Exercise Option",
+      "buttonProcessing": "Processing...",
+      "validation": {
+        "spotPricePositive": "Spot price must be positive"
+      }
     },
     "simulate": {
       "title": "Simulate Margin Check",
       "subtitle": "Run a margin check calculation for this option using a custom index price",
       "indexPriceLabel": "Index Price",
       "indexPricePlaceholder": "Enter index price",
-      "indexPriceDesc": "The current commodity index price for P&L calculation"
+      "indexPriceDesc": "The current commodity index price for P&L calculation",
+      "trigger": "Simulate",
+      "button": "Run Margin Check",
+      "buttonProcessing": "Simulating...",
+      "validation": {
+        "positive": "Index price must be positive",
+        "min": "Index price must be greater than 0"
+      }
     },
     "forceSettle": {
       "title": "Force Settle Option",
       "subtitle": "This will force-settle the option \"{{title}}\" and update its status to EXERCISED or DEFAULTED. This action cannot be undone.",
       "reasonLabel": "Reason for Force Settlement",
       "reasonPlaceholder": "Enter detailed reason for force-settling this option (e.g., margin call deadline expired, insufficient collateral, etc.)",
-      "button": "Force Settle"
+      "button": "Force Settle",
+      "buttonProcessing": "Processing...",
+      "validation": {
+        "reasonMin": "Reason must be at least 10 characters",
+        "reasonMax": "Reason must be less than 500 characters"
+      }
     },
     "topup": {
       "title": "Top Up Collateral",
@@ -735,7 +874,15 @@
       "currencyLabel": "Currency",
       "currencyPlaceholder": "Select currency",
       "usd": "USD",
-      "button": "Top Up"
+      "button": "Top Up",
+      "trigger": "Top-up",
+      "buttonProcessing": "Processing...",
+      "fiat": "FIAT",
+      "validation": {
+        "positive": "Amount must be positive",
+        "min": "Amount must be greater than 0",
+        "currencyRequired": "Please select a currency"
+      }
     },
     "withdraw": {
       "title": "Withdraw CROPT",
@@ -757,7 +904,16 @@
       "viewExplorer": "View on Explorer",
       "nftLabel": "NFT #{{id}}",
       "button": "Mint NFT",
-      "buttonPending": "Minting..."
+      "buttonPending": "Minting...",
+      "view": "View",
+      "errorTitle": "Mint Failed",
+      "errors": {
+        "failed": "Failed to mint NFT"
+      },
+      "validation": {
+        "addressLength": "Address must be 42 characters",
+        "addressInvalid": "Invalid Ethereum address"
+      }
     },
     "walletAuth": {
       "title": "Connect Wallet",
@@ -799,7 +955,25 @@
     "priceHistory": {
       "title": "Price History",
       "subtitle": "View historical index price data for {{commodity}}",
-      "close": "Close"
+      "close": "Close",
+      "titleWithCommodity": "Price History — {{commodity}}",
+      "period": {
+        "30d": "30 days",
+        "90d": "90 days",
+        "365d": "1 year",
+        "all": "All time"
+      },
+      "labels": {
+        "thisYear": "This Year",
+        "lastYear": "Last Year",
+        "lastYearComparison": "Last Year (Comparison)"
+      },
+      "empty": "No data to display",
+      "summary": {
+        "points": "Data Points",
+        "min": "Minimum",
+        "max": "Maximum"
+      }
     }
   },
   "faq": {

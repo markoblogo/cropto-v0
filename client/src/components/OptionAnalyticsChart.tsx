@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { StrikeVolumePoint, AnalyticsMetric } from "@/lib/optionCalculations";
+import { useTranslation } from "react-i18next";
 
 export interface OptionAnalyticsChartProps {
   data: StrikeVolumePoint[];
@@ -34,6 +35,16 @@ export function StrikeVolumeChart({
   commodity,
   expiry,
 }: OptionAnalyticsChartProps) {
+  const { t } = useTranslation();
+
+  const title = metric === "volume"
+    ? t("component.optionAnalytics.title.volume")
+    : t("component.optionAnalytics.title.openInterest");
+
+  const axisLabel = metric === "volume"
+    ? t("component.optionAnalytics.axis.volume")
+    : t("component.optionAnalytics.axis.openInterest");
+
   // Transform data: Calls go negative (left), Puts go positive (right)
   const chartData = data.map((item) => ({
     strike: item.strike,
@@ -67,18 +78,20 @@ export function StrikeVolumeChart({
       const data = payload[0].payload;
       return (
         <div className="rounded-lg border bg-background p-3 shadow-md">
-          <p className="font-semibold mb-2">Strike: ${data.strike.toFixed(2)}</p>
+          <p className="font-semibold mb-2">{t("component.optionAnalytics.tooltip.strike", { strike: data.strike.toFixed(2) })}</p>
           <div className="space-y-1 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CALL_COLOR }} />
               <span>
-                Calls: <span className="font-mono font-semibold">{data.callVolumeOriginal.toFixed(2)} t</span>
+                {t("component.optionAnalytics.tooltip.calls")}{" "}
+                <span className="font-mono font-semibold">{t("component.optionAnalytics.tooltip.tons", { value: data.callVolumeOriginal.toFixed(2) })}</span>
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PUT_COLOR }} />
               <span>
-                Puts: <span className="font-mono font-semibold">{data.putVolumeOriginal.toFixed(2)} t</span>
+                {t("component.optionAnalytics.tooltip.puts")}{" "}
+                <span className="font-mono font-semibold">{t("component.optionAnalytics.tooltip.tons", { value: data.putVolumeOriginal.toFixed(2) })}</span>
               </span>
             </div>
           </div>
@@ -93,14 +106,14 @@ export function StrikeVolumeChart({
       <Card>
         <CardHeader>
           <CardTitle>
-            {metric === "volume" ? "Volume" : "Open Interest"} Analytics
+            {title} {t("component.optionAnalytics.title.analytics")}
           </CardTitle>
           <CardDescription>
             {filtersLabel
               ? filtersLabel
               : [
-                  commodity && `Commodity: ${commodity}`,
-                  expiry && `Expiry: ${new Date(expiry).toLocaleDateString()}`,
+                  commodity && t("component.optionAnalytics.filters.commodity", { commodity }),
+                  expiry && t("component.optionAnalytics.filters.expiry", { date: new Date(expiry).toLocaleDateString() }),
                 ]
                   .filter(Boolean)
                   .join(" • ")}
@@ -111,10 +124,10 @@ export function StrikeVolumeChart({
             <div className="text-center">
               <p className="text-lg font-medium mb-2">
                 {metric === "volume"
-                  ? "No volume data for the selected filters."
-                  : "No open interest data for the selected filters."}
+                  ? t("component.optionAnalytics.empty.volume")
+                  : t("component.optionAnalytics.empty.openInterest")}
               </p>
-              <p className="text-sm">Try another expiry or commodity.</p>
+              <p className="text-sm">{t("component.optionAnalytics.empty.cta")}</p>
             </div>
           </div>
         </CardContent>
@@ -126,14 +139,14 @@ export function StrikeVolumeChart({
     <Card>
       <CardHeader>
         <CardTitle>
-          {metric === "volume" ? "Volume" : "Open Interest"} Analytics
+          {title} {t("component.optionAnalytics.title.analytics")}
         </CardTitle>
         <CardDescription>
           {filtersLabel
             ? filtersLabel
             : [
-                commodity && `Commodity: ${commodity}`,
-                expiry && `Expiry: ${new Date(expiry).toLocaleDateString()}`,
+                commodity && t("component.optionAnalytics.filters.commodity", { commodity }),
+                expiry && t("component.optionAnalytics.filters.expiry", { date: new Date(expiry).toLocaleDateString() }),
               ]
                 .filter(Boolean)
                 .join(" • ")}
@@ -155,7 +168,7 @@ export function StrikeVolumeChart({
                 tick={{ fontSize: 12 }}
                 className="text-muted-foreground"
                 label={{
-                  value: metric === "volume" ? "Volume (t)" : "Open Interest (t)",
+                  value: axisLabel,
                   position: "insideBottom",
                   offset: -10,
                   style: { textAnchor: "middle" },
@@ -172,8 +185,8 @@ export function StrikeVolumeChart({
               <Tooltip content={<CustomTooltip />} />
               <Legend
                 formatter={(value) => {
-                  if (value === "callVolume") return "Calls";
-                  if (value === "putVolume") return "Puts";
+                  if (value === "callVolume") return t("component.optionAnalytics.legend.calls");
+                  if (value === "putVolume") return t("component.optionAnalytics.legend.puts");
                   return value;
                 }}
               />
@@ -181,7 +194,7 @@ export function StrikeVolumeChart({
               <ReferenceLine x={0} stroke="hsl(var(--border))" />
               <Bar
                 dataKey="callVolume"
-                name="Calls"
+                name={t("component.optionAnalytics.legend.calls")}
                 fill={CALL_COLOR}
                 radius={[0, 4, 4, 0]}
               >
@@ -191,7 +204,7 @@ export function StrikeVolumeChart({
               </Bar>
               <Bar
                 dataKey="putVolume"
-                name="Puts"
+                name={t("component.optionAnalytics.legend.puts")}
                 fill={PUT_COLOR}
                 radius={[4, 0, 0, 4]}
               >
@@ -209,5 +222,4 @@ export function StrikeVolumeChart({
 
 // Backwards-compatible export so existing usages keep working
 export const OptionAnalyticsChart = StrikeVolumeChart;
-
 

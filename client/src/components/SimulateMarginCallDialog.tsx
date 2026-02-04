@@ -22,14 +22,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Activity } from "lucide-react";
-
-const simulateFormSchema = z.object({
-  indexPrice: z.coerce.number()
-    .positive("Index price must be positive")
-    .min(0.00000001, "Index price must be greater than 0"),
-});
-
-type SimulateFormData = z.infer<typeof simulateFormSchema>;
+import { useTranslation } from "react-i18next";
 
 interface SimulateMarginCallDialogProps {
   optionId: string;
@@ -45,6 +38,16 @@ export function SimulateMarginCallDialog({
   isPending 
 }: SimulateMarginCallDialogProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const simulateFormSchema = z.object({
+    indexPrice: z
+      .coerce.number()
+      .positive(t("dialog.simulate.validation.positive"))
+      .min(0.00000001, t("dialog.simulate.validation.min")),
+  });
+
+  type SimulateFormData = z.infer<typeof simulateFormSchema>;
 
   const form = useForm<SimulateFormData>({
     resolver: zodResolver(simulateFormSchema),
@@ -69,14 +72,14 @@ export function SimulateMarginCallDialog({
           data-testid={`button-simulate-${optionId}`}
         >
           <Activity className="w-4 h-4" />
-          Simulate
+          {t("dialog.simulate.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" data-testid="dialog-simulate-margin-call">
         <DialogHeader>
-          <DialogTitle>Simulate Margin Call</DialogTitle>
+          <DialogTitle>{t("dialog.simulate.title")}</DialogTitle>
           <DialogDescription>
-            Enter an index price to trigger a margin check for this option
+            {t("dialog.simulate.subtitle")}
             {commodity && ` (${commodity})`}
           </DialogDescription>
         </DialogHeader>
@@ -87,12 +90,12 @@ export function SimulateMarginCallDialog({
               name="indexPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Index Price</FormLabel>
+                  <FormLabel>{t("dialog.simulate.indexPriceLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.00000001"
-                      placeholder="Enter index price"
+                      placeholder={t("dialog.simulate.indexPricePlaceholder")}
                       {...field}
                       data-testid="input-index-price"
                     />
@@ -107,7 +110,7 @@ export function SimulateMarginCallDialog({
                 disabled={isPending}
                 data-testid="button-confirm-simulate"
               >
-                {isPending ? "Simulating..." : "Run Margin Check"}
+                {isPending ? t("dialog.simulate.buttonProcessing") : t("dialog.simulate.button")}
               </Button>
             </DialogFooter>
           </form>

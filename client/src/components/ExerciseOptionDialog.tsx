@@ -23,12 +23,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Activity } from "lucide-react";
-
-const exerciseFormSchema = z.object({
-  spotPrice: z.coerce.number().positive("Spot price must be positive"),
-});
-
-type ExerciseFormData = z.infer<typeof exerciseFormSchema>;
+import { useTranslation } from "react-i18next";
 
 interface ExerciseOptionDialogProps {
   optionId: string;
@@ -46,6 +41,13 @@ export function ExerciseOptionDialog({
   isPending 
 }: ExerciseOptionDialogProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const exerciseFormSchema = z.object({
+    spotPrice: z.coerce.number().positive(t("dialog.exercise.validation.spotPricePositive")),
+  });
+
+  type ExerciseFormData = z.infer<typeof exerciseFormSchema>;
 
   const form = useForm<ExerciseFormData>({
     resolver: zodResolver(exerciseFormSchema),
@@ -70,14 +72,14 @@ export function ExerciseOptionDialog({
           data-testid={`button-exercise-${optionId}`}
         >
           <Activity className="w-4 h-4" />
-          Exercise
+          {t("dialog.exercise.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" data-testid="dialog-exercise-option">
         <DialogHeader>
-          <DialogTitle>Exercise {optionType} Option</DialogTitle>
+          <DialogTitle>{t("dialog.exercise.titleWithType", { type: optionType })}</DialogTitle>
           <DialogDescription>
-            Enter the current spot price to exercise this option. Strike: ${parseFloat(strike).toLocaleString()}
+            {t("dialog.exercise.subtitle", { strike: parseFloat(strike).toLocaleString() })}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -87,20 +89,20 @@ export function ExerciseOptionDialog({
               name="spotPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Current Spot Price</FormLabel>
+                  <FormLabel>{t("dialog.exercise.spotPriceLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.00000001"
-                      placeholder="0.00"
+                      placeholder={t("dialog.exercise.spotPricePlaceholder")}
                       {...field}
                       data-testid="input-spot-price"
                     />
                   </FormControl>
                   <FormDescription>
                     {optionType === "CALL"
-                      ? "You will buy the underlying at the strike price and open/update a long spot position."
-                      : "You will sell the underlying at the strike price and open/update a short spot position."}
+                      ? t("dialog.exercise.callDesc")
+                      : t("dialog.exercise.putDesc")}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -112,7 +114,7 @@ export function ExerciseOptionDialog({
                 disabled={isPending}
                 data-testid="button-confirm-exercise"
               >
-                {isPending ? "Processing..." : "Exercise Option"}
+                {isPending ? t("dialog.exercise.buttonProcessing") : t("dialog.exercise.button")}
               </Button>
             </DialogFooter>
           </form>
