@@ -228,82 +228,82 @@
       "processing": "Індекс переробки"
     },
     "positions": {
-      "title": "Spot Positions",
-      "emptyGuestTitle": "Log in to see your spot positions",
-      "emptyNoWalletTitle": "Connect your wallet to start spot trading",
-      "emptyDefault": "No spot positions yet. Visit the Spot Market on the homepage to start trading.",
+      "title": "Спотові позиції",
+      "emptyGuestTitle": "Увійдіть, щоб побачити свої спотові позиції",
+      "emptyNoWalletTitle": "Підключіть гаманець, щоб почати спотову торгівлю",
+      "emptyDefault": "Поки що немає спотових позицій. Перейдіть на Спотовий ринок на головній сторінці, щоб почати торгівлю.",
       "headers": {
-        "commodity": "Commodity",
-        "quantity": "Quantity (t)",
-        "entryPrice": "Entry Price ($/t)",
-        "currentPrice": "Current Price ($/t)",
-        "currentValue": "Current Value",
+        "commodity": "Товар",
+        "quantity": "Кількість (т)",
+        "entryPrice": "Ціна входу ($/т)",
+        "currentPrice": "Поточна ціна ($/т)",
+        "currentValue": "Поточна вартість",
         "pnl": "P&L",
-        "options": "Options",
-        "actions": "Actions"
+        "options": "Опціони",
+        "actions": "Дії"
       },
       "badge": {
-        "long": "LONG",
-        "short": "SHORT"
+        "long": "ЛОНГ",
+        "short": "ШОРТ"
       }
     },
     "positionCard": {
-      "title": "Your Position in {{commodity}}",
-      "empty": "No spot position in this commodity yet",
+      "title": "Ваша позиція в {{commodity}}",
+      "empty": "Поки що немає спотової позиції по цьому товару",
       "headers": {
-        "avgEntryPrice": "Avg Entry Price ($/t)"
+        "avgEntryPrice": "Сер. ціна входу ($/т)"
       }
     },
     "buyModal": {
-      "title": "Buy {{commodity}}",
-      "description": "Purchase commodity using your internal CROPT balance",
-      "depositNotice": "You need to deposit CROPT from your on-chain balance to your internal trading balance first.",
-      "depositButton": "Deposit {{amount}} CROPT",
-      "depositing": "Depositing...",
-      "depositSuccessTitle": "Deposit successful",
-      "depositSuccessDesc": "CROPT deposited to internal balance",
-      "depositFailedTitle": "Deposit failed",
-      "depositFailedDesc": "Failed to deposit CROPT",
-      "currentPriceLabel": "Current Price:",
-      "pricePerTon": "$ {{price}} / ton",
-      "internalBalanceLabel": "Internal Balance:",
+      "title": "Купити {{commodity}}",
+      "description": "Купити товар за внутрішній баланс CROPT",
+      "depositNotice": "Спочатку потрібно перевести CROPT з ончейн балансу на внутрішній торговий баланс.",
+      "depositButton": "Внести {{amount}} CROPT",
+      "depositing": "Поповнення...",
+      "depositSuccessTitle": "Поповнення успішне",
+      "depositSuccessDesc": "CROPT зараховано на внутрішній баланс",
+      "depositFailedTitle": "Поповнення не вдалося",
+      "depositFailedDesc": "Не вдалося поповнити CROPT",
+      "currentPriceLabel": "Поточна ціна:",
+      "pricePerTon": "$ {{price}} / т",
+      "internalBalanceLabel": "Внутрішній баланс:",
       "internalBalanceValue": "{{balance}} CROPT",
-      "quantityLabel": "Quantity (t)",
-      "quantityPlaceholder": "Enter quantity in tonnes",
-      "minimumQuantity": "Minimum quantity is {{min}} t",
-      "totalCostLabel": "Total Cost:",
+      "quantityLabel": "Кількість (т)",
+      "quantityPlaceholder": "Введіть кількість у тоннах",
+      "minimumQuantity": "Мінімальна кількість — {{min}} т",
+      "totalCostLabel": "Загальна вартість:",
       "totalCostValue": "{{total}} CROPT",
-      "invalidQuantityTitle": "Invalid quantity",
-      "invalidQuantityDesc": "Minimum quantity is {{min}} t",
-      "insufficientBalanceTitle": "Insufficient balance",
-      "insufficientBalanceDesc": "You need {{needed}} CROPT but only have {{available}} CROPT",
-      "insufficientBalanceInline": "Insufficient balance",
-      "successDesc": "Successfully bought {{qty}}t of {{commodity}}",
-      "errorDesc": "Failed to buy commodity"
+      "invalidQuantityTitle": "Некоректна кількість",
+      "invalidQuantityDesc": "Мінімальна кількість — {{min}} т",
+      "insufficientBalanceTitle": "Недостатній баланс",
+      "insufficientBalanceDesc": "Потрібно {{needed}} CROPT, але доступно лише {{available}} CROPT",
+      "insufficientBalanceInline": "Недостатній баланс",
+      "successDesc": "Успішно куплено {{qty}}т {{commodity}}",
+      "errorDesc": "Не вдалося купити товар"
     },
     "sellModal": {
-      "title": "Sell {{commodity}}",
-      "description": "Sell your commodity position and receive CROPT",
-      "currentPriceLabel": "Current Price:",
-      "pricePerTon": "$ {{price}} / ton",
-      "yourPositionLabel": "Your Position:",
-      "yourPositionValue": "{{qty}} t",
-      "unrealizedPnlLabel": "Unrealized P&L:",
+      "title": "Продати {{commodity}}",
+      "description": "Продайте позицію і отримайте CROPT",
+      "currentPriceLabel": "Поточна ціна:",
+      "pricePerTon": "$ {{price}} / т",
+      "yourPositionLabel": "Ваша позиція:",
+      "yourPositionValue": "{{qty}} т",
+      "unrealizedPnlLabel": "Нереалізований P&L:",
       "unrealizedPnlValue": "{{value}} CROPT ({{percent}}%)",
-      "quantityLabel": "Quantity (t)",
-      "quantityPlaceholder": "Enter quantity in tonnes",
-      "minimumQuantity": "Minimum quantity is {{min}} t",
-      "maxQuantity": "Max: {{qty}} t",
-      "totalPayoutLabel": "Total Payout:",
+      "quantityLabel": "Кількість (т)",
+      "quantityPlaceholder": "Введіть кількість у тоннах",
+      "minimumQuantity": "Мінімальна кількість — {{min}} т",
+      "maxQuantity": "Макс: {{qty}} т",
+      "totalPayoutLabel": "Сума виплати:",
       "totalPayoutValue": "{{total}} CROPT",
-      "invalidQuantityTitle": "Invalid quantity",
-      "invalidQuantityDesc": "Minimum quantity is {{min}} t",
-      "insufficientPositionTitle": "Insufficient position",
-      "insufficientPositionDesc": "You are trying to sell {{sell}}t but only have {{available}}t",
-      "insufficientPositionInline": "Insufficient position (available: {{available}} t)",
-      "shortInfo": "You don't own this commodity yet — this order will open or increase a short position.",
-      "successDesc": "Successfully sold {{qty}}t of {{commodity}}",
-      "errorDesc": "Failed to sell commodity"
+      "invalidQuantityTitle": "Некоректна кількість",
+      "invalidQuantityDesc": "Мінімальна кількість — {{min}} т",
+      "insufficientPositionTitle": "Недостатня позиція",
+      "insufficientPositionDesc": "Ви намагаєтесь продати {{sell}}т, але маєте лише {{available}}т",
+      "insufficientPositionInline": "Недостатня позиція (доступно: {{available}} т)",
+      "shortInfo": "Ви ще не володієте цим товаром — ордер відкриє або збільшить коротку позицію.",
+      "successDesc": "Успішно продано {{qty}}т {{commodity}}",
+      "errorDesc": "Не вдалося продати товар"
     }
   },
   "page": {
@@ -947,6 +947,30 @@
     },
     "error": {
       "generic": "Не вдалося отримати дані для порівняння. Спробуйте ще раз."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Access your Cropto account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "button": "Sign in",
+      "buttonLoading": "Signing in...",
+      "noAccount": "Don’t have an account?",
+      "registerLink": "Register",
+      "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email",
+        "passwordRequired": "Password is required"
+      },
+      "toast": {
+        "success": "Successfully signed in",
+        "failedTitle": "Login failed",
+        "failedDesc": "Invalid email or password"
+      }
     }
   }
 }

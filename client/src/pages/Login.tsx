@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,19 +26,23 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 
-const loginSchema = z.object({
-  email: z.string()
-    .min(1, "Email is required")
-    .refine((email) => email.includes("@"), "Invalid email format"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormValues = {
+  email: string;
+  password: string;
+};
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  const loginSchema = z.object({
+    email: z.string()
+      .min(1, t("auth.login.validation.emailRequired"))
+      .refine((email) => email.includes("@"), t("auth.login.validation.emailInvalid")),
+    password: z.string().min(1, t("auth.login.validation.passwordRequired")),
+  });
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -60,14 +65,14 @@ export default function Login() {
       localStorage.removeItem("cropto_admin_mode");
       
       toast({
-        title: "Success",
-        description: "Logged in successfully",
+        title: t("toast.success"),
+        description: t("auth.login.toast.success"),
       });
       setLocation("/");
     } catch (error: any) {
       toast({
-        title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        title: t("auth.login.toast.failedTitle"),
+        description: error.message || t("auth.login.toast.failedDesc"),
         variant: "destructive",
       });
       setIsLoading(false);
@@ -79,9 +84,9 @@ export default function Login() {
         <div className="w-full max-w-md">
           <Card className="w-full">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login to Cropto</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t("auth.login.title")}</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            {t("auth.login.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,12 +97,12 @@ export default function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("auth.login.emailLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
-                        placeholder="farmer@example.com"
+                        placeholder={t("auth.login.emailPlaceholder")}
                         data-testid="input-email"
                       />
                     </FormControl>
@@ -111,12 +116,12 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("auth.login.passwordLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="password"
-                        placeholder="Enter your password"
+                        placeholder={t("auth.login.passwordPlaceholder")}
                         data-testid="input-password"
                       />
                     </FormControl>
@@ -131,16 +136,16 @@ export default function Login() {
                 disabled={isLoading}
                 data-testid="button-login"
               >
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? t("auth.login.buttonLoading") : t("auth.login.button")}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            {t("auth.login.noAccount")}{" "}
             <Link href="/register" className="text-primary hover:underline" data-testid="link-register">
-              Register
+              {t("auth.login.registerLink")}
             </Link>
           </p>
         </CardFooter>

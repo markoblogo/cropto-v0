@@ -1,8 +1,10 @@
 #!/usr/bin/env tsx
 /**
- * This script extracts all user-facing strings from TSX/JSX files
- * for i18n translation. It uses ts-morph to parse AST and identify
- * string literals in JSX context.
+ * i18n hardcode guard
+ * - Extracts user-facing strings (same logic as extract-strings.ts)
+ * - Fails if NEW strings appear that are not in the baseline
+ *
+ * Baseline file: scripts/i18n-baseline.json
  */
 
 import { Project, SyntaxKind } from "ts-morph";
@@ -24,11 +26,8 @@ const project = new Project({
 const sourceFiles = project.addSourceFilesAtPaths([
   "client/src/pages/**/*.tsx",
   "client/src/components/**/*.tsx",
-  "!client/src/components/ui/**/*.tsx", // Skip shadcn UI primitives
+  "!client/src/components/ui/**/*.tsx",
 ]);
-
-const extractedStrings: ExtractedString[] = [];
-const seenStrings = new Set<string>();
 
 const ignoredFilePatterns = [
   /client\/src\/pages\/Admin/i,
@@ -41,32 +40,32 @@ function isIgnoredFile(filePath: string): boolean {
 }
 
 function isIgnoredString(text: string): boolean {
-  // Ignore test-id attributes, empty strings, single chars, numbers, etc.
   const ignored = [
     /^data-testid$/i,
     /^className$/i,
     /^[0-9.]+$/,
     /^[a-z]$/i,
     /^\s*$/,
-    /^\/[\/\w\-]*$/,  // paths
-    /^[\w-]+\.(png|jpg|svg|ico)$/i,  // filenames
-    /^#[0-9a-f]{3,6}$/i,  // color codes
-    /^[\w-]+$/,  // single words without spaces (likely props/variables)
+    /^\/[\/\w\-]*$/,
+    /^[\w-]+\.(png|jpg|svg|ico)$/i,
+    /^#[0-9a-f]{3,6}$/i,
+    /^[\w-]+$/,
   ];
-  
-  return ignored.some(pattern => pattern.test(text.trim()));
+
+  return ignored.some((pattern) => pattern.test(text.trim()));
 }
+
+const extractedStrings: ExtractedString[] = [];
+const seenStrings = new Set<string>();
 
 for (const sourceFile of sourceFiles) {
   const filePath = sourceFile.getFilePath().replace(process.cwd() + "/", "");
   if (isIgnoredFile(filePath)) {
     continue;
   }
-  
-  // Find all JSX elements and attributes
-  sourceFile.getDescendantsOfKind(SyntaxKind.JsxElement).forEach(element => {
-    // Extract text from JSX children
-    element.getJsxChildren().forEach(child => {
+
+  sourceFile.getDescendantsOfKind(SyntaxKind.JsxElement).forEach((element) => {
+    element.getJsxChildren().forEach((child) => {
       if (child.getKind() === SyntaxKind.JsxText) {
         const text = child.getText().trim();
         if (text && !isIgnoredString(text) && !seenStrings.has(text)) {
@@ -79,8 +78,7 @@ for (const sourceFile of sourceFiles) {
           });
         }
       }
-      
-      // String literals in JSX expressions
+
       if (child.getKind() === SyntaxKind.JsxExpression) {
         const expr = child.getExpression();
         if (expr && expr.getKind() === SyntaxKind.StringLiteral) {
@@ -98,14 +96,12 @@ for (const sourceFile of sourceFiles) {
       }
     });
   });
-  
-  // Extract from self-closing JSX elements
-  sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute).forEach(attr => {
+
+  sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute).forEach((attr) => {
     const name = attr.getNameNode().getText();
     const initializer = attr.getInitializer();
-    
+
     if (initializer && initializer.getKind() === SyntaxKind.StringLiteral) {
-      // Only extract from user-visible attributes
       if (["placeholder", "title", "aria-label", "alt"].includes(name)) {
         const text = initializer.getText().replace(/^["']|["']$/g, "");
         if (!isIgnoredString(text) && !seenStrings.has(text)) {
@@ -121,13 +117,11 @@ for (const sourceFile of sourceFiles) {
       }
     }
   });
-  
-  // Extract from string literals in calls (e.g., toast.title)
-  sourceFile.getDescendantsOfKind(SyntaxKind.StringLiteral).forEach(literal => {
+
+  sourceFile.getDescendantsOfKind(SyntaxKind.StringLiteral).forEach((literal) => {
     const text = literal.getText().replace(/^["']|["']$/g, "");
     const parent = literal.getParent();
-    
-    // Check if it's in a property assignment (like title: "Success")
+
     if (parent && parent.getKind() === SyntaxKind.PropertyAssignment) {
       const propName = parent.getFirstChildByKind(SyntaxKind.Identifier)?.getText();
       if (propName && ["title", "description", "label", "message"].includes(propName)) {
@@ -146,27 +140,26 @@ for (const sourceFile of sourceFiles) {
   });
 }
 
-// Group by file
-const byFile = extractedStrings.reduce((acc, item) => {
-  if (!acc[item.file]) {
-    acc[item.file] = [];
-  }
-  acc[item.file].push(item);
-  return acc;
-}, {} as Record<string, ExtractedString[]>);
+const baselinePath = path.join(process.cwd(), "scripts/i18n-baseline.json");
+if (!fs.existsSync(baselinePath)) {
+  console.error("Missing baseline file:", baselinePath);
+  process.exit(2);
+}
 
-// Output results
-console.log("\n=== EXTRACTED STRINGS FOR I18N ===\n");
-console.log(`Total unique strings: ${extractedStrings.length}\n`);
+const baselineJson = JSON.parse(fs.readFileSync(baselinePath, "utf-8"));
+const baselineTexts = new Set<string>((baselineJson?.strings || []).map((s: ExtractedString) => s.text));
 
-Object.keys(byFile).sort().forEach(file => {
-  console.log(`\n## ${file} (${byFile[file].length} strings)`);
-  byFile[file].forEach(item => {
-    console.log(`  Line ${item.line}: "${item.text}" [${item.category}${item.context ? `, ${item.context}` : ""}]`);
+const newStrings = extractedStrings.filter((s) => !baselineTexts.has(s.text));
+
+if (newStrings.length > 0) {
+  console.error(`Found ${newStrings.length} new hardcoded strings not in baseline.`);
+  newStrings.slice(0, 50).forEach((s) => {
+    console.error(`- ${s.file}:${s.line} "${s.text}"`);
   });
-});
+  if (newStrings.length > 50) {
+    console.error(`...and ${newStrings.length - 50} more`);
+  }
+  process.exit(1);
+}
 
-// Also save to JSON for processing
-const outputPath = "scripts/extracted-strings.json";
-fs.writeFileSync(outputPath, JSON.stringify({ total: extractedStrings.length, strings: extractedStrings, byFile }, null, 2));
-console.log(`\n✅ Results saved to ${outputPath}`);
+console.log("✅ i18n check passed (no new hardcoded strings).");

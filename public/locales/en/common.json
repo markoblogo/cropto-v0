@@ -947,5 +947,29 @@
     "error": {
       "generic": "Failed to fetch comparison data. Please try again."
     }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Access your Cropto account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "button": "Sign in",
+      "buttonLoading": "Signing in...",
+      "noAccount": "Don’t have an account?",
+      "registerLink": "Register",
+      "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email",
+        "passwordRequired": "Password is required"
+      },
+      "toast": {
+        "success": "Successfully signed in",
+        "failedTitle": "Login failed",
+        "failedDesc": "Invalid email or password"
+      }
+    }
   }
 }

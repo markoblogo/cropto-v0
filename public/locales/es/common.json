@@ -226,82 +226,82 @@
       "processing": "Processing index"
     },
     "positions": {
-      "title": "Spot Positions",
-      "emptyGuestTitle": "Log in to see your spot positions",
-      "emptyNoWalletTitle": "Connect your wallet to start spot trading",
-      "emptyDefault": "No spot positions yet. Visit the Spot Market on the homepage to start trading.",
+      "title": "Posiciones Spot",
+      "emptyGuestTitle": "Inicia sesión para ver tus posiciones spot",
+      "emptyNoWalletTitle": "Conecta tu billetera para empezar a operar en spot",
+      "emptyDefault": "Aún no hay posiciones spot. Visita el Mercado Spot en la página principal para comenzar.",
       "headers": {
-        "commodity": "Commodity",
-        "quantity": "Quantity (t)",
-        "entryPrice": "Entry Price ($/t)",
-        "currentPrice": "Current Price ($/t)",
-        "currentValue": "Current Value",
+        "commodity": "Producto",
+        "quantity": "Cantidad (t)",
+        "entryPrice": "Precio de entrada ($/t)",
+        "currentPrice": "Precio actual ($/t)",
+        "currentValue": "Valor actual",
         "pnl": "P&L",
-        "options": "Options",
-        "actions": "Actions"
+        "options": "Opciones",
+        "actions": "Acciones"
       },
       "badge": {
-        "long": "LONG",
-        "short": "SHORT"
+        "long": "LARGO",
+        "short": "CORTO"
       }
     },
     "positionCard": {
-      "title": "Your Position in {{commodity}}",
-      "empty": "No spot position in this commodity yet",
+      "title": "Tu posición en {{commodity}}",
+      "empty": "Aún no hay posición spot en este producto",
       "headers": {
-        "avgEntryPrice": "Avg Entry Price ($/t)"
+        "avgEntryPrice": "Precio medio de entrada ($/t)"
       }
     },
     "buyModal": {
-      "title": "Buy {{commodity}}",
-      "description": "Purchase commodity using your internal CROPT balance",
-      "depositNotice": "You need to deposit CROPT from your on-chain balance to your internal trading balance first.",
-      "depositButton": "Deposit {{amount}} CROPT",
-      "depositing": "Depositing...",
-      "depositSuccessTitle": "Deposit successful",
-      "depositSuccessDesc": "CROPT deposited to internal balance",
-      "depositFailedTitle": "Deposit failed",
-      "depositFailedDesc": "Failed to deposit CROPT",
-      "currentPriceLabel": "Current Price:",
+      "title": "Comprar {{commodity}}",
+      "description": "Compra el producto usando tu saldo interno de CROPT",
+      "depositNotice": "Primero debes depositar CROPT desde tu saldo on‑chain a tu saldo interno de trading.",
+      "depositButton": "Depositar {{amount}} CROPT",
+      "depositing": "Depositando...",
+      "depositSuccessTitle": "Depósito exitoso",
+      "depositSuccessDesc": "CROPT depositado en el saldo interno",
+      "depositFailedTitle": "Depósito fallido",
+      "depositFailedDesc": "No se pudo depositar CROPT",
+      "currentPriceLabel": "Precio actual:",
       "pricePerTon": "$ {{price}} / ton",
-      "internalBalanceLabel": "Internal Balance:",
+      "internalBalanceLabel": "Saldo interno:",
       "internalBalanceValue": "{{balance}} CROPT",
-      "quantityLabel": "Quantity (t)",
-      "quantityPlaceholder": "Enter quantity in tonnes",
-      "minimumQuantity": "Minimum quantity is {{min}} t",
-      "totalCostLabel": "Total Cost:",
+      "quantityLabel": "Cantidad (t)",
+      "quantityPlaceholder": "Ingresa la cantidad en toneladas",
+      "minimumQuantity": "La cantidad mínima es {{min}} t",
+      "totalCostLabel": "Costo total:",
       "totalCostValue": "{{total}} CROPT",
-      "invalidQuantityTitle": "Invalid quantity",
-      "invalidQuantityDesc": "Minimum quantity is {{min}} t",
-      "insufficientBalanceTitle": "Insufficient balance",
-      "insufficientBalanceDesc": "You need {{needed}} CROPT but only have {{available}} CROPT",
-      "insufficientBalanceInline": "Insufficient balance",
-      "successDesc": "Successfully bought {{qty}}t of {{commodity}}",
-      "errorDesc": "Failed to buy commodity"
+      "invalidQuantityTitle": "Cantidad inválida",
+      "invalidQuantityDesc": "La cantidad mínima es {{min}} t",
+      "insufficientBalanceTitle": "Saldo insuficiente",
+      "insufficientBalanceDesc": "Necesitas {{needed}} CROPT pero solo tienes {{available}} CROPT",
+      "insufficientBalanceInline": "Saldo insuficiente",
+      "successDesc": "Compraste {{qty}}t de {{commodity}}",
+      "errorDesc": "No se pudo comprar el producto"
     },
     "sellModal": {
-      "title": "Sell {{commodity}}",
-      "description": "Sell your commodity position and receive CROPT",
-      "currentPriceLabel": "Current Price:",
+      "title": "Vender {{commodity}}",
+      "description": "Vende tu posición y recibe CROPT",
+      "currentPriceLabel": "Precio actual:",
       "pricePerTon": "$ {{price}} / ton",
-      "yourPositionLabel": "Your Position:",
+      "yourPositionLabel": "Tu posición:",
       "yourPositionValue": "{{qty}} t",
-      "unrealizedPnlLabel": "Unrealized P&L:",
+      "unrealizedPnlLabel": "P&L no realizado:",
       "unrealizedPnlValue": "{{value}} CROPT ({{percent}}%)",
-      "quantityLabel": "Quantity (t)",
-      "quantityPlaceholder": "Enter quantity in tonnes",
-      "minimumQuantity": "Minimum quantity is {{min}} t",
-      "maxQuantity": "Max: {{qty}} t",
-      "totalPayoutLabel": "Total Payout:",
+      "quantityLabel": "Cantidad (t)",
+      "quantityPlaceholder": "Ingresa la cantidad en toneladas",
+      "minimumQuantity": "La cantidad mínima es {{min}} t",
+      "maxQuantity": "Máx: {{qty}} t",
+      "totalPayoutLabel": "Pago total:",
       "totalPayoutValue": "{{total}} CROPT",
-      "invalidQuantityTitle": "Invalid quantity",
-      "invalidQuantityDesc": "Minimum quantity is {{min}} t",
-      "insufficientPositionTitle": "Insufficient position",
-      "insufficientPositionDesc": "You are trying to sell {{sell}}t but only have {{available}}t",
-      "insufficientPositionInline": "Insufficient position (available: {{available}} t)",
-      "shortInfo": "You don't own this commodity yet — this order will open or increase a short position.",
-      "successDesc": "Successfully sold {{qty}}t of {{commodity}}",
-      "errorDesc": "Failed to sell commodity"
+      "invalidQuantityTitle": "Cantidad inválida",
+      "invalidQuantityDesc": "La cantidad mínima es {{min}} t",
+      "insufficientPositionTitle": "Posición insuficiente",
+      "insufficientPositionDesc": "Intentas vender {{sell}}t pero solo tienes {{available}}t",
+      "insufficientPositionInline": "Posición insuficiente (disponible: {{available}} t)",
+      "shortInfo": "Aún no posees este producto: esta orden abrirá o aumentará una posición corta.",
+      "successDesc": "Vendiste {{qty}}t de {{commodity}}",
+      "errorDesc": "No se pudo vender el producto"
     }
   },
   "page": {
@@ -934,6 +934,30 @@
     },
     "error": {
       "generic": "Failed to fetch comparison data. Please try again."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Access your Cropto account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "button": "Sign in",
+      "buttonLoading": "Signing in...",
+      "noAccount": "Don’t have an account?",
+      "registerLink": "Register",
+      "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email",
+        "passwordRequired": "Password is required"
+      },
+      "toast": {
+        "success": "Successfully signed in",
+        "failedTitle": "Login failed",
+        "failedDesc": "Invalid email or password"
+      }
     }
   }
 }
