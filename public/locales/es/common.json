@@ -938,25 +938,25 @@
   },
   "auth": {
     "login": {
-      "title": "Sign in",
-      "subtitle": "Access your Cropto account",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Enter your email",
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "Enter your password",
-      "button": "Sign in",
-      "buttonLoading": "Signing in...",
-      "noAccount": "Don’t have an account?",
-      "registerLink": "Register",
+      "title": "Iniciar sesión",
+      "subtitle": "Accede a tu cuenta de Cropto",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "button": "Iniciar sesión",
+      "buttonLoading": "Iniciando sesión…",
+      "noAccount": "¿No tienes una cuenta?",
+      "registerLink": "Registrarse",
       "validation": {
-        "emailRequired": "Email is required",
-        "emailInvalid": "Enter a valid email",
-        "passwordRequired": "Password is required"
+        "emailRequired": "El correo electrónico es obligatorio",
+        "emailInvalid": "Ingresa un correo electrónico válido",
+        "passwordRequired": "La contraseña es obligatoria"
       },
       "toast": {
-        "success": "Successfully signed in",
-        "failedTitle": "Login failed",
-        "failedDesc": "Invalid email or password"
+        "success": "Inicio de sesión exitoso",
+        "failedTitle": "Error al iniciar sesión",
+        "failedDesc": "Correo electrónico o contraseña incorrectos"
       }
     }
   }

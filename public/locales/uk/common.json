@@ -951,25 +951,25 @@
   },
   "auth": {
     "login": {
-      "title": "Sign in",
-      "subtitle": "Access your Cropto account",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Enter your email",
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "Enter your password",
-      "button": "Sign in",
-      "buttonLoading": "Signing in...",
-      "noAccount": "Don’t have an account?",
-      "registerLink": "Register",
+      "title": "Увійти",
+      "subtitle": "Увійдіть до свого облікового запису Cropto",
+      "emailLabel": "Електронна пошта",
+      "emailPlaceholder": "Введіть свою електронну пошту",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Введіть свій пароль",
+      "button": "Увійти",
+      "buttonLoading": "Вхід…",
+      "noAccount": "Немає облікового запису?",
+      "registerLink": "Зареєструватися",
       "validation": {
-        "emailRequired": "Email is required",
-        "emailInvalid": "Enter a valid email",
-        "passwordRequired": "Password is required"
+        "emailRequired": "Електронна пошта обов’язкова",
+        "emailInvalid": "Введіть дійсну електронну пошту",
+        "passwordRequired": "Пароль обов’язковий"
       },
       "toast": {
-        "success": "Successfully signed in",
-        "failedTitle": "Login failed",
-        "failedDesc": "Invalid email or password"
+        "success": "Вхід виконано успішно",
+        "failedTitle": "Помилка входу",
+        "failedDesc": "Неправильна електронна пошта або пароль"
       }
     }
   }
