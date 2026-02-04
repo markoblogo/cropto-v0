@@ -660,7 +660,9 @@
         "open": "Open",
         "filled": "Filled",
         "expired": "Expired",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "commodity": "Filter Commodity",
+        "allCommodities": "All Commodities"
       },
       "headers": {
         "title": "Title",
@@ -670,7 +672,44 @@
         "premium": "Premium",
         "expiry": "Expiry",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "commodity": "Commodity",
+        "iv": "IV (stub)",
+        "volume": "Volume",
+        "margin": "Margin"
+      },
+      "bookTitle": "Options Book",
+      "values": {
+        "dash": "—",
+        "na": "N/A",
+        "commodityAlt": "Commodity"
+      },
+      "marginHealth": {
+        "liquidated": "Liquidated",
+        "marginCall": "Margin Call",
+        "atRisk": "At Risk",
+        "normal": "Normal"
+      },
+      "marginToast": {
+        "title": "Margin Call",
+        "desc": "Position {{id}} is in margin call"
+      },
+      "margin": {
+        "detailsLabel": "Margin details",
+        "standard": "Standard",
+        "line": "Margin ({{label}}): {{value}} CROPT",
+        "premiumAsMargin": "(premium as margin)",
+        "balance": "Balance: {{value}}",
+        "floatingLoss": "Floating loss: {{value}}",
+        "topUp": "Top-up needed: {{value}}",
+        "dueIn": "Margin call due in {{time}}",
+        "ssiAvg": "SSI avg: {{value}}",
+        "finalPnl": "Final PnL: {{value}}"
+      },
+      "actions": {
+        "viewSettlement": "View settlement / transaction",
+        "takeOffer": "Take this offer",
+        "takeOfferHint": "Take this offer and become the counterparty on this option."
       }
     },
     "notifications": {

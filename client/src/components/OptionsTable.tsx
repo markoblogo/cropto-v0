@@ -38,6 +38,7 @@ import { TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Plus, Info } from "lucide-
 import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 type SortField = "commodity" | "title" | "type" | "strike" | "qty" | "premium" | "status" | "createdAt";
 type SortDirection = "asc" | "desc" | null;
@@ -73,30 +74,6 @@ function canExercise(option: Option, currentUserId?: string) {
   return option.buyerId === currentUserId || option.issuerId === currentUserId;
 }
 
-function getMarginHealth({
-  marginBalance,
-  initialMargin,
-  isInMarginCall,
-  isLiquidated,
-}: {
-  marginBalance: number;
-  initialMargin: number;
-  isInMarginCall: boolean;
-  isLiquidated: boolean;
-}) {
-  if (isLiquidated) {
-    return { label: "Liquidated", className: "bg-red-100 text-red-800 border border-red-200" };
-  }
-  if (isInMarginCall) {
-    return { label: "Margin Call", className: "bg-amber-100 text-amber-800 border border-amber-200" };
-  }
-  const healthPct = initialMargin > 0 ? (marginBalance / initialMargin) * 100 : 100;
-  if (healthPct < 80) {
-    return { label: "At Risk", className: "bg-yellow-100 text-yellow-800 border border-yellow-200" };
-  }
-  return { label: "Normal", className: "bg-emerald-100 text-emerald-800 border border-emerald-200" };
-}
-
 export function OptionsTable({ 
   options, 
   isLoading, 
@@ -118,6 +95,31 @@ export function OptionsTable({
   userRole,
   userId 
 }: OptionsTableProps) {
+  const { t } = useTranslation();
+
+  function getMarginHealth({
+    marginBalance,
+    initialMargin,
+    isInMarginCall,
+    isLiquidated,
+  }: {
+    marginBalance: number;
+    initialMargin: number;
+    isInMarginCall: boolean;
+    isLiquidated: boolean;
+  }) {
+    if (isLiquidated) {
+      return { label: t("component.optionsTable.marginHealth.liquidated"), className: "bg-red-100 text-red-800 border border-red-200" };
+    }
+    if (isInMarginCall) {
+      return { label: t("component.optionsTable.marginHealth.marginCall"), className: "bg-amber-100 text-amber-800 border border-amber-200" };
+    }
+    const healthPct = initialMargin > 0 ? (marginBalance / initialMargin) * 100 : 100;
+    if (healthPct < 80) {
+      return { label: t("component.optionsTable.marginHealth.atRisk"), className: "bg-yellow-100 text-yellow-800 border border-yellow-200" };
+    }
+    return { label: t("component.optionsTable.marginHealth.normal"), className: "bg-emerald-100 text-emerald-800 border border-emerald-200" };
+  }
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [commodityFilter, setCommodityFilter] = useState<string>("ALL");
@@ -135,8 +137,8 @@ export function OptionsTable({
     if (newOnes.length > 0) {
       newOnes.forEach((opt) => {
         toast({
-          title: "Margin Call",
-          description: `Position ${opt.title || opt.id} is in margin call`,
+          title: t("component.optionsTable.marginToast.title"),
+          description: t("component.optionsTable.marginToast.desc", { id: opt.title || opt.id }),
           variant: "destructive",
         });
       });
@@ -234,7 +236,7 @@ export function OptionsTable({
         <CardHeader>
           <CardTitle className="text-xl font-semibold flex items-center gap-2">
             <TrendingUp className="w-5 h-5" />
-            Options Book
+            {t("component.optionsTable.bookTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -255,41 +257,41 @@ export function OptionsTable({
           <div>
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
               <TrendingUp className="w-5 h-5" />
-              Option Chain
+              {t("component.optionsTable.title")}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Browse and trade commodity options contracts
+              {t("component.optionsTable.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[140px]" data-testid="select-type-filter">
-                <SelectValue placeholder="Filter Type" />
+                <SelectValue placeholder={t("component.optionsTable.filters.type")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All Types</SelectItem>
-                <SelectItem value="CALL">Call</SelectItem>
-                <SelectItem value="PUT">Put</SelectItem>
+                <SelectItem value="ALL">{t("component.optionsTable.filters.allTypes")}</SelectItem>
+                <SelectItem value="CALL">{t("component.optionsTable.filters.call")}</SelectItem>
+                <SelectItem value="PUT">{t("component.optionsTable.filters.put")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[140px]" data-testid="select-status-filter">
-                <SelectValue placeholder="Filter Status" />
+                <SelectValue placeholder={t("component.optionsTable.filters.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All Status</SelectItem>
-                <SelectItem value="OPEN">Open</SelectItem>
-                <SelectItem value="FILLED">Filled</SelectItem>
-                <SelectItem value="EXPIRED">Expired</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                <SelectItem value="ALL">{t("component.optionsTable.filters.allStatus")}</SelectItem>
+                <SelectItem value="OPEN">{t("component.optionsTable.filters.open")}</SelectItem>
+                <SelectItem value="FILLED">{t("component.optionsTable.filters.filled")}</SelectItem>
+                <SelectItem value="EXPIRED">{t("component.optionsTable.filters.expired")}</SelectItem>
+                <SelectItem value="CANCELLED">{t("component.optionsTable.filters.cancelled")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={commodityFilter} onValueChange={setCommodityFilter}>
               <SelectTrigger className="w-[160px]" data-testid="select-commodity-filter">
-                <SelectValue placeholder="Filter Commodity" />
+                <SelectValue placeholder={t("component.optionsTable.filters.commodity")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All Commodities</SelectItem>
+                <SelectItem value="ALL">{t("component.optionsTable.filters.allCommodities")}</SelectItem>
                 {uniqueCommodities.map(commodity => (
                   <SelectItem key={commodity} value={commodity}>
                     {commodity}
@@ -309,11 +311,11 @@ export function OptionsTable({
             <div className="rounded-full bg-muted p-6 mb-4">
               <TrendingUp className="w-12 h-12 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No Options Found</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("component.optionsTable.empty")}</h3>
             <p className="text-sm text-muted-foreground max-w-sm">
               {options.length === 0 
-                ? "Get started by creating your first option contract."
-                : "No options match your current filters. Try adjusting them."}
+                ? t("component.optionsTable.emptyCreate")
+                : t("component.optionsTable.emptyFilter")}
             </p>
           </div>
         ) : (
@@ -329,7 +331,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-commodity"
                     >
-                      Commodity
+                      {t("component.optionsTable.headers.commodity")}
                       {getSortIcon("commodity")}
                     </Button>
                   </TableHead>
@@ -341,7 +343,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-type"
                     >
-                      Type
+                      {t("component.optionsTable.headers.type")}
                       {getSortIcon("type")}
                     </Button>
                   </TableHead>
@@ -353,7 +355,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-strike"
                     >
-                      Strike
+                      {t("component.optionsTable.headers.strike")}
                       {getSortIcon("strike")}
                     </Button>
                   </TableHead>
@@ -365,7 +367,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-premium"
                     >
-                      Premium
+                      {t("component.optionsTable.headers.premium")}
                       {getSortIcon("premium")}
                     </Button>
                   </TableHead>
@@ -377,7 +379,7 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-qty"
                     >
-                      Qty (t)
+                      {t("component.optionsTable.headers.qty")}
                       {getSortIcon("qty")}
                     </Button>
                   </TableHead>
@@ -389,12 +391,12 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-expiry"
                     >
-                      Expiry
+                      {t("component.optionsTable.headers.expiry")}
                       {getSortIcon("createdAt")}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-semibold text-right">IV (stub)</TableHead>
-                  <TableHead className="font-semibold text-right">Volume</TableHead>
+                  <TableHead className="font-semibold text-right">{t("component.optionsTable.headers.iv")}</TableHead>
+                  <TableHead className="font-semibold text-right">{t("component.optionsTable.headers.volume")}</TableHead>
                   <TableHead className="font-semibold">
                     <Button 
                       variant="ghost" 
@@ -403,12 +405,12 @@ export function OptionsTable({
                       className="hover-elevate gap-1 h-8"
                       data-testid="button-sort-status"
                     >
-                      Status
+                      {t("component.optionsTable.headers.status")}
                       {getSortIcon("status")}
                     </Button>
                   </TableHead>
-                  <TableHead className="font-semibold">Margin</TableHead>
-                  <TableHead className="font-semibold text-right">Actions</TableHead>
+                  <TableHead className="font-semibold">{t("component.optionsTable.headers.margin")}</TableHead>
+                  <TableHead className="font-semibold text-right">{t("component.optionsTable.headers.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -418,7 +420,7 @@ export function OptionsTable({
                       ? (option as any).expiryWindow
                       : option.expirationDate
                       ? format(new Date(option.expirationDate), "MMM dd, yyyy")
-                      : "-";
+                      : t("component.optionsTable.values.dash");
                   const volCount = volumeMap?.[option.id] || 0;
                   const premiumNum = parseFloat(option.premium);
                   const strikeNum = Number(option.strike);
@@ -469,12 +471,12 @@ export function OptionsTable({
                       {(option as any).commoditySlug && (
                         <img 
                           src={`/commodities/${(option as any).commoditySlug}.png`}
-                          alt={(option as any).commodityName || "Commodity"}
+                          alt={(option as any).commodityName || t("component.optionsTable.values.commodityAlt")}
                           className="w-5 h-5 rounded-md object-cover"
                         />
                       )}
                       <span className="font-medium max-w-[140px] truncate">
-                        {(option as any).commodityName || option.commodity || "-"}
+                        {(option as any).commodityName || option.commodity || t("component.optionsTable.values.dash")}
                       </span>
                     </div>
                   </TableCell>
@@ -494,7 +496,7 @@ export function OptionsTable({
                     {expiryLabel}
                   </TableCell>
                   <TableCell className="text-right font-mono text-xs whitespace-nowrap">
-                    {ivApprox ? `${ivApprox.toFixed(1)}%` : "—"}
+                    {ivApprox ? `${ivApprox.toFixed(1)}%` : t("component.optionsTable.values.dash")}
                   </TableCell>
                   <TableCell className="text-right font-mono whitespace-nowrap">
                     {volCount}
@@ -505,7 +507,7 @@ export function OptionsTable({
                   <TableCell>
                     <div className="flex items-center gap-2 text-sm whitespace-nowrap">
                       <span className="font-mono">
-                        {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : "—"} CROPT
+                        {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : t("component.optionsTable.values.dash")} CROPT
                       </span>
                       {(() => {
                         const health = getMarginHealth({
@@ -526,7 +528,7 @@ export function OptionsTable({
                             <button
                               type="button"
                               className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center"
-                              aria-label="Margin details"
+                              aria-label={t("component.optionsTable.margin.detailsLabel")}
                               onClick={(e) => e.stopPropagation()}
                             >
                               <Info className="h-4 w-4" />
@@ -534,20 +536,22 @@ export function OptionsTable({
                           </TooltipTrigger>
                           <TooltipContent className="text-xs space-y-1">
                             <div>
-                              Margin ({marginProfile?.label || "Standard"}):{" "}
-                              {Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : "—"} CROPT
-                              {marginProfile?.usePremiumAsMargin ? " (premium as margin)" : ""}
+                              {t("component.optionsTable.margin.line", {
+                                label: marginProfile?.label || t("component.optionsTable.margin.standard"),
+                                value: Number.isFinite(displayMargin) ? displayMargin.toFixed(2) : t("component.optionsTable.values.dash"),
+                              })}{" "}
+                              {marginProfile?.usePremiumAsMargin ? t("component.optionsTable.margin.premiumAsMargin") : ""}
                             </div>
-                            <div>Balance: {Number.isFinite(marginBalance) ? marginBalance.toFixed(2) : "-"}</div>
-                            <div>Floating loss: {Number.isFinite(floatingLoss) ? floatingLoss.toFixed(2) : "-"}</div>
-                            <div>Top-up needed: {Number.isFinite(initialMargin) ? topUp.toFixed(2) : "-"}</div>
+                            <div>{t("component.optionsTable.margin.balance", { value: Number.isFinite(marginBalance) ? marginBalance.toFixed(2) : t("component.optionsTable.values.dash") })}</div>
+                            <div>{t("component.optionsTable.margin.floatingLoss", { value: Number.isFinite(floatingLoss) ? floatingLoss.toFixed(2) : t("component.optionsTable.values.dash") })}</div>
+                            <div>{t("component.optionsTable.margin.topUp", { value: Number.isFinite(initialMargin) ? topUp.toFixed(2) : t("component.optionsTable.values.dash") })}</div>
                             {isInMarginCall && timeLeft && !isLiquidated && (
-                              <div>Margin call due in {timeLeft}</div>
+                              <div>{t("component.optionsTable.margin.dueIn", { time: timeLeft })}</div>
                             )}
                             {isLiquidated && (
                               <>
-                                <div>SSI avg: {ssiAvg ? Number(ssiAvg).toFixed(2) : "N/A"}</div>
-                                <div>Final PnL: {finalPnl !== undefined ? Number(finalPnl).toFixed(2) : "N/A"}</div>
+                                <div>{t("component.optionsTable.margin.ssiAvg", { value: ssiAvg ? Number(ssiAvg).toFixed(2) : t("component.optionsTable.values.na") })}</div>
+                                <div>{t("component.optionsTable.margin.finalPnl", { value: finalPnl !== undefined ? Number(finalPnl).toFixed(2) : t("component.optionsTable.values.na") })}</div>
                               </>
                             )}
                           </TooltipContent>
@@ -630,7 +634,7 @@ export function OptionsTable({
                           data-testid={`button-create-from-${option.id}`}
                         >
                           <Plus className="w-3 h-3" />
-                          Create
+                          {t("button.create")}
                         </Button>
                       )}
                       {isLiquidated && (
@@ -641,7 +645,7 @@ export function OptionsTable({
                           data-testid={`button-view-settlement-${option.id}`}
                           asChild
                         >
-                          <Link href="/admin/reconciliation">View settlement / transaction</Link>
+                          <Link href="/admin/reconciliation">{t("component.optionsTable.actions.viewSettlement")}</Link>
                         </Button>
                       )}
                       {canMatchAsOther && (
@@ -660,11 +664,11 @@ export function OptionsTable({
                                   })
                                 }
                               >
-                                Take this offer
+                                {t("component.optionsTable.actions.takeOffer")}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Take this offer and become the counterparty on this option.</p>
+                              <p>{t("component.optionsTable.actions.takeOfferHint")}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
