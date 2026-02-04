@@ -411,6 +411,51 @@
         "loadError": "Failed to load index data",
         "lastUpdated": "Last updated:",
         "priceHistory": "Price History"
+      },
+      "toast": {
+        "optionCreated": "Opção criada com sucesso",
+        "optionCreateFailed": "Não foi possível criar a opção",
+        "optionMatchedTitle": "Opção casada com sucesso",
+        "optionMatchedDesc": "Sua posição foi atualizada no portfólio.",
+        "optionMatchFailedTitle": "Não foi possível casar a opção",
+        "optionMatchFailedDesc": "Por favor, tente novamente mais tarde.",
+        "exerciseSuccessTitle": "Exercício concluído",
+        "exerciseSuccessDesc": "Sua opção foi exercida e sua posição spot e saldo de CROPT foram atualizados.",
+        "exerciseFailedTitle": "Falha no exercício",
+        "exerciseFailedDesc": "Não foi possível exercer a opção. Verifique seu saldo de CROPT e tente novamente.",
+        "marginCheckCompleteTitle": "Verificação de margem concluída",
+        "marginCheckCompleteDesc": "Foram processadas {{processed}} opções. Foram criados {{count}} margin calls.",
+        "marginCheckFailedTitle": "Falha na verificação de margem",
+        "marginCheckFailedDesc": "Não foi possível executar a verificação de margem",
+        "forceSettleCompleteTitle": "Liquidação à força concluída",
+        "forceSettleCompleteDesc": "A opção foi liquidada à força. Status: {{status}}. {{count}} notificações enviadas.",
+        "forceSettleFailedTitle": "Falha na liquidação à força",
+        "forceSettleFailedDesc": "Não foi possível liquidar a opção à força",
+        "topUpResolvedTitle": "Margin call resolvido",
+        "topUpResolvedDesc": "O margin call foi resolvido. O status da opção foi restaurado para OPEN.",
+        "topUpSuccessTitle": "Recarga realizada",
+        "topUpSuccessDesc": "Adicionado {{reserved}} ao colateral. Total disponível: {{total}}",
+        "topUpFailedTitle": "Falha na recarga",
+        "topUpFailedDesc": "Não foi possível recarregar o margin call",
+        "withdrawInitiatedTitle": "Saque iniciado",
+        "withdrawInitiatedDesc": "Transação: {{tx}}…",
+        "withdrawFailedTitle": "Falha no saque",
+        "withdrawFailedDesc": "Não foi possível iniciar o saque",
+        "welcomeBackTitle": "Bem-vindo de volta!",
+        "welcomeBackDesc": "Você foi autenticado com sucesso",
+        "roleCompleteTitle": "Configuração da conta concluída",
+        "roleCompleteDesc": "Tudo pronto! Comece a explorar opções de grãos.",
+        "noPendingMarginCall": "Não foi encontrado margin call pendente para esta opção"
+      },
+      "portfolioHealth": {
+        "loading": "Carregando saúde do portfólio…",
+        "error": "Não foi possível carregar a saúde do portfólio.",
+        "signInPrompt": "Entre para ver a saúde do seu portfólio."
+      },
+      "optionsPreview": {
+        "title": "Cadeia de opções",
+        "subtitle": "Navegue e negocie contratos de opções de commodities",
+        "viewAll": "Ver a cadeia completa de opções"
       }
     },
     "login": {

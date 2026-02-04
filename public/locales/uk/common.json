@@ -324,6 +324,51 @@
         "loadError": "Не вдалося завантажити індексні дані",
         "lastUpdated": "Останнє оновлення:",
         "priceHistory": "Історія цін"
+      },
+      "toast": {
+        "optionCreated": "Опціон успішно створено",
+        "optionCreateFailed": "Не вдалося створити опціон",
+        "optionMatchedTitle": "Опціон успішно зіставлено",
+        "optionMatchedDesc": "Вашу позицію оновлено в портфелі.",
+        "optionMatchFailedTitle": "Не вдалося зіставити опціон",
+        "optionMatchFailedDesc": "Будь ласка, спробуйте пізніше.",
+        "exerciseSuccessTitle": "Виконання успішне",
+        "exerciseSuccessDesc": "Ваш опціон виконано, а спотову позицію та баланс CROPT оновлено.",
+        "exerciseFailedTitle": "Помилка виконання",
+        "exerciseFailedDesc": "Не вдалося виконати опціон. Перевірте баланс CROPT і спробуйте ще раз.",
+        "marginCheckCompleteTitle": "Перевірку маржі завершено",
+        "marginCheckCompleteDesc": "Опрацьовано {{processed}} опціонів. Створено {{count}} маржин-колів.",
+        "marginCheckFailedTitle": "Помилка перевірки маржі",
+        "marginCheckFailedDesc": "Не вдалося запустити перевірку маржі",
+        "forceSettleCompleteTitle": "Примусовий розрахунок завершено",
+        "forceSettleCompleteDesc": "Опціон примусово розраховано. Статус: {{status}}. Надіслано сповіщень: {{count}}.",
+        "forceSettleFailedTitle": "Помилка примусового розрахунку",
+        "forceSettleFailedDesc": "Не вдалося примусово розрахувати опціон",
+        "topUpResolvedTitle": "Маржин-кол закрито",
+        "topUpResolvedDesc": "Маржин-кол закрито. Статус опціону відновлено до OPEN.",
+        "topUpSuccessTitle": "Поповнення успішне",
+        "topUpSuccessDesc": "Додано {{reserved}} до застави. Доступно всього: {{total}}",
+        "topUpFailedTitle": "Помилка поповнення",
+        "topUpFailedDesc": "Не вдалося поповнити маржин-кол",
+        "withdrawInitiatedTitle": "Виведення ініційовано",
+        "withdrawInitiatedDesc": "Транзакція: {{tx}}…",
+        "withdrawFailedTitle": "Помилка виведення",
+        "withdrawFailedDesc": "Не вдалося ініціювати виведення",
+        "welcomeBackTitle": "З поверненням!",
+        "welcomeBackDesc": "Вас успішно автентифіковано",
+        "roleCompleteTitle": "Налаштування акаунта завершено",
+        "roleCompleteDesc": "Готово! Почніть досліджувати опціони на зерно.",
+        "noPendingMarginCall": "Для цього опціону не знайдено маржин-колів в очікуванні"
+      },
+      "portfolioHealth": {
+        "loading": "Завантаження стану портфеля…",
+        "error": "Не вдалося завантажити стан портфеля.",
+        "signInPrompt": "Увійдіть, щоб переглянути стан портфеля."
+      },
+      "optionsPreview": {
+        "title": "Ланцюг опціонів",
+        "subtitle": "Переглядайте та торгуйте контрактами на товарні опціони",
+        "viewAll": "Переглянути весь ланцюг опціонів"
       }
     },
     "login": {
