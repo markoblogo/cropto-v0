@@ -56,7 +56,8 @@
     "pending": "Очікування...",
     "noData": "Немає даних",
     "yes": "Так",
-    "no": "Ні"
+    "no": "Ні",
+    "dash": "—"
   },
   "toast": {
     "loggedOut": "Вихід виконано",
@@ -214,7 +215,9 @@
       "subtitle": "Купуйте та продавайте товари використовуючи ваш CROPT баланс",
       "buy": "Купити",
       "sell": "Продати",
-      "pricePerKg": "Ціна за тонну"
+      "pricePerKg": "Ціна за тонну",
+      "error": "Не вдалося завантажити дані спот-ринку. Будь ласка, спробуйте пізніше.",
+      "noData": "Наразі дані спот-ринку недоступні."
     },
     "trading": {
       "title": "Спотова торгівля",
@@ -245,7 +248,9 @@
       "badge": {
         "long": "ЛОНГ",
         "short": "ШОРТ"
-      }
+      },
+      "optionsCount_one": "{{count}} опціон",
+      "optionsCount_other": "{{count}} опціонів"
     },
     "positionCard": {
       "title": "Ваша позиція в {{commodity}}",
@@ -304,6 +309,48 @@
       "shortInfo": "Ви ще не володієте цим товаром — ордер відкриє або збільшить коротку позицію.",
       "successDesc": "Успішно продано {{qty}}т {{commodity}}",
       "errorDesc": "Не вдалося продати товар"
+    },
+    "orderForm": {
+      "title": "Розмістити ордер",
+      "depositRequired": "Спочатку потрібно внести CROPT з ончейн-балансу на внутрішній торговий баланс.",
+      "quantityLabel": "Кількість (т)",
+      "quantityPlaceholder": "0.00",
+      "priceLabel": "Ціна:",
+      "priceValue": "${{price}} / т",
+      "estimatedCostLabel": "Орієнтовна вартість:",
+      "estimatedCostValue": "{{total}} CROPT",
+      "availableBalanceLabel": "Доступно CROPT:",
+      "availableBalanceValue": "{{balance}} CROPT",
+      "estimatedPayoutLabel": "Орієнтовна виплата:",
+      "estimatedPayoutValue": "{{total}} CROPT",
+      "processing": "Обробка…",
+      "buyCta": "Купити {{commodity}}",
+      "sellCta": "Продати {{commodity}}",
+      "validation": {
+        "invalidQuantityTitle": "Некоректна кількість",
+        "minQuantityDesc": "Мінімальна кількість — {{min}} т",
+        "minQuantityInline": "Мінімальна кількість — {{min}} т",
+        "insufficientBalanceTitle": "Недостатній баланс",
+        "insufficientBalanceDesc": "Потрібно {{needed}} CROPT, але доступно лише {{available}} CROPT"
+      },
+      "toast": {
+        "buySuccessDesc": "Успішно куплено {{qty}}т {{commodity}}",
+        "sellSuccessDesc": "Успішно продано {{qty}}т {{commodity}}",
+        "buyFailedDesc": "Не вдалося купити товар",
+        "sellFailedDesc": "Не вдалося продати товар"
+      }
+    },
+    "tradeHistory": {
+      "empty": "Немає недавніх угод",
+      "na": "Н/Д",
+      "justNow": "Щойно",
+      "headers": {
+        "time": "Час",
+        "price": "Ціна",
+        "change": "Зміна"
+      },
+      "minutesAgo_one": "{{count}} хв тому",
+      "minutesAgo_other": "{{count}} хв тому"
     }
   },
   "page": {
@@ -656,7 +703,22 @@
       "processing": "Переробка",
       "perTon": "/ тонна",
       "comingSoon": "Незабаром",
-      "comingSoonDesc": "Торгівля для цього регіону незабаром. Наразі доступна тільки для України."
+      "comingSoonDesc": "Торгівля для цього регіону незабаром. Наразі доступна тільки для України.",
+      "failedToLoadTrades": "Не вдалося завантажити угоди",
+      "tradeTypeFallback": "Угода",
+      "failedToLoadChart": "Не вдалося завантажити графік",
+      "chartRange": {
+        "7d": "7д",
+        "30d": "30д"
+      },
+      "tradeTable": {
+        "time": "Час",
+        "price": "Ціна",
+        "qty": "К-сть (т)",
+        "side": "Сторона",
+        "buy": "Купити",
+        "sell": "Продати"
+      }
     },
     "options": {
       "title": "Торгівля опціонами",
