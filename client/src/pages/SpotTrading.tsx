@@ -216,7 +216,7 @@ export default function SpotTrading() {
     queryFn: async () => {
       const res = await fetch(`/api/trades?commodity=${selectedPairSlug}`);
       if (!res.ok) {
-        throw new Error("Failed to fetch trades");
+        throw new Error(t('page.spot.failedToLoadTrades'));
       }
       const raw = await res.json();
       if (!Array.isArray(raw)) return [];
@@ -237,7 +237,7 @@ export default function SpotTrading() {
           price: Number.isFinite(price) ? price : 0,
           qty: Number.isFinite(qty) ? qty : 0,
           // No explicit side in payload; display aggregated trade direction
-          type: t.type || t.side || "BUY/SELL",
+          type: t.type || t.side || t('page.spot.tradeTypeFallback'),
           createdAt: t.createdAt || t.timestamp || new Date().toISOString(),
         };
       });
@@ -451,7 +451,7 @@ export default function SpotTrading() {
                         <Skeleton className="h-full w-full" />
                       ) : historyError ? (
                         <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                          Failed to load chart
+                          {t('page.spot.failedToLoadChart')}
                         </div>
                       ) : (
                         <SpotMiniChart 
@@ -505,14 +505,14 @@ export default function SpotTrading() {
                                 variant={chartRange === "7d" ? "default" : "outline"}
                                 onClick={() => setChartRange("7d")}
                               >
-                                7d
+                                {t('page.spot.chartRange.7d')}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={chartRange === "30d" ? "default" : "outline"}
                                 onClick={() => setChartRange("30d")}
                               >
-                                30d
+                                {t('page.spot.chartRange.30d')}
                               </Button>
                             </div>
                           </div>
@@ -564,10 +564,10 @@ export default function SpotTrading() {
                         <table className="w-full">
                           <thead className="text-xs uppercase text-muted-foreground">
                             <tr className="text-left">
-                              <th className="py-1">Time</th>
-                              <th className="py-1">Price</th>
-                              <th className="py-1">Qty (t)</th>
-                              <th className="py-1">Side</th>
+                              <th className="py-1">{t('page.spot.tradeTable.time')}</th>
+                              <th className="py-1">{t('page.spot.tradeTable.price')}</th>
+                              <th className="py-1">{t('page.spot.tradeTable.qty')}</th>
+                              <th className="py-1">{t('page.spot.tradeTable.side')}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
@@ -587,7 +587,7 @@ export default function SpotTrading() {
                                   </td>
                                   <td className="py-1">
                                     <span className={trade.type === "SELL" ? "text-destructive" : "text-emerald-600"}>
-                                      {trade.type}
+                                      {trade.type === "SELL" ? t('page.spot.tradeTable.sell') : trade.type === "BUY" ? t('page.spot.tradeTable.buy') : trade.type}
                                     </span>
                                   </td>
                                 </tr>

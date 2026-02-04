@@ -252,11 +252,12 @@ export function SpotPositionsTable({
                           onClick={() => onShowOptionsForCommodity?.(position.commoditySlug)}
                           data-testid={`button-show-options-${position.commoditySlug}`}
                         >
-                          {optionsByCommodity[position.commoditySlug]} option
-                          {optionsByCommodity[position.commoditySlug] === 1 ? "" : "s"}
+                          {t("spot.positions.optionsCount", {
+                            count: optionsByCommodity[position.commoditySlug],
+                          })}
                         </Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">–</span>
+                        <span className="text-xs text-muted-foreground">{t("common.dash")}</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">

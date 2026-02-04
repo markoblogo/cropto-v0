@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 interface PriceEntry {
   id?: string;
@@ -26,6 +26,7 @@ interface SpotTradeHistoryProps {
  * Displays last N price updates as "quotes" if no actual trade data is available
  */
 export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
+  const { t } = useTranslation();
   // Sort by timestamp (newest first) and limit rows
   const sortedData = [...data]
     .sort((a, b) => {
@@ -46,7 +47,7 @@ export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
   if (sortedData.length === 0) {
     return (
       <div className="text-center py-4 text-sm text-muted-foreground">
-        No recent trades
+        {t("spot.tradeHistory.empty")}
       </div>
     );
   }
@@ -57,7 +58,7 @@ export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
         ? new Date(timestamp) 
         : timestamp;
       
-      if (isNaN(date.getTime())) return "N/A";
+      if (isNaN(date.getTime())) return t("spot.tradeHistory.na");
       
       // If less than 1 hour ago, show "X min ago", otherwise show time
       const now = new Date();
@@ -65,12 +66,14 @@ export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
       const diffMins = Math.floor(diffMs / 60000);
       
       if (diffMins < 60) {
-        return diffMins <= 0 ? "Just now" : `${diffMins} min ago`;
+        return diffMins <= 0
+          ? t("spot.tradeHistory.justNow")
+          : t("spot.tradeHistory.minutesAgo", { count: diffMins });
       } else {
         return format(date, "HH:mm");
       }
     } catch {
-      return "N/A";
+      return t("spot.tradeHistory.na");
     }
   };
 
@@ -86,9 +89,9 @@ export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="h-8 text-xs">Time</TableHead>
-            <TableHead className="h-8 text-xs">Price</TableHead>
-            <TableHead className="h-8 text-xs">Change</TableHead>
+            <TableHead className="h-8 text-xs">{t("spot.tradeHistory.headers.time")}</TableHead>
+            <TableHead className="h-8 text-xs">{t("spot.tradeHistory.headers.price")}</TableHead>
+            <TableHead className="h-8 text-xs">{t("spot.tradeHistory.headers.change")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -113,7 +116,7 @@ export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
                       {entry.delta > 0 ? "+" : ""}{entry.delta.toFixed(2)}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">{t("common.dash")}</span>
                   )}
                 </TableCell>
               </TableRow>
@@ -124,4 +127,3 @@ export function SpotTradeHistory({ data, maxRows = 5 }: SpotTradeHistoryProps) {
     </div>
   );
 }
-

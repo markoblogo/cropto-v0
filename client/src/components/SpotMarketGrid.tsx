@@ -109,7 +109,7 @@ export function SpotMarketGrid() {
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Failed to load spot market data. Please try again later.
+              {t('spot.market.error')}
             </AlertDescription>
           </Alert>
         </div>
@@ -133,7 +133,7 @@ export function SpotMarketGrid() {
           </div>
           <Alert>
             <AlertDescription>
-              No spot market data available at this time.
+              {t('spot.market.noData')}
             </AlertDescription>
           </Alert>
         </div>

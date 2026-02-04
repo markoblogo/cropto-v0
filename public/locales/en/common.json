@@ -56,7 +56,8 @@
     "pending": "Pending...",
     "noData": "No data available",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "dash": "—"
   },
   "toast": {
     "loggedOut": "Logged out",
@@ -214,7 +215,9 @@
       "subtitle": "Buy and sell commodities using your CROPT balance",
       "buy": "Buy",
       "sell": "Sell",
-      "pricePerKg": "Price per ton"
+      "pricePerKg": "Price per ton",
+      "error": "Failed to load spot market data. Please try again later.",
+      "noData": "No spot market data available at this time."
     },
     "trading": {
       "title": "Spot Trading",
@@ -245,7 +248,9 @@
       "badge": {
         "long": "LONG",
         "short": "SHORT"
-      }
+      },
+      "optionsCount_one": "{{count}} option",
+      "optionsCount_other": "{{count}} options"
     },
     "positionCard": {
       "title": "Your Position in {{commodity}}",
@@ -304,6 +309,48 @@
       "shortInfo": "You don't own this commodity yet — this order will open or increase a short position.",
       "successDesc": "Successfully sold {{qty}}t of {{commodity}}",
       "errorDesc": "Failed to sell commodity"
+    },
+    "orderForm": {
+      "title": "Place Order",
+      "depositRequired": "You need to deposit CROPT from your on-chain balance to your internal trading balance first.",
+      "quantityLabel": "Quantity (t)",
+      "quantityPlaceholder": "0.00",
+      "priceLabel": "Price:",
+      "priceValue": "${{price}} / ton",
+      "estimatedCostLabel": "Estimated Cost:",
+      "estimatedCostValue": "{{total}} CROPT",
+      "availableBalanceLabel": "Available CROPT:",
+      "availableBalanceValue": "{{balance}} CROPT",
+      "estimatedPayoutLabel": "Estimated Payout:",
+      "estimatedPayoutValue": "{{total}} CROPT",
+      "processing": "Processing...",
+      "buyCta": "Buy {{commodity}}",
+      "sellCta": "Sell {{commodity}}",
+      "validation": {
+        "invalidQuantityTitle": "Invalid quantity",
+        "minQuantityDesc": "Minimum quantity is {{min}} t",
+        "minQuantityInline": "Minimum quantity is {{min}} t",
+        "insufficientBalanceTitle": "Insufficient balance",
+        "insufficientBalanceDesc": "You need {{needed}} CROPT but only have {{available}} CROPT"
+      },
+      "toast": {
+        "buySuccessDesc": "Successfully bought {{qty}}t of {{commodity}}",
+        "sellSuccessDesc": "Successfully sold {{qty}}t of {{commodity}}",
+        "buyFailedDesc": "Failed to buy commodity",
+        "sellFailedDesc": "Failed to sell commodity"
+      }
+    },
+    "tradeHistory": {
+      "empty": "No recent trades",
+      "na": "N/A",
+      "justNow": "Just now",
+      "headers": {
+        "time": "Time",
+        "price": "Price",
+        "change": "Change"
+      },
+      "minutesAgo_one": "{{count}} min ago",
+      "minutesAgo_other": "{{count}} min ago"
     }
   },
   "page": {
@@ -326,7 +373,22 @@
       "processing": "Processing",
       "perTon": "/ ton",
       "comingSoon": "Coming Soon",
-      "comingSoonDesc": "Trading for this region is coming soon. Currently available for Ukraine only."
+      "comingSoonDesc": "Trading for this region is coming soon. Currently available for Ukraine only.",
+      "failedToLoadTrades": "Failed to load trades",
+      "tradeTypeFallback": "Trade",
+      "failedToLoadChart": "Failed to load chart",
+      "chartRange": {
+        "7d": "7d",
+        "30d": "30d"
+      },
+      "tradeTable": {
+        "time": "Time",
+        "price": "Price",
+        "qty": "Qty (t)",
+        "side": "Side",
+        "buy": "Buy",
+        "sell": "Sell"
+      }
     },
     "options": {
       "title": "Options Trading",

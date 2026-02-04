@@ -65,15 +65,18 @@ export function SpotOrderForm({
       queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/spot", commoditySlug] });
       toast({
-        title: "Success",
-        description: `Successfully bought ${quantityTonnes}t of ${commodityName}`,
+        title: t("common.success"),
+        description: t("spot.orderForm.toast.buySuccessDesc", {
+          qty: quantityTonnes,
+          commodity: commodityName,
+        }),
       });
       setQuantityTonnes("");
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to buy commodity",
+        title: t("common.error"),
+        description: error.message || t("spot.orderForm.toast.buyFailedDesc"),
         variant: "destructive",
       });
     },
@@ -89,15 +92,18 @@ export function SpotOrderForm({
       queryClient.invalidateQueries({ queryKey: ["/api/spot/positions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/spot", commoditySlug] });
       toast({
-        title: "Success",
-        description: `Successfully sold ${quantityTonnes}t of ${commodityName}`,
+        title: t("common.success"),
+        description: t("spot.orderForm.toast.sellSuccessDesc", {
+          qty: quantityTonnes,
+          commodity: commodityName,
+        }),
       });
       setQuantityTonnes("");
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to sell commodity",
+        title: t("common.error"),
+        description: error.message || t("spot.orderForm.toast.sellFailedDesc"),
         variant: "destructive",
       });
     },
@@ -108,8 +114,10 @@ export function SpotOrderForm({
     const qtyTonnes = parseFloat(quantityTonnes);
     if (!qtyTonnes || qtyTonnes < MIN_TRADE_TONS) {
       toast({
-        title: "Invalid quantity",
-        description: `Minimum quantity is ${MIN_TRADE_TONS.toFixed(3)} t`,
+        title: t("spot.orderForm.validation.invalidQuantityTitle"),
+        description: t("spot.orderForm.validation.minQuantityDesc", {
+          min: MIN_TRADE_TONS.toFixed(3),
+        }),
         variant: "destructive",
       });
       return;
@@ -117,8 +125,11 @@ export function SpotOrderForm({
 
     if (orderType === "buy" && !canAfford) {
       toast({
-        title: "Insufficient balance",
-        description: `You need ${estimatedCost.toFixed(2)} CROPT but only have ${availableBalance.toFixed(2)} CROPT`,
+        title: t("spot.orderForm.validation.insufficientBalanceTitle"),
+        description: t("spot.orderForm.validation.insufficientBalanceDesc", {
+          needed: estimatedCost.toFixed(2),
+          available: availableBalance.toFixed(2),
+        }),
         variant: "destructive",
       });
       return;
@@ -139,16 +150,16 @@ export function SpotOrderForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Place Order</CardTitle>
+        <CardTitle>{t("spot.orderForm.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={orderType} onValueChange={(v) => setOrderType(v as "buy" | "sell")}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="buy" className={orderType === "buy" ? "bg-green-600 text-white" : ""}>
-              Buy
+              {t("spot.market.buy")}
             </TabsTrigger>
             <TabsTrigger value="sell" className={orderType === "sell" ? "bg-red-600 text-white" : ""}>
-              Sell
+              {t("spot.market.sell")}
             </TabsTrigger>
           </TabsList>
 
@@ -157,14 +168,14 @@ export function SpotOrderForm({
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  You need to deposit CROPT from your on-chain balance to your internal trading balance first.
+                  {t("spot.orderForm.depositRequired")}
                 </AlertDescription>
               </Alert>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="buy-quantity">Quantity (t)</Label>
+                <Label htmlFor="buy-quantity">{t("spot.orderForm.quantityLabel")}</Label>
                 <Input
                   id="buy-quantity"
                   type="number"
@@ -172,33 +183,41 @@ export function SpotOrderForm({
                   min={MIN_TRADE_TONS}
                   value={quantityTonnes}
                   onChange={(e) => setQuantityTonnes(e.target.value)}
-                  placeholder="0.00"
+                  placeholder={t("spot.orderForm.quantityPlaceholder")}
                   disabled={isPending}
                 />
                 {!isQuantityValid && quantityTonnes && (
                   <p className="text-xs text-destructive">
-                    Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+                    {t("spot.orderForm.validation.minQuantityInline", {
+                      min: MIN_TRADE_TONS.toFixed(3),
+                    })}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Price:</span>
+                  <span className="text-muted-foreground">{t("spot.orderForm.priceLabel")}</span>
                   <span className="font-mono font-medium">
-                    ${currentPrice.toFixed(2)} / ton
+                    {t("spot.orderForm.priceValue", {
+                      price: currentPrice.toFixed(2),
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Estimated Cost:</span>
+                  <span className="text-muted-foreground">{t("spot.orderForm.estimatedCostLabel")}</span>
                   <span className="font-mono font-medium">
-                    {estimatedCost.toFixed(2)} CROPT
+                    {t("spot.orderForm.estimatedCostValue", {
+                      total: estimatedCost.toFixed(2),
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Available CROPT:</span>
+                  <span className="text-muted-foreground">{t("spot.orderForm.availableBalanceLabel")}</span>
                   <span className="font-mono font-medium">
-                    {availableBalance.toFixed(2)} CROPT
+                    {t("spot.orderForm.availableBalanceValue", {
+                      balance: availableBalance.toFixed(2),
+                    })}
                   </span>
                 </div>
               </div>
@@ -211,10 +230,10 @@ export function SpotOrderForm({
                 {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    {t("spot.orderForm.processing")}
                   </>
                 ) : (
-                  `Buy ${commodityName}`
+                  t("spot.orderForm.buyCta", { commodity: commodityName })
                 )}
               </Button>
             </form>
@@ -223,7 +242,7 @@ export function SpotOrderForm({
           <TabsContent value="sell" className="space-y-4 mt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="sell-quantity">Quantity (t)</Label>
+                <Label htmlFor="sell-quantity">{t("spot.orderForm.quantityLabel")}</Label>
                 <Input
                   id="sell-quantity"
                   type="number"
@@ -231,27 +250,33 @@ export function SpotOrderForm({
                   min={MIN_TRADE_TONS}
                   value={quantityTonnes}
                   onChange={(e) => setQuantityTonnes(e.target.value)}
-                  placeholder="0.00"
+                  placeholder={t("spot.orderForm.quantityPlaceholder")}
                   disabled={isPending}
                 />
                 {!isQuantityValid && quantityTonnes && (
                   <p className="text-xs text-destructive">
-                    Minimum quantity is {MIN_TRADE_TONS.toFixed(3)} t
+                    {t("spot.orderForm.validation.minQuantityInline", {
+                      min: MIN_TRADE_TONS.toFixed(3),
+                    })}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Price:</span>
+                  <span className="text-muted-foreground">{t("spot.orderForm.priceLabel")}</span>
                   <span className="font-mono font-medium">
-                    ${currentPrice.toFixed(2)} / ton
+                    {t("spot.orderForm.priceValue", {
+                      price: currentPrice.toFixed(2),
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Estimated Payout:</span>
+                  <span className="text-muted-foreground">{t("spot.orderForm.estimatedPayoutLabel")}</span>
                   <span className="font-mono font-medium">
-                    {estimatedCost.toFixed(2)} CROPT
+                    {t("spot.orderForm.estimatedPayoutValue", {
+                      total: estimatedCost.toFixed(2),
+                    })}
                   </span>
                 </div>
               </div>
@@ -265,10 +290,10 @@ export function SpotOrderForm({
                 {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    {t("spot.orderForm.processing")}
                   </>
                 ) : (
-                  `Sell ${commodityName}`
+                  t("spot.orderForm.sellCta", { commodity: commodityName })
                 )}
               </Button>
             </form>
@@ -278,4 +303,3 @@ export function SpotOrderForm({
     </Card>
   );
 }
-
