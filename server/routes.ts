@@ -4059,6 +4059,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Feedback endpoints
+  app.post("/api/feedback/upload", async (req, res) => {
+    try {
+      const schema = z.object({
+        fileName: z.string().optional(),
+        contentType: z.string().min(1),
+        dataBase64: z.string().min(1),
+      });
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid upload payload" });
+      }
+
+      const { fileName, contentType, dataBase64 } = parsed.data;
+      const allowedTypes = new Map([
+        ["image/png", ".png"],
+        ["image/jpeg", ".jpg"],
+        ["image/webp", ".webp"],
+        ["image/gif", ".gif"],
+      ]);
+
+      const extension = allowedTypes.get(contentType);
+      if (!extension) {
+        return res.status(400).json({ error: "Only PNG/JPEG/WEBP/GIF images are allowed" });
+      }
+
+      const fileBuffer = Buffer.from(dataBase64, "base64");
+      const maxBytes = 5 * 1024 * 1024;
+      if (!fileBuffer.length || fileBuffer.length > maxBytes) {
+        return res.status(413).json({ error: "Image must be between 1 byte and 5MB" });
+      }
+
+      const uploadsDir = path.join(process.cwd(), "uploads", "feedback");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const safeBaseName = (fileName || "feedback-screenshot")
+        .replace(/[^a-zA-Z0-9-_\\.]/g, "_")
+        .replace(/\.[^.]+$/, "")
+        .slice(0, 60);
+      const storedFileName = `${Date.now()}-${safeBaseName || "feedback"}-${randomUUID()}${extension}`;
+      const storedPath = path.join(uploadsDir, storedFileName);
+      fs.writeFileSync(storedPath, fileBuffer);
+
+      return res.status(201).json({
+        url: `/uploads/feedback/${storedFileName}`,
+      });
+    } catch (error) {
+      console.error("Error uploading feedback screenshot:", error);
+      return res.status(500).json({ error: "Failed to upload screenshot" });
+    }
+  });
+
   app.post("/api/feedback", async (req, res) => {
     try {
       const result = insertFeedbackSchema.safeParse(req.body);

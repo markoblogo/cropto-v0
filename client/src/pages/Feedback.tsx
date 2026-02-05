@@ -37,8 +37,18 @@ export default function Feedback() {
         category: z.enum(["bug", "data", "ux", "other"]),
         message: z.string().min(1, t("page.feedback.validation.messageRequired")),
         screenshotUrl: z
-          .union([z.string().url(t("page.feedback.validation.urlInvalid")), z.literal(""), z.undefined()])
-          .optional(),
+          .string()
+          .optional()
+          .refine((value) => {
+            if (!value) return true;
+            if (value.startsWith("/uploads/")) return true;
+            try {
+              new URL(value);
+              return true;
+            } catch {
+              return false;
+            }
+          }, t("page.feedback.validation.urlInvalid")),
       }),
     [t]
   );
@@ -121,8 +131,64 @@ export default function Feedback() {
     },
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const dataBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.onload = () => {
+          const result = String(reader.result || "");
+          const payload = result.split(",")[1];
+          if (!payload) {
+            reject(new Error("Failed to parse file data"));
+            return;
+          }
+          resolve(payload);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      const response = await fetch("/api/feedback/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+          dataBase64,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || "Upload failed");
+      }
+
+      const body = await response.json();
+      return body.url as string;
+    },
+    onSuccess: (url) => {
+      form.setValue("screenshotUrl", url, { shouldDirty: true, shouldValidate: true });
+      toast({
+        title: t("page.feedback.toast.successTitle"),
+        description: t("page.feedback.upload.success"),
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t("page.feedback.toast.errorTitle"),
+        description: error?.message || t("page.feedback.upload.failed"),
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: FeedbackFormData) => {
     submitMutation.mutate(data);
+  };
+
+  const handleScreenshotFile = (file?: File) => {
+    if (!file) return;
+    uploadMutation.mutate(file);
   };
 
   const envSummary = useMemo(() => {
@@ -302,6 +368,23 @@ export default function Feedback() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.feedback.fields.screenshotUrl.label")}</FormLabel>
+                      <div className="rounded-md border border-dashed p-3">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {t("page.feedback.upload.hint")}
+                        </p>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadMutation.isPending}
+                          onChange={(e) => handleScreenshotFile(e.target.files?.[0])}
+                          data-testid="input-screenshot-file"
+                        />
+                        {uploadMutation.isPending && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {t("page.feedback.upload.uploading")}
+                          </p>
+                        )}
+                      </div>
                       <FormControl>
                         <Input
                           placeholder={t("page.feedback.fields.screenshotUrl.placeholder")}
@@ -310,6 +393,7 @@ export default function Feedback() {
                           data-testid="input-screenshot-url"
                         />
                       </FormControl>
+                      <FormDescription>{t("page.feedback.upload.orPasteUrl")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

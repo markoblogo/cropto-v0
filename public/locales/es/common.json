@@ -1244,6 +1244,13 @@
         "wallet": "Billetera",
         "userId": "ID de usuario",
         "notConnected": "No conectada"
+      },
+      "upload": {
+        "hint": "Sube una captura (arrastra y suelta o elige archivo).",
+        "uploading": "Subiendo captura…",
+        "orPasteUrl": "O pega una URL de captura manualmente",
+        "success": "Captura subida y adjuntada.",
+        "failed": "No se pudo subir la captura. Inténtalo de nuevo."
       }
     }
   },

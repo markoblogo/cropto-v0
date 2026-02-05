@@ -1244,6 +1244,13 @@
         "wallet": "Wallet",
         "userId": "User ID",
         "notConnected": "Not connected"
+      },
+      "upload": {
+        "hint": "Upload screenshot (drag & drop or choose file).",
+        "uploading": "Uploading screenshot…",
+        "orPasteUrl": "Or paste a screenshot URL manually",
+        "success": "Screenshot uploaded and attached.",
+        "failed": "Failed to upload screenshot. Please try again."
       }
     }
   },

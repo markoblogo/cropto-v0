@@ -1244,6 +1244,13 @@
         "wallet": "Carteira",
         "userId": "ID do usuário",
         "notConnected": "Não conectada"
+      },
+      "upload": {
+        "hint": "Envie uma captura (arraste e solte ou escolha um arquivo).",
+        "uploading": "Enviando captura…",
+        "orPasteUrl": "Ou cole uma URL da captura manualmente",
+        "success": "Captura enviada e anexada.",
+        "failed": "Falha ao enviar a captura. Tente novamente."
       }
     }
   },

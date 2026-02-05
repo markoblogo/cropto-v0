@@ -19,6 +19,7 @@ declare module 'http' {
   }
 }
 app.use(express.json({
+  limit: "10mb",
   verify: (req, _res, buf) => {
     req.rawBody = buf;
   }
@@ -94,6 +95,9 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
   registerSpotRoutes(app);
+
+  // Static files uploaded by users (e.g. feedback screenshots)
+  app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
