@@ -56,7 +56,10 @@ export function startReconciler() {
     return;
   }
 
-  if (!process.env.POLYGON_AMOY_RPC_URL || !process.env.CROPT_CONTRACT_ADDRESS) {
+  const privateKey = process.env.DEPLOYER_PRIVATE_KEY || "";
+  const hasValidPrivateKey = /^0x[a-fA-F0-9]{64}$/.test(privateKey);
+
+  if (!process.env.POLYGON_AMOY_RPC_URL || !process.env.CROPT_CONTRACT_ADDRESS || !hasValidPrivateKey) {
     console.log('[Reconciler] Blockchain not configured, skipping reconciler');
     return;
   }

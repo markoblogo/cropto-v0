@@ -111,11 +111,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     startTelegramPoller();
   } else {
     console.log("[TelegramPoller] TELEGRAM_BOT_TOKEN not configured. Poller disabled.");
-    console.log("[TelegramScraper] Starting fallback scraper for public channel...");
-    // Run scraper in background, handle errors gracefully
-    runScraper(false).catch((error) => {
-      console.error("[TelegramScraper] Fatal error:", error);
-    });
+    const scraperEnabled = process.env.ENABLE_TELEGRAM_SCRAPER !== "false";
+    if (scraperEnabled) {
+      console.log("[TelegramScraper] Starting fallback scraper for public channel...");
+      // Run scraper in background, handle errors gracefully
+      runScraper(false).catch((error) => {
+        console.error("[TelegramScraper] Fatal error:", error);
+      });
+    } else {
+      console.log("[TelegramScraper] ENABLE_TELEGRAM_SCRAPER=false, scraper disabled.");
+    }
   }
 
   // Start IGC poller if enabled
