@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, TrendingUp, ArrowRightCircle, BarChart3, Eye } from "lucide-react";
+import { Wallet, ArrowRightCircle, BarChart3, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 
@@ -67,28 +67,28 @@ export function Hero({
       </div>
 
       {/* Content */}
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
-        <div className="flex flex-col gap-8 max-w-7xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-11 sm:py-14 lg:py-18">
+        <div className="flex flex-col gap-6 max-w-7xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <div className="flex flex-col gap-4 flex-1">
-              <div className="flex flex-col md:flex-row items-center md:items-center gap-6">
+              <div className="flex flex-col md:flex-row items-center md:items-center gap-4">
                 <img
                   src="/CroptoBlackLogo-removebg-preview.png"
                   alt="Cropto logo"
-                  className="h-20 w-auto md:h-24"
+                  className="h-16 w-auto md:h-20"
                   data-testid="img-hero-logo"
                 />
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight text-center md:text-left" data-testid="text-hero-headline">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-tight text-center md:text-left" data-testid="text-hero-headline">
                   {t('home.hero.title')}
                 </h1>
               </div>
-              <p className="text-base sm:text-lg text-white/80 max-w-3xl">
+              <p className="text-sm sm:text-base lg:text-lg text-white/80 max-w-3xl md:pl-[5.5rem]">
                 {t('home.hero.subtitle')}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 md:pl-[5.5rem]">
             {/* Four CTA buttons: light amber -> deep green */}
             <Button
               size="lg"
