@@ -41,6 +41,7 @@ import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySl
 import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
 import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
+import { getSourceDescriptor } from "./services/sourceCatalog";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -71,6 +72,13 @@ function computeIsStale(latestTimestamp: Date | string | null | undefined) {
   const thresholdMs = STALE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
   const isStale = ageMs > thresholdMs;
   return { isStale, staleReason: isStale ? `no_updates_since:${new Date(ts).toISOString()}` : null };
+}
+
+function computeFreshnessDays(timestamp: Date | string | null | undefined): number {
+  if (!timestamp) return Number.POSITIVE_INFINITY;
+  const ts = new Date(timestamp).getTime();
+  if (Number.isNaN(ts)) return Number.POSITIVE_INFINITY;
+  return Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
 }
 
 async function getIndexWithLatestById(indexId: string) {
@@ -986,10 +994,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get BR/AR indexes from indexPrices with meta
-      const allIndexPrices = await db
+      const allIndexPricesRaw = await db
         .select()
         .from(indexPrices)
         .orderBy(desc(indexPrices.date));
+
+      const allIndexPrices = [...allIndexPricesRaw].sort((a, b) => {
+        const timeDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (timeDiff !== 0) return timeDiff;
+        const aPriority = getSourceDescriptor(String(a.source || "manual")).priority;
+        const bPriority = getSourceDescriptor(String(b.source || "manual")).priority;
+        return bPriority - aPriority;
+      });
 
       const brArLatest: Array<{
         country: string;
@@ -1662,37 +1678,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (const price of allIndexPrices) {
         try {
-          // Check if this is IGC data (has country field directly and source = IGC)
-          // IGC export prices, source: International Grains Council, see https://www.igc.int/en/markets/marketinfo-prices.aspx
+          // Check if this is external data (country-tagged source from IGC or USDA AMS).
           const hasCountry = !!price.country;
           const countryMatches = price.country === "BR" || price.country === "AR" || price.country === "US";
-          const sourceMatches = price.source === "IGC";
-          const isIgcRecord = hasCountry && countryMatches && sourceMatches;
+          const sourceMatches = price.source === "IGC" || price.source === "USDA_AMS";
+          const isExternalRecord = hasCountry && countryMatches && sourceMatches;
           
           // Debug log for IGC records
           if (hasCountry && countryMatches && price.source) {
-            console.log(`[Market Dashboard DEBUG] Record: country=${price.country}, source="${price.source}", sourceMatches=${sourceMatches}, isIgcRecord=${isIgcRecord}, commodity=${price.commodity}`);
+            console.log(`[Market Dashboard DEBUG] Record: country=${price.country}, source="${price.source}", sourceMatches=${sourceMatches}, isExternalRecord=${isExternalRecord}, commodity=${price.commodity}`);
           }
           
-          if (isIgcRecord) {
+          if (isExternalRecord) {
             try {
               const commodity = price.commodity.toLowerCase();
               const country = price.country as "BR" | "AR" | "US"; // Already validated by isIgcRecord check
               const label = price.label || "";
-              
-              // Get preferred label for this country+commodity combination
-              const preferredLabel = IGC_SERIES_MAPPING[country]?.[commodity];
-              
-              // Skip if this country+commodity combination is not in the mapping
-              if (!preferredLabel) {
-                // This commodity for this country should not be shown on dashboard
-                continue;
-              }
-              
-              // Filter by label: allow startsWith to handle minor formatting changes
-              if (!label.startsWith(preferredLabel)) {
-                // This is not the preferred series - skip it
-                continue;
+
+              // IGC gets strict mapping per country/commodity. USDA AMS is accepted for US without IGC mapping.
+              if (price.source === "IGC") {
+                const preferredLabel = IGC_SERIES_MAPPING[country]?.[commodity];
+                if (!preferredLabel) {
+                  continue;
+                }
+                if (!label.startsWith(preferredLabel)) {
+                  continue;
+                }
               }
               
               // For IGC data, use label as basis identifier
@@ -1725,6 +1736,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   asOfDate = new Date();
                 }
                 
+                const asOfDateRaw = price.asOfDate || price.date;
+                const freshnessDays = computeFreshnessDays(asOfDateRaw);
+                const sourceDescriptor = getSourceDescriptor(String(price.source || "manual"));
+                const metaObj = price.meta ? JSON.parse(price.meta) : {};
                 const result: MarketIndexDto = {
                   commodity,
                   grade: null, // IGC data doesn't use grade field
@@ -1736,7 +1751,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   change7d: 0,
                   change30d: 0,
                   asOf: asOfDate.toISOString(),
-                  source: "IGC" as const,
+                  source: (price.source === "USDA_AMS" ? "USDA_AMS" : "IGC") as const,
+                  confidence: (metaObj.confidence || "high") as "high" | "medium" | "low",
+                  freshnessDays,
+                  isStale: freshnessDays > STALE_MAX_AGE_DAYS,
+                  sourceType: sourceDescriptor.sourceType,
+                  usagePolicy: sourceDescriptor.usagePolicy,
+                  visibility: sourceDescriptor.visibility,
                 };
                 
                 // Add optional IGC-specific fields (explicitly set, not via TypeScript defaults)
@@ -1751,12 +1772,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
                 
                 targetMap.set(key, result);
-                console.log(`[Market Dashboard] Added IGC record: country=${country}, key=${key}, commodity=${commodity}, price=${priceValue}`);
+                console.log(`[Market Dashboard] Added external record: source=${price.source}, country=${country}, key=${key}, commodity=${commodity}, price=${priceValue}`);
               } else {
-                console.log(`[Market Dashboard] Skipped IGC record (duplicate key): country=${country}, key=${key}`);
+                console.log(`[Market Dashboard] Skipped external record (duplicate key): source=${price.source}, country=${country}, key=${key}`);
               }
             } catch (error) {
-              console.error(`[Market Dashboard] Error processing IGC record:`, error);
+              console.error(`[Market Dashboard] Error processing external record:`, error);
             }
           } else {
             // Legacy meta-based data (for backward compatibility)
@@ -1801,6 +1822,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
 
                 const detectedSource = (meta.source || price.source || "manual") as string;
+                const descriptor = getSourceDescriptor(detectedSource);
+                const freshnessDays = computeFreshnessDays(price.asOfDate || price.date);
 
                 targetMap.set(key, {
                   commodity,
@@ -1814,6 +1837,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   change30d: 0,
                   asOf: new Date(price.date).toISOString(),
                   source: detectedSource as any,
+                  confidence: (meta.confidence || "medium") as "high" | "medium" | "low",
+                  freshnessDays,
+                  isStale: freshnessDays > STALE_MAX_AGE_DAYS,
+                  sourceType: descriptor.sourceType,
+                  usagePolicy: descriptor.usagePolicy,
+                  visibility: descriptor.visibility,
                 });
               }
             }
@@ -1927,6 +1956,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("Error fetching market dashboard:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // GET /debug/index-prices/raw - diagnostic raw rows for ETL verification
+  app.get("/debug/index-prices/raw", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!hasBrokerPermissions(req.user?.role)) {
+        return res.status(403).json({ error: "Access denied. Broker role required." });
+      }
+
+      const includeMeta = req.query.includeMeta === "true";
+      const includeRawRow = req.query.includeRawRow === "true";
+      const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || "200"), 10) || 200, 1), 2000);
+
+      const rows = await db
+        .select()
+        .from(indexPrices)
+        .orderBy(desc(indexPrices.date))
+        .limit(limit);
+
+      const payload = rows.map((row) => {
+        const item: Record<string, unknown> = {
+          id: row.id,
+          source: row.source,
+          commodity: row.commodity,
+          country: row.country,
+          label: row.label,
+          price: row.price,
+          asOfDate: row.asOfDate,
+          date: row.date,
+        };
+        if (includeMeta) {
+          item.meta = row.meta ? JSON.parse(row.meta) : null;
+        }
+        if (includeRawRow) {
+          item.rawRow = row.rawRow ? JSON.parse(row.rawRow) : null;
+        }
+        return item;
+      });
+
+      res.json({ count: payload.length, items: payload });
+    } catch (error: any) {
+      console.error("Error fetching debug index prices:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

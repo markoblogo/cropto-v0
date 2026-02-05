@@ -507,6 +507,28 @@ export default function Education() {
             </Accordion>
           </CardContent>
         </Card>
+
+        <Card id="data-sources">
+          <CardHeader>
+            <CardTitle>{t('page.education.dataSources.title')}</CardTitle>
+            <CardDescription>{t('page.education.dataSources.subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>{t('page.education.dataSources.sources.igc')}</li>
+              <li>{t('page.education.dataSources.sources.usda')}</li>
+              <li>{t('page.education.dataSources.sources.telegram')}</li>
+              <li>{t('page.education.dataSources.sources.fallback')}</li>
+            </ul>
+            <Separator />
+            <div className="space-y-1 text-muted-foreground">
+              <h3 className="text-sm font-semibold text-foreground">{t('page.education.dataSources.processing.title')}</h3>
+              <p>{t('page.education.dataSources.processing.step1')}</p>
+              <p>{t('page.education.dataSources.processing.step2')}</p>
+              <p>{t('page.education.dataSources.processing.step3')}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );

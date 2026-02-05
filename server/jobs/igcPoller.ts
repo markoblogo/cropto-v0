@@ -1,34 +1,40 @@
 /**
- * IGC Poller Job
- * Fetches and stores daily grain prices from IGC (International Grains Council)
+ * External Market Poller Job
+ * Fetches and stores daily grain prices from external sources (IGC + USDA AMS)
  */
 
-import { fetchDailyPrices } from "../services/igcPriceService";
+import { fetchDailyPrices as fetchIgcDailyPrices } from "../services/igcPriceService";
+import { fetchUsdaAmsPrices } from "../services/usdaAmsPriceService";
 import { upsertIgcIndexPrices } from "../services/igcUpsert";
 
 const POLL_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 let pollerInterval: NodeJS.Timeout | null = null;
 
 /**
- * Run IGC price fetch and upsert once
+ * Run external price fetch and upsert once
  */
 export async function pollOnce(): Promise<number> {
   try {
-    console.log("[IGC Poller] Starting price fetch...");
-    
-    const prices = await fetchDailyPrices();
-    
-    if (prices.length === 0) {
-      console.warn("[IGC Poller] No prices fetched");
+    console.log("[IGC Poller] Starting external price fetch...");
+
+    const igcPrices = await fetchIgcDailyPrices();
+    const usdaPrices = process.env.ENABLE_USDA_AMS_POLLING === "false"
+      ? []
+      : await fetchUsdaAmsPrices();
+
+    if (igcPrices.length === 0 && usdaPrices.length === 0) {
+      console.warn("[IGC Poller] No external prices fetched");
       return 0;
     }
 
-    console.log(`[IGC Poller] Fetched ${prices.length} prices, upserting...`);
-    
-    const upserted = await upsertIgcIndexPrices(prices);
-    
-    console.log(`[IGC Poller] ✅ Upserted ${upserted} prices`);
-    return upserted;
+    console.log(`[IGC Poller] Fetched ${igcPrices.length} IGC prices and ${usdaPrices.length} USDA AMS prices, upserting...`);
+
+    const upsertedIgc = igcPrices.length > 0 ? await upsertIgcIndexPrices(igcPrices, "IGC") : 0;
+    const upsertedUsda = usdaPrices.length > 0 ? await upsertIgcIndexPrices(usdaPrices, "USDA_AMS") : 0;
+    const totalUpserted = upsertedIgc + upsertedUsda;
+
+    console.log(`[IGC Poller] ✅ Upserted ${totalUpserted} prices (IGC=${upsertedIgc}, USDA_AMS=${upsertedUsda})`);
+    return totalUpserted;
   } catch (error: any) {
     console.error("[IGC Poller] Error in poll cycle:", error.message);
     throw error;
@@ -90,4 +96,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       process.exit(1);
     });
 }
-

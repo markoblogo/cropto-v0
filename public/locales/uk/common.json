@@ -815,6 +815,22 @@
           "question": "Чи можуть змінюватися функції або правила?",
           "answer": "Так. Cropto активно розробляється. Тексти, сценарії та розрахунки можуть змінюватися між збірками."
         }
+      },
+      "dataSources": {
+        "title": "Джерела даних і обробка",
+        "subtitle": "Звідки збираються дані та як вони нормалізуються для ринкових екранів і контрактів.",
+        "sources": {
+          "igc": "IGC (International Grains Council): експортні бенчмарки для BR/AR/US (коли доступні).",
+          "usda": "USDA AMS (JO_GR850): експортні біди США, що парсяться в нормалізовані індексні ряди.",
+          "telegram": "Spike Telegram фіди: потік індексів UA та ручні адмінські оновлення.",
+          "fallback": "Mock fallback використовується лише коли по країні немає живих рядків; fallback записується в БД для безперервності графіків."
+        },
+        "processing": {
+          "title": "ETL-пайплайн",
+          "step1": "Ingestion: poller-и за розкладом забирають сторінки/файли джерел (IGC/USDA/Telegram).",
+          "step2": "Normalization: рядки мапляться в commodity/country/basis/asOfDate + USD за тонну.",
+          "step3": "Storage: записи безпечно upsert-яться за source+country+commodity+label+asOfDate і віддаються через API."
+        }
       }
     },
     "admin": {

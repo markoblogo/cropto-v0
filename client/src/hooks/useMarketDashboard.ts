@@ -12,7 +12,13 @@ export interface MarketIndexDto {
   change7d: number;
   change30d: number;
   asOf: string;
-  source: "spike_telegram" | "mock" | "manual" | "IGC";
+  source: "spike_telegram" | "mock" | "manual" | "IGC" | "USDA_AMS";
+  confidence?: "high" | "medium" | "low";
+  freshnessDays?: number;
+  isStale?: boolean;
+  sourceType?: "official_api" | "official_file" | "public_html" | "editorial_article" | "internal";
+  usagePolicy?: "open" | "restricted" | "unknown";
+  visibility?: "public" | "internal_only";
   // Optional IGC-specific fields
   dailyChange?: number; // alias for change24h (for backward compatibility)
   annualChange?: number;

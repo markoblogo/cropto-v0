@@ -20,6 +20,8 @@ export interface IgcPrice {
   low52w?: number | null;
   high52w?: number | null;
   rawRow: Record<string, string>;
+  confidence?: "high" | "medium" | "low";
+  meta?: Record<string, unknown>;
 }
 
 const IGC_BASE_URL = "https://www.igc.int/en/markets/marketinfo-prices.aspx";
@@ -445,4 +447,3 @@ export async function fetchDailyPrices(): Promise<IgcPrice[]> {
     throw error;
   }
 }
-

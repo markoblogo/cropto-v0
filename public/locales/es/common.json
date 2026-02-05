@@ -626,6 +626,22 @@
           "question": "¿Pueden cambiar las funciones o reglas?",
           "answer": "Sí. Cropto está en desarrollo activo. Los textos, flujos y cálculos pueden cambiar entre versiones."
         }
+      },
+      "dataSources": {
+        "title": "Fuentes de datos y procesamiento",
+        "subtitle": "De dónde se recogen los datos y cómo se normalizan para vistas de mercado y contratos.",
+        "sources": {
+          "igc": "IGC (International Grains Council): series de referencia de exportación para BR/AR/US (cuando están disponibles).",
+          "usda": "USDA AMS (JO_GR850): ofertas de exportación de granos de EE. UU. convertidas a series de índice normalizadas.",
+          "telegram": "Feeds de Spike Telegram: flujo de índices UA y ajustes manuales de administradores.",
+          "fallback": "El fallback mock se usa solo cuando un país no tiene filas de feed en vivo; estas filas se guardan para continuidad de gráficos."
+        },
+        "processing": {
+          "title": "Pipeline ETL",
+          "step1": "Ingesta: los pollers obtienen páginas/archivos de fuentes en un horario definido (IGC/USDA/Telegram).",
+          "step2": "Normalización: las filas se mapean a commodity/country/basis/asOfDate + USD por tonelada.",
+          "step3": "Almacenamiento: los registros se hacen upsert seguro por source+country+commodity+label+asOfDate y se exponen por API."
+        }
       }
     },
     "dashboard": {

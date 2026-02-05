@@ -626,6 +626,22 @@
           "question": "Can features or rules change over time?",
           "answer": "Yes. Cropto is under active development. UI text, flows, and calculations may be updated between builds."
         }
+      },
+      "dataSources": {
+        "title": "Data Sources & Processing",
+        "subtitle": "Where data is collected from and how it is normalized for market views and contracts.",
+        "sources": {
+          "igc": "IGC (International Grains Council): export benchmark rows for BR/AR/US (when available).",
+          "usda": "USDA AMS (JO_GR850): US export grain bids parsed into normalized US index rows.",
+          "telegram": "Spike Telegram feeds: UA market index stream and manual admin overrides.",
+          "fallback": "Mock fallback is used only when a country has no live feed rows; fallback rows are persisted for chart continuity."
+        },
+        "processing": {
+          "title": "ETL pipeline",
+          "step1": "Ingestion: pollers fetch source pages/files on schedule (IGC/USDA/Telegram).",
+          "step2": "Normalization: rows are mapped to commodity/country/basis/asOfDate + USD per ton.",
+          "step3": "Storage: records are safely upserted by source+country+commodity+label+asOfDate and exposed via API."
+        }
       }
     },
     "dashboard": {
