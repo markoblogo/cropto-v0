@@ -14,7 +14,8 @@
     "debug:igc": "tsx scripts/debugIgcIndexPrices.ts",
     "e2e:smoke": "tsx scripts/e2e_smoke.ts",
     "i18n:extract": "tsx scripts/extract-strings.ts",
-    "i18n:check": "tsx scripts/i18n-check.ts"
+    "i18n:check": "tsx scripts/i18n-check.ts",
+    "data:backfill:usda": "tsx scripts/backfillUsdaAmsArchives.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
