@@ -50,7 +50,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="sticky bottom-0 z-40 border-t border-border/70 bg-muted/85 backdrop-blur-sm">
+    <footer className="border-t border-border/70 bg-muted/85">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-xl border border-border/60 bg-background/80 p-3 md:col-span-2 xl:col-span-1">
