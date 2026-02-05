@@ -32,6 +32,7 @@ export default function MarketData() {
   }, [selectedRegion, setLocation]);
 
   const { data: marketDashboardData, isLoading: isMarketDashboardLoading } = useMarketDashboard();
+  const [selectedChartSeriesKey, setSelectedChartSeriesKey] = useState<string | null>(null);
 
   const regionalIndexes = useMemo(() => {
     if (!marketDashboardData) return [];
@@ -43,20 +44,38 @@ export default function MarketData() {
     return regionalIndexes.find((item) => item.commodity.toLowerCase().includes("wheat")) || regionalIndexes[0];
   }, [regionalIndexes]);
 
+  useEffect(() => {
+    if (!regionalIndexes.length) {
+      setSelectedChartSeriesKey(null);
+      return;
+    }
+    const preferred = primaryWheatIndex || regionalIndexes[0];
+    setSelectedChartSeriesKey(`${preferred.country}:${preferred.commodity}:${preferred.basis}`);
+  }, [selectedRegion, regionalIndexes, primaryWheatIndex]);
+
+  const selectedChartIndex = useMemo(() => {
+    if (!selectedChartSeriesKey) return primaryWheatIndex;
+    return (
+      regionalIndexes.find(
+        (item) => `${item.country}:${item.commodity}:${item.basis}` === selectedChartSeriesKey
+      ) || primaryWheatIndex
+    );
+  }, [selectedChartSeriesKey, regionalIndexes, primaryWheatIndex]);
+
   const { data: primaryWheatHistory, isLoading: isPrimaryWheatHistoryLoading } = useQuery<Array<{ date: string; price: number }>>({
-    queryKey: ["/api/index/history", selectedRegion, primaryWheatIndex?.commodity, primaryWheatIndex?.basis],
+    queryKey: ["/api/index/history", selectedRegion, selectedChartIndex?.commodity, selectedChartIndex?.basis],
     queryFn: async () => {
-      if (!primaryWheatIndex) return [];
+      if (!selectedChartIndex) return [];
       const params = new URLSearchParams({
         country: selectedRegion.toUpperCase(),
-        commodity: primaryWheatIndex.commodity,
-        basis: primaryWheatIndex.basis,
+        commodity: selectedChartIndex.commodity,
+        basis: selectedChartIndex.basis,
       });
       const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     },
-    enabled: !!primaryWheatIndex,
+    enabled: !!selectedChartIndex,
   });
 
   const volatilityChartData = useMemo(() => {
@@ -161,6 +180,9 @@ export default function MarketData() {
                         24h: {index.change24h > 0 ? "+" : ""}
                         {index.change24h.toFixed(2)}%
                       </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Updated: {new Date(index.asOf).toLocaleString()}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -184,6 +206,9 @@ export default function MarketData() {
                       <div className="text-sm text-muted-foreground mt-1">
                         24h: {index.change24h > 0 ? "+" : ""}
                         {index.change24h.toFixed(2)}%
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Updated: {new Date(index.asOf).toLocaleString()}
                       </div>
                     </CardContent>
                   </Card>
@@ -209,6 +234,9 @@ export default function MarketData() {
                         <div className="text-sm text-muted-foreground mt-1">
                           24h: {index.change24h > 0 ? "+" : ""}
                           {index.change24h.toFixed(2)}%
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Updated: {new Date(index.asOf).toLocaleString()}
                         </div>
                       </CardContent>
                     </Card>
@@ -240,15 +268,35 @@ export default function MarketData() {
             <CardDescription>{t("page.marketData.volatilityHistoryDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
+            {regionalIndexes.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {regionalIndexes.map((idx) => {
+                  const key = `${idx.country}:${idx.commodity}:${idx.basis}`;
+                  const selected = key === selectedChartSeriesKey;
+                  return (
+                    <Button
+                      key={key}
+                      type="button"
+                      variant={selected ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedChartSeriesKey(key)}
+                    >
+                      {idx.commodity}
+                      {idx.grade ? ` (${idx.grade})` : ""}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
             {isMarketDashboardLoading || isPrimaryWheatHistoryLoading ? (
               <Skeleton className="h-64 w-full" />
-            ) : primaryWheatIndex && volatilityChartData.length > 0 ? (
+            ) : selectedChartIndex && volatilityChartData.length > 0 ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>{countryFlag}</span>
                   <span>
-                    {primaryWheatIndex.commodity}
-                    {primaryWheatIndex.grade ? ` (${primaryWheatIndex.grade})` : ""} - {primaryWheatIndex.basis}
+                    {selectedChartIndex.commodity}
+                    {selectedChartIndex.grade ? ` (${selectedChartIndex.grade})` : ""} - {selectedChartIndex.basis}
                   </span>
                 </div>
                 <div className="h-64">

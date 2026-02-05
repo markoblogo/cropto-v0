@@ -1172,27 +1172,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
         } else {
-          // Query from indexPrices with meta
-          const allPrices = await db
+          // Query from indexPrices external rows first (country/commodity/label columns)
+          const externalPrices = await db
             .select()
             .from(indexPrices)
+            .where(
+              and(
+                eq(indexPrices.country, countryStr),
+                sql`LOWER(${indexPrices.commodity}) = LOWER(${commodityStr})`,
+                eq(indexPrices.label, basisStr)
+              )
+            )
             .orderBy(asc(indexPrices.date));
 
-          for (const price of allPrices) {
-            try {
-              const meta = price.meta ? JSON.parse(price.meta) : {};
-              if (
-                meta.country === countryStr &&
-                (meta.commodity || price.commodity.toLowerCase()) === commodityStr.toLowerCase() &&
-                meta.basis === basisStr
-              ) {
-                history.push({
-                  date: new Date(price.date).toISOString().split("T")[0],
-                  price: parseFloat(price.price),
-                });
+          for (const price of externalPrices) {
+            history.push({
+              date: new Date(price.asOfDate || price.date).toISOString().split("T")[0],
+              price: parseFloat(price.price),
+            });
+          }
+
+          // Backward-compatible fallback for legacy manual records stored only in meta
+          if (history.length === 0) {
+            const allPrices = await db
+              .select()
+              .from(indexPrices)
+              .orderBy(asc(indexPrices.date));
+
+            for (const price of allPrices) {
+              try {
+                const meta = price.meta ? JSON.parse(price.meta) : {};
+                const metaCommodity = String(meta.commodity || price.commodity || "").toLowerCase();
+                const metaBasis = String(meta.basis || meta.label || price.label || "");
+                if (
+                  meta.country === countryStr &&
+                  metaCommodity === commodityStr.toLowerCase() &&
+                  metaBasis === basisStr
+                ) {
+                  history.push({
+                    date: new Date(price.asOfDate || price.date).toISOString().split("T")[0],
+                    price: parseFloat(price.price),
+                  });
+                }
+              } catch {
+                // Skip invalid meta
               }
-            } catch {
-              // Skip invalid meta
             }
           }
         }
