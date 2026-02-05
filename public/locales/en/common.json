@@ -2058,5 +2058,10 @@
       "title": "Transfers (coming soon)",
       "subtitle": "Here you will see deposits, withdrawals and internal transfers history once we start logging them."
     }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

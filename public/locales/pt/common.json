@@ -2058,5 +2058,10 @@
       "title": "Transferências (em breve)",
       "subtitle": "Aqui você verá o histórico de depósitos, saques e transferências internas quando começarmos a registrá-los."
     }
+  },
+  "theme": {
+    "toggle": "Alternar tema",
+    "light": "Claro",
+    "dark": "Escuro"
   }
 }

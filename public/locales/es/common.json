@@ -2058,5 +2058,10 @@
       "title": "Transferencias (próximamente)",
       "subtitle": "Aquí verás el historial de depósitos, retiros y transferencias internas cuando empecemos a registrarlos."
     }
+  },
+  "theme": {
+    "toggle": "Cambiar tema",
+    "light": "Claro",
+    "dark": "Oscuro"
   }
 }

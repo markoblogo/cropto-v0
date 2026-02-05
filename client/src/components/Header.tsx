@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import FlagSwitcher from "./FlagSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 import { useTranslation } from "react-i18next";
 import { useUserTier } from "@/hooks/useUserTier";
 import {
@@ -299,6 +300,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
           <div className="flex items-center gap-1.5">
             {/* Language Switcher */}
             <FlagSwitcher />
+            <ThemeToggle />
             
             {/* Mobile Menu Button */}
             <Button 
