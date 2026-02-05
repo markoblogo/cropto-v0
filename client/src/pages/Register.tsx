@@ -109,7 +109,7 @@ export default function Register() {
           data-testid="button-register-go-back"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {t("site.backToDashboard")}
+          {t("auth.backToDashboard")}
         </Button>
         <Card className="w-full">
         <CardHeader className="space-y-1">

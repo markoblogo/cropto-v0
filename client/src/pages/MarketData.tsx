@@ -139,7 +139,7 @@ export default function MarketData() {
           </Alert>
         ) : regionalIndexes.length === 0 ? (
           <Alert>
-            <AlertDescription>No market indexes available for {selectedRegion.toUpperCase()}.</AlertDescription>
+            <AlertDescription>{t("page.marketData.noIndexesForCountry", { country: selectedRegion.toUpperCase() })}</AlertDescription>
           </Alert>
         ) : (
           <div className="space-y-6">
@@ -226,7 +226,7 @@ export default function MarketData() {
                 <CardTitle className="flex items-center gap-2">
                   <span>{countryFlag}</span>
                   <span>
-                    {t("page.marketData.volatilityTitle")} - {countryLabel}
+                    {t("page.marketData.countryHeader", { country: countryLabel })}
                   </span>
                 </CardTitle>
               </div>

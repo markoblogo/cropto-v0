@@ -7,7 +7,10 @@
   "header": {
     "connect": "Connect wallet",
     "signIn": "Sign in",
-    "language": "Language"
+    "language": "Language",
+    "authPrompt": {
+      "description": "This section requires sign in. Continue as guest or authenticate now."
+    }
   },
   "nav": {
     "home": "Home",
@@ -27,7 +30,27 @@
     "reconciliation": "Reconciliation",
     "index": "Index",
     "waitlist": "Waitlist",
-    "chain": "Option & Forward Chain"
+    "chain": "Option & Forward Chain",
+    "indexTrading": "Index Trading",
+    "optionsTrading": "Options Trading",
+    "marketDataShort": "Market Data",
+    "more": "More",
+    "tradeIndexUA": "Trade Index UA",
+    "tradeIndexBR": "Trade Index BR",
+    "tradeIndexAR": "Trade Index AR",
+    "tradeIndexUS": "Trade Index USA",
+    "tradeArbitrage": "Trade Arbitrage Index UA/BR/AR/USA",
+    "tradeOptionsUA": "Trade Options UA",
+    "tradeOptionsBR": "Trade Options BR",
+    "tradeOptionsAR": "Trade Options AR",
+    "tradeOptionsUS": "Trade Options USA",
+    "indexUA": "Index UA",
+    "indexBR": "Index BR",
+    "indexAR": "Index AR",
+    "indexUS": "Index USA",
+    "documentation": "Documentation",
+    "faqShort": "FAQ",
+    "aboutCropto": "About Cropto"
   },
   "button": {
     "createOption": "Create Option",
@@ -117,7 +140,14 @@
     "subheadline": "Trade agricultural commodity options with blockchain-backed transparency",
     "cta": {
       "createOption": "Create Option",
-      "connectWallet": "Connect Wallet"
+      "connectWallet": "Connect Wallet",
+      "startIndexTrading": "Start Index Trading",
+      "startOptionsTrading": "Start Options Trading",
+      "viewMarkets": "View Markets",
+      "walletConnected": "Wallet: Connected"
+    },
+    "label": {
+      "demoEnvironment": "Demo environment"
     }
   },
   "home": {
@@ -351,6 +381,10 @@
       },
       "minutesAgo_one": "{{count}} min ago",
       "minutesAgo_other": "{{count}} min ago"
+    },
+    "readOnly": {
+      "notice": "Read-only mode for {{country}}: market data is live, trading flow is enabled for UA in this build.",
+      "orderbookNotice": "Order book and executed spot trades are shown for UA tradable instruments in this environment."
     }
   },
   "page": {
@@ -388,7 +422,8 @@
         "side": "Side",
         "buy": "Buy",
         "sell": "Sell"
-      }
+      },
+      "noTradingPairsForCountry": "No trading pairs available for {{country}}"
     },
     "options": {
       "title": "Options Trading",
@@ -441,7 +476,9 @@
         "ar": "Argentina"
       },
       "volatilityTitle": "Volatility & History",
-      "viewOptionsMarket": "View options market"
+      "viewOptionsMarket": "View options market",
+      "noIndexesForCountry": "No market indexes available for {{country}}.",
+      "countryHeader": "Volatility & History - {{country}}"
     },
     "testing": {
       "title": "Testing Guide",
@@ -527,6 +564,16 @@
             "desc": "Walk through matching counterparties, monitoring collateral, handling margin calls, and force settlement in the demo environment."
           }
         }
+      },
+      "docs": {
+        "indexes": "Indices & Spot Tokens",
+        "options": "Options 101",
+        "margin": "Margin & Collateral",
+        "spotVsForwards": "Spot vs Forward vs Options",
+        "faq": "FAQ"
+      },
+      "scenarios": {
+        "readScenario": "Read scenario"
       }
     },
     "dashboard": {
@@ -1576,7 +1623,9 @@
         "failedTitle": "Registration Failed",
         "failedDesc": "Failed to create account"
       }
-    }
+    },
+    "backToDashboard": "Back to Dashboard",
+    "back": "Back"
   },
   "banner": {
     "guest": {

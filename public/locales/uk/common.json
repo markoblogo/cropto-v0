@@ -7,7 +7,10 @@
   "header": {
     "connect": "Підключити гаманець",
     "signIn": "Увійти",
-    "language": "Мова"
+    "language": "Мова",
+    "authPrompt": {
+      "description": "Цей розділ потребує входу. Продовжуйте як гість або автентифікуйтеся зараз."
+    }
   },
   "nav": {
     "home": "Головна",
@@ -27,7 +30,27 @@
     "index": "Індекс",
     "wallet": "Гаманець",
     "waitlist": "Лист очікування",
-    "chain": "Ланцюг опціонів і форвардів"
+    "chain": "Ланцюг опціонів і форвардів",
+    "indexTrading": "Індексна торгівля",
+    "optionsTrading": "Торгівля опціонами",
+    "marketDataShort": "Ринкові дані",
+    "more": "Ще",
+    "tradeIndexUA": "Торгувати індексом UA",
+    "tradeIndexBR": "Торгувати індексом BR",
+    "tradeIndexAR": "Торгувати індексом AR",
+    "tradeIndexUS": "Торгувати індексом USA",
+    "tradeArbitrage": "Торгувати арбітражем індексу UA/BR/AR/USA",
+    "tradeOptionsUA": "Торгувати опціонами UA",
+    "tradeOptionsBR": "Торгувати опціонами BR",
+    "tradeOptionsAR": "Торгувати опціонами AR",
+    "tradeOptionsUS": "Торгувати опціонами USA",
+    "indexUA": "Індекс UA",
+    "indexBR": "Індекс BR",
+    "indexAR": "Індекс AR",
+    "indexUS": "Індекс USA",
+    "documentation": "Документація",
+    "faqShort": "FAQ",
+    "aboutCropto": "Про Cropto"
   },
   "button": {
     "createOption": "Створити опціон",
@@ -117,7 +140,14 @@
     "subheadline": "Торгуйте опціонами на сільськогосподарські товари з прозорістю, підкріпленою блокчейном",
     "cta": {
       "createOption": "Створити опціон",
-      "connectWallet": "Підключити гаманець"
+      "connectWallet": "Підключити гаманець",
+      "startIndexTrading": "Почати індексну торгівлю",
+      "startOptionsTrading": "Почати торгівлю опціонами",
+      "viewMarkets": "Переглянути ринки",
+      "walletConnected": "Гаманець: Підключено"
+    },
+    "label": {
+      "demoEnvironment": "Демо-середовище"
     }
   },
   "home": {
@@ -351,6 +381,10 @@
       },
       "minutesAgo_one": "{{count}} хв тому",
       "minutesAgo_other": "{{count}} хв тому"
+    },
+    "readOnly": {
+      "notice": "Режим лише для перегляду для {{country}}: ринкові дані — в реальному часі, а торгівля в цій збірці доступна лише для UA.",
+      "orderbookNotice": "У цьому середовищі книга ордерів і виконані спот-угоди показані для інструментів, що торгуються в UA."
     }
   },
   "page": {
@@ -719,6 +753,16 @@
             "desc": "Пройдіть шлях зведення сторін угоди, моніторингу забезпечення, обробки маржин-колів і примусового розрахунку в демо-середовищі."
           }
         }
+      },
+      "docs": {
+        "indexes": "Індекси та спот-токени",
+        "options": "Опціони 101",
+        "margin": "Маржа та забезпечення",
+        "spotVsForwards": "Спот vs форвард vs опціони",
+        "faq": "FAQ"
+      },
+      "scenarios": {
+        "readScenario": "Прочитати сценарій"
       }
     },
     "admin": {
@@ -786,7 +830,8 @@
         "side": "Сторона",
         "buy": "Купити",
         "sell": "Продати"
-      }
+      },
+      "noTradingPairsForCountry": "Немає доступних торгових пар для {{country}}"
     },
     "options": {
       "title": "Торгівля опціонами",
@@ -839,7 +884,9 @@
         "ar": "Аргентина"
       },
       "volatilityTitle": "Волатильність та історія",
-      "viewOptionsMarket": "Переглянути ринок опціонів"
+      "viewOptionsMarket": "Переглянути ринок опціонів",
+      "noIndexesForCountry": "Немає доступних ринкових індексів для {{country}}.",
+      "countryHeader": "Волатильність та історія — {{country}}"
     },
     "testing": {
       "title": "Інструкція з тестування",
@@ -1584,7 +1631,9 @@
         "failedTitle": "Помилка реєстрації",
         "failedDesc": "Не вдалося створити обліковий запис"
       }
-    }
+    },
+    "backToDashboard": "Назад до панелі",
+    "back": "Назад"
   },
   "banner": {
     "guest": {

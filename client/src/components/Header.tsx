@@ -96,32 +96,32 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
   ];
 
   const indexTradingNav = [
-    { to: "/spot-trading?country=ua", label: "Trade Index UA", testId: "button-nav-index-ua" },
-    { to: "/spot-trading?country=br", label: "Trade Index BR", testId: "button-nav-index-br" },
-    { to: "/spot-trading?country=ar", label: "Trade Index AR", testId: "button-nav-index-ar" },
-    { to: "/spot-trading?country=us", label: "Trade Index USA", testId: "button-nav-index-us" },
-    { to: "/arbitrage", label: "Trade Arbitrage Index UA/BR/AR/USA", testId: "button-nav-index-arbitrage" },
+    { to: "/spot-trading?country=ua", label: t("nav.tradeIndexUA"), testId: "button-nav-index-ua" },
+    { to: "/spot-trading?country=br", label: t("nav.tradeIndexBR"), testId: "button-nav-index-br" },
+    { to: "/spot-trading?country=ar", label: t("nav.tradeIndexAR"), testId: "button-nav-index-ar" },
+    { to: "/spot-trading?country=us", label: t("nav.tradeIndexUS"), testId: "button-nav-index-us" },
+    { to: "/arbitrage", label: t("nav.tradeArbitrage"), testId: "button-nav-index-arbitrage" },
   ];
 
   const optionsTradingNav = [
-    { to: "/options?country=ua", label: "Trade Options UA", testId: "button-nav-options-ua" },
-    { to: "/options?country=br", label: "Trade Options BR", testId: "button-nav-options-br" },
-    { to: "/options?country=ar", label: "Trade Options AR", testId: "button-nav-options-ar" },
-    { to: "/options?country=us", label: "Trade Options USA", testId: "button-nav-options-us" },
+    { to: "/options?country=ua", label: t("nav.tradeOptionsUA"), testId: "button-nav-options-ua" },
+    { to: "/options?country=br", label: t("nav.tradeOptionsBR"), testId: "button-nav-options-br" },
+    { to: "/options?country=ar", label: t("nav.tradeOptionsAR"), testId: "button-nav-options-ar" },
+    { to: "/options?country=us", label: t("nav.tradeOptionsUS"), testId: "button-nav-options-us" },
   ];
 
   const marketDataNav = [
-    { to: "/market-data?country=ua", label: "Index UA", testId: "button-nav-market-ua" },
-    { to: "/market-data?country=br", label: "Index BR", testId: "button-nav-market-br" },
-    { to: "/market-data?country=ar", label: "Index AR", testId: "button-nav-market-ar" },
-    { to: "/market-data?country=us", label: "Index USA", testId: "button-nav-market-us" },
+    { to: "/market-data?country=ua", label: t("nav.indexUA"), testId: "button-nav-market-ua" },
+    { to: "/market-data?country=br", label: t("nav.indexBR"), testId: "button-nav-market-br" },
+    { to: "/market-data?country=ar", label: t("nav.indexAR"), testId: "button-nav-market-ar" },
+    { to: "/market-data?country=us", label: t("nav.indexUS"), testId: "button-nav-market-us" },
   ];
 
   const secondaryNav = [
-    { to: "/education", label: t("nav.about"), testId: "button-nav-education" },
-    { to: "/docs", label: "Documentation", testId: "button-nav-docs" },
+    { to: "/education", label: t("nav.aboutCropto"), testId: "button-nav-education" },
+    { to: "/docs", label: t("nav.documentation"), testId: "button-nav-docs" },
     { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
-    { to: "/faq", label: "FAQ", testId: "button-nav-faq" },
+    { to: "/faq", label: t("nav.faqShort"), testId: "button-nav-faq" },
     { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
@@ -198,7 +198,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                   data-testid="button-nav-index-trading"
                   className={location.startsWith("/spot-trading") || location.startsWith("/arbitrage") ? "bg-accent" : ""}
                 >
-                  Index Trading
+                  {t("nav.indexTrading")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
@@ -221,7 +221,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                   data-testid="button-nav-options-trading"
                   className={location.startsWith("/options") ? "bg-accent" : ""}
                 >
-                  Options Trading
+                  {t("nav.optionsTrading")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
@@ -244,7 +244,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                   data-testid="button-nav-market-data-dropdown"
                   className={location.startsWith("/market-data") ? "bg-accent" : ""}
                 >
-                  {t("nav.marketData")}
+                  {t("nav.marketDataShort")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
@@ -268,7 +268,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                   className="gap-1"
                 >
                   <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">More</span>
+                  <span className="sr-only">{t("nav.more")}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -380,7 +380,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               <Separator className="my-2" />
 
               {/* Index Trading Links */}
-              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Index Trading</div>
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">{t("nav.indexTrading")}</div>
               {indexTradingNav.map((item) => (
                 <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
                   <Button
@@ -396,7 +396,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               <Separator className="my-2" />
 
               {/* Options Trading Links */}
-              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Options Trading</div>
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">{t("nav.optionsTrading")}</div>
               {optionsTradingNav.map((item) => (
                 <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
                   <Button
@@ -412,7 +412,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               <Separator className="my-2" />
 
               {/* Market Data Links */}
-              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">{t("nav.marketData")}</div>
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">{t("nav.marketDataShort")}</div>
               {marketDataNav.map((item) => (
                 <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
                   <Button
@@ -450,7 +450,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
           <DialogHeader>
             <DialogTitle>{t("auth.login.title")}</DialogTitle>
             <DialogDescription>
-              This section requires sign in. Continue as guest or authenticate now.
+              {t("header.authPrompt.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 justify-end">

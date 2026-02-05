@@ -399,9 +399,9 @@ export default function SpotTrading() {
         ) : !tradingPairs.length ? (
           <Card>
             <CardContent className="pt-6">
-              <Alert>
+                <Alert>
                 <AlertDescription>
-                  {t('page.spot.noTradingPairs')} ({selectedRegion.toUpperCase()})
+                  {t('page.spot.noTradingPairsForCountry', { country: selectedRegion.toUpperCase() })}
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -523,7 +523,7 @@ export default function SpotTrading() {
                       <h3 className="text-lg font-semibold">{t("spot.orderForm.title")}</h3>
                       <Alert>
                         <AlertDescription>
-                          Read-only mode for {selectedRegion.toUpperCase()}: market data is live, trading flow is enabled for UA in this build.
+                          {t("spot.readOnly.notice", { country: selectedRegion.toUpperCase() })}
                         </AlertDescription>
                       </Alert>
                     </CardContent>
@@ -666,7 +666,7 @@ export default function SpotTrading() {
                   <Card className="lg:col-span-2">
                     <CardContent className="pt-6">
                       <p className="text-sm text-muted-foreground">
-                        Order book and executed spot trades are shown for UA tradable instruments in this environment.
+                        {t("spot.readOnly.orderbookNotice")}
                       </p>
                     </CardContent>
                   </Card>

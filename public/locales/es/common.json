@@ -7,7 +7,10 @@
   "header": {
     "connect": "Conectar billetera",
     "signIn": "Iniciar sesión",
-    "language": "Idioma"
+    "language": "Idioma",
+    "authPrompt": {
+      "description": "Esta sección requiere iniciar sesión. Continúa como invitado o autentícate ahora."
+    }
   },
   "nav": {
     "home": "Inicio",
@@ -27,7 +30,27 @@
     "reconciliation": "Conciliación",
     "index": "Índice",
     "waitlist": "Lista de espera",
-    "chain": "Cadena de opciones y forwards"
+    "chain": "Cadena de opciones y forwards",
+    "indexTrading": "Trading de índices",
+    "optionsTrading": "Trading de opciones",
+    "marketDataShort": "Datos de mercado",
+    "more": "Más",
+    "tradeIndexUA": "Operar índice UA",
+    "tradeIndexBR": "Operar índice BR",
+    "tradeIndexAR": "Operar índice AR",
+    "tradeIndexUS": "Operar índice USA",
+    "tradeArbitrage": "Operar arbitraje del índice UA/BR/AR/USA",
+    "tradeOptionsUA": "Operar opciones UA",
+    "tradeOptionsBR": "Operar opciones BR",
+    "tradeOptionsAR": "Operar opciones AR",
+    "tradeOptionsUS": "Operar opciones USA",
+    "indexUA": "Índice UA",
+    "indexBR": "Índice BR",
+    "indexAR": "Índice AR",
+    "indexUS": "Índice USA",
+    "documentation": "Documentación",
+    "faqShort": "FAQ",
+    "aboutCropto": "Sobre Cropto"
   },
   "button": {
     "createOption": "Crear opción",
@@ -117,7 +140,14 @@
     "subheadline": "Opera opciones sobre commodities agrícolas con transparencia respaldada por blockchain",
     "cta": {
       "createOption": "Crear opción",
-      "connectWallet": "Conectar billetera"
+      "connectWallet": "Conectar billetera",
+      "startIndexTrading": "Iniciar trading de índices",
+      "startOptionsTrading": "Iniciar trading de opciones",
+      "viewMarkets": "Ver mercados",
+      "walletConnected": "Billetera: Conectada"
+    },
+    "label": {
+      "demoEnvironment": "Entorno de demostración"
     }
   },
   "home": {
@@ -351,6 +381,10 @@
       },
       "minutesAgo_one": "Hace {{count}} min",
       "minutesAgo_other": "Hace {{count}} min"
+    },
+    "readOnly": {
+      "notice": "Modo solo lectura para {{country}}: los datos de mercado están en vivo; el flujo de trading está habilitado para UA en esta versión.",
+      "orderbookNotice": "En este entorno, el libro de órdenes y las operaciones spot ejecutadas se muestran para los instrumentos negociables de UA."
     }
   },
   "page": {
@@ -388,7 +422,8 @@
         "side": "Lado",
         "buy": "Comprar",
         "sell": "Vender"
-      }
+      },
+      "noTradingPairsForCountry": "No hay pares de trading disponibles para {{country}}"
     },
     "options": {
       "title": "Trading de opciones",
@@ -441,7 +476,9 @@
         "ar": "Argentina"
       },
       "volatilityTitle": "Volatilidad e historial",
-      "viewOptionsMarket": "Ver mercado de opciones"
+      "viewOptionsMarket": "Ver mercado de opciones",
+      "noIndexesForCountry": "No hay índices de mercado disponibles para {{country}}.",
+      "countryHeader": "Volatilidad e historial - {{country}}"
     },
     "testing": {
       "title": "Guía de pruebas",
@@ -527,6 +564,16 @@
             "desc": "Recorre el proceso de asignar contrapartes, monitorear colateral, gestionar margin calls y forzar la liquidación en el entorno de demo."
           }
         }
+      },
+      "docs": {
+        "indexes": "Índices y tokens spot",
+        "options": "Opciones 101",
+        "margin": "Margen y colateral",
+        "spotVsForwards": "Spot vs forward vs opciones",
+        "faq": "FAQ"
+      },
+      "scenarios": {
+        "readScenario": "Leer escenario"
       }
     },
     "dashboard": {
@@ -1576,7 +1623,9 @@
         "failedTitle": "Error de registro",
         "failedDesc": "No se pudo crear la cuenta"
       }
-    }
+    },
+    "backToDashboard": "Volver al panel",
+    "back": "Atrás"
   },
   "banner": {
     "guest": {

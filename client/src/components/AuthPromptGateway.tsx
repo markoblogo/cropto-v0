@@ -33,7 +33,7 @@ export function AuthPromptGateway() {
         <DialogHeader>
           <DialogTitle>{t("auth.login.title")}</DialogTitle>
           <DialogDescription>
-            This section requires sign in. Continue as guest or authenticate now.
+            {t("header.authPrompt.description")}
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2 justify-end">
@@ -51,4 +51,3 @@ export function AuthPromptGateway() {
     </Dialog>
   );
 }
-

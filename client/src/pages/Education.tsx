@@ -71,10 +71,10 @@ export default function Education() {
 
   const docs = useMemo(() => [
     { key: "indexes", label: t("page.education.indicesSpot.title"), src: `/api/docs/education.indices.${currentLang}.md` },
-    { key: "options", label: "Options 101", src: `/api/docs/education.options.${currentLang}.md` },
-    { key: "margin", label: "Margin & Collateral", src: `/api/docs/education-margin.md` },
-    { key: "spot", label: "Spot vs Forward vs Options", src: `/api/docs/education-spot-vs-forwards.md` },
-    { key: "faq", label: "FAQ", src: `/api/docs/education.faq.${currentLang}.md` },
+    { key: "options", label: t("page.education.docs.options"), src: `/api/docs/education.options.${currentLang}.md` },
+    { key: "margin", label: t("page.education.docs.margin"), src: `/api/docs/education-margin.md` },
+    { key: "spot", label: t("page.education.docs.spotVsForwards"), src: `/api/docs/education-spot-vs-forwards.md` },
+    { key: "faq", label: t("page.education.docs.faq"), src: `/api/docs/education.faq.${currentLang}.md` },
   ], [currentLang, t]);
 
   const { data: indexes = [] } = useQuery<CommodityIndex[]>({
@@ -259,7 +259,7 @@ export default function Education() {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="w-full">
-                          {t('page.education.tradingScenarios.cta')}
+                          {t('page.education.scenarios.readScenario', { defaultValue: t('page.education.tradingScenarios.cta') })}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
