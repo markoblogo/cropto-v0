@@ -119,7 +119,6 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
 
   const secondaryNav = [
     { to: "/education", label: t("nav.aboutCropto"), testId: "button-nav-education" },
-    { to: "/docs", label: t("nav.documentation"), testId: "button-nav-docs" },
     { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
     { to: "/education#faq", label: t("nav.faqShort"), testId: "button-nav-faq" },
     { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },

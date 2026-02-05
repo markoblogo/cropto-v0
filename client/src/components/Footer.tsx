@@ -79,9 +79,6 @@ export function Footer() {
             
             <p className="font-semibold text-foreground mt-4">{t('footer.other')}</p>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <Link href="/docs" className="hover:text-foreground transition-colors">
-                {t('footer.documentation')}
-              </Link>
               <Link href="/wallet" className="hover:text-foreground transition-colors">
                 {t('footer.wallet')}
               </Link>
