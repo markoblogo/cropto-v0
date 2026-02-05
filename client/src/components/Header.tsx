@@ -17,6 +17,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -27,6 +34,8 @@ interface HeaderProps {
 export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLogin, onOpenWalletModal: _onOpenWalletModal }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<string>("/portfolio");
   const { toast } = useToast();
   const { t } = useTranslation();
   const userTier = useUserTier();
@@ -133,6 +142,19 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
     });
   };
 
+  const protectedPrefixes = ["/portfolio", "/wallet"];
+  const requiresAuth = (to: string) => protectedPrefixes.some((prefix) => to.startsWith(prefix));
+
+  const handleNavIntent = (to: string) => {
+    if (!user && requiresAuth(to)) {
+      setPendingRoute(to);
+      setAuthPromptOpen(true);
+      return;
+    }
+    setLocation(to);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -155,16 +177,16 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               const isActive = location === item.to || 
                 (item.to !== "/" && location.startsWith(item.to));
               return (
-                <Link key={item.to} href={item.to}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    data-testid={item.testId}
-                    className={isActive ? "bg-accent" : ""}
-                  >
-                    {item.label}
-                  </Button>
-                </Link>
+                <Button
+                  key={item.to}
+                  variant="ghost"
+                  size="sm"
+                  data-testid={item.testId}
+                  className={isActive ? "bg-accent" : ""}
+                  onClick={() => handleNavIntent(item.to)}
+                >
+                  {item.label}
+                </Button>
               );
             })}
 
@@ -259,12 +281,15 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                     return (
                       <DropdownMenuItem 
                         key={item.to} 
-                        asChild
                         className={isActive ? "bg-accent" : ""}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleNavIntent(item.to);
+                        }}
                       >
-                        <Link href={item.to} data-testid={item.testId}>
+                        <span data-testid={item.testId}>
                           {item.label}
-                        </Link>
+                        </span>
                       </DropdownMenuItem>
                     );
                   })}
@@ -342,15 +367,15 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-2">
               {/* Primary Navigation */}
               {primaryNav.map((item) => (
-                <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    data-testid={`mobile-${item.testId}`}
-                  >
-                    {item.label}
-                  </Button>
-                </Link>
+                <Button
+                  key={item.to}
+                  variant="ghost"
+                  className="w-full justify-start"
+                  data-testid={`mobile-${item.testId}`}
+                  onClick={() => handleNavIntent(item.to)}
+                >
+                  {item.label}
+                </Button>
               ))}
 
               <Separator className="my-2" />
@@ -407,20 +432,41 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               {secondaryNav
                 .filter((item) => !item.requiresAdmin || isAdminLevelUser)
                 .map((item) => (
-                  <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start"
-                      data-testid={`mobile-${item.testId}`}
-                    >
-                      {item.label}
-                    </Button>
-                  </Link>
+                  <Button
+                    key={item.to}
+                    variant="ghost"
+                    className="w-full justify-start"
+                    data-testid={`mobile-${item.testId}`}
+                    onClick={() => handleNavIntent(item.to)}
+                  >
+                    {item.label}
+                  </Button>
                 ))}
             </nav>
           </div>
         )}
       </div>
+      <Dialog open={authPromptOpen} onOpenChange={setAuthPromptOpen}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>{t("auth.login.title")}</DialogTitle>
+            <DialogDescription>
+              This section requires sign in. Continue as guest or authenticate now.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setAuthPromptOpen(false)}>
+              {t("button.cancel")}
+            </Button>
+            <Button variant="outline" onClick={() => setLocation(`/register?returnTo=${encodeURIComponent(pendingRoute)}`)}>
+              {t("button.register")}
+            </Button>
+            <Button onClick={() => setLocation(`/login?returnTo=${encodeURIComponent(pendingRoute)}`)}>
+              {t("button.login")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }
