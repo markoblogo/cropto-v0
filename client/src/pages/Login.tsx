@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
+import { ArrowLeft } from "lucide-react";
 
 type LoginFormValues = {
   email: string;
@@ -36,6 +37,8 @@ export default function Login() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = new URLSearchParams(window.location.search);
+  const returnTo = searchParams.get("returnTo") || "/";
 
   const loginSchema = z.object({
     email: z.string()
@@ -68,7 +71,7 @@ export default function Login() {
         title: t("toast.success"),
         description: t("auth.login.toast.success"),
       });
-      setLocation("/");
+      setLocation(returnTo);
     } catch (error: any) {
       toast({
         title: t("auth.login.toast.failedTitle"),
@@ -79,9 +82,26 @@ export default function Login() {
     }
   };
 
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    setLocation("/");
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
+          <Button
+            variant="ghost"
+            className="mb-4 px-2"
+            onClick={handleGoBack}
+            data-testid="button-login-go-back"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t("site.backToDashboard")}
+          </Button>
           <Card className="w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">{t("auth.login.title")}</CardTitle>
