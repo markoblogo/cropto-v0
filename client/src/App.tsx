@@ -43,6 +43,14 @@ import { useEffect } from "react";
 function RedirectToEducation() {
   const [, setLocation] = useLocation();
   useEffect(() => {
+    setLocation("/education");
+  }, [setLocation]);
+  return null;
+}
+
+function RedirectToEducationFaq() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
     setLocation("/education#faq");
   }, [setLocation]);
   return null;
@@ -68,7 +76,7 @@ function Router() {
       <Route path="/onchain-tx" component={OnchainTx} />
       <Route path="/about" component={RedirectToEducation} />
       <Route path="/docs" component={RedirectToEducation} />
-      <Route path="/faq" component={RedirectToEducation} />
+      <Route path="/faq" component={RedirectToEducationFaq} />
       <Route path="/testing" component={Testing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/feedback" component={AdminFeedback} />
