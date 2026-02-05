@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
@@ -42,6 +42,7 @@ import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
 import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 import { getSourceDescriptor } from "./services/sourceCatalog";
+import { findSpreadSpec } from "./services/specRegistry";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -1672,9 +1673,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // IGC series mapping is imported at the top - only these series will be shown on Market Dashboard
 
-      const brMap = new Map<string, MarketIndexDto>();
-      const arMap = new Map<string, MarketIndexDto>();
-      const usMap = new Map<string, MarketIndexDto>();
+      const brCandidates = new Map<string, MarketIndexDto[]>();
+      const arCandidates = new Map<string, MarketIndexDto[]>();
+      const usCandidates = new Map<string, MarketIndexDto[]>();
+
+      const pushCandidate = (
+        country: "BR" | "AR" | "US",
+        key: string,
+        value: MarketIndexDto
+      ) => {
+        const targetMap = country === "BR" ? brCandidates : country === "AR" ? arCandidates : usCandidates;
+        if (!targetMap.has(key)) targetMap.set(key, []);
+        targetMap.get(key)!.push(value);
+      };
 
       for (const price of allIndexPrices) {
         try {
@@ -1710,72 +1721,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const basis = label;
               const key = `${commodity}:${basis}`;
 
-              const targetMap = country === "BR" ? brMap : country === "AR" ? arMap : usMap;
+              const priceValue = parseFloat(price.price);
+              const change24h = price.dailyChangePct ? parseFloat(price.dailyChangePct.toString()) : 0;
 
-              // Only keep the latest entry per (commodity, basis)
-              if (!targetMap.has(key)) {
-                const priceValue = parseFloat(price.price);
-                const change24h = price.dailyChangePct ? parseFloat(price.dailyChangePct.toString()) : 0;
-                
-                // IGC export prices, source: International Grains Council, see https://www.igc.int/en/markets/marketinfo-prices.aspx
-                // Safely get date: use asOfDate if valid, otherwise fallback to date field
-                let asOfDate: Date;
-                if (price.asOfDate) {
-                  const dateObj = typeof price.asOfDate === 'string' ? new Date(price.asOfDate) : price.asOfDate;
-                  if (!isNaN(dateObj.getTime())) {
-                    asOfDate = dateObj;
-                  } else {
-                    asOfDate = new Date(price.date);
-                  }
+              let asOfDate: Date;
+              if (price.asOfDate) {
+                const dateObj = typeof price.asOfDate === 'string' ? new Date(price.asOfDate) : price.asOfDate;
+                if (!isNaN(dateObj.getTime())) {
+                  asOfDate = dateObj;
                 } else {
                   asOfDate = new Date(price.date);
                 }
-                
-                // Final fallback to current date if date is still invalid
-                if (isNaN(asOfDate.getTime())) {
-                  asOfDate = new Date();
-                }
-                
-                const asOfDateRaw = price.asOfDate || price.date;
-                const freshnessDays = computeFreshnessDays(asOfDateRaw);
-                const sourceDescriptor = getSourceDescriptor(String(price.source || "manual"));
-                const metaObj = price.meta ? JSON.parse(price.meta) : {};
-                const result: MarketIndexDto = {
-                  commodity,
-                  grade: null, // IGC data doesn't use grade field
-                  country: country as "BR" | "AR" | "US",
-                  basis: price.label || basis,
-                  price: priceValue,
-                  currency: "USD" as const,
-                  change24h,
-                  change7d: 0,
-                  change30d: 0,
-                  asOf: asOfDate.toISOString(),
-                  source: (price.source === "USDA_AMS" ? "USDA_AMS" : "IGC") as const,
-                  confidence: (metaObj.confidence || "high") as "high" | "medium" | "low",
-                  freshnessDays,
-                  isStale: freshnessDays > STALE_MAX_AGE_DAYS,
-                  sourceType: sourceDescriptor.sourceType,
-                  usagePolicy: sourceDescriptor.usagePolicy,
-                  visibility: sourceDescriptor.visibility,
-                };
-                
-                // Add optional IGC-specific fields (explicitly set, not via TypeScript defaults)
-                if (price.annualChangePct !== null && price.annualChangePct !== undefined) {
-                  result.annualChange = parseFloat(price.annualChangePct.toString());
-                }
-                if (price.low52w !== null && price.low52w !== undefined) {
-                  result.low52w = parseFloat(price.low52w.toString());
-                }
-                if (price.high52w !== null && price.high52w !== undefined) {
-                  result.high52w = parseFloat(price.high52w.toString());
-                }
-                
-                targetMap.set(key, result);
-                console.log(`[Market Dashboard] Added external record: source=${price.source}, country=${country}, key=${key}, commodity=${commodity}, price=${priceValue}`);
               } else {
-                console.log(`[Market Dashboard] Skipped external record (duplicate key): source=${price.source}, country=${country}, key=${key}`);
+                asOfDate = new Date(price.date);
               }
+              if (isNaN(asOfDate.getTime())) {
+                asOfDate = new Date();
+              }
+
+              const asOfDateRaw = price.asOfDate || price.date;
+              const freshnessDays = computeFreshnessDays(asOfDateRaw);
+              const sourceDescriptor = getSourceDescriptor(String(price.source || "manual"));
+              const metaObj = price.meta ? JSON.parse(price.meta) : {};
+              const result: MarketIndexDto = {
+                commodity,
+                grade: null,
+                country: country as "BR" | "AR" | "US",
+                basis: price.label || basis,
+                price: priceValue,
+                currency: "USD" as const,
+                change24h,
+                change7d: 0,
+                change30d: 0,
+                asOf: asOfDate.toISOString(),
+                source: (price.source === "USDA_AMS" ? "USDA_AMS" : "IGC") as const,
+                confidence: (metaObj.confidence || "high") as "high" | "medium" | "low",
+                freshnessDays,
+                isStale: freshnessDays > STALE_MAX_AGE_DAYS,
+                sourceType: sourceDescriptor.sourceType,
+                usagePolicy: sourceDescriptor.usagePolicy,
+                visibility: sourceDescriptor.visibility,
+              };
+              if (price.annualChangePct !== null && price.annualChangePct !== undefined) {
+                result.annualChange = parseFloat(price.annualChangePct.toString());
+              }
+              if (price.low52w !== null && price.low52w !== undefined) {
+                result.low52w = parseFloat(price.low52w.toString());
+              }
+              if (price.high52w !== null && price.high52w !== undefined) {
+                result.high52w = parseFloat(price.high52w.toString());
+              }
+
+              pushCandidate(country, key, result);
+              console.log(`[Market Dashboard] Added external candidate: source=${price.source}, country=${country}, key=${key}, commodity=${commodity}, price=${priceValue}`);
             } catch (error) {
               console.error(`[Market Dashboard] Error processing external record:`, error);
             }
@@ -1788,63 +1786,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const key = `${commodity}:${basis}`;
 
               const country = meta.country;
-              const targetMap = country === "BR" ? brMap : country === "AR" ? arMap : usMap;
-
-              // Only keep the latest entry per (commodity, basis)
-              if (!targetMap.has(key)) {
-                // Calculate change24h (simplified: compare with previous day)
-                const priceValue = parseFloat(price.price);
-                let change24h = 0;
-                
-                // Find previous price for same commodity+basis
-                for (const prevPrice of allIndexPrices) {
-                  if (prevPrice.id === price.id) continue;
-                  try {
-                    const prevMeta = prevPrice.meta ? JSON.parse(prevPrice.meta) : {};
-                    if (
-                      prevMeta.country === country &&
-                      (prevMeta.commodity || prevPrice.commodity.toLowerCase()) === commodity &&
-                      prevMeta.basis === basis
-                    ) {
-                      const prevPriceValue = parseFloat(prevPrice.price);
-                      const prevDate = new Date(prevPrice.date);
-                      const currentDate = new Date(price.date);
-                      const daysDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
-                      
-                      if (daysDiff <= 1.5 && daysDiff > 0) {
-                        change24h = ((priceValue - prevPriceValue) / prevPriceValue) * 100;
-                      }
-                      break;
+              const priceValue = parseFloat(price.price);
+              let change24h = 0;
+              for (const prevPrice of allIndexPrices) {
+                if (prevPrice.id === price.id) continue;
+                try {
+                  const prevMeta = prevPrice.meta ? JSON.parse(prevPrice.meta) : {};
+                  if (
+                    prevMeta.country === country &&
+                    (prevMeta.commodity || prevPrice.commodity.toLowerCase()) === commodity &&
+                    prevMeta.basis === basis
+                  ) {
+                    const prevPriceValue = parseFloat(prevPrice.price);
+                    const prevDate = new Date(prevPrice.date);
+                    const currentDate = new Date(price.date);
+                    const daysDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+                    if (daysDiff <= 1.5 && daysDiff > 0) {
+                      change24h = ((priceValue - prevPriceValue) / prevPriceValue) * 100;
                     }
-                  } catch {
-                    // Skip invalid meta
+                    break;
                   }
+                } catch {
+                  // Skip invalid meta
                 }
-
-                const detectedSource = (meta.source || price.source || "manual") as string;
-                const descriptor = getSourceDescriptor(detectedSource);
-                const freshnessDays = computeFreshnessDays(price.asOfDate || price.date);
-
-                targetMap.set(key, {
-                  commodity,
-                  grade: meta.grade || null,
-                  country: country as "BR" | "AR" | "US",
-                  basis,
-                  price: priceValue,
-                  currency: "USD" as const,
-                  change24h,
-                  change7d: 0,
-                  change30d: 0,
-                  asOf: new Date(price.date).toISOString(),
-                  source: detectedSource as any,
-                  confidence: (meta.confidence || "medium") as "high" | "medium" | "low",
-                  freshnessDays,
-                  isStale: freshnessDays > STALE_MAX_AGE_DAYS,
-                  sourceType: descriptor.sourceType,
-                  usagePolicy: descriptor.usagePolicy,
-                  visibility: descriptor.visibility,
-                });
               }
+
+              const detectedSource = (meta.source || price.source || "manual") as string;
+              const descriptor = getSourceDescriptor(detectedSource);
+              const freshnessDays = computeFreshnessDays(price.asOfDate || price.date);
+
+              pushCandidate(country, key, {
+                commodity,
+                grade: meta.grade || null,
+                country: country as "BR" | "AR" | "US",
+                basis,
+                price: priceValue,
+                currency: "USD" as const,
+                change24h,
+                change7d: 0,
+                change30d: 0,
+                asOf: new Date(price.date).toISOString(),
+                source: detectedSource as any,
+                confidence: (meta.confidence || "medium") as "high" | "medium" | "low",
+                freshnessDays,
+                isStale: freshnessDays > STALE_MAX_AGE_DAYS,
+                sourceType: descriptor.sourceType,
+                usagePolicy: descriptor.usagePolicy,
+                visibility: descriptor.visibility,
+              });
             }
           }
         } catch {
@@ -1852,9 +1841,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const brData = Array.from(brMap.values());
-      const arData = Array.from(arMap.values());
-      const usData = Array.from(usMap.values());
+      const resolveCandidates = (
+        country: "BR" | "AR" | "US",
+        candidatesMap: Map<string, MarketIndexDto[]>,
+        usSelectedByCommodity: Map<string, MarketIndexDto>
+      ): { selected: MarketIndexDto[]; failoverEvents: Array<Record<string, unknown>> } => {
+        const selected: MarketIndexDto[] = [];
+        const failoverEvents: Array<Record<string, unknown>> = [];
+
+        const sourceOrderByCountry: Record<"BR" | "AR" | "US", string[]> = {
+          BR: ["IGC", "manual", "spike_telegram", "mock"],
+          AR: ["IGC", "manual", "spike_telegram", "mock"],
+          US: ["USDA_AMS", "IGC", "manual", "spike_telegram", "mock"],
+        };
+        const maxAgeDaysBySource: Record<string, number> = {
+          USDA_AMS: 2,
+          IGC: 2,
+          manual: 7,
+          spike_telegram: 3,
+          mock: 1,
+          synthetic_model: 1,
+        };
+
+        for (const [key, candidates] of candidatesMap.entries()) {
+          const sorted = [...candidates].sort((a, b) => {
+            const order = sourceOrderByCountry[country];
+            const aIdx = Math.max(0, order.indexOf(a.source));
+            const bIdx = Math.max(0, order.indexOf(b.source));
+            if (aIdx !== bIdx) return aIdx - bIdx;
+            return new Date(b.asOf).getTime() - new Date(a.asOf).getTime();
+          });
+
+          const freshBySource = (source: string) =>
+            sorted.find((c) => c.source === source && (c.freshnessDays ?? 999) <= (maxAgeDaysBySource[source] ?? 2));
+
+          const order = sourceOrderByCountry[country];
+          const freshPrimary = freshBySource(order[0]);
+          const freshSecondary = order.slice(1).map(freshBySource).find(Boolean);
+
+          if (freshPrimary) {
+            selected.push({ ...freshPrimary, sourceTier: "primary", isStale: false });
+            continue;
+          }
+
+          if (freshSecondary) {
+            selected.push({ ...freshSecondary, sourceTier: "secondary", isStale: false });
+            failoverEvents.push({
+              event: "source_failover_primary_to_secondary",
+              country,
+              key,
+              from: order[0],
+              to: freshSecondary.source,
+            });
+            continue;
+          }
+
+          const lastKnown = sorted[0];
+          const spreadSpec = country === "US" ? null : findSpreadSpec(country, lastKnown.commodity, lastKnown.basis);
+
+          if (spreadSpec?.syntheticAllowed) {
+            const anchor = usSelectedByCommodity.get(spreadSpec.anchorCommodity);
+            const anchorDriftPct = Math.max(-5, Math.min(5, anchor?.change24h ?? 0)) / 100;
+            const syntheticPrice = Number((lastKnown.price * (1 + anchorDriftPct)).toFixed(2));
+            selected.push({
+              ...lastKnown,
+              source: "synthetic_model",
+              sourceTier: "synthetic",
+              confidence: "low",
+              isStale: false,
+              sourceType: "internal",
+              usagePolicy: "open",
+              visibility: "public",
+              price: syntheticPrice,
+              change24h: anchor?.change24h ?? 0,
+            });
+            failoverEvents.push({
+              event: "source_failover_to_synthetic",
+              country,
+              key,
+              spreadSpecId: spreadSpec.spreadSpecId,
+              anchorCommodity: spreadSpec.anchorCommodity,
+              anchorSource: anchor?.source || null,
+            });
+          } else {
+            selected.push({ ...lastKnown, sourceTier: "last_known", isStale: true, confidence: "low" });
+          }
+        }
+
+        return { selected, failoverEvents };
+      };
+
+      const usResolved = resolveCandidates("US", usCandidates, new Map());
+      const usSelectedByCommodity = new Map<string, MarketIndexDto>();
+      for (const row of usResolved.selected) {
+        if (!usSelectedByCommodity.has(row.commodity)) {
+          usSelectedByCommodity.set(row.commodity, row);
+        }
+      }
+      const brResolved = resolveCandidates("BR", brCandidates, usSelectedByCommodity);
+      const arResolved = resolveCandidates("AR", arCandidates, usSelectedByCommodity);
+
+      const brData = brResolved.selected;
+      const arData = arResolved.selected;
+      const usData = usResolved.selected;
+
+      const failoverEvents = [...usResolved.failoverEvents, ...brResolved.failoverEvents, ...arResolved.failoverEvents];
+      if (failoverEvents.length > 0) {
+        await db.insert(analyticsEvents).values(
+          failoverEvents.map((evt) => ({
+            eventName: String(evt.event),
+            payload: JSON.stringify(evt),
+          }))
+        );
+      }
 
       // Debug logging
       console.log(`[Market Dashboard] Before fallback - BR: ${brData.length}, AR: ${arData.length}, US: ${usData.length} records from DB`);
@@ -1865,9 +1964,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use IGC data from database if available, otherwise fallback to mock data
       // Mock data is only used when NO IGC records exist for a specific country
       // If there are some IGC records (even if fewer than expected), we use them without mock fallback
-      const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR();
-      const finalArData = arData.length > 0 ? arData : getMockMarketDataAR();
-      const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS();
+      const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR().map((m) => ({ ...m, sourceTier: "secondary" as const }));
+      const finalArData = arData.length > 0 ? arData : getMockMarketDataAR().map((m) => ({ ...m, sourceTier: "secondary" as const }));
+      const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }));
 
       // Persist mock data to index_prices for history charts if no real records exist.
       const mockCooldownMs = 1000 * 60 * 60 * 12;

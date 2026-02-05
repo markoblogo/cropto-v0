@@ -1,4 +1,4 @@
-export type SourceKey = "IGC" | "USDA_AMS" | "spike_telegram" | "manual" | "mock";
+export type SourceKey = "IGC" | "USDA_AMS" | "spike_telegram" | "manual" | "mock" | "synthetic_model";
 export type SourceType = "official_api" | "official_file" | "public_html" | "editorial_article" | "internal";
 export type UsagePolicy = "open" | "restricted" | "unknown";
 export type Visibility = "public" | "internal_only";
@@ -47,10 +47,16 @@ const CATALOG: Record<SourceKey, SourceDescriptor> = {
     usagePolicy: "open",
     visibility: "public",
   },
+  synthetic_model: {
+    key: "synthetic_model",
+    priority: 20,
+    sourceType: "internal",
+    usagePolicy: "open",
+    visibility: "public",
+  },
 };
 
 export function getSourceDescriptor(source: string): SourceDescriptor {
   const key = source as SourceKey;
   return CATALOG[key] || CATALOG.manual;
 }
-
