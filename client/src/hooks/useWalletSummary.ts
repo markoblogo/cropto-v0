@@ -47,7 +47,7 @@ export function useWalletSummary(walletAddress: string | null) {
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/onchain/balance'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/onchain/txs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/onchain/transactions'] });
     },
     onError: (error: any) => {
       const errorMessage = error.message || 'Failed to mint CROPT';
@@ -121,4 +121,3 @@ export function useWalletSummary(walletAddress: string | null) {
     isDepositing: depositMutation.isPending,
   };
 }
-

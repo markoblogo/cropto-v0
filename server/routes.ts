@@ -15,7 +15,7 @@ import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
 import { runScraper } from "./jobs/telegramScraper";
 import { MATCHING_FEE_PER_TON, SETTLEMENT_FEE_PER_TON } from "./fees";
-import { authenticateToken, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions } from "./auth";
+import { authenticateToken, optionalAuth, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions } from "./auth";
 import { 
   intrinsic, 
   shouldTriggerMargin, 
@@ -775,116 +775,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get price history for charting (with optional year-over-year comparison)
-  app.get("/api/index/history", async (req, res) => {
-    try {
-      const rawCommodity = (req.query.commodity as string | undefined) || WHEAT_115_NAME;
-      const commodity = normalizeLegacyCommodity(rawCommodity);
-      const period = req.query.period as string || '30d';
-      const interval = req.query.interval as string || 'day';
-      const includeComparison = req.query.comparison === 'true';
-
-      // Parse period (30d, 90d, 365d, all)
-      let cutoffDate: Date | null = null;
-      if (period !== 'all') {
-        const days = parseInt(period.replace('d', ''));
-        if (!isNaN(days)) {
-          cutoffDate = new Date();
-          cutoffDate.setDate(cutoffDate.getDate() - days);
-        }
-      }
-
-      // Build query with conditional cutoff date
-      const whereConditions = cutoffDate
-        ? and(
-            eq(indexPrices.commodity, commodity),
-            sql`${indexPrices.date} >= ${cutoffDate}`
-          )
-        : eq(indexPrices.commodity, commodity);
-
-      const prices = await db
-        .select({
-          price: indexPrices.price,
-          date: indexPrices.date,
-        })
-        .from(indexPrices)
-        .where(whereConditions)
-        .orderBy(indexPrices.date);
-
-      // Group by interval (day or month)
-      const grouped = new Map<string, number>();
-      
-      for (const p of prices) {
-        let key: string;
-        if (interval === 'month') {
-          // Group by YYYY-MM
-          key = p.date.toISOString().substring(0, 7);
-        } else {
-          // Default: group by day (YYYY-MM-DD)
-          key = p.date.toISOString().split('T')[0];
-        }
-        // Take latest price for each interval
-        grouped.set(key, parseFloat(p.price));
-      }
-
-      // Convert to sorted array
-      const dataPoints = Array.from(grouped.entries())
-        .map(([date, price]) => ({ date, price }))
-        .sort((a, b) => a.date.localeCompare(b.date)); // Ascending order for chart
-
-      // Fetch previous year data for comparison if requested
-      let previousYearData: Array<{ date: string; price: number }> = [];
-      if (includeComparison && cutoffDate) {
-        // Calculate date range for previous year (same calendar dates, 1 year ago)
-        const prevYearCutoff = new Date(cutoffDate);
-        prevYearCutoff.setFullYear(prevYearCutoff.getFullYear() - 1);
-        
-        const prevYearEnd = new Date();
-        prevYearEnd.setFullYear(prevYearEnd.getFullYear() - 1);
-
-        const prevYearConditions = and(
-          eq(indexPrices.commodity, commodity),
-          sql`${indexPrices.date} >= ${prevYearCutoff}`,
-          sql`${indexPrices.date} <= ${prevYearEnd}`
-        );
-
-        const prevYearPrices = await db
-          .select({
-            price: indexPrices.price,
-            date: indexPrices.date,
-          })
-          .from(indexPrices)
-          .where(prevYearConditions)
-          .orderBy(indexPrices.date);
-
-        // Group previous year data
-        const prevGrouped = new Map<string, number>();
-        for (const p of prevYearPrices) {
-          let key: string;
-          if (interval === 'month') {
-            key = p.date.toISOString().substring(0, 7);
-          } else {
-            key = p.date.toISOString().split('T')[0];
-          }
-          prevGrouped.set(key, parseFloat(p.price));
-        }
-
-        previousYearData = Array.from(prevGrouped.entries())
-          .map(([date, price]) => ({ date, price }))
-          .sort((a, b) => a.date.localeCompare(b.date));
-      }
-
-      res.json({
-        current: dataPoints,
-        previous: previousYearData,
-        hasPreviousYear: previousYearData.length > 0
-      });
-    } catch (error) {
-      console.error("Error fetching price history:", error);
-      res.status(500).json({ error: "Failed to fetch price history" });
-    }
-  });
-
   // Internal endpoint for scraper ingestion
   app.post("/api/index/ingest/scrape", async (req, res) => {
     try {
@@ -1216,7 +1106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/index/history - Get price history for a specific instrument
+  // GET /api/index/history - Price history for legacy charts OR country/commodity/basis history
   app.get("/api/index/history", async (req, res) => {
     try {
       const { country, commodity, basis } = req.query;
@@ -1224,76 +1114,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const commodityStr = typeof commodity === "string" ? commodity : "";
       const basisStr = typeof basis === "string" ? basis : "";
 
-      if (!countryStr || !commodityStr || !basisStr) {
-        return res.status(400).json({
-          error: "Missing required parameters: country, commodity, basis",
-        });
-      }
+      const hasCountryParams = !!(countryStr && commodityStr && basisStr);
 
-      const history: Array<{ date: string; price: number }> = [];
+      if (hasCountryParams) {
+        const history: Array<{ date: string; price: number }> = [];
 
-      if (countryStr === "UA") {
-        // Query from commodityIndexPrices via indexes table
-        const uaIndexes = await db
-          .select()
-          .from(indexes)
-          .where(sql`${indexes.category} LIKE 'CPT%'`);
-
-        // Find matching index (simplified matching)
-        let matchingIndex = null;
-        for (const index of uaIndexes) {
-          const indexBasis = index.category === "CPT ODESA"
-            ? "CPT Odesa (export)"
-            : index.category === "CPT PARITET ODESA"
-            ? "CPT Paritet Odesa (processing)"
-            : index.category;
-          if (indexBasis === basisStr && index.name.toLowerCase().includes(commodityStr.toLowerCase())) {
-            matchingIndex = index;
-            break;
-          }
-        }
-
-        if (matchingIndex) {
-          const prices = await db
+        if (countryStr === "UA") {
+          // Query from commodityIndexPrices via indexes table
+          const uaIndexes = await db
             .select()
-            .from(commodityIndexPrices)
-            .where(eq(commodityIndexPrices.indexId, matchingIndex.id))
-            .orderBy(asc(commodityIndexPrices.timestamp));
+            .from(indexes)
+            .where(sql`${indexes.category} LIKE 'CPT%'`);
 
-          for (const price of prices) {
-            history.push({
-              date: new Date(price.timestamp).toISOString().split("T")[0],
-              price: parseFloat(price.price),
-            });
+          // Find matching index (simplified matching)
+          let matchingIndex = null;
+          for (const index of uaIndexes) {
+            const indexBasis = index.category === "CPT ODESA"
+              ? "CPT Odesa (export)"
+              : index.category === "CPT PARITET ODESA"
+              ? "CPT Paritet Odesa (processing)"
+              : index.category;
+            if (indexBasis === basisStr && index.name.toLowerCase().includes(commodityStr.toLowerCase())) {
+              matchingIndex = index;
+              break;
+            }
           }
-        }
-      } else {
-        // Query from indexPrices with meta
-        const allPrices = await db
-          .select()
-          .from(indexPrices)
-          .orderBy(asc(indexPrices.date));
 
-        for (const price of allPrices) {
-          try {
-            const meta = price.meta ? JSON.parse(price.meta) : {};
-            if (
-              meta.country === countryStr &&
-              (meta.commodity || price.commodity.toLowerCase()) === commodityStr.toLowerCase() &&
-              meta.basis === basisStr
-            ) {
+          if (matchingIndex) {
+            const prices = await db
+              .select()
+              .from(commodityIndexPrices)
+              .where(eq(commodityIndexPrices.indexId, matchingIndex.id))
+              .orderBy(asc(commodityIndexPrices.timestamp));
+
+            for (const price of prices) {
               history.push({
-                date: new Date(price.date).toISOString().split("T")[0],
+                date: new Date(price.timestamp).toISOString().split("T")[0],
                 price: parseFloat(price.price),
               });
             }
-          } catch {
-            // Skip invalid meta
           }
+        } else {
+          // Query from indexPrices with meta
+          const allPrices = await db
+            .select()
+            .from(indexPrices)
+            .orderBy(asc(indexPrices.date));
+
+          for (const price of allPrices) {
+            try {
+              const meta = price.meta ? JSON.parse(price.meta) : {};
+              if (
+                meta.country === countryStr &&
+                (meta.commodity || price.commodity.toLowerCase()) === commodityStr.toLowerCase() &&
+                meta.basis === basisStr
+              ) {
+                history.push({
+                  date: new Date(price.date).toISOString().split("T")[0],
+                  price: parseFloat(price.price),
+                });
+              }
+            } catch {
+              // Skip invalid meta
+            }
+          }
+        }
+
+        return res.json(history);
+      }
+
+      // Legacy chart mode: commodity + period/interval/comparison
+      const rawCommodity = (req.query.commodity as string | undefined) || WHEAT_115_NAME;
+      const legacyCommodity = normalizeLegacyCommodity(rawCommodity);
+      const period = (req.query.period as string) || "30d";
+      const interval = (req.query.interval as string) || "day";
+      const includeComparison = req.query.comparison === "true";
+
+      let cutoffDate: Date | null = null;
+      if (period !== "all") {
+        const days = parseInt(period.replace("d", ""));
+        if (!isNaN(days)) {
+          cutoffDate = new Date();
+          cutoffDate.setDate(cutoffDate.getDate() - days);
         }
       }
 
-      res.json(history);
+      const whereConditions = cutoffDate
+        ? and(eq(indexPrices.commodity, legacyCommodity), sql`${indexPrices.date} >= ${cutoffDate}`)
+        : eq(indexPrices.commodity, legacyCommodity);
+
+      const prices = await db
+        .select({
+          price: indexPrices.price,
+          date: indexPrices.date,
+        })
+        .from(indexPrices)
+        .where(whereConditions)
+        .orderBy(indexPrices.date);
+
+      const grouped = new Map<string, number>();
+      for (const p of prices) {
+        const key = interval === "month"
+          ? p.date.toISOString().substring(0, 7)
+          : p.date.toISOString().split("T")[0];
+        grouped.set(key, parseFloat(p.price));
+      }
+
+      const dataPoints = Array.from(grouped.entries())
+        .map(([date, price]) => ({ date, price }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      let previousYearData: Array<{ date: string; price: number }> = [];
+      if (includeComparison && cutoffDate) {
+        const prevYearCutoff = new Date(cutoffDate);
+        prevYearCutoff.setFullYear(prevYearCutoff.getFullYear() - 1);
+
+        const prevYearEnd = new Date();
+        prevYearEnd.setFullYear(prevYearEnd.getFullYear() - 1);
+
+        const prevYearConditions = and(
+          eq(indexPrices.commodity, legacyCommodity),
+          sql`${indexPrices.date} >= ${prevYearCutoff}`,
+          sql`${indexPrices.date} <= ${prevYearEnd}`
+        );
+
+        const prevYearPrices = await db
+          .select({
+            price: indexPrices.price,
+            date: indexPrices.date,
+          })
+          .from(indexPrices)
+          .where(prevYearConditions)
+          .orderBy(indexPrices.date);
+
+        const prevGrouped = new Map<string, number>();
+        for (const p of prevYearPrices) {
+          const key = interval === "month"
+            ? p.date.toISOString().substring(0, 7)
+            : p.date.toISOString().split("T")[0];
+          prevGrouped.set(key, parseFloat(p.price));
+        }
+
+        previousYearData = Array.from(prevGrouped.entries())
+          .map(([date, price]) => ({ date, price }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+      }
+
+      return res.json({
+        current: dataPoints,
+        previous: previousYearData,
+        hasPreviousYear: previousYearData.length > 0,
+      });
     } catch (error: any) {
       console.error("Error fetching index history:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -1868,6 +1839,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR();
       const finalArData = arData.length > 0 ? arData : getMockMarketDataAR();
       const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS();
+
+      // Persist mock data to index_prices for history charts if no real records exist.
+      const mockCooldownMs = 1000 * 60 * 60 * 12;
+      const latestByKey = new Map<string, Date>();
+
+      for (const price of allIndexPrices) {
+        try {
+          const meta = price.meta ? JSON.parse(price.meta) : {};
+          const country = price.country || meta.country;
+          const commodity = meta.commodity || price.commodity;
+          const basis = meta.basis || price.label || "";
+          if (!country || !commodity || !basis) continue;
+          const key = `${country}:${commodity.toLowerCase()}:${basis}`;
+          const dateValue = price.asOfDate ? new Date(price.asOfDate as any) : new Date(price.date);
+          if (!latestByKey.has(key) || dateValue > latestByKey.get(key)!) {
+            latestByKey.set(key, dateValue);
+          }
+        } catch {
+          // ignore malformed meta
+        }
+      }
+
+      const persistMockData = async (country: "BR" | "AR" | "US", data: MarketIndexDto[]) => {
+        const now = new Date();
+        const inserts = [];
+        for (const item of data) {
+          if (item.source !== "mock") continue;
+          const commodity = item.commodity;
+          const basis = item.basis || "";
+          const key = `${country}:${commodity.toLowerCase()}:${basis}`;
+          const lastSeen = latestByKey.get(key);
+          if (lastSeen && now.getTime() - lastSeen.getTime() < mockCooldownMs) {
+            continue;
+          }
+          inserts.push({
+            commodity: commodity.toUpperCase(),
+            price: item.price.toString(),
+            date: now,
+            source: "mock",
+            country,
+            label: basis,
+            meta: JSON.stringify({
+              country,
+              commodity,
+              basis,
+              source: "mock",
+            }),
+          });
+          latestByKey.set(key, now);
+        }
+        if (inserts.length > 0) {
+          await db.insert(indexPrices).values(inserts);
+          console.log(`[Market Dashboard] Persisted ${inserts.length} mock records for ${country}`);
+        }
+      };
+
+      if (brData.length === 0) await persistMockData("BR", finalBrData);
+      if (arData.length === 0) await persistMockData("AR", finalArData);
+      if (usData.length === 0) await persistMockData("US", finalUsData);
 
       console.log(`[Market Dashboard] Final - BR: ${finalBrData.length}, AR: ${finalArData.length}, US: ${finalUsData.length} records`);
       console.log(`[Market Dashboard] Final BR sources:`, finalBrData.map(d => d.source));
@@ -4714,12 +4744,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Option & Forward chain for a single index/window
-  app.get("/api/markets/chain", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/markets/chain", optionalAuth, async (req: AuthRequest, res) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
       const { indexId, commodity, window, includeForwards } = req.query;
       if (!indexId && !commodity) {
         return res.status(400).json({ error: "indexId or commodity is required" });

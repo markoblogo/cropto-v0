@@ -27,9 +27,10 @@ export function useCroptBalance(address: string | null) {
 
 export function usePendingTransactions() {
   return useQuery<Transaction[]>({
-    queryKey: ['/api/onchain/txs'],
+    queryKey: ['/api/onchain/transactions'],
     select: (data: Transaction[]) => data?.filter(tx => tx.status === 'PENDING') || [],
     refetchInterval: 5000,
     retry: 1,
+    enabled: !!localStorage.getItem('cropto_token'),
   });
 }
