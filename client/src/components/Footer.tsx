@@ -85,7 +85,7 @@ export function Footer() {
               <Link href="/wallet" className="hover:text-foreground transition-colors">
                 {t('footer.wallet')}
               </Link>
-              <Link href="/faq" className="hover:text-foreground transition-colors">
+              <Link href="/education#faq" className="hover:text-foreground transition-colors">
                 {t('footer.faq')}
               </Link>
               <Link href="/education" className="hover:text-foreground transition-colors">

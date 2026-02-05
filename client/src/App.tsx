@@ -43,7 +43,7 @@ import { useEffect } from "react";
 function RedirectToEducation() {
   const [, setLocation] = useLocation();
   useEffect(() => {
-    setLocation("/education");
+    setLocation("/education#faq");
   }, [setLocation]);
   return null;
 }

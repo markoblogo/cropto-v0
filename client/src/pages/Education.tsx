@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layouts/MainLayout";
@@ -132,6 +132,18 @@ export default function Education() {
       }),
     [t]
   );
+
+  useEffect(() => {
+    if (window.location.hash !== "#faq") return;
+
+    const faqSection = document.getElementById("faq");
+    if (!faqSection) return;
+
+    // Defer scroll until content has rendered in SPA navigation.
+    requestAnimationFrame(() => {
+      faqSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
 
   return (
     <MainLayout>

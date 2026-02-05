@@ -121,7 +121,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
     { to: "/education", label: t("nav.aboutCropto"), testId: "button-nav-education" },
     { to: "/docs", label: t("nav.documentation"), testId: "button-nav-docs" },
     { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
-    { to: "/faq", label: t("nav.faqShort"), testId: "button-nav-faq" },
+    { to: "/education#faq", label: t("nav.faqShort"), testId: "button-nav-faq" },
     { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
