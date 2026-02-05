@@ -84,7 +84,6 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
   // Define navigation items
   const primaryNav = [
     { to: "/portfolio", label: t("nav.portfolio"), testId: "button-nav-portfolio" },
-    { to: "/education", label: t("nav.education"), testId: "button-nav-education" },
   ];
 
   const indexTradingNav = [
@@ -110,6 +109,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
   ];
 
   const secondaryNav = [
+    { to: "/education", label: t("nav.education"), testId: "button-nav-education" },
     { to: "/docs", label: "Documentation", testId: "button-nav-docs" },
     { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
     { to: "/faq", label: "FAQ", testId: "button-nav-faq" },

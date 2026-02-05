@@ -122,14 +122,20 @@ export default function SpotTrading() {
     .filter((p) => SPOT_ALLOWED_SLUGS.includes(p.slug))
     .sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug));
   
-  // Filter by region: UA = CPT ODESA/PARITET ODESA, BR/AR = coming soon (empty for now)
+  // Filter pairs by selected region (derived from index category).
+  const regionFromCategory = (category?: string) => {
+    const c = (category || "").toLowerCase();
+    if (c.includes("odesa")) return "ua";
+    if (c.includes("brazil") || c.includes("br ")) return "br";
+    if (c.includes("argentina") || c.includes("ar ")) return "ar";
+    if (c.includes("usa") || c.includes("us ")) return "us";
+    return "ua";
+  };
+
   const tradingPairsFiltered = tradingPairsOrdered.filter((p) => {
-    if (selectedRegion === "ua") {
-      const index = indexes?.find(idx => idx.slug === p.slug);
-      return index && (index.category.includes("CPT ODESA") || index.category.includes("CPT PARITET ODESA"));
-    }
-    // BR/AR don't have indexes yet, will be filtered out
-    return false;
+    const index = indexes?.find(idx => idx.slug === p.slug);
+    if (!index) return false;
+    return regionFromCategory(index.category) === selectedRegion;
   });
   
   const tradingPairs = tradingPairsFiltered.filter((p) => !p.isStale);
@@ -318,15 +324,7 @@ export default function SpotTrading() {
             </p>
           </div>
           
-          {/* Region Selector */}
-          <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar" | "us")} className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-4">
-              <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
-              <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
-              <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
-              <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Country is controlled by header dropdown (country query param). */}
         </div>
 
         {/* Wallet Summary Bar */}
@@ -344,26 +342,12 @@ export default function SpotTrading() {
             <Skeleton className="h-40 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
-        ) : selectedRegion !== "ua" ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="text-4xl mb-4">
-                  {selectedRegion === "br" ? "🇧🇷" : selectedRegion === "ar" ? "🇦🇷" : "🇺🇸"}
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{t('page.spot.comingSoon')}</h3>
-                <p className="text-sm text-muted-foreground max-w-sm">
-                  {t('page.spot.comingSoonDesc')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
         ) : !tradingPairs.length ? (
           <Card>
             <CardContent className="pt-6">
               <Alert>
                 <AlertDescription>
-                  {t('page.spot.noTradingPairs')}
+                  {t('page.spot.noTradingPairs')} ({selectedRegion.toUpperCase()})
                 </AlertDescription>
               </Alert>
             </CardContent>

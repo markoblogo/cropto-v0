@@ -167,19 +167,21 @@ export default function OptionChain() {
       base = userId ? options.filter((option) => option.buyerId === userId || option.issuerId === userId) : [];
     }
 
-    // Filter by region: UA = options linked to CPT ODESA/PARITET ODESA indexes, BR/AR = coming soon
-    if (selectedRegion !== "ua") {
-      // BR/AR don't have options yet
-      return [];
-    }
+    const regionFromCategory = (category?: string) => {
+      const c = (category || "").toLowerCase();
+      if (c.includes("odesa")) return "ua";
+      if (c.includes("brazil") || c.includes("br ")) return "br";
+      if (c.includes("argentina") || c.includes("ar ")) return "ar";
+      if (c.includes("usa") || c.includes("us ")) return "us";
+      return "ua";
+    };
 
-    // For UA, filter options that are linked to Ukraine indexes (CPT ODESA/PARITET ODESA)
+    // Filter options by selected region based on linked index category.
     const filteredByRegion = base.filter((opt) => {
       if (!opt.indexId || !indexes) return false;
       const index = indexes.find(idx => idx.id === opt.indexId);
       if (!index) return false;
-      // Only include options linked to Ukraine indexes
-      return index.category.includes("CPT ODESA") || index.category.includes("CPT PARITET ODESA");
+      return regionFromCategory(index.category) === selectedRegion;
     });
 
     return filteredByRegion.filter((opt) => {
@@ -418,15 +420,7 @@ export default function OptionChain() {
             </Button>
           </div>
           
-          {/* Region Selector */}
-          <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar" | "us")} className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-4">
-              <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
-              <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
-              <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
-              <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Country is controlled by header dropdown (country query param). */}
         </div>
 
         {/* View Mode Tabs */}
@@ -457,16 +451,16 @@ export default function OptionChain() {
               Failed to load options. Please try again.
             </AlertDescription>
           </Alert>
-        ) : selectedRegion !== "ua" ? (
+        ) : filteredOptions.length === 0 && viewMode === "all" ? (
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="text-4xl mb-4">
                   {selectedRegion === "br" ? "🇧🇷" : selectedRegion === "ar" ? "🇦🇷" : "🇺🇸"}
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{t('page.options.comingSoon')}</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('page.options.noOptionsFound')}</h3>
                 <p className="text-sm text-muted-foreground max-w-sm">
-                  {t('page.options.comingSoonDesc')}
+                  {t('page.options.getStarted')}
                 </p>
               </div>
             </CardContent>
