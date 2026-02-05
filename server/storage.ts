@@ -8,6 +8,7 @@ import {
   notifications,
   transactions,
   feedback,
+  appSettings,
   platformFees,
   croptBalances,
   spotPositions,
@@ -29,6 +30,7 @@ import {
   type InsertTransaction,
   type Feedback,
   type InsertFeedback,
+  type AppSetting,
   type PartnerOrganization,
   type InsertPartnerOrganization,
   type ServiceContract,
@@ -68,6 +70,8 @@ export interface IStorage {
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
   listFeedback(): Promise<Feedback[]>;
   updateFeedback(id: string, updates: Partial<Feedback>): Promise<Feedback>;
+  getAppSetting(key: string): Promise<AppSetting | undefined>;
+  upsertAppSetting(key: string, value: string): Promise<AppSetting>;
   // Partner Organizations
   getPartnerOrganizations(): Promise<PartnerOrganization[]>;
   getPartnerById(id: string): Promise<PartnerOrganization | undefined>;
@@ -1048,6 +1052,27 @@ export class DatabaseStorage implements IStorage {
       .where(eq(feedback.id, id))
       .returning();
     return feedbackEntry;
+  }
+
+  async getAppSetting(key: string): Promise<AppSetting | undefined> {
+    const [setting] = await db
+      .select()
+      .from(appSettings)
+      .where(eq(appSettings.key, key))
+      .limit(1);
+    return setting;
+  }
+
+  async upsertAppSetting(key: string, value: string): Promise<AppSetting> {
+    const [setting] = await db
+      .insert(appSettings)
+      .values({ key, value, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: appSettings.key,
+        set: { value, updatedAt: new Date() },
+      })
+      .returning();
+    return setting;
   }
 
   // Partner Organizations

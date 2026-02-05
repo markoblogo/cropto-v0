@@ -1,5 +1,6 @@
 import { writeFileSync, appendFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
+import nodemailer from "nodemailer";
 
 interface EmailMessage {
   to: string;
@@ -10,10 +11,13 @@ interface EmailMessage {
 
 class EmailMockService {
   private logsDir: string;
+  private transporter: nodemailer.Transporter | null = null;
+  private fromAddress: string | null = null;
 
   constructor() {
     this.logsDir = join(process.cwd(), "logs");
     this.ensureLogsDir();
+    this.initTransporter();
   }
 
   private ensureLogsDir() {
@@ -25,6 +29,35 @@ class EmailMockService {
   private getLogFileName(): string {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     return join(this.logsDir, `email-log-${timestamp}.log`);
+  }
+
+  private initTransporter() {
+    const host = process.env.SMTP_HOST;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    const from = process.env.SMTP_FROM;
+    const portRaw = process.env.SMTP_PORT || "587";
+    const secure = process.env.SMTP_SECURE === "true";
+
+    if (!host || !user || !pass || !from) {
+      console.log("[Email] SMTP is not fully configured. Falling back to mock logging.");
+      return;
+    }
+
+    const port = Number(portRaw);
+    if (!Number.isFinite(port) || port <= 0) {
+      console.warn("[Email] SMTP_PORT is invalid. Falling back to mock logging.");
+      return;
+    }
+
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+    });
+    this.fromAddress = from;
+    console.log(`[Email] SMTP delivery enabled (${host}:${port}, secure=${secure}).`);
   }
 
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
@@ -53,6 +86,21 @@ ${"=".repeat(80)}
       subject,
       timestamp,
     });
+
+    // Try real SMTP delivery first (if configured)
+    if (this.transporter && this.fromAddress) {
+      try {
+        await this.transporter.sendMail({
+          from: this.fromAddress,
+          to,
+          subject,
+          text: body,
+        });
+        console.log(`   ✓ Email delivered via SMTP to: ${to}`);
+      } catch (smtpError) {
+        console.error(`   ✗ SMTP delivery failed for ${to}. Falling back to log only.`, smtpError);
+      }
+    }
 
     // Log to file
     try {

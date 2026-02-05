@@ -4,6 +4,7 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -46,6 +47,19 @@ export default function AdminFeedback() {
     queryKey: ["/api/admin/feedback"],
     enabled: !!isAdminLevelUser,
   });
+
+  const { data: emailSettings } = useQuery<{ emails: string }>({
+    queryKey: ["/api/admin/settings/feedback-emails"],
+    enabled: !!isAdminLevelUser,
+  });
+
+  const [recipientEmails, setRecipientEmails] = useState("");
+
+  useEffect(() => {
+    if (emailSettings?.emails != null) {
+      setRecipientEmails(emailSettings.emails);
+    }
+  }, [emailSettings?.emails]);
 
   // Show loading while checking auth
   if (isAuthLoading || !user) {
@@ -128,6 +142,38 @@ export default function AdminFeedback() {
     }
   };
 
+  const saveRecipientsMutation = useMutation({
+    mutationFn: async (emails: string) => {
+      const response = await fetch("/api/admin/settings/feedback-emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("cropto_token")}`,
+        },
+        body: JSON.stringify({ emails }),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to save recipients");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings/feedback-emails"] });
+      toast({
+        title: "Saved",
+        description: "Feedback alert recipients updated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save recipients",
+        variant: "destructive",
+      });
+    },
+  });
+
   const openFeedback = feedbackList.filter(f => f.status === "open");
   const resolvedFeedback = feedbackList.filter(f => f.status === "resolved");
 
@@ -146,6 +192,30 @@ export default function AdminFeedback() {
             Export CSV
           </Button>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Feedback Alert Emails</CardTitle>
+            <CardDescription>
+              Comma-separated recipients for new feedback notifications. If empty, fallback address is used.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              value={recipientEmails}
+              onChange={(e) => setRecipientEmails(e.target.value)}
+              placeholder="ops@cropto.com, support@cropto.com"
+              data-testid="input-feedback-alert-emails"
+            />
+            <Button
+              onClick={() => saveRecipientsMutation.mutate(recipientEmails)}
+              disabled={saveRecipientsMutation.isPending}
+              data-testid="button-save-feedback-alert-emails"
+            >
+              {saveRecipientsMutation.isPending ? "Saving..." : "Save recipients"}
+            </Button>
+          </CardContent>
+        </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
             <Card>

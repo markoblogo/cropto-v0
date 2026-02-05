@@ -147,6 +147,12 @@ export const feedback = pgTable("feedback", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const indexPrices = pgTable("index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   commodity: text("commodity").notNull(),
@@ -442,6 +448,10 @@ export const insertFeedbackSchema = createInsertSchema(feedback).omit({
   status: true,
 });
 
+export const upsertAppSettingSchema = createInsertSchema(appSettings).omit({
+  updatedAt: true,
+});
+
 export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
   id: true,
   createdAt: true,
@@ -535,6 +545,7 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 export type Feedback = typeof feedback.$inferSelect;
+export type AppSetting = typeof appSettings.$inferSelect;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
 export type InsertIndex = z.infer<typeof insertIndexSchema>;

@@ -45,15 +45,22 @@ import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
 
-function getFeedbackAlertRecipients(): string[] {
+async function getFeedbackAlertRecipients(): Promise<string[]> {
   const configured = process.env.FEEDBACK_ALERT_EMAILS || process.env.FEEDBACK_ALERT_EMAIL || "";
-  const recipients = configured
+  const envRecipients = configured
     .split(",")
     .map((r) => r.trim())
     .filter(Boolean);
 
-  if (recipients.length > 0) return recipients;
-  return [DEFAULT_FEEDBACK_ALERT_EMAIL];
+  const dbSetting = await storage.getAppSetting("feedback_alert_emails");
+  const dbRecipients = (dbSetting?.value || "")
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
+
+  const merged = [...envRecipients, ...dbRecipients];
+  if (merged.length === 0) return [DEFAULT_FEEDBACK_ALERT_EMAIL];
+  return Array.from(new Set(merged));
 }
 
 function computeIsStale(latestTimestamp: Date | string | null | undefined) {
@@ -4059,6 +4066,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Feedback endpoints
+  app.get("/api/admin/settings/feedback-emails", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const setting = await storage.getAppSetting("feedback_alert_emails");
+      res.json({ emails: setting?.value || "" });
+    } catch (error: any) {
+      console.error("Error fetching feedback email settings:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch feedback email settings" });
+    }
+  });
+
+  app.post("/api/admin/settings/feedback-emails", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const parsed = z.object({ emails: z.string().max(2000) }).safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid email settings payload" });
+      }
+
+      await storage.upsertAppSetting("feedback_alert_emails", parsed.data.emails);
+      res.json({ ok: true });
+    } catch (error: any) {
+      console.error("Error saving feedback email settings:", error);
+      res.status(500).json({ error: error.message || "Failed to save feedback email settings" });
+    }
+  });
+
   app.post("/api/feedback/upload", async (req, res) => {
     try {
       const schema = z.object({
@@ -4126,7 +4168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const feedbackEntry = await storage.createFeedback(result.data);
 
       // Best-effort alert email: do not block form submission on email issues.
-      const recipients = getFeedbackAlertRecipients();
+      const recipients = await getFeedbackAlertRecipients();
       const emailBody = [
         `New feedback received on Cropto.`,
         ``,
