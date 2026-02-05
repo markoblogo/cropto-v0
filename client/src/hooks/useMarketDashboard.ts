@@ -14,6 +14,7 @@ export interface MarketIndexDto {
   asOf: string;
   source: "spike_telegram" | "mock" | "manual" | "IGC" | "USDA_AMS" | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+  dataStatus?: "fresh" | "stale" | "no_recent";
   confidence?: "high" | "medium" | "low";
   freshnessDays?: number;
   isStale?: boolean;
@@ -32,6 +33,52 @@ export interface MarketDashboardResponse {
   br: MarketIndexDto[];
   ar: MarketIndexDto[];
   us: MarketIndexDto[];
+  seriesStatus?: {
+    ua: Array<{
+      country: "UA";
+      key: string;
+      commodity: string;
+      basis: string;
+      status: "fresh" | "stale" | "no_recent";
+      sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+      source?: string;
+      asOf?: string;
+      freshnessDays?: number;
+    }>;
+    br: Array<{
+      country: "BR";
+      key: string;
+      commodity: string;
+      basis: string;
+      status: "fresh" | "stale" | "no_recent";
+      sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+      source?: string;
+      asOf?: string;
+      freshnessDays?: number;
+    }>;
+    ar: Array<{
+      country: "AR";
+      key: string;
+      commodity: string;
+      basis: string;
+      status: "fresh" | "stale" | "no_recent";
+      sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+      source?: string;
+      asOf?: string;
+      freshnessDays?: number;
+    }>;
+    us: Array<{
+      country: "US";
+      key: string;
+      commodity: string;
+      basis: string;
+      status: "fresh" | "stale" | "no_recent";
+      sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+      source?: string;
+      asOf?: string;
+      freshnessDays?: number;
+    }>;
+  };
 }
 
 export function useMarketDashboard() {

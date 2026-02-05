@@ -1894,12 +1894,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               : undefined;
 
           if (freshPrimary) {
-            selected.push({ ...freshPrimary, sourceTier: "primary", isStale: false });
+            selected.push({ ...freshPrimary, sourceTier: "primary", isStale: false, dataStatus: "fresh" });
             continue;
           }
 
           if (freshSecondary) {
-            selected.push({ ...freshSecondary, sourceTier: "secondary", isStale: false });
+            selected.push({ ...freshSecondary, sourceTier: "secondary", isStale: false, dataStatus: "fresh" });
             failoverEvents.push({
               event: "source_failover_primary_to_secondary",
               country,
@@ -1918,6 +1918,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ...lastKnown,
               sourceTier: "last_known",
               isStale: true,
+              dataStatus: "stale",
               confidence: lastKnown.confidence === "high" ? "medium" : (lastKnown.confidence || "medium"),
             });
             failoverEvents.push({
@@ -1957,6 +1958,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sourceTier: "synthetic",
               confidence: "low",
               isStale: false,
+              dataStatus: "fresh",
               sourceType: "internal",
               usagePolicy: "open",
               visibility: "public",
@@ -2026,6 +2028,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const finalBrData = brData;
       const finalArData = arData;
       const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }));
+
+      const buildSeriesStatus = (
+        country: "UA" | "BR" | "AR" | "US",
+        rows: MarketIndexDto[],
+        events: Array<Record<string, unknown>>
+      ) => {
+        const statuses: Array<{
+          country: "UA" | "BR" | "AR" | "US";
+          key: string;
+          commodity: string;
+          basis: string;
+          status: "fresh" | "stale" | "no_recent";
+          sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+          source?: string;
+          asOf?: string;
+          freshnessDays?: number;
+        }> = [];
+
+        for (const row of rows) {
+          statuses.push({
+            country,
+            key: `${row.commodity}:${row.basis}`,
+            commodity: row.commodity,
+            basis: row.basis,
+            status: row.isStale ? "stale" : "fresh",
+            sourceTier: row.sourceTier,
+            source: row.source,
+            asOf: row.asOf,
+            freshnessDays: row.freshnessDays,
+          });
+        }
+
+        for (const evt of events) {
+          if (evt.event !== "source_no_recent_price" || evt.country !== country) continue;
+          const key = String(evt.key || "");
+          const [commodity, ...basisParts] = key.split(":");
+          statuses.push({
+            country,
+            key,
+            commodity: commodity || "unknown",
+            basis: basisParts.join(":") || "",
+            status: "no_recent",
+            sourceTier: "last_known",
+            freshnessDays: Number(evt.freshnessDays ?? 999),
+          });
+        }
+
+        return statuses;
+      };
+
+      const seriesStatus = {
+        ua: buildSeriesStatus("UA", uaDataFiltered, []),
+        br: buildSeriesStatus("BR", finalBrData, failoverEvents),
+        ar: buildSeriesStatus("AR", finalArData, failoverEvents),
+        us: buildSeriesStatus("US", finalUsData, failoverEvents),
+      };
 
       // Persist mock data to index_prices for history charts if no real records exist.
       const mockCooldownMs = 1000 * 60 * 60 * 12;
@@ -2110,6 +2168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         br: finalBrData,
         ar: finalArData,
         us: finalUsData,
+        seriesStatus,
       });
     } catch (error: any) {
       console.error("Error fetching market dashboard:", error);

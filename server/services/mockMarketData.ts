@@ -16,6 +16,7 @@ export interface MarketIndexDto {
   asOf: string; // ISO string
   source: "spike_telegram" | "mock" | "manual" | "IGC" | "USDA_AMS" | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
+  dataStatus?: "fresh" | "stale" | "no_recent";
   confidence?: "high" | "medium" | "low";
   freshnessDays?: number;
   isStale?: boolean;
