@@ -93,6 +93,8 @@ export function useMarketDashboard() {
       return resp.json();
     },
     staleTime: 60000, // 1 minute
+    refetchInterval: 60000,
+    refetchOnWindowFocus: true,
     retry: 1,
   });
 }
