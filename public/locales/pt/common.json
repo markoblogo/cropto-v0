@@ -2063,5 +2063,11 @@
     "toggle": "Alternar tema",
     "light": "Claro",
     "dark": "Escuro"
-  }
+  },
+  "geo.detected": "Idioma detectado: {{language}}",
+  "geo.change": "Alterar",
+  "language.name.en": "Inglês",
+  "language.name.uk": "Ucraniano",
+  "language.name.es": "Espanhol",
+  "language.name.pt": "Português"
 }

@@ -33,12 +33,28 @@ i18n
 const GEO_LANG_CACHE_KEY = "cropto_geo_lang";
 const GEO_LANG_TS_KEY = "cropto_geo_lang_ts";
 const GEO_LANG_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+const GEO_LANG_TOAST_EVENT = "cropto:geoLang";
 
 const PT_COUNTRIES = new Set(["BR", "PT"]);
 const ES_COUNTRIES = new Set([
   "ES", "AR", "MX", "CL", "CO", "PE", "VE", "EC", "BO", "PY", "UY",
   "CR", "PA", "DO", "GT", "SV", "HN", "NI", "PR", "CU", "GQ",
 ]);
+
+async function fetchCountryCode(url: string, pick: (data: unknown) => string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2500);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) return "";
+    const data = await response.json();
+    return String(pick(data) || "").toUpperCase();
+  } catch {
+    return "";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 async function detectGeoLanguage() {
   if (typeof window === "undefined") return;
@@ -56,13 +72,16 @@ async function detectGeoLanguage() {
   }
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
-    const response = await fetch("https://ipapi.co/json/", { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!response.ok) return;
-    const data = await response.json();
-    const countryCode = String(data?.country || data?.country_code || "").toUpperCase();
+    let countryCode = await fetchCountryCode(
+      "https://ipapi.co/json/",
+      (data) => (data as { country?: string; country_code?: string })?.country || (data as { country_code?: string })?.country_code
+    );
+    if (!countryCode) {
+      countryCode = await fetchCountryCode(
+        "https://ipwho.is/?fields=country_code",
+        (data) => (data as { country_code?: string })?.country_code
+      );
+    }
     if (!countryCode) return;
 
     let lang = "en";
@@ -75,6 +94,7 @@ async function detectGeoLanguage() {
     if (i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }
+    window.dispatchEvent(new CustomEvent(GEO_LANG_TOAST_EVENT, { detail: { lang } }));
   } catch {
     // best-effort only
   }

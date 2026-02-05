@@ -1,5 +1,4 @@
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 
@@ -17,12 +16,13 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      size="sm"
       onClick={handleToggle}
       aria-label={t("theme.toggle")}
       data-testid="button-theme-toggle"
+      className="text-xs font-medium"
     >
-      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDark ? t("theme.dark") : t("theme.light")}
     </Button>
   );
 }
