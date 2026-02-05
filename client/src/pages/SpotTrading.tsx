@@ -13,7 +13,6 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { WalletSummary } from "@/components/WalletSummary";
 import { useWalletSummary } from "@/hooks/useWalletSummary";
-import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { getTradingPairs, getIndexMetadata, SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
 import { SpotMiniChart } from "@/components/SpotMiniChart";
 import { SpotTradeHistory } from "@/components/SpotTradeHistory";
@@ -21,7 +20,7 @@ import { SpotOrderForm } from "@/components/SpotOrderForm";
 import { SpotPositionCard } from "@/components/SpotPositionCard";
 import { OrderBook } from "@/components/trading/OrderBook";
 import { format } from "date-fns";
-import { TabsContent } from "@/components/ui/tabs";
+import { useMarketDashboard } from "@/hooks/useMarketDashboard";
 
 interface CommodityIndex {
   id: string;
@@ -66,6 +65,19 @@ interface IndexDataWithHistory {
   updatedAt: string;
 }
 
+interface TradingPairView {
+  slug: string;
+  name: string;
+  pairCode: string;
+  type: "export" | "processing";
+  isStale?: boolean;
+  source: "ua" | "global";
+  commodity: string;
+  basis?: string;
+  price?: number;
+  asOf?: string;
+}
+
 export default function SpotTrading() {
   const { t } = useTranslation();
   const [location, setLocation] = useLocation();
@@ -84,11 +96,6 @@ export default function SpotTrading() {
     newSearchParams.set("country", selectedRegion);
     setLocation(`/spot-trading?${newSearchParams.toString()}`, { replace: true });
   }, [selectedRegion, setLocation]);
-
-  const guardTradingAction = useTradingGuard({
-    onOpenLogin: () => setLocation("/login"),
-    onOpenWalletModal: () => setIsWalletAuthModalOpen(true),
-  });
 
   // Fetch current user
   const { data: userData } = useQuery<{ 
@@ -109,36 +116,60 @@ export default function SpotTrading() {
   // Get wallet summary data
   const walletData = useWalletSummary(user?.walletAddress || null);
 
-  const { data: indexes, isLoading } = useQuery<CommodityIndex[]>({
+  const { data: indexes, isLoading: isIndexesLoading } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
     refetchInterval: 30000,
   });
+  const { data: marketDashboardData, isLoading: isMarketDashboardLoading } = useMarketDashboard();
 
   const [chartRange, setChartRange] = useState<"7d" | "30d">("7d");
 
-  // Get trading pairs from indexes (only allowed spot commodities, ordered)
-  const tradingPairsRaw = indexes ? getTradingPairs(indexes) : [];
-  const tradingPairsOrdered = tradingPairsRaw
-    .filter((p) => SPOT_ALLOWED_SLUGS.includes(p.slug))
-    .sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug));
-  
-  // Filter pairs by selected region (derived from index category).
-  const regionFromCategory = (category?: string) => {
-    const c = (category || "").toLowerCase();
-    if (c.includes("odesa")) return "ua";
-    if (c.includes("brazil") || c.includes("br ")) return "br";
-    if (c.includes("argentina") || c.includes("ar ")) return "ar";
-    if (c.includes("usa") || c.includes("us ")) return "us";
-    return "ua";
-  };
+  const isUaRegion = selectedRegion === "ua";
 
-  const tradingPairsFiltered = tradingPairsOrdered.filter((p) => {
-    const index = indexes?.find(idx => idx.slug === p.slug);
-    if (!index) return false;
-    return regionFromCategory(index.category) === selectedRegion;
-  });
-  
-  const tradingPairs = tradingPairsFiltered.filter((p) => !p.isStale);
+  // UA trading pairs come from /api/indexes (real tradable slugs).
+  const uaTradingPairs: TradingPairView[] = useMemo(() => {
+    const tradingPairsRaw = indexes ? getTradingPairs(indexes) : [];
+    return tradingPairsRaw
+      .filter((p) => SPOT_ALLOWED_SLUGS.includes(p.slug))
+      .sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug))
+      .map((p) => ({
+        slug: p.slug,
+        name: p.name,
+        pairCode: p.pairCode,
+        type: p.type,
+        isStale: p.isStale,
+        source: "ua",
+        commodity: p.name.toLowerCase(),
+      }));
+  }, [indexes]);
+
+  // BR/AR/US pairs come from /api/market-dashboard (IGC/manual/mock).
+  const globalTradingPairs: TradingPairView[] = useMemo(() => {
+    if (!marketDashboardData) return [];
+    const regionData = marketDashboardData[selectedRegion] || [];
+    return regionData
+      .filter((item) => Number.isFinite(item.price) && item.price > 0)
+      .map((item) => {
+        const basisSlug = item.basis.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        const commoditySlug = item.commodity.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        const syntheticSlug = `${selectedRegion}-${commoditySlug}-${basisSlug}`;
+        const displayName = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
+        return {
+          slug: syntheticSlug,
+          name: displayName,
+          pairCode: `CROPT/${item.country}-${commoditySlug.toUpperCase()}`,
+          type: item.basis.toLowerCase().includes("processing") ? "processing" : "export",
+          source: "global",
+          commodity: item.commodity,
+          basis: item.basis,
+          price: item.price,
+          asOf: item.asOf,
+        };
+      });
+  }, [marketDashboardData, selectedRegion]);
+
+  const tradingPairs = (isUaRegion ? uaTradingPairs : globalTradingPairs).filter((p) => !p.isStale);
+  const isLoading = isUaRegion ? isIndexesLoading : isMarketDashboardLoading;
   
   // Get selected pair from query params or default to first pair
   const searchParams = new URLSearchParams(window.location.search);
@@ -153,14 +184,14 @@ export default function SpotTrading() {
       );
       if (found) return found.slug;
     }
-    if (indexIdParam) {
+    if (isUaRegion && indexIdParam) {
       const found = indexes?.find(idx => idx.id === indexIdParam && !idx.isStale);
       if (found) return found.slug;
     }
     // Default to first non-stale pair (prefer Corn if available)
     const corn = tradingPairs.find(p => p.slug.includes("corn"));
     return corn?.slug || tradingPairs[0]?.slug || null;
-  }, [commodityParam, indexIdParam, tradingPairs, indexes]);
+  }, [commodityParam, indexIdParam, tradingPairs, indexes, isUaRegion]);
 
   const [selectedPairSlug, setSelectedPairSlug] = useState<string | null>(defaultSlug);
 
@@ -171,20 +202,21 @@ export default function SpotTrading() {
     }
   }, [defaultSlug, selectedPairSlug]);
 
-  const selectedPair = tradingPairs.find(p => p.slug === selectedPairSlug);
-  const selectedIndex = indexes?.find(idx => idx.slug === selectedPairSlug);
-  const currentPrice = selectedIndex?.latestPrice?.price || 0;
-  const delta = selectedIndex?.latestPrice?.delta || null;
-  const lastUpdate = selectedIndex?.latestPrice?.timestamp 
-    ? (typeof selectedIndex.latestPrice.timestamp === 'string' 
-        ? new Date(selectedIndex.latestPrice.timestamp) 
+  const selectedPair = tradingPairs.find((p) => p.slug === selectedPairSlug);
+  const selectedIndex = isUaRegion ? indexes?.find((idx) => idx.slug === selectedPairSlug) : undefined;
+  const currentPrice = isUaRegion ? (selectedIndex?.latestPrice?.price || 0) : (selectedPair?.price || 0);
+  const delta = isUaRegion ? (selectedIndex?.latestPrice?.delta || null) : null;
+  const lastUpdate = isUaRegion
+    ? (selectedIndex?.latestPrice?.timestamp
+      ? (typeof selectedIndex.latestPrice.timestamp === "string"
+        ? new Date(selectedIndex.latestPrice.timestamp)
         : selectedIndex.latestPrice.timestamp)
-    : null;
+      : null)
+    : (selectedPair?.asOf ? new Date(selectedPair.asOf) : null);
   
   // Calculate 24h change percentage
-  const changePercent = delta !== null && currentPrice > 0 
-    ? ((delta / (currentPrice - delta)) * 100) 
-    : null;
+  const changePercent =
+    delta !== null && currentPrice > 0 ? ((delta / (currentPrice - delta)) * 100) : null;
   
   const isPositive = (delta || 0) > 0;
   const isNegative = (delta || 0) < 0;
@@ -196,20 +228,43 @@ export default function SpotTrading() {
     : "text-muted-foreground";
 
   // Get index metadata for badge
-  const indexMetadata = selectedIndex 
+  const indexMetadata = selectedIndex
     ? getIndexMetadata(selectedIndex.slug, selectedIndex.category)
-    : null;
+    : selectedPair
+      ? { type: selectedPair.type }
+      : null;
 
-  // Fetch price history for selected index
-  const { data: indexDataWithHistory, isLoading: isHistoryLoading, error: historyError } = useQuery<IndexDataWithHistory>({
-    queryKey: ["/api/indexes", selectedPairSlug],
+  // Fetch price history for selected instrument.
+  const { data: historyPoints = [], isLoading: isHistoryLoading, error: historyError } = useQuery<Array<{ timestamp: string; price: number }>>({
+    queryKey: ["/api/spot-history", selectedRegion, selectedPairSlug],
     queryFn: async () => {
-      if (!selectedPairSlug) return null;
-      const response = await fetch(`/api/indexes/${selectedPairSlug}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch index history: ${response.statusText}`);
+      if (!selectedPairSlug) return [];
+      if (isUaRegion) {
+        const response = await fetch(`/api/indexes/${selectedPairSlug}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch index history: ${response.statusText}`);
+        }
+        const payload: IndexDataWithHistory = await response.json();
+        return (payload.priceHistory || []).map((entry) => ({
+          timestamp: entry.timestamp,
+          price: entry.price,
+        }));
       }
-      return response.json();
+      if (!selectedPair?.commodity || !selectedPair?.basis) return [];
+      const params = new URLSearchParams({
+        country: selectedRegion.toUpperCase(),
+        commodity: selectedPair.commodity,
+        basis: selectedPair.basis,
+      });
+      const response = await fetch(`/api/index/history?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch global history: ${response.statusText}`);
+      }
+      const payload = (await response.json()) as Array<{ date: string; price: number }>;
+      return (payload || []).map((entry) => ({
+        timestamp: entry.date,
+        price: entry.price,
+      }));
     },
     enabled: !!selectedPairSlug,
     refetchInterval: 30000,
@@ -218,7 +273,7 @@ export default function SpotTrading() {
   // Executed trades (separate from index updates)
   const { data: trades = [], isLoading: isTradesLoading, error: tradesError } = useQuery<TradeEntry[]>({
     queryKey: ["/api/trades", selectedPairSlug],
-    enabled: !!selectedPairSlug,
+    enabled: isUaRegion && !!selectedPairSlug,
     queryFn: async () => {
       const res = await fetch(`/api/trades?commodity=${selectedPairSlug}`);
       if (!res.ok) {
@@ -255,50 +310,48 @@ export default function SpotTrading() {
     refetchInterval: 30000,
   });
 
-  // Prepare chart data from price history
+  // Prepare chart data from price history.
   const chartData = useMemo(() => {
-    if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
+    if (!historyPoints || historyPoints.length === 0) {
       return [];
     }
-    return [...indexDataWithHistory.priceHistory]
+    return [...historyPoints]
       .slice(-30)
-      .reverse()
       .map(entry => ({
         timestamp: entry.timestamp,
         price: entry.price,
       }));
-  }, [indexDataWithHistory]);
+  }, [historyPoints]);
 
   const priceChartData = useMemo(() => {
-    if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
+    if (!historyPoints || historyPoints.length === 0) {
       return [];
     }
     const now = Date.now();
     const days = chartRange === "7d" ? 7 : 30;
     const cutoff = now - days * 24 * 60 * 60 * 1000;
-    // Reuse Market Data history transform: priceHistory -> {timestamp, price}
-    return indexDataWithHistory.priceHistory
+    return historyPoints
       .filter((entry) => new Date(entry.timestamp).getTime() >= cutoff)
       .map((entry) => ({
         timestamp: entry.timestamp,
         price: entry.price,
       }));
-  }, [indexDataWithHistory, chartRange]);
+  }, [historyPoints, chartRange]);
 
   // Prepare trade history data
   const tradeHistoryData = useMemo(() => {
-    if (!indexDataWithHistory?.priceHistory || indexDataWithHistory.priceHistory.length === 0) {
+    if (!historyPoints || historyPoints.length === 0) {
       return [];
     }
-    return indexDataWithHistory.priceHistory
+    return historyPoints
       .slice(-10)
-      .map(entry => ({
-        id: entry.id,
+      .map((entry, idx) => ({
+        id: `${entry.timestamp}-${idx}`,
         price: entry.price,
-        delta: entry.delta,
+        delta: null,
         timestamp: entry.timestamp,
       }));
-  }, [indexDataWithHistory]);
+  }, [historyPoints]);
 
   const handlePairChange = (slug: string) => {
     setSelectedPairSlug(slug);
@@ -382,7 +435,7 @@ export default function SpotTrading() {
             </div>
 
             {/* Instrument Overview */}
-            {selectedPair && selectedIndex && (
+            {selectedPair && (
               <Card>
                 <CardContent className="pt-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -452,16 +505,29 @@ export default function SpotTrading() {
             )}
 
             {/* Order Form and Recent Updates Grid */}
-            {selectedPair && selectedIndex && (
+            {selectedPair && (
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Order Form */}
-                <SpotOrderForm
-                  commoditySlug={selectedPair.slug}
-                  commodityName={selectedPair.name}
-                  currentPrice={currentPrice}
-                  onOpenLogin={() => setLocation("/login")}
-                  onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
-                />
+                {isUaRegion ? (
+                  <SpotOrderForm
+                    commoditySlug={selectedPair.slug}
+                    commodityName={selectedPair.name}
+                    currentPrice={currentPrice}
+                    onOpenLogin={() => setLocation("/login")}
+                    onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
+                  />
+                ) : (
+                  <Card>
+                    <CardContent className="pt-6 space-y-3">
+                      <h3 className="text-lg font-semibold">{t("spot.orderForm.title")}</h3>
+                      <Alert>
+                        <AlertDescription>
+                          Read-only mode for {selectedRegion.toUpperCase()}: market data is live, trading flow is enabled for UA in this build.
+                        </AlertDescription>
+                      </Alert>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Recent Price Updates (index quotes, not trades) */}
                 <Card>
@@ -531,74 +597,84 @@ export default function SpotTrading() {
                   </CardContent>
                 </Card>
 
-                {/* Trade History (executed trades) */}
-                <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-4">{t('page.spot.tradeHistory')}</h3>
-                    {/* Executed trades from /api/trades filtered by commodity */}
-                    {isTradesLoading ? (
-                      <Skeleton className="h-64 w-full" />
-                    ) : tradesError ? (
-                      <Alert variant="destructive">
-                        <AlertDescription>{t('common.error')}</AlertDescription>
-                      </Alert>
-                    ) : trades.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">{t('page.spot.noTrades')}</p>
-                    ) : (
-                      <div className="max-h-64 overflow-y-auto text-sm">
-                        <table className="w-full">
-                          <thead className="text-xs uppercase text-muted-foreground">
-                            <tr className="text-left">
-                              <th className="py-1">{t('page.spot.tradeTable.time')}</th>
-                              <th className="py-1">{t('page.spot.tradeTable.price')}</th>
-                              <th className="py-1">{t('page.spot.tradeTable.qty')}</th>
-                              <th className="py-1">{t('page.spot.tradeTable.side')}</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y">
-                            {trades.slice(0, 20).map((trade) => {
-                              const priceSafe = Number.isFinite(trade.price) ? trade.price : 0;
-                              const qtySafe = Number.isFinite(trade.qty) ? trade.qty : 0;
-                              return (
-                                <tr key={trade.id || `${priceSafe}-${trade.createdAt}`} className="text-sm">
-                                  <td className="py-1">
-                                    {format(new Date(trade.createdAt), "HH:mm:ss")}
-                                  </td>
-                                  <td className="py-1 font-mono text-right pr-2">
-                                    ${priceSafe.toFixed(2)}
-                                  </td>
-                                  <td className="py-1 font-mono text-right pr-2">
-                                    {qtySafe.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                                  </td>
-                                  <td className="py-1">
-                                    <span className={trade.type === "SELL" ? "text-destructive" : "text-emerald-600"}>
-                                      {trade.type === "SELL" ? t('page.spot.tradeTable.sell') : trade.type === "BUY" ? t('page.spot.tradeTable.buy') : trade.type}
-                                    </span>
-                                  </td>
+                {/* Trade History + Order Book are currently UA trading-flow only */}
+                {isUaRegion ? (
+                  <>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <h3 className="text-lg font-semibold mb-4">{t('page.spot.tradeHistory')}</h3>
+                        {isTradesLoading ? (
+                          <Skeleton className="h-64 w-full" />
+                        ) : tradesError ? (
+                          <Alert variant="destructive">
+                            <AlertDescription>{t('common.error')}</AlertDescription>
+                          </Alert>
+                        ) : trades.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">{t('page.spot.noTrades')}</p>
+                        ) : (
+                          <div className="max-h-64 overflow-y-auto text-sm">
+                            <table className="w-full">
+                              <thead className="text-xs uppercase text-muted-foreground">
+                                <tr className="text-left">
+                                  <th className="py-1">{t('page.spot.tradeTable.time')}</th>
+                                  <th className="py-1">{t('page.spot.tradeTable.price')}</th>
+                                  <th className="py-1">{t('page.spot.tradeTable.qty')}</th>
+                                  <th className="py-1">{t('page.spot.tradeTable.side')}</th>
                                 </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                              </thead>
+                              <tbody className="divide-y">
+                                {trades.slice(0, 20).map((trade) => {
+                                  const priceSafe = Number.isFinite(trade.price) ? trade.price : 0;
+                                  const qtySafe = Number.isFinite(trade.qty) ? trade.qty : 0;
+                                  return (
+                                    <tr key={trade.id || `${priceSafe}-${trade.createdAt}`} className="text-sm">
+                                      <td className="py-1">
+                                        {format(new Date(trade.createdAt), "HH:mm:ss")}
+                                      </td>
+                                      <td className="py-1 font-mono text-right pr-2">
+                                        ${priceSafe.toFixed(2)}
+                                      </td>
+                                      <td className="py-1 font-mono text-right pr-2">
+                                        {qtySafe.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                      </td>
+                                      <td className="py-1">
+                                        <span className={trade.type === "SELL" ? "text-destructive" : "text-emerald-600"}>
+                                          {trade.type === "SELL" ? t('page.spot.tradeTable.sell') : trade.type === "BUY" ? t('page.spot.tradeTable.buy') : trade.type}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                {/* Order Book */}
-                <div className="lg:col-span-1">
-                  <OrderBook
-                    title={t('page.spot.orderBook')}
-                    commodity={selectedPair.slug}
-                    mode="spot"
-                    depth={5}
-                  />
-                </div>
+                    <div className="lg:col-span-1">
+                      <OrderBook
+                        title={t('page.spot.orderBook')}
+                        commodity={selectedPair.slug}
+                        mode="spot"
+                        depth={5}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <Card className="lg:col-span-2">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">
+                        Order book and executed spot trades are shown for UA tradable instruments in this environment.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
             {/* Your Position */}
-            {selectedPair && (
+            {selectedPair && isUaRegion && (
               <SpotPositionCard
                 commoditySlug={selectedPair.slug}
                 commodityName={selectedPair.name}
