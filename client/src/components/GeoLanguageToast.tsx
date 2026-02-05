@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 const GEO_LANG_TOAST_EVENT = "cropto:geoLang";
 const GEO_LANG_TOAST_SHOWN_KEY = "cropto_geo_lang_toast_shown";
@@ -56,6 +57,7 @@ export default function GeoLanguageToast() {
 
       const hideToast = () => {
         localStorage.setItem(GEO_LANG_TOAST_HIDE_KEY, "1");
+        trackAnalyticsEvent("geo_language_toast_dismissed", { language: lang });
       };
 
       toast({

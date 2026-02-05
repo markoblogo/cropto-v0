@@ -8,6 +8,7 @@ import {
   notifications,
   transactions,
   feedback,
+  analyticsEvents,
   appSettings,
   platformFees,
   croptBalances,
@@ -30,6 +31,8 @@ import {
   type InsertTransaction,
   type Feedback,
   type InsertFeedback,
+  type AnalyticsEvent,
+  type InsertAnalyticsEvent,
   type AppSetting,
   type PartnerOrganization,
   type InsertPartnerOrganization,
@@ -70,6 +73,7 @@ export interface IStorage {
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
   listFeedback(): Promise<Feedback[]>;
   updateFeedback(id: string, updates: Partial<Feedback>): Promise<Feedback>;
+  createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent>;
   getAppSetting(key: string): Promise<AppSetting | undefined>;
   upsertAppSetting(key: string, value: string): Promise<AppSetting>;
   // Partner Organizations
@@ -1052,6 +1056,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(feedback.id, id))
       .returning();
     return feedbackEntry;
+  }
+
+  async createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent> {
+    const [created] = await db
+      .insert(analyticsEvents)
+      .values(event)
+      .returning();
+    return created;
   }
 
   async getAppSetting(key: string): Promise<AppSetting | undefined> {

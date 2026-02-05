@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
@@ -4066,6 +4066,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Feedback endpoints
+  app.post("/api/analytics/events", async (req, res) => {
+    try {
+      const parsed = insertAnalyticsEventSchema.safeParse({
+        eventName: req.body?.eventName,
+        userId: req.body?.userId,
+        sessionId: req.body?.sessionId,
+        payload: req.body?.payload ? JSON.stringify(req.body.payload) : undefined,
+      });
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid analytics payload" });
+      }
+
+      const userAgent = req.headers["user-agent"] || "";
+      const referer = req.headers["referer"] || req.headers["referrer"] || "";
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "";
+      const enrichedPayload = {
+        ...(req.body?.payload || {}),
+        userAgent,
+        referer,
+        ip,
+      };
+
+      const eventPayload = {
+        ...parsed.data,
+        payload: JSON.stringify(enrichedPayload),
+      };
+
+      await storage.createAnalyticsEvent(eventPayload);
+      res.status(201).json({ ok: true });
+    } catch (error: any) {
+      console.error("Error creating analytics event:", error);
+      res.status(500).json({ error: "Failed to record analytics event" });
+    }
+  });
+
   app.get("/api/admin/settings/feedback-emails", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const user = await findUserById(req.user!.id);
