@@ -5,6 +5,9 @@ import { ToastAction } from "@/components/ui/toast";
 
 const GEO_LANG_TOAST_EVENT = "cropto:geoLang";
 const GEO_LANG_TOAST_SHOWN_KEY = "cropto_geo_lang_toast_shown";
+const GEO_LANG_TOAST_TS_KEY = "cropto_geo_lang_toast_shown_ts";
+const GEO_LANG_TOAST_HIDE_KEY = "cropto_geo_lang_toast_hidden";
+const GEO_LANG_TOAST_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 
 type GeoLangEventDetail = {
   lang?: string;
@@ -25,7 +28,12 @@ export default function GeoLanguageToast() {
   useEffect(() => {
     const handleToast = (event: Event) => {
       if (hasShownRef.current) return;
-      if (localStorage.getItem(GEO_LANG_TOAST_SHOWN_KEY)) return;
+      if (localStorage.getItem(GEO_LANG_TOAST_HIDE_KEY)) return;
+
+      const lastShownTs = Number(
+        localStorage.getItem(GEO_LANG_TOAST_TS_KEY) || 0
+      );
+      if (Date.now() - lastShownTs < GEO_LANG_TOAST_TTL_MS) return;
 
       const detail = (event as CustomEvent<GeoLangEventDetail>).detail;
       const lang = detail?.lang || "en";
@@ -44,9 +52,25 @@ export default function GeoLanguageToast() {
 
       hasShownRef.current = true;
       localStorage.setItem(GEO_LANG_TOAST_SHOWN_KEY, "1");
+      localStorage.setItem(GEO_LANG_TOAST_TS_KEY, String(Date.now()));
+
+      const hideToast = () => {
+        localStorage.setItem(GEO_LANG_TOAST_HIDE_KEY, "1");
+      };
 
       toast({
-        description: t("geo.detected", { language: languageName }),
+        description: (
+          <div className="flex flex-col gap-2">
+            <span>{t("geo.detected", { language: languageName })}</span>
+            <button
+              type="button"
+              onClick={hideToast}
+              className="text-xs text-muted-foreground underline underline-offset-2 self-start hover:text-foreground"
+            >
+              {t("geo.dismiss")}
+            </button>
+          </div>
+        ),
         action: (
           <ToastAction altText={t("geo.change")} onClick={openLanguageMenu}>
             {t("geo.change")}
