@@ -17,7 +17,6 @@ import PartnersContracts from "@/pages/PartnersContracts";
 import OnchainTx from "@/pages/OnchainTx";
 import Wallet from "@/pages/Wallet";
 import Education from "@/pages/Education";
-import AboutPage from "@/pages/AboutPage";
 import Testing from "@/pages/Testing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -41,10 +40,10 @@ import TermsOfUse from "@/pages/TermsOfUse";
 import RiskDisclosure from "@/pages/RiskDisclosure";
 import { useEffect } from "react";
 
-function RedirectToAbout() {
+function RedirectToEducation() {
   const [, setLocation] = useLocation();
   useEffect(() => {
-    setLocation("/about");
+    setLocation("/education");
   }, [setLocation]);
   return null;
 }
@@ -67,9 +66,9 @@ function Router() {
       <Route path="/design-architecture" component={DesignArchitecture} />
       <Route path="/partners-contracts" component={PartnersContracts} />
       <Route path="/onchain-tx" component={OnchainTx} />
-      <Route path="/about" component={AboutPage} />
-      <Route path="/docs" component={RedirectToAbout} />
-      <Route path="/faq" component={RedirectToAbout} />
+      <Route path="/about" component={RedirectToEducation} />
+      <Route path="/docs" component={RedirectToEducation} />
+      <Route path="/faq" component={RedirectToEducation} />
       <Route path="/testing" component={Testing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/feedback" component={AdminFeedback} />

@@ -118,11 +118,10 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
   ];
 
   const secondaryNav = [
-    { to: "/education", label: t("nav.education"), testId: "button-nav-education" },
+    { to: "/education", label: t("nav.about"), testId: "button-nav-education" },
     { to: "/docs", label: "Documentation", testId: "button-nav-docs" },
     { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
     { to: "/faq", label: "FAQ", testId: "button-nav-faq" },
-    { to: "/about", label: "About Cropto", testId: "button-nav-about" },
     { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },

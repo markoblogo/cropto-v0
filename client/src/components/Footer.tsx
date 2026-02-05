@@ -88,7 +88,7 @@ export function Footer() {
               <Link href="/faq" className="hover:text-foreground transition-colors">
                 {t('footer.faq')}
               </Link>
-              <Link href="/about" className="hover:text-foreground transition-colors">
+              <Link href="/education" className="hover:text-foreground transition-colors">
                 {t('footer.aboutCropto')}
               </Link>
             </div>
