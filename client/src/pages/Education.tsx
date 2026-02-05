@@ -133,6 +133,42 @@ export default function Education() {
     [t]
   );
 
+  const faqJsonLd = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    }),
+    [faqItems]
+  );
+
+  useEffect(() => {
+    const scriptId = "education-faq-jsonld";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
+
+    script.text = JSON.stringify(faqJsonLd);
+
+    return () => {
+      if (script?.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, [faqJsonLd]);
+
   useEffect(() => {
     if (window.location.hash !== "#faq") return;
 
