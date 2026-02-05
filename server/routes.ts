@@ -43,6 +43,18 @@ import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type Mar
 import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 
 const STALE_MAX_AGE_DAYS = 7;
+const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
+
+function getFeedbackAlertRecipients(): string[] {
+  const configured = process.env.FEEDBACK_ALERT_EMAILS || process.env.FEEDBACK_ALERT_EMAIL || "";
+  const recipients = configured
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
+
+  if (recipients.length > 0) return recipients;
+  return [DEFAULT_FEEDBACK_ALERT_EMAIL];
+}
 
 function computeIsStale(latestTimestamp: Date | string | null | undefined) {
   if (!latestTimestamp) return { isStale: true, staleReason: "no_recent_quotes" };
@@ -4059,6 +4071,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const feedbackEntry = await storage.createFeedback(result.data);
+
+      // Best-effort alert email: do not block form submission on email issues.
+      const recipients = getFeedbackAlertRecipients();
+      const emailBody = [
+        `New feedback received on Cropto.`,
+        ``,
+        `ID: ${feedbackEntry.id}`,
+        `Name: ${feedbackEntry.name}`,
+        `Email: ${feedbackEntry.email}`,
+        `Role: ${feedbackEntry.role}`,
+        `Status: ${feedbackEntry.status}`,
+        `Created At: ${feedbackEntry.createdAt?.toISOString?.() || ""}`,
+        `Screenshot URL: ${feedbackEntry.screenshotUrl || "n/a"}`,
+        ``,
+        `Message:`,
+        `${feedbackEntry.message}`,
+      ].join("\n");
+
+      await Promise.all(
+        recipients.map(async (to) => {
+          try {
+            await emailService.sendEmail(to, "Cropto feedback", emailBody);
+          } catch (emailError) {
+            console.error(`[Feedback] Failed to send alert email to ${to}:`, emailError);
+          }
+        })
+      );
+
       res.status(201).json(feedbackEntry);
     } catch (error) {
       console.error("Error creating feedback:", error);
