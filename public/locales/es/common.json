@@ -448,8 +448,8 @@
       "subtitle": "Aprende a probar las funciones de la plataforma Cropto"
     },
     "education": {
-      "title": "Education & Learn",
-      "subtitle": "Understand how Cropto works: indices, spot tokens, options and risk.",
+      "title": "Educación y formación",
+      "subtitle": "Aprende cómo funciona Cropto: índices, tokens spot, opciones, margen y liquidación. Esta página es solo para demostración y pruebas.",
       "sections": {
         "intro": "Cómo funciona Cropto",
         "indices": "Índices y tokens spot",
@@ -466,7 +466,68 @@
       "calculatorTitle": "Calculadora de opciones",
       "calculatorDescription": "Calcula la prima, el nocional y el valor intrínseco con fines educativos",
       "readScenario": "Leer escenario",
-      "heroDescription": "Cropto es una plataforma para operar índices de granos tokenizados y opciones, diseñada para agricultores (cobertura), traders (especulación) y brókers. Combina liquidación on-chain con feeds off-chain de precios de índices."
+      "heroDescription": "Cropto es una plataforma para operar índices de granos tokenizados y opciones, diseñada para agricultores (cobertura), traders (especulación) y brókers. Combina liquidación on-chain con feeds off-chain de precios de índices.",
+      "about": {
+        "title": "Sobre Cropto",
+        "body": "Cropto es una plataforma prototipo para trading y gestión de riesgo de instrumentos vinculados a commodities. Combina liquidación on-chain con feeds off-chain de precios de índices. Los instrumentos se liquidan en efectivo contra el Spike Spot Index (CPT Odesa) y no implican entrega física."
+      },
+      "how": {
+        "title": "Cómo funciona el marketplace",
+        "step1": "Elige un mercado (UA/BR/AR) y un índice de commodity.",
+        "step2": "Conecta tu billetera para autenticarte (MetaMask compatible).",
+        "step3": "Crea o toma órdenes de opciones o instrumentos spot/forward.",
+        "step4": "Sigue el margen y la liquidación. El P&L se liquida en CROPT según el precio del índice."
+      },
+      "keyConcepts": {
+        "title": "Conceptos clave",
+        "lead": "Cropto separa el riesgo de precio de los flujos físicos de grano para que la logística y la cadena de suministro no se distorsionen por la especulación.",
+        "bullet1": "Las expectativas de precio se gestionan financieramente.",
+        "bullet2": "El riesgo de mercado puede cubrirse sin forzar la entrega física.",
+        "bullet3": "El grano físico se mueve cuando es óptimo para la cadena de suministro, no por el timing de trading.",
+        "bullet4": "Blockchain se usa donde aporta valor: reglas, trazabilidad y transparencia."
+      },
+      "audiences": {
+        "title": "Para quién es",
+        "farmer": {
+          "title": "Para agricultores",
+          "body": "Los agricultores pueden gestionar el riesgo de precio sin adivinar el “mejor momento de venta”. Operas el índice de precio, mientras que la logística física es una decisión separada."
+        },
+        "trader": {
+          "title": "Para traders",
+          "body": "Los traders obtienen un instrumento para operar índices de precios de commodities reales y hacer arbitraje entre mercados locales y globales sin afectar las entregas físicas."
+        },
+        "web3": {
+          "title": "Para Web3 / crypto",
+          "body": "Cropto usa blockchain para confianza y verificación: reglas transparentes y trazabilidad inmutable. Es infraestructura para commodities reales, no especulación cripto."
+        }
+      },
+      "indicesSpot": {
+        "title": "Índices y tokens spot",
+        "lead": "Los índices son precios de referencia para mercados específicos. Los tokens spot representan exposición al precio para trading de demo y no implican propiedad de grano físico.",
+        "bullet1": "Cada índice se define por región, commodity y base (p. ej., CPT Odesa).",
+        "bullet2": "Las cotizaciones suelen mostrarse en USD por tonelada y se actualizan cuando llegan nuevos datos de mercado.",
+        "bullet3": "Los tokens spot permiten tomar exposición direccional (long/short) sin gestionar la logística de entrega física.",
+        "bullet4": "El P&L se calcula a partir de precios del índice y se liquida en CROPT en el entorno de demo."
+      },
+      "tradingScenarios": {
+        "title": "Escenarios de trading",
+        "subtitle": "Elige un escenario para ver un flujo típico paso a paso.",
+        "cta": "Leer escenario",
+        "cards": {
+          "farmer": {
+            "title": "Agricultor: cubrir el precio de venta",
+            "desc": "Usa opciones para reducir el riesgo a la baja manteniendo el potencial alcista. Define strike y ventana de vencimiento y luego sigue el margen y la liquidación."
+          },
+          "trader": {
+            "title": "Trader: expresar una visión de mercado",
+            "desc": "Opera movimientos direccionales o spreads entre regiones con instrumentos ligados a índices. Mira cómo se forma el P&L y cómo se liquida en CROPT."
+          },
+          "broker": {
+            "title": "Broker/Admin: hacer matching y gestionar riesgo",
+            "desc": "Recorre el proceso de asignar contrapartes, monitorear colateral, gestionar margin calls y forzar la liquidación en el entorno de demo."
+          }
+        }
+      }
     },
     "dashboard": {
       "title": "Mercado de opciones",
@@ -1323,25 +1384,25 @@
     "subtitle": "Preguntas frecuentes sobre la plataforma Cropto y el trading de opciones cripto",
     "q1": {
       "question": "¿Qué es Cropto?",
-      "answer": "Cropto es una plataforma de trading de opciones sobre criptomonedas que permite crear, operar y gestionar contratos de opciones (calls y puts). Usa un libro de órdenes off-chain con un motor de emparejamiento para facilitar una operativa eficiente."
+      "answer": "Cropto es una plataforma prototipo para trading y gestión de riesgo de instrumentos vinculados a commodities. Usa índices de precios y liquidación en efectivo (en CROPT) y no implica entrega física de grano."
     },
     "q2": {
       "question": "¿Cómo creo una opción?",
       "answer": "Para crear una opción:",
       "steps": {
         "1": "Inicia sesión en tu cuenta",
-        "2": "Haz clic en el botón “Create Option” en el encabezado",
-        "3": "Completa los datos de la opción (título, precio de strike, cantidad, prima, dirección del comprador)",
-        "4": "Envía el formulario: tu opción se creará con estado OPEN"
+        "2": "Haz clic en el botón “Create Option”",
+        "3": "Completa los detalles de la opción (título, strike, cantidad, prima, vencimiento)",
+        "4": "Envía el formulario: la opción se creará con estado OPEN"
       }
     },
     "q3": {
-      "question": "¿Qué es el proceso de emparejamiento?",
-      "answer": "El motor de emparejamiento conecta compradores y vendedores de contratos de opciones. Cuando una opción está en estado OPEN, un bróker puede emparejarla proporcionando la dirección Ethereum del vendedor. Tras emparejarla, el estado cambia a FILLED y puede ejercerse."
+      "question": "¿Qué es el proceso de matching?",
+      "answer": "El matching conecta las dos partes de una operación de opciones. En el flujo de demo, una opción empieza en estado OPEN y pasa a FILLED cuando se asigna una contraparte. Después de eso, el contrato puede ejercerse según sus reglas."
     },
     "q4": {
-      "question": "¿Cómo funciona el minting de NFT?",
-      "answer": "Después de que una opción esté en estado FILLED o EXERCISED, el propietario (emisor o comprador) puede mintearla como un NFT ERC-721 en la testnet Polygon Amoy. El NFT incluye metadatos de la opción y se puede ver en PolygonScan. Cada opción solo puede mintearse una vez."
+      "question": "¿Cómo funciona el minteo de NFT?",
+      "answer": "Después de que una opción esté en estado FILLED o EXERCISED, su propietario puede mintearla como un NFT (ERC-721) en la red de prueba compatible. El NFT contiene metadatos de la opción y se puede ver en un explorador de bloques. Cada opción solo puede mintearse una vez."
     },
     "q5": {
       "question": "¿Qué son los margin calls?",

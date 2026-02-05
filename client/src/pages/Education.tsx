@@ -40,36 +40,23 @@ interface CommodityIndex {
 
 type OptionType = "CALL" | "PUT";
 
-// DOCS array will be created dynamically based on currentLang
-// This is defined as a function to use currentLang
-const getDocs = (currentLang: string) => [
-  { key: "indexes", label: "Commodity Indexes", src: `/api/docs/education.indices.${currentLang}.md` },
-  { key: "options", label: "Options 101", src: `/api/docs/education.options.${currentLang}.md` },
-  { key: "margin", label: "Margin & Collateral", src: `/api/docs/education-margin.md` }, // No localized version yet
-  { key: "spot", label: "Spot vs Forward vs Options", src: `/api/docs/education-spot-vs-forwards.md` }, // No localized version yet
-  { key: "faq", label: "FAQ", src: `/api/docs/education.faq.${currentLang}.md` },
-];
-
 const SCENARIOS = [
   {
     key: "farmer-hedge",
-    title: "Farmer Hedge",
-    description: "How farmers protect their harvest prices using options and forwards",
-    summary: "A corn farmer with 1000 tons secures minimum price while keeping upside potential",
+    titleKey: "page.education.tradingScenarios.cards.farmer.title",
+    descriptionKey: "page.education.tradingScenarios.cards.farmer.desc",
     content: farmerHedgeContent
   },
   {
     key: "trader-spread",
-    title: "Trader Spread",
-    description: "Calendar and cross-commodity spreads for professional traders",
-    summary: "Profiting from price relationships between different time periods or commodities",
+    titleKey: "page.education.tradingScenarios.cards.trader.title",
+    descriptionKey: "page.education.tradingScenarios.cards.trader.desc",
     content: traderSpreadContent
   },
   {
     key: "broker-overview",
-    title: "Broker Overview",
-    description: "How brokers manage client relationships, risk, and fee revenue",
-    summary: "Running a successful brokerage business in the Cropto ecosystem",
+    titleKey: "page.education.tradingScenarios.cards.broker.title",
+    descriptionKey: "page.education.tradingScenarios.cards.broker.desc",
     content: brokerOverviewContent
   }
 ];
@@ -77,8 +64,18 @@ const SCENARIOS = [
 export default function Education() {
   const { t, i18n } = useTranslation();
   const normalizedLang = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0];
-  const currentLang = normalizedLang === 'uk' ? 'uk' : 'en';
+  const currentLang = normalizedLang === 'uk' || normalizedLang === 'es' || normalizedLang === 'pt'
+    ? normalizedLang
+    : 'en';
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
+
+  const docs = useMemo(() => [
+    { key: "indexes", label: t("page.education.indicesSpot.title"), src: `/api/docs/education.indices.${currentLang}.md` },
+    { key: "options", label: "Options 101", src: `/api/docs/education.options.${currentLang}.md` },
+    { key: "margin", label: "Margin & Collateral", src: `/api/docs/education-margin.md` },
+    { key: "spot", label: "Spot vs Forward vs Options", src: `/api/docs/education-spot-vs-forwards.md` },
+    { key: "faq", label: "FAQ", src: `/api/docs/education.faq.${currentLang}.md` },
+  ], [currentLang, t]);
 
   const { data: indexes = [] } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
@@ -122,10 +119,6 @@ export default function Education() {
     });
   }, [calculator.type, priceNum, premiumNum, qtyNum, strikeNum]);
 
-  const aboutSrc = `/api/docs/about.${currentLang}.md`;
-  const faqSrc = `/api/docs/faq.${currentLang}.md`;
-  const docs = getDocs(currentLang);
-
   return (
     <MainLayout>
       <div className="max-w-6xl mx-auto space-y-8">
@@ -137,32 +130,92 @@ export default function Education() {
           <p className="text-muted-foreground mt-2">
             {t('page.education.subtitle')}
           </p>
-          <p className="text-muted-foreground mt-4 max-w-3xl">
-            {t('page.education.heroDescription')}
-          </p>
         </div>
 
         {/* About Section */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('page.education.aboutTitle')}</CardTitle>
+            <CardTitle>{t('page.education.about.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div key={`about-${currentLang}`}>
-              <MarkdownSection src={aboutSrc} />
+            <p className="text-muted-foreground">{t('page.education.about.body')}</p>
+          </CardContent>
+        </Card>
+
+        {/* How Marketplace Works */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('page.education.how.title')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-muted-foreground">
+            <p>1. {t('page.education.how.step1')}</p>
+            <p>2. {t('page.education.how.step2')}</p>
+            <p>3. {t('page.education.how.step3')}</p>
+            <p>4. {t('page.education.how.step4')}</p>
+          </CardContent>
+        </Card>
+
+        {/* Key concepts and audiences */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('page.education.keyConcepts.title')}</CardTitle>
+            <CardDescription>{t('page.education.keyConcepts.lead')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+              <li>{t('page.education.keyConcepts.bullet1')}</li>
+              <li>{t('page.education.keyConcepts.bullet2')}</li>
+              <li>{t('page.education.keyConcepts.bullet3')}</li>
+              <li>{t('page.education.keyConcepts.bullet4')}</li>
+            </ul>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">{t('page.education.audiences.title')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t('page.education.audiences.farmer.title')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    {t('page.education.audiences.farmer.body')}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t('page.education.audiences.trader.title')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    {t('page.education.audiences.trader.body')}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t('page.education.audiences.web3.title')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    {t('page.education.audiences.web3.body')}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* FAQ Section */}
+        {/* Indices & Spot Tokens */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('page.education.faqTitle')}</CardTitle>
+            <CardTitle>{t('page.education.indicesSpot.title')}</CardTitle>
+            <CardDescription>{t('page.education.indicesSpot.lead')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div key={`faq-${currentLang}`}>
-              <MarkdownSection src={faqSrc} />
-            </div>
+            <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+              <li>{t('page.education.indicesSpot.bullet1')}</li>
+              <li>{t('page.education.indicesSpot.bullet2')}</li>
+              <li>{t('page.education.indicesSpot.bullet3')}</li>
+              <li>{t('page.education.indicesSpot.bullet4')}</li>
+            </ul>
           </CardContent>
         </Card>
 
@@ -191,32 +244,29 @@ export default function Education() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('page.education.scenariosTitle')}</CardTitle>
-            <CardDescription>{t('page.education.scenariosDescription')}</CardDescription>
+            <CardTitle>{t('page.education.tradingScenarios.title')}</CardTitle>
+            <CardDescription>{t('page.education.tradingScenarios.subtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {SCENARIOS.map((scenario) => (
                 <Card key={scenario.key} className="hover:shadow-md transition-shadow">
                   <CardHeader>
-                    <CardTitle className="text-lg">{scenario.title}</CardTitle>
-                    <CardDescription>{scenario.description}</CardDescription>
+                    <CardTitle className="text-lg">{t(scenario.titleKey)}</CardTitle>
+                    <CardDescription>{t(scenario.descriptionKey)}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {scenario.summary}
-                    </p>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="w-full">
-                          {t('page.education.readScenario')}
+                          {t('page.education.tradingScenarios.cta')}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle>{scenario.title}</DialogTitle>
+                          <DialogTitle>{t(scenario.titleKey)}</DialogTitle>
                         </DialogHeader>
-                        <MarkdownContent content={scenario.content} title={scenario.title} />
+                        <MarkdownContent content={scenario.content} title={t(scenario.titleKey)} />
                       </DialogContent>
                     </Dialog>
                   </CardContent>

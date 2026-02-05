@@ -449,7 +449,7 @@
     },
     "education": {
       "title": "Education & Training",
-      "subtitle": "Central hub for learning Cropto",
+      "subtitle": "Learn how Cropto works: indices, spot tokens, options, margin and settlement. This page is for demo and testing only.",
       "sections": {
         "intro": "How Cropto works",
         "indices": "Indices & Spot Tokens",
@@ -466,7 +466,68 @@
       "calculatorTitle": "Options Calculator",
       "calculatorDescription": "Calculate premium, notional, and intrinsic value for educational purposes",
       "readScenario": "Read Scenario",
-      "heroDescription": "Cropto is a platform for trading tokenized grain indices and options, designed for farmers (hedging), traders (speculation), and brokers. It combines on-chain settlement with off-chain index price feeds."
+      "heroDescription": "Cropto is a platform for trading tokenized grain indices and options, designed for farmers (hedging), traders (speculation), and brokers. It combines on-chain settlement with off-chain index price feeds.",
+      "about": {
+        "title": "About Cropto",
+        "body": "Cropto is a prototype platform for trading and risk management of commodity-linked instruments. It combines on-chain settlement with off-chain index price feeds. Instruments are cash-settled against the Spike Spot Index (CPT Odesa) and do not involve physical delivery."
+      },
+      "how": {
+        "title": "How the Marketplace Works",
+        "step1": "Choose a market (UA/BR/AR) and a commodity index.",
+        "step2": "Connect your wallet to authenticate (MetaMask supported).",
+        "step3": "Create or take orders for options or spot/forward instruments.",
+        "step4": "Track margin and settlement. P&L is settled in CROPT based on the index price."
+      },
+      "keyConcepts": {
+        "title": "Key Concepts",
+        "lead": "Cropto separates price risk from physical grain flows so logistics and supply chains are not distorted by speculation.",
+        "bullet1": "Price expectations are managed financially.",
+        "bullet2": "Market risk can be hedged without forcing physical delivery.",
+        "bullet3": "Physical grain moves when it’s optimal for the supply chain, not for trading timing.",
+        "bullet4": "Blockchain is used where it adds value: rules, audit trails, and transparency."
+      },
+      "audiences": {
+        "title": "Who It’s For",
+        "farmer": {
+          "title": "For Farmers",
+          "body": "Farmers can manage price risk without guessing the “best sale moment”. You trade the price index, while physical logistics stays a separate decision."
+        },
+        "trader": {
+          "title": "For Traders",
+          "body": "Traders get an instrument to trade real commodity price indices and run arbitrage across local and global markets without disrupting physical deliveries."
+        },
+        "web3": {
+          "title": "For Web3 / Crypto",
+          "body": "Cropto uses blockchain for trust and verification: transparent rules and immutable audit trails. This is infrastructure for real commodities, not crypto speculation."
+        }
+      },
+      "indicesSpot": {
+        "title": "Indices & Spot Tokens",
+        "lead": "Indices are reference prices for specific markets. Spot tokens represent price exposure for demo trading — they do not represent ownership of physical grain.",
+        "bullet1": "Each index is defined by region, commodity, and basis (e.g., CPT Odesa).",
+        "bullet2": "Quotes are typically shown in USD per ton and updated as new market data arrives.",
+        "bullet3": "Spot tokens let you take directional exposure (long/short) without dealing with physical delivery logistics.",
+        "bullet4": "P&L is calculated from index prices and settled in CROPT in the demo environment."
+      },
+      "tradingScenarios": {
+        "title": "Trading Scenarios",
+        "subtitle": "Pick a scenario to see a typical workflow step by step.",
+        "cta": "Read scenario",
+        "cards": {
+          "farmer": {
+            "title": "Farmer: Hedge a Selling Price",
+            "desc": "Use options to reduce downside risk while keeping upside. Set strike and expiry window, then track margin and settlement."
+          },
+          "trader": {
+            "title": "Trader: Express a Market View",
+            "desc": "Trade directional moves or spreads across regions using index-linked instruments. See how P&L is formed and settled in CROPT."
+          },
+          "broker": {
+            "title": "Broker/Admin: Match and Manage Risk",
+            "desc": "Walk through matching counterparties, monitoring collateral, handling margin calls, and force settlement in the demo environment."
+          }
+        }
+      }
     },
     "dashboard": {
       "title": "Options Marketplace",
@@ -1323,25 +1384,25 @@
     "subtitle": "Common questions about the Cropto platform and crypto options trading",
     "q1": {
       "question": "What is Cropto?",
-      "answer": "Cropto is a cryptocurrency options trading platform that enables users to create, trade, and manage crypto options contracts (calls and puts). It uses an off-chain order book system with a matching engine to facilitate efficient trading."
+      "answer": "Cropto is a prototype platform for trading and risk management of commodity-linked instruments. It uses price indexes and cash settlement (in CROPT) and does not involve physical delivery of grain."
     },
     "q2": {
       "question": "How do I create an option?",
       "answer": "To create an option:",
       "steps": {
         "1": "Log in to your account",
-        "2": "Click the \"Create Option\" button in the header",
-        "3": "Fill in the option details (title, strike price, quantity, premium, buyer address)",
-        "4": "Submit the form - your option will be created with OPEN status"
+        "2": "Click the “Create Option” button",
+        "3": "Fill in the option details (title, strike price, quantity, premium, expiry)",
+        "4": "Submit the form — the option will be created with OPEN status"
       }
     },
     "q3": {
       "question": "What is the matching process?",
-      "answer": "The matching engine connects buyers and sellers for options contracts. When an option is in OPEN status, a broker can match it by providing a seller's Ethereum address. Once matched, the option status changes to FILLED and becomes exercisable."
+      "answer": "Matching connects the two sides of an option trade. In the demo flow, an option starts in OPEN status and becomes FILLED after a counterparty is assigned. Once matched, the contract can be exercised according to its rules."
     },
     "q4": {
       "question": "How does NFT minting work?",
-      "answer": "After an option is FILLED or EXERCISED, the option owner (issuer or buyer) can mint it as an ERC-721 NFT on the Polygon Amoy testnet. The NFT includes metadata about the option and can be viewed on PolygonScan. Each option can only be minted once."
+      "answer": "After an option is FILLED or EXERCISED, the owner can mint it as an NFT (ERC-721) on the supported test network. The NFT contains option metadata and can be viewed in a block explorer. Each option can be minted only once."
     },
     "q5": {
       "question": "What are margin calls?",
