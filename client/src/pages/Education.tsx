@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,6 +119,19 @@ export default function Education() {
       };
     });
   }, [calculator.type, priceNum, premiumNum, qtyNum, strikeNum]);
+
+  const faqItems = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, idx) => {
+        const n = idx + 1;
+        return {
+          id: `q${n}`,
+          question: t(`page.education.faq.q${n}.question`),
+          answer: t(`page.education.faq.q${n}.answer`),
+        };
+      }),
+    [t]
+  );
 
   return (
     <MainLayout>
@@ -426,6 +440,23 @@ export default function Education() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card id="faq">
+          <CardHeader>
+            <CardTitle>{t('page.education.faq.title')}</CardTitle>
+            <CardDescription>{t('page.education.faq.subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              {faqItems.map((item) => (
+                <AccordionItem key={item.id} value={item.id}>
+                  <AccordionTrigger>{item.question}</AccordionTrigger>
+                  <AccordionContent>{item.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </CardContent>
         </Card>
       </div>

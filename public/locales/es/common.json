@@ -574,6 +574,58 @@
       },
       "scenarios": {
         "readScenario": "Leer escenario"
+      },
+      "faq": {
+        "title": "FAQ",
+        "subtitle": "Respuestas prácticas sobre acceso demo, billeteras, liquidación y datos.",
+        "q1": {
+          "question": "¿Cropto es una plataforma de trading real?",
+          "answer": "No. Cropto es un entorno demo prototipo para pruebas y presentaciones a socios. La funcionalidad y los resultados se ofrecen “tal cual” y pueden cambiar."
+        },
+        "q2": {
+          "question": "¿Las operaciones implican entrega física de grano?",
+          "answer": "No. Los instrumentos están ligados a índices y se liquidan en efectivo. No hay entrega física."
+        },
+        "q3": {
+          "question": "¿Qué es CROPT?",
+          "answer": "CROPT es la unidad demo de liquidación y contabilidad usada en la plataforma (margen, P&L, liquidación)."
+        },
+        "q4": {
+          "question": "¿Por qué necesito una billetera?",
+          "answer": "La billetera se usa para autenticar y firmar acciones en el flujo demo. Ayuda a mantener trazabilidad para pruebas."
+        },
+        "q5": {
+          "question": "Veo “modo solo lectura” para un país. ¿Qué significa?",
+          "answer": "Los datos de mercado pueden verse, pero el trading está habilitado solo para regiones seleccionadas en esta versión. Usa UA para probar el flujo completo."
+        },
+        "q6": {
+          "question": "¿Cómo se calcula la liquidación y el P&L?",
+          "answer": "El P&L se calcula a partir de precios del índice según las reglas del instrumento (strike, vencimiento, cantidad) y se liquida en CROPT en el entorno demo."
+        },
+        "q7": {
+          "question": "¿Qué es el margen y cuándo puede ocurrir un margin call?",
+          "answer": "El margen es colateral reservado para cubrir obligaciones potenciales. Un margin call puede ocurrir si el colateral requerido sube o el disponible no alcanza."
+        },
+        "q8": {
+          "question": "¿Hay comisiones en la demo?",
+          "answer": "Si hay comisiones en un flujo, se muestran en la interfaz antes de confirmar acciones."
+        },
+        "q9": {
+          "question": "¿De dónde vienen los datos de mercado?",
+          "answer": "Los valores de índices pueden provenir de feeds integrados o introducirse para demo/pruebas. La disponibilidad depende de la región y la configuración de la versión."
+        },
+        "q10": {
+          "question": "¿Qué datos personales se almacenan?",
+          "answer": "Podemos almacenar identificadores de cuenta (p. ej., email, ID de usuario) y datos técnicos/de uso necesarios para pruebas, soporte y trazabilidad. No usamos datos para marketing sin consentimiento."
+        },
+        "q11": {
+          "question": "¿Cómo reporto un problema o solicito acceso?",
+          "answer": "Usa la sección Feedback en la navegación o contacta al equipo de Cropto por el canal designado del proyecto. Incluye pasos para reproducir y capturas si es posible."
+        },
+        "q12": {
+          "question": "¿Pueden cambiar las funciones o reglas?",
+          "answer": "Sí. Cropto está en desarrollo activo. Los textos, flujos y cálculos pueden cambiar entre versiones."
+        }
       }
     },
     "dashboard": {

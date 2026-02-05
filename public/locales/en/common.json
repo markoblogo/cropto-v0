@@ -574,6 +574,58 @@
       },
       "scenarios": {
         "readScenario": "Read scenario"
+      },
+      "faq": {
+        "title": "FAQ",
+        "subtitle": "Practical answers about demo access, wallets, settlement, and data.",
+        "q1": {
+          "question": "Is Cropto a live trading platform?",
+          "answer": "No. Cropto is a prototype demo environment for testing and partner presentations. Functionality and results are provided “as is” and may change."
+        },
+        "q2": {
+          "question": "Do trades involve physical delivery of grain?",
+          "answer": "No. Instruments are index-linked and cash-settled. There is no physical delivery."
+        },
+        "q3": {
+          "question": "What is CROPT?",
+          "answer": "CROPT is the demo settlement and accounting unit used on the platform (e.g., margin, P&L, settlement)."
+        },
+        "q4": {
+          "question": "Why do I need a wallet to use Cropto?",
+          "answer": "A wallet is used to authenticate and sign actions in the demo flow. It helps keep an audit trail for testing."
+        },
+        "q5": {
+          "question": "I see “read-only mode” for a country — what does it mean?",
+          "answer": "Market data may be visible, but trading is enabled only for selected regions in this build. Use UA if you want to test the full trading flow."
+        },
+        "q6": {
+          "question": "How are settlement and P&L calculated?",
+          "answer": "P&L is calculated from index prices according to the instrument rules (e.g., strike, expiry, quantity) and settled in CROPT in the demo environment."
+        },
+        "q7": {
+          "question": "What is margin and when can a margin call happen?",
+          "answer": "Margin is collateral reserved to cover potential obligations. A margin call may occur if required collateral increases or available collateral becomes insufficient."
+        },
+        "q8": {
+          "question": "Are there fees in the demo?",
+          "answer": "If fees apply in a given flow, they are shown in the interface before you confirm actions."
+        },
+        "q9": {
+          "question": "Where does market data come from?",
+          "answer": "Index values may be provided via integrated feeds or entered for demo/testing. Availability depends on the selected region and build configuration."
+        },
+        "q10": {
+          "question": "What personal data is stored?",
+          "answer": "We may store account identifiers (e.g., email, user ID) and technical/usage data needed for testing, support, and audit trails. We do not use data for marketing without consent."
+        },
+        "q11": {
+          "question": "How can I report an issue or request access?",
+          "answer": "Use the Feedback section in the navigation or contact the Cropto team via the project’s designated channel. Include steps to reproduce and screenshots when possible."
+        },
+        "q12": {
+          "question": "Can features or rules change over time?",
+          "answer": "Yes. Cropto is under active development. UI text, flows, and calculations may be updated between builds."
+        }
       }
     },
     "dashboard": {
