@@ -82,13 +82,13 @@ export function Hero({
                   {t('home.hero.title')}
                 </h1>
               </div>
-              <p className="text-sm sm:text-base lg:text-lg text-white/80 max-w-3xl md:pl-[5.5rem]">
+              <p className="text-sm sm:text-base lg:text-lg text-white/80 max-w-3xl md:pl-[7rem]">
                 {t('home.hero.subtitle')}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 md:pl-[5.5rem]">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 md:pl-[7rem]">
             {/* Four CTA buttons: light amber -> deep green */}
             <Button
               size="lg"
