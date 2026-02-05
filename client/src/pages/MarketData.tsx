@@ -81,15 +81,30 @@ export default function MarketData() {
     setLocation(`/options?country=${selectedRegion}`);
   };
 
-  const grains = regionalIndexes.filter((index) => {
-    const name = index.commodity.toLowerCase();
-    return name.includes("corn") || name.includes("feed wheat") || name.includes("wheat");
-  });
+  const classifyCommodity = (commodity: string): "grains" | "oilseeds" | "other" => {
+    const c = commodity.toLowerCase();
+    if (
+      c.includes("corn") ||
+      c.includes("maize") ||
+      c.includes("wheat") ||
+      c.includes("barley")
+    ) {
+      return "grains";
+    }
+    if (
+      c.includes("soy") ||
+      c.includes("soymeal") ||
+      c.includes("rapeseed") ||
+      c.includes("sunflower")
+    ) {
+      return "oilseeds";
+    }
+    return "other";
+  };
 
-  const oilseeds = regionalIndexes.filter((index) => {
-    const name = index.commodity.toLowerCase();
-    return name.includes("soy") || name.includes("rapeseed") || name.includes("sunflower");
-  });
+  const grains = regionalIndexes.filter((index) => classifyCommodity(index.commodity) === "grains");
+  const oilseeds = regionalIndexes.filter((index) => classifyCommodity(index.commodity) === "oilseeds");
+  const otherCommodities = regionalIndexes.filter((index) => classifyCommodity(index.commodity) === "other");
 
   return (
     <MainLayout>
@@ -175,6 +190,32 @@ export default function MarketData() {
                 ))}
               </div>
             </div>
+
+            {otherCommodities.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-muted-foreground">Other</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {otherCommodities.map((index) => (
+                    <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          {index.commodity}
+                          {index.grade ? ` (${index.grade})` : ""}
+                        </CardTitle>
+                        <CardDescription>{index.basis}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold">${index.price.toFixed(2)} / t</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          24h: {index.change24h > 0 ? "+" : ""}
+                          {index.change24h.toFixed(2)}%
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
