@@ -23,6 +23,7 @@ type FeedbackFormData = z.infer<typeof insertFeedbackSchema> & {
 export default function Feedback() {
   const { t, i18n } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
 
   const feedbackFormSchema = useMemo(
@@ -368,9 +369,33 @@ export default function Feedback() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.feedback.fields.screenshotUrl.label")}</FormLabel>
-                      <div className="rounded-md border border-dashed p-3">
+                      <div
+                        className={`rounded-md border border-dashed p-3 transition-colors ${
+                          isDragOver ? "border-primary bg-primary/5" : ""
+                        }`}
+                        onDragEnter={(e) => {
+                          e.preventDefault();
+                          setIsDragOver(true);
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setIsDragOver(true);
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          setIsDragOver(false);
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDragOver(false);
+                          handleScreenshotFile(e.dataTransfer.files?.[0]);
+                        }}
+                      >
                         <p className="text-sm text-muted-foreground mb-2">
                           {t("page.feedback.upload.hint")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {t("page.feedback.upload.dropHere")}
                         </p>
                         <Input
                           type="file"

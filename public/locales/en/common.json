@@ -1250,7 +1250,8 @@
         "uploading": "Uploading screenshot…",
         "orPasteUrl": "Or paste a screenshot URL manually",
         "success": "Screenshot uploaded and attached.",
-        "failed": "Failed to upload screenshot. Please try again."
+        "failed": "Failed to upload screenshot. Please try again.",
+        "dropHere": "Drop image here or choose a file below"
       }
     }
   },

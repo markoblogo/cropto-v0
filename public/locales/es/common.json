@@ -1250,7 +1250,8 @@
         "uploading": "Subiendo captura…",
         "orPasteUrl": "O pega una URL de captura manualmente",
         "success": "Captura subida y adjuntada.",
-        "failed": "No se pudo subir la captura. Inténtalo de nuevo."
+        "failed": "No se pudo subir la captura. Inténtalo de nuevo.",
+        "dropHere": "Suelta la imagen aquí o elige un archivo abajo"
       }
     }
   },

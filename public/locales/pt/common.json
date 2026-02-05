@@ -1250,7 +1250,8 @@
         "uploading": "Enviando captura…",
         "orPasteUrl": "Ou cole uma URL da captura manualmente",
         "success": "Captura enviada e anexada.",
-        "failed": "Falha ao enviar a captura. Tente novamente."
+        "failed": "Falha ao enviar a captura. Tente novamente.",
+        "dropHere": "Solte a imagem aqui ou escolha um arquivo abaixo"
       }
     }
   },
