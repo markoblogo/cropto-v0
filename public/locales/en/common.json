@@ -1072,6 +1072,110 @@
         "title": "Demo Environment Disclaimer",
         "body": "The current Cropto version is intended for prototyping and testing. Any displayed trades and metrics are conditional and do not create legally binding obligations or rights."
       }
+    },
+    "partnersContracts": {
+      "title": "Partners & Contracts",
+      "subtitle": "Manage institutional partnerships and service agreements",
+      "loading": "Loading…",
+      "partners": {
+        "title": "Partner Organizations",
+        "description": "Active and pending institutional partners",
+        "addButton": "Add Partner",
+        "empty": "No partners found",
+        "table": {
+          "organization": "Organization",
+          "contact": "Contact",
+          "relationship": "Relationship",
+          "status": "Status",
+          "feeShare": "Fee share (%)",
+          "contracts": "Contracts",
+          "totalValue": "Total Value"
+        }
+      },
+      "contracts": {
+        "title": "Service Contracts",
+        "description": "All partnership agreements and service contracts",
+        "addButton": "Add Contract",
+        "empty": "No contracts found",
+        "table": {
+          "contractId": "Contract ID",
+          "partner": "Partner",
+          "value": "Value",
+          "startDate": "Start Date",
+          "endDate": "End Date",
+          "status": "Status"
+        },
+        "unknownPartner": "Unknown"
+      },
+      "dialog": {
+        "partner": {
+          "title": "Add Partner Organization",
+          "description": "Create a new institutional partner",
+          "fields": {
+            "name": "Name",
+            "contactEmail": "Contact Email",
+            "relationship": "Relationship",
+            "status": "Status",
+            "notes": "Notes (optional)",
+            "feeShare": "Fee share (%)",
+            "feeShareHint": "Portion of platform fees attributed to this partner (reporting only)."
+          },
+          "actions": {
+            "cancel": "Cancel",
+            "create": "Create Partner",
+            "creating": "Creating…"
+          }
+        },
+        "contract": {
+          "title": "Add Service Contract",
+          "description": "Create a new service contract",
+          "fields": {
+            "partner": "Partner",
+            "partnerPlaceholder": "Select a partner",
+            "contractCode": "Contract Code",
+            "contractCodePlaceholder": "CTR-2024-001",
+            "valueUsd": "Value (USD)",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "status": "Status",
+            "description": "Description (optional)"
+          },
+          "actions": {
+            "cancel": "Cancel",
+            "create": "Create Contract",
+            "creating": "Creating…"
+          }
+        }
+      },
+      "relationship": {
+        "prime_broker": "Prime Broker",
+        "custody": "Custody Provider",
+        "liquidity_provider": "Liquidity Provider",
+        "security_auditor": "Security Auditor",
+        "other": "Other"
+      },
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "inactive": "Inactive",
+        "completed": "Completed",
+        "terminated": "Terminated"
+      },
+      "toast": {
+        "successTitle": "Success",
+        "errorTitle": "Error",
+        "partnerCreated": "Partner created successfully",
+        "partnerCreateFailed": "Failed to create partner",
+        "contractCreated": "Contract created successfully",
+        "contractCreateFailed": "Failed to create contract"
+      },
+      "validation": {
+        "nameRequired": "Name is required",
+        "invalidEmail": "Invalid email address",
+        "partnerRequired": "Partner is required",
+        "contractCodeRequired": "Contract code is required",
+        "valuePositive": "Value must be positive"
+      }
     }
   },
   "component": {

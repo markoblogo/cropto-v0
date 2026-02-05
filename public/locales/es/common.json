@@ -1072,6 +1072,110 @@
         "title": "Descargo sobre entorno demo",
         "body": "La versión actual de Cropto está destinada a prototipado y pruebas. Cualquier operación y métrica mostrada es condicional y no crea obligaciones ni derechos legalmente vinculantes."
       }
+    },
+    "partnersContracts": {
+      "title": "Socios y contratos",
+      "subtitle": "Gestiona alianzas institucionales y acuerdos de servicio",
+      "loading": "Cargando…",
+      "partners": {
+        "title": "Organizaciones socias",
+        "description": "Socios institucionales activos y pendientes",
+        "addButton": "Añadir socio",
+        "empty": "No se encontraron socios",
+        "table": {
+          "organization": "Organización",
+          "contact": "Contacto",
+          "relationship": "Função",
+          "status": "Estado",
+          "feeShare": "Participación de comisiones (%)",
+          "contracts": "Contratos",
+          "totalValue": "Valor total"
+        }
+      },
+      "contracts": {
+        "title": "Contratos de servicio",
+        "description": "Todos los acuerdos de colaboración y contratos de servicio",
+        "addButton": "Añadir contrato",
+        "empty": "No se encontraron contratos",
+        "table": {
+          "contractId": "ID del contrato",
+          "partner": "Socio",
+          "value": "Valor",
+          "startDate": "Fecha de inicio",
+          "endDate": "Fecha de finalización",
+          "status": "Estado"
+        },
+        "unknownPartner": "Desconocido"
+      },
+      "dialog": {
+        "partner": {
+          "title": "Añadir organización socia",
+          "description": "Crear un nuevo socio institucional",
+          "fields": {
+            "name": "Nombre",
+            "contactEmail": "Correo de contacto",
+            "relationship": "Função",
+            "status": "Estado",
+            "notes": "Notas (opcional)",
+            "feeShare": "Participación de comisiones (%)",
+            "feeShareHint": "Porción de comisiones de la plataforma atribuida a este socio (solo para reportes)."
+          },
+          "actions": {
+            "cancel": "Cancelar",
+            "create": "Crear socio",
+            "creating": "Creando…"
+          }
+        },
+        "contract": {
+          "title": "Añadir contrato de servicio",
+          "description": "Crear un nuevo contrato de servicio",
+          "fields": {
+            "partner": "Socio",
+            "partnerPlaceholder": "Selecciona un socio",
+            "contractCode": "Código de contrato",
+            "contractCodePlaceholder": "CTR-2024-001",
+            "valueUsd": "Valor (USD)",
+            "startDate": "Fecha de inicio",
+            "endDate": "Fecha de finalización",
+            "status": "Estado",
+            "description": "Descripción (opcional)"
+          },
+          "actions": {
+            "cancel": "Cancelar",
+            "create": "Crear contrato",
+            "creating": "Creando…"
+          }
+        }
+      },
+      "relationship": {
+        "prime_broker": "Prime broker",
+        "custody": "Proveedor de custodia",
+        "liquidity_provider": "Proveedor de liquidez",
+        "security_auditor": "Auditor de seguridad",
+        "other": "Otro"
+      },
+      "status": {
+        "active": "Activo",
+        "pending": "Pendiente",
+        "inactive": "Inactivo",
+        "completed": "Completado",
+        "terminated": "Rescindido"
+      },
+      "toast": {
+        "successTitle": "Éxito",
+        "errorTitle": "Error",
+        "partnerCreated": "Socio creado correctamente",
+        "partnerCreateFailed": "No se pudo crear el socio",
+        "contractCreated": "Contrato creado correctamente",
+        "contractCreateFailed": "No se pudo crear el contrato"
+      },
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "invalidEmail": "Dirección de correo inválida",
+        "partnerRequired": "El socio es obligatorio",
+        "contractCodeRequired": "El código de contrato es obligatorio",
+        "valuePositive": "El valor debe ser positivo"
+      }
     }
   },
   "component": {

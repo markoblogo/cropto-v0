@@ -39,6 +39,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 // Types
 interface PartnerOrganization {
@@ -68,40 +69,24 @@ interface ServiceContract {
   partnerName?: string;
 }
 
-// Form schemas
-const partnerFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  contactEmail: z.string().email("Invalid email address"),
-  relationship: z.enum(["prime_broker", "custody", "liquidity_provider", "security_auditor", "other"]),
-  status: z.enum(["active", "pending", "inactive"]),
-  notes: z.string().optional(),
-  feeSharePercent: z.coerce.number().min(0).max(100).optional(),
-});
+type PartnerFormData = {
+  name: string;
+  contactEmail: string;
+  relationship: "prime_broker" | "custody" | "liquidity_provider" | "security_auditor" | "other";
+  status: "active" | "pending" | "inactive";
+  notes?: string;
+  feeSharePercent?: number;
+};
 
-const contractFormSchema = z.object({
-  partnerId: z.string().min(1, "Partner is required"),
-  contractCode: z.string().min(1, "Contract code is required"),
-  valueUsd: z.coerce.number().positive("Value must be positive"),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-  status: z.enum(["active", "pending", "completed", "terminated"]),
-  description: z.string().optional(),
-});
-
-type PartnerFormData = z.infer<typeof partnerFormSchema>;
-type ContractFormData = z.infer<typeof contractFormSchema>;
-
-// Helper to format relationship
-function formatRelationship(rel: string): string {
-  const map: Record<string, string> = {
-    prime_broker: "Prime Broker",
-    custody: "Custody Provider",
-    liquidity_provider: "Liquidity Provider",
-    security_auditor: "Security Auditor",
-    other: "Other",
-  };
-  return map[rel] || rel;
-}
+type ContractFormData = {
+  partnerId: string;
+  contractCode: string;
+  valueUsd: number;
+  startDate: Date;
+  endDate: Date;
+  status: "active" | "pending" | "completed" | "terminated";
+  description?: string;
+};
 
 // Helper to format currency
 function formatCurrency(value: string | number | undefined): string {
@@ -116,10 +101,52 @@ function formatCurrency(value: string | number | undefined): string {
 }
 
 export default function PartnersContracts() {
+  const { t } = useTranslation();
   const isAdmin = useIsAdminLevelUser();
   const { toast } = useToast();
   const [isPartnerDialogOpen, setIsPartnerDialogOpen] = useState(false);
   const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
+
+  const partnerFormSchema = z.object({
+    name: z.string().min(1, t("page.partnersContracts.validation.nameRequired")),
+    contactEmail: z.string().email(t("page.partnersContracts.validation.invalidEmail")),
+    relationship: z.enum(["prime_broker", "custody", "liquidity_provider", "security_auditor", "other"]),
+    status: z.enum(["active", "pending", "inactive"]),
+    notes: z.string().optional(),
+    feeSharePercent: z.coerce.number().min(0).max(100).optional(),
+  });
+
+  const contractFormSchema = z.object({
+    partnerId: z.string().min(1, t("page.partnersContracts.validation.partnerRequired")),
+    contractCode: z.string().min(1, t("page.partnersContracts.validation.contractCodeRequired")),
+    valueUsd: z.coerce.number().positive(t("page.partnersContracts.validation.valuePositive")),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    status: z.enum(["active", "pending", "completed", "terminated"]),
+    description: z.string().optional(),
+  });
+
+  const formatRelationship = (rel: string): string => {
+    const map: Record<string, string> = {
+      prime_broker: t("page.partnersContracts.relationship.prime_broker"),
+      custody: t("page.partnersContracts.relationship.custody"),
+      liquidity_provider: t("page.partnersContracts.relationship.liquidity_provider"),
+      security_auditor: t("page.partnersContracts.relationship.security_auditor"),
+      other: t("page.partnersContracts.relationship.other"),
+    };
+    return map[rel] || rel;
+  };
+
+  const formatStatus = (status: string): string => {
+    const map: Record<string, string> = {
+      active: t("page.partnersContracts.status.active"),
+      pending: t("page.partnersContracts.status.pending"),
+      inactive: t("page.partnersContracts.status.inactive"),
+      completed: t("page.partnersContracts.status.completed"),
+      terminated: t("page.partnersContracts.status.terminated"),
+    };
+    return map[status] || status;
+  };
 
   // Fetch partners
   const { data: partnersData, isLoading: isLoadingPartners } = useQuery<{ partners: PartnerOrganization[] }>({
@@ -176,14 +203,14 @@ export default function PartnersContracts() {
       setIsPartnerDialogOpen(false);
       partnerForm.reset();
       toast({
-        title: "Success",
-        description: "Partner created successfully",
+        title: t("page.partnersContracts.toast.successTitle"),
+        description: t("page.partnersContracts.toast.partnerCreated"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create partner",
+        title: t("page.partnersContracts.toast.errorTitle"),
+        description: error.message || t("page.partnersContracts.toast.partnerCreateFailed"),
         variant: "destructive",
       });
     },
@@ -201,14 +228,14 @@ export default function PartnersContracts() {
       setIsContractDialogOpen(false);
       contractForm.reset();
       toast({
-        title: "Success",
-        description: "Contract created successfully",
+        title: t("page.partnersContracts.toast.successTitle"),
+        description: t("page.partnersContracts.toast.contractCreated"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create contract",
+        title: t("page.partnersContracts.toast.errorTitle"),
+        description: error.message || t("page.partnersContracts.toast.contractCreateFailed"),
         variant: "destructive",
       });
     },
@@ -227,8 +254,8 @@ export default function PartnersContracts() {
       <MainLayout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">Partners & Contracts</h1>
-            <p className="text-muted-foreground mt-1">Loading...</p>
+            <h1 className="text-3xl font-bold">{t("page.partnersContracts.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("page.partnersContracts.loading")}</p>
           </div>
         </div>
       </MainLayout>
@@ -239,9 +266,9 @@ export default function PartnersContracts() {
     <MainLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Partners & Contracts</h1>
+          <h1 className="text-3xl font-bold">{t("page.partnersContracts.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage institutional partnerships and service agreements
+            {t("page.partnersContracts.subtitle")}
           </p>
         </div>
 
@@ -249,9 +276,9 @@ export default function PartnersContracts() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Partner Organizations</CardTitle>
+                <CardTitle>{t("page.partnersContracts.partners.title")}</CardTitle>
                 <CardDescription>
-                  Active and pending institutional partners
+                  {t("page.partnersContracts.partners.description")}
                 </CardDescription>
               </div>
               {isAdmin && (
@@ -259,14 +286,14 @@ export default function PartnersContracts() {
                   <DialogTrigger asChild>
                     <Button size="sm">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Partner
+                      {t("page.partnersContracts.partners.addButton")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Partner Organization</DialogTitle>
+                      <DialogTitle>{t("page.partnersContracts.dialog.partner.title")}</DialogTitle>
                       <DialogDescription>
-                        Create a new institutional partner
+                        {t("page.partnersContracts.dialog.partner.description")}
                       </DialogDescription>
                     </DialogHeader>
                     <Form {...partnerForm}>
@@ -276,7 +303,7 @@ export default function PartnersContracts() {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Name</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.partner.fields.name")}</FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -289,7 +316,7 @@ export default function PartnersContracts() {
                           name="contactEmail"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Contact Email</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.partner.fields.contactEmail")}</FormLabel>
                               <FormControl>
                                 <Input type="email" {...field} />
                               </FormControl>
@@ -302,7 +329,7 @@ export default function PartnersContracts() {
                           name="relationship"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Relationship</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.partner.fields.relationship")}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -310,11 +337,11 @@ export default function PartnersContracts() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="prime_broker">Prime Broker</SelectItem>
-                                  <SelectItem value="custody">Custody Provider</SelectItem>
-                                  <SelectItem value="liquidity_provider">Liquidity Provider</SelectItem>
-                                  <SelectItem value="security_auditor">Security Auditor</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
+                                  <SelectItem value="prime_broker">{t("page.partnersContracts.relationship.prime_broker")}</SelectItem>
+                                  <SelectItem value="custody">{t("page.partnersContracts.relationship.custody")}</SelectItem>
+                                  <SelectItem value="liquidity_provider">{t("page.partnersContracts.relationship.liquidity_provider")}</SelectItem>
+                                  <SelectItem value="security_auditor">{t("page.partnersContracts.relationship.security_auditor")}</SelectItem>
+                                  <SelectItem value="other">{t("page.partnersContracts.relationship.other")}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -326,7 +353,7 @@ export default function PartnersContracts() {
                           name="status"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Status</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.partner.fields.status")}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -334,9 +361,9 @@ export default function PartnersContracts() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="active">Active</SelectItem>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="inactive">Inactive</SelectItem>
+                                  <SelectItem value="active">{t("page.partnersContracts.status.active")}</SelectItem>
+                                  <SelectItem value="pending">{t("page.partnersContracts.status.pending")}</SelectItem>
+                                  <SelectItem value="inactive">{t("page.partnersContracts.status.inactive")}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -348,7 +375,7 @@ export default function PartnersContracts() {
                           name="notes"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Notes (optional)</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.partner.fields.notes")}</FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -361,7 +388,7 @@ export default function PartnersContracts() {
                           name="feeSharePercent"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Fee share (%)</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.partner.fields.feeShare")}</FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
@@ -374,7 +401,7 @@ export default function PartnersContracts() {
                                 />
                               </FormControl>
                               <FormDescription className="text-xs">
-                                Portion of platform fees attributed to this partner (reporting only).
+                                {t("page.partnersContracts.dialog.partner.fields.feeShareHint")}
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -386,10 +413,12 @@ export default function PartnersContracts() {
                             variant="outline"
                             onClick={() => setIsPartnerDialogOpen(false)}
                           >
-                            Cancel
+                            {t("page.partnersContracts.dialog.partner.actions.cancel")}
                           </Button>
                           <Button type="submit" disabled={createPartnerMutation.isPending}>
-                            {createPartnerMutation.isPending ? "Creating..." : "Create Partner"}
+                            {createPartnerMutation.isPending
+                              ? t("page.partnersContracts.dialog.partner.actions.creating")
+                              : t("page.partnersContracts.dialog.partner.actions.create")}
                           </Button>
                         </DialogFooter>
                       </form>
@@ -403,20 +432,20 @@ export default function PartnersContracts() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Relationship</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Fee share (%)</TableHead>
-                  <TableHead className="text-right">Contracts</TableHead>
-                  <TableHead className="text-right">Total Value</TableHead>
+                  <TableHead>{t("page.partnersContracts.partners.table.organization")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.partners.table.contact")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.partners.table.relationship")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.partners.table.status")}</TableHead>
+                  <TableHead className="text-right">{t("page.partnersContracts.partners.table.feeShare")}</TableHead>
+                  <TableHead className="text-right">{t("page.partnersContracts.partners.table.contracts")}</TableHead>
+                  <TableHead className="text-right">{t("page.partnersContracts.partners.table.totalValue")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {partners.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      No partners found
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      {t("page.partnersContracts.partners.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -441,7 +470,7 @@ export default function PartnersContracts() {
                               : "outline"
                           }
                         >
-                          {partner.status}
+                          {formatStatus(partner.status)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-mono">
@@ -467,9 +496,9 @@ export default function PartnersContracts() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Service Contracts</CardTitle>
+                <CardTitle>{t("page.partnersContracts.contracts.title")}</CardTitle>
                 <CardDescription>
-                  All partnership agreements and service contracts
+                  {t("page.partnersContracts.contracts.description")}
                 </CardDescription>
               </div>
               {isAdmin && (
@@ -477,14 +506,14 @@ export default function PartnersContracts() {
                   <DialogTrigger asChild>
                     <Button size="sm">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Contract
+                      {t("page.partnersContracts.contracts.addButton")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                      <DialogTitle>Add Service Contract</DialogTitle>
+                      <DialogTitle>{t("page.partnersContracts.dialog.contract.title")}</DialogTitle>
                       <DialogDescription>
-                        Create a new service contract
+                        {t("page.partnersContracts.dialog.contract.description")}
                       </DialogDescription>
                     </DialogHeader>
                     <Form {...contractForm}>
@@ -494,11 +523,11 @@ export default function PartnersContracts() {
                           name="partnerId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Partner</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.contract.fields.partner")}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select a partner" />
+                                    <SelectValue placeholder={t("page.partnersContracts.dialog.contract.fields.partnerPlaceholder")} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -518,9 +547,9 @@ export default function PartnersContracts() {
                           name="contractCode"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Contract Code</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.contract.fields.contractCode")}</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="CTR-2024-001" />
+                                <Input {...field} placeholder={t("page.partnersContracts.dialog.contract.fields.contractCodePlaceholder")} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -531,7 +560,7 @@ export default function PartnersContracts() {
                           name="valueUsd"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Value (USD)</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.contract.fields.valueUsd")}</FormLabel>
                               <FormControl>
                                 <Input type="number" step="0.01" {...field} />
                               </FormControl>
@@ -545,7 +574,7 @@ export default function PartnersContracts() {
                             name="startDate"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Start Date</FormLabel>
+                                <FormLabel>{t("page.partnersContracts.dialog.contract.fields.startDate")}</FormLabel>
                                 <FormControl>
                                   <Input
                                     type="date"
@@ -563,7 +592,7 @@ export default function PartnersContracts() {
                             name="endDate"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>End Date</FormLabel>
+                                <FormLabel>{t("page.partnersContracts.dialog.contract.fields.endDate")}</FormLabel>
                                 <FormControl>
                                   <Input
                                     type="date"
@@ -582,7 +611,7 @@ export default function PartnersContracts() {
                           name="status"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Status</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.contract.fields.status")}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -590,10 +619,10 @@ export default function PartnersContracts() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="active">Active</SelectItem>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="completed">Completed</SelectItem>
-                                  <SelectItem value="terminated">Terminated</SelectItem>
+                                  <SelectItem value="active">{t("page.partnersContracts.status.active")}</SelectItem>
+                                  <SelectItem value="pending">{t("page.partnersContracts.status.pending")}</SelectItem>
+                                  <SelectItem value="completed">{t("page.partnersContracts.status.completed")}</SelectItem>
+                                  <SelectItem value="terminated">{t("page.partnersContracts.status.terminated")}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -605,7 +634,7 @@ export default function PartnersContracts() {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Description (optional)</FormLabel>
+                              <FormLabel>{t("page.partnersContracts.dialog.contract.fields.description")}</FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -619,10 +648,12 @@ export default function PartnersContracts() {
                             variant="outline"
                             onClick={() => setIsContractDialogOpen(false)}
                           >
-                            Cancel
+                            {t("page.partnersContracts.dialog.contract.actions.cancel")}
                           </Button>
                           <Button type="submit" disabled={createContractMutation.isPending}>
-                            {createContractMutation.isPending ? "Creating..." : "Create Contract"}
+                            {createContractMutation.isPending
+                              ? t("page.partnersContracts.dialog.contract.actions.creating")
+                              : t("page.partnersContracts.dialog.contract.actions.create")}
                           </Button>
                         </DialogFooter>
                       </form>
@@ -636,19 +667,19 @@ export default function PartnersContracts() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Contract ID</TableHead>
-                  <TableHead>Partner</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t("page.partnersContracts.contracts.table.contractId")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.contracts.table.partner")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.contracts.table.value")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.contracts.table.startDate")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.contracts.table.endDate")}</TableHead>
+                  <TableHead>{t("page.partnersContracts.contracts.table.status")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {contracts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      No contracts found
+                      {t("page.partnersContracts.contracts.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -658,7 +689,7 @@ export default function PartnersContracts() {
                         {contract.contractCode}
                       </TableCell>
                       <TableCell data-testid={`text-contract-partner-${contract.id}`}>
-                        {contract.partnerName || "Unknown"}
+                        {contract.partnerName || t("page.partnersContracts.contracts.unknownPartner")}
                       </TableCell>
                       <TableCell className="font-mono" data-testid={`text-contract-value-${contract.id}`}>
                         {formatCurrency(contract.valueUsd)}
@@ -679,7 +710,7 @@ export default function PartnersContracts() {
                               : "outline"
                           }
                         >
-                          {contract.status}
+                          {formatStatus(contract.status)}
                         </Badge>
                       </TableCell>
                     </TableRow>

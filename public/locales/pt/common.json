@@ -1072,6 +1072,110 @@
         "title": "Isenção em ambiente demo",
         "body": "A versão atual da Cropto é destinada a prototipagem e testes. Quaisquer negociações e métricas exibidas são condicionais e não criam obrigações ou direitos legalmente vinculantes."
       }
+    },
+    "partnersContracts": {
+      "title": "Parceiros e contratos",
+      "subtitle": "Gerencie parcerias institucionais e contratos de serviço",
+      "loading": "Carregando…",
+      "partners": {
+        "title": "Organizações parceiras",
+        "description": "Parceiros institucionais ativos e pendentes",
+        "addButton": "Adicionar parceiro",
+        "empty": "Nenhum parceiro encontrado",
+        "table": {
+          "organization": "Organização",
+          "contact": "Contato",
+          "relationship": "Função",
+          "status": "Status",
+          "feeShare": "Participação nas taxas (%)",
+          "contracts": "Contratos",
+          "totalValue": "Valor total"
+        }
+      },
+      "contracts": {
+        "title": "Contratos de serviço",
+        "description": "Todos os acordos de parceria e contratos de serviço",
+        "addButton": "Adicionar contrato",
+        "empty": "Nenhum contrato encontrado",
+        "table": {
+          "contractId": "ID do contrato",
+          "partner": "Parceiro",
+          "value": "Valor",
+          "startDate": "Data de início",
+          "endDate": "Data de término",
+          "status": "Status"
+        },
+        "unknownPartner": "Desconhecido"
+      },
+      "dialog": {
+        "partner": {
+          "title": "Adicionar organização parceira",
+          "description": "Criar um novo parceiro institucional",
+          "fields": {
+            "name": "Nome",
+            "contactEmail": "E-mail de contato",
+            "relationship": "Função",
+            "status": "Status",
+            "notes": "Observações (opcional)",
+            "feeShare": "Participação nas taxas (%)",
+            "feeShareHint": "Parcela das taxas da plataforma atribuída a este parceiro (apenas para relatórios)."
+          },
+          "actions": {
+            "cancel": "Cancelar",
+            "create": "Criar parceiro",
+            "creating": "Criando…"
+          }
+        },
+        "contract": {
+          "title": "Adicionar contrato de serviço",
+          "description": "Criar um novo contrato de serviço",
+          "fields": {
+            "partner": "Parceiro",
+            "partnerPlaceholder": "Selecione um parceiro",
+            "contractCode": "Código do contrato",
+            "contractCodePlaceholder": "CTR-2024-001",
+            "valueUsd": "Valor (USD)",
+            "startDate": "Data de início",
+            "endDate": "Data de término",
+            "status": "Status",
+            "description": "Descrição (opcional)"
+          },
+          "actions": {
+            "cancel": "Cancelar",
+            "create": "Criar contrato",
+            "creating": "Criando…"
+          }
+        }
+      },
+      "relationship": {
+        "prime_broker": "Prime broker",
+        "custody": "Provedor de custódia",
+        "liquidity_provider": "Provedor de liquidez",
+        "security_auditor": "Auditor de segurança",
+        "other": "Outro"
+      },
+      "status": {
+        "active": "Ativo",
+        "pending": "Pendente",
+        "inactive": "Inativo",
+        "completed": "Concluído",
+        "terminated": "Rescindido"
+      },
+      "toast": {
+        "successTitle": "Sucesso",
+        "errorTitle": "Erro",
+        "partnerCreated": "Parceiro criado com sucesso",
+        "partnerCreateFailed": "Falha ao criar parceiro",
+        "contractCreated": "Contrato criado com sucesso",
+        "contractCreateFailed": "Falha ao criar contrato"
+      },
+      "validation": {
+        "nameRequired": "O nome é obrigatório",
+        "invalidEmail": "Endereço de e-mail inválido",
+        "partnerRequired": "O parceiro é obrigatório",
+        "contractCodeRequired": "O código do contrato é obrigatório",
+        "valuePositive": "O valor deve ser positivo"
+      }
     }
   },
   "component": {

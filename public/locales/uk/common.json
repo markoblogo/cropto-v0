@@ -1076,6 +1076,110 @@
         "title": "Застереження щодо демо-середовища",
         "body": "Поточна версія Cropto призначена для прототипування та тестування. Будь-які відображені угоди та метрики є умовними і не створюють юридично зобов’язувальних прав або обов’язків."
       }
+    },
+    "partnersContracts": {
+      "title": "Партнери та контракти",
+      "subtitle": "Керуйте інституційними партнерствами та сервісними угодами",
+      "loading": "Завантаження…",
+      "partners": {
+        "title": "Партнерські організації",
+        "description": "Активні та очікувані інституційні партнери",
+        "addButton": "Додати партнера",
+        "empty": "Партнерів не знайдено",
+        "table": {
+          "organization": "Організація",
+          "contact": "Контакт",
+          "relationship": "Роль",
+          "status": "Статус",
+          "feeShare": "Частка комісій (%)",
+          "contracts": "Контракти",
+          "totalValue": "Загальна вартість"
+        }
+      },
+      "contracts": {
+        "title": "Сервісні контракти",
+        "description": "Усі партнерські угоди та сервісні контракти",
+        "addButton": "Додати контракт",
+        "empty": "Контрактів не знайдено",
+        "table": {
+          "contractId": "ID контракту",
+          "partner": "Партнер",
+          "value": "Вартість",
+          "startDate": "Дата початку",
+          "endDate": "Дата завершення",
+          "status": "Статус"
+        },
+        "unknownPartner": "Невідомо"
+      },
+      "dialog": {
+        "partner": {
+          "title": "Додати партнерську організацію",
+          "description": "Створити нового інституційного партнера",
+          "fields": {
+            "name": "Назва",
+            "contactEmail": "Email для зв’язку",
+            "relationship": "Роль",
+            "status": "Статус",
+            "notes": "Примітки (необов’язково)",
+            "feeShare": "Частка комісій (%)",
+            "feeShareHint": "Частина комісій платформи, що відноситься до цього партнера (лише для звітності)."
+          },
+          "actions": {
+            "cancel": "Скасувати",
+            "create": "Створити партнера",
+            "creating": "Створення…"
+          }
+        },
+        "contract": {
+          "title": "Додати сервісний контракт",
+          "description": "Створити новий сервісний контракт",
+          "fields": {
+            "partner": "Партнер",
+            "partnerPlaceholder": "Оберіть партнера",
+            "contractCode": "Код контракту",
+            "contractCodePlaceholder": "CTR-2024-001",
+            "valueUsd": "Вартість (USD)",
+            "startDate": "Дата початку",
+            "endDate": "Дата завершення",
+            "status": "Статус",
+            "description": "Опис (необов’язково)"
+          },
+          "actions": {
+            "cancel": "Скасувати",
+            "create": "Створити контракт",
+            "creating": "Створення…"
+          }
+        }
+      },
+      "relationship": {
+        "prime_broker": "Прайм-брокер",
+        "custody": "Кастоді-провайдер",
+        "liquidity_provider": "Провайдер ліквідності",
+        "security_auditor": "Аудитор безпеки",
+        "other": "Інше"
+      },
+      "status": {
+        "active": "Активний",
+        "pending": "Очікує",
+        "inactive": "Неактивний",
+        "completed": "Завершено",
+        "terminated": "Розірвано"
+      },
+      "toast": {
+        "successTitle": "Успіх",
+        "errorTitle": "Помилка",
+        "partnerCreated": "Партнера успішно створено",
+        "partnerCreateFailed": "Не вдалося створити партнера",
+        "contractCreated": "Контракт успішно створено",
+        "contractCreateFailed": "Не вдалося створити контракт"
+      },
+      "validation": {
+        "nameRequired": "Назва обов’язкова",
+        "invalidEmail": "Невірна email-адреса",
+        "partnerRequired": "Партнер обов’язковий",
+        "contractCodeRequired": "Код контракту обов’язковий",
+        "valuePositive": "Значення має бути додатним"
+      }
     }
   },
   "component": {
