@@ -1864,20 +1864,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
 
         for (const [key, candidates] of candidatesMap.entries()) {
+          const first = candidates[0];
+          const spreadSpec =
+            country === "US" || !first ? null : findSpreadSpec(country, first.commodity, first.basis);
+          const order = spreadSpec?.fallbackOrder?.length
+            ? spreadSpec.fallbackOrder
+            : sourceOrderByCountry[country];
+          const primaryMaxAge = spreadSpec?.maxAgeDays ?? (maxAgeDaysBySource[order[0]] ?? 2);
+          const secondaryMaxAge = spreadSpec?.secondaryMaxAgeDays ?? 3;
+          const graceDays = spreadSpec?.graceDays ?? 1;
+
           const sorted = [...candidates].sort((a, b) => {
-            const order = sourceOrderByCountry[country];
             const aIdx = Math.max(0, order.indexOf(a.source));
             const bIdx = Math.max(0, order.indexOf(b.source));
             if (aIdx !== bIdx) return aIdx - bIdx;
             return new Date(b.asOf).getTime() - new Date(a.asOf).getTime();
           });
 
-          const freshBySource = (source: string) =>
-            sorted.find((c) => c.source === source && (c.freshnessDays ?? 999) <= (maxAgeDaysBySource[source] ?? 2));
+          const freshBySource = (source: string, maxAge: number) =>
+            sorted.find((c) => c.source === source && (c.freshnessDays ?? 999) <= maxAge);
 
-          const order = sourceOrderByCountry[country];
-          const freshPrimary = freshBySource(order[0]);
-          const freshSecondary = order.slice(1).map(freshBySource).find(Boolean);
+          const freshPrimary = freshBySource(order[0], primaryMaxAge);
+          const freshSecondary = order.slice(1).map((s) => freshBySource(s, secondaryMaxAge)).find(Boolean);
 
           if (freshPrimary) {
             selected.push({ ...freshPrimary, sourceTier: "primary", isStale: false });
@@ -1897,12 +1905,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           const lastKnown = sorted[0];
-          const spreadSpec = country === "US" ? null : findSpreadSpec(country, lastKnown.commodity, lastKnown.basis);
+          const lastKnownFreshness = lastKnown?.freshnessDays ?? 999;
 
-          if (spreadSpec?.syntheticAllowed) {
+          if (lastKnown && lastKnownFreshness <= primaryMaxAge + graceDays) {
+            selected.push({
+              ...lastKnown,
+              sourceTier: "last_known",
+              isStale: true,
+              confidence: lastKnown.confidence === "high" ? "medium" : (lastKnown.confidence || "medium"),
+            });
+            failoverEvents.push({
+              event: "source_failover_to_last_known",
+              country,
+              key,
+              from: order[0],
+              lastKnownSource: lastKnown.source,
+              freshnessDays: lastKnownFreshness,
+              graceDays,
+            });
+            continue;
+          }
+
+          if (lastKnown && spreadSpec?.syntheticAllowed) {
             const anchor = usSelectedByCommodity.get(spreadSpec.anchorCommodity);
-            const anchorDriftPct = Math.max(-5, Math.min(5, anchor?.change24h ?? 0)) / 100;
-            const syntheticPrice = Number((lastKnown.price * (1 + anchorDriftPct)).toFixed(2));
+            let syntheticPrice = lastKnown.price;
+            if (anchor) {
+              if (spreadSpec.modelType === "additive") {
+                const spread = spreadSpec.spreadUsdPerTon || 0;
+                syntheticPrice = Number((anchor.price + spread).toFixed(2));
+              } else {
+                const alpha = spreadSpec.alpha ?? 0;
+                const beta = spreadSpec.beta ?? 1;
+                syntheticPrice = Number((beta * anchor.price + alpha).toFixed(2));
+              }
+            }
             selected.push({
               ...lastKnown,
               source: "synthetic_model",
@@ -1914,12 +1950,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               visibility: "public",
               price: syntheticPrice,
               change24h: anchor?.change24h ?? 0,
+              freshnessDays: 0,
             });
             failoverEvents.push({
               event: "source_failover_to_synthetic",
               country,
               key,
               spreadSpecId: spreadSpec.spreadSpecId,
+              modelType: spreadSpec.modelType,
               anchorCommodity: spreadSpec.anchorCommodity,
               anchorSource: anchor?.source || null,
             });

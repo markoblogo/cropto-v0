@@ -16,9 +16,19 @@ export interface SpreadSpec {
   anchorCommodity: string;
   fallbackOrder: Array<"USDA_AMS" | "IGC" | "manual" | "spike_telegram" | "mock">;
   maxAgeDays: number;
+  graceDays: number;
+  secondaryMaxAgeDays: number;
+  syntheticMaxAgeDays: number;
   syntheticAllowed: boolean;
-  // Temporary placeholder until proper calibrated alpha/beta model is plugged in.
-  syntheticModel: "last_known_with_anchor_drift";
+  modelType: "additive" | "affine";
+  spreadUsdPerTon?: number;
+  alpha?: number;
+  beta?: number;
+  calibrationWindow: {
+    from: string;
+    to: string;
+  };
+  notes?: string;
 }
 
 const SPEC_USDA_CORN: ConversionSpec = {
@@ -64,8 +74,17 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     anchorCommodity: "soybeans",
     fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
     maxAgeDays: 2,
+    graceDays: 2,
+    secondaryMaxAgeDays: 1,
+    syntheticMaxAgeDays: 5,
     syntheticAllowed: true,
-    syntheticModel: "last_known_with_anchor_drift",
+    modelType: "additive",
+    spreadUsdPerTon: 0,
+    calibrationWindow: {
+      from: "2025-01-01",
+      to: "2025-12-31",
+    },
+    notes: "Temporary spread placeholder until BR FOB calibration is loaded.",
   },
   {
     spreadSpecId: "br_maize_paranagua_v1",
@@ -76,8 +95,17 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     anchorCommodity: "maize",
     fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
     maxAgeDays: 2,
+    graceDays: 2,
+    secondaryMaxAgeDays: 1,
+    syntheticMaxAgeDays: 5,
     syntheticAllowed: true,
-    syntheticModel: "last_known_with_anchor_drift",
+    modelType: "additive",
+    spreadUsdPerTon: 0,
+    calibrationWindow: {
+      from: "2025-01-01",
+      to: "2025-12-31",
+    },
+    notes: "Temporary spread placeholder until BR FOB calibration is loaded.",
   },
   {
     spreadSpecId: "ar_soybeans_upriver_v1",
@@ -88,8 +116,17 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     anchorCommodity: "soybeans",
     fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
     maxAgeDays: 2,
+    graceDays: 2,
+    secondaryMaxAgeDays: 1,
+    syntheticMaxAgeDays: 5,
     syntheticAllowed: true,
-    syntheticModel: "last_known_with_anchor_drift",
+    modelType: "additive",
+    spreadUsdPerTon: 0,
+    calibrationWindow: {
+      from: "2025-01-01",
+      to: "2025-12-31",
+    },
+    notes: "Temporary spread placeholder until AR FOB calibration is loaded.",
   },
   {
     spreadSpecId: "ar_maize_upriver_v1",
@@ -100,8 +137,17 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     anchorCommodity: "maize",
     fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
     maxAgeDays: 2,
+    graceDays: 2,
+    secondaryMaxAgeDays: 1,
+    syntheticMaxAgeDays: 5,
     syntheticAllowed: true,
-    syntheticModel: "last_known_with_anchor_drift",
+    modelType: "additive",
+    spreadUsdPerTon: 0,
+    calibrationWindow: {
+      from: "2025-01-01",
+      to: "2025-12-31",
+    },
+    notes: "Temporary spread placeholder until AR FOB calibration is loaded.",
   },
 ];
 
