@@ -1,49 +1,101 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFeedbackSchema } from "@shared/schema";
 import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
 import { CheckCircle2, Send } from "lucide-react";
 import { MainLayout } from "@/components/layouts/MainLayout";
+import { useTranslation } from "react-i18next";
 
-const feedbackFormSchema = insertFeedbackSchema.extend({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Valid email is required"),
-  role: z.string().min(1, "Role is required"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
-
-type FeedbackFormData = z.infer<typeof feedbackFormSchema>;
+type FeedbackFormData = z.infer<typeof insertFeedbackSchema> & {
+  category: "bug" | "data" | "ux" | "other";
+};
 
 export default function Feedback() {
+  const { t, i18n } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
+  const feedbackFormSchema = useMemo(
+    () =>
+      insertFeedbackSchema.extend({
+        name: z.string().min(1, t("page.feedback.validation.nameRequired")),
+        email: z
+          .string()
+          .min(1, t("page.feedback.validation.emailRequired"))
+          .email(t("page.feedback.validation.emailInvalid")),
+        role: z.string().min(1, t("page.feedback.validation.roleRequired")),
+        category: z.enum(["bug", "data", "ux", "other"]),
+        message: z.string().min(1, t("page.feedback.validation.messageRequired")),
+        screenshotUrl: z
+          .union([z.string().url(t("page.feedback.validation.urlInvalid")), z.literal(""), z.undefined()])
+          .optional(),
+      }),
+    [t]
+  );
+
+  const { data: authData } = useQuery<{
+    user?: { name?: string; email?: string; role?: string; walletAddress?: string; id?: string };
+  } | null>({
+    queryKey: ["/api/auth/me"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    enabled: !!localStorage.getItem("cropto_token"),
+  });
+
   const form = useForm<FeedbackFormData>({
     resolver: zodResolver(feedbackFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       email: "",
       role: "",
+      category: "other",
       message: "",
       screenshotUrl: "",
     },
   });
 
+  useEffect(() => {
+    const user = authData?.user;
+    if (!user) return;
+
+    if (!form.getValues("name")) form.setValue("name", user.name || "", { shouldValidate: true });
+    if (!form.getValues("email")) form.setValue("email", user.email || "", { shouldValidate: true });
+    if (!form.getValues("role")) form.setValue("role", user.role || "", { shouldValidate: true });
+  }, [authData, form]);
+
   const submitMutation = useMutation({
     mutationFn: async (data: FeedbackFormData) => {
+      const user = authData?.user;
+      const currentPath = window.location.pathname + window.location.search;
+      const normalizedLang = (i18n.resolvedLanguage || i18n.language || "en").split("-")[0];
+      const metadataLine =
+        `\n\n---\n` +
+        `Category: ${data.category}\n` +
+        `Environment: ${window.location.hostname}\n` +
+        `Page: ${currentPath}\n` +
+        `Language: ${normalizedLang}\n` +
+        `User ID: ${user?.id ?? "anonymous"}\n` +
+        `Wallet: ${user?.walletAddress ?? "not connected"}\n` +
+        `User Agent: ${navigator.userAgent}`;
+
+      const payload = {
+        ...data,
+        message: `${data.message}${metadataLine}`,
+      };
+
       const response = await fetch("/api/feedback", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
         headers: {
           "Content-Type": "application/json",
         },
@@ -56,14 +108,14 @@ export default function Feedback() {
     onSuccess: () => {
       setSubmitted(true);
       toast({
-        title: "Feedback submitted",
-        description: "Thank you for your feedback!",
+        title: t("page.feedback.toast.successTitle"),
+        description: t("page.feedback.toast.successDesc"),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit feedback",
+        title: t("page.feedback.toast.errorTitle"),
+        description: error.message || t("page.feedback.toast.errorDesc"),
         variant: "destructive",
       });
     },
@@ -72,6 +124,17 @@ export default function Feedback() {
   const onSubmit = (data: FeedbackFormData) => {
     submitMutation.mutate(data);
   };
+
+  const envSummary = useMemo(() => {
+    const user = authData?.user;
+    return {
+      environment: window.location.hostname,
+      page: window.location.pathname + window.location.search,
+      language: (i18n.resolvedLanguage || i18n.language || "en").split("-")[0],
+      wallet: user?.walletAddress || t("page.feedback.environment.notConnected"),
+      userId: user?.id || "anonymous",
+    };
+  }, [authData, i18n.language, i18n.resolvedLanguage, t]);
 
   if (submitted) {
     return (
@@ -82,9 +145,9 @@ export default function Feedback() {
             <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-primary" data-testid="icon-success" />
             </div>
-            <CardTitle data-testid="text-success-title">Thank You!</CardTitle>
+            <CardTitle data-testid="text-success-title">{t("page.feedback.success.title")}</CardTitle>
             <CardDescription data-testid="text-success-description">
-              Your feedback has been submitted successfully. We appreciate you taking the time to help us improve Cropto.
+              {t("page.feedback.toast.successDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,7 +160,7 @@ export default function Feedback() {
               variant="outline"
               data-testid="button-submit-another"
             >
-              Submit Another Feedback
+              {t("page.feedback.actions.submitAnother")}
             </Button>
           </CardContent>
         </Card>
@@ -111,9 +174,9 @@ export default function Feedback() {
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle data-testid="text-page-title">Partner Feedback</CardTitle>
+            <CardTitle data-testid="text-page-title">{t("page.feedback.title")}</CardTitle>
             <CardDescription data-testid="text-page-description">
-              Help us improve Cropto by reporting UI issues, bugs, or suggesting improvements.
+              {t("page.feedback.subtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -124,10 +187,10 @@ export default function Feedback() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t("page.feedback.fields.name.label")} *</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Your name"
+                          placeholder={t("page.feedback.fields.name.placeholder")}
                           {...field}
                           data-testid="input-name"
                         />
@@ -137,16 +200,25 @@ export default function Feedback() {
                   )}
                 />
 
+                <div className="rounded-md border p-3 text-sm">
+                  <p className="font-medium mb-2">{t("page.feedback.environment.title")}</p>
+                  <p className="text-muted-foreground">{t("page.feedback.environment.environment")}: {envSummary.environment}</p>
+                  <p className="text-muted-foreground">{t("page.feedback.environment.page")}: {envSummary.page}</p>
+                  <p className="text-muted-foreground">{t("page.feedback.environment.language")}: {envSummary.language}</p>
+                  <p className="text-muted-foreground">{t("page.feedback.environment.wallet")}: {envSummary.wallet}</p>
+                  <p className="text-muted-foreground">{t("page.feedback.environment.userId")}: {envSummary.userId}</p>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t("page.feedback.fields.email.label")} *</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="your.email@example.com"
+                          placeholder={t("page.feedback.fields.email.placeholder")}
                           {...field}
                           data-testid="input-email"
                         />
@@ -161,11 +233,11 @@ export default function Feedback() {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role</FormLabel>
+                      <FormLabel>{t("page.feedback.fields.role.label")} *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-role">
-                            <SelectValue placeholder="Select your role" />
+                            <SelectValue placeholder={t("page.feedback.fields.role.placeholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -180,21 +252,45 @@ export default function Feedback() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.feedback.fields.category.label")} *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-category">
+                            <SelectValue placeholder={t("page.feedback.fields.category.placeholder")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="bug">{t("page.feedback.category.bug")}</SelectItem>
+                          <SelectItem value="data">{t("page.feedback.category.data")}</SelectItem>
+                          <SelectItem value="ux">{t("page.feedback.category.ux")}</SelectItem>
+                          <SelectItem value="other">{t("page.feedback.category.other")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Message</FormLabel>
+                      <FormLabel>{t("page.feedback.fields.message.label")} *</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Describe the issue or suggestion..."
+                          placeholder={t("page.feedback.fields.message.placeholder")}
                           className="min-h-32 resize-none"
                           {...field}
                           data-testid="input-message"
                         />
                       </FormControl>
+                      <FormDescription>{t("page.feedback.helperText")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -205,10 +301,10 @@ export default function Feedback() {
                   name="screenshotUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Screenshot URL (Optional)</FormLabel>
+                      <FormLabel>{t("page.feedback.fields.screenshotUrl.label")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="https://..."
+                          placeholder={t("page.feedback.fields.screenshotUrl.placeholder")}
                           {...field}
                           value={field.value || ""}
                           data-testid="input-screenshot-url"
@@ -222,18 +318,21 @@ export default function Feedback() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={submitMutation.isPending}
+                  disabled={submitMutation.isPending || !form.formState.isValid}
                   data-testid="button-submit-feedback"
                 >
                   {submitMutation.isPending ? (
-                    "Submitting..."
+                    t("page.feedback.actions.submitting")
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      Submit Feedback
+                      {t("page.feedback.actions.submit")}
                     </>
                   )}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  {t("page.feedback.privacyNote")}
+                </p>
               </form>
             </Form>
           </CardContent>

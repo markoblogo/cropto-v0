@@ -1180,6 +1180,75 @@
         "contractCodeRequired": "Код контракту обов’язковий",
         "valuePositive": "Значення має бути додатним"
       }
+    },
+    "feedback": {
+      "title": "Відгук партнера",
+      "subtitle": "Допоможіть нам покращити Cropto: повідомляйте про проблеми UI, баги або пропонуйте покращення.",
+      "fields": {
+        "name": {
+          "label": "Ім’я",
+          "placeholder": "Ваше ім’я"
+        },
+        "email": {
+          "label": "Email",
+          "placeholder": "your.email@example.com"
+        },
+        "role": {
+          "label": "Роль",
+          "placeholder": "Оберіть вашу роль"
+        },
+        "message": {
+          "label": "Повідомлення",
+          "placeholder": "Опишіть проблему або пропозицію…"
+        },
+        "screenshotUrl": {
+          "label": "URL скріншота (необов’язково)",
+          "placeholder": "https://…"
+        },
+        "category": {
+          "label": "Категорія",
+          "placeholder": "Оберіть категорію"
+        }
+      },
+      "actions": {
+        "submit": "Надіслати відгук",
+        "submitting": "Надсилання…",
+        "submitAnother": "Надіслати ще один"
+      },
+      "toast": {
+        "successTitle": "Успіх",
+        "successDesc": "Відгук надіслано. Дякуємо!",
+        "errorTitle": "Помилка",
+        "errorDesc": "Не вдалося надіслати відгук. Спробуйте ще раз."
+      },
+      "validation": {
+        "nameRequired": "Ім’я обов’язкове",
+        "emailRequired": "Email обов’язковий",
+        "emailInvalid": "Введіть коректний email",
+        "roleRequired": "Будь ласка, оберіть роль",
+        "messageRequired": "Повідомлення обов’язкове",
+        "urlInvalid": "Введіть коректний URL"
+      },
+      "category": {
+        "bug": "Баг",
+        "data": "Проблема з даними",
+        "ux": "Пропозиція щодо UX",
+        "other": "Інше"
+      },
+      "helperText": "Порада: додайте кроки відтворення, очікуваний та фактичний результат і сторінку, де ви були.",
+      "success": {
+        "title": "Дякуємо!"
+      },
+      "privacyNote": "Ми використовуємо це лише для підтримки та покращення продукту.",
+      "environment": {
+        "title": "Дані середовища (додаються автоматично)",
+        "environment": "Середовище",
+        "page": "Сторінка",
+        "language": "Мова",
+        "wallet": "Гаманець",
+        "userId": "ID користувача",
+        "notConnected": "Не підключено"
+      }
     }
   },
   "component": {

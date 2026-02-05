@@ -1176,6 +1176,75 @@
         "contractCodeRequired": "El código de contrato es obligatorio",
         "valuePositive": "El valor debe ser positivo"
       }
+    },
+    "feedback": {
+      "title": "Comentarios de socios",
+      "subtitle": "Ayúdanos a mejorar Cropto: reporta problemas de UI, errores o sugiere mejoras.",
+      "fields": {
+        "name": {
+          "label": "Nombre",
+          "placeholder": "Tu nombre"
+        },
+        "email": {
+          "label": "Correo electrónico",
+          "placeholder": "tu.correo@ejemplo.com"
+        },
+        "role": {
+          "label": "Rol",
+          "placeholder": "Selecciona tu rol"
+        },
+        "message": {
+          "label": "Mensaje",
+          "placeholder": "Describe el problema o la sugerencia…"
+        },
+        "screenshotUrl": {
+          "label": "URL de captura (opcional)",
+          "placeholder": "https://…"
+        },
+        "category": {
+          "label": "Categoría",
+          "placeholder": "Selecciona una categoría"
+        }
+      },
+      "actions": {
+        "submit": "Enviar comentarios",
+        "submitting": "Enviando…",
+        "submitAnother": "Enviar otro"
+      },
+      "toast": {
+        "successTitle": "Éxito",
+        "successDesc": "Comentarios enviados. ¡Gracias!",
+        "errorTitle": "Error",
+        "errorDesc": "No se pudo enviar. Inténtalo de nuevo."
+      },
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "emailRequired": "El correo es obligatorio",
+        "emailInvalid": "Ingresa un correo válido",
+        "roleRequired": "Selecciona un rol",
+        "messageRequired": "El mensaje es obligatorio",
+        "urlInvalid": "Ingresa una URL válida"
+      },
+      "category": {
+        "bug": "Error",
+        "data": "Problema de datos",
+        "ux": "Sugerencia de UX",
+        "other": "Otro"
+      },
+      "helperText": "Consejo: incluye pasos para reproducir, resultado esperado vs real y la página donde ocurrió.",
+      "success": {
+        "title": "¡Gracias!"
+      },
+      "privacyNote": "Usamos esto solo para soporte y mejora del producto.",
+      "environment": {
+        "title": "Detalles del entorno (adjuntos automáticamente)",
+        "environment": "Entorno",
+        "page": "Página",
+        "language": "Idioma",
+        "wallet": "Billetera",
+        "userId": "ID de usuario",
+        "notConnected": "No conectada"
+      }
     }
   },
   "component": {
