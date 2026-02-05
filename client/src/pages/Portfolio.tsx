@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { usePolling } from "@/hooks/usePolling";
 import { Header } from "@/components/Header";
@@ -41,6 +41,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import type { Option } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 interface CommodityIndex {
   id: string;
@@ -1141,11 +1142,9 @@ export default function Portfolio() {
                 {userTier === "guest" ? (
                   <>
                     <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.loginRequired')}</p>
-                    <Link href="/login">
-                      <Button size="sm" data-testid="button-empty-sign-in">
-                        {t('button.login')}
-                      </Button>
-                    </Link>
+                    <Button size="sm" data-testid="button-empty-sign-in" onClick={() => openAuthPrompt()}>
+                      {t('button.login')}
+                    </Button>
                   </>
                 ) : userTier === "user_no_wallet" ? (
                   <>
@@ -1638,11 +1637,9 @@ export default function Portfolio() {
                 ) : userTier === "guest" ? (
                   <>
                     <p className="text-lg font-medium mb-2">{t('page.portfolio.empty.loginRequired')}</p>
-                    <Link href="/login">
-                      <Button size="sm" data-testid="button-empty-sign-in">
-                        {t('button.login')}
-                      </Button>
-                    </Link>
+                    <Button size="sm" data-testid="button-empty-sign-in" onClick={() => openAuthPrompt()}>
+                      {t('button.login')}
+                    </Button>
                   </>
                 ) : userTier === "user_no_wallet" ? (
                   <>
@@ -1858,7 +1855,7 @@ export default function Portfolio() {
           commoditySlug={hedgeModalState.commoditySlug}
           commodityName={hedgeModalState.commodityName}
           currentPrice={hedgeModalState.currentPrice}
-          onOpenLogin={() => setLocation("/login")}
+          onOpenLogin={() => openAuthPrompt()}
           onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
         />
       )}
@@ -1869,7 +1866,7 @@ export default function Portfolio() {
           commoditySlug={hedgeModalState.commoditySlug}
           commodityName={hedgeModalState.commodityName}
           currentPrice={hedgeModalState.currentPrice}
-          onOpenLogin={() => setLocation("/login")}
+          onOpenLogin={() => openAuthPrompt()}
           onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
         />
       )}

@@ -1,8 +1,8 @@
 import { useUserTier } from "@/hooks/useUserTier";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 interface TradingStatusBannerProps {
   onOpenWalletModal?: () => void;
@@ -35,11 +35,9 @@ export function TradingStatusBanner({ onOpenWalletModal }: TradingStatusBannerPr
               {t("banner.guest.message")}
             </p>
           </div>
-          <Link href="/login">
-            <Button size="sm" data-testid="button-banner-sign-in">
-              {t("banner.guest.cta")}
-            </Button>
-          </Link>
+          <Button size="sm" data-testid="button-banner-sign-in" onClick={() => openAuthPrompt()}>
+            {t("banner.guest.cta")}
+          </Button>
         </div>
       </Card>
     );

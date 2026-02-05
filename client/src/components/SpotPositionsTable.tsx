@@ -18,8 +18,8 @@ import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { useUserTier } from "@/hooks/useUserTier";
 import { queryClient } from "@/lib/queryClient";
 import { kgToTons, formatTons } from "@/lib/units";
-import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 interface SpotPosition {
   id: string;
@@ -112,11 +112,9 @@ export function SpotPositionsTable({
           {userTier === "guest" ? (
             <div className="text-center py-8 text-muted-foreground">
               <p className="text-sm font-medium mb-3">{t("spot.positions.emptyGuestTitle")}</p>
-              <Link href="/login">
-                <Button size="sm" data-testid="button-spot-empty-sign-in">
-                  {t("button.login")}
-                </Button>
-              </Link>
+              <Button size="sm" data-testid="button-spot-empty-sign-in" onClick={() => openAuthPrompt()}>
+                {t("button.login")}
+              </Button>
             </div>
           ) : userTier === "user_no_wallet" ? (
             <div className="text-center py-8 text-muted-foreground">
