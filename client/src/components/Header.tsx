@@ -156,20 +156,20 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-14 gap-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 hover-elevate rounded-lg px-2 py-1 -ml-2">
             <img 
               src="/cropto-logo.png" 
               alt={t('site.logoAlt')}
-              className="h-8 w-auto"
+              className="h-7 w-auto"
               data-testid="img-header-logo"
             />
             <span className="font-bold text-lg hidden sm:inline">{t('site.title')}</span>
           </Link>
 
           {/* Navigation - Hidden on mobile, shown on md+ */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5">
             {/* Primary Navigation */}
             {primaryNav.map((item) => {
               const isActive = location === item.to || 
@@ -296,7 +296,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
           </nav>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Language Switcher */}
             <FlagSwitcher />
             
@@ -317,14 +317,14 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                 <NotificationsDropdown />
 
                 {/* User Tier Status Badge */}
-                <Badge className={statusBadge.className} data-testid="badge-user-tier-status">
+                <Badge className={`${statusBadge.className} px-2 py-0.5 text-xs`} data-testid="badge-user-tier-status">
                   {statusBadge.text}
                 </Badge>
 
                 {/* Demo environment badge (replaces Create Option) */}
                 <Badge
                   variant="secondary"
-                  className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap"
+                  className="px-2.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap"
                   data-testid="badge-demo-environment"
                 >
                   Demo environment

@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { usePolling } from "@/hooks/usePolling";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
@@ -771,8 +772,9 @@ export default function Portfolio() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="container mx-auto space-y-8">
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header onCreateOption={() => {}} />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-1">
         <div>
           <h1 className="text-3xl font-bold mb-2">{t('page.portfolio.title')}</h1>
           <p className="text-muted-foreground">{t('page.portfolio.subtitle')}</p>
@@ -793,6 +795,7 @@ export default function Portfolio() {
             ))}
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -800,8 +803,9 @@ export default function Portfolio() {
   // Error state
   if (hasError) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="container mx-auto">
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header onCreateOption={() => {}} />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>{t('common.error')}</AlertTitle>
@@ -810,6 +814,7 @@ export default function Portfolio() {
             </AlertDescription>
           </Alert>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -820,9 +825,9 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header onCreateOption={() => {}} />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-1">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -1871,6 +1876,7 @@ export default function Portfolio() {
         />
       )}
       </div>
+      <Footer />
     </div>
   );
 }
