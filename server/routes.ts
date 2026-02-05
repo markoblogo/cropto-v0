@@ -1870,6 +1870,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const order = spreadSpec?.fallbackOrder?.length
             ? spreadSpec.fallbackOrder
             : sourceOrderByCountry[country];
+          const failoverOrder = spreadSpec?.failoverOrder?.length
+            ? spreadSpec.failoverOrder
+            : ["primary", "secondary", "last_known", "synthetic"];
           const primaryMaxAge = spreadSpec?.maxAgeDays ?? (maxAgeDaysBySource[order[0]] ?? 2);
           const secondaryMaxAge = spreadSpec?.secondaryMaxAgeDays ?? 3;
           const graceDays = spreadSpec?.graceDays ?? 1;
@@ -1885,7 +1888,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sorted.find((c) => c.source === source && (c.freshnessDays ?? 999) <= maxAge);
 
           const freshPrimary = freshBySource(order[0], primaryMaxAge);
-          const freshSecondary = order.slice(1).map((s) => freshBySource(s, secondaryMaxAge)).find(Boolean);
+          const freshSecondary =
+            secondaryMaxAge > 0 && failoverOrder.includes("secondary")
+              ? order.slice(1).map((s) => freshBySource(s, secondaryMaxAge)).find(Boolean)
+              : undefined;
 
           if (freshPrimary) {
             selected.push({ ...freshPrimary, sourceTier: "primary", isStale: false });
@@ -1907,7 +1913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const lastKnown = sorted[0];
           const lastKnownFreshness = lastKnown?.freshnessDays ?? 999;
 
-          if (lastKnown && lastKnownFreshness <= primaryMaxAge + graceDays) {
+          if (lastKnown && failoverOrder.includes("last_known") && lastKnownFreshness <= primaryMaxAge + graceDays) {
             selected.push({
               ...lastKnown,
               sourceTier: "last_known",
@@ -1926,7 +1932,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
 
-          if (lastKnown && spreadSpec?.syntheticAllowed) {
+          if (
+            lastKnown &&
+            failoverOrder.includes("synthetic") &&
+            spreadSpec?.syntheticAllowed &&
+            (spreadSpec.syntheticMaxAgeDays ?? 0) > 0 &&
+            lastKnownFreshness <= spreadSpec.syntheticMaxAgeDays
+          ) {
             const anchor = usSelectedByCommodity.get(spreadSpec.anchorCommodity);
             let syntheticPrice = lastKnown.price;
             if (anchor) {
@@ -1962,7 +1974,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               anchorSource: anchor?.source || null,
             });
           } else {
-            selected.push({ ...lastKnown, sourceTier: "last_known", isStale: true, confidence: "low" });
+            failoverEvents.push({
+              event: "source_no_recent_price",
+              country,
+              key,
+              from: order[0],
+              maxAgeDays: primaryMaxAge,
+              graceDays,
+              freshnessDays: lastKnownFreshness,
+            });
+            continue;
           }
         }
 
@@ -2002,8 +2023,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use IGC data from database if available, otherwise fallback to mock data
       // Mock data is only used when NO IGC records exist for a specific country
       // If there are some IGC records (even if fewer than expected), we use them without mock fallback
-      const finalBrData = brData.length > 0 ? brData : getMockMarketDataBR().map((m) => ({ ...m, sourceTier: "secondary" as const }));
-      const finalArData = arData.length > 0 ? arData : getMockMarketDataAR().map((m) => ({ ...m, sourceTier: "secondary" as const }));
+      const finalBrData = brData;
+      const finalArData = arData;
       const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }));
 
       // Persist mock data to index_prices for history charts if no real records exist.
@@ -2061,8 +2082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      if (brData.length === 0) await persistMockData("BR", finalBrData);
-      if (arData.length === 0) await persistMockData("AR", finalArData);
+      // In conservative BR/AR mode we do not persist mock replacements.
       if (usData.length === 0) await persistMockData("US", finalUsData);
 
       console.log(`[Market Dashboard] Final - BR: ${finalBrData.length}, AR: ${finalArData.length}, US: ${finalUsData.length} records`);
