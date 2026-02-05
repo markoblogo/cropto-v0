@@ -22,7 +22,10 @@ export function startTransactionPoller() {
     }
   }, POLL_INTERVAL);
 
-  updatePendingTransactions();
+  // Run once on startup, but do not crash the process if DB/RPC is temporarily unavailable.
+  updatePendingTransactions().catch((error) => {
+    console.error("Initial transaction poller run failed:", error);
+  });
 }
 
 export function stopTransactionPoller() {
@@ -40,10 +43,16 @@ async function updatePendingTransactions() {
 
   const provider = new ethers.JsonRpcProvider(process.env.POLYGON_AMOY_RPC_URL);
   
-  const pendingTxs = await db
-    .select()
-    .from(onchainTransactions)
-    .where(eq(onchainTransactions.status, "PENDING"));
+  let pendingTxs;
+  try {
+    pendingTxs = await db
+      .select()
+      .from(onchainTransactions)
+      .where(eq(onchainTransactions.status, "PENDING"));
+  } catch (error) {
+    console.error("Failed to query pending on-chain transactions:", error);
+    return;
+  }
 
   for (const tx of pendingTxs) {
     if (!tx.txHash) continue;
