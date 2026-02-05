@@ -21,6 +21,7 @@ import { SpotPositionCard } from "@/components/SpotPositionCard";
 import { OrderBook } from "@/components/trading/OrderBook";
 import { format } from "date-fns";
 import { useMarketDashboard } from "@/hooks/useMarketDashboard";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 interface CommodityIndex {
   id: string;
@@ -513,7 +514,7 @@ export default function SpotTrading() {
                     commoditySlug={selectedPair.slug}
                     commodityName={selectedPair.name}
                     currentPrice={currentPrice}
-                    onOpenLogin={() => setLocation("/login")}
+                    onOpenLogin={() => openAuthPrompt()}
                     onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
                   />
                 ) : (

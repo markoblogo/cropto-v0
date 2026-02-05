@@ -1,6 +1,6 @@
-import { useLocation } from "wouter";
 import { useUserTier } from "./useUserTier";
 import { useWeb3 } from "@/contexts/Web3Context";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 export interface TradingGuardOptions {
   onOpenLogin?: () => void;        // вызывается, если userTier === "guest"
@@ -22,7 +22,6 @@ export function useTradingGuard(
   options?: TradingGuardOptions,
 ): (action: () => void | Promise<void>) => void {
   const userTier = useUserTier();
-  const [, setLocation] = useLocation();
   const { connectWallet } = useWeb3();
 
   return (action: () => void | Promise<void>) => {
@@ -37,9 +36,9 @@ export function useTradingGuard(
       if (options?.onOpenLogin) {
         options.onOpenLogin();
       } else {
-        // Fallback: navigate to login page
-        console.warn("useTradingGuard: onOpenLogin callback not provided, falling back to navigation");
-        setLocation("/login");
+        // Fallback: open global auth prompt
+        console.warn("useTradingGuard: onOpenLogin callback not provided, opening auth prompt");
+        openAuthPrompt();
       }
       return;
     }
@@ -59,4 +58,3 @@ export function useTradingGuard(
     }
   };
 }
-

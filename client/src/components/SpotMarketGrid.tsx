@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
-import { useLocation } from "wouter";
 import { SpotMarketCard } from "./SpotMarketCard";
 import { SpotBuyModal } from "./SpotBuyModal";
 import { SpotSellModal } from "./SpotSellModal";
@@ -11,6 +10,7 @@ import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 interface CommodityIndex {
   id: string;
@@ -34,14 +34,13 @@ interface SelectedCommodity {
 
 export function SpotMarketGrid() {
   const { t } = useTranslation();
-  const [, setLocation] = useLocation();
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedCommodity, setSelectedCommodity] = useState<SelectedCommodity | null>(null);
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
 
   const guardTradingAction = useTradingGuard({
-    onOpenLogin: () => setLocation("/login"),
+    onOpenLogin: () => openAuthPrompt(),
     onOpenWalletModal: () => setIsWalletAuthModalOpen(true),
   });
 
@@ -178,7 +177,7 @@ export function SpotMarketGrid() {
             commoditySlug={selectedCommodity.slug}
             commodityName={selectedCommodity.name}
             currentPrice={selectedCommodity.pricePerTon}
-            onOpenLogin={() => setLocation("/login")}
+            onOpenLogin={() => openAuthPrompt()}
             onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
           />
           <SpotSellModal
@@ -187,7 +186,7 @@ export function SpotMarketGrid() {
             commoditySlug={selectedCommodity.slug}
             commodityName={selectedCommodity.name}
             currentPrice={selectedCommodity.pricePerTon}
-            onOpenLogin={() => setLocation("/login")}
+            onOpenLogin={() => openAuthPrompt()}
             onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
           />
         </>

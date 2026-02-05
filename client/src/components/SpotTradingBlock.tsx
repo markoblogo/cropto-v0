@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +20,7 @@ import { useTradingGuard } from "@/hooks/useTradingGuard";
 import { getTradingPairs, SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
 import { SpotMiniChart } from "./SpotMiniChart";
 import { SpotTradeHistory } from "./SpotTradeHistory";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 interface CommodityIndex {
   id: string;
@@ -57,14 +57,13 @@ interface IndexDataWithHistory {
 
 export function SpotTradingBlock() {
   const { t } = useTranslation();
-  const [, setLocation] = useLocation();
   const [selectedPairSlug, setSelectedPairSlug] = useState<string | null>(null);
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [isWalletAuthModalOpen, setIsWalletAuthModalOpen] = useState(false);
 
   const guardTradingAction = useTradingGuard({
-    onOpenLogin: () => setLocation("/login"),
+    onOpenLogin: () => openAuthPrompt(),
     onOpenWalletModal: () => setIsWalletAuthModalOpen(true),
   });
 
@@ -335,7 +334,7 @@ export function SpotTradingBlock() {
             commoditySlug={selectedPair.slug}
             commodityName={selectedPair.name}
             currentPrice={currentPrice}
-            onOpenLogin={() => setLocation("/login")}
+            onOpenLogin={() => openAuthPrompt()}
             onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
           />
           <SpotSellModal
@@ -344,7 +343,7 @@ export function SpotTradingBlock() {
             commoditySlug={selectedPair.slug}
             commodityName={selectedPair.name}
             currentPrice={currentPrice}
-            onOpenLogin={() => setLocation("/login")}
+            onOpenLogin={() => openAuthPrompt()}
             onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
           />
         </>
@@ -358,4 +357,3 @@ export function SpotTradingBlock() {
     </>
   );
 }
-

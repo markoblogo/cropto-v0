@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { OrderBook } from "@/components/trading/OrderBook";
 import { SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
 import { MARGIN_PROFILES, MarginProfileId, getMarginProfile } from "@/lib/marginProfiles";
+import { openAuthPrompt } from "@/lib/authPrompt";
 
 type ViewMode = "all" | "my";
 type AnalyticsTab = "chain" | "volume" | "openInterest";
@@ -654,7 +655,7 @@ export default function OptionChain() {
                 ) : (
                   <div className="space-y-3 text-sm text-muted-foreground">
                     <p>{t('page.options.loginToViewOrderBook')}</p>
-                    <Button size="sm" onClick={() => setLocation("/login")}>
+                    <Button size="sm" onClick={() => openAuthPrompt()}>
                       {t('button.login')}
                     </Button>
                   </div>

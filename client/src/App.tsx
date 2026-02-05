@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Web3Provider } from "@/contexts/Web3Context";
 import { WaitlistProvider } from "@/contexts/WaitlistContext";
 import DemoBanner from "@/components/DemoBanner";
+import { AuthPromptGateway } from "@/components/AuthPromptGateway";
 import Dashboard from "@/pages/Dashboard";
 import Portfolio from "@/pages/Portfolio";
 import OptionChain from "@/pages/OptionChain";
@@ -97,6 +98,7 @@ function App() {
           <WaitlistProvider>
             <Toaster />
             <DemoBanner />
+            <AuthPromptGateway />
             <Router />
           </WaitlistProvider>
         </Web3Provider>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOptionsMarketSnapshot } from "@/hooks/useOptionsMarketSnapshot";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { openAuthPrompt, getCurrentPathWithSearch } from "@/lib/authPrompt";
 
 export function OptionsMarketStrip() {
   const [, setLocation] = useLocation();
@@ -19,8 +20,8 @@ export function OptionsMarketStrip() {
 
   const rows = useMemo(() => data?.options ?? [], [data]);
 
-  const goToLogin = () => setLocation("/login");
-  const goToRegister = () => setLocation("/register");
+  const goToLogin = () => openAuthPrompt(getCurrentPathWithSearch());
+  const goToRegister = () => setLocation(`/register?returnTo=${encodeURIComponent(getCurrentPathWithSearch())}`);
   const goToOptionChain = (commodity: string | null | undefined, windowLabel: string) => {
     const params = new URLSearchParams();
     if (commodity) params.set("commodity", commodity);
@@ -196,4 +197,3 @@ export function OptionsMarketStrip() {
     </Card>
   );
 }
-
