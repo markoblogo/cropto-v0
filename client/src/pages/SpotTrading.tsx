@@ -74,8 +74,8 @@ export default function SpotTrading() {
   // Read country query param
   const initialSearchParams = new URLSearchParams(window.location.search);
   const countryParam = initialSearchParams.get("country")?.toLowerCase();
-  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar">(
-    (countryParam === "ua" || countryParam === "br" || countryParam === "ar") ? countryParam : "ua"
+  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar" | "us">(
+    (countryParam === "ua" || countryParam === "br" || countryParam === "ar" || countryParam === "us") ? countryParam : "ua"
   );
 
   // Update URL when region changes
@@ -319,11 +319,12 @@ export default function SpotTrading() {
           </div>
           
           {/* Region Selector */}
-          <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar")} className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
+          <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar" | "us")} className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-4">
               <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
               <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
               <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+              <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -348,7 +349,7 @@ export default function SpotTrading() {
             <CardContent className="pt-6">
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="text-4xl mb-4">
-                  {selectedRegion === "br" ? "🇧🇷" : "🇦🇷"}
+                  {selectedRegion === "br" ? "🇧🇷" : selectedRegion === "ar" ? "🇦🇷" : "🇺🇸"}
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{t('page.spot.comingSoon')}</h3>
                 <p className="text-sm text-muted-foreground max-w-sm">

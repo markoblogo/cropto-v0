@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
@@ -64,7 +64,19 @@ interface SpotPosition {
 export default function MarketData() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar">("ua");
+  const initialSearchParams = new URLSearchParams(window.location.search);
+  const countryParam = initialSearchParams.get("country")?.toLowerCase();
+  const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar" | "us">(
+    (countryParam === "ua" || countryParam === "br" || countryParam === "ar" || countryParam === "us")
+      ? countryParam
+      : "ua"
+  );
+
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(window.location.search);
+    newSearchParams.set("country", selectedRegion);
+    setLocation(`/market-data?${newSearchParams.toString()}`, { replace: true });
+  }, [selectedRegion, setLocation]);
   
   // Fetch market dashboard data for regional indexes
   const { data: marketDashboardData, isLoading: isMarketDashboardLoading } = useMarketDashboard();
@@ -206,7 +218,10 @@ export default function MarketData() {
   const volatilityPadding = (volatilityMaxPrice - volatilityMinPrice) * 0.1 || 10;
 
   // Get country flag and label
-  const countryFlag = selectedRegion === "ua" ? "🇺🇦" : selectedRegion === "br" ? "🇧🇷" : "🇦🇷";
+  const countryFlag =
+    selectedRegion === "ua" ? "🇺🇦" :
+    selectedRegion === "br" ? "🇧🇷" :
+    selectedRegion === "ar" ? "🇦🇷" : "🇺🇸";
   const countryLabel = selectedRegion.toUpperCase();
 
   const handleViewOptionsMarket = () => {
@@ -382,11 +397,12 @@ export default function MarketData() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar")} className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-3">
+            <Tabs value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as "ua" | "br" | "ar" | "us")} className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-4">
                 <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
                 <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
                 <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+                <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value={selectedRegion} className="mt-6">
@@ -452,4 +468,3 @@ export default function MarketData() {
     </MainLayout>
   );
 }
-

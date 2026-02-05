@@ -83,15 +83,37 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
 
   // Define navigation items
   const primaryNav = [
-    { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
     { to: "/portfolio", label: t("nav.portfolio"), testId: "button-nav-portfolio" },
-    { to: "/spot-trading", label: t("nav.spot"), testId: "button-nav-spot" },
-    { to: "/options", label: t("nav.options"), testId: "button-nav-options" },
-    { to: "/market-data", label: t("nav.marketData"), testId: "button-nav-market-data" },
     { to: "/education", label: t("nav.education"), testId: "button-nav-education" },
   ];
 
+  const indexTradingNav = [
+    { to: "/spot-trading?country=ua", label: "Trade Index UA", testId: "button-nav-index-ua" },
+    { to: "/spot-trading?country=br", label: "Trade Index BR", testId: "button-nav-index-br" },
+    { to: "/spot-trading?country=ar", label: "Trade Index AR", testId: "button-nav-index-ar" },
+    { to: "/spot-trading?country=us", label: "Trade Index USA", testId: "button-nav-index-us" },
+    { to: "/arbitrage", label: "Trade Arbitrage Index UA/BR/AR/USA", testId: "button-nav-index-arbitrage" },
+  ];
+
+  const optionsTradingNav = [
+    { to: "/options?country=ua", label: "Trade Options UA", testId: "button-nav-options-ua" },
+    { to: "/options?country=br", label: "Trade Options BR", testId: "button-nav-options-br" },
+    { to: "/options?country=ar", label: "Trade Options AR", testId: "button-nav-options-ar" },
+    { to: "/options?country=us", label: "Trade Options USA", testId: "button-nav-options-us" },
+  ];
+
+  const marketDataNav = [
+    { to: "/market-data?country=ua", label: "Index UA", testId: "button-nav-market-ua" },
+    { to: "/market-data?country=br", label: "Index BR", testId: "button-nav-market-br" },
+    { to: "/market-data?country=ar", label: "Index AR", testId: "button-nav-market-ar" },
+    { to: "/market-data?country=us", label: "Index USA", testId: "button-nav-market-us" },
+  ];
+
   const secondaryNav = [
+    { to: "/docs", label: "Documentation", testId: "button-nav-docs" },
+    { to: "/wallet", label: t("nav.wallet"), testId: "button-nav-wallet" },
+    { to: "/faq", label: "FAQ", testId: "button-nav-faq" },
+    { to: "/about", label: "About Cropto", testId: "button-nav-about" },
     { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
@@ -145,6 +167,75 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                 </Link>
               );
             })}
+
+            {/* Index Trading Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="button-nav-index-trading"
+                  className={location.startsWith("/spot-trading") || location.startsWith("/arbitrage") ? "bg-accent" : ""}
+                >
+                  Index Trading
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {indexTradingNav.map((item) => (
+                  <DropdownMenuItem key={item.to} asChild>
+                    <Link href={item.to} data-testid={item.testId}>
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Options Trading Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="button-nav-options-trading"
+                  className={location.startsWith("/options") ? "bg-accent" : ""}
+                >
+                  Options Trading
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {optionsTradingNav.map((item) => (
+                  <DropdownMenuItem key={item.to} asChild>
+                    <Link href={item.to} data-testid={item.testId}>
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Market Data Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="button-nav-market-data-dropdown"
+                  className={location.startsWith("/market-data") ? "bg-accent" : ""}
+                >
+                  {t("nav.marketData")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {marketDataNav.map((item) => (
+                  <DropdownMenuItem key={item.to} asChild>
+                    <Link href={item.to} data-testid={item.testId}>
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* More Dropdown */}
             <DropdownMenu>
@@ -254,6 +345,54 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                 <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
                   <Button 
                     variant="ghost" 
+                    className="w-full justify-start"
+                    data-testid={`mobile-${item.testId}`}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
+
+              <Separator className="my-2" />
+
+              {/* Index Trading Links */}
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Index Trading</div>
+              {indexTradingNav.map((item) => (
+                <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    data-testid={`mobile-${item.testId}`}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
+
+              <Separator className="my-2" />
+
+              {/* Options Trading Links */}
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Options Trading</div>
+              {optionsTradingNav.map((item) => (
+                <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    data-testid={`mobile-${item.testId}`}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
+
+              <Separator className="my-2" />
+
+              {/* Market Data Links */}
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">{t("nav.marketData")}</div>
+              {marketDataNav.map((item) => (
+                <Link key={item.to} href={item.to} onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
                     className="w-full justify-start"
                     data-testid={`mobile-${item.testId}`}
                   >
