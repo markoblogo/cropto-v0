@@ -5134,6 +5134,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sources: {
           IGC: {
             enabled: process.env.ENABLE_IGC_POLLING === "true",
+            disabledBySetting: ((await getSettingValue("parser_disabled_igc")) || "").toLowerCase() === "true",
+            effectiveEnabled:
+              process.env.ENABLE_IGC_POLLING === "true" &&
+              ((await getSettingValue("parser_disabled_igc")) || "").toLowerCase() !== "true",
             lastFetchAt: igcLastFetchAt,
             lastSuccessAt: igcLastSuccessAt,
             lastRows: igcLastRows,
@@ -5141,9 +5145,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastErrorAt: igcLastErrorAt,
             latestAsOf: igcLatestAsOf ? igcLatestAsOf.toISOString() : null,
             status: statusByAge(igcLatestAsOf),
+            consecutiveZeroRuns: toIntOrNull(await getSettingValue("parser_health_igc_consecutive_zero")),
           },
           USDA_AMS: {
             enabled: process.env.ENABLE_USDA_AMS_POLLING !== "false",
+            disabledBySetting: ((await getSettingValue("parser_disabled_usda_ams")) || "").toLowerCase() === "true",
+            effectiveEnabled:
+              process.env.ENABLE_USDA_AMS_POLLING !== "false" &&
+              ((await getSettingValue("parser_disabled_usda_ams")) || "").toLowerCase() !== "true",
             lastFetchAt: usdaLastFetchAt,
             lastSuccessAt: usdaLastSuccessAt,
             lastRows: usdaLastRows,
@@ -5152,9 +5161,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastPublishedDate: usdaLastPublishedDate,
             latestAsOf: usdaLatestAsOf ? usdaLatestAsOf.toISOString() : null,
             status: statusByAge(usdaLatestAsOf),
+            consecutiveZeroRuns: toIntOrNull(await getSettingValue("parser_health_usda_ams_consecutive_zero")),
           },
           BARCHART_USDA: {
             enabled: process.env.ENABLE_BARCHART_USDA_POLLING !== "false",
+            disabledBySetting:
+              ((await getSettingValue("parser_disabled_barchart_usda")) || "").toLowerCase() === "true",
+            effectiveEnabled:
+              process.env.ENABLE_BARCHART_USDA_POLLING !== "false" &&
+              ((await getSettingValue("parser_disabled_barchart_usda")) || "").toLowerCase() !== "true",
             lastFetchAt: toIsoOrNull(await getSettingValue("parser_health_barchart_usda_last_fetch_at")),
             lastSuccessAt: toIsoOrNull(await getSettingValue("parser_health_barchart_usda_last_success_at")),
             lastRows: toIntOrNull(await getSettingValue("parser_health_barchart_usda_last_rows")),
@@ -5162,9 +5177,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastErrorAt: toIsoOrNull(await getSettingValue("parser_health_barchart_usda_last_error_at")),
             latestAsOf: barchartLatestAsOf ? barchartLatestAsOf.toISOString() : null,
             status: statusByAge(barchartLatestAsOf),
+            consecutiveZeroRuns: toIntOrNull(await getSettingValue("parser_health_barchart_usda_consecutive_zero")),
           },
           FUTURES_PROXY: {
             enabled: process.env.ENABLE_FUTURES_PROXY_POLLING !== "false",
+            disabledBySetting:
+              ((await getSettingValue("parser_disabled_futures_proxy")) || "").toLowerCase() === "true",
+            effectiveEnabled:
+              process.env.ENABLE_FUTURES_PROXY_POLLING !== "false" &&
+              ((await getSettingValue("parser_disabled_futures_proxy")) || "").toLowerCase() !== "true",
             lastFetchAt: toIsoOrNull(await getSettingValue("parser_health_futures_proxy_last_fetch_at")),
             lastSuccessAt: toIsoOrNull(await getSettingValue("parser_health_futures_proxy_last_success_at")),
             lastRows: toIntOrNull(await getSettingValue("parser_health_futures_proxy_last_rows")),
@@ -5172,6 +5193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastErrorAt: toIsoOrNull(await getSettingValue("parser_health_futures_proxy_last_error_at")),
             latestAsOf: futuresProxyLatestAsOf ? futuresProxyLatestAsOf.toISOString() : null,
             status: statusByAge(futuresProxyLatestAsOf),
+            consecutiveZeroRuns: toIntOrNull(await getSettingValue("parser_health_futures_proxy_consecutive_zero")),
           },
         },
         countries,
@@ -5179,6 +5201,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching parser health:", error);
       res.status(500).json({ error: error.message || "Failed to fetch parser health" });
+    }
+  });
+
+  app.post("/api/admin/parsers/source", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const parsed = z
+        .object({
+          source: z.enum(["IGC", "USDA_AMS", "BARCHART_USDA", "FUTURES_PROXY"]),
+          disabled: z.boolean(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid payload" });
+      }
+
+      const key = `parser_disabled_${parsed.data.source.toLowerCase()}`;
+      await storage.upsertAppSetting(key, parsed.data.disabled ? "true" : "false");
+      await storage.writeAuditEvent({
+        event: "parser_manual_toggle",
+        userId: req.user!.id,
+        metadata: { source: parsed.data.source, disabled: parsed.data.disabled },
+      });
+      res.json({ ok: true, source: parsed.data.source, disabled: parsed.data.disabled });
+    } catch (error: any) {
+      console.error("Error toggling parser source:", error);
+      res.status(500).json({ error: error.message || "Failed to toggle parser source" });
     }
   });
 

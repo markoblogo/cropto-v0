@@ -15,6 +15,8 @@ const POLL_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 let pollerInterval: NodeJS.Timeout | null = null;
 let lastPrimaryFailureAlertAt = 0;
 
+type ParserSource = "IGC" | "USDA_AMS" | "BARCHART_USDA" | "FUTURES_PROXY";
+
 function getAlertRecipients(): string[] {
   const configured =
     process.env.INDEX_PARSER_ALERT_EMAILS ||
@@ -57,7 +59,7 @@ async function sendPrimaryFailureAlert(details: { igcRows: number; usdaRows: num
 }
 
 async function writeParserHealthSnapshot(args: {
-  source: "IGC" | "USDA_AMS" | "BARCHART_USDA" | "FUTURES_PROXY";
+  source: ParserSource;
   rows: number;
   success: boolean;
   error?: string;
@@ -79,6 +81,51 @@ async function writeParserHealthSnapshot(args: {
   }
 }
 
+function sourceToSettingKey(source: ParserSource): string {
+  return source.toLowerCase();
+}
+
+async function isSourceDisabledBySetting(source: ParserSource): Promise<boolean> {
+  const key = `parser_disabled_${sourceToSettingKey(source)}`;
+  const value = (await storage.getAppSetting(key))?.value || "";
+  return value.toLowerCase() === "true";
+}
+
+async function setSourceDisabledBySetting(source: ParserSource, disabled: boolean): Promise<void> {
+  const key = `parser_disabled_${sourceToSettingKey(source)}`;
+  await storage.upsertAppSetting(key, disabled ? "true" : "false");
+}
+
+async function bumpConsecutiveZeroRuns(args: { source: ParserSource; zeroRun: boolean }): Promise<number> {
+  const lower = sourceToSettingKey(args.source);
+  const key = `parser_health_${lower}_consecutive_zero`;
+  if (!args.zeroRun) {
+    await storage.upsertAppSetting(key, "0");
+    return 0;
+  }
+  const currentRaw = (await storage.getAppSetting(key))?.value || "0";
+  const current = Number.parseInt(currentRaw, 10);
+  const next = Number.isFinite(current) ? Math.max(current, 0) + 1 : 1;
+  await storage.upsertAppSetting(key, String(next));
+  return next;
+}
+
+function isEnvSourceEnabled(source: ParserSource): boolean {
+  switch (source) {
+    case "IGC":
+      // Poller-level enablement is still controlled by ENABLE_IGC_POLLING, but source-level can be disabled by setting.
+      return true;
+    case "USDA_AMS":
+      return process.env.ENABLE_USDA_AMS_POLLING !== "false";
+    case "BARCHART_USDA":
+      return process.env.ENABLE_BARCHART_USDA_POLLING !== "false";
+    case "FUTURES_PROXY":
+      return process.env.ENABLE_FUTURES_PROXY_POLLING !== "false";
+    default:
+      return true;
+  }
+}
+
 /**
  * Run external price fetch and upsert once
  */
@@ -86,30 +133,42 @@ export async function pollOnce(): Promise<number> {
   try {
     console.log("[IGC Poller] Starting external price fetch...");
 
-    const igcPrices = await fetchIgcDailyPrices();
-    const usdaPrices = process.env.ENABLE_USDA_AMS_POLLING === "false"
-      ? []
-      : await fetchUsdaAmsPrices();
-    const barchartUsPrices = process.env.ENABLE_BARCHART_USDA_POLLING === "false"
-      ? []
-      : await fetchUsBarchartPrices();
-    const futuresProxyPrices = process.env.ENABLE_FUTURES_PROXY_POLLING === "false"
-      ? []
-      : await fetchLatamFuturesProxyPrices();
+    const autoDisableThresholdRaw = Number.parseInt(process.env.PARSER_AUTO_DISABLE_AFTER_ZERO_RUNS || "3", 10);
+    const autoDisableThreshold = Number.isFinite(autoDisableThresholdRaw)
+      ? Math.min(Math.max(autoDisableThresholdRaw, 2), 20)
+      : 3;
+
+    const enabledBySource: Record<ParserSource, boolean> = {
+      IGC: isEnvSourceEnabled("IGC") && !(await isSourceDisabledBySetting("IGC")),
+      USDA_AMS: isEnvSourceEnabled("USDA_AMS") && !(await isSourceDisabledBySetting("USDA_AMS")),
+      BARCHART_USDA: isEnvSourceEnabled("BARCHART_USDA") && !(await isSourceDisabledBySetting("BARCHART_USDA")),
+      FUTURES_PROXY: isEnvSourceEnabled("FUTURES_PROXY") && !(await isSourceDisabledBySetting("FUTURES_PROXY")),
+    };
+
+    const igcPrices = enabledBySource.IGC ? await fetchIgcDailyPrices() : [];
+    const usdaPrices = enabledBySource.USDA_AMS ? await fetchUsdaAmsPrices() : [];
+    const barchartUsPrices = enabledBySource.BARCHART_USDA ? await fetchUsBarchartPrices() : [];
+    const futuresProxyPrices = enabledBySource.FUTURES_PROXY ? await fetchLatamFuturesProxyPrices() : [];
 
     await writeParserHealthSnapshot({
       source: "IGC",
       rows: igcPrices.length,
-      success: igcPrices.length > 0,
-      error: igcPrices.length === 0 ? "No rows parsed from IGC source" : undefined,
+      success: !enabledBySource.IGC || igcPrices.length > 0,
+      error: !enabledBySource.IGC
+        ? "Polling disabled by app setting parser_disabled_igc=true"
+        : igcPrices.length === 0
+          ? "No rows parsed from IGC source"
+          : undefined,
     });
     await writeParserHealthSnapshot({
       source: "USDA_AMS",
       rows: usdaPrices.length,
-      success: usdaPrices.length > 0 || process.env.ENABLE_USDA_AMS_POLLING === "false",
+      success: !enabledBySource.USDA_AMS || usdaPrices.length > 0,
       error:
-        process.env.ENABLE_USDA_AMS_POLLING === "false"
-          ? "Polling disabled by ENABLE_USDA_AMS_POLLING=false"
+        !enabledBySource.USDA_AMS
+          ? isEnvSourceEnabled("USDA_AMS")
+            ? "Polling disabled by app setting parser_disabled_usda_ams=true"
+            : "Polling disabled by ENABLE_USDA_AMS_POLLING=false"
           : usdaPrices.length === 0
             ? "No rows parsed from USDA AMS source"
             : undefined,
@@ -117,10 +176,12 @@ export async function pollOnce(): Promise<number> {
     await writeParserHealthSnapshot({
       source: "BARCHART_USDA",
       rows: barchartUsPrices.length,
-      success: barchartUsPrices.length > 0 || process.env.ENABLE_BARCHART_USDA_POLLING === "false",
+      success: !enabledBySource.BARCHART_USDA || barchartUsPrices.length > 0,
       error:
-        process.env.ENABLE_BARCHART_USDA_POLLING === "false"
-          ? "Polling disabled by ENABLE_BARCHART_USDA_POLLING=false"
+        !enabledBySource.BARCHART_USDA
+          ? isEnvSourceEnabled("BARCHART_USDA")
+            ? "Polling disabled by app setting parser_disabled_barchart_usda=true"
+            : "Polling disabled by ENABLE_BARCHART_USDA_POLLING=false"
           : barchartUsPrices.length === 0
             ? "No rows parsed from Barchart USDA source"
             : undefined,
@@ -128,21 +189,50 @@ export async function pollOnce(): Promise<number> {
     await writeParserHealthSnapshot({
       source: "FUTURES_PROXY",
       rows: futuresProxyPrices.length,
-      success: futuresProxyPrices.length > 0 || process.env.ENABLE_FUTURES_PROXY_POLLING === "false",
+      success: !enabledBySource.FUTURES_PROXY || futuresProxyPrices.length > 0,
       error:
-        process.env.ENABLE_FUTURES_PROXY_POLLING === "false"
-          ? "Polling disabled by ENABLE_FUTURES_PROXY_POLLING=false"
+        !enabledBySource.FUTURES_PROXY
+          ? isEnvSourceEnabled("FUTURES_PROXY")
+            ? "Polling disabled by app setting parser_disabled_futures_proxy=true"
+            : "Polling disabled by ENABLE_FUTURES_PROXY_POLLING=false"
           : futuresProxyPrices.length === 0
             ? "No rows parsed from futures proxy source"
             : undefined,
     });
 
-    if (
-      igcPrices.length === 0 &&
-      usdaPrices.length === 0 &&
-      barchartUsPrices.length === 0 &&
-      futuresProxyPrices.length === 0
-    ) {
+    const enabledCount = Object.values(enabledBySource).filter(Boolean).length;
+    const allEnabledReturnedZero =
+      (!enabledBySource.IGC || igcPrices.length === 0) &&
+      (!enabledBySource.USDA_AMS || usdaPrices.length === 0) &&
+      (!enabledBySource.BARCHART_USDA || barchartUsPrices.length === 0) &&
+      (!enabledBySource.FUTURES_PROXY || futuresProxyPrices.length === 0) &&
+      enabledCount > 0;
+
+    // Auto-disable sources that return zero repeatedly to avoid wasting resources in demo deployments.
+    for (const source of Object.keys(enabledBySource) as ParserSource[]) {
+      if (!enabledBySource[source]) continue;
+      const rows =
+        source === "IGC"
+          ? igcPrices.length
+          : source === "USDA_AMS"
+            ? usdaPrices.length
+            : source === "BARCHART_USDA"
+              ? barchartUsPrices.length
+              : futuresProxyPrices.length;
+
+      const consecutiveZero = await bumpConsecutiveZeroRuns({ source, zeroRun: rows === 0 });
+      if (rows === 0 && consecutiveZero >= autoDisableThreshold) {
+        await setSourceDisabledBySetting(source, true);
+        await storage.writeAuditEvent({
+          event: "parser_auto_disabled",
+          userId: null,
+          metadata: { source, consecutiveZero, threshold: autoDisableThreshold },
+        });
+        console.warn(`[IGC Poller] Auto-disabled ${source} after ${consecutiveZero} consecutive zero runs`);
+      }
+    }
+
+    if (allEnabledReturnedZero) {
       console.warn("[IGC Poller] No external prices fetched");
       await sendPrimaryFailureAlert({ igcRows: 0, usdaRows: 0 });
       return 0;
