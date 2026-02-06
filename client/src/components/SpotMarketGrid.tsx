@@ -33,6 +33,10 @@ function toSlug(commodity: string): string {
   return c.replace(/\s+/g, "-");
 }
 
+function normalizeToSlug(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 function countryLabel(country: CountryCode): string {
   if (country === "UA") return "Ukraine";
   if (country === "BR") return "Brazil";
@@ -74,7 +78,6 @@ export function SpotMarketGrid() {
   }, [data, selectedCountry]);
 
   const handleBuy = (slug: string, name: string, pricePerTon: number) => {
-    if (selectedCountry !== "UA") return;
     guardTradingAction(() => {
       setSelectedCommodity({ slug, name, pricePerTon });
       setBuyModalOpen(true);
@@ -82,7 +85,6 @@ export function SpotMarketGrid() {
   };
 
   const handleSell = (slug: string, name: string, pricePerTon: number) => {
-    if (selectedCountry !== "UA") return;
     guardTradingAction(() => {
       setSelectedCommodity({ slug, name, pricePerTon });
       setSellModalOpen(true);
@@ -129,14 +131,6 @@ export function SpotMarketGrid() {
             </TabsList>
           </Tabs>
 
-          {selectedCountry !== "UA" && (
-            <Alert>
-              <AlertDescription>
-                {`Read-only mode for ${selectedCountry}: market data is live, trading flow is enabled for UA in this build.`}
-              </AlertDescription>
-            </Alert>
-          )}
-
           {rows.length === 0 ? (
             <Alert>
               <AlertDescription>{t("spot.market.noData")}</AlertDescription>
@@ -144,9 +138,10 @@ export function SpotMarketGrid() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {rows.map((row, i) => {
-                const slug = toSlug(row.commodity);
+                const slug = selectedCountry === "UA"
+                  ? toSlug(row.commodity)
+                  : `${selectedCountry.toLowerCase()}-${normalizeToSlug(row.commodity)}-${normalizeToSlug(row.basis || "default")}`;
                 const changeClass = row.change24h > 0 ? "text-green-600" : row.change24h < 0 ? "text-red-600" : "text-muted-foreground";
-                const canTrade = selectedCountry === "UA";
                 return (
                   <Card key={`${selectedCountry}:${row.commodity}:${row.basis}:${i}`} className="rounded-xl shadow-sm">
                     <CardHeader className="pb-2">
@@ -173,10 +168,10 @@ export function SpotMarketGrid() {
                       </div>
                       <div className={`text-sm font-medium ${changeClass}`}>{row.change24h > 0 ? "+" : ""}{row.change24h.toFixed(2)}% 24h</div>
                       <div className="flex gap-2">
-                        <Button size="sm" className="flex-1" disabled={!canTrade} onClick={() => handleBuy(slug, row.commodity, row.price)}>
+                        <Button size="sm" className="flex-1" onClick={() => handleBuy(slug, row.commodity, row.price)}>
                           {t("spot.market.buy")}
                         </Button>
-                        <Button size="sm" variant="secondary" className="flex-1" disabled={!canTrade} onClick={() => handleSell(slug, row.commodity, row.price)}>
+                        <Button size="sm" variant="secondary" className="flex-1" onClick={() => handleSell(slug, row.commodity, row.price)}>
                           {t("spot.market.sell")}
                         </Button>
                       </div>

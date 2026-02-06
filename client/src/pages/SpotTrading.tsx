@@ -509,26 +509,13 @@ export default function SpotTrading() {
             {selectedPair && (
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Order Form */}
-                {isUaRegion ? (
-                  <SpotOrderForm
-                    commoditySlug={selectedPair.slug}
-                    commodityName={selectedPair.name}
-                    currentPrice={currentPrice}
-                    onOpenLogin={() => openAuthPrompt()}
-                    onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
-                  />
-                ) : (
-                  <Card>
-                    <CardContent className="pt-6 space-y-3">
-                      <h3 className="text-lg font-semibold">{t("spot.orderForm.title")}</h3>
-                      <Alert>
-                        <AlertDescription>
-                          {t("spot.readOnly.notice", { country: selectedRegion.toUpperCase() })}
-                        </AlertDescription>
-                      </Alert>
-                    </CardContent>
-                  </Card>
-                )}
+                <SpotOrderForm
+                  commoditySlug={selectedPair.slug}
+                  commodityName={selectedPair.name}
+                  currentPrice={currentPrice}
+                  onOpenLogin={() => openAuthPrompt()}
+                  onOpenWalletModal={() => setIsWalletAuthModalOpen(true)}
+                />
 
                 {/* Recent Price Updates (index quotes, not trades) */}
                 <Card>

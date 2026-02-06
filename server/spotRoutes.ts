@@ -6,12 +6,27 @@ import {
   croptBalances, 
   indexes, 
   commodityIndexPrices,
-  platformFees
+  platformFees,
+  indexPrices,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
 export function registerSpotRoutes(app: Express) {
   const STALE_MAX_AGE_DAYS = 7;
+
+  function normalizeToSlug(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
+
+  function parseSyntheticSpotSlug(slug: string): { country: "UA" | "BR" | "AR" | "US"; commoditySlug: string; basisSlug: string } | null {
+    const m = slug.match(/^(ua|br|ar|us)-([a-z0-9-]+)-([a-z0-9-]+)$/i);
+    if (!m) return null;
+    return {
+      country: m[1].toUpperCase() as "UA" | "BR" | "AR" | "US",
+      commoditySlug: m[2],
+      basisSlug: m[3],
+    };
+  }
 
   function computeIsStale(latestTimestamp: Date | string | null | undefined) {
     if (!latestTimestamp) return { isStale: true, staleReason: "no_recent_quotes" };
@@ -26,9 +41,49 @@ export function registerSpotRoutes(app: Express) {
   async function getPricePerKgOrThrow(commoditySlug: string) {
     const [index] = await db.select().from(indexes).where(eq(indexes.slug, commoditySlug)).limit(1);
     if (!index) {
-      const err: any = new Error("Commodity not found");
-      err.statusCode = 404;
-      throw err;
+      // Support synthetic country slugs from global market dashboard:
+      // br-corn-fob-paranagua, ar-soybeans-fob-up-river, etc.
+      const synthetic = parseSyntheticSpotSlug(commoditySlug);
+      if (!synthetic) {
+        const err: any = new Error("Commodity not found");
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const rows = await db
+        .select()
+        .from(indexPrices)
+        .where(eq(indexPrices.country, synthetic.country))
+        .orderBy(desc(indexPrices.asOfDate), desc(indexPrices.date));
+
+      const matched = rows.find((r) => {
+        const commoditySlugValue = normalizeToSlug(r.commodity || "");
+        const basisSource = r.label || (() => {
+          try {
+            const parsed = r.meta ? JSON.parse(r.meta) : null;
+            return (parsed?.basis as string) || "";
+          } catch {
+            return "";
+          }
+        })();
+        const basisSlugValue = normalizeToSlug(basisSource || "");
+        return commoditySlugValue === synthetic.commoditySlug && basisSlugValue === synthetic.basisSlug;
+      });
+
+      if (!matched) {
+        const err: any = new Error("No price available");
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const pricePerTon = parseFloat(matched.price);
+      if (!Number.isFinite(pricePerTon) || pricePerTon <= 0) {
+        const err: any = new Error("Invalid price value");
+        err.statusCode = 400;
+        throw err;
+      }
+
+      return pricePerTon / 1000;
     }
 
     const [latestPrice] = await db
@@ -44,11 +99,11 @@ export function registerSpotRoutes(app: Express) {
       throw err;
     }
 
+    // Demo mode: allow trading on last known quote even if stale to preserve full feature flow.
+    // Staleness is still surfaced in UI/monitoring and via market series status.
     const { isStale } = computeIsStale(latestPrice.timestamp);
     if (isStale) {
-      const err: any = new Error("Trading disabled for this commodity (index is stale)");
-      err.statusCode = 400;
-      throw err;
+      console.warn(`[SpotTrading] Using stale quote for ${commoditySlug} at ${latestPrice.timestamp}`);
     }
 
     const pricePerTon = parseFloat(latestPrice.price);
