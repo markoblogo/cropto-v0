@@ -1,0 +1,15 @@
+#!/bin/sh
+# Allow pushes only to origin/release/demo
+while read local_ref local_sha remote_ref remote_sha
+ do
+  case "$remote_ref" in
+    refs/heads/release/demo)
+      ;;
+    *)
+      echo "Push blocked: target branch must be release/demo." >&2
+      echo "Use: git push origin HEAD:release/demo" >&2
+      exit 1
+      ;;
+  esac
+ done
+exit 0
