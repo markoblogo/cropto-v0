@@ -30,3 +30,8 @@ aptPkgs = [
   "ca-certificates",
   "fonts-liberation",
 ]
+
+[start]
+# Nixpacks defaults to running Caddy. This app already serves the SPA + API via Express,
+# and Railway expects the app to bind to $PORT.
+cmd = "npm run start"
