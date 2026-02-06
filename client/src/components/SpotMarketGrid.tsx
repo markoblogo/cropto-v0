@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,14 @@ function normalizeToSlug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function getDefaultCountryForLang(langRaw: string): CountryCode {
+  const lang = (langRaw || "en").split("-")[0].toLowerCase();
+  if (lang === "uk") return "UA";
+  if (lang === "pt") return "BR";
+  if (lang === "es") return "AR";
+  return "US";
+}
+
 function countryLabel(country: CountryCode): string {
   if (country === "UA") return "Ukraine";
   if (country === "BR") return "Brazil";
@@ -52,8 +60,11 @@ function countryFlag(country: CountryCode): string {
 }
 
 export function SpotMarketGrid() {
-  const { t } = useTranslation();
-  const [selectedCountry, setSelectedCountry] = useState<CountryCode>("UA");
+  const { t, i18n } = useTranslation();
+  const computedDefaultCountry = getDefaultCountryForLang(i18n.resolvedLanguage || i18n.language || "en");
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(() =>
+    computedDefaultCountry
+  );
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedCommodity, setSelectedCommodity] = useState<SelectedCommodity | null>(null);
@@ -65,6 +76,10 @@ export function SpotMarketGrid() {
   });
 
   const { data, isLoading, error } = useMarketDashboard();
+
+  useEffect(() => {
+    setSelectedCountry(computedDefaultCountry);
+  }, [computedDefaultCountry]);
 
   const rows = useMemo(() => {
     if (!data) return [];

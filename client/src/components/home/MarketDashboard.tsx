@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { useMarketDashboard, type MarketIndexDto } from "@/hooks/useMarketDashboard";
@@ -13,6 +14,16 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface HistoryDataPoint {
   date: string;
   price: number;
+}
+
+type MarketCountryTab = "ua" | "br" | "ar" | "us";
+
+function getDefaultMarketTabForLang(langRaw: string): MarketCountryTab {
+  const lang = (langRaw || "en").split("-")[0].toLowerCase();
+  if (lang === "uk") return "ua";
+  if (lang === "pt") return "br";
+  if (lang === "es") return "ar";
+  return "us";
 }
 
 function MarketCard({ item }: { item: MarketIndexDto }) {
@@ -201,9 +212,18 @@ function MarketTab({
 }
 
 export function MarketDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [, setLocation] = useLocation();
   const { data, isLoading, error } = useMarketDashboard();
+  const computedDefaultTab = useMemo(
+    () => getDefaultMarketTabForLang(i18n.resolvedLanguage || i18n.language || "en"),
+    [i18n.language, i18n.resolvedLanguage]
+  );
+  const [selectedTab, setSelectedTab] = useState<MarketCountryTab>(computedDefaultTab);
+
+  useEffect(() => {
+    setSelectedTab(computedDefaultTab);
+  }, [computedDefaultTab]);
 
   if (error) {
     return (
@@ -237,7 +257,7 @@ export function MarketDashboard() {
           </Button>
         </div>
 
-        <Tabs defaultValue="ua" className="w-full">
+        <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as MarketCountryTab)} className="w-full">
           <TabsList className="grid w-full max-w-lg grid-cols-4">
             <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
             <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
