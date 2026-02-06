@@ -284,6 +284,11 @@ async function getIndexWithLatestBySlug(slug: string) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check must be available even if background jobs (pollers/scrapers) are failing.
+  app.get("/api/health", (_req, res) => {
+    res.json({ ok: true });
+  });
+
   // Register auth routes
   app.use("/api/auth", authRoutes);
   app.use("/api/wallet", walletRoutes);
@@ -328,17 +333,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
-  // Start IGC poller if enabled
+  // Start IGC poller if enabled (must not block route registration / server listen)
   if (process.env.ENABLE_IGC_POLLING === "true") {
-    const { startPoller } = await import("./jobs/igcPoller");
-    startPoller();
+    setTimeout(() => {
+      import("./jobs/igcPoller")
+        .then(({ startPoller }) => startPoller())
+        .catch((error) => {
+          console.error("[IGC Poller] Failed to load/start poller:", error?.message || error);
+        });
+    }, 0);
   } else {
     console.log("[IGC Poller] ENABLE_IGC_POLLING not set to 'true', poller disabled.");
   }
-
-  app.get("/api/health", (req, res) => {
-    res.json({ ok: true });
-  });
 
   // Waitlist endpoints (early-access)
 
