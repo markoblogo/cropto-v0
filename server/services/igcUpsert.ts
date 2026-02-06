@@ -97,6 +97,18 @@ export async function upsertIgcIndexPrices(
         )
         .limit(1);
 
+      const existingCommoditySeries = await db
+        .select({ id: indexPrices.id })
+        .from(indexPrices)
+        .where(
+          and(
+            eq(indexPrices.source, source),
+            eq(indexPrices.country, price.country),
+            eq(indexPrices.commodity, price.commodity.toUpperCase())
+          )
+        )
+        .limit(1);
+
       if (existing.length > 0) {
         await db
           .update(indexPrices)
@@ -104,6 +116,22 @@ export async function upsertIgcIndexPrices(
           .where(eq(indexPrices.id, existing[0].id));
       } else {
         await db.insert(indexPrices).values(values);
+      }
+
+      if (existingCommoditySeries.length === 0) {
+        await db.insert(analyticsEvents).values({
+          eventName: "data_catalog_new_commodity",
+          payload: JSON.stringify({
+            source,
+            country: price.country,
+            commodity: price.commodity,
+            label: price.label,
+            asOfDate: asOfDateIso,
+          }),
+        });
+        console.log(
+          `[IGC Upsert] discovered new commodity series source=${source} country=${price.country} commodity=${price.commodity}`
+        );
       }
 
       if (prev.length > 0) {

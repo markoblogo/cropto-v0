@@ -10,7 +10,7 @@ import { chromium, type Browser, type Page } from "playwright";
 import * as cheerio from "cheerio";
 
 export interface IgcPrice {
-  commodity: "wheat" | "maize" | "barley" | "soybeans" | "rice";
+  commodity: string;
   country: "US" | "BR" | "AR";
   label: string;
   asOfDate: string; // ISO format: yyyy-mm-dd

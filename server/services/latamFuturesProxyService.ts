@@ -1,23 +1,14 @@
 import type { IgcPrice } from "./igcPriceService";
+import { normalizeExternalCommodityName, usdPerBushelToTon } from "./externalCommodity";
 
 type ProxyRow = {
   country: "BR" | "AR";
-  commodity: "maize" | "wheat" | "soybeans";
+  commodity: string;
   basis: string;
   price: number;
   unit: "usd_per_ton" | "usd_per_bushel" | "brl_per_60kg_bag";
   asOfDate?: string;
 };
-
-const BUSHEL_KG: Record<"maize" | "wheat" | "soybeans", number> = {
-  maize: 25.40117272,
-  wheat: 27.2155422,
-  soybeans: 27.2155422,
-};
-
-function usdPerBushelToTon(price: number, commodity: "maize" | "wheat" | "soybeans"): number {
-  return Number((price * (1000 / BUSHEL_KG[commodity])).toFixed(2));
-}
 
 function brlPer60kgBagToUsdPerTon(price: number, brlUsd: number): number {
   const usdPerBag = price * brlUsd;
@@ -52,18 +43,18 @@ function parseCsv(content: string): ProxyRow[] {
   for (const line of lines.slice(1)) {
     const cols = line.split(",").map((c) => c.trim());
     const country = (cols[idx("country")] || "").toUpperCase();
-    const commodity = (cols[idx("commodity")] || "").toLowerCase();
+    const commodity = normalizeExternalCommodityName(cols[idx("commodity")] || "");
     const basis = cols[idx("basis")] || "Futures proxy";
     const unit = (cols[idx("unit")] || "").toLowerCase();
     const price = Number.parseFloat(cols[idx("price")] || "0");
     const asOfDate = cols[idx("asofdate")] || cols[idx("as_of_date")] || undefined;
     if (!["BR", "AR"].includes(country)) continue;
-    if (!["maize", "wheat", "soybeans"].includes(commodity)) continue;
+    if (!commodity || commodity === "unknown") continue;
     if (!Number.isFinite(price) || price <= 0) continue;
     if (!["usd_per_ton", "usd_per_bushel", "brl_per_60kg_bag"].includes(unit)) continue;
     out.push({
       country: country as "BR" | "AR",
-      commodity: commodity as "maize" | "wheat" | "soybeans",
+      commodity,
       basis,
       unit: unit as ProxyRow["unit"],
       price,
@@ -78,7 +69,7 @@ function parseJson(content: any): ProxyRow[] {
   return arr
     .map((row: any) => ({
       country: String(row.country || "").toUpperCase(),
-      commodity: String(row.commodity || "").toLowerCase(),
+      commodity: normalizeExternalCommodityName(String(row.commodity || "")),
       basis: String(row.basis || "Futures proxy"),
       unit: String(row.unit || "").toLowerCase(),
       price: Number.parseFloat(String(row.price || "0")),
@@ -87,7 +78,8 @@ function parseJson(content: any): ProxyRow[] {
     .filter(
       (r: any) =>
         ["BR", "AR"].includes(r.country) &&
-        ["maize", "wheat", "soybeans"].includes(r.commodity) &&
+        !!r.commodity &&
+        r.commodity !== "unknown" &&
         ["usd_per_ton", "usd_per_bushel", "brl_per_60kg_bag"].includes(r.unit) &&
         Number.isFinite(r.price) &&
         r.price > 0
@@ -143,7 +135,9 @@ export async function fetchLatamFuturesProxyPrices(): Promise<IgcPrice[]> {
     if (row.unit === "usd_per_ton") {
       usdPerTon = Number(row.price.toFixed(2));
     } else if (row.unit === "usd_per_bushel") {
-      usdPerTon = usdPerBushelToTon(row.price, row.commodity);
+      const converted = usdPerBushelToTon(row.price, row.commodity);
+      if (!converted) continue;
+      usdPerTon = converted;
     } else if (row.unit === "brl_per_60kg_bag") {
       if (!(brlUsd > 0)) continue;
       usdPerTon = brlPer60kgBagToUsdPerTon(row.price, brlUsd);
@@ -174,4 +168,3 @@ export async function fetchLatamFuturesProxyPrices(): Promise<IgcPrice[]> {
   console.log(`[FuturesProxy] Parsed ${out.length} rows`);
   return out;
 }
-

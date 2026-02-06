@@ -1,22 +1,12 @@
 import { chromium } from "playwright";
 import * as cheerio from "cheerio";
 import type { IgcPrice } from "./igcPriceService";
+import { normalizeExternalCommodityName, usdPerBushelToTon } from "./externalCommodity";
 
 const BARCHART_GRAIN_INDEX_URL =
   process.env.BARCHART_GRAIN_INDEX_URL || "https://www.barchart.com/cmdty/indexes/grain";
 
-const BUSHEL_KG: Record<"maize" | "wheat" | "soybeans", number> = {
-  maize: 25.40117272,
-  wheat: 27.2155422,
-  soybeans: 27.2155422,
-};
-
-function usdPerBushelToTon(price: number, commodity: "maize" | "wheat" | "soybeans"): number {
-  const kg = BUSHEL_KG[commodity];
-  return Number((price * (1000 / kg)).toFixed(2));
-}
-
-function extractIndexRows(html: string): Array<{ name: string; value: number }> {
+function extractIndexRows(html: string): Array<{ commodity: string; label: string; valueUsdPerBushel: number }> {
   const $ = cheerio.load(html);
   const bodyText = $("body").text();
   const lines = bodyText
@@ -24,24 +14,46 @@ function extractIndexRows(html: string): Array<{ name: string; value: number }> 
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const targets = [
-    { key: "us corn price idx", commodity: "maize" as const, label: "US National Index (Corn)" },
-    { key: "us soybean price idx", commodity: "soybeans" as const, label: "US National Index (Soybeans)" },
-    { key: "us wheat price idx", commodity: "wheat" as const, label: "US National Index (Wheat)" },
-  ];
-
-  const result: Array<{ name: string; value: number }> = [];
-  for (const target of targets) {
-    const line = lines.find((l) => l.toLowerCase().includes(target.key));
-    if (!line) continue;
+  const result: Array<{ commodity: string; label: string; valueUsdPerBushel: number }> = [];
+  for (const line of lines) {
+    if (!/\bus\b/i.test(line) || !/\bprice idx\b/i.test(line)) continue;
+    const nameMatch = line.match(/(us\s+.+?\s+price idx)/i);
+    if (!nameMatch) continue;
     const nums = (line.match(/\d+(?:\.\d+)?/g) || [])
       .map((v) => Number.parseFloat(v))
       .filter((n) => Number.isFinite(n) && n > 1 && n < 50);
     if (nums.length === 0) continue;
-    result.push({ name: `${target.commodity}:${target.label}`, value: nums[nums.length - 1] });
+    const title = nameMatch[1].replace(/\s+/g, " ").trim();
+    const commodity = normalizeExternalCommodityName(title);
+    result.push({
+      commodity,
+      label: `US National Index (${title.replace(/^us\s+/i, "").replace(/\s+price idx$/i, "").trim()})`,
+      valueUsdPerBushel: nums[nums.length - 1],
+    });
   }
 
-  return result;
+  const dedup = new Map<string, { commodity: string; label: string; valueUsdPerBushel: number }>();
+  for (const row of result) {
+    dedup.set(`${row.commodity}:${row.label.toLowerCase()}`, row);
+  }
+  if (dedup.size === 0) {
+    for (const line of lines) {
+      const low = line.toLowerCase();
+      if (!(low.includes("corn") || low.includes("soybean") || low.includes("wheat"))) continue;
+      if (!low.includes("price idx")) continue;
+      const nums = (line.match(/\d+(?:\.\d+)?/g) || [])
+        .map((v) => Number.parseFloat(v))
+        .filter((n) => Number.isFinite(n) && n > 1 && n < 50);
+      if (nums.length === 0) continue;
+      const commodity = normalizeExternalCommodityName(line);
+      dedup.set(`${commodity}:${line.toLowerCase()}`, {
+        commodity,
+        label: "US National Index (Discovered)",
+        valueUsdPerBushel: nums[nums.length - 1],
+      });
+    }
+  }
+  return Array.from(dedup.values());
 }
 
 export async function fetchUsBarchartPrices(): Promise<IgcPrice[]> {
@@ -60,22 +72,20 @@ export async function fetchUsBarchartPrices(): Promise<IgcPrice[]> {
     const asOfDate = new Date().toISOString().slice(0, 10);
     const parsed: IgcPrice[] = [];
     for (const row of rows) {
-      const [commodity, label] = row.name.split(":");
-      if (commodity !== "maize" && commodity !== "wheat" && commodity !== "soybeans") continue;
-      const priceUsdPerTon = usdPerBushelToTon(row.value, commodity);
-      if (!(priceUsdPerTon > 0)) continue;
+      const priceUsdPerTon = usdPerBushelToTon(row.valueUsdPerBushel, row.commodity);
+      if (!(priceUsdPerTon && priceUsdPerTon > 0)) continue;
       parsed.push({
-        commodity,
+        commodity: row.commodity,
         country: "US",
-        label,
+        label: row.label,
         asOfDate,
-        priceUsdPerTon,
+        priceUsdPerTon: priceUsdPerTon,
         confidence: "medium",
-        rawRow: { source: BARCHART_GRAIN_INDEX_URL, valueUsdPerBushel: String(row.value) },
+        rawRow: { source: BARCHART_GRAIN_INDEX_URL, valueUsdPerBushel: String(row.valueUsdPerBushel) },
         meta: {
           sourceUrl: BARCHART_GRAIN_INDEX_URL,
           quoteUnitOriginal: "usd_per_bushel",
-          conversionApplied: { method: "bushel_to_ton", conversionVersion: "v1" },
+          conversionApplied: { method: "bushel_to_ton", conversionVersion: "v2-discovery" },
         },
       });
     }
@@ -89,4 +99,3 @@ export async function fetchUsBarchartPrices(): Promise<IgcPrice[]> {
     await browser.close();
   }
 }
-
