@@ -47,6 +47,8 @@ import { findSpreadSpec } from "./services/specRegistry";
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
 const USER_NOTIFICATION_PREFS_PREFIX = "user_notification_prefs:";
+const INDEX_UPDATE_MAILING_MODE_KEY = "index_update_mailing_mode";
+const DEFAULT_INDEX_UPDATE_MAILING_MODE = "manual";
 
 type UserNotificationPreferences = {
   tradeStatus: boolean;
@@ -54,6 +56,8 @@ type UserNotificationPreferences = {
   indexUpdates: boolean;
   system: boolean;
 };
+
+type IndexUpdateMailingMode = "manual" | "auto";
 
 const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
   tradeStatus: true,
@@ -139,6 +143,13 @@ async function sendEmailIfEnabled(
   await emailService.sendEmail(user.email, subject, body);
 }
 
+async function getIndexUpdateMailingMode(): Promise<IndexUpdateMailingMode> {
+  const setting = await storage.getAppSetting(INDEX_UPDATE_MAILING_MODE_KEY);
+  const value = (setting?.value || "").toLowerCase();
+  if (value === "auto") return "auto";
+  return "manual";
+}
+
 function indexUpdateThrottleKey(userId: string, country: string, commodity: string) {
   return `index_update_last_sent:${userId}:${country.toUpperCase()}:${commodity.toLowerCase()}`;
 }
@@ -168,9 +179,15 @@ async function sendIndexUpdateEmails(args: {
   basis?: string | null;
   priceUsdPerTon: number;
   source: string;
+  trigger: "manual" | "auto";
 }) {
-  const { country, commodity, basis, priceUsdPerTon, source } = args;
+  const { country, commodity, basis, priceUsdPerTon, source, trigger } = args;
   try {
+    const mailingMode = await getIndexUpdateMailingMode();
+    if (mailingMode === "manual" && trigger !== "manual") {
+      return;
+    }
+
     const users = await listUsers();
     for (const u of users) {
       const enabled = await shouldSendUserEmail(u.id, "indexUpdates");
@@ -798,6 +815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         basis: null,
         priceUsdPerTon: priceNum,
         source: `admin-override:${userName}`,
+        trigger: "manual",
       });
 
       res.json({ 
@@ -1245,6 +1263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         basis,
         priceUsdPerTon: price,
         source: `admin:${userName}`,
+        trigger: "manual",
       });
 
       res.json({
@@ -2435,6 +2454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         basis: index.category || null,
         priceUsdPerTon: price,
         source: `admin:${req.user?.email || "unknown"}`,
+        trigger: "manual",
       });
 
       res.status(201).json({
@@ -4761,6 +4781,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error saving feedback email settings:", error);
       res.status(500).json({ error: error.message || "Failed to save feedback email settings" });
+    }
+  });
+
+  app.get("/api/admin/settings/index-update-mailing-mode", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const mode = await getIndexUpdateMailingMode();
+      res.json({ mode });
+    } catch (error: any) {
+      console.error("Error fetching index update mailing mode:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch index update mailing mode" });
+    }
+  });
+
+  app.post("/api/admin/settings/index-update-mailing-mode", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const parsed = z.object({ mode: z.enum(["manual", "auto"]) }).safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid mailing mode payload" });
+      }
+
+      await storage.upsertAppSetting(INDEX_UPDATE_MAILING_MODE_KEY, parsed.data.mode);
+      res.json({ ok: true, mode: parsed.data.mode });
+    } catch (error: any) {
+      console.error("Error saving index update mailing mode:", error);
+      res.status(500).json({ error: error.message || "Failed to save index update mailing mode" });
     }
   });
 

@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -53,13 +55,25 @@ export default function AdminFeedback() {
     enabled: !!isAdminLevelUser,
   });
 
+  const { data: mailingModeSettings } = useQuery<{ mode: "manual" | "auto" }>({
+    queryKey: ["/api/admin/settings/index-update-mailing-mode"],
+    enabled: !!isAdminLevelUser,
+  });
+
   const [recipientEmails, setRecipientEmails] = useState("");
+  const [mailingMode, setMailingMode] = useState<"manual" | "auto">("manual");
 
   useEffect(() => {
     if (emailSettings?.emails != null) {
       setRecipientEmails(emailSettings.emails);
     }
   }, [emailSettings?.emails]);
+
+  useEffect(() => {
+    if (mailingModeSettings?.mode) {
+      setMailingMode(mailingModeSettings.mode);
+    }
+  }, [mailingModeSettings?.mode]);
 
   // Show loading while checking auth
   if (isAuthLoading || !user) {
@@ -174,6 +188,38 @@ export default function AdminFeedback() {
     },
   });
 
+  const saveMailingModeMutation = useMutation({
+    mutationFn: async (mode: "manual" | "auto") => {
+      const response = await fetch("/api/admin/settings/index-update-mailing-mode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("cropto_token")}`,
+        },
+        body: JSON.stringify({ mode }),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to save mailing mode");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings/index-update-mailing-mode"] });
+      toast({
+        title: "Saved",
+        description: "Index update mailing mode updated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save mailing mode",
+        variant: "destructive",
+      });
+    },
+  });
+
   const openFeedback = feedbackList.filter(f => f.status === "open");
   const resolvedFeedback = feedbackList.filter(f => f.status === "resolved");
 
@@ -213,6 +259,39 @@ export default function AdminFeedback() {
               data-testid="button-save-feedback-alert-emails"
             >
               {saveRecipientsMutation.isPending ? "Saving..." : "Save recipients"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Index Update Email Mode</CardTitle>
+            <CardDescription>
+              Manual mode sends emails only for manual index updates. Auto mode enables emails for parser/automatic updates as well.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RadioGroup
+              value={mailingMode}
+              onValueChange={(v) => setMailingMode(v as "manual" | "auto")}
+              className="grid gap-3"
+              data-testid="radio-index-update-mailing-mode"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="manual" id="mailing-mode-manual" />
+                <Label htmlFor="mailing-mode-manual">Manual (default)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="auto" id="mailing-mode-auto" />
+                <Label htmlFor="mailing-mode-auto">Auto</Label>
+              </div>
+            </RadioGroup>
+            <Button
+              onClick={() => saveMailingModeMutation.mutate(mailingMode)}
+              disabled={saveMailingModeMutation.isPending}
+              data-testid="button-save-index-update-mailing-mode"
+            >
+              {saveMailingModeMutation.isPending ? "Saving..." : "Save mode"}
             </Button>
           </CardContent>
         </Card>
