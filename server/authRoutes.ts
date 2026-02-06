@@ -7,6 +7,7 @@ import {
   createUser,
   findUserByEmail,
   verifyPassword,
+  hashPassword,
   generateToken,
   findUserById,
   authenticateToken,
@@ -19,6 +20,7 @@ import { nonces } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { storage } from './storage';
 import { emailService } from './utils/emailMock';
+import { isSupabaseConfigured, getSupabaseClient } from './db/supabase';
 
 const router = Router();
 const EMAIL_VERIFY_TOKEN_PREFIX = "email_verify_token:";
@@ -107,9 +109,6 @@ async function queueVerificationEmail(userId: string, email: string, baseUrl: st
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H-reg-body',location:'authRoutes.ts:/register',message:'incoming register',data:{body:req.body},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const validatedData = registerSchema.parse(req.body);
 
     // Normalize incoming role to current backend role model.
@@ -150,9 +149,6 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error("[REGISTER_ERROR]", error);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-error',location:'authRoutes.ts:/login',message:'login error',data:{error: (error as any)?.message, stack: (error as any)?.stack},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (error instanceof z.ZodError) {
       const validationError = fromError(error);
       return res.status(400).json({ error: validationError.message });
@@ -177,15 +173,9 @@ router.post('/login', async (req, res) => {
     if (process.env.SUPABASE_ANON_KEY) supabaseEnvKeys.push('SUPABASE_ANON_KEY');
     console.log(`[AUTH] Supabase env keys present: ${supabaseEnvKeys.length > 0 ? supabaseEnvKeys.join(', ') : 'none'}`);
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-body',location:'authRoutes.ts:/login',message:'incoming login body',data:{body:req.body},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const validatedData = loginSchema.parse(req.body);
     
     const user = await findUserByEmail(validatedData.email);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-user',location:'authRoutes.ts:/login',message:'user lookup result',data:{found:!!user,userId:user?.id,email:user?.email,role:user?.role,hasHash:!!(user as any)?.passwordHash},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -225,6 +215,67 @@ router.post('/login', async (req, res) => {
     
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/auth/status - public minimal auth/backend status (no secrets)
+router.get("/status", async (_req, res) => {
+  const allowAnonFallback = process.env.ALLOW_SUPABASE_ANON_BACKEND === "true";
+  res.json({
+    supabase: {
+      configured: isSupabaseConfigured(),
+      hasUrl: Boolean(process.env.SUPABASE_URL),
+      hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+      allowAnonFallback,
+      hasAnonKey: Boolean(process.env.SUPABASE_ANON_KEY),
+    },
+    emailVerification: {
+      enabled: true,
+      ttlHours: Math.floor(EMAIL_VERIFY_TTL_MS / (1000 * 60 * 60)),
+    },
+  });
+});
+
+// POST /api/auth/bootstrap-admin - emergency admin account upsert (requires env secret)
+router.post("/bootstrap-admin", async (req, res) => {
+  const secret = process.env.ADMIN_BOOTSTRAP_SECRET;
+  if (!secret) return res.status(404).json({ error: "Not found" });
+  const header = String(req.headers["x-bootstrap-secret"] || "");
+  if (header !== secret) return res.status(403).json({ error: "Forbidden" });
+
+  const schema = z.object({
+    email: z.string().min(1).refine((e) => e.includes("@")),
+    password: z.string().min(6),
+    role: z.enum(["USER", "ADMIN", "SUPER_ADMIN", "BROKER"]).optional(),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Invalid payload" });
+  if (!isSupabaseConfigured()) return res.status(500).json({ error: "Supabase is not configured" });
+
+  const email = parsed.data.email.trim().toLowerCase();
+  const role = parsed.data.role || "BROKER";
+
+  try {
+    const passwordHash = await hashPassword(parsed.data.password);
+    const client = getSupabaseClient();
+
+    const { data: existing } = await client.from("users").select("*").ilike("email", email).limit(1);
+    if (existing && existing.length > 0) {
+      await client.from("users").update({ password_hash: passwordHash, role } as any).ilike("email", email);
+    } else {
+      await client.from("users").insert({
+        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        email,
+        password_hash: passwordHash,
+        role,
+        created_at: new Date().toISOString(),
+      } as any);
+    }
+
+    return res.json({ ok: true, email, role });
+  } catch (error: any) {
+    console.error("[bootstrap-admin] failed:", error?.message || error);
+    return res.status(500).json({ error: error?.message || "Failed to bootstrap admin" });
   }
 });
 
