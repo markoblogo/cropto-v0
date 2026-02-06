@@ -4950,6 +4950,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/parsers/health", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const getSettingValue = async (key: string) => (await storage.getAppSetting(key))?.value || null;
+      const toIsoOrNull = (value: string | null) => {
+        if (!value) return null;
+        const dt = new Date(value);
+        return Number.isNaN(dt.getTime()) ? null : dt.toISOString();
+      };
+      const toIntOrNull = (value: string | null) => {
+        if (!value) return null;
+        const n = Number.parseInt(value, 10);
+        return Number.isFinite(n) ? n : null;
+      };
+      const statusByAge = (asOf: Date | null): "fresh" | "stale" | "no_recent" => {
+        if (!asOf || Number.isNaN(asOf.getTime())) return "no_recent";
+        const ageDays = Math.floor((Date.now() - asOf.getTime()) / (1000 * 60 * 60 * 24));
+        if (ageDays <= 2) return "fresh";
+        if (ageDays <= 7) return "stale";
+        return "no_recent";
+      };
+
+      const rows = await db
+        .select()
+        .from(indexPrices)
+        .where(or(eq(indexPrices.source, "IGC"), eq(indexPrices.source, "USDA_AMS")))
+        .orderBy(desc(indexPrices.date))
+        .limit(5000);
+
+      const bySourceCountry = new Map<
+        string,
+        { source: string; country: string; latestAsOf: Date | null; rows24h: number; totalRows: number }
+      >();
+      const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+      for (const row of rows) {
+        const source = String(row.source || "");
+        const country = String(row.country || "N/A");
+        const key = `${source}:${country}`;
+        const asOfRaw = row.asOfDate ? new Date(row.asOfDate as any) : new Date(row.date);
+        const asOf = Number.isNaN(asOfRaw.getTime()) ? null : asOfRaw;
+        const existing = bySourceCountry.get(key) || {
+          source,
+          country,
+          latestAsOf: null as Date | null,
+          rows24h: 0,
+          totalRows: 0,
+        };
+        existing.totalRows += 1;
+        if (asOf && asOf.getTime() >= twentyFourHoursAgo) existing.rows24h += 1;
+        if (!existing.latestAsOf || (asOf && asOf > existing.latestAsOf)) {
+          existing.latestAsOf = asOf;
+        }
+        bySourceCountry.set(key, existing);
+      }
+
+      const igcLastFetchAt = toIsoOrNull(await getSettingValue("parser_health_igc_last_fetch_at"));
+      const igcLastSuccessAt = toIsoOrNull(await getSettingValue("parser_health_igc_last_success_at"));
+      const igcLastRows = toIntOrNull(await getSettingValue("parser_health_igc_last_rows"));
+      const igcLastError = await getSettingValue("parser_health_igc_last_error");
+      const igcLastErrorAt = toIsoOrNull(await getSettingValue("parser_health_igc_last_error_at"));
+
+      const usdaLastFetchAt = toIsoOrNull(await getSettingValue("parser_health_usda_ams_last_fetch_at"));
+      const usdaLastSuccessAt = toIsoOrNull(await getSettingValue("parser_health_usda_ams_last_success_at"));
+      const usdaLastRows = toIntOrNull(await getSettingValue("parser_health_usda_ams_last_rows"));
+      const usdaLastError = await getSettingValue("parser_health_usda_ams_last_error");
+      const usdaLastErrorAt = toIsoOrNull(await getSettingValue("parser_health_usda_ams_last_error_at"));
+
+      let usdaLastPublishedDate: string | null = null;
+      try {
+        const ctrl = new AbortController();
+        const timeout = setTimeout(() => ctrl.abort(), 4000);
+        const marsUrl =
+          process.env.USDA_AMS_MARS_LIST_URL ||
+          "https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports/all";
+        const response = await fetch(marsUrl, {
+          headers: { accept: "application/json,*/*;q=0.8", "user-agent": "CroptoBot/1.0" },
+          signal: ctrl.signal,
+        });
+        clearTimeout(timeout);
+        if (response.ok) {
+          const body = await response.text();
+          const dates = body.match(/\b\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?)?/g) || [];
+          const parsed = dates
+            .map((d) => new Date(d))
+            .filter((d) => !Number.isNaN(d.getTime()))
+            .sort((a, b) => b.getTime() - a.getTime());
+          if (parsed.length > 0) usdaLastPublishedDate = parsed[0].toISOString();
+        }
+      } catch {
+        // ignore network errors for health endpoint
+      }
+
+      const countries = Array.from(bySourceCountry.values()).map((item) => ({
+        source: item.source,
+        country: item.country,
+        latestAsOf: item.latestAsOf ? item.latestAsOf.toISOString() : null,
+        rows24h: item.rows24h,
+        totalRows: item.totalRows,
+        status: statusByAge(item.latestAsOf),
+      }));
+
+      const sourceLatest = (source: "IGC" | "USDA_AMS") => {
+        const sourceRows = countries.filter((c) => c.source === source);
+        const latest = sourceRows
+          .map((c) => (c.latestAsOf ? new Date(c.latestAsOf) : null))
+          .filter((d): d is Date => !!d && !Number.isNaN(d.getTime()))
+          .sort((a, b) => b.getTime() - a.getTime());
+        return latest[0] || null;
+      };
+
+      const igcLatestAsOf = sourceLatest("IGC");
+      const usdaLatestAsOf = sourceLatest("USDA_AMS");
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        sources: {
+          IGC: {
+            enabled: process.env.ENABLE_IGC_POLLING === "true",
+            lastFetchAt: igcLastFetchAt,
+            lastSuccessAt: igcLastSuccessAt,
+            lastRows: igcLastRows,
+            lastError: igcLastError || null,
+            lastErrorAt: igcLastErrorAt,
+            latestAsOf: igcLatestAsOf ? igcLatestAsOf.toISOString() : null,
+            status: statusByAge(igcLatestAsOf),
+          },
+          USDA_AMS: {
+            enabled: process.env.ENABLE_USDA_AMS_POLLING !== "false",
+            lastFetchAt: usdaLastFetchAt,
+            lastSuccessAt: usdaLastSuccessAt,
+            lastRows: usdaLastRows,
+            lastError: usdaLastError || null,
+            lastErrorAt: usdaLastErrorAt,
+            lastPublishedDate: usdaLastPublishedDate,
+            latestAsOf: usdaLatestAsOf ? usdaLatestAsOf.toISOString() : null,
+            status: statusByAge(usdaLatestAsOf),
+          },
+        },
+        countries,
+      });
+    } catch (error: any) {
+      console.error("Error fetching parser health:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch parser health" });
+    }
+  });
+
   app.post("/api/feedback/upload", async (req, res) => {
     try {
       const schema = z.object({

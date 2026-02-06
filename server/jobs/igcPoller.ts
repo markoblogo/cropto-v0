@@ -7,6 +7,7 @@ import { fetchDailyPrices as fetchIgcDailyPrices } from "../services/igcPriceSer
 import { fetchUsdaAmsPrices } from "../services/usdaAmsPriceService";
 import { upsertIgcIndexPrices } from "../services/igcUpsert";
 import { emailService } from "../utils/emailMock";
+import { storage } from "../storage";
 
 const POLL_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 let pollerInterval: NodeJS.Timeout | null = null;
@@ -53,6 +54,29 @@ async function sendPrimaryFailureAlert(details: { igcRows: number; usdaRows: num
   }
 }
 
+async function writeParserHealthSnapshot(args: {
+  source: "IGC" | "USDA_AMS";
+  rows: number;
+  success: boolean;
+  error?: string;
+}) {
+  const lower = args.source.toLowerCase();
+  const nowIso = new Date().toISOString();
+  try {
+    await storage.upsertAppSetting(`parser_health_${lower}_last_fetch_at`, nowIso);
+    await storage.upsertAppSetting(`parser_health_${lower}_last_rows`, String(args.rows));
+    if (args.success) {
+      await storage.upsertAppSetting(`parser_health_${lower}_last_success_at`, nowIso);
+      await storage.upsertAppSetting(`parser_health_${lower}_last_error`, "");
+    } else {
+      await storage.upsertAppSetting(`parser_health_${lower}_last_error_at`, nowIso);
+      await storage.upsertAppSetting(`parser_health_${lower}_last_error`, args.error || "parser returned zero rows");
+    }
+  } catch (error: any) {
+    console.error(`[IGC Poller] Failed to write parser health snapshot for ${args.source}:`, error?.message || error);
+  }
+}
+
 /**
  * Run external price fetch and upsert once
  */
@@ -64,6 +88,24 @@ export async function pollOnce(): Promise<number> {
     const usdaPrices = process.env.ENABLE_USDA_AMS_POLLING === "false"
       ? []
       : await fetchUsdaAmsPrices();
+
+    await writeParserHealthSnapshot({
+      source: "IGC",
+      rows: igcPrices.length,
+      success: igcPrices.length > 0,
+      error: igcPrices.length === 0 ? "No rows parsed from IGC source" : undefined,
+    });
+    await writeParserHealthSnapshot({
+      source: "USDA_AMS",
+      rows: usdaPrices.length,
+      success: usdaPrices.length > 0 || process.env.ENABLE_USDA_AMS_POLLING === "false",
+      error:
+        process.env.ENABLE_USDA_AMS_POLLING === "false"
+          ? "Polling disabled by ENABLE_USDA_AMS_POLLING=false"
+          : usdaPrices.length === 0
+            ? "No rows parsed from USDA AMS source"
+            : undefined,
+    });
 
     if (igcPrices.length === 0 && usdaPrices.length === 0) {
       console.warn("[IGC Poller] No external prices fetched");

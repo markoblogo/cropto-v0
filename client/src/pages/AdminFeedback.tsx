@@ -14,6 +14,41 @@ import { format } from "date-fns";
 import { Download, CheckCircle2, MessageSquare, Mail, User, Briefcase, Calendar } from "lucide-react";
 import type { Feedback } from "@shared/schema";
 
+type ParserHealthResponse = {
+  generatedAt: string;
+  sources: {
+    IGC: {
+      enabled: boolean;
+      lastFetchAt: string | null;
+      lastSuccessAt: string | null;
+      lastRows: number | null;
+      lastError: string | null;
+      lastErrorAt: string | null;
+      latestAsOf: string | null;
+      status: "fresh" | "stale" | "no_recent";
+    };
+    USDA_AMS: {
+      enabled: boolean;
+      lastFetchAt: string | null;
+      lastSuccessAt: string | null;
+      lastRows: number | null;
+      lastError: string | null;
+      lastErrorAt: string | null;
+      latestAsOf: string | null;
+      lastPublishedDate: string | null;
+      status: "fresh" | "stale" | "no_recent";
+    };
+  };
+  countries: Array<{
+    source: string;
+    country: string;
+    latestAsOf: string | null;
+    rows24h: number;
+    totalRows: number;
+    status: "fresh" | "stale" | "no_recent";
+  }>;
+};
+
 export default function AdminFeedback() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -57,6 +92,10 @@ export default function AdminFeedback() {
 
   const { data: mailingModeSettings } = useQuery<{ mode: "manual" | "auto" }>({
     queryKey: ["/api/admin/settings/index-update-mailing-mode"],
+    enabled: !!isAdminLevelUser,
+  });
+  const { data: parserHealth, isLoading: isParserHealthLoading } = useQuery<ParserHealthResponse>({
+    queryKey: ["/api/admin/parsers/health"],
     enabled: !!isAdminLevelUser,
   });
 
@@ -222,6 +261,17 @@ export default function AdminFeedback() {
 
   const openFeedback = feedbackList.filter(f => f.status === "open");
   const resolvedFeedback = feedbackList.filter(f => f.status === "resolved");
+  const statusBadgeClass = (status: "fresh" | "stale" | "no_recent") => {
+    if (status === "fresh") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+    if (status === "stale") return "bg-amber-100 text-amber-800 border-amber-200";
+    return "bg-rose-100 text-rose-800 border-rose-200";
+  };
+  const fmt = (value: string | null | undefined) => {
+    if (!value) return "n/a";
+    const dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return "n/a";
+    return dt.toLocaleString();
+  };
 
   return (
     <MainLayout>
@@ -293,6 +343,66 @@ export default function AdminFeedback() {
             >
               {saveMailingModeMutation.isPending ? "Saving..." : "Save mode"}
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Index Parser Health</CardTitle>
+            <CardDescription>
+              Live status for primary parsers and per-country freshness from stored index rows.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isParserHealthLoading || !parserHealth ? (
+              <p className="text-sm text-muted-foreground">Loading parser health...</p>
+            ) : (
+              <>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {(["IGC", "USDA_AMS"] as const).map((sourceKey) => {
+                    const source = parserHealth.sources[sourceKey];
+                    return (
+                      <div key={sourceKey} className="rounded-md border p-3 space-y-2" data-testid={`card-parser-${sourceKey.toLowerCase()}`}>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold">{sourceKey}</p>
+                          <Badge variant="outline" className={statusBadgeClass(source.status)}>
+                            {source.status}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <p>Enabled: {source.enabled ? "yes" : "no"}</p>
+                          <p>Last fetch: {fmt(source.lastFetchAt)}</p>
+                          <p>Last success: {fmt(source.lastSuccessAt)}</p>
+                          <p>Latest asOf: {fmt(source.latestAsOf)}</p>
+                          <p>Last rows: {source.lastRows ?? 0}</p>
+                          {sourceKey === "USDA_AMS" ? <p>MARS latest published: {fmt(source.lastPublishedDate)}</p> : null}
+                          {source.lastError ? <p className="text-destructive">Last error: {source.lastError}</p> : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="rounded-md border p-3 space-y-2">
+                  <p className="text-sm font-semibold">Country/source freshness</p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {parserHealth.countries.map((row) => (
+                      <div key={`${row.source}-${row.country}`} className="flex items-center justify-between rounded-sm border px-2 py-1 text-xs">
+                        <div>
+                          <span className="font-medium">{row.country}</span>
+                          <span className="text-muted-foreground"> • {row.source}</span>
+                          <span className="text-muted-foreground"> • rows24h: {row.rows24h}</span>
+                        </div>
+                        <Badge variant="outline" className={statusBadgeClass(row.status)}>
+                          {row.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Generated: {fmt(parserHealth.generatedAt)}</p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
