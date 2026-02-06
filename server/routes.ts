@@ -2307,10 +2307,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         rows: MarketIndexDto[],
         events: Array<Record<string, unknown>>
       ) => {
+        const MAX_AGE_DAYS = 3;
+        const GRACE_DAYS = 4;
+        const maxStaleDays = MAX_AGE_DAYS + GRACE_DAYS;
+
         const statuses: Array<{
           country: "UA" | "BR" | "AR" | "US";
           key: string;
           commodity: string;
+          grade?: string | null;
           basis: string;
           status: "fresh" | "stale" | "no_recent";
           sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
@@ -2319,17 +2324,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
           freshnessDays?: number;
         }> = [];
 
+        const pushUnique = (item: (typeof statuses)[number]) => {
+          // Keep the first occurrence; callers should pass rows in priority order.
+          if (!seen.has(item.key)) {
+            seen.add(item.key);
+            statuses.push(item);
+          }
+        };
+
+        const seen = new Set<string>();
+
         for (const row of rows) {
-          statuses.push({
+          const asOfCandidate = row.asOf ? new Date(row.asOf) : null;
+          const computedFreshnessDays =
+            typeof row.freshnessDays === "number"
+              ? row.freshnessDays
+              : asOfCandidate && !Number.isNaN(asOfCandidate.getTime())
+                ? Math.floor((Date.now() - asOfCandidate.getTime()) / (1000 * 60 * 60 * 24))
+                : undefined;
+          const computedStatus: "fresh" | "stale" | "no_recent" = (() => {
+            if (row.dataStatus === "fresh" || row.dataStatus === "stale" || row.dataStatus === "no_recent") {
+              return row.dataStatus;
+            }
+            if (typeof computedFreshnessDays !== "number") return "no_recent";
+            if (computedFreshnessDays <= MAX_AGE_DAYS) return "fresh";
+            if (computedFreshnessDays <= maxStaleDays) return "stale";
+            return "no_recent";
+          })();
+
+          const key = `${row.commodity}${row.grade ? `(${row.grade})` : ""}:${row.basis}`;
+          pushUnique({
             country,
-            key: `${row.commodity}:${row.basis}`,
+            key,
             commodity: row.commodity,
+            grade: row.grade ?? null,
             basis: row.basis,
-            status: row.isStale ? "stale" : "fresh",
+            status: row.isStale ? "stale" : computedStatus,
             sourceTier: row.sourceTier,
             source: row.source,
             asOf: row.asOf,
-            freshnessDays: row.freshnessDays,
+            freshnessDays: computedFreshnessDays,
           });
         }
 
@@ -2337,7 +2371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (evt.event !== "source_no_recent_price" || evt.country !== country) continue;
           const key = String(evt.key || "");
           const [commodity, ...basisParts] = key.split(":");
-          statuses.push({
+          pushUnique({
             country,
             key,
             commodity: commodity || "unknown",
