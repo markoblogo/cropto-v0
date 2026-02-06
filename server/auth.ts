@@ -133,24 +133,26 @@ export function verifyToken(token: string): { id: string; email: string; role: s
 
 // Find user by email
 export async function findUserByEmail(email: string): Promise<User | null> {
+  const normalizedEmail = email.trim().toLowerCase();
+
   if (useSupabase()) {
     console.log("[AUTH] Using Supabase for users lookup");
     try {
-      const supabaseUser = await findUserByEmailSupabase(email);
+      const supabaseUser = await findUserByEmailSupabase(normalizedEmail);
       if (!supabaseUser) {
-        console.log("[AUTH] User not found in Supabase");
-        return null;
+        console.log("[AUTH] User not found in Supabase, checking local DB fallback");
+      } else {
+        console.log("[AUTH] User found in Supabase:", supabaseUser.email);
+        return {
+          id: supabaseUser.id,
+          email: supabaseUser.email,
+          passwordHash: supabaseUser.password_hash,
+          role: supabaseUser.role,
+          createdAt: supabaseUser.created_at,
+          walletAddress: supabaseUser.wallet_address,
+          network: supabaseUser.network,
+        };
       }
-      console.log("[AUTH] User found in Supabase:", supabaseUser.email);
-      return {
-        id: supabaseUser.id,
-        email: supabaseUser.email,
-        passwordHash: supabaseUser.password_hash,
-        role: supabaseUser.role,
-        createdAt: supabaseUser.created_at,
-        walletAddress: supabaseUser.wallet_address,
-        network: supabaseUser.network,
-      };
     } catch (error) {
       console.error("[AUTH] Supabase lookup failed, falling back to local DB:", (error as any)?.message || error);
       console.log("[AUTH] FALLBACK: using file DB for users");
@@ -160,7 +162,7 @@ export async function findUserByEmail(email: string): Promise<User | null> {
   }
   
   const db = await readDB();
-  return db.users.find(u => u.email === email) || null;
+  return db.users.find(u => u.email.trim().toLowerCase() === normalizedEmail) || null;
 }
 
 // Create user
@@ -169,15 +171,17 @@ export async function createUser(
   password: string,
   role: UserRole = 'USER'
 ): Promise<User> {
+  const normalizedEmail = email.trim().toLowerCase();
+
   if (useSupabase()) {
     // Check if user exists
-    const existing = await findUserByEmailSupabase(email);
+    const existing = await findUserByEmailSupabase(normalizedEmail);
     if (existing) {
       throw new Error('User already exists');
     }
     
     const passwordHash = await hashPassword(password);
-    const supabaseUser = await createUserSupabase(email, passwordHash, role);
+    const supabaseUser = await createUserSupabase(normalizedEmail, passwordHash, role);
     
     return {
       id: supabaseUser.id,
@@ -193,13 +197,13 @@ export async function createUser(
   const db = await readDB();
   
   // Check if user exists
-  if (db.users.find(u => u.email === email)) {
+  if (db.users.find(u => u.email.trim().toLowerCase() === normalizedEmail)) {
     throw new Error('User already exists');
   }
   
   const user: User = {
     id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    email,
+    email: normalizedEmail,
     passwordHash: await hashPassword(password),
     role,
     createdAt: new Date().toISOString(),
