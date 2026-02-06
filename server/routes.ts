@@ -5,7 +5,7 @@ import { db } from "./db";
 import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
-import { eq, desc, gt, and, or, sql, asc, gte, lte } from "drizzle-orm";
+import { eq, desc, gt, and, or, sql, asc, gte, lte, inArray } from "drizzle-orm";
 import authRoutes from "./authRoutes";
 import walletRoutes from "./walletRoutes";
 import { registerOnchainRoutes } from "./onchainRoutes";
@@ -5133,6 +5133,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching parser health:", error);
       res.status(500).json({ error: error.message || "Failed to fetch parser health" });
+    }
+  });
+
+  app.get("/api/admin/debug/failover-events", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const limitRaw = Number.parseInt(String(req.query?.limit || "50"), 10);
+      const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 200) : 50;
+      const includeNoRecent = String(req.query?.includeNoRecent || "false").toLowerCase() === "true";
+
+      const failoverNames = [
+        "source_failover_primary_to_secondary",
+        "source_failover_to_last_known",
+        "source_failover_to_synthetic",
+      ];
+      if (includeNoRecent) failoverNames.push("source_no_recent_price");
+
+      const rows = await db
+        .select({
+          id: analyticsEvents.id,
+          eventName: analyticsEvents.eventName,
+          userId: analyticsEvents.userId,
+          sessionId: analyticsEvents.sessionId,
+          payload: analyticsEvents.payload,
+          createdAt: analyticsEvents.createdAt,
+        })
+        .from(analyticsEvents)
+        .where(inArray(analyticsEvents.eventName, failoverNames))
+        .orderBy(desc(analyticsEvents.createdAt))
+        .limit(limit);
+
+      const events = rows.map((row) => {
+        let parsedPayload: Record<string, unknown> | null = null;
+        if (row.payload) {
+          try {
+            parsedPayload = JSON.parse(row.payload) as Record<string, unknown>;
+          } catch {
+            parsedPayload = { raw: row.payload };
+          }
+        }
+        return {
+          id: row.id,
+          eventName: row.eventName,
+          createdAt: row.createdAt ? new Date(row.createdAt as any).toISOString() : null,
+          userId: row.userId || null,
+          sessionId: row.sessionId || null,
+          payload: parsedPayload,
+        };
+      });
+
+      return res.json({
+        generatedAt: new Date().toISOString(),
+        count: events.length,
+        limit,
+        includeNoRecent,
+        events,
+      });
+    } catch (error: any) {
+      console.error("Error fetching failover debug events:", error);
+      return res.status(500).json({ error: error.message || "Failed to fetch failover events" });
     }
   });
 
