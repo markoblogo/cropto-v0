@@ -238,9 +238,9 @@ router.get("/status", async (_req, res) => {
 
 // POST /api/auth/bootstrap-admin - emergency admin account upsert (requires env secret)
 router.post("/bootstrap-admin", async (req, res) => {
-  const secret = process.env.ADMIN_BOOTSTRAP_SECRET;
+  const secret = String(process.env.ADMIN_BOOTSTRAP_SECRET || "").trim();
   if (!secret) return res.status(404).json({ error: "Not found" });
-  const header = String(req.headers["x-bootstrap-secret"] || "");
+  const header = String(req.headers["x-bootstrap-secret"] || "").trim();
   if (header !== secret) return res.status(403).json({ error: "Forbidden" });
 
   const schema = z.object({
