@@ -8,8 +8,10 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "dev:jobs": "NODE_ENV=development tsx server/jobsRunner.ts",
+    "build": "vite build && esbuild server/index.ts server/jobsRunner.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --entry-names=[name]",
     "start": "NODE_ENV=production node dist/index.js",
+    "start:jobs": "NODE_ENV=production node dist/jobsRunner.js",
     "postinstall": "playwright install chromium",
     "check": "tsc",
     "db:push": "drizzle-kit push",

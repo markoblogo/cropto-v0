@@ -316,21 +316,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`[Cron] Started deadline processor with ${DEADLINE_CHECK_INTERVAL}ms interval`);
   }
 
-  // Start Telegram integration: Bot API (if token available) OR Public scraper (fallback)
-  if (process.env.TELEGRAM_BOT_TOKEN) {
-    startTelegramPoller();
-  } else {
-    console.log("[TelegramPoller] TELEGRAM_BOT_TOKEN not configured. Poller disabled.");
-    const scraperEnabled = process.env.ENABLE_TELEGRAM_SCRAPER !== "false";
-    if (scraperEnabled) {
-      console.log("[TelegramScraper] Starting fallback scraper for public channel...");
-      // Run scraper in background, handle errors gracefully
-      runScraper(false).catch((error) => {
-        console.error("[TelegramScraper] Fatal error:", error);
-      });
+  // Telegram integration should run in the jobs service by default.
+  // Running scrapers/pollers inside the web service increases the risk of flapping.
+  const allowTelegramInWeb = process.env.RUN_TELEGRAM_JOBS_IN_WEB === "true";
+  if (allowTelegramInWeb) {
+    // Bot API (if token available) OR Public scraper (fallback)
+    if (process.env.TELEGRAM_BOT_TOKEN) {
+      startTelegramPoller();
     } else {
-      console.log("[TelegramScraper] ENABLE_TELEGRAM_SCRAPER=false, scraper disabled.");
+      console.log("[TelegramPoller] TELEGRAM_BOT_TOKEN not configured. Poller disabled.");
+      const scraperEnabled = process.env.ENABLE_TELEGRAM_SCRAPER !== "false";
+      if (scraperEnabled) {
+        console.log("[TelegramScraper] Starting fallback scraper for public channel...");
+        // Run scraper in background, handle errors gracefully
+        runScraper(false).catch((error) => {
+          console.error("[TelegramScraper] Fatal error:", error);
+        });
+      } else {
+        console.log("[TelegramScraper] ENABLE_TELEGRAM_SCRAPER=false, scraper disabled.");
+      }
     }
+  } else {
+    console.log("[TelegramJobs] RUN_TELEGRAM_JOBS_IN_WEB!=true; skipping in web service.");
   }
 
   // Start IGC poller if enabled (must not block route registration / server listen).
