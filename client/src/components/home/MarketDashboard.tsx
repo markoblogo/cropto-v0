@@ -81,6 +81,17 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
     setLocation(`/market-data?country=${item.country.toLowerCase()}&commodity=${item.commodity}`);
   };
 
+  const compactIndexLabel = t("home.market.card.viewIndex")
+    .replace(/^View\s+/i, "")
+    .replace(/^Переглянути\s+/i, "")
+    .replace(/^Ver\s+/i, "")
+    .replace(/^Просмотреть\s+/i, "");
+  const compactOptionsLabel = t("home.market.card.viewOptions")
+    .replace(/^View\s+/i, "")
+    .replace(/^Переглянути\s+/i, "")
+    .replace(/^Ver\s+/i, "")
+    .replace(/^Просмотреть\s+/i, "");
+
   return (
     <Card className="flex flex-col rounded-xl shadow-sm">
       <CardHeader className="pb-2">
@@ -104,9 +115,9 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
       <CardContent className="flex-1 space-y-2">
         <div className="space-y-2">
           {/* Current Price */}
-          <div>
-            <div className="text-2xl font-bold">{item.price.toFixed(2)}</div>
-            <div className="text-sm text-muted-foreground">{item.currency}/t</div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold leading-none">{item.price.toFixed(2)}</span>
+            <span className="text-sm text-muted-foreground">{item.currency}/t</span>
           </div>
 
           {/* Change 24h */}
@@ -124,7 +135,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           {/* Sparkline Chart */}
           {sparklineData.length > 1 && (
             <div 
-              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-10 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={handleSparklineClick}
               title={t('home.market.card.clickForMarketData')}
             >
@@ -143,24 +154,26 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2 sm:flex-row pt-2">
+      <CardFooter className="pt-1 pb-3 flex gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="h-8 px-3 text-xs flex-1 min-w-0"
           onClick={handleViewIndexMarket}
+          title={compactIndexLabel}
         >
-          {t('home.market.card.viewIndex')}
-          <ExternalLink className="ml-2 h-3 w-3" />
+          <span className="truncate">{compactIndexLabel}</span>
+          <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
         </Button>
         <Button
           variant="default"
           size="sm"
-          className="flex-1"
+          className="h-8 px-3 text-xs flex-1 min-w-0"
           onClick={handleViewOptionsMarket}
+          title={compactOptionsLabel}
         >
-          {t('home.market.card.viewOptions')}
-          <ExternalLink className="ml-2 h-3 w-3" />
+          <span className="truncate">{compactOptionsLabel}</span>
+          <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
         </Button>
       </CardFooter>
     </Card>
