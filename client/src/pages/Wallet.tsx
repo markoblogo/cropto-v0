@@ -1,23 +1,35 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { WalletSummary } from "@/components/WalletSummary";
 import { OnchainTransactionsTable } from "@/components/OnchainTransactionsTable";
 import { useWalletSummary } from "@/hooks/useWalletSummary";
-import { useWalletSummary as usePortfolioWalletSummary } from "@/hooks/useWalletSummary";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface PortfolioSummary {
   lockedCollateral: string;
 }
 
+interface NotificationPreferences {
+  tradeStatus: boolean;
+  marginCalls: boolean;
+  indexUpdates: boolean;
+  system: boolean;
+}
+
 export default function Wallet() {
   const [, setLocation] = useLocation();
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch current user to get wallet address
   const { data: userData } = useQuery<{
@@ -45,6 +57,32 @@ export default function Wallet() {
   });
 
   const lockedCollateral = portfolioData ? parseFloat(portfolioData.lockedCollateral || "0") : 0;
+
+  const { data: notificationPreferences } = useQuery<NotificationPreferences>({
+    queryKey: ["/api/user/notification-preferences"],
+    enabled: !!user,
+  });
+
+  const savePreferencesMutation = useMutation({
+    mutationFn: async (payload: Partial<NotificationPreferences>) => {
+      const res = await apiRequest("PUT", "/api/user/notification-preferences", payload);
+      return (await res.json()) as NotificationPreferences;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user/notification-preferences"] });
+    },
+    onError: () => {
+      toast({
+        title: t("toast.error"),
+        description: t("wallet.notifications.saveError"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTogglePreference = (key: keyof NotificationPreferences, checked: boolean) => {
+    savePreferencesMutation.mutate({ [key]: checked });
+  };
 
   return (
     <MainLayout>
@@ -199,6 +237,33 @@ export default function Wallet() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("wallet.notifications.title")}</CardTitle>
+                <CardDescription>{t("wallet.notifications.subtitle")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {([
+                  { key: "tradeStatus", label: t("wallet.notifications.tradeStatus") },
+                  { key: "marginCalls", label: t("wallet.notifications.marginCalls") },
+                  { key: "indexUpdates", label: t("wallet.notifications.indexUpdates") },
+                  { key: "system", label: t("wallet.notifications.system") },
+                ] as const).map((item) => (
+                  <div key={item.key} className="flex items-center justify-between rounded-md border p-3">
+                    <Label htmlFor={`pref-${item.key}`} className="cursor-pointer">
+                      {item.label}
+                    </Label>
+                    <Switch
+                      id={`pref-${item.key}`}
+                      checked={Boolean(notificationPreferences?.[item.key])}
+                      onCheckedChange={(checked) => handleTogglePreference(item.key, checked)}
+                      disabled={savePreferencesMutation.isPending}
+                    />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="activity" className="mt-6 space-y-4">
@@ -222,4 +287,3 @@ export default function Wallet() {
     </MainLayout>
   );
 }
-

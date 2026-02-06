@@ -1830,6 +1830,7 @@
       "passwordLabel": "Password",
       "passwordPlaceholder": "Enter your password",
       "button": "Sign in",
+      "resendVerification": "Resend verification email",
       "buttonLoading": "Signing in...",
       "noAccount": "Don’t have an account?",
       "registerLink": "Register",
@@ -1841,7 +1842,11 @@
       "toast": {
         "success": "Successfully signed in",
         "failedTitle": "Login failed",
-        "failedDesc": "Invalid email or password"
+        "failedDesc": "Invalid email or password",
+        "emailVerified": "Email verified. You can now sign in.",
+        "emailNotVerified": "Email not verified. Please check your inbox and confirm your email.",
+        "verificationResent": "Verification email sent.",
+        "verificationResendFailed": "Failed to resend verification email."
       }
     },
     "register": {
@@ -1869,6 +1874,8 @@
       "toast": {
         "successTitle": "Success",
         "successDesc": "Account created successfully",
+        "verifyTitle": "Check your email",
+        "verifyDesc": "We sent you a verification link. Confirm your email before login.",
         "failedTitle": "Registration Failed",
         "failedDesc": "Failed to create account"
       }
@@ -2073,6 +2080,15 @@
     "transfers": {
       "title": "Transfers (coming soon)",
       "subtitle": "Here you will see deposits, withdrawals and internal transfers history once we start logging them."
+    },
+    "notifications": {
+      "title": "Email Notifications",
+      "subtitle": "Manage which email alerts you receive.",
+      "tradeStatus": "Trade status updates",
+      "marginCalls": "Margin call alerts",
+      "indexUpdates": "Market index updates",
+      "system": "System notifications",
+      "saveError": "Failed to save notification preferences."
     }
   },
   "theme": {

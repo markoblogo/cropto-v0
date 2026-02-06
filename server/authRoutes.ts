@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { z } from 'zod';
 import { fromError } from 'zod-validation-error';
 import { ethers } from 'ethers';
@@ -17,8 +17,13 @@ import {
 import { db } from './db';
 import { nonces } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { storage } from './storage';
+import { emailService } from './utils/emailMock';
 
 const router = Router();
+const EMAIL_VERIFY_TOKEN_PREFIX = "email_verify_token:";
+const EMAIL_VERIFIED_PREFIX = "email_verified:";
+const EMAIL_VERIFY_TTL_MS = 1000 * 60 * 60 * 24; // 24h
 
 // Validation schemas
 const registerSchema = z.object({
@@ -51,6 +56,54 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+const resendVerificationSchema = z.object({
+  email: z.string()
+    .min(1, 'Email is required')
+    .refine((email) => email.includes('@'), 'Invalid email format'),
+});
+
+function emailVerifyTokenKey(token: string): string {
+  return `${EMAIL_VERIFY_TOKEN_PREFIX}${token}`;
+}
+
+function emailVerifiedKey(userId: string): string {
+  return `${EMAIL_VERIFIED_PREFIX}${userId}`;
+}
+
+function getBaseUrl(req: Request): string {
+  if (process.env.APP_BASE_URL) {
+    return process.env.APP_BASE_URL.replace(/\/+$/, "");
+  }
+  const protocol = req.protocol || "http";
+  const host = req.get("host") || "localhost:5000";
+  return `${protocol}://${host}`;
+}
+
+async function isEmailVerified(userId: string): Promise<boolean> {
+  const setting = await storage.getAppSetting(emailVerifiedKey(userId));
+  // Backward compatibility: if no setting exists, treat as verified.
+  if (!setting) return true;
+  return setting.value === "true";
+}
+
+async function queueVerificationEmail(userId: string, email: string, baseUrl: string): Promise<void> {
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + EMAIL_VERIFY_TTL_MS).toISOString();
+
+  await storage.upsertAppSetting(
+    emailVerifyTokenKey(token),
+    JSON.stringify({ userId, email, expiresAt, usedAt: null })
+  );
+  await storage.upsertAppSetting(emailVerifiedKey(userId), "false");
+
+  const verifyLink = `${baseUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+  await emailService.sendEmail(
+    email,
+    "Cropto: verify your email",
+    `Please verify your email by clicking this link:\n\n${verifyLink}\n\nThis link expires in 24 hours.\nIf you did not create this account, you can ignore this email.`
+  );
+}
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
@@ -76,11 +129,16 @@ router.post('/register', async (req, res) => {
       validatedData.password,
       normalizedRole // Default to USER role
     );
-    
-    const token = generateToken(user.id, user.email, user.role);
+
+    try {
+      await queueVerificationEmail(user.id, user.email, getBaseUrl(req));
+    } catch (emailError) {
+      console.error("[Register] failed to send verification email:", emailError);
+    }
     
     res.status(201).json({
-      token,
+      message: "Account created. Please verify your email before login.",
+      requiresEmailVerification: true,
       user: {
         id: user.id,
         email: user.email,
@@ -136,6 +194,11 @@ router.post('/login', async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+
+    const verified = await isEmailVerified(user.id);
+    if (!verified) {
+      return res.status(403).json({ error: "Email not verified. Please check your inbox and confirm your email." });
+    }
     
     const token = generateToken(user.id, user.email, user.role);
     
@@ -158,6 +221,91 @@ router.post('/login', async (req, res) => {
     
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get("/verify-email", async (req, res) => {
+  try {
+    const token = String(req.query.token || "").trim();
+    if (!token) {
+      return res.status(400).send("Verification token is required.");
+    }
+
+    const tokenRecord = await storage.getAppSetting(emailVerifyTokenKey(token));
+    if (!tokenRecord) {
+      return res.status(400).send("Invalid or expired verification token.");
+    }
+
+    let payload: { userId: string; email: string; expiresAt: string; usedAt?: string | null };
+    try {
+      payload = JSON.parse(tokenRecord.value);
+    } catch {
+      return res.status(400).send("Invalid verification token payload.");
+    }
+
+    if (payload.usedAt) {
+      return res.status(400).send("This verification link has already been used.");
+    }
+    if (Date.now() > new Date(payload.expiresAt).getTime()) {
+      return res.status(400).send("Verification link expired. Request a new one.");
+    }
+
+    const user = await findUserById(payload.userId);
+    if (!user || user.email.toLowerCase() !== payload.email.toLowerCase()) {
+      return res.status(400).send("Invalid verification token.");
+    }
+
+    await storage.upsertAppSetting(emailVerifiedKey(payload.userId), "true");
+    await storage.upsertAppSetting(
+      emailVerifyTokenKey(token),
+      JSON.stringify({ ...payload, usedAt: new Date().toISOString() })
+    );
+
+    const loginUrl = `${process.env.APP_BASE_URL || "http://localhost:5173"}/login?verified=success`;
+    return res.status(200).send(`
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Email verified</title></head>
+  <body style="font-family: sans-serif; padding: 24px;">
+    <h2>Email verified successfully.</h2>
+    <p>You can now log in to Cropto.</p>
+    <a href="${loginUrl}">Go to login</a>
+  </body>
+</html>`);
+  } catch (error) {
+    console.error("Verify email error:", error);
+    return res.status(500).send("Failed to verify email.");
+  }
+});
+
+router.post("/resend-verification", async (req, res) => {
+  try {
+    const parsed = resendVerificationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid request payload" });
+    }
+
+    const email = parsed.data.email.toLowerCase().trim();
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.json({ message: "If this account exists, a verification email has been sent." });
+    }
+
+    const verified = await isEmailVerified(user.id);
+    if (verified) {
+      return res.json({ message: "Email is already verified." });
+    }
+
+    try {
+      await queueVerificationEmail(user.id, user.email, getBaseUrl(req));
+    } catch (emailError) {
+      console.error("[ResendVerification] failed to send verification email:", emailError);
+    }
+
+    return res.json({ message: "If this account exists, a verification email has been sent." });
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

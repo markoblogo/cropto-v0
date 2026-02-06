@@ -1830,6 +1830,7 @@
       "passwordLabel": "Contraseña",
       "passwordPlaceholder": "Ingresa tu contraseña",
       "button": "Iniciar sesión",
+      "resendVerification": "Reenviar correo de verificación",
       "buttonLoading": "Iniciando sesión…",
       "noAccount": "¿No tienes una cuenta?",
       "registerLink": "Registrarse",
@@ -1841,7 +1842,11 @@
       "toast": {
         "success": "Inicio de sesión exitoso",
         "failedTitle": "Error al iniciar sesión",
-        "failedDesc": "Correo electrónico o contraseña incorrectos"
+        "failedDesc": "Correo electrónico o contraseña incorrectos",
+        "emailVerified": "Correo verificado. Ya puedes iniciar sesión.",
+        "emailNotVerified": "Correo no verificado. Revisa tu bandeja y confirma tu email.",
+        "verificationResent": "Correo de verificación enviado.",
+        "verificationResendFailed": "No se pudo reenviar el correo de verificación."
       }
     },
     "register": {
@@ -1869,6 +1874,8 @@
       "toast": {
         "successTitle": "Éxito",
         "successDesc": "Cuenta creada correctamente",
+        "verifyTitle": "Revisa tu correo",
+        "verifyDesc": "Te enviamos un enlace de verificación. Confirma tu correo antes de iniciar sesión.",
         "failedTitle": "Error de registro",
         "failedDesc": "No se pudo crear la cuenta"
       }
@@ -2073,6 +2080,15 @@
     "transfers": {
       "title": "Transferencias (próximamente)",
       "subtitle": "Aquí verás el historial de depósitos, retiros y transferencias internas cuando empecemos a registrarlos."
+    },
+    "notifications": {
+      "title": "Notificaciones por correo",
+      "subtitle": "Gestiona qué alertas por email deseas recibir.",
+      "tradeStatus": "Actualizaciones de estado de operaciones",
+      "marginCalls": "Alertas de margin call",
+      "indexUpdates": "Actualizaciones de índices de mercado",
+      "system": "Notificaciones del sistema",
+      "saveError": "No se pudieron guardar las preferencias de notificación."
     }
   },
   "theme": {

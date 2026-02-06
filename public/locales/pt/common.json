@@ -1830,6 +1830,7 @@
       "passwordLabel": "Senha",
       "passwordPlaceholder": "Digite sua senha",
       "button": "Iniciar sessão",
+      "resendVerification": "Reenviar e-mail de verificação",
       "buttonLoading": "Entrando…",
       "noAccount": "Não tem uma conta?",
       "registerLink": "Cadastre-se",
@@ -1841,7 +1842,11 @@
       "toast": {
         "success": "Login realizado com sucesso",
         "failedTitle": "Falha no login",
-        "failedDesc": "E-mail ou senha inválidos"
+        "failedDesc": "E-mail ou senha inválidos",
+        "emailVerified": "E-mail verificado. Agora você pode entrar.",
+        "emailNotVerified": "E-mail não verificado. Verifique sua caixa de entrada e confirme seu e-mail.",
+        "verificationResent": "E-mail de verificação enviado.",
+        "verificationResendFailed": "Não foi possível reenviar o e-mail de verificação."
       }
     },
     "register": {
@@ -1869,6 +1874,8 @@
       "toast": {
         "successTitle": "Sucesso",
         "successDesc": "Conta criada com sucesso",
+        "verifyTitle": "Verifique seu e-mail",
+        "verifyDesc": "Enviamos um link de verificação. Confirme seu e-mail antes de entrar.",
         "failedTitle": "Falha no cadastro",
         "failedDesc": "Não foi possível criar a conta"
       }
@@ -2073,6 +2080,15 @@
     "transfers": {
       "title": "Transferências (em breve)",
       "subtitle": "Aqui você verá o histórico de depósitos, saques e transferências internas quando começarmos a registrá-los."
+    },
+    "notifications": {
+      "title": "Notificações por e-mail",
+      "subtitle": "Gerencie quais alertas por e-mail você deseja receber.",
+      "tradeStatus": "Atualizações de status das negociações",
+      "marginCalls": "Alertas de margin call",
+      "indexUpdates": "Atualizações dos índices de mercado",
+      "system": "Notificações do sistema",
+      "saveError": "Falha ao salvar preferências de notificação."
     }
   },
   "theme": {

@@ -46,6 +46,21 @@ import { findSpreadSpec } from "./services/specRegistry";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
+const USER_NOTIFICATION_PREFS_PREFIX = "user_notification_prefs:";
+
+type UserNotificationPreferences = {
+  tradeStatus: boolean;
+  marginCalls: boolean;
+  indexUpdates: boolean;
+  system: boolean;
+};
+
+const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
+  tradeStatus: true,
+  marginCalls: true,
+  indexUpdates: false,
+  system: true,
+};
 
 async function getFeedbackAlertRecipients(): Promise<string[]> {
   const configured = process.env.FEEDBACK_ALERT_EMAILS || process.env.FEEDBACK_ALERT_EMAIL || "";
@@ -80,6 +95,34 @@ function computeFreshnessDays(timestamp: Date | string | null | undefined): numb
   const ts = new Date(timestamp).getTime();
   if (Number.isNaN(ts)) return Number.POSITIVE_INFINITY;
   return Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
+}
+
+function userNotificationPrefsKey(userId: string): string {
+  return `${USER_NOTIFICATION_PREFS_PREFIX}${userId}`;
+}
+
+async function getUserNotificationPreferences(userId: string): Promise<UserNotificationPreferences> {
+  const setting = await storage.getAppSetting(userNotificationPrefsKey(userId));
+  if (!setting?.value) return DEFAULT_USER_NOTIFICATION_PREFS;
+  try {
+    const parsed = JSON.parse(setting.value) as Partial<UserNotificationPreferences>;
+    return {
+      tradeStatus: parsed.tradeStatus ?? DEFAULT_USER_NOTIFICATION_PREFS.tradeStatus,
+      marginCalls: parsed.marginCalls ?? DEFAULT_USER_NOTIFICATION_PREFS.marginCalls,
+      indexUpdates: parsed.indexUpdates ?? DEFAULT_USER_NOTIFICATION_PREFS.indexUpdates,
+      system: parsed.system ?? DEFAULT_USER_NOTIFICATION_PREFS.system,
+    };
+  } catch {
+    return DEFAULT_USER_NOTIFICATION_PREFS;
+  }
+}
+
+async function shouldSendUserEmail(
+  userId: string,
+  type: keyof UserNotificationPreferences
+): Promise<boolean> {
+  const prefs = await getUserNotificationPreferences(userId);
+  return !!prefs[type];
 }
 
 async function getIndexWithLatestById(indexId: string) {
@@ -3092,7 +3135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Send email notification for new margin call
             const responsibleUser = await findUserById(responsibleUserId);
-            if (responsibleUser && marginCall.deadline) {
+            const canSendMarginCallEmail = await shouldSendUserEmail(responsibleUserId, "marginCalls");
+            if (responsibleUser && marginCall.deadline && canSendMarginCallEmail) {
               await emailService.sendMarginCallEmail(
                 responsibleUser.email,
                 responsibleUser.email.split('@')[0], // Use email prefix as name
@@ -3326,6 +3370,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching margin calls:", error);
       res.status(500).json({ error: error.message || "Failed to fetch margin calls" });
+    }
+  });
+
+  const notificationPrefsSchema = z.object({
+    tradeStatus: z.boolean().optional(),
+    marginCalls: z.boolean().optional(),
+    indexUpdates: z.boolean().optional(),
+    system: z.boolean().optional(),
+  });
+
+  app.get("/api/user/notification-preferences", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+      const prefs = await getUserNotificationPreferences(req.user.id);
+      res.json(prefs);
+    } catch (error: any) {
+      console.error("Error fetching notification preferences:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch notification preferences" });
+    }
+  });
+
+  app.put("/api/user/notification-preferences", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+      const parsed = notificationPrefsSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid notification preferences payload" });
+      }
+
+      const current = await getUserNotificationPreferences(req.user.id);
+      const next: UserNotificationPreferences = {
+        tradeStatus: parsed.data.tradeStatus ?? current.tradeStatus,
+        marginCalls: parsed.data.marginCalls ?? current.marginCalls,
+        indexUpdates: parsed.data.indexUpdates ?? current.indexUpdates,
+        system: parsed.data.system ?? current.system,
+      };
+
+      await storage.upsertAppSetting(
+        userNotificationPrefsKey(req.user.id),
+        JSON.stringify(next)
+      );
+      res.json(next);
+    } catch (error: any) {
+      console.error("Error updating notification preferences:", error);
+      res.status(500).json({ error: error.message || "Failed to update notification preferences" });
     }
   });
 

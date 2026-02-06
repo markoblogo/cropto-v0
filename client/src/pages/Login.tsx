@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,6 +39,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = new URLSearchParams(window.location.search);
   const returnTo = searchParams.get("returnTo") || "/";
+  const verifyState = searchParams.get("verify");
+  const prefilledEmail = searchParams.get("email") || "";
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
 
   const loginSchema = z.object({
     email: z.string()
@@ -50,10 +53,25 @@ export default function Login() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      email: prefilledEmail,
       password: "",
     },
   });
+
+  useEffect(() => {
+    if (verifyState === "pending") {
+      toast({
+        title: t("auth.register.toast.verifyTitle"),
+        description: t("auth.register.toast.verifyDesc"),
+      });
+    }
+    if (verifyState === "success") {
+      toast({
+        title: t("common.success"),
+        description: t("auth.login.toast.emailVerified"),
+      });
+    }
+  }, [verifyState, toast, t]);
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
@@ -73,12 +91,44 @@ export default function Login() {
       });
       setLocation(returnTo);
     } catch (error: any) {
+      const rawError = String(error?.message || "");
+      const isEmailNotVerified = rawError.includes("Email not verified");
       toast({
         title: t("auth.login.toast.failedTitle"),
-        description: error.message || t("auth.login.toast.failedDesc"),
+        description: isEmailNotVerified
+          ? t("auth.login.toast.emailNotVerified")
+          : (error.message || t("auth.login.toast.failedDesc")),
         variant: "destructive",
       });
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const email = form.getValues("email");
+    if (!email) {
+      toast({
+        title: t("auth.login.toast.failedTitle"),
+        description: t("auth.login.validation.emailRequired"),
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsResendingVerification(true);
+    try {
+      await apiRequest("POST", "/api/auth/resend-verification", { email });
+      toast({
+        title: t("common.success"),
+        description: t("auth.login.toast.verificationResent"),
+      });
+    } catch {
+      toast({
+        title: t("auth.login.toast.failedTitle"),
+        description: t("auth.login.toast.verificationResendFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsResendingVerification(false);
     }
   };
 
@@ -157,6 +207,18 @@ export default function Login() {
                 data-testid="button-login"
               >
                 {isLoading ? t("auth.login.buttonLoading") : t("auth.login.button")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={isResendingVerification}
+                onClick={handleResendVerification}
+                data-testid="button-resend-verification"
+              >
+                {isResendingVerification
+                  ? t("auth.login.buttonLoading")
+                  : t("auth.login.resendVerification")}
               </Button>
             </form>
           </Form>

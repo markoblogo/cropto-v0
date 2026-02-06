@@ -70,15 +70,20 @@ export default function Register() {
       const response = await apiRequest("POST", "/api/auth/register", data);
       const result = await response.json();
 
-      // Save token to localStorage
-      localStorage.setItem("cropto_token", result.token);
-
       toast({
-        title: t("auth.register.toast.successTitle"),
-        description: t("auth.register.toast.successDesc"),
+        title: t("auth.register.toast.verifyTitle"),
+        description: t("auth.register.toast.verifyDesc"),
       });
 
-      // Redirect back to requested page (or dashboard by default)
+      if (result?.requiresEmailVerification) {
+        setLocation(`/login?verify=pending&email=${encodeURIComponent(data.email)}&returnTo=${encodeURIComponent(returnTo)}`);
+        return;
+      }
+
+      // Backward compatible behavior if server still returns token
+      if (result?.token) {
+        localStorage.setItem("cropto_token", result.token);
+      }
       setLocation(returnTo);
     } catch (error: any) {
       toast({
