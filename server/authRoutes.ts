@@ -26,8 +26,22 @@ const registerSchema = z.object({
     .min(1, 'Email is required')
     .refine((email) => email.includes('@'), 'Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  // Role is optional - defaults to USER if not provided
-  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN', 'BROKER']).optional(),
+  // Role is optional - defaults to USER if not provided.
+  // Accept both legacy uppercase and UI lowercase values.
+  role: z
+    .enum([
+      'USER',
+      'ADMIN',
+      'SUPER_ADMIN',
+      'BROKER',
+      'farmer',
+      'trader',
+      'broker',
+      'admin',
+      'super_admin',
+      'user',
+    ])
+    .optional(),
 });
 
 const loginSchema = z.object({
@@ -44,8 +58,19 @@ router.post('/register', async (req, res) => {
     fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H-reg-body',location:'authRoutes.ts:/register',message:'incoming register',data:{body:req.body},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     const validatedData = registerSchema.parse(req.body);
-    
-    const normalizedRole = (validatedData.role || 'USER').toUpperCase() as any;
+
+    // Normalize incoming role to current backend role model.
+    // We keep FARMER/TRADER as USER for now and preserve BROKER.
+    const normalizeIncomingRole = (role?: string): 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'BROKER' => {
+      const raw = (role || 'USER').toLowerCase();
+      if (raw === 'broker') return 'BROKER';
+      if (raw === 'admin') return 'ADMIN';
+      if (raw === 'super_admin') return 'SUPER_ADMIN';
+      if (raw === 'farmer' || raw === 'trader' || raw === 'user') return 'USER';
+      return 'USER';
+    };
+
+    const normalizedRole = normalizeIncomingRole(validatedData.role);
     const user = await createUser(
       validatedData.email,
       validatedData.password,
@@ -66,7 +91,7 @@ router.post('/register', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("[LOGIN_ERROR]", error);
+    console.error("[REGISTER_ERROR]", error);
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run-login',hypothesisId:'H-login-error',location:'authRoutes.ts:/login',message:'login error',data:{error: (error as any)?.message, stack: (error as any)?.stack},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
@@ -273,13 +298,32 @@ router.put('/update-role', authenticateToken, async (req: AuthRequest, res) => {
     }
 
     const roleSchema = z.object({
-      role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN'], {
-        errorMap: () => ({ message: 'Role must be USER, ADMIN, or SUPER_ADMIN' })
+      // Accept UI role values and map to backend role model.
+      role: z.enum([
+        'USER',
+        'ADMIN',
+        'SUPER_ADMIN',
+        'BROKER',
+        'farmer',
+        'trader',
+        'broker',
+        'admin',
+        'super_admin',
+        'user',
+      ], {
+        errorMap: () => ({ message: 'Role must be one of USER, ADMIN, SUPER_ADMIN, BROKER, farmer, trader, broker' }),
       }),
     });
 
     const validatedData = roleSchema.parse(req.body);
-    const updatedUser = await updateUserRole(req.user.id, validatedData.role);
+    const normalizedRole = (() => {
+      const raw = (validatedData.role || 'USER').toLowerCase();
+      if (raw === 'broker') return 'BROKER' as const;
+      if (raw === 'admin') return 'ADMIN' as const;
+      if (raw === 'super_admin') return 'SUPER_ADMIN' as const;
+      return 'USER' as const;
+    })();
+    const updatedUser = await updateUserRole(req.user.id, normalizedRole);
 
     if (!updatedUser) {
       return res.status(404).json({ error: 'User not found' });
