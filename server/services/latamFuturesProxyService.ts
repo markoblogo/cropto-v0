@@ -2,7 +2,7 @@ import type { IgcPrice } from "./igcPriceService";
 import { normalizeExternalCommodityName, usdPerBushelToTon } from "./externalCommodity";
 
 type ProxyRow = {
-  country: "BR" | "AR";
+  country: string;
   commodity: string;
   basis: string;
   price: number;
@@ -48,12 +48,13 @@ function parseCsv(content: string): ProxyRow[] {
     const unit = (cols[idx("unit")] || "").toLowerCase();
     const price = Number.parseFloat(cols[idx("price")] || "0");
     const asOfDate = cols[idx("asofdate")] || cols[idx("as_of_date")] || undefined;
-    if (!["BR", "AR"].includes(country)) continue;
+    // Accept any 2-letter country code; UI will filter by region.
+    if (!/^[A-Z]{2}$/.test(country)) continue;
     if (!commodity || commodity === "unknown") continue;
     if (!Number.isFinite(price) || price <= 0) continue;
     if (!["usd_per_ton", "usd_per_bushel", "brl_per_60kg_bag"].includes(unit)) continue;
     out.push({
-      country: country as "BR" | "AR",
+      country,
       commodity,
       basis,
       unit: unit as ProxyRow["unit"],
@@ -77,7 +78,7 @@ function parseJson(content: any): ProxyRow[] {
     }))
     .filter(
       (r: any) =>
-        ["BR", "AR"].includes(r.country) &&
+        /^[A-Z]{2}$/.test(r.country) &&
         !!r.commodity &&
         r.commodity !== "unknown" &&
         ["usd_per_ton", "usd_per_bushel", "brl_per_60kg_bag"].includes(r.unit) &&
