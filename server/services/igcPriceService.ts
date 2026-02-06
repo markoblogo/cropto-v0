@@ -88,6 +88,21 @@ function parsePrice(priceStr: string): number {
   return isNaN(parsed) ? 0 : parsed;
 }
 
+function parsePriceFromCells(cells: string[]): number {
+  const candidates: number[] = [];
+  for (const cell of cells) {
+    const numeric = (cell.match(/\d+(?:\.\d+)?/g) || [])
+      .map((v) => Number.parseFloat(v))
+      .filter((v) => Number.isFinite(v) && v >= 50 && v <= 2000);
+    if (numeric.length > 0) {
+      candidates.push(...numeric);
+    }
+  }
+  if (candidates.length === 0) return 0;
+  // Prefer the right-most realistic numeric in row (typically latest value column).
+  return candidates[candidates.length - 1];
+}
+
 /**
  * Parse percentage string (may contain % sign, +, -)
  */
@@ -121,142 +136,65 @@ function extractCountry(text: string): "US" | "BR" | "AR" | null {
 function extractTableData(html: string, commodity: string): IgcPrice[] {
   const $ = cheerio.load(html);
   const results: IgcPrice[] = [];
+  const seen = new Set<string>();
 
-  // Find the table - look for price data table
-  // Try multiple strategies to find the correct table
-  const allTables = $("table");
-  
-  let $table = allTables.filter((i, el) => {
-    const text = $(el).text().toLowerCase();
-    // Look for tables that contain country names and price data
-    return (
-      text.includes("argentina") ||
-      text.includes("brazil") ||
-      text.includes("us") ||
-      text.includes("u.s.")
-    );
-  }).first();
+  const processRows = (headers: string[], rows: cheerio.Cheerio<any>) => {
+    rows.each((i, row) => {
+      const $cells = $(row).find("td");
+      if ($cells.length === 0) return;
 
-  // If no table found with countries, try finding by structure
-  if ($table.length === 0) {
-    // Look for tables with multiple columns (likely price tables)
-    $table = $("table").filter((i, el) => {
-      const $rows = $(el).find("tr");
-      return $rows.length > 5; // Reasonable size for a price table
-    }).first();
-  }
+      const cells: string[] = [];
+      $cells.each((j, cell) => cells.push($(cell).text().trim()));
+      if (cells.length === 0) return;
 
-  if ($table.length === 0) {
-    console.warn(`[IGC] No table found for commodity ${commodity}`);
-    return results;
-  }
+      const firstCell = cells[0];
+      const country = extractCountry(firstCell);
+      if (!country) return;
 
-  // Parse table rows
-  const $rows = $table.find("tr");
-  
-  // Assume first row is headers
-  const headers: string[] = [];
-  $rows.first().find("th, td").each((i, el) => {
-    headers.push($(el).text().trim());
-  });
+      const rawRow: Record<string, string> = {};
+      headers.forEach((header, idx) => {
+        rawRow[header || `col_${idx}`] = cells[idx] || "";
+      });
+      rawRow["_rowIndex"] = i.toString();
 
-  // Process data rows
-  $rows.slice(1).each((i, row) => {
-    const $cells = $(row).find("td");
-    if ($cells.length === 0) return;
+      const priceValue = parsePriceFromCells(cells.slice(1));
+      if (!(priceValue > 0)) return;
 
-    // Extract all cell values
-    const cells: string[] = [];
-    $cells.each((j, cell) => {
-      cells.push($(cell).text().trim());
-    });
-
-    if (cells.length === 0) return;
-
-    // First column typically contains the label (country + description)
-    const firstCell = cells[0];
-    const country = extractCountry(firstCell);
-    
-    if (!country) {
-      // Skip rows that don't match our target countries
-      return;
-    }
-
-    // Build raw row object
-    const rawRow: Record<string, string> = {};
-    headers.forEach((header, idx) => {
-      rawRow[header] = cells[idx] || "";
-    });
-    rawRow["_rowIndex"] = i.toString();
-
-    // Try to find price column (usually contains numeric values with $ or USD)
-    let priceValue = 0;
-    let priceColumnIdx = -1;
-    for (let j = 1; j < cells.length; j++) {
-      const cellValue = cells[j];
-      if (cellValue && /[\d,.]/.test(cellValue)) {
-        const parsed = parsePrice(cellValue);
-        if (parsed > 0 && parsed < 10000) {
-          // Reasonable price range for grains per ton
-          priceValue = parsed;
-          priceColumnIdx = j;
+      let dateStr = "";
+      for (const cell of cells.slice(1)) {
+        if (/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(cell)) {
+          dateStr = cell;
           break;
         }
       }
-    }
 
-    // Try to find date column (usually contains date strings)
-    let dateStr = "";
-    for (let j = 1; j < cells.length; j++) {
-      const cellValue = cells[j];
-      if (cellValue && /jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(cellValue)) {
-        dateStr = cellValue;
-        break;
-      }
-    }
+      const dailyChangeHeaderIdx = headers.findIndex((h) => /daily.*change|daily.*%/i.test(h));
+      const annualChangeHeaderIdx = headers.findIndex((h) => /annual.*change|annual.*%/i.test(h));
+      const low52wHeaderIdx = headers.findIndex((h) => /52.*week.*low|52w.*low/i.test(h));
+      const high52wHeaderIdx = headers.findIndex((h) => /52.*week.*high|52w.*high/i.test(h));
 
-    // Find daily change column (typically "%" or "Daily % Change")
-    let dailyChange: number | null = null;
-    const dailyChangeHeaderIdx = headers.findIndex(h => 
-      /daily.*change|daily.*%/i.test(h)
-    );
-    if (dailyChangeHeaderIdx >= 0 && cells[dailyChangeHeaderIdx]) {
-      dailyChange = parsePercentage(cells[dailyChangeHeaderIdx]);
-    }
+      const dailyChange =
+        dailyChangeHeaderIdx >= 0 && cells[dailyChangeHeaderIdx]
+          ? parsePercentage(cells[dailyChangeHeaderIdx])
+          : null;
+      const annualChange =
+        annualChangeHeaderIdx >= 0 && cells[annualChangeHeaderIdx]
+          ? parsePercentage(cells[annualChangeHeaderIdx])
+          : null;
+      const low52w =
+        low52wHeaderIdx >= 0 && cells[low52wHeaderIdx] ? parsePrice(cells[low52wHeaderIdx]) : null;
+      const high52w =
+        high52wHeaderIdx >= 0 && cells[high52wHeaderIdx] ? parsePrice(cells[high52wHeaderIdx]) : null;
 
-    // Find annual change column
-    let annualChange: number | null = null;
-    const annualChangeHeaderIdx = headers.findIndex(h => 
-      /annual.*change|annual.*%/i.test(h)
-    );
-    if (annualChangeHeaderIdx >= 0 && cells[annualChangeHeaderIdx]) {
-      annualChange = parsePercentage(cells[annualChangeHeaderIdx]);
-    }
+      const label = firstCell;
+      const dedupKey = `${commodity}:${country}:${label}`;
+      if (seen.has(dedupKey)) return;
+      seen.add(dedupKey);
 
-    // Find 52-week low column
-    let low52w: number | null = null;
-    const low52wHeaderIdx = headers.findIndex(h => 
-      /52.*week.*low|52w.*low/i.test(h)
-    );
-    if (low52wHeaderIdx >= 0 && cells[low52wHeaderIdx]) {
-      low52w = parsePrice(cells[low52wHeaderIdx]);
-    }
-
-    // Find 52-week high column
-    let high52w: number | null = null;
-    const high52wHeaderIdx = headers.findIndex(h => 
-      /52.*week.*high|52w.*high/i.test(h)
-    );
-    if (high52wHeaderIdx >= 0 && cells[high52wHeaderIdx]) {
-      high52w = parsePrice(cells[high52wHeaderIdx]);
-    }
-
-    // Only add if we have a valid price
-    if (priceValue > 0 && country) {
-      const result = {
+      results.push({
         commodity: commodity as "wheat" | "maize" | "barley" | "soybeans" | "rice",
         country,
-        label: firstCell,
+        label,
         asOfDate: dateStr ? parseDate(dateStr) : new Date().toISOString().split("T")[0],
         priceUsdPerTon: priceValue,
         dailyChangePct: dailyChange,
@@ -264,11 +202,71 @@ function extractTableData(html: string, commodity: string): IgcPrice[] {
         low52w: low52w && low52w > 0 ? low52w : null,
         high52w: high52w && high52w > 0 ? high52w : null,
         rawRow,
-      };
-      results.push(result);
-    }
+      });
+    });
+  };
+
+  const candidateTables = $("table").filter((i, el) => {
+    const text = $(el).text().toLowerCase();
+    return (
+      text.includes("argentina") ||
+      text.includes("brazil") ||
+      text.includes("united states") ||
+      text.includes("u.s.") ||
+      text.includes("us")
+    );
   });
 
+  candidateTables.each((ti, table) => {
+    const $table = $(table);
+    const $rows = $table.find("tr");
+    if ($rows.length < 2) return;
+    const headers: string[] = [];
+    $rows
+      .first()
+      .find("th, td")
+      .each((i, el) => headers.push($(el).text().trim()));
+    processRows(headers, $rows.slice(1));
+  });
+
+  if (results.length > 0) return results;
+
+  // Fallback parser: extract country + numeric rows from plain text blocks when table markup changes.
+  const textLines = $("body")
+    .text()
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  let lastDate = "";
+  for (const line of textLines) {
+    if (/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(line)) {
+      lastDate = line;
+    }
+    const country = extractCountry(line);
+    if (!country) continue;
+    const numeric = parsePriceFromCells([line]);
+    if (!(numeric > 0)) continue;
+    const label = line.slice(0, 140);
+    const dedupKey = `${commodity}:${country}:${label}`;
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
+    results.push({
+      commodity: commodity as "wheat" | "maize" | "barley" | "soybeans" | "rice",
+      country,
+      label,
+      asOfDate: lastDate ? parseDate(lastDate) : new Date().toISOString().split("T")[0],
+      priceUsdPerTon: numeric,
+      dailyChangePct: null,
+      annualChangePct: null,
+      low52w: null,
+      high52w: null,
+      rawRow: { line },
+    });
+  }
+
+  if (results.length === 0) {
+    console.warn(`[IGC] No table/content rows found for commodity ${commodity}`);
+  }
   return results;
 }
 

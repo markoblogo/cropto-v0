@@ -6,9 +6,52 @@
 import { fetchDailyPrices as fetchIgcDailyPrices } from "../services/igcPriceService";
 import { fetchUsdaAmsPrices } from "../services/usdaAmsPriceService";
 import { upsertIgcIndexPrices } from "../services/igcUpsert";
+import { emailService } from "../utils/emailMock";
 
 const POLL_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 let pollerInterval: NodeJS.Timeout | null = null;
+let lastPrimaryFailureAlertAt = 0;
+
+function getAlertRecipients(): string[] {
+  const configured =
+    process.env.INDEX_PARSER_ALERT_EMAILS ||
+    process.env.FEEDBACK_ALERT_EMAILS ||
+    process.env.FEEDBACK_ALERT_EMAIL ||
+    "a.biletskiy@gmail.com";
+  return configured
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+async function sendPrimaryFailureAlert(details: { igcRows: number; usdaRows: number }) {
+  const throttleHours = Number.parseInt(process.env.INDEX_PARSER_ALERT_THROTTLE_HOURS || "6", 10);
+  const throttleMs = Math.max(1, throttleHours) * 60 * 60 * 1000;
+  const now = Date.now();
+  if (now - lastPrimaryFailureAlertAt < throttleMs) return;
+  lastPrimaryFailureAlertAt = now;
+
+  const subject = "Cropto: primary index parsers returned no data";
+  const body = [
+    "Index polling completed with no rows from primary parsers.",
+    `IGC rows: ${details.igcRows}`,
+    `USDA AMS rows: ${details.usdaRows}`,
+    "",
+    "Action required:",
+    "1) Check upstream source availability",
+    "2) Verify parser selectors/format",
+    "3) Confirm fallback series status in Market Dashboard",
+  ].join("\n");
+
+  const recipients = getAlertRecipients();
+  for (const email of recipients) {
+    try {
+      await emailService.sendEmail(email, subject, body);
+    } catch (error: any) {
+      console.error(`[IGC Poller] Failed to send parser alert to ${email}:`, error?.message || error);
+    }
+  }
+}
 
 /**
  * Run external price fetch and upsert once
@@ -24,6 +67,7 @@ export async function pollOnce(): Promise<number> {
 
     if (igcPrices.length === 0 && usdaPrices.length === 0) {
       console.warn("[IGC Poller] No external prices fetched");
+      await sendPrimaryFailureAlert({ igcRows: 0, usdaRows: 0 });
       return 0;
     }
 

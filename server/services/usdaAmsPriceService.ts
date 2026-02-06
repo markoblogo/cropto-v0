@@ -38,6 +38,33 @@ function detectCommodity(line: string): Commodity | null {
   return null;
 }
 
+function detectCommoditySection(line: string): Commodity | null {
+  const lower = line.toLowerCase();
+  if (
+    lower.includes("soybean export bids") ||
+    lower.includes("soybeans export bids") ||
+    lower.includes("soybean bids")
+  ) {
+    return "soybeans";
+  }
+  if (
+    lower.includes("corn export bids") ||
+    lower.includes("maize export bids") ||
+    lower.includes("corn bids")
+  ) {
+    return "maize";
+  }
+  if (
+    lower.includes("wheat export bids") ||
+    lower.includes("wheat bids") ||
+    lower.includes("hrw export") ||
+    lower.includes("srw export")
+  ) {
+    return "wheat";
+  }
+  return null;
+}
+
 function detectLabel(line: string): string | null {
   const lower = line.toLowerCase();
   if (lower.includes("pacific northwest") || lower.includes("pnw")) return "US Export Bids (PNW)";
@@ -72,6 +99,58 @@ function extractUsdPerTon(line: string, commodity: Commodity): number | null {
   const usdPerTon = bushelPrice * (1000 / kgPerBushel);
   if (!Number.isFinite(usdPerTon) || usdPerTon <= 0 || usdPerTon > 2000) return null;
   return Number(usdPerTon.toFixed(2));
+}
+
+function parseUsdaLinesToPrices(lines: string[], reportUrl: string, asOfDate: string): IgcPrice[] {
+  const dedup = new Map<string, IgcPrice>();
+  let sectionCommodity: Commodity | null = null;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const explicitSection = detectCommoditySection(line);
+    if (explicitSection) {
+      sectionCommodity = explicitSection;
+      continue;
+    }
+
+    const inlineCommodity = detectCommodity(line);
+    const commodity = inlineCommodity || sectionCommodity;
+    if (!commodity) continue;
+
+    const label = detectLabel(line);
+    if (!label) continue;
+
+    const priceUsdPerTon = extractUsdPerTon(line, commodity);
+    if (!priceUsdPerTon) continue;
+
+    const key = `${commodity}:${label}`;
+    if (!dedup.has(key)) {
+      const spec = getUsdaSpec(commodity as "maize" | "wheat" | "soybeans");
+      const confidence = priceUsdPerTon >= 100 && priceUsdPerTon <= 700 ? "high" : "medium";
+      dedup.set(key, {
+        commodity,
+        country: "US",
+        label,
+        asOfDate,
+        priceUsdPerTon,
+        rawRow: { line: line.trim(), source: reportUrl },
+        confidence,
+        meta: {
+          sourceUrl: reportUrl,
+          discovery: "MARS_API",
+          quoteUnitOriginal: "usd_per_bushel_or_cents_per_bushel",
+          conversionApplied: {
+            specId: spec.specId,
+            conversionVersion: spec.conversionVersion,
+          },
+        },
+      });
+    }
+  }
+
+  return Array.from(dedup.values());
 }
 
 function toAbsoluteUsdaUrl(url: string): string {
@@ -161,42 +240,7 @@ export async function fetchUsdaAmsPrices(): Promise<IgcPrice[]> {
     const text = await resp.text();
     const asOfDate = normalizeReportDate(text);
     const lines = text.split(/\r?\n/);
-    const dedup = new Map<string, IgcPrice>();
-
-    for (const line of lines) {
-      const commodity = detectCommodity(line);
-      if (!commodity) continue;
-      const label = detectLabel(line);
-      if (!label) continue;
-      const priceUsdPerTon = extractUsdPerTon(line, commodity);
-      if (!priceUsdPerTon) continue;
-
-      const key = `${commodity}:${label}`;
-      if (!dedup.has(key)) {
-        const spec = getUsdaSpec(commodity as "maize" | "wheat" | "soybeans");
-        const confidence = priceUsdPerTon >= 100 && priceUsdPerTon <= 700 ? "high" : "medium";
-        dedup.set(key, {
-          commodity,
-          country: "US",
-          label,
-          asOfDate,
-          priceUsdPerTon,
-          rawRow: { line: line.trim(), source: reportUrl },
-          confidence,
-          meta: {
-            sourceUrl: reportUrl,
-            discovery: "MARS_API",
-            quoteUnitOriginal: "usd_per_bushel_or_cents_per_bushel",
-            conversionApplied: {
-              specId: spec.specId,
-              conversionVersion: spec.conversionVersion,
-            },
-          },
-        });
-      }
-    }
-
-    const result = Array.from(dedup.values());
+    const result = parseUsdaLinesToPrices(lines, reportUrl, asOfDate);
     console.log(`[USDA AMS] Parsed ${result.length} price rows for ${asOfDate}`);
     return result;
   } catch (error: any) {

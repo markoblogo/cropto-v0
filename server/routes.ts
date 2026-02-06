@@ -101,6 +101,27 @@ function computeFreshnessDays(timestamp: Date | string | null | undefined): numb
   return Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
 }
 
+function normalizeSourceLabel(value: string): string {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function sourceLabelMatches(preferredLabel: string, actualLabel: string): boolean {
+  const preferred = normalizeSourceLabel(preferredLabel);
+  const actual = normalizeSourceLabel(actualLabel);
+  if (!preferred || !actual) return false;
+  if (actual.startsWith(preferred) || actual.includes(preferred)) return true;
+
+  // Token-based fallback for minor upstream label reformatting.
+  const preferredTokens = preferred.split(" ").filter((t) => t.length > 2);
+  if (preferredTokens.length === 0) return false;
+  const matchedTokens = preferredTokens.filter((token) => actual.includes(token)).length;
+  return matchedTokens >= Math.max(2, Math.ceil(preferredTokens.length * 0.6));
+}
+
 function detectCountryFromText(source: string): "UA" | "BR" | "AR" | "US" | "N/A" {
   const s = source.toUpperCase();
   if (s.includes("/UA") || s.includes(" UA")) return "UA";
@@ -1919,7 +1940,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (!preferredLabel) {
                   continue;
                 }
-                if (!label.startsWith(preferredLabel)) {
+                if (!sourceLabelMatches(preferredLabel, label)) {
                   continue;
                 }
               }
@@ -2243,8 +2264,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           seriesKey: `${row.country}:${String(row.commodity || "").toLowerCase()}:${row.basis}`,
         }));
 
-      const finalBrData = withSeriesKey(brData);
-      const finalArData = withSeriesKey(arData);
+      const allowBrArMockFallback = process.env.ALLOW_BR_AR_MOCK_FALLBACK !== "false";
+      const finalBrData = withSeriesKey(
+        brData.length > 0
+          ? brData
+          : allowBrArMockFallback
+            ? getMockMarketDataBR().map((m) => ({ ...m, sourceTier: "secondary" as const }))
+            : []
+      );
+      const finalArData = withSeriesKey(
+        arData.length > 0
+          ? arData
+          : allowBrArMockFallback
+            ? getMockMarketDataAR().map((m) => ({ ...m, sourceTier: "secondary" as const }))
+            : []
+      );
       const finalUsData = withSeriesKey(
         usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }))
       );
@@ -2361,8 +2395,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // In conservative BR/AR mode we do not persist mock replacements.
       if (usData.length === 0) await persistMockData("US", finalUsData);
+      if (allowBrArMockFallback && brData.length === 0) await persistMockData("BR", finalBrData);
+      if (allowBrArMockFallback && arData.length === 0) await persistMockData("AR", finalArData);
 
       console.log(`[Market Dashboard] Final - BR: ${finalBrData.length}, AR: ${finalArData.length}, US: ${finalUsData.length} records`);
       console.log(`[Market Dashboard] Final BR sources:`, finalBrData.map(d => d.source));

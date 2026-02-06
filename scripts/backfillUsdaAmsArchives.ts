@@ -189,6 +189,33 @@ function detectCommodity(line: string): Commodity | null {
   return null;
 }
 
+function detectCommoditySection(line: string): Commodity | null {
+  const lower = line.toLowerCase();
+  if (
+    lower.includes("soybean export bids") ||
+    lower.includes("soybeans export bids") ||
+    lower.includes("soybean bids")
+  ) {
+    return "soybeans";
+  }
+  if (
+    lower.includes("corn export bids") ||
+    lower.includes("maize export bids") ||
+    lower.includes("corn bids")
+  ) {
+    return "maize";
+  }
+  if (
+    lower.includes("wheat export bids") ||
+    lower.includes("wheat bids") ||
+    lower.includes("hrw export") ||
+    lower.includes("srw export")
+  ) {
+    return "wheat";
+  }
+  return null;
+}
+
 function detectLabel(line: string): string | null {
   const lower = line.toLowerCase();
   if (lower.includes("pacific northwest") || lower.includes("pnw")) return "US Export Bids (PNW)";
@@ -225,25 +252,22 @@ function extractUsdPerTon(line: string, commodity: Commodity): number | null {
   return Number(usdPerTon.toFixed(2));
 }
 
-async function fetchAndParseUsdaReport(reportUrl: string): Promise<IgcPrice[]> {
-  const resp = await fetch(reportUrl, {
-    headers: {
-      "user-agent": "CroptoBot/1.0",
-      accept: "text/plain,text/*;q=0.9,*/*;q=0.8",
-    },
-  });
-
-  if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status}`);
-  }
-
-  const text = await resp.text();
-  const asOfDate = normalizeReportDate(text);
-  const lines = text.split(/\r?\n/);
+function parseUsdaLinesToPrices(lines: string[], reportUrl: string, asOfDate: string): IgcPrice[] {
   const dedup = new Map<string, IgcPrice>();
+  let sectionCommodity: Commodity | null = null;
 
-  for (const line of lines) {
-    const commodity = detectCommodity(line);
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const explicitSection = detectCommoditySection(line);
+    if (explicitSection) {
+      sectionCommodity = explicitSection;
+      continue;
+    }
+
+    const inlineCommodity = detectCommodity(line);
+    const commodity = inlineCommodity || sectionCommodity;
     if (!commodity) continue;
 
     const label = detectLabel(line);
@@ -279,6 +303,24 @@ async function fetchAndParseUsdaReport(reportUrl: string): Promise<IgcPrice[]> {
   }
 
   return Array.from(dedup.values());
+}
+
+async function fetchAndParseUsdaReport(reportUrl: string): Promise<IgcPrice[]> {
+  const resp = await fetch(reportUrl, {
+    headers: {
+      "user-agent": "CroptoBot/1.0",
+      accept: "text/plain,text/*;q=0.9,*/*;q=0.8",
+    },
+  });
+
+  if (!resp.ok) {
+    throw new Error(`HTTP ${resp.status}`);
+  }
+
+  const text = await resp.text();
+  const asOfDate = normalizeReportDate(text);
+  const lines = text.split(/\r?\n/);
+  return parseUsdaLinesToPrices(lines, reportUrl, asOfDate);
 }
 
 function sleep(ms: number): Promise<void> {
