@@ -16,7 +16,8 @@
     "i18n:extract": "tsx scripts/extract-strings.ts",
     "i18n:check": "tsx scripts/i18n-check.ts",
     "data:backfill:usda": "tsx scripts/backfillUsdaAmsArchives.ts",
-    "data:audit:index-contract": "tsx scripts/auditIndexContract.ts"
+    "data:audit:index-contract": "tsx scripts/auditIndexContract.ts",
+    "auth:sync-legacy-users": "tsx scripts/syncLegacyUsersToSupabase.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
