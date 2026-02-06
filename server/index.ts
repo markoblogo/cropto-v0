@@ -73,26 +73,6 @@ app.use((req, res, next) => {
     process.exit(1);
   }
 
-  // Seed commodity indexes (required for Telegram scraper)
-  if (process.env.DATABASE_URL) {
-    try {
-      await seedCommodityIndexes();
-    } catch (error: any) {
-      console.error("⚠️  Warning: Failed to seed commodity indexes:", error.message);
-      // Don't exit - continue server startup
-    }
-  }
-
-  // Auto-import demo data if not present in database
-  if (process.env.DATABASE_URL) {
-    try {
-      await autoImportDemoData(db);
-    } catch (error: any) {
-      console.error("⚠️  Warning: Failed to auto-import demo data:", error.message);
-      // Don't exit - continue server startup even if demo import fails
-    }
-  }
-
   const server = await registerRoutes(app);
   registerSpotRoutes(app);
 
@@ -130,5 +110,27 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+  });
+
+  // Background startup tasks must not block the server from binding to $PORT,
+  // otherwise Railway health checks / edge routing may mark the deployment as unhealthy.
+  (async () => {
+    if (!process.env.DATABASE_URL) return;
+
+    // Seed commodity indexes (required for Telegram scraper)
+    try {
+      await seedCommodityIndexes();
+    } catch (error: any) {
+      console.error("⚠️  Warning: Failed to seed commodity indexes:", error.message);
+    }
+
+    // Auto-import demo data if not present in database
+    try {
+      await autoImportDemoData(db);
+    } catch (error: any) {
+      console.error("⚠️  Warning: Failed to auto-import demo data:", error.message);
+    }
+  })().catch((err: any) => {
+    console.error("⚠️  Warning: Background startup task failed:", err?.message || err);
   });
 })();
