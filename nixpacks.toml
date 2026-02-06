@@ -35,3 +35,8 @@ aptPkgs = [
 # Nixpacks defaults to running Caddy. This app already serves the SPA + API via Express,
 # and Railway expects the app to bind to $PORT.
 cmd = "npm run start"
+
+[variables]
+# Nixpacks sometimes falls back to Node 18 if it can't infer a version.
+# Force the runtime to Node 22 to avoid undici/cheerio web API issues on Node 18.
+NIXPACKS_NODE_VERSION = "22"

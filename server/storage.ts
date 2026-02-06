@@ -44,6 +44,30 @@ import { desc, eq, and, lt, or, sql, gte, lte } from "drizzle-orm";
 import { serializeOptionToJson } from "./optionJson";
 import { MATCHING_FEE_PER_TON, SETTLEMENT_FEE_PER_TON } from "./fees";
 
+let ensuredAppSettingsTable = false;
+async function ensureAppSettingsExists(): Promise<void> {
+  if (ensuredAppSettingsTable) return;
+  try {
+    // Fast-path: table exists.
+    await db.select({ key: appSettings.key }).from(appSettings).limit(1);
+    ensuredAppSettingsTable = true;
+    return;
+  } catch (err: any) {
+    const msg = String(err?.message || "");
+    if (!msg.includes('relation "app_settings" does not exist')) throw err;
+  }
+
+  // Create a minimal table definition used by app settings / health snapshots.
+  await db.execute(
+    sql`create table if not exists app_settings (
+      key text primary key,
+      value text not null,
+      updated_at timestamp not null default now()
+    )`,
+  );
+  ensuredAppSettingsTable = true;
+}
+
 export interface IStorage {
   listOptions(): Promise<Option[]>;
   createOption(option: InsertOption): Promise<Option>;
@@ -1067,6 +1091,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAppSetting(key: string): Promise<AppSetting | undefined> {
+    await ensureAppSettingsExists();
     const [setting] = await db
       .select()
       .from(appSettings)
@@ -1076,6 +1101,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertAppSetting(key: string, value: string): Promise<AppSetting> {
+    await ensureAppSettingsExists();
     const [setting] = await db
       .insert(appSettings)
       .values({ key, value, updatedAt: new Date() })
