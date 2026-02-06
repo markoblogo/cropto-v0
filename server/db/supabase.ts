@@ -5,7 +5,9 @@ export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'BROKER';
 export interface SupabaseUser {
   id: string;
   email: string;
-  password_hash: string;
+  password_hash?: string;
+  passwordHash?: string;
+  password?: string;
   role: UserRole;
   created_at: string;
   wallet_address?: string;
@@ -53,21 +55,25 @@ export function isSupabaseConfigured(): boolean {
 
 export async function findUserByEmailSupabase(email: string): Promise<SupabaseUser | null> {
   const client = getSupabaseClient();
-  
+
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+
   const { data, error } = await client
     .from('users')
     .select('*')
-    .eq('email', email)
-    .single();
+    .ilike('email', normalizedEmail)
+    .order('created_at', { ascending: false })
+    .limit(10);
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      return null;
-    }
     throw error;
   }
 
-  return data as SupabaseUser;
+  if (!data || data.length === 0) return null;
+
+  // If there are duplicates by email, prefer the most recent record with a password hash.
+  const withHash = data.find((row: any) => Boolean(row.password_hash || row.passwordHash || row.password));
+  return (withHash || data[0]) as SupabaseUser;
 }
 
 export async function createUserSupabase(
@@ -103,19 +109,23 @@ export async function updateUserSupabase(
   updates: Partial<SupabaseUser>
 ): Promise<SupabaseUser> {
   const client = getSupabaseClient();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
 
   const { data, error } = await client
     .from('users')
     .update(updates as any as never)
-    .eq('email', email)
+    .ilike('email', normalizedEmail)
     .select()
-    .single();
+    .limit(1);
 
   if (error) {
     throw error;
   }
 
-  return data as SupabaseUser;
+  if (!data || data.length === 0) {
+    throw new Error("User not found for update");
+  }
+  return data[0] as SupabaseUser;
 }
 
 export async function getAllUsersSupabase(): Promise<SupabaseUser[]> {

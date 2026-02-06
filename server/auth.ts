@@ -143,10 +143,15 @@ export async function findUserByEmail(email: string): Promise<User | null> {
         console.log("[AUTH] User not found in Supabase, checking local DB fallback");
       } else {
         console.log("[AUTH] User found in Supabase:", supabaseUser.email);
+        const resolvedPasswordHash =
+          (supabaseUser as any).password_hash ||
+          (supabaseUser as any).passwordHash ||
+          (supabaseUser as any).password ||
+          "";
         return {
           id: supabaseUser.id,
           email: supabaseUser.email,
-          passwordHash: supabaseUser.password_hash,
+          passwordHash: resolvedPasswordHash,
           role: supabaseUser.role,
           createdAt: supabaseUser.created_at,
           walletAddress: supabaseUser.wallet_address,
@@ -186,7 +191,11 @@ export async function createUser(
     return {
       id: supabaseUser.id,
       email: supabaseUser.email,
-      passwordHash: supabaseUser.password_hash,
+      passwordHash:
+        (supabaseUser as any).password_hash ||
+        (supabaseUser as any).passwordHash ||
+        (supabaseUser as any).password ||
+        "",
       role: supabaseUser.role,
       createdAt: supabaseUser.created_at,
       walletAddress: supabaseUser.wallet_address,
@@ -225,7 +234,11 @@ export async function findUserById(id: string): Promise<User | null> {
     return {
       id: supabaseUser.id,
       email: supabaseUser.email,
-      passwordHash: supabaseUser.password_hash,
+      passwordHash:
+        (supabaseUser as any).password_hash ||
+        (supabaseUser as any).passwordHash ||
+        (supabaseUser as any).password ||
+        "",
       role: supabaseUser.role,
       createdAt: supabaseUser.created_at,
       walletAddress: supabaseUser.wallet_address,
@@ -293,7 +306,11 @@ export async function findOrCreateUserByWallet(
         user: {
           id: existingUser.id,
           email: existingUser.email,
-          passwordHash: existingUser.password_hash,
+          passwordHash:
+            (existingUser as any).password_hash ||
+            (existingUser as any).passwordHash ||
+            (existingUser as any).password ||
+            "",
           role: existingUser.role,
           createdAt: existingUser.created_at,
           walletAddress: existingUser.wallet_address,
@@ -323,7 +340,11 @@ export async function findOrCreateUserByWallet(
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
-        passwordHash: updatedUser.password_hash,
+        passwordHash:
+          (updatedUser as any).password_hash ||
+          (updatedUser as any).passwordHash ||
+          (updatedUser as any).password ||
+          "",
         role: updatedUser.role,
         createdAt: updatedUser.created_at,
         walletAddress: updatedUser.wallet_address,
@@ -379,7 +400,11 @@ export async function updateUserRole(
     return {
       id: supabaseUser.id,
       email: supabaseUser.email,
-      passwordHash: supabaseUser.password_hash,
+      passwordHash:
+        (supabaseUser as any).password_hash ||
+        (supabaseUser as any).passwordHash ||
+        (supabaseUser as any).password ||
+        "",
       role: supabaseUser.role,
       createdAt: supabaseUser.created_at,
       walletAddress: supabaseUser.wallet_address,
