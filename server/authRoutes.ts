@@ -260,16 +260,25 @@ router.post("/bootstrap-admin", async (req, res) => {
     const client = getSupabaseClient();
 
     const { data: existing } = await client.from("users").select("*").ilike("email", email).limit(1);
+    let userId: string | null = null;
     if (existing && existing.length > 0) {
+      userId = String((existing[0] as any).id || "");
       await client.from("users").update({ password_hash: passwordHash, role } as any).ilike("email", email);
     } else {
+      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       await client.from("users").insert({
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: userId,
         email,
         password_hash: passwordHash,
         role,
         created_at: new Date().toISOString(),
       } as any);
+    }
+
+    // If the user previously registered, they might have an email_verified app setting set to false.
+    // Bootstrap is an emergency operator action; force-verify so the account can log in immediately.
+    if (userId) {
+      await storage.upsertAppSetting(emailVerifiedKey(userId), "true");
     }
 
     return res.json({ ok: true, email, role });
