@@ -15,7 +15,15 @@ export interface MarketIndexDto {
   change7d: number;
   change30d: number;
   asOf: string; // ISO string
-  source: "spike_telegram" | "mock" | "manual" | "IGC" | "USDA_AMS" | "synthetic_model";
+  source:
+    | "spike_telegram"
+    | "mock"
+    | "manual"
+    | "IGC"
+    | "USDA_AMS"
+    | "BARCHART_USDA"
+    | "FUTURES_PROXY"
+    | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
   dataStatus?: "fresh" | "stale" | "no_recent";
   confidence?: "high" | "medium" | "low";

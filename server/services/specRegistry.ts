@@ -14,7 +14,9 @@ export interface SpreadSpec {
   basis: string;
   anchorCountry: "US";
   anchorCommodity: string;
-  fallbackOrder: Array<"USDA_AMS" | "IGC" | "manual" | "spike_telegram" | "mock">;
+  fallbackOrder: Array<
+    "USDA_AMS" | "IGC" | "BARCHART_USDA" | "FUTURES_PROXY" | "manual" | "spike_telegram" | "mock"
+  >;
   failoverOrder: Array<"primary" | "last_known" | "secondary" | "synthetic">;
   maxAgeDays: number;
   graceDays: number;
@@ -74,7 +76,7 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     basis: "Brazil (Paranagua)",
     anchorCountry: "US",
     anchorCommodity: "soybeans",
-    fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
+    fallbackOrder: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
     failoverOrder: ["primary", "last_known"],
     maxAgeDays: 3,
     graceDays: 4,
@@ -97,7 +99,7 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     basis: "Brazil Feed (Paranagua)",
     anchorCountry: "US",
     anchorCommodity: "maize",
-    fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
+    fallbackOrder: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
     failoverOrder: ["primary", "last_known"],
     maxAgeDays: 3,
     graceDays: 4,
@@ -120,7 +122,7 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     basis: "Argentina (Up River)",
     anchorCountry: "US",
     anchorCommodity: "soybeans",
-    fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
+    fallbackOrder: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
     failoverOrder: ["primary", "last_known"],
     maxAgeDays: 3,
     graceDays: 4,
@@ -143,7 +145,7 @@ export const SPREAD_SPECS: SpreadSpec[] = [
     basis: "Argentina Feed (Up River)",
     anchorCountry: "US",
     anchorCommodity: "maize",
-    fallbackOrder: ["IGC", "manual", "spike_telegram", "mock"],
+    fallbackOrder: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
     failoverOrder: ["primary", "last_known"],
     maxAgeDays: 3,
     graceDays: 4,

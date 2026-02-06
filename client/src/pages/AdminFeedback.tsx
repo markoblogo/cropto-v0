@@ -38,6 +38,26 @@ type ParserHealthResponse = {
       lastPublishedDate: string | null;
       status: "fresh" | "stale" | "no_recent";
     };
+    BARCHART_USDA: {
+      enabled: boolean;
+      lastFetchAt: string | null;
+      lastSuccessAt: string | null;
+      lastRows: number | null;
+      lastError: string | null;
+      lastErrorAt: string | null;
+      latestAsOf: string | null;
+      status: "fresh" | "stale" | "no_recent";
+    };
+    FUTURES_PROXY: {
+      enabled: boolean;
+      lastFetchAt: string | null;
+      lastSuccessAt: string | null;
+      lastRows: number | null;
+      lastError: string | null;
+      lastErrorAt: string | null;
+      latestAsOf: string | null;
+      status: "fresh" | "stale" | "no_recent";
+    };
   };
   countries: Array<{
     source: string;
@@ -359,7 +379,7 @@ export default function AdminFeedback() {
             ) : (
               <>
                 <div className="grid gap-3 md:grid-cols-2">
-                  {(["IGC", "USDA_AMS"] as const).map((sourceKey) => {
+                  {(["IGC", "USDA_AMS", "BARCHART_USDA", "FUTURES_PROXY"] as const).map((sourceKey) => {
                     const source = parserHealth.sources[sourceKey];
                     return (
                       <div key={sourceKey} className="rounded-md border p-3 space-y-2" data-testid={`card-parser-${sourceKey.toLowerCase()}`}>

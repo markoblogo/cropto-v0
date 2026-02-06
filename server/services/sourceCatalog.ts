@@ -1,4 +1,12 @@
-export type SourceKey = "IGC" | "USDA_AMS" | "spike_telegram" | "manual" | "mock" | "synthetic_model";
+export type SourceKey =
+  | "IGC"
+  | "USDA_AMS"
+  | "BARCHART_USDA"
+  | "FUTURES_PROXY"
+  | "spike_telegram"
+  | "manual"
+  | "mock"
+  | "synthetic_model";
 export type SourceType = "official_api" | "official_file" | "public_html" | "editorial_article" | "internal";
 export type UsagePolicy = "open" | "restricted" | "unknown";
 export type Visibility = "public" | "internal_only";
@@ -24,6 +32,20 @@ const CATALOG: Record<SourceKey, SourceDescriptor> = {
     priority: 90,
     sourceType: "public_html",
     usagePolicy: "restricted",
+    visibility: "public",
+  },
+  BARCHART_USDA: {
+    key: "BARCHART_USDA",
+    priority: 95,
+    sourceType: "public_html",
+    usagePolicy: "open",
+    visibility: "public",
+  },
+  FUTURES_PROXY: {
+    key: "FUTURES_PROXY",
+    priority: 85,
+    sourceType: "public_html",
+    usagePolicy: "open",
     visibility: "public",
   },
   spike_telegram: {

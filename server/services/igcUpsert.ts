@@ -15,7 +15,7 @@ import { getSourceDescriptor } from "./sourceCatalog";
  */
 export async function upsertIgcIndexPrices(
   prices: IgcPrice[],
-  source: "IGC" | "USDA_AMS" = "IGC"
+  source: "IGC" | "USDA_AMS" | "BARCHART_USDA" | "FUTURES_PROXY" = "IGC"
 ): Promise<number> {
   const descriptor = getSourceDescriptor(source);
   const anomalyThresholdPct = Number.parseFloat(process.env.DATA_ANOMALY_THRESHOLD_PCT || "15");

@@ -1920,7 +1920,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if this is external data (country-tagged source from IGC or USDA AMS).
           const hasCountry = !!price.country;
           const countryMatches = price.country === "BR" || price.country === "AR" || price.country === "US";
-          const sourceMatches = price.source === "IGC" || price.source === "USDA_AMS";
+          const sourceMatches =
+            price.source === "IGC" ||
+            price.source === "USDA_AMS" ||
+            price.source === "BARCHART_USDA" ||
+            price.source === "FUTURES_PROXY";
           const isExternalRecord = hasCountry && countryMatches && sourceMatches;
           
           // Debug log for IGC records
@@ -1934,7 +1938,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const country = price.country as "BR" | "AR" | "US"; // Already validated by isIgcRecord check
               const label = price.label || "";
 
-              // IGC gets strict mapping per country/commodity. USDA AMS is accepted for US without IGC mapping.
+              // IGC gets strict mapping per country/commodity.
               if (price.source === "IGC") {
                 const preferredLabel = IGC_SERIES_MAPPING[country]?.[commodity];
                 if (!preferredLabel) {
@@ -1982,7 +1986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 change7d: 0,
                 change30d: 0,
                 asOf: asOfDate.toISOString(),
-                source: (price.source === "USDA_AMS" ? "USDA_AMS" : "IGC") as const,
+                source: String(price.source || "manual") as any,
                 confidence: (metaObj.confidence || "high") as "high" | "medium" | "low",
                 freshnessDays,
                 isStale: freshnessDays > STALE_MAX_AGE_DAYS,
@@ -2078,13 +2082,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const failoverEvents: Array<Record<string, unknown>> = [];
 
         const sourceOrderByCountry: Record<"BR" | "AR" | "US", string[]> = {
-          BR: ["IGC", "manual", "spike_telegram", "mock"],
-          AR: ["IGC", "manual", "spike_telegram", "mock"],
-          US: ["USDA_AMS", "IGC", "manual", "spike_telegram", "mock"],
+          BR: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
+          AR: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
+          US: ["USDA_AMS", "BARCHART_USDA", "IGC", "manual", "spike_telegram", "mock"],
         };
         const maxAgeDaysBySource: Record<string, number> = {
           USDA_AMS: 2,
+          BARCHART_USDA: 2,
           IGC: 2,
+          FUTURES_PROXY: 2,
           manual: 7,
           spike_telegram: 3,
           mock: 1,
@@ -4979,7 +4985,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rows = await db
         .select()
         .from(indexPrices)
-        .where(or(eq(indexPrices.source, "IGC"), eq(indexPrices.source, "USDA_AMS")))
+        .where(
+          or(
+            eq(indexPrices.source, "IGC"),
+            eq(indexPrices.source, "USDA_AMS"),
+            eq(indexPrices.source, "BARCHART_USDA"),
+            eq(indexPrices.source, "FUTURES_PROXY")
+          )
+        )
         .orderBy(desc(indexPrices.date))
         .limit(5000);
 
@@ -5056,7 +5069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: statusByAge(item.latestAsOf),
       }));
 
-      const sourceLatest = (source: "IGC" | "USDA_AMS") => {
+      const sourceLatest = (source: "IGC" | "USDA_AMS" | "BARCHART_USDA" | "FUTURES_PROXY") => {
         const sourceRows = countries.filter((c) => c.source === source);
         const latest = sourceRows
           .map((c) => (c.latestAsOf ? new Date(c.latestAsOf) : null))
@@ -5067,6 +5080,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const igcLatestAsOf = sourceLatest("IGC");
       const usdaLatestAsOf = sourceLatest("USDA_AMS");
+      const barchartLatestAsOf = sourceLatest("BARCHART_USDA");
+      const futuresProxyLatestAsOf = sourceLatest("FUTURES_PROXY");
 
       res.json({
         generatedAt: new Date().toISOString(),
@@ -5091,6 +5106,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastPublishedDate: usdaLastPublishedDate,
             latestAsOf: usdaLatestAsOf ? usdaLatestAsOf.toISOString() : null,
             status: statusByAge(usdaLatestAsOf),
+          },
+          BARCHART_USDA: {
+            enabled: process.env.ENABLE_BARCHART_USDA_POLLING !== "false",
+            lastFetchAt: toIsoOrNull(await getSettingValue("parser_health_barchart_usda_last_fetch_at")),
+            lastSuccessAt: toIsoOrNull(await getSettingValue("parser_health_barchart_usda_last_success_at")),
+            lastRows: toIntOrNull(await getSettingValue("parser_health_barchart_usda_last_rows")),
+            lastError: await getSettingValue("parser_health_barchart_usda_last_error"),
+            lastErrorAt: toIsoOrNull(await getSettingValue("parser_health_barchart_usda_last_error_at")),
+            latestAsOf: barchartLatestAsOf ? barchartLatestAsOf.toISOString() : null,
+            status: statusByAge(barchartLatestAsOf),
+          },
+          FUTURES_PROXY: {
+            enabled: process.env.ENABLE_FUTURES_PROXY_POLLING !== "false",
+            lastFetchAt: toIsoOrNull(await getSettingValue("parser_health_futures_proxy_last_fetch_at")),
+            lastSuccessAt: toIsoOrNull(await getSettingValue("parser_health_futures_proxy_last_success_at")),
+            lastRows: toIntOrNull(await getSettingValue("parser_health_futures_proxy_last_rows")),
+            lastError: await getSettingValue("parser_health_futures_proxy_last_error"),
+            lastErrorAt: toIsoOrNull(await getSettingValue("parser_health_futures_proxy_last_error_at")),
+            latestAsOf: futuresProxyLatestAsOf ? futuresProxyLatestAsOf.toISOString() : null,
+            status: statusByAge(futuresProxyLatestAsOf),
           },
         },
         countries,
