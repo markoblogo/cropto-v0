@@ -333,8 +333,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
-  // Start IGC poller if enabled (must not block route registration / server listen)
-  if (process.env.ENABLE_IGC_POLLING === "true") {
+  // Start IGC poller if enabled (must not block route registration / server listen).
+  //
+  // IMPORTANT: Playwright-based polling can be heavy and may destabilize the web process
+  // on some platforms. Require an explicit opt-in to run pollers inside the web service.
+  const allowJobsInWeb = process.env.RUN_INDEX_POLLERS_IN_WEB === "true";
+  if (process.env.ENABLE_IGC_POLLING === "true" && allowJobsInWeb) {
     setTimeout(() => {
       import("./jobs/igcPoller")
         .then(({ startPoller }) => startPoller())
@@ -343,7 +347,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
     }, 0);
   } else {
-    console.log("[IGC Poller] ENABLE_IGC_POLLING not set to 'true', poller disabled.");
+    if (process.env.ENABLE_IGC_POLLING !== "true") {
+      console.log("[IGC Poller] ENABLE_IGC_POLLING not set to 'true', poller disabled.");
+    } else if (!allowJobsInWeb) {
+      console.log("[IGC Poller] Poller enabled but RUN_INDEX_POLLERS_IN_WEB!=true; skipping in web service.");
+    }
   }
 
   // Waitlist endpoints (early-access)
