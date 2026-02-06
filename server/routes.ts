@@ -101,6 +101,26 @@ function computeFreshnessDays(timestamp: Date | string | null | undefined): numb
   return Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
 }
 
+function detectCountryFromText(source: string): "UA" | "BR" | "AR" | "US" | "N/A" {
+  const s = source.toUpperCase();
+  if (s.includes("/UA") || s.includes(" UA")) return "UA";
+  if (s.includes("/BR") || s.includes(" BR")) return "BR";
+  if (s.includes("/AR") || s.includes(" AR")) return "AR";
+  if (s.includes("/US") || s.includes(" US") || s.includes(" USA")) return "US";
+  return "N/A";
+}
+
+function buildOptionCountry(optionLike: Record<string, unknown>): "UA" | "BR" | "AR" | "US" | "N/A" {
+  const source = [
+    String(optionLike.title || ""),
+    String(optionLike.commodity || ""),
+    String(optionLike.commoditySlug || ""),
+    String(optionLike.indexSlug || ""),
+    String(optionLike.indexName || ""),
+  ].join(" ");
+  return detectCountryFromText(source);
+}
+
 function userNotificationPrefsKey(userId: string): string {
   return `${USER_NOTIFICATION_PREFS_PREFIX}${userId}`;
 }
@@ -1280,10 +1300,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/index/history - Price history for legacy charts OR country/commodity/basis history
   app.get("/api/index/history", async (req, res) => {
     try {
-      const { country, commodity, basis } = req.query;
-      const countryStr = typeof country === "string" ? country : "";
-      const commodityStr = typeof commodity === "string" ? commodity : "";
-      const basisStr = typeof basis === "string" ? basis : "";
+      const { country, commodity, basis, seriesKey } = req.query;
+      let countryStr = typeof country === "string" ? country : "";
+      let commodityStr = typeof commodity === "string" ? commodity : "";
+      let basisStr = typeof basis === "string" ? basis : "";
+
+      if (typeof seriesKey === "string" && seriesKey.trim().length > 0) {
+        const [keyCountry, keyCommodity, ...basisParts] = seriesKey.split(":");
+        if (keyCountry && keyCommodity && basisParts.length > 0) {
+          countryStr = keyCountry;
+          commodityStr = keyCommodity;
+          basisStr = basisParts.join(":");
+        }
+      }
 
       const hasCountryParams = !!(countryStr && commodityStr && basisStr);
 
@@ -2208,9 +2237,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use IGC data from database if available, otherwise fallback to mock data
       // Mock data is only used when NO IGC records exist for a specific country
       // If there are some IGC records (even if fewer than expected), we use them without mock fallback
-      const finalBrData = brData;
-      const finalArData = arData;
-      const finalUsData = usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }));
+      const withSeriesKey = (rows: MarketIndexDto[]): MarketIndexDto[] =>
+        rows.map((row) => ({
+          ...row,
+          seriesKey: `${row.country}:${String(row.commodity || "").toLowerCase()}:${row.basis}`,
+        }));
+
+      const finalBrData = withSeriesKey(brData);
+      const finalArData = withSeriesKey(arData);
+      const finalUsData = withSeriesKey(
+        usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }))
+      );
+      const uaDataWithSeriesKey = withSeriesKey(uaDataFiltered);
 
       const buildSeriesStatus = (
         country: "UA" | "BR" | "AR" | "US",
@@ -2262,7 +2300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const seriesStatus = {
-        ua: buildSeriesStatus("UA", uaDataFiltered, []),
+        ua: buildSeriesStatus("UA", uaDataWithSeriesKey, []),
         br: buildSeriesStatus("BR", finalBrData, failoverEvents),
         ar: buildSeriesStatus("AR", finalArData, failoverEvents),
         us: buildSeriesStatus("US", finalUsData, failoverEvents),
@@ -2332,7 +2370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Market Dashboard] Final US sources:`, finalUsData.map(d => d.source));
 
       res.json({
-        ua: uaDataFiltered.length > 0 ? uaDataFiltered : [
+        ua: uaDataWithSeriesKey.length > 0 ? uaDataWithSeriesKey : withSeriesKey([
           // Fallback sample data if no real data available
           {
             commodity: "corn",
@@ -2347,7 +2385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             asOf: new Date().toISOString(),
             source: "manual" as const,
           },
-        ],
+        ]),
         br: finalBrData,
         ar: finalArData,
         us: finalUsData,
@@ -2482,11 +2520,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/options", async (req, res) => {
     try {
-      const options = await storage.listOptions();
-      res.json(options);
+      const optionRows = await storage.listOptions();
+      const withCountry = optionRows.map((row: any) => ({
+        ...row,
+        country: buildOptionCountry(row),
+      }));
+      res.json(withCountry);
     } catch (error) {
       console.error("Error fetching options:", error);
       res.status(500).json({ error: "Failed to fetch options" });
+    }
+  });
+
+  app.get("/api/dashboard/metrics", async (_req, res) => {
+    try {
+      const [allOptions, allForwardContracts, allSpotPositions] = await Promise.all([
+        storage.listOptions(),
+        db.select().from(forwardContracts),
+        db.select().from(spotPositions),
+      ]);
+
+      const activeOptionStatuses = new Set(["OPEN", "FILLED", "MARGIN_CALL", "ACTIVE"]);
+      const activeForwardStatuses = new Set(["ACTIVE", "OPEN", "FILLED"]);
+
+      const optionsCount = allOptions.length;
+      const activeOptions = allOptions.filter((opt: any) => activeOptionStatuses.has(String(opt.status || "").toUpperCase())).length;
+      const activeForwards = allForwardContracts.filter((fc: any) =>
+        activeForwardStatuses.has(String(fc.status || "").toUpperCase())
+      ).length;
+      const activeSpotPositions = allSpotPositions.filter((sp: any) => Number(sp.quantityKg || 0) !== 0).length;
+
+      const optionsVolume = allOptions.reduce((sum: number, opt: any) => {
+        const premium = Number(opt.premium || 0);
+        const qty = Number(opt.qty || 0);
+        return sum + (Number.isFinite(premium) && Number.isFinite(qty) ? premium * qty : 0);
+      }, 0);
+
+      const forwardsVolume = allForwardContracts.reduce((sum: number, fc: any) => {
+        const px = Number(fc.contractPrice || 0);
+        const qty = Number(fc.qtyTon || 0);
+        return sum + (Number.isFinite(px) && Number.isFinite(qty) ? px * qty : 0);
+      }, 0);
+
+      const spotVolume = allSpotPositions.reduce((sum: number, sp: any) => {
+        const qtyKg = Number(sp.quantityKg || 0);
+        const avgPxPerKg = Number(sp.avgEntryPrice || 0);
+        return sum + (Number.isFinite(qtyKg) && Number.isFinite(avgPxPerKg) ? Math.abs(qtyKg) * avgPxPerKg : 0);
+      }, 0);
+
+      res.json({
+        totalOptionsLike: optionsCount + allForwardContracts.length + allSpotPositions.length,
+        openPositions: activeOptions + activeForwards + activeSpotPositions,
+        totalVolumeUsd: optionsVolume + forwardsVolume + spotVolume,
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard metrics:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard metrics" });
     }
   });
 
@@ -2631,13 +2720,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market snapshot for open options (authenticated users)
-  app.get("/api/options/market", authenticateToken, async (req: AuthRequest, res) => {
+  // Market snapshot for open options (public read-only)
+  app.get("/api/options/market", async (req, res) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
       const { commodity, window, limit } = req.query as {
         commodity?: string;
         window?: string;
@@ -2695,7 +2780,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const rows = (rowsResult as any).rows ?? [];
 
-      const marketRows = rows.map((opt: any) => mapOptionToMarketRow(opt as any));
+      const marketRows = rows.map((opt: any) => {
+        const row = mapOptionToMarketRow(opt as any) as any;
+        return {
+          ...row,
+          country: buildOptionCountry(opt),
+        };
+      });
 
       res.json({ options: marketRows });
     } catch (error: any) {

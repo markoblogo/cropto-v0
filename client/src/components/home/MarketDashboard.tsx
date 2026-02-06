@@ -50,13 +50,10 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
 
   // Fetch history for sparkline
   const { data: history } = useQuery<HistoryDataPoint[]>({
-    queryKey: ["/api/index/history", item.country, item.commodity, item.basis],
+    queryKey: ["/api/index/history", item.seriesKey || `${item.country}:${item.commodity}:${item.basis}`],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        country: item.country,
-        commodity: item.commodity,
-        basis: item.basis,
-      });
+      const params = new URLSearchParams();
+      params.set("seriesKey", item.seriesKey || `${item.country}:${item.commodity}:${item.basis}`);
       const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
       const data = await response.json();
       if (!Array.isArray(data)) {

@@ -21,15 +21,6 @@ interface OptionChainTableProps {
   onView?: (option: Option) => void;
 }
 
-function inferMarket(option: Option): "UA" | "BR" | "AR" | "US" | "N/A" {
-  const source = `${option.title || ""} ${option.commodity || ""} ${option.indexId || ""}`.toUpperCase();
-  if (source.includes(" UA") || source.includes("/UA")) return "UA";
-  if (source.includes(" BR") || source.includes("/BR")) return "BR";
-  if (source.includes(" AR") || source.includes("/AR")) return "AR";
-  if (source.includes(" US") || source.includes("/US") || source.includes(" USA")) return "US";
-  return "N/A";
-}
-
 export function OptionChainTable({ options, isLoading, onView }: OptionChainTableProps) {
   const { t } = useTranslation();
 
@@ -160,7 +151,7 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
                   {getCommodityName(option)}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {inferMarket(option)}
+                  {(option as any).country || "N/A"}
                 </TableCell>
                 <TableCell>
                   <OptionTypeBadge type={option.type as "CALL" | "PUT"} />

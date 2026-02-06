@@ -4,6 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 
 export interface OptionsMarketRow {
   id: string;
+  country?: "UA" | "BR" | "AR" | "US" | "N/A";
   commodity: string;
   commoditySlug?: string | null;
   expiryWindowLabel: string;

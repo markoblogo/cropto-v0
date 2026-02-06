@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 export interface MarketIndexDto {
+  seriesKey?: string;
   commodity: string;
   grade: string | null;
   country: "UA" | "BR" | "AR" | "US";

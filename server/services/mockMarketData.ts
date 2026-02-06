@@ -4,6 +4,7 @@
  */
 
 export interface MarketIndexDto {
+  seriesKey?: string;
   commodity: string;
   grade: string | null;
   country: "UA" | "BR" | "AR" | "US";

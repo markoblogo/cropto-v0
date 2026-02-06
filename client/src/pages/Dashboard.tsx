@@ -94,6 +94,14 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  const { data: dashboardMetrics } = useQuery<{
+    totalOptionsLike: number;
+    openPositions: number;
+    totalVolumeUsd: number;
+  }>({
+    queryKey: ["/api/dashboard/metrics"],
+  });
+
   const createOptionMutation = useMutation({
     mutationFn: async (data: InsertOption) => {
       const response = await apiRequest("POST", "/api/options", data);
@@ -281,9 +289,11 @@ export default function Dashboard() {
     },
   });
 
-  const totalOptions = options.length;
-  const openOptions = options.filter(opt => opt.status === "OPEN").length;
-  const totalVolume = options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
+  const totalOptions = dashboardMetrics?.totalOptionsLike ?? options.length;
+  const openOptions =
+    dashboardMetrics?.openPositions ?? options.filter(opt => opt.status === "OPEN").length;
+  const totalVolume =
+    dashboardMetrics?.totalVolumeUsd ?? options.reduce((sum, opt) => sum + parseFloat(opt.premium) * parseFloat(opt.qty), 0);
 
   const handleConnectWallet = () => {
     // Wallet-first flow: Open wallet authentication modal for everyone

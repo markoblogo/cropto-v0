@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOptionsMarketSnapshot } from "@/hooks/useOptionsMarketSnapshot";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { openAuthPrompt, getCurrentPathWithSearch } from "@/lib/authPrompt";
 
 interface OptionsMarketStripProps {
   isAuthenticated?: boolean;
 }
 
-export function OptionsMarketStrip({ isAuthenticated = false }: OptionsMarketStripProps) {
+export function OptionsMarketStrip({ isAuthenticated: _isAuthenticated = false }: OptionsMarketStripProps) {
   const [, setLocation] = useLocation();
   const [commodityFilter, setCommodityFilter] = useState<string>("ALL");
   const [windowFilter, setWindowFilter] = useState<"ALL" | "NEAREST" | "NEXT">("ALL");
@@ -19,38 +18,17 @@ export function OptionsMarketStrip({ isAuthenticated = false }: OptionsMarketStr
   const { data, isLoading, error, refetch, isFetching } = useOptionsMarketSnapshot({
     limit: 6,
     commodity: commodityFilter !== "ALL" ? commodityFilter : undefined,
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   const rows = useMemo(() => data?.options ?? [], [data]);
 
-  const goToLogin = () => openAuthPrompt(getCurrentPathWithSearch());
-  const goToRegister = () => setLocation(`/register?returnTo=${encodeURIComponent(getCurrentPathWithSearch())}`);
   const goToOptionChain = (commodity: string | null | undefined, windowLabel: string) => {
     const params = new URLSearchParams();
     if (commodity) params.set("commodity", commodity);
     if (windowLabel && windowLabel !== "TBD") params.set("window", windowLabel);
     setLocation(`/options?${params.toString()}`);
   };
-
-  if (!isAuthenticated) {
-    return (
-      <Card className="border border-muted-foreground/10 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Options Market (top offers)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            Login to see live option offers from the marketplace.
-          </p>
-          <div className="flex gap-3">
-            <Button onClick={goToLogin}>Login</Button>
-            <Button variant="outline" onClick={goToRegister}>Register</Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const availableCommodities = useMemo(() => {
     const set = new Set<string>();
@@ -165,6 +143,7 @@ export function OptionsMarketStrip({ isAuthenticated = false }: OptionsMarketStr
           <div className="divide-y divide-border">
             <div className="grid grid-cols-7 gap-2 py-2 text-xs uppercase text-muted-foreground">
               <span>Commodity</span>
+              <span className="hidden md:block">Mkt</span>
               <span>Window</span>
               <span>Type</span>
               <span className="text-right hidden sm:block">Qty (t)</span>
@@ -176,8 +155,9 @@ export function OptionsMarketStrip({ isAuthenticated = false }: OptionsMarketStr
               const strikeFmt = `$${Number(row.strikePerTon ?? 0).toLocaleString()}`;
               const premiumFmt = row.premiumPerTon?.toLocaleString() ?? "-";
               return (
-                <div key={row.id} className="grid grid-cols-7 gap-2 py-3 text-sm items-center">
+                <div key={row.id} className="grid grid-cols-7 md:grid-cols-8 gap-2 py-3 text-sm items-center">
                   <span className="font-medium">{row.commodity}</span>
+                  <span className="hidden md:block text-muted-foreground">{row.country || "N/A"}</span>
                   <span className="text-muted-foreground">{row.expiryWindowLabel}</span>
                   <span>{row.type}</span>
                   <span className="text-right hidden sm:block">{row.qtyTons.toLocaleString()}</span>
