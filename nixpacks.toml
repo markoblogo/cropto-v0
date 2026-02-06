@@ -1,0 +1,32 @@
+[phases.setup]
+# Playwright Chromium runtime dependencies for Debian-based images.
+# Railway uses Nixpacks; these packages must exist in the runtime layer (not just build),
+# otherwise Playwright will fail to launch the browser.
+aptPkgs = [
+  "libglib2.0-0",
+  "libnss3",
+  "libnspr4",
+  "libatk1.0-0",
+  "libatk-bridge2.0-0",
+  "libcups2",
+  "libdbus-1-3",
+  "libdrm2",
+  "libx11-6",
+  "libx11-xcb1",
+  "libxkbcommon0",
+  "libxcomposite1",
+  "libxdamage1",
+  "libxext6",
+  "libxfixes3",
+  "libxrandr2",
+  "libgbm1",
+  "libasound2",
+  "libpango-1.0-0",
+  "libpangocairo-1.0-0",
+  "libcairo2",
+  "libatspi2.0-0",
+  "libgtk-3-0",
+  "ca-certificates",
+  "fonts-liberation",
+]
+
