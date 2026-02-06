@@ -85,14 +85,14 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   };
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card className="flex flex-col rounded-xl shadow-sm">
+      <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <span>{countryFlag}</span>
           <img
             src={`/commodities/${commoditySlug}.png`}
             alt={item.commodity}
-            className="h-5 w-5 object-contain"
+            className="h-4 w-4 object-contain"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
@@ -104,11 +104,11 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           {item.source === "IGC" ? "IGC export prices" : item.basis}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="space-y-3">
+      <CardContent className="flex-1 space-y-2">
+        <div className="space-y-2">
           {/* Current Price */}
           <div>
-            <div className="text-3xl font-bold">{item.price.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{item.price.toFixed(2)}</div>
             <div className="text-sm text-muted-foreground">{item.currency}/t</div>
           </div>
 
@@ -146,7 +146,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2 sm:flex-row">
+      <CardFooter className="flex flex-col gap-2 sm:flex-row pt-2">
         <Button
           variant="outline"
           size="sm"
@@ -202,7 +202,7 @@ function MarketTab({
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {items.map((item, index) => (
           <MarketCard key={`${item.country}-${item.commodity}-${index}`} item={item} />
         ))}
