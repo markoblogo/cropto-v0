@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, ExternalLink } from "lucide-react";
@@ -38,6 +39,19 @@ export default function MarketData() {
     if (!marketDashboardData) return [];
     return marketDashboardData[selectedRegion] || [];
   }, [marketDashboardData, selectedRegion]);
+
+  const regionalSeriesStatus = useMemo(() => {
+    if (!marketDashboardData?.seriesStatus) return [];
+    return marketDashboardData.seriesStatus[selectedRegion] || [];
+  }, [marketDashboardData, selectedRegion]);
+
+  const seriesStatusByKey = useMemo(() => {
+    const map = new Map<string, "fresh" | "stale" | "no_recent">();
+    for (const row of regionalSeriesStatus) {
+      map.set(`${row.country}:${row.commodity}:${row.basis}`, row.status);
+    }
+    return map;
+  }, [regionalSeriesStatus]);
 
   const primaryWheatIndex = useMemo(() => {
     if (!regionalIndexes.length) return null;
@@ -125,6 +139,15 @@ export default function MarketData() {
   const oilseeds = regionalIndexes.filter((index) => classifyCommodity(index.commodity) === "oilseeds");
   const otherCommodities = regionalIndexes.filter((index) => classifyCommodity(index.commodity) === "other");
 
+  const getSeriesStatus = (index: { country: string; commodity: string; basis: string }) =>
+    seriesStatusByKey.get(`${index.country}:${index.commodity}:${index.basis}`) || "no_recent";
+
+  const getStatusBadgeClass = (status: "fresh" | "stale" | "no_recent") => {
+    if (status === "fresh") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+    if (status === "stale") return "bg-amber-100 text-amber-800 border-amber-200";
+    return "bg-red-100 text-red-800 border-red-200";
+  };
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -172,7 +195,12 @@ export default function MarketData() {
                         {index.commodity}
                         {index.grade ? ` (${index.grade})` : ""}
                       </CardTitle>
-                      <CardDescription>{index.basis}</CardDescription>
+                      <CardDescription className="flex items-center gap-2">
+                        <span>{index.basis}</span>
+                        <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
+                          {getSeriesStatus(index)}
+                        </Badge>
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold">${index.price.toFixed(2)} / t</div>
@@ -199,7 +227,12 @@ export default function MarketData() {
                         {index.commodity}
                         {index.grade ? ` (${index.grade})` : ""}
                       </CardTitle>
-                      <CardDescription>{index.basis}</CardDescription>
+                      <CardDescription className="flex items-center gap-2">
+                        <span>{index.basis}</span>
+                        <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
+                          {getSeriesStatus(index)}
+                        </Badge>
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold">${index.price.toFixed(2)} / t</div>
@@ -227,7 +260,12 @@ export default function MarketData() {
                           {index.commodity}
                           {index.grade ? ` (${index.grade})` : ""}
                         </CardTitle>
-                        <CardDescription>{index.basis}</CardDescription>
+                        <CardDescription className="flex items-center gap-2">
+                          <span>{index.basis}</span>
+                          <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
+                            {getSeriesStatus(index)}
+                          </Badge>
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-3xl font-bold">${index.price.toFixed(2)} / t</div>
