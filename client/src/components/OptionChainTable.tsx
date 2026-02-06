@@ -21,6 +21,15 @@ interface OptionChainTableProps {
   onView?: (option: Option) => void;
 }
 
+function inferMarket(option: Option): "UA" | "BR" | "AR" | "US" | "N/A" {
+  const source = `${option.title || ""} ${option.commodity || ""} ${option.indexId || ""}`.toUpperCase();
+  if (source.includes(" UA") || source.includes("/UA")) return "UA";
+  if (source.includes(" BR") || source.includes("/BR")) return "BR";
+  if (source.includes(" AR") || source.includes("/AR")) return "AR";
+  if (source.includes(" US") || source.includes("/US") || source.includes(" USA")) return "US";
+  return "N/A";
+}
+
 export function OptionChainTable({ options, isLoading, onView }: OptionChainTableProps) {
   const { t } = useTranslation();
 
@@ -100,11 +109,12 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border text-sm">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>{t("component.optionChainTable.headers.commodity")}</TableHead>
+            <TableHead>Mkt</TableHead>
             <TableHead>{t("component.optionChainTable.headers.type")}</TableHead>
             <TableHead>{t("component.optionChainTable.headers.side")}</TableHead>
             <TableHead>{t("component.optionChainTable.headers.strike")}</TableHead>
@@ -149,24 +159,27 @@ export function OptionChainTable({ options, isLoading, onView }: OptionChainTabl
                 <TableCell className="font-medium">
                   {getCommodityName(option)}
                 </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {inferMarket(option)}
+                </TableCell>
                 <TableCell>
                   <OptionTypeBadge type={option.type as "CALL" | "PUT"} />
                 </TableCell>
                 <TableCell>
                   <span className="text-sm text-muted-foreground">{side}</span>
                 </TableCell>
-                <TableCell className="font-mono">
+                <TableCell className="font-mono text-sm">
                   ${strikePerTon.toFixed(2)}
                 </TableCell>
-                <TableCell className="font-mono">
+                <TableCell className="font-mono text-sm">
                   {quantityTons.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-mono text-sm">
+                    <span className="font-mono text-xs">
                       {t("component.optionChainTable.values.premiumPerTon", { premium: premiumPerTon.toFixed(2) })}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[11px] text-muted-foreground">
                       {t("component.optionChainTable.values.premiumTotal", { total: totalPremium.toFixed(2) })}
                     </span>
                   </div>

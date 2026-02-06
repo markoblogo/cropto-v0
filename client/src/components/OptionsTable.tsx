@@ -74,6 +74,15 @@ function canExercise(option: Option, currentUserId?: string) {
   return option.buyerId === currentUserId || option.issuerId === currentUserId;
 }
 
+function inferMarket(option: Option): "UA" | "BR" | "AR" | "US" | "N/A" {
+  const source = `${option.title || ""} ${(option as any).commoditySlug || ""} ${(option as any).commodityName || ""} ${option.commodity || ""}`.toUpperCase();
+  if (source.includes("/UA") || source.includes(" UA")) return "UA";
+  if (source.includes("/BR") || source.includes(" BR")) return "BR";
+  if (source.includes("/AR") || source.includes(" AR")) return "AR";
+  if (source.includes("/US") || source.includes(" US") || source.includes(" USA")) return "US";
+  return "N/A";
+}
+
 export function OptionsTable({ 
   options, 
   isLoading, 
@@ -320,7 +329,7 @@ export function OptionsTable({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="text-sm">
               <TableHeader>
                 <TableRow>
                   <TableHead className="font-semibold">
@@ -335,6 +344,7 @@ export function OptionsTable({
                       {getSortIcon("commodity")}
                     </Button>
                   </TableHead>
+                  <TableHead className="font-semibold w-[58px]">Mkt</TableHead>
                   <TableHead className="font-semibold">
                     <Button 
                       variant="ghost" 
@@ -479,6 +489,9 @@ export function OptionsTable({
                         {(option as any).commodityName || option.commodity || t("component.optionsTable.values.dash")}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {inferMarket(option)}
                   </TableCell>
                   <TableCell>
                     <OptionTypeBadge type={option.type as "CALL" | "PUT"} />

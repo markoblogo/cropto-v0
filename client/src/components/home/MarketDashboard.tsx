@@ -5,100 +5,19 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown, Minus, TrendingUp, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface HistoryDataPoint {
   date: string;
   price: number;
 }
 
-function MarketHistoryDialog({
-  open,
-  onClose,
-  item,
-}: {
-  open: boolean;
-  onClose: () => void;
-  item: MarketIndexDto;
-}) {
-  const { t } = useTranslation();
-
-  const { data: history, isLoading } = useQuery<HistoryDataPoint[]>({
-    queryKey: ["/api/index/history", item.country, item.commodity, item.basis],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        country: item.country,
-        commodity: item.commodity,
-        basis: item.basis,
-      });
-      const response = await apiRequest("GET", `/api/index/history?${params.toString()}`);
-      return response.json();
-    },
-    enabled: open,
-  });
-
-  const chartData = history?.map((point) => ({
-    date: new Date(point.date).toLocaleDateString(),
-    price: point.price,
-  })) || [];
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>
-            {item.country} {item.commodity} {item.grade ? `(${item.grade})` : ""} - {item.basis}
-          </DialogTitle>
-          <DialogDescription>Price history chart</DialogDescription>
-        </DialogHeader>
-        <div className="mt-4">
-          {isLoading ? (
-            <Skeleton className="h-64 w-full" />
-          ) : chartData.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No history data available</p>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: number) => [`$${value.toFixed(2)}/t`, "Price"]}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="price"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function MarketCard({ item }: { item: MarketIndexDto }) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const [showHistory, setShowHistory] = useState(false);
 
   const changeValue = item.change24h;
   const changeColor = changeValue > 0 ? "text-emerald-600" : changeValue < 0 ? "text-red-600" : "text-muted-foreground";
@@ -106,6 +25,17 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
 
   const commodityLabel = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
   const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : item.country === "AR" ? "🇦🇷" : "🇺🇸";
+  const commoditySlug = item.commodity.toLowerCase().includes("corn") || item.commodity.toLowerCase().includes("maize")
+    ? "corn"
+    : item.commodity.toLowerCase().includes("sunflower")
+      ? "sunflower"
+      : item.commodity.toLowerCase().includes("soy")
+        ? "soy-gmo"
+        : item.commodity.toLowerCase().includes("wheat") && item.commodity.toLowerCase().includes("feed")
+          ? "feed-wheat"
+          : item.commodity.toLowerCase().includes("wheat")
+            ? "wheat-115"
+            : item.commodity.toLowerCase().replace(/\\s+/g, "-");
 
   // Fetch history for sparkline
   const { data: history } = useQuery<HistoryDataPoint[]>({
@@ -148,6 +78,14 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <span>{countryFlag}</span>
+          <img
+            src={`/commodities/${commoditySlug}.png`}
+            alt={item.commodity}
+            className="h-5 w-5 object-contain"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
           <span>{commodityLabel}</span>
         </CardTitle>
         <CardDescription>
@@ -170,6 +108,9 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               {changeValue > 0 ? "+" : ""}{changeValue.toFixed(2)}%
             </span>
             <span className="text-xs text-muted-foreground">24h</span>
+            <Badge variant="outline" className="ml-auto text-[10px] uppercase">
+              {item.basis?.toLowerCase().includes("processing") ? "Processing" : "Export"}
+            </Badge>
           </div>
 
           {/* Sparkline Chart */}
@@ -214,11 +155,6 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
           <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
       </CardFooter>
-      <MarketHistoryDialog
-        open={showHistory}
-        onClose={() => setShowHistory(false)}
-        item={item}
-      />
     </Card>
   );
 }

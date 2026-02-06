@@ -7,7 +7,6 @@ import { OptionsTable } from "@/components/OptionsTable";
 import { Hero } from "@/components/Hero";
 import { Header } from "@/components/Header";
 import { MetricCards } from "@/components/MetricCards";
-import { CommodityIndexesGrid } from "@/components/CommodityIndexesGrid";
 import { OptionsMarketStrip } from "@/components/home/OptionsMarketStrip";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
 import { MarketDashboard } from "@/components/home/MarketDashboard";
@@ -385,11 +384,8 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Commodity Indexes */}
-          <CommodityIndexesGrid />
-
           {/* Options Market Snapshot */}
-          <OptionsMarketStrip />
+          <OptionsMarketStrip isAuthenticated={!!user} />
 
           {/* Spot Market */}
           <SpotMarketGrid />

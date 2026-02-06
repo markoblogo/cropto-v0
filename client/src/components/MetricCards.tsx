@@ -40,13 +40,13 @@ export function MetricCards({ totalOptions, openPositions, totalVolume }: Metric
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
           <Link key={metric.title} href={metric.href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 rounded-2xl">
             <Card 
-              className="relative overflow-hidden rounded-2xl border-2 hover-elevate active-elevate-2 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"
+              className="relative overflow-hidden rounded-xl border-2 hover-elevate active-elevate-2 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"
               data-testid={metric.testId}
               role="link"
               aria-label={metric.title}
@@ -59,8 +59,8 @@ export function MetricCards({ totalOptions, openPositions, totalVolume }: Metric
               }`} />
 
               {/* Content */}
-              <div className="relative p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="relative p-4">
+                <div className="flex items-center justify-between mb-2">
                   <div className={`p-3 rounded-xl ${
                     metric.color === 'primary' ? 'bg-primary/20' :
                     metric.color === 'secondary' ? 'bg-secondary/20' :
@@ -75,16 +75,16 @@ export function MetricCards({ totalOptions, openPositions, totalVolume }: Metric
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground font-medium">
+                  <p className="text-xs text-muted-foreground font-medium">
                     {metric.title}
                   </p>
                   <p 
-                    className="text-4xl font-bold font-mono tracking-tight"
+                    className="text-3xl font-bold font-mono tracking-tight leading-none"
                     data-testid={`text-${metric.testId}-value`}
                   >
                     {metric.value}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     {metric.description}
                   </p>
                 </div>

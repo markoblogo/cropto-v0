@@ -7,15 +7,19 @@ import { useOptionsMarketSnapshot } from "@/hooks/useOptionsMarketSnapshot";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { openAuthPrompt, getCurrentPathWithSearch } from "@/lib/authPrompt";
 
-export function OptionsMarketStrip() {
+interface OptionsMarketStripProps {
+  isAuthenticated?: boolean;
+}
+
+export function OptionsMarketStrip({ isAuthenticated = false }: OptionsMarketStripProps) {
   const [, setLocation] = useLocation();
-  const hasToken = typeof window !== "undefined" && !!localStorage.getItem("cropto_token");
   const [commodityFilter, setCommodityFilter] = useState<string>("ALL");
   const [windowFilter, setWindowFilter] = useState<"ALL" | "NEAREST" | "NEXT">("ALL");
 
   const { data, isLoading, error, refetch, isFetching } = useOptionsMarketSnapshot({
     limit: 6,
     commodity: commodityFilter !== "ALL" ? commodityFilter : undefined,
+    enabled: isAuthenticated,
   });
 
   const rows = useMemo(() => data?.options ?? [], [data]);
@@ -29,7 +33,7 @@ export function OptionsMarketStrip() {
     setLocation(`/options?${params.toString()}`);
   };
 
-  if (!hasToken) {
+  if (!isAuthenticated) {
     return (
       <Card className="border border-muted-foreground/10 shadow-sm">
         <CardHeader>

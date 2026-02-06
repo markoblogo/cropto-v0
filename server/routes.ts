@@ -2186,12 +2186,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const failoverEvents = [...usResolved.failoverEvents, ...brResolved.failoverEvents, ...arResolved.failoverEvents];
       if (failoverEvents.length > 0) {
-        await db.insert(analyticsEvents).values(
-          failoverEvents.map((evt) => ({
-            eventName: String(evt.event),
-            payload: JSON.stringify(evt),
-          }))
-        );
+        try {
+          await db.insert(analyticsEvents).values(
+            failoverEvents.map((evt) => ({
+              eventName: String(evt.event),
+              payload: JSON.stringify(evt),
+            }))
+          );
+        } catch (analyticsError) {
+          // Analytics must never break market dashboard payload.
+          console.error("[Market Dashboard] Failed to write failover analytics:", analyticsError);
+        }
       }
 
       // Debug logging

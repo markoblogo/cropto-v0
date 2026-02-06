@@ -33,33 +33,30 @@ export function HowCroptoWorks() {
   };
 
   return (
-    <section className="py-12 bg-muted/50">
+    <section className="py-7 bg-muted/40">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight mb-2">
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-bold tracking-tight mb-1">
             {t('home.how.title')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
             {t('home.how.subtitle')}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
           {steps.map((step) => (
             <Card key={step.num} className="flex flex-col">
-              <CardHeader>
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary">
-                    <step.Icon className="h-6 w-6" />
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
+                    <step.Icon className="h-4 w-4" />
                   </div>
-                  <div className="text-2xl font-bold text-muted-foreground">
-                    {step.num}
-                  </div>
+                  <CardTitle className="text-base">{step.title}</CardTitle>
                 </div>
-                <CardTitle className="text-xl">{step.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
+              <CardContent className="pt-0">
+                <CardDescription className="text-sm leading-5">
                   {step.description}
                 </CardDescription>
               </CardContent>
@@ -70,7 +67,7 @@ export function HowCroptoWorks() {
         {/* CTA Button */}
         <div className="text-center">
           <Button
-            size="lg"
+            size="sm"
             onClick={handleStartTrading}
             className="font-semibold"
           >

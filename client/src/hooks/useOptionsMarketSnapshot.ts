@@ -23,10 +23,11 @@ interface UseOptionsMarketSnapshotParams {
   commodity?: string;
   window?: string;
   limit?: number;
+  enabled?: boolean;
 }
 
 export function useOptionsMarketSnapshot(params?: UseOptionsMarketSnapshotParams) {
-  const hasToken = typeof window !== "undefined" && !!localStorage.getItem("cropto_token");
+  const enabled = params?.enabled ?? false;
 
   const queryKey = useMemo(() => {
     const base = ["/api/options/market"];
@@ -38,7 +39,7 @@ export function useOptionsMarketSnapshot(params?: UseOptionsMarketSnapshotParams
 
   const query = useQuery<OptionsMarketResponse>({
     queryKey,
-    enabled: hasToken,
+    enabled,
     retry: false,
     queryFn: async () => {
       const searchParams = new URLSearchParams();
@@ -61,4 +62,3 @@ export function useOptionsMarketSnapshot(params?: UseOptionsMarketSnapshotParams
     isFetching: query.isFetching,
   };
 }
-

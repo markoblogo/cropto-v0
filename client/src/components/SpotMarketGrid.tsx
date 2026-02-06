@@ -1,30 +1,18 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SPOT_ALLOWED_SLUGS } from "@/lib/indexMapping";
-import { SpotMarketCard } from "./SpotMarketCard";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertTriangle } from "lucide-react";
 import { SpotBuyModal } from "./SpotBuyModal";
 import { SpotSellModal } from "./SpotSellModal";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { useTradingGuard } from "@/hooks/useTradingGuard";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle } from "lucide-react";
+import { useMarketDashboard } from "@/hooks/useMarketDashboard";
 import { openAuthPrompt } from "@/lib/authPrompt";
 
-interface CommodityIndex {
-  id: string;
-  name: string;
-  slug: string;
-  category: string;
-  hasVat: boolean;
-  latestPrice: {
-    price: number;
-    delta: number | null;
-    timestamp: Date;
-  } | null;
-  isStale?: boolean;
-}
+type CountryCode = "UA" | "BR" | "AR" | "US";
 
 interface SelectedCommodity {
   slug: string;
@@ -32,8 +20,36 @@ interface SelectedCommodity {
   pricePerTon: number;
 }
 
+function toSlug(commodity: string): string {
+  const c = commodity.toLowerCase();
+  if (c.includes("corn") || c.includes("maize")) return "corn";
+  if (c.includes("feed") && c.includes("wheat")) return "feed-wheat";
+  if (c.includes("wheat") && c.includes("11")) return "wheat-115";
+  if (c.includes("wheat")) return "wheat";
+  if (c.includes("sunflower")) return "sunflower";
+  if (c.includes("rape")) return "rapeseed";
+  if (c.includes("soy") && c.includes("processing")) return "soy-processing";
+  if (c.includes("soy")) return "soy-gmo";
+  return c.replace(/\s+/g, "-");
+}
+
+function countryLabel(country: CountryCode): string {
+  if (country === "UA") return "Ukraine";
+  if (country === "BR") return "Brazil";
+  if (country === "AR") return "Argentina";
+  return "USA";
+}
+
+function countryFlag(country: CountryCode): string {
+  if (country === "UA") return "🇺🇦";
+  if (country === "BR") return "🇧🇷";
+  if (country === "AR") return "🇦🇷";
+  return "🇺🇸";
+}
+
 export function SpotMarketGrid() {
   const { t } = useTranslation();
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>("UA");
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedCommodity, setSelectedCommodity] = useState<SelectedCommodity | null>(null);
@@ -44,12 +60,21 @@ export function SpotMarketGrid() {
     onOpenWalletModal: () => setIsWalletAuthModalOpen(true),
   });
 
-  const { data: indexes, isLoading, error } = useQuery<CommodityIndex[]>({
-    queryKey: ["/api/indexes"],
-    refetchInterval: 30000,
-  });
+  const { data, isLoading, error } = useMarketDashboard();
+
+  const rows = useMemo(() => {
+    if (!data) return [];
+    const map: Record<CountryCode, typeof data.ua> = {
+      UA: data.ua || [],
+      BR: data.br || [],
+      AR: data.ar || [],
+      US: data.us || [],
+    };
+    return map[selectedCountry] || [];
+  }, [data, selectedCountry]);
 
   const handleBuy = (slug: string, name: string, pricePerTon: number) => {
+    if (selectedCountry !== "UA") return;
     guardTradingAction(() => {
       setSelectedCommodity({ slug, name, pricePerTon });
       setBuyModalOpen(true);
@@ -57,117 +82,112 @@ export function SpotMarketGrid() {
   };
 
   const handleSell = (slug: string, name: string, pricePerTon: number) => {
+    if (selectedCountry !== "UA") return;
     guardTradingAction(() => {
       setSelectedCommodity({ slug, name, pricePerTon });
       setSellModalOpen(true);
     });
   };
 
-  const handleWalletAuthSuccess = (token: string, newUser: boolean) => {
-    setIsWalletAuthModalOpen(false);
-  };
-
   if (isLoading) {
     return (
-      <div className="py-12" id="spot-market-section">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
-            <p className="text-muted-foreground">
-              {t('spot.market.subtitle')}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {[...Array(7)].map((_, i) => (
-              <div key={i} className="space-y-3 p-5 border rounded-xl shadow-md">
-                <Skeleton className="h-8 w-8" />
-                <Skeleton className="h-6 w-24" />
-                <Skeleton className="h-8 w-full" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-9 flex-1" />
-                  <Skeleton className="h-9 flex-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <section className="py-8" id="spot-market-section">
+        <h2 className="text-3xl font-bold mb-2">{t("spot.market.title")}</h2>
+        <p className="text-muted-foreground">{t("spot.market.subtitle")}</p>
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="py-12" id="spot-market-section">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
-            <p className="text-muted-foreground">
-              {t('spot.market.subtitle')}
-            </p>
-          </div>
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {t('spot.market.error')}
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
-
-  const spotIndexes = indexes?.filter(index => 
-    SPOT_ALLOWED_SLUGS.includes(index.slug) && !index.isStale
-  ).sort((a, b) => SPOT_ALLOWED_SLUGS.indexOf(a.slug) - SPOT_ALLOWED_SLUGS.indexOf(b.slug)) || [];
-
-  if (spotIndexes.length === 0) {
-    return (
-      <div className="py-12" id="spot-market-section">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
-            <p className="text-muted-foreground">
-              {t('spot.market.subtitle')}
-            </p>
-          </div>
-          <Alert>
-            <AlertDescription>
-              {t('spot.market.noData')}
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
+      <section className="py-8" id="spot-market-section">
+        <h2 className="text-3xl font-bold mb-2">{t("spot.market.title")}</h2>
+        <p className="text-muted-foreground mb-4">{t("spot.market.subtitle")}</p>
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{t("spot.market.error")}</AlertDescription>
+        </Alert>
+      </section>
     );
   }
 
   return (
     <>
-      <div className="py-12" id="spot-market-section" data-testid="spot-market-grid">
-        <div className="space-y-6">
+      <section className="py-8" id="spot-market-section" data-testid="spot-market-grid">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-3xl font-bold mb-2">{t('spot.market.title')}</h2>
-            <p className="text-muted-foreground">
-              {t('spot.market.subtitle')}
-            </p>
+            <h2 className="text-3xl font-bold mb-2">{t("spot.market.title")}</h2>
+            <p className="text-muted-foreground">{t("spot.market.subtitle")}</p>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {spotIndexes.map((index, i) => (
-              <SpotMarketCard
-                key={index.id}
-                slug={index.slug}
-                name={index.name}
-                pricePerTon={index.latestPrice?.price || 0}
-                delta={index.latestPrice?.delta || null}
-                category={index.category}
-                onBuy={handleBuy}
-                onSell={handleSell}
-                index={i}
-              />
-            ))}
-          </div>
+
+          <Tabs value={selectedCountry} onValueChange={(v) => setSelectedCountry(v as CountryCode)}>
+            <TabsList className="grid w-full grid-cols-4 max-w-xl">
+              <TabsTrigger value="UA">UA</TabsTrigger>
+              <TabsTrigger value="BR">BR</TabsTrigger>
+              <TabsTrigger value="AR">AR</TabsTrigger>
+              <TabsTrigger value="US">US</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {selectedCountry !== "UA" && (
+            <Alert>
+              <AlertDescription>
+                {`Read-only mode for ${selectedCountry}: market data is live, trading flow is enabled for UA in this build.`}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {rows.length === 0 ? (
+            <Alert>
+              <AlertDescription>{t("spot.market.noData")}</AlertDescription>
+            </Alert>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {rows.map((row, i) => {
+                const slug = toSlug(row.commodity);
+                const changeClass = row.change24h > 0 ? "text-green-600" : row.change24h < 0 ? "text-red-600" : "text-muted-foreground";
+                const canTrade = selectedCountry === "UA";
+                return (
+                  <Card key={`${selectedCountry}:${row.commodity}:${row.basis}:${i}`} className="rounded-xl shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <span>{countryFlag(selectedCountry)}</span>
+                        <span className="truncate">{row.commodity}</span>
+                      </CardTitle>
+                      <div className="text-xs text-muted-foreground">{countryLabel(selectedCountry)} • {row.basis}</div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={`/commodities/${slug}.png`}
+                          alt={row.commodity}
+                          className="w-8 h-8 object-contain"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                        <div>
+                          <div className="text-2xl font-bold font-mono">${row.price.toFixed(2)}</div>
+                          <div className="text-xs text-muted-foreground">USD / ton</div>
+                        </div>
+                      </div>
+                      <div className={`text-sm font-medium ${changeClass}`}>{row.change24h > 0 ? "+" : ""}{row.change24h.toFixed(2)}% 24h</div>
+                      <div className="flex gap-2">
+                        <Button size="sm" className="flex-1" disabled={!canTrade} onClick={() => handleBuy(slug, row.commodity, row.price)}>
+                          {t("spot.market.buy")}
+                        </Button>
+                        <Button size="sm" variant="secondary" className="flex-1" disabled={!canTrade} onClick={() => handleSell(slug, row.commodity, row.price)}>
+                          {t("spot.market.sell")}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
-      </div>
+      </section>
 
       {selectedCommodity && (
         <>
@@ -195,7 +215,7 @@ export function SpotMarketGrid() {
       <WalletAuthModal
         open={isWalletAuthModalOpen}
         onOpenChange={setIsWalletAuthModalOpen}
-        onSuccess={handleWalletAuthSuccess}
+        onSuccess={() => setIsWalletAuthModalOpen(false)}
       />
     </>
   );
