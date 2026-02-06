@@ -20,7 +20,8 @@ aptPkgs = [
   "libxfixes3",
   "libxrandr2",
   "libgbm1",
-  "libasound2",
+  # Ubuntu 24.04 uses the t64 transition packages.
+  "libasound2t64",
   "libpango-1.0-0",
   "libpangocairo-1.0-0",
   "libcairo2",
@@ -29,4 +30,3 @@ aptPkgs = [
   "ca-certificates",
   "fonts-liberation",
 ]
-
