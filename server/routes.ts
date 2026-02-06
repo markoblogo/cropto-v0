@@ -15,7 +15,7 @@ import { startReconciler } from "./jobs/reconciler";
 import { startPoller as startTelegramPoller } from "./jobs/telegramPoller";
 import { runScraper } from "./jobs/telegramScraper";
 import { MATCHING_FEE_PER_TON, SETTLEMENT_FEE_PER_TON } from "./fees";
-import { authenticateToken, optionalAuth, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions } from "./auth";
+import { authenticateToken, optionalAuth, type AuthRequest, findUserById, hasBrokerPermissions, hasAdminPermissions, listUsers } from "./auth";
 import { 
   intrinsic, 
   shouldTriggerMargin, 
@@ -123,6 +123,82 @@ async function shouldSendUserEmail(
 ): Promise<boolean> {
   const prefs = await getUserNotificationPreferences(userId);
   return !!prefs[type];
+}
+
+async function sendEmailIfEnabled(
+  userId: string | null | undefined,
+  preference: keyof UserNotificationPreferences,
+  subject: string,
+  body: string
+) {
+  if (!userId) return;
+  const enabled = await shouldSendUserEmail(userId, preference);
+  if (!enabled) return;
+  const user = await findUserById(userId);
+  if (!user?.email) return;
+  await emailService.sendEmail(user.email, subject, body);
+}
+
+function indexUpdateThrottleKey(userId: string, country: string, commodity: string) {
+  return `index_update_last_sent:${userId}:${country.toUpperCase()}:${commodity.toLowerCase()}`;
+}
+
+async function canSendIndexUpdateEmail(
+  userId: string,
+  country: string,
+  commodity: string
+): Promise<boolean> {
+  const key = indexUpdateThrottleKey(userId, country, commodity);
+  const last = await storage.getAppSetting(key);
+  if (!last?.value) return true;
+  const ts = Number(last.value);
+  if (!Number.isFinite(ts)) return true;
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  return Date.now() - ts >= oneDayMs;
+}
+
+async function markIndexUpdateEmailSent(userId: string, country: string, commodity: string) {
+  const key = indexUpdateThrottleKey(userId, country, commodity);
+  await storage.upsertAppSetting(key, String(Date.now()));
+}
+
+async function sendIndexUpdateEmails(args: {
+  country: string;
+  commodity: string;
+  basis?: string | null;
+  priceUsdPerTon: number;
+  source: string;
+}) {
+  const { country, commodity, basis, priceUsdPerTon, source } = args;
+  try {
+    const users = await listUsers();
+    for (const u of users) {
+      const enabled = await shouldSendUserEmail(u.id, "indexUpdates");
+      if (!enabled) continue;
+      const underThrottle = await canSendIndexUpdateEmail(u.id, country, commodity);
+      if (!underThrottle) continue;
+
+      const subject = `Cropto: ${country.toUpperCase()} index update (${commodity})`;
+      const body = [
+        `A market index update is available.`,
+        ``,
+        `Country: ${country.toUpperCase()}`,
+        `Commodity: ${commodity}`,
+        `Basis: ${basis || "n/a"}`,
+        `Price: $${priceUsdPerTon.toFixed(2)} / ton`,
+        `Source: ${source}`,
+      ].join("\n");
+
+      try {
+        await emailService.sendEmail(u.email, subject, body);
+        await markIndexUpdateEmailSent(u.id, country, commodity);
+      } catch (sendErr) {
+        console.error(`[IndexUpdate] Failed to send to ${u.email}:`, sendErr);
+      }
+    }
+  } catch (error) {
+    console.error("[IndexUpdate] Broadcast failed:", error);
+  }
 }
 
 async function getIndexWithLatestById(indexId: string) {
@@ -716,6 +792,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .returning();
 
+      void sendIndexUpdateEmails({
+        country: "GLOBAL",
+        commodity: commodity.toUpperCase(),
+        basis: null,
+        priceUsdPerTon: priceNum,
+        source: `admin-override:${userName}`,
+      });
+
       res.json({ 
         success: true, 
         message: `Index price added: ${commodity} = $${priceNum}`,
@@ -1154,6 +1238,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           meta,
         })
         .returning();
+
+      void sendIndexUpdateEmails({
+        country,
+        commodity,
+        basis,
+        priceUsdPerTon: price,
+        source: `admin:${userName}`,
+      });
 
       res.json({
         success: true,
@@ -2337,6 +2429,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[Index] New price added for ${index.name} (${slug}): $${price} by ${req.user?.email}`);
 
+      void sendIndexUpdateEmails({
+        country: "UA",
+        commodity: index.slug || slug,
+        basis: index.category || null,
+        priceUsdPerTon: price,
+        source: `admin:${req.user?.email || "unknown"}`,
+      });
+
       res.status(201).json({
         id: newPrice.id,
         indexId: newPrice.indexId,
@@ -2948,6 +3048,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result.data.counterpartyId,
         req.user.id
       );
+
+      // Trade status email alerts (best effort)
+      try {
+        const subject = `Cropto: Option matched (${option.title})`;
+        const body = [
+          `Your option has been matched.`,
+          ``,
+          `Option ID: ${option.id}`,
+          `Title: ${option.title}`,
+          `Type: ${option.type}`,
+          `Status: ${option.status}`,
+          `Quantity: ${option.qty}`,
+          `Strike: ${option.strike}`,
+          ``,
+          `You can now review the position in Portfolio.`,
+        ].join("\n");
+        await sendEmailIfEnabled(option.issuerId, "tradeStatus", subject, body);
+        await sendEmailIfEnabled(option.buyerId, "tradeStatus", subject, body);
+      } catch (emailError) {
+        console.error("[TradeStatus] Failed to send option matched emails:", emailError);
+      }
+
       res.status(200).json(option);
     } catch (error: any) {
       console.error("Error matching option:", error);
@@ -2993,6 +3115,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.user.id,
         result.data.spotPrice.toString()
       );
+
+      try {
+        const optionAfterExercise = await storage.getOptionById(req.params.id);
+        const subject = `Cropto: Option exercised (${optionAfterExercise?.title || req.params.id})`;
+        const body = [
+          `An option position has been exercised and settled.`,
+          ``,
+          `Option ID: ${req.params.id}`,
+          `Status: EXERCISED`,
+          `Spot price: ${result.data.spotPrice}`,
+          `Payout: ${settlement.payout}`,
+          ``,
+          `See details in Portfolio.`,
+        ].join("\n");
+        await sendEmailIfEnabled(optionAfterExercise?.issuerId, "tradeStatus", subject, body);
+        await sendEmailIfEnabled(optionAfterExercise?.buyerId, "tradeStatus", subject, body);
+      } catch (emailError) {
+        console.error("[TradeStatus] Failed to send option exercised emails:", emailError);
+      }
       
       res.status(200).json(settlement);
     } catch (error: any) {
@@ -3595,6 +3736,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const result = await storage.forceSettleOption(id, req.user.id, reason);
+
+      try {
+        const subject = `Cropto: Option force-settled (${result.option.title})`;
+        const body = [
+          `An option was force-settled by an administrator.`,
+          ``,
+          `Option ID: ${result.option.id}`,
+          `Title: ${result.option.title}`,
+          `Status: ${result.option.status}`,
+          `Reason: ${reason}`,
+          ``,
+          `Please review this in your Portfolio / activity logs.`,
+        ].join("\n");
+        await sendEmailIfEnabled(result.option.issuerId, "tradeStatus", subject, body);
+        await sendEmailIfEnabled(result.option.buyerId, "tradeStatus", subject, body);
+        await sendEmailIfEnabled(result.option.issuerId, "system", subject, body);
+        await sendEmailIfEnabled(result.option.buyerId, "system", subject, body);
+      } catch (emailError) {
+        console.error("[TradeStatus] Failed to send force-settle emails:", emailError);
+      }
       
       res.json({
         option: result.option,
@@ -3685,6 +3846,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "system",
             reason
           );
+
+          try {
+            const subject = `Cropto: Option force-settled (${result.option.title})`;
+            const body = [
+              `Option was force-settled due to expired margin call deadline.`,
+              ``,
+              `Option ID: ${result.option.id}`,
+              `Status: ${result.option.status}`,
+              `Reason: ${reason}`,
+            ].join("\n");
+            await sendEmailIfEnabled(result.option.issuerId, "tradeStatus", subject, body);
+            await sendEmailIfEnabled(result.option.buyerId, "tradeStatus", subject, body);
+            await sendEmailIfEnabled(result.option.issuerId, "system", subject, body);
+            await sendEmailIfEnabled(result.option.buyerId, "system", subject, body);
+          } catch (emailError) {
+            console.error("[TradeStatus] Failed to send deadline force-settle emails:", emailError);
+          }
           
           // Update margin call status to LIQUIDATED
           await storage.updateMarginCall(marginCall.id, {
@@ -3821,6 +3999,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               message: `Option ${option.title} was liquidated due to overdue margin call. Collateral ${totalAvailableCollateral.toFixed(2)} applied.`,
               relatedId: option.id,
             });
+          }
+
+          try {
+            const subject = `Cropto: Liquidation (${option.title})`;
+            const body = [
+              `Option was liquidated due to overdue margin call.`,
+              ``,
+              `Option ID: ${option.id}`,
+              `Status: DEFAULTED`,
+              `Net payout: ${netPayout.toFixed(2)}`,
+              `Collateral applied: ${totalAvailableCollateral.toFixed(2)}`,
+            ].join("\n");
+            await sendEmailIfEnabled(option.buyerId, "tradeStatus", subject, body);
+            await sendEmailIfEnabled(responsibleUserId, "tradeStatus", subject, body);
+            await sendEmailIfEnabled(option.buyerId, "system", subject, body);
+            await sendEmailIfEnabled(responsibleUserId, "system", subject, body);
+          } catch (emailError) {
+            console.error("[TradeStatus] Failed to send liquidation emails:", emailError);
           }
           
           processedOptions.push({

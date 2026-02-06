@@ -47,6 +47,15 @@ interface User {
   network?: string;
 }
 
+export type PublicUser = {
+  id: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+  walletAddress?: string;
+  network?: string;
+};
+
 interface DB {
   users: User[];
 }
@@ -385,6 +394,30 @@ export async function updateUserRole(
   
   await writeDB(db);
   return db.users[userIndex];
+}
+
+export async function listUsers(): Promise<PublicUser[]> {
+  if (useSupabase()) {
+    const allUsers = await getAllUsersSupabase();
+    return allUsers.map((u) => ({
+      id: u.id,
+      email: u.email,
+      role: u.role,
+      createdAt: u.created_at,
+      walletAddress: u.wallet_address,
+      network: u.network,
+    }));
+  }
+
+  const localDb = await readDB();
+  return localDb.users.map((u) => ({
+    id: u.id,
+    email: u.email,
+    role: u.role,
+    createdAt: u.createdAt,
+    walletAddress: u.walletAddress,
+    network: u.network,
+  }));
 }
 
 // Auth middleware
