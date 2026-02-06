@@ -5198,6 +5198,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/debug/new-commodity-events", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const limitRaw = Number.parseInt(String(req.query?.limit || "200"), 10);
+      const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 1000) : 200;
+
+      const daysRaw = Number.parseInt(String(req.query?.days || "30"), 10);
+      const days = Number.isFinite(daysRaw) ? Math.min(Math.max(daysRaw, 1), 365) : 30;
+
+      const to = req.query?.to ? new Date(String(req.query.to)) : new Date();
+      if (Number.isNaN(to.getTime())) return res.status(400).json({ error: "Invalid 'to' date" });
+
+      const from = req.query?.from
+        ? new Date(String(req.query.from))
+        : new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
+      if (Number.isNaN(from.getTime())) return res.status(400).json({ error: "Invalid 'from' date" });
+      if (from > to) return res.status(400).json({ error: "'from' must be <= 'to'" });
+
+      const rows = await db
+        .select({
+          id: analyticsEvents.id,
+          eventName: analyticsEvents.eventName,
+          payload: analyticsEvents.payload,
+          createdAt: analyticsEvents.createdAt,
+        })
+        .from(analyticsEvents)
+        .where(
+          and(
+            eq(analyticsEvents.eventName, "data_catalog_new_commodity"),
+            gte(analyticsEvents.createdAt, from),
+            lte(analyticsEvents.createdAt, to)
+          )
+        )
+        .orderBy(desc(analyticsEvents.createdAt))
+        .limit(limit);
+
+      const events = rows.map((row) => {
+        let payload: Record<string, unknown> | null = null;
+        if (row.payload) {
+          try {
+            payload = JSON.parse(row.payload) as Record<string, unknown>;
+          } catch {
+            payload = { raw: row.payload };
+          }
+        }
+        return {
+          id: row.id,
+          eventName: row.eventName,
+          createdAt: row.createdAt ? new Date(row.createdAt as any).toISOString() : null,
+          payload,
+        };
+      });
+
+      const grouped = new Map<string, { country: string; source: string; commodity: string; count: number; firstSeenAt: string | null; lastSeenAt: string | null }>();
+      for (const evt of events) {
+        const payload = evt.payload || {};
+        const country = String(payload.country || "N/A").toUpperCase();
+        const source = String(payload.source || "unknown");
+        const commodity = String(payload.commodity || "unknown").toLowerCase();
+        const key = `${country}:${source}:${commodity}`;
+        const cur = grouped.get(key) || {
+          country,
+          source,
+          commodity,
+          count: 0,
+          firstSeenAt: evt.createdAt,
+          lastSeenAt: evt.createdAt,
+        };
+        cur.count += 1;
+        if (evt.createdAt && (!cur.firstSeenAt || evt.createdAt < cur.firstSeenAt)) cur.firstSeenAt = evt.createdAt;
+        if (evt.createdAt && (!cur.lastSeenAt || evt.createdAt > cur.lastSeenAt)) cur.lastSeenAt = evt.createdAt;
+        grouped.set(key, cur);
+      }
+
+      const summary = Array.from(grouped.values()).sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return (b.lastSeenAt || "").localeCompare(a.lastSeenAt || "");
+      });
+
+      return res.json({
+        generatedAt: new Date().toISOString(),
+        window: {
+          from: from.toISOString(),
+          to: to.toISOString(),
+        },
+        count: events.length,
+        limit,
+        summaryCount: summary.length,
+        summary,
+        events,
+      });
+    } catch (error: any) {
+      console.error("Error fetching new commodity debug events:", error);
+      return res.status(500).json({ error: error.message || "Failed to fetch new commodity events" });
+    }
+  });
+
   app.post("/api/feedback/upload", async (req, res) => {
     try {
       const schema = z.object({
