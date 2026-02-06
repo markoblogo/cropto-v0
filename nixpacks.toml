@@ -1,4 +1,6 @@
 [phases.setup]
+# Force Node 22 even if Nixpacks defaults to an older Node.
+nixPkgs = ["nodejs_22", "npm-10_x", "openssl"]
 # Playwright Chromium runtime dependencies for Debian-based images.
 # Railway uses Nixpacks; these packages must exist in the runtime layer (not just build),
 # otherwise Playwright will fail to launch the browser.
