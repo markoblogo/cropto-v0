@@ -72,20 +72,25 @@ export async function fetchUsBarchartPrices(): Promise<IgcPrice[]> {
     const asOfDate = new Date().toISOString().slice(0, 10);
     const parsed: IgcPrice[] = [];
     for (const row of rows) {
-      const priceUsdPerTon = usdPerBushelToTon(row.valueUsdPerBushel, row.commodity);
-      if (!(priceUsdPerTon && priceUsdPerTon > 0)) continue;
+      const converted = usdPerBushelToTon(row.valueUsdPerBushel, row.commodity);
+      if (!(converted && converted.value > 0)) continue;
       parsed.push({
         commodity: row.commodity,
         country: "US",
         label: row.label,
         asOfDate,
-        priceUsdPerTon: priceUsdPerTon,
+        priceUsdPerTon: converted.value,
         confidence: "medium",
         rawRow: { source: BARCHART_GRAIN_INDEX_URL, valueUsdPerBushel: String(row.valueUsdPerBushel) },
         meta: {
           sourceUrl: BARCHART_GRAIN_INDEX_URL,
           quoteUnitOriginal: "usd_per_bushel",
-          conversionApplied: { method: "bushel_to_ton", conversionVersion: "v2-discovery" },
+          conversionApplied: {
+            method: "bushel_to_ton",
+            conversionVersion: "v3-discovery",
+            kgPerBushel: converted.kgPerBushel,
+            approximate: converted.approximate,
+          },
         },
       });
     }

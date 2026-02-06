@@ -3,6 +3,12 @@ const BUSHEL_KG: Record<string, number> = {
   wheat: 27.2155422,
   soybeans: 27.2155422,
   barley: 21.77243044,
+  oats: 14.515,
+  rye: 25.40117272,
+  sorghum: 25.40117272,
+  rice: 20.41165625,
+  rapeseed: 22.6796185,
+  sunflower: 22.6796185,
 };
 
 const COMMODITY_ALIASES: Array<{ re: RegExp; to: string }> = [
@@ -15,6 +21,7 @@ const COMMODITY_ALIASES: Array<{ re: RegExp; to: string }> = [
   { re: /\bsunflower\b/i, to: "sunflower" },
   { re: /\boats?\b/i, to: "oats" },
   { re: /\brye\b/i, to: "rye" },
+  { re: /\bsorghum\b|\bmilo\b/i, to: "sorghum" },
 ];
 
 export function normalizeExternalCommodityName(raw: string): string {
@@ -26,10 +33,18 @@ export function normalizeExternalCommodityName(raw: string): string {
   return value;
 }
 
-export function usdPerBushelToTon(price: number, commodity: string): number | null {
+export function usdPerBushelToTon(
+  price: number,
+  commodity: string
+): { value: number; kgPerBushel: number; approximate: boolean } | null {
   const normalized = normalizeExternalCommodityName(commodity);
-  const kg = BUSHEL_KG[normalized];
+  const knownKg = BUSHEL_KG[normalized];
+  const fallbackKgEnv = Number.parseFloat(process.env.BUSHEL_KG_DEFAULT || "27.2155422");
+  const kg = knownKg && knownKg > 0 ? knownKg : fallbackKgEnv;
   if (!kg || !(kg > 0)) return null;
-  return Number((price * (1000 / kg)).toFixed(2));
+  return {
+    value: Number((price * (1000 / kg)).toFixed(2)),
+    kgPerBushel: kg,
+    approximate: !knownKg,
+  };
 }
-

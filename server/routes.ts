@@ -1938,13 +1938,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const country = price.country as "BR" | "AR" | "US"; // Already validated by isIgcRecord check
               const label = price.label || "";
 
-              // IGC gets strict mapping per country/commodity.
+              // IGC mapping stays strict for known commodity mappings.
+              // New commodities (not mapped yet) are allowed through to expand catalog coverage.
               if (price.source === "IGC") {
                 const preferredLabel = IGC_SERIES_MAPPING[country]?.[commodity];
-                if (!preferredLabel) {
-                  continue;
-                }
-                if (!sourceLabelMatches(preferredLabel, label)) {
+                if (preferredLabel && !sourceLabelMatches(preferredLabel, label)) {
                   continue;
                 }
               }

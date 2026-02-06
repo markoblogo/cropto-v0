@@ -137,7 +137,7 @@ export async function fetchLatamFuturesProxyPrices(): Promise<IgcPrice[]> {
     } else if (row.unit === "usd_per_bushel") {
       const converted = usdPerBushelToTon(row.price, row.commodity);
       if (!converted) continue;
-      usdPerTon = converted;
+      usdPerTon = converted.value;
     } else if (row.unit === "brl_per_60kg_bag") {
       if (!(brlUsd > 0)) continue;
       usdPerTon = brlPer60kgBagToUsdPerTon(row.price, brlUsd);
@@ -158,8 +158,11 @@ export async function fetchLatamFuturesProxyPrices(): Promise<IgcPrice[]> {
         sourceUrl: urls.length > 0 ? urls.join(",") : "LATAM_FUTURES_PROXY_STATIC",
         quoteUnitOriginal: row.unit,
         conversionApplied: {
+          kgPerBushel: row.unit === "usd_per_bushel" ? usdPerBushelToTon(row.price, row.commodity)?.kgPerBushel ?? null : null,
+          approximate:
+            row.unit === "usd_per_bushel" ? usdPerBushelToTon(row.price, row.commodity)?.approximate ?? null : null,
           brlUsdRate: row.unit === "brl_per_60kg_bag" ? brlUsd : null,
-          conversionVersion: "v1",
+          conversionVersion: "v2",
         },
       },
     });
