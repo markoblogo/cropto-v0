@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "mode": "safe",
+  "on_missing_markers": "write_generated",
+  "generated_suffix": ".generated",
+  "markers": {
+    "start": "<!-- AGENTSGEN:START section={section} -->",
+    "end": "<!-- AGENTSGEN:END section={section} -->"
+  },
+  "sections": [
+    "guardrails",
+    "workflow",
+    "style",
+    "verification",
+    "stack",
+    "repo_context"
+  ],
+  "presets": {},
+  "defaults": {},
+  "project": {
+    "primary_stack": "node",
+    "name": "cropto-v0",
+    "repo_root": ".",
+    "node_package_manager": "npm"
+  },
+  "paths": {
+    "docs": [
+      "README.md"
+    ],
+    "ci": "",
+    "source_dirs": [
+      "client",
+      "server"
+    ],
+    "config_locations": [
+      "package.json",
+      "package-lock.json"
+    ]
+  },
+  "commands": {
+    "dev": "npm run dev",
+    "build": "npm run build"
+  },
+  "evidence": {
+    "python": [],
+    "node": [
+      "package-lock.json",
+      "package.json"
+    ],
+    "make": [],
+    "ci": []
+  }
+}
