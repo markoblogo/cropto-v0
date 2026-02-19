@@ -19,6 +19,7 @@ export default function MarketData() {
   const [, setLocation] = useLocation();
 
   const initialSearchParams = new URLSearchParams(window.location.search);
+  const debugSources = initialSearchParams.get("debugSources") === "1";
   const countryParam = initialSearchParams.get("country")?.toLowerCase();
   const [selectedRegion, setSelectedRegion] = useState<"ua" | "br" | "ar" | "us">(
     countryParam === "ua" || countryParam === "br" || countryParam === "ar" || countryParam === "us"
@@ -109,6 +110,13 @@ export default function MarketData() {
   const countryFlag =
     selectedRegion === "ua" ? "🇺🇦" : selectedRegion === "br" ? "🇧🇷" : selectedRegion === "ar" ? "🇦🇷" : "🇺🇸";
   const countryLabel = selectedRegion.toUpperCase();
+  const marketHealth = marketDashboardData?.marketHealth?.[selectedRegion];
+  const marketHealthClass =
+    marketHealth?.status === "OK"
+      ? "bg-emerald-100 text-emerald-800"
+      : marketHealth?.status === "WARN"
+        ? "bg-amber-100 text-amber-800"
+        : "bg-red-100 text-red-800";
 
   const handleViewOptionsMarket = () => {
     setLocation(`/options?country=${selectedRegion}`);
@@ -148,6 +156,17 @@ export default function MarketData() {
     return "bg-red-100 text-red-800 border-red-200";
   };
 
+  const formatRelative = (value: string) => {
+    const ts = new Date(value).getTime();
+    if (!Number.isFinite(ts)) return "n/a";
+    const minutes = Math.floor((Date.now() - ts) / 60000);
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -185,6 +204,14 @@ export default function MarketData() {
           </Alert>
         ) : (
           <div className="space-y-6">
+            {marketHealth ? (
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span>Last successful update: {marketHealth.lastSuccessfulUpdate || "n/a"}</span>
+                <span>·</span>
+                <span>Source: {marketHealth.source || "n/a"}</span>
+                <Badge className={marketHealthClass}>{marketHealth.status}</Badge>
+              </div>
+            ) : null}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-muted-foreground">{t("page.marketData.grains")}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -209,8 +236,21 @@ export default function MarketData() {
                         {index.change24h.toFixed(2)}%
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Updated: {new Date(index.asOf).toLocaleString()}
+                        As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                       </div>
+                      <div className="text-xs text-muted-foreground">
+                        Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
+                      </div>
+                      {debugSources ? (
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
+                          <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
+                          <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                        </div>
+                      ) : null}
                     </CardContent>
                   </Card>
                 ))}
@@ -241,8 +281,21 @@ export default function MarketData() {
                         {index.change24h.toFixed(2)}%
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Updated: {new Date(index.asOf).toLocaleString()}
+                        As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                       </div>
+                      <div className="text-xs text-muted-foreground">
+                        Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
+                      </div>
+                      {debugSources ? (
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
+                          <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
+                          <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                        </div>
+                      ) : null}
                     </CardContent>
                   </Card>
                 ))}
@@ -274,8 +327,21 @@ export default function MarketData() {
                           {index.change24h.toFixed(2)}%
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
-                          Updated: {new Date(index.asOf).toLocaleString()}
+                          As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                         </div>
+                        <div className="text-xs text-muted-foreground">
+                          Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
+                        </div>
+                        {debugSources ? (
+                          <div className="text-xs text-muted-foreground space-y-0.5">
+                            <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
+                            <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
+                            <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          </div>
+                        ) : null}
                       </CardContent>
                     </Card>
                   ))}

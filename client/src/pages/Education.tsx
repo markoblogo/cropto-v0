@@ -13,6 +13,7 @@ import { MarkdownSection } from "@/components/MarkdownSection";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { intrinsic, computeNotional, calculatePnLPreview } from "@/lib/optionCalculations";
+import { apiRequest } from "@/lib/queryClient";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -37,6 +38,21 @@ interface CommodityIndex {
   id: string;
   name: string;
   slug: string;
+}
+
+interface IngestionSourceItem {
+  provider: string;
+  channel: string;
+  enabled: boolean;
+  hasSuccess: boolean;
+  hasPrimary: boolean;
+  hasFallback: boolean;
+}
+
+interface IngestionSourcesResponse {
+  primary: IngestionSourceItem[];
+  fallback: IngestionSourceItem[];
+  statement: string;
 }
 
 type OptionType = "CALL" | "PUT";
@@ -81,6 +97,15 @@ export default function Education() {
   const { data: indexes = [] } = useQuery<CommodityIndex[]>({
     queryKey: ["/api/indexes"],
     refetchInterval: 60000,
+  });
+  const { data: ingestionSources } = useQuery<IngestionSourcesResponse>({
+    queryKey: ["/api/market-ingestion/sources"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/market-ingestion/sources");
+      if (!response.ok) throw new Error("Failed to load sources");
+      return response.json();
+    },
+    staleTime: 60000,
   });
 
   const [calculator, setCalculator] = useState({
@@ -515,10 +540,22 @@ export default function Education() {
           </CardHeader>
           <CardContent className="space-y-4">
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              <li>{t('page.education.dataSources.sources.igc')}</li>
-              <li>{t('page.education.dataSources.sources.usda')}</li>
-              <li>{t('page.education.dataSources.sources.telegram')}</li>
-              <li>{t('page.education.dataSources.sources.fallback')}</li>
+              <li>
+                Primary:{" "}
+                {(ingestionSources?.primary || [])
+                  .filter((p) => p.enabled)
+                  .map((p) => `${p.provider} (${p.channel})`)
+                  .join(", ") || "CLAL (TESEO)"}
+              </li>
+              <li>
+                Fallbacks:{" "}
+                {(ingestionSources?.fallback || [])
+                  .filter((p) => p.enabled)
+                  .map((p) => `${p.provider} (${p.channel})`)
+                  .join(", ") || "BCR, FSGRAIN, GRAINSPRICES, COMMODITY3"}
+              </li>
+              <li>{ingestionSources?.statement || "Prices are refreshed daily. If primary feed is unavailable, the system falls back to secondary sources. All prices are normalized to USD/t."}</li>
+              <li>As-of/freshness/source status is shown directly in market cards and debug mode</li>
             </ul>
             <Separator />
             <div className="space-y-1 text-muted-foreground">

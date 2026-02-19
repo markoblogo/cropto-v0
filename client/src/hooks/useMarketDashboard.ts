@@ -21,6 +21,11 @@ export interface MarketIndexDto {
     | "USDA_AMS"
     | "BARCHART_USDA"
     | "FUTURES_PROXY"
+    | "CLAL"
+    | "GRAINSPRICES"
+    | "FSGRAIN"
+    | "BCR"
+    | "COMMODITY3"
     | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
   dataStatus?: "fresh" | "stale" | "no_recent";
@@ -30,6 +35,16 @@ export interface MarketIndexDto {
   sourceType?: "official_api" | "official_file" | "public_html" | "editorial_article" | "internal";
   usagePolicy?: "open" | "restricted" | "unknown";
   visibility?: "public" | "internal_only";
+  fetchedAt?: string;
+  provider?: string;
+  channel?: string;
+  rawCommodity?: string;
+  category?: "grain" | "oilseed" | "other";
+  rawPrice?: number;
+  rawUnit?: string;
+  rawCurrency?: string;
+  rawToUsdFxRate?: number;
+  conversionNotes?: string;
   // Optional IGC-specific fields
   dailyChange?: number; // alias for change24h (for backward compatibility)
   annualChange?: number;
@@ -88,13 +103,21 @@ export interface MarketDashboardResponse {
       freshnessDays?: number;
     }>;
   };
+  debugSources?: Array<Record<string, unknown>>;
+  marketHealth?: {
+    ua: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
+    br: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
+    ar: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
+    us: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
+  };
 }
 
 export function useMarketDashboard() {
+  const debugSources = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugSources") === "1";
   return useQuery<MarketDashboardResponse>({
-    queryKey: ["/api/market-dashboard"],
+    queryKey: ["/api/market-dashboard", debugSources ? "debugSources=1" : ""],
     queryFn: async () => {
-      const resp = await apiRequest("GET", "/api/market-dashboard");
+      const resp = await apiRequest("GET", debugSources ? "/api/market-dashboard?debugSources=1" : "/api/market-dashboard");
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.error || "Failed to load market dashboard");

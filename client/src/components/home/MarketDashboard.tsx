@@ -35,6 +35,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   const ChangeIcon = changeValue > 0 ? ArrowUp : changeValue < 0 ? ArrowDown : Minus;
 
   const commodityLabel = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
+  const isDebugSources = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugSources") === "1";
   const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : item.country === "AR" ? "🇦🇷" : "🇺🇸";
   const commoditySlug = item.commodity.toLowerCase().includes("corn") || item.commodity.toLowerCase().includes("maize")
     ? "corn"
@@ -92,6 +93,10 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
     .replace(/^Ver\s+/i, "")
     .replace(/^Просмотреть\s+/i, "");
 
+  const asOfText = item.asOf ? new Date(item.asOf).toISOString().slice(0, 10) : "n/a";
+  const fetchedText = item.fetchedAt ? formatRelative(item.fetchedAt) : "n/a";
+  const freshnessBadge = item.dataStatus === "fresh" ? "Fresh" : item.dataStatus === "stale" ? "Stale" : "Failed";
+
   return (
     <Card className="flex flex-col rounded-xl shadow-sm">
       <CardHeader className="pb-2">
@@ -109,7 +114,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
         </CardTitle>
         <CardDescription>
           <span className="font-medium">{t('home.market.card.source')}: </span>
-          {item.source === "IGC" ? "IGC export prices" : item.basis}
+          {`${item.provider || item.source}${item.channel ? ` (${item.channel})` : ""}${item.sourceTier ? ` ${item.sourceTier}` : ""}`}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 space-y-2">
@@ -131,6 +136,28 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               {item.basis?.toLowerCase().includes("processing") ? "Processing" : "Export"}
             </Badge>
           </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span>As of: {asOfText}</span>
+            <span>Fetched: {fetchedText}</span>
+            <Badge variant={freshnessBadge === "Fresh" ? "default" : freshnessBadge === "Stale" ? "secondary" : "destructive"} className="ml-auto h-5 text-[10px]">
+              {freshnessBadge}
+            </Badge>
+          </div>
+          {isDebugSources ? (
+            <div className="text-[11px] text-muted-foreground leading-tight">
+              <div>normalized: {item.commodity}</div>
+              <div>raw: {item.rawCommodity || item.commodity}</div>
+              <div>category: {item.category || "other"}</div>
+              {typeof item.rawPrice === "number" ? (
+                <div>
+                  raw quote: {item.rawPrice.toFixed(4)} {item.rawUnit || item.rawCurrency || ""}
+                </div>
+              ) : null}
+              {typeof item.rawToUsdFxRate === "number" ? (
+                <div>fx: {item.rawCurrency || "N/A"} {"->"} USD = {item.rawToUsdFxRate.toFixed(8)}</div>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Sparkline Chart */}
           {sparklineData.length > 1 && (
@@ -178,6 +205,19 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
       </CardFooter>
     </Card>
   );
+}
+
+function formatRelative(value: string): string {
+  const ts = new Date(value).getTime();
+  if (!Number.isFinite(ts)) return "n/a";
+  const diffMs = Date.now() - ts;
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 function MarketTab({ 
@@ -230,6 +270,13 @@ export function MarketDashboard() {
     [i18n.language, i18n.resolvedLanguage]
   );
   const [selectedTab, setSelectedTab] = useState<MarketCountryTab>(computedDefaultTab);
+  const selectedHealth = data?.marketHealth?.[selectedTab];
+  const selectedHealthBadgeClass =
+    selectedHealth?.status === "OK"
+      ? "bg-emerald-100 text-emerald-800"
+      : selectedHealth?.status === "WARN"
+        ? "bg-amber-100 text-amber-800"
+        : "bg-red-100 text-red-800";
 
   useEffect(() => {
     setSelectedTab(computedDefaultTab);
@@ -266,6 +313,14 @@ export function MarketDashboard() {
             {t('home.market.compareMarkets')}
           </Button>
         </div>
+        {selectedHealth ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
+            <span>·</span>
+            <span>Source: {selectedHealth.source || "n/a"}</span>
+            <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
+          </div>
+        ) : null}
 
         <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as MarketCountryTab)} className="w-full">
           <TabsList className="grid w-full max-w-lg grid-cols-4">
