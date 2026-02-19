@@ -105,6 +105,24 @@ export function toUsdPerTon(args: {
     };
   }
 
+  if (rawUnit.endsWith("/qq100kg")) {
+    const perTon = args.rawPrice * 10;
+    if (rawCurrency === "USD") {
+      return { priceUsdPerTon: Number(perTon.toFixed(6)), rawCurrency, rawToUsdFxRate: 1, conversionNotes: "USD/qq100kg -> USD/t", needsReview: false };
+    }
+    const fxRate = args.fx.usdPerUnit[rawCurrency];
+    if (!Number.isFinite(fxRate) || fxRate <= 0) {
+      return { priceUsdPerTon: null, rawCurrency, conversionNotes: `missing_fx:${rawCurrency}`, needsReview: true };
+    }
+    return {
+      priceUsdPerTon: Number((perTon * fxRate).toFixed(6)),
+      rawCurrency,
+      rawToUsdFxRate: fxRate,
+      conversionNotes: `${rawCurrency}/qq100kg -> USD/t`,
+      needsReview: false,
+    };
+  }
+
   if (rawUnit.endsWith("/t") && rawCurrency !== "USD") {
     const fxRate = args.fx.usdPerUnit[rawCurrency];
     if (!Number.isFinite(fxRate) || fxRate <= 0) {

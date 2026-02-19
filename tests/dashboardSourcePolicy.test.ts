@@ -100,6 +100,61 @@ describe('dashboard source policy', () => {
     expect(selected[0].commodity).toBe('corn');
   });
 
+  it('fresh fallback beats stale primary', () => {
+    const stalePrimary = row({
+      commodity: 'wheat',
+      provider: 'CLAL',
+      source: 'CLAL',
+      sourceTier: 'primary',
+      priceStatus: 'stale',
+      dataStatus: 'stale',
+      freshnessDays: 10,
+      asOf: '2026-02-01T00:00:00.000Z',
+    });
+    const freshFallback = row({
+      commodity: 'wheat',
+      provider: 'BCR',
+      source: 'BCR',
+      sourceTier: 'secondary',
+      priceStatus: 'fresh',
+      dataStatus: 'fresh',
+      freshnessDays: 1,
+      asOf: '2026-02-19T00:00:00.000Z',
+    });
+
+    const selected = selectTruthSeriesPerCommodity([stalePrimary, freshFallback], {
+      providerPriority: ['CLAL', 'BCR'],
+    });
+    expect(selected).toHaveLength(1);
+    expect(selected[0].provider).toBe('BCR');
+  });
+
+  it('does not leak cross-commodity rows into selection', () => {
+    const cornRow = row({
+      commodity: 'corn',
+      provider: 'CLAL',
+      source: 'CLAL',
+      sourceTier: 'primary',
+      priceStatus: 'stale',
+      dataStatus: 'stale',
+      freshnessDays: 3,
+    });
+    const soyRow = row({
+      commodity: 'soybeans',
+      provider: 'CLAL',
+      source: 'CLAL',
+      sourceTier: 'primary',
+      priceStatus: 'fresh',
+      dataStatus: 'fresh',
+      freshnessDays: 0,
+    });
+    const selected = selectTruthSeriesPerCommodity([cornRow, soyRow], { providerPriority: ['CLAL'] });
+    const corn = selected.find((x) => x.commodity === 'corn');
+    expect(corn).toBeDefined();
+    expect(corn?.commodity).toBe('corn');
+    expect(corn?.price).toBe(cornRow.price);
+  });
+
   it('ignores rows marked needsReview or invalidReason', () => {
     const bad = row({
       commodity: 'soybeans',

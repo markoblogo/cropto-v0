@@ -8,7 +8,7 @@ const PRICE_RE = /(?:USD|US\$|ARS|BRL|EUR|R\$|\$)?\s*(-?\d{1,3}(?:[.,]\d{3})*(?:
 
 const LAST_REQUEST_BY_DOMAIN = new Map<string, number>();
 
-function parsePrice(raw: string): number | null {
+function parsePrice(raw: string, numberFormat: "auto" | "thousands_dot_decimal_comma" = "auto"): number | null {
   const cleaned = raw.replace(/\s/g, "");
   if (!cleaned) return null;
   const hasComma = cleaned.includes(",");
@@ -22,6 +22,10 @@ function parsePrice(raw: string): number | null {
     }
   } else if (hasComma && !hasDot) {
     normalized = cleaned.replace(/,/g, ".");
+  } else if (!hasComma && hasDot && numberFormat === "thousands_dot_decimal_comma") {
+    if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
+      normalized = cleaned.replace(/\./g, "");
+    }
   }
   const value = Number.parseFloat(normalized);
   if (!Number.isFinite(value) || value <= 0 || value > 1_000_000) return null;
@@ -86,12 +90,13 @@ function inferRawCurrency(body: string, hint?: "USD" | "ARS" | "BRL" | "EUR"): "
   return "UNKNOWN";
 }
 
-function inferRawUnit(body: string, currency: string, hint?: "t" | "kg" | "bu" | "cwt" | "bag60kg"): string {
+function inferRawUnit(body: string, currency: string, hint?: "t" | "kg" | "bu" | "cwt" | "bag60kg" | "qq100kg"): string {
   const normalizedHint = hint || null;
   if (normalizedHint === "bu" || /USD\s*\/\s*bu|\busd\/bu\b|bushel/i.test(body)) return "USD/bu";
   if (normalizedHint === "kg" || /\b\/\s*kg\b|\bper\s+kg\b/i.test(body)) return `${currency}/kg`;
   if (normalizedHint === "cwt" || /\b\/\s*cwt\b|\bcentum\b|\bhundredweight\b/i.test(body)) return `${currency}/cwt`;
   if (normalizedHint === "bag60kg" || /\b(bag|sack)\b.{0,8}\b60\s?kg\b/i.test(body)) return `${currency}/bag60kg`;
+  if (normalizedHint === "qq100kg" || /\bqq\b|\bquintal\b|\b100\s?kg\b/i.test(body)) return `${currency}/qq100kg`;
   if (normalizedHint === "t" || /\b\/\s*t\b|\b\/\s*ton\b|\bper\s+ton\b|\bmetric\s+ton\b/i.test(body)) return `${currency}/t`;
   return "UNKNOWN";
 }
@@ -112,17 +117,26 @@ function sanitizeSnippet(input: string): string {
     .replace(/\b(authorization|token)\b\s*[:=]\s*["']?bearer\s+[A-Za-z0-9._\-+/=]+/gi, "$1=Bearer [redacted]");
 }
 
-function extractDatePricePairs(body: string, customPriceRegex?: string): Array<{ asOf: string; price: number }> {
+function extractDatePricePairs(
+  body: string,
+  opts?: { customPriceRegex?: string; commodityKeywords?: string[]; numberFormat?: "auto" | "thousands_dot_decimal_comma" }
+): Array<{ asOf: string; price: number }> {
   const pairs: Array<{ asOf: string; price: number }> = [];
-  const priceRe = customPriceRegex ? new RegExp(customPriceRegex, "g") : PRICE_RE;
+  const priceRe = opts?.customPriceRegex ? new RegExp(opts.customPriceRegex, "g") : PRICE_RE;
+  const commodityKeywords = (opts?.commodityKeywords || []).map((k) => k.toLowerCase());
+  const numberFormat = opts?.numberFormat || "auto";
   const lines = body.split(/\n|<tr|<li|<p|<div/gi);
   for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    if (commodityKeywords.length > 0 && !commodityKeywords.some((kw) => lowerLine.includes(kw))) {
+      continue;
+    }
     const ds = parseDates(line);
     if (ds.length === 0) continue;
     const prices = [...line.matchAll(priceRe)]
-      .map((m) => parsePrice(String(m[1] || m[0] || "")))
+      .map((m) => parsePrice(String(m[1] || m[0] || ""), numberFormat))
       .filter((n): n is number => Number.isFinite(n))
-      .filter((n) => n > 5 && n < 5000);
+      .filter((n) => n > 0.0001 && n < 2_000_000);
     if (prices.length === 0) continue;
     pairs.push({ asOf: ds[0], price: prices[0] });
   }
@@ -193,9 +207,9 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
   let body = await response.text();
   let dates = parseDates(body, def.parserSpec?.dateRegex);
   let prices = [...body.matchAll(def.parserSpec?.priceRegex ? new RegExp(def.parserSpec.priceRegex, "g") : PRICE_RE)]
-    .map((m) => parsePrice(String(m[1] || m[0] || "")))
+    .map((m) => parsePrice(String(m[1] || m[0] || ""), def.parserSpec?.numberFormat || "auto"))
     .filter((n): n is number => Number.isFinite(n))
-    .filter((n) => n > 5 && n < 5000);
+    .filter((n) => n > 0.0001 && n < 2_000_000);
 
   if ((prices.length === 0 || dates.length === 0) && process.env.INGEST_USE_PLAYWRIGHT === "true") {
     const rendered = await maybeRender(def.url);
@@ -203,9 +217,9 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
       body = rendered;
       dates = parseDates(body, def.parserSpec?.dateRegex);
       prices = [...body.matchAll(def.parserSpec?.priceRegex ? new RegExp(def.parserSpec.priceRegex, "g") : PRICE_RE)]
-        .map((m) => parsePrice(String(m[1] || m[0] || "")))
+        .map((m) => parsePrice(String(m[1] || m[0] || ""), def.parserSpec?.numberFormat || "auto"))
         .filter((n): n is number => Number.isFinite(n))
-        .filter((n) => n > 5 && n < 5000);
+        .filter((n) => n > 0.0001 && n < 2_000_000);
     }
   }
 
@@ -220,7 +234,11 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
   const points: MarketPricePoint[] = [];
 
   const historyLimit = Math.min(Math.max(Number.parseInt(process.env.INGEST_HISTORY_DAYS || "60", 10), 1), 730);
-  const pairs = extractDatePricePairs(body, def.parserSpec?.priceRegex).slice(0, historyLimit);
+  const pairs = extractDatePricePairs(body, {
+    customPriceRegex: def.parserSpec?.priceRegex,
+    commodityKeywords: def.parserSpec?.commodityKeywords,
+    numberFormat: def.parserSpec?.numberFormat,
+  }).slice(0, historyLimit);
 
   if (pairs.length > 0) {
     for (const pair of pairs) {

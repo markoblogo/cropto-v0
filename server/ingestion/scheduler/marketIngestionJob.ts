@@ -139,7 +139,7 @@ function pickDefinitions(provider: string, market: IngestionMarket, commodity: s
   if (defs.length <= 1) return defs;
 
   const byCommodity = defs.filter((d) => d.commodityHint.toLowerCase().includes(commodity));
-  return byCommodity.length > 0 ? byCommodity : defs;
+  return byCommodity;
 }
 
 async function tryProvider(
@@ -168,7 +168,8 @@ async function tryProvider(
       const result = await fetchAndParseProvider(def, layer);
       const normalizedPoints = result.points
         .slice(0, historyDays)
-        .map((p) => ({ ...p, commodity, basis: basis || p.basis }))
+        .filter((p) => p.commodity === commodity)
+        .map((p) => ({ ...p, basis: basis || p.basis }))
         .map((p) => applyUsdNormalization(p, fx));
 
       const validPoints = normalizedPoints.filter((p) => p.priceUsdPerTon && p.priceUsdPerTon > 0);

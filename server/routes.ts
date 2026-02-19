@@ -2377,41 +2377,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return new Date(b.asOf).getTime() - new Date(a.asOf).getTime();
           });
 
-          const freshBySource = (source: string, maxAge: number) =>
-            sorted.find((c) => c.source === source && (c.freshnessDays ?? 999) <= maxAge);
+          const freshCandidates = sorted
+            .filter((c) => (c.freshnessDays ?? 999) <= Math.max(primaryMaxAge, secondaryMaxAge))
+            .sort((a, b) => {
+              const aDays = a.freshnessDays ?? 999;
+              const bDays = b.freshnessDays ?? 999;
+              if (aDays !== bDays) return aDays - bDays;
+              const aIdx = Math.max(0, order.indexOf(a.source));
+              const bIdx = Math.max(0, order.indexOf(b.source));
+              return aIdx - bIdx;
+            });
 
-          const freshPrimary = freshBySource(order[0], primaryMaxAge);
-          const freshSecondary =
-            secondaryMaxAge > 0 && failoverOrder.includes("secondary")
-              ? order.slice(1).map((s) => freshBySource(s, secondaryMaxAge)).find(Boolean)
-              : undefined;
-
-          if (freshPrimary) {
+          const bestFresh = freshCandidates[0];
+          if (bestFresh) {
+            const isPrimary = bestFresh.source === order[0];
             selected.push({
-              ...freshPrimary,
-              sourceTier: "primary",
+              ...bestFresh,
+              sourceTier: isPrimary ? "primary" : "secondary",
               isStale: false,
               dataStatus: "fresh",
               priceStatus: "fresh",
             });
-            continue;
-          }
-
-          if (freshSecondary) {
-            selected.push({
-              ...freshSecondary,
-              sourceTier: "secondary",
-              isStale: false,
-              dataStatus: "fresh",
-              priceStatus: "fresh",
-            });
-            failoverEvents.push({
-              event: "source_failover_primary_to_secondary",
-              country,
-              key,
-              from: order[0],
-              to: freshSecondary.source,
-            });
+            if (!isPrimary) {
+              failoverEvents.push({
+                event: "source_failover_primary_to_secondary",
+                country,
+                key,
+                from: order[0],
+                to: bestFresh.source,
+              });
+            }
             continue;
           }
 
