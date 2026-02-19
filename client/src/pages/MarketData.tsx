@@ -150,6 +150,20 @@ export default function MarketData() {
   const getSeriesStatus = (index: { country: string; commodity: string; basis: string }) =>
     seriesStatusByKey.get(`${index.country}:${index.commodity}:${index.basis}`) || "no_recent";
 
+  const getDisplayStatus = (index: {
+    country: string;
+    commodity: string;
+    basis: string;
+    priceStatus?: "fresh" | "stale" | "missing";
+    dataStatus?: "fresh" | "stale" | "no_recent";
+  }): "fresh" | "stale" | "no_recent" => {
+    if (index.priceStatus === "fresh" || index.priceStatus === "stale") return index.priceStatus;
+    if (index.priceStatus === "missing") return "no_recent";
+    if (index.dataStatus === "fresh" || index.dataStatus === "stale") return index.dataStatus;
+    if (index.dataStatus === "no_recent") return "no_recent";
+    return getSeriesStatus(index);
+  };
+
   const getStatusBadgeClass = (status: "fresh" | "stale" | "no_recent") => {
     if (status === "fresh") return "bg-emerald-100 text-emerald-800 border-emerald-200";
     if (status === "stale") return "bg-amber-100 text-amber-800 border-amber-200";
@@ -224,8 +238,8 @@ export default function MarketData() {
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
                         <span>{index.basis}</span>
-                        <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
-                          {getSeriesStatus(index)}
+                        <Badge variant="outline" className={getStatusBadgeClass(getDisplayStatus(index))}>
+                          {getDisplayStatus(index)}
                         </Badge>
                       </CardDescription>
                     </CardHeader>
@@ -239,11 +253,14 @@ export default function MarketData() {
                         As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                        Fetched: {formatRelative(index.fetchedAt || index.asOf)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
                       </div>
+                      {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
+                        <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
+                      ) : null}
                       {debugSources ? (
                         <div className="text-xs text-muted-foreground space-y-0.5">
                           <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
@@ -269,8 +286,8 @@ export default function MarketData() {
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
                         <span>{index.basis}</span>
-                        <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
-                          {getSeriesStatus(index)}
+                        <Badge variant="outline" className={getStatusBadgeClass(getDisplayStatus(index))}>
+                          {getDisplayStatus(index)}
                         </Badge>
                       </CardDescription>
                     </CardHeader>
@@ -284,11 +301,14 @@ export default function MarketData() {
                         As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                        Fetched: {formatRelative(index.fetchedAt || index.asOf)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
                       </div>
+                      {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
+                        <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
+                      ) : null}
                       {debugSources ? (
                         <div className="text-xs text-muted-foreground space-y-0.5">
                           <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
@@ -315,8 +335,8 @@ export default function MarketData() {
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2">
                           <span>{index.basis}</span>
-                          <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
-                            {getSeriesStatus(index)}
+                          <Badge variant="outline" className={getStatusBadgeClass(getDisplayStatus(index))}>
+                            {getDisplayStatus(index)}
                           </Badge>
                         </CardDescription>
                       </CardHeader>
@@ -330,11 +350,14 @@ export default function MarketData() {
                           As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                          Fetched: {formatRelative(index.fetchedAt || index.asOf)}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
                         </div>
+                        {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
+                          <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
+                        ) : null}
                         {debugSources ? (
                           <div className="text-xs text-muted-foreground space-y-0.5">
                             <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>

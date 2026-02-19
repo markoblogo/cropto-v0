@@ -29,6 +29,10 @@ export interface MarketIndexDto {
     | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
   dataStatus?: "fresh" | "stale" | "no_recent";
+  priceStatus?: "fresh" | "stale" | "missing";
+  lastFetchStatus?: "ok" | "failed" | "unknown";
+  lastFetchError?: string | null;
+  isMockData?: boolean;
   confidence?: "high" | "medium" | "low";
   freshnessDays?: number;
   isStale?: boolean;

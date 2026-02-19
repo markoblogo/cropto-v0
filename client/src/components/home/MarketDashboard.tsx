@@ -94,8 +94,11 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
     .replace(/^Просмотреть\s+/i, "");
 
   const asOfText = item.asOf ? new Date(item.asOf).toISOString().slice(0, 10) : "n/a";
-  const fetchedText = item.fetchedAt ? formatRelative(item.fetchedAt) : "n/a";
-  const freshnessBadge = item.dataStatus === "fresh" ? "Fresh" : item.dataStatus === "stale" ? "Stale" : "Failed";
+  const fetchedValue = item.fetchedAt || item.asOf;
+  const fetchedText = fetchedValue ? formatRelative(fetchedValue) : "n/a";
+  const priceStatus = item.priceStatus || (item.dataStatus === "no_recent" ? "missing" : item.dataStatus) || "missing";
+  const freshnessBadge = priceStatus === "fresh" ? "Fresh" : priceStatus === "stale" ? "Stale" : "Failed";
+  const showLastFetchFailedWarning = item.lastFetchStatus === "failed" && priceStatus !== "missing";
 
   return (
     <Card className="flex flex-col rounded-xl shadow-sm">
@@ -143,6 +146,9 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               {freshnessBadge}
             </Badge>
           </div>
+          {showLastFetchFailedWarning ? (
+            <div className="text-[11px] text-amber-700">Last fetch failed; showing latest successful price</div>
+          ) : null}
           {isDebugSources ? (
             <div className="text-[11px] text-muted-foreground leading-tight">
               <div>normalized: {item.commodity}</div>
