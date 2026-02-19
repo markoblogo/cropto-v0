@@ -80,6 +80,8 @@ export async function upsertMarketPrice(point: MarketPricePoint): Promise<void> 
     rawCurrency: point.rawCurrency,
     rawToUsdFxRate: point.rawToUsdFxRate,
     conversionNotes: point.conversionNotes,
+    invalidReason: point.raw?.invalidReason || null,
+    rawTextSnippet: point.raw?.rawTextSnippet || null,
   };
 
   const legacyExisting = await db

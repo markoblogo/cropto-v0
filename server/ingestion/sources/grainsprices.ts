@@ -8,7 +8,7 @@ const DEF: ProviderDefinition = {
   commodityHint: "corn",
   basis: "FOB reference",
   url: "https://grainsprices.com/markets/fob",
-  parserSpec: { dateKeywords: ["fob", "markets"], priceKeywords: ["corn", "wheat", "soy"] },
+  parserSpec: { dateKeywords: ["fob", "markets"], priceKeywords: ["corn", "wheat", "soy"], currencyHint: "USD", unitHint: "t" },
 };
 
 export async function fetchGrainsPrices(layer: SourceLayer): Promise<ProviderParseResult> {

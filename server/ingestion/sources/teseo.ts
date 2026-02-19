@@ -9,7 +9,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "corn",
     basis: "Rosario",
     url: "https://teseo.clal.it/en/?section=argentina_mais",
-    parserSpec: { dateKeywords: ["Rosario", "Corn"], priceKeywords: ["USD", "ARS"] },
+    parserSpec: { dateKeywords: ["Rosario", "Corn"], priceKeywords: ["USD", "ARS"], unitHint: "t" },
   },
   AR_WHEAT: {
     vendor: "CLAL",
@@ -18,7 +18,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "wheat",
     basis: "Argentina wheat",
     url: "https://teseo.clal.it/en/?section=argentina_wheat",
-    parserSpec: { dateKeywords: ["Wheat"], priceKeywords: ["USD", "ARS"] },
+    parserSpec: { dateKeywords: ["Wheat"], priceKeywords: ["USD", "ARS"], unitHint: "t" },
   },
   AR_SOY: {
     vendor: "CLAL",
@@ -27,7 +27,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "soybeans",
     basis: "Argentina",
     url: "https://teseo.clal.it/en/?section=argentina_soia",
-    parserSpec: { dateKeywords: ["Soy"], priceKeywords: ["USD", "ARS"] },
+    parserSpec: { dateKeywords: ["Soy"], priceKeywords: ["USD", "ARS"], unitHint: "t" },
   },
   BR_MIXED: {
     vendor: "CLAL",
@@ -36,7 +36,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "soybeans",
     basis: "Brazil cereals",
     url: "https://teseo.clal.it/en/?section=cereals_brazil_prices",
-    parserSpec: { dateKeywords: ["Brazil"], priceKeywords: ["BRL", "USD"] },
+    parserSpec: { dateKeywords: ["Brazil"], priceKeywords: ["BRL", "USD"], unitHint: "t" },
   },
   US_MIXED: {
     vendor: "CLAL",
@@ -45,7 +45,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "soybeans",
     basis: "US cereals",
     url: "https://teseo.clal.it/en/?section=cereals_price_usa",
-    parserSpec: { dateKeywords: ["United States"], priceKeywords: ["USD", "bushel"] },
+    parserSpec: { dateKeywords: ["United States"], priceKeywords: ["USD", "bushel"], unitHint: "bu", currencyHint: "USD" },
   },
 };
 

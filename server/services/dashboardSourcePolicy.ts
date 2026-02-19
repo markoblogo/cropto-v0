@@ -31,9 +31,10 @@ export function selectTruthSeriesPerCommodity(
   options?: { providerPriority?: string[]; debug?: boolean }
 ): MarketIndexDto[] {
   const providerPriority = (options?.providerPriority || []).map((p) => p.toUpperCase());
+  const validRows = rows.filter((row) => !row.needsReview && !row.invalidReason);
   const grouped = new Map<string, MarketIndexDto[]>();
 
-  for (const row of rows) {
+  for (const row of validRows) {
     const canonical = normalizeCanonicalCommodity(row.commodity);
     const normalizedRow: MarketIndexDto = {
       ...row,

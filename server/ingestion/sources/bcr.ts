@@ -8,7 +8,7 @@ const DEF: ProviderDefinition = {
   commodityHint: "corn",
   basis: "Rosario local",
   url: "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-1",
-  parserSpec: { dateKeywords: ["cotizaciones"], priceKeywords: ["maiz", "trigo", "soja"] },
+  parserSpec: { dateKeywords: ["cotizaciones"], priceKeywords: ["maiz", "trigo", "soja"], currencyHint: "ARS", unitHint: "t" },
 };
 
 export async function fetchBcr(layer: SourceLayer): Promise<ProviderParseResult> {

@@ -8,7 +8,7 @@ const DEF: ProviderDefinition = {
   commodityHint: "corn",
   basis: "USDA cash",
   url: "https://www.fsgrain.com/pages/usdacash.php",
-  parserSpec: { dateKeywords: ["USDA"], priceKeywords: ["cash", "corn", "wheat"] },
+  parserSpec: { dateKeywords: ["USDA"], priceKeywords: ["cash", "corn", "wheat"], currencyHint: "USD", unitHint: "bu" },
 };
 
 export async function fetchFsGrain(layer: SourceLayer): Promise<ProviderParseResult> {

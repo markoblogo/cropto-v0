@@ -77,11 +77,23 @@ function confidence(args: { statusCode: number; hasPrice: boolean; hasDate: bool
   return Number(Math.min(score, 0.95).toFixed(2));
 }
 
-function inferRawUnit(body: string): string {
-  if (/USD\s*\/\s*bu|\busd\/bu\b|bushel/i.test(body)) return "USD/bu";
-  if (/\bARS\b/i.test(body)) return "ARS/t";
-  if (/\bBRL\b|R\$/i.test(body)) return "BRL/t";
-  return "USD/t";
+function inferRawCurrency(body: string, hint?: "USD" | "ARS" | "BRL" | "EUR"): "USD" | "ARS" | "BRL" | "EUR" | "UNKNOWN" {
+  if (hint) return hint;
+  if (/\bARS\b|argentine peso/i.test(body)) return "ARS";
+  if (/\bBRL\b|R\$/i.test(body)) return "BRL";
+  if (/\bEUR\b|€/i.test(body)) return "EUR";
+  if (/\bUSD\b|US\$|\$/i.test(body)) return "USD";
+  return "UNKNOWN";
+}
+
+function inferRawUnit(body: string, currency: string, hint?: "t" | "kg" | "bu" | "cwt" | "bag60kg"): string {
+  const normalizedHint = hint || null;
+  if (normalizedHint === "bu" || /USD\s*\/\s*bu|\busd\/bu\b|bushel/i.test(body)) return "USD/bu";
+  if (normalizedHint === "kg" || /\b\/\s*kg\b|\bper\s+kg\b/i.test(body)) return `${currency}/kg`;
+  if (normalizedHint === "cwt" || /\b\/\s*cwt\b|\bcentum\b|\bhundredweight\b/i.test(body)) return `${currency}/cwt`;
+  if (normalizedHint === "bag60kg" || /\b(bag|sack)\b.{0,8}\b60\s?kg\b/i.test(body)) return `${currency}/bag60kg`;
+  if (normalizedHint === "t" || /\b\/\s*t\b|\b\/\s*ton\b|\bper\s+ton\b|\bmetric\s+ton\b/i.test(body)) return `${currency}/t`;
+  return "UNKNOWN";
 }
 
 function extractFailureSnippet(body: string, keywords: string[] = []): string {
@@ -200,7 +212,9 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
   const dedupPrices = [...new Set(prices)].slice(0, 120);
   const asOf = pickAsOfDate(dates);
   const hasHistory = new Set(dates).size >= 5;
-  const rawUnit = inferRawUnit(body);
+  const rawCurrency = inferRawCurrency(body, def.parserSpec?.currencyHint);
+  const rawUnit = inferRawUnit(body, rawCurrency, def.parserSpec?.unitHint);
+  const rawTextSnippet = sanitizeSnippet(body.slice(0, 700));
 
   const commodityNorm = normalizeCommodity(def.commodityHint);
   const points: MarketPricePoint[] = [];
@@ -222,7 +236,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
         price: pair.price,
         priceRaw: pair.price,
         rawUnit,
-        rawCurrency: rawUnit.slice(0, 3).toUpperCase(),
+        rawCurrency,
         asOf: pair.asOf,
         fetchedAt: new Date().toISOString(),
         source: {
@@ -237,7 +251,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
             hasHistory,
           }),
         },
-        raw: { htmlSha, parser: "heuristic" },
+        raw: { htmlSha, parser: "heuristic", rawTextSnippet },
       });
     }
   } else if (asOf && dedupPrices.length > 0) {
@@ -254,7 +268,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
       price,
       priceRaw: price,
       rawUnit,
-      rawCurrency: rawUnit.slice(0, 3).toUpperCase(),
+      rawCurrency,
       asOf,
       fetchedAt: new Date().toISOString(),
       source: {
@@ -269,7 +283,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
           hasHistory,
         }),
       },
-      raw: { htmlSha, parser: "heuristic" },
+      raw: { htmlSha, parser: "heuristic", rawTextSnippet },
     });
   }
 

@@ -2029,6 +2029,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const market = row.market as "BR" | "AR" | "US";
           if (market !== "BR" && market !== "AR" && market !== "US") continue;
+          const rawMeta = (() => {
+            try {
+              return row.rawMeta ? JSON.parse(row.rawMeta) : {};
+            } catch {
+              return {};
+            }
+          })();
+          const invalidReason = typeof rawMeta.invalidReason === "string" ? rawMeta.invalidReason : null;
+          const rowNeedsReview = row.needsReview === "true" || Boolean(invalidReason);
+          if (rowNeedsReview) continue;
           const key = `${market}:${row.commodity}:${row.basis || ""}`;
           if (seenIngestionSeries.has(key)) continue;
           seenIngestionSeries.add(key);
@@ -2070,9 +2080,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawCurrency: row.rawCurrency || undefined,
             rawToUsdFxRate: row.rawToUsdFxRate ? Number.parseFloat(String(row.rawToUsdFxRate)) : undefined,
             conversionNotes: row.conversionNotes || undefined,
+            invalidReason,
+            needsReview: row.needsReview === "true",
             sourceTier: row.sourceLayer === "primary" ? "primary" : "secondary",
             lastFetchStatus: computeLastFetchStatus(providerStatus),
             lastFetchError: providerStatus?.lastError || null,
+            alternatives: debugSources
+              ? [
+                  {
+                    provider: provider,
+                    source: provider,
+                    channel: row.channel || "HTML_PAGE",
+                    asOf,
+                    fetchedAt,
+                    priceStatus,
+                    lastFetchStatus: computeLastFetchStatus(providerStatus),
+                    sourceTier: row.sourceLayer || undefined,
+                  },
+                ]
+              : undefined,
           });
         } catch {
           // ignore malformed ingestion rows
@@ -2745,7 +2771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           truthBrData.length === 0
             ? marketIngestionEnabled
               ? (marketStatusRows.get("BR") || 0) > 0
-                ? "No BR price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
+                ? "No validated quotes yet (waiting for unit/currency parsing)."
                 : "Ingestion enabled, but scheduler has not produced BR source status yet."
               : "Market ingestion is disabled."
             : null,
@@ -2753,7 +2779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           truthArData.length === 0
             ? marketIngestionEnabled
               ? (marketStatusRows.get("AR") || 0) > 0
-                ? "No AR price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
+                ? "No validated quotes yet (waiting for unit/currency parsing)."
                 : "Ingestion enabled, but scheduler has not produced AR source status yet."
               : "Market ingestion is disabled."
             : null,
@@ -2761,7 +2787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           truthUsData.length === 0
             ? marketIngestionEnabled
               ? (marketStatusRows.get("US") || 0) > 0
-                ? "No US price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
+                ? "No validated quotes yet (waiting for unit/currency parsing)."
                 : "Ingestion enabled, but scheduler has not produced US source status yet."
               : "Market ingestion is disabled."
             : null,
@@ -5930,6 +5956,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching market ingestion db-check:", error);
       res.status(500).json({ error: error.message || "Failed to fetch market ingestion db-check" });
+    }
+  });
+
+  app.get("/api/admin/market-ingestion/sample", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = req.user;
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const market = String(req.query.market || "").toUpperCase();
+      const commodityRaw = String(req.query.commodity || "").toLowerCase();
+      const canonicalCommodity = commodityRaw ? normalizeCanonicalCommodity(commodityRaw).commodity : "";
+      const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || "20"), 10) || 20, 1), 100);
+
+      if (!["BR", "AR", "US", "UA"].includes(market)) {
+        return res.status(400).json({ error: "market must be one of BR/AR/US/UA" });
+      }
+      if (!canonicalCommodity) {
+        return res.status(400).json({ error: "commodity is required" });
+      }
+
+      const rows = await db
+        .select()
+        .from(marketPrices)
+        .where(and(eq(marketPrices.market, market), eq(marketPrices.commodity, canonicalCommodity)))
+        .orderBy(desc(marketPrices.fetchedAt))
+        .limit(limit);
+
+      const sample = rows.map((row) => {
+        let rawMeta: Record<string, unknown> = {};
+        try {
+          rawMeta = row.rawMeta ? JSON.parse(row.rawMeta) : {};
+        } catch {
+          rawMeta = {};
+        }
+        const rawTextSnippet = String(rawMeta.rawTextSnippet || "").slice(0, 280);
+        const invalidReason = typeof rawMeta.invalidReason === "string" ? rawMeta.invalidReason : null;
+        return {
+          asOf: row.asOf?.toISOString?.() || row.asOf || null,
+          fetchedAt: row.fetchedAt?.toISOString?.() || row.fetchedAt || null,
+          vendor: row.provider,
+          channel: row.channel,
+          rawPrice: row.priceRaw ? Number.parseFloat(String(row.priceRaw)) : null,
+          rawCurrency: row.rawCurrency || null,
+          rawUnit: row.rawUnit || null,
+          rawTextSnippet: rawTextSnippet || null,
+          priceUsdPerTon: row.priceUsdPerTon ? Number.parseFloat(String(row.priceUsdPerTon)) : null,
+          conversionNotes: row.conversionNotes || null,
+          needsReview: row.needsReview === "true",
+          invalidReason,
+        };
+      });
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        market,
+        commodity: canonicalCommodity,
+        count: sample.length,
+        sample,
+      });
+    } catch (error: any) {
+      console.error("Error fetching market ingestion sample:", error);
+      res.status(500).json({ error: "Failed to fetch market ingestion sample" });
     }
   });
 

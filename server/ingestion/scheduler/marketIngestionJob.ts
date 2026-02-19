@@ -3,6 +3,7 @@ import type { IngestionMarket, MarketPricePoint, ProviderDefinition, SourceLayer
 import { fetchAndParseProvider } from "../sources/common";
 import { ensureIngestionTables, getPreviousMarketPrice, insertFetchAttempt, upsertMarketPrice, upsertSourceStatus } from "../storage/repository";
 import { applyUsdNormalization } from "../normalization/price";
+import { validateUsdPerTon } from "../normalization/priceSanity";
 import { getFxSnapshotOrFetch } from "./fxIngestionJob";
 import { db } from "../../db";
 import { sql } from "drizzle-orm";
@@ -96,6 +97,15 @@ function validatePoint(point: MarketPricePoint): { ok: boolean; reasons: string[
   if (!point.priceUsdPerTon || !(point.priceUsdPerTon > 0)) {
     reasons.push("missing_price_usd_per_ton");
     needsReview = true;
+  }
+  const sanity = validateUsdPerTon(point);
+  if (!sanity.valid) {
+    reasons.push(`invalid:${sanity.invalidReason}`);
+    needsReview = true;
+    point.raw = {
+      ...(point.raw || {}),
+      invalidReason: sanity.invalidReason,
+    };
   }
 
   return { ok: reasons.length === 0, reasons, needsReview };
@@ -198,13 +208,24 @@ async function tryProvider(
       });
 
       if (validPoints.length > 0) {
+        const acceptedPoints: MarketPricePoint[] = [];
         for (const point of validPoints) {
           const validation = validatePoint(point);
           point.needsReview = point.needsReview || validation.needsReview;
-          if (!validation.ok) continue;
+          if (!validation.ok) {
+            point.raw = {
+              ...(point.raw || {}),
+              invalidReason: validation.reasons.join(","),
+            };
+            continue;
+          }
           await annotateAnomaly(point);
+          acceptedPoints.push(point);
         }
-        return { points: validPoints };
+        if (acceptedPoints.length > 0) {
+          return { points: acceptedPoints };
+        }
+        lastError = "all_points_invalid_after_validation";
       }
 
       lastError = `no_point:${result.notes.join(";")}`;

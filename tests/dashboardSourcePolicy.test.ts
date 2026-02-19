@@ -99,4 +99,27 @@ describe('dashboard source policy', () => {
     expect(selected).toHaveLength(1);
     expect(selected[0].commodity).toBe('corn');
   });
+
+  it('ignores rows marked needsReview or invalidReason', () => {
+    const bad = row({
+      commodity: 'soybeans',
+      provider: 'CLAL',
+      source: 'CLAL',
+      sourceTier: 'primary',
+      needsReview: true,
+      invalidReason: 'OUT_OF_RANGE',
+    });
+    const good = row({
+      commodity: 'soybeans',
+      provider: 'GRAINSPRICES',
+      source: 'GRAINSPRICES',
+      sourceTier: 'secondary',
+      priceStatus: 'stale',
+      dataStatus: 'stale',
+      needsReview: false,
+    });
+    const selected = selectTruthSeriesPerCommodity([bad, good], { providerPriority: ['CLAL', 'GRAINSPRICES'] });
+    expect(selected).toHaveLength(1);
+    expect(selected[0].provider).toBe('GRAINSPRICES');
+  });
 });
