@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import { useMarketDashboard } from "@/hooks/useMarketDashboard";
 import { Button } from "@/components/ui/button";
+import { commodityDisplayName } from "@shared/commodities";
 
 export default function MarketData() {
   const { t } = useTranslation();
@@ -134,7 +135,6 @@ export default function MarketData() {
     const c = commodity.toLowerCase();
     if (
       c.includes("corn") ||
-      c.includes("maize") ||
       c.includes("wheat") ||
       c.includes("barley")
     ) {
@@ -243,7 +243,7 @@ export default function MarketData() {
                   <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
                     <CardHeader>
                       <CardTitle className="text-lg">
-                        {index.commodity}
+                        {commodityDisplayName(index.commodity)}
                         {index.grade ? ` (${index.grade})` : ""}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function MarketData() {
                   <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
                     <CardHeader>
                       <CardTitle className="text-lg">
-                        {index.commodity}
+                        {commodityDisplayName(index.commodity)}
                         {index.grade ? ` (${index.grade})` : ""}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
@@ -340,7 +340,7 @@ export default function MarketData() {
                     <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          {index.commodity}
+                          {commodityDisplayName(index.commodity)}
                           {index.grade ? ` (${index.grade})` : ""}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2">

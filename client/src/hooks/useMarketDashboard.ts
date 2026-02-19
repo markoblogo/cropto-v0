@@ -49,6 +49,16 @@ export interface MarketIndexDto {
   rawCurrency?: string;
   rawToUsdFxRate?: number;
   conversionNotes?: string;
+  alternatives?: Array<{
+    provider: string;
+    source: string;
+    channel?: string;
+    asOf: string;
+    fetchedAt?: string;
+    priceStatus?: string;
+    lastFetchStatus?: string;
+    sourceTier?: string;
+  }>;
   // Optional IGC-specific fields
   dailyChange?: number; // alias for change24h (for backward compatibility)
   annualChange?: number;

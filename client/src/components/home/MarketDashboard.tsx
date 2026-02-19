@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { commodityDisplayName } from "@shared/commodities";
 
 interface HistoryDataPoint {
   date: string;
@@ -34,7 +35,8 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   const changeColor = changeValue > 0 ? "text-emerald-600" : changeValue < 0 ? "text-red-600" : "text-muted-foreground";
   const ChangeIcon = changeValue > 0 ? ArrowUp : changeValue < 0 ? ArrowDown : Minus;
 
-  const commodityLabel = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
+  const commodityName = commodityDisplayName(item.commodity);
+  const commodityLabel = item.grade ? `${commodityName} (${item.grade})` : commodityName;
   const isDebugSources = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugSources") === "1";
   const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : item.country === "AR" ? "🇦🇷" : "🇺🇸";
   const commoditySlug = item.commodity.toLowerCase().includes("corn") || item.commodity.toLowerCase().includes("maize")
@@ -162,6 +164,9 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               {typeof item.rawToUsdFxRate === "number" ? (
                 <div>fx: {item.rawCurrency || "N/A"} {"->"} USD = {item.rawToUsdFxRate.toFixed(8)}</div>
               ) : null}
+              {item.alternatives && item.alternatives.length > 0 ? (
+                <div>alternatives: {item.alternatives.length}</div>
+              ) : null}
             </div>
           ) : null}
 
@@ -259,8 +264,8 @@ function MarketTab({
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {items.map((item, index) => (
-          <MarketCard key={`${item.country}-${item.commodity}-${index}`} item={item} />
+        {items.map((item) => (
+          <MarketCard key={item.seriesKey || `${item.country}-${item.commodity}-${item.basis}`} item={item} />
         ))}
       </div>
     </div>
