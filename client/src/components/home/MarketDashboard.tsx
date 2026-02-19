@@ -277,6 +277,8 @@ export function MarketDashboard() {
   );
   const [selectedTab, setSelectedTab] = useState<MarketCountryTab>(computedDefaultTab);
   const selectedHealth = data?.marketHealth?.[selectedTab];
+  const selectedDataAlert =
+    selectedTab === "br" ? data?.dataAlerts?.br : selectedTab === "ar" ? data?.dataAlerts?.ar : selectedTab === "us" ? data?.dataAlerts?.us : null;
   const selectedHealthBadgeClass =
     selectedHealth?.status === "OK"
       ? "bg-emerald-100 text-emerald-800"
@@ -325,6 +327,11 @@ export function MarketDashboard() {
             <span>·</span>
             <span>Source: {selectedHealth.source || "n/a"}</span>
             <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
+          </div>
+        ) : null}
+        {selectedDataAlert ? (
+          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            {selectedDataAlert}
           </div>
         ) : null}
 

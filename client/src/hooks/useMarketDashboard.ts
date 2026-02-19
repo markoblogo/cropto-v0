@@ -114,6 +114,11 @@ export interface MarketDashboardResponse {
     ar: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
     us: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
   };
+  dataAlerts?: {
+    br: string | null;
+    ar: string | null;
+    us: string | null;
+  };
 }
 
 export function useMarketDashboard() {

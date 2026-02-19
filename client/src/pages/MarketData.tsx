@@ -111,6 +111,14 @@ export default function MarketData() {
     selectedRegion === "ua" ? "🇺🇦" : selectedRegion === "br" ? "🇧🇷" : selectedRegion === "ar" ? "🇦🇷" : "🇺🇸";
   const countryLabel = selectedRegion.toUpperCase();
   const marketHealth = marketDashboardData?.marketHealth?.[selectedRegion];
+  const selectedDataAlert =
+    selectedRegion === "br"
+      ? marketDashboardData?.dataAlerts?.br
+      : selectedRegion === "ar"
+        ? marketDashboardData?.dataAlerts?.ar
+        : selectedRegion === "us"
+          ? marketDashboardData?.dataAlerts?.us
+          : null;
   const marketHealthClass =
     marketHealth?.status === "OK"
       ? "bg-emerald-100 text-emerald-800"
@@ -214,7 +222,9 @@ export default function MarketData() {
           </Alert>
         ) : regionalIndexes.length === 0 ? (
           <Alert>
-            <AlertDescription>{t("page.marketData.noIndexesForCountry", { country: selectedRegion.toUpperCase() })}</AlertDescription>
+            <AlertDescription>
+              {selectedDataAlert || t("page.marketData.noIndexesForCountry", { country: selectedRegion.toUpperCase() })}
+            </AlertDescription>
           </Alert>
         ) : (
           <div className="space-y-6">
