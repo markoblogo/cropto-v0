@@ -98,6 +98,11 @@ export interface IStorage {
   listFeedback(): Promise<Feedback[]>;
   updateFeedback(id: string, updates: Partial<Feedback>): Promise<Feedback>;
   createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent>;
+  writeAuditEvent(input: {
+    event: string;
+    userId: string | null;
+    metadata?: Record<string, unknown>;
+  }): Promise<AnalyticsEvent>;
   getAppSetting(key: string): Promise<AppSetting | undefined>;
   upsertAppSetting(key: string, value: string): Promise<AppSetting>;
   // Partner Organizations
@@ -1088,6 +1093,19 @@ export class DatabaseStorage implements IStorage {
       .values(event)
       .returning();
     return created;
+  }
+
+  async writeAuditEvent(input: {
+    event: string;
+    userId: string | null;
+    metadata?: Record<string, unknown>;
+  }): Promise<AnalyticsEvent> {
+    return this.createAnalyticsEvent({
+      eventName: input.event,
+      userId: input.userId ?? undefined,
+      payload: input.metadata ? JSON.stringify(input.metadata) : null,
+      sessionId: null,
+    });
   }
 
   async getAppSetting(key: string): Promise<AppSetting | undefined> {

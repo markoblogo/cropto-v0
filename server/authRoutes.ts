@@ -20,7 +20,7 @@ import { nonces } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { storage } from './storage';
 import { emailService } from './utils/emailMock';
-import { isSupabaseConfigured, getSupabaseClient } from './db/supabase';
+import { isSupabaseConfigured, getSupabaseClient, updateUserSupabase } from './db/supabase';
 
 const router = Router();
 const EMAIL_VERIFY_TOKEN_PREFIX = "email_verify_token:";
@@ -263,7 +263,7 @@ router.post("/bootstrap-admin", async (req, res) => {
     let userId: string | null = null;
     if (existing && existing.length > 0) {
       userId = String((existing[0] as any).id || "");
-      await client.from("users").update({ password_hash: passwordHash, role } as any).ilike("email", email);
+      await updateUserSupabase(email, { password_hash: passwordHash, role } as any);
     } else {
       userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       await client.from("users").insert({

@@ -11,7 +11,7 @@ interface EmailMessage {
 
 class EmailMockService {
   private logsDir: string;
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: any | null = null;
   private fromAddress: string | null = null;
 
   constructor() {

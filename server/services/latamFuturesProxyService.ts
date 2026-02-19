@@ -132,6 +132,8 @@ export async function fetchLatamFuturesProxyPrices(): Promise<IgcPrice[]> {
   const asOfDefault = new Date().toISOString().slice(0, 10);
   const out: IgcPrice[] = [];
   for (const row of rows) {
+    if (!["US", "BR", "AR"].includes(row.country)) continue;
+    const country = row.country as IgcPrice["country"];
     let usdPerTon = 0;
     if (row.unit === "usd_per_ton") {
       usdPerTon = Number(row.price.toFixed(2));
@@ -146,7 +148,7 @@ export async function fetchLatamFuturesProxyPrices(): Promise<IgcPrice[]> {
     if (!(usdPerTon > 0)) continue;
     out.push({
       commodity: row.commodity,
-      country: row.country,
+      country,
       label: row.basis,
       asOfDate: row.asOfDate || asOfDefault,
       priceUsdPerTon: usdPerTon,
