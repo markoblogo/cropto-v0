@@ -84,6 +84,8 @@ async function main() {
       '010_add_margin_fields.sql',
       '011_add_margin_call_fields.sql',
       '009_waitlist_signups.sql',
+      '011_market_price_ingestion.sql',
+      '012_ingestion_fx_and_identity.sql',
       '013_extend_user_role_broker.sql',
     ];
 
@@ -106,4 +108,3 @@ main().catch((error) => {
   console.error('Unexpected error:', error);
   process.exit(1);
 });
-

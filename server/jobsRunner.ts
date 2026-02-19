@@ -5,6 +5,8 @@ import { initSentry } from "./utils/sentry";
 import { startPoller as startExternalIndexPoller } from "./jobs/igcPoller";
 import { startPoller as startTelegramBotPoller } from "./jobs/telegramPoller";
 import { runScraper as runTelegramScraper } from "./jobs/telegramScraper";
+import { startMarketIngestionScheduler } from "./ingestion/scheduler/marketIngestionJob";
+import { startFxIngestionScheduler } from "./ingestion/scheduler/fxIngestionJob";
 
 function startHealthServer() {
   const app = express();
@@ -41,6 +43,10 @@ async function startJobs() {
   // This may use headless browsing depending on the enabled sources. It should run
   // in the jobs service (not in web) to avoid destabilizing the HTTP server.
   startExternalIndexPoller();
+
+  // New multi-source market ingestion with primary/fallback strategy.
+  startFxIngestionScheduler();
+  startMarketIngestionScheduler();
 }
 
 startHealthServer();
@@ -48,4 +54,3 @@ startJobs().catch((error) => {
   console.error("[jobs] Failed to start jobs:", error?.message || error);
   process.exit(1);
 });
-

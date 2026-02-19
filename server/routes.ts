@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, marketPriceSourceStatus, marketPriceFetchLog, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte, inArray } from "drizzle-orm";
@@ -43,6 +43,7 @@ import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type Mar
 import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 import { getSourceDescriptor } from "./services/sourceCatalog";
 import { findSpreadSpec } from "./services/specRegistry";
+import { MARKET_COMMODITY_CONFIG } from "./ingestion/config";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -1821,6 +1822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/market-dashboard - Market dashboard view by country (UA, BR, AR, US)
   app.get("/api/market-dashboard", async (req, res) => {
     try {
+      const debugSources = req.query.debugSources === "1" || req.query.debugSources === "true";
       // Helper function to extract commodity name and grade from index name
       function extractCommodityAndGrade(indexName: string): { commodity: string; grade: string | null } {
         const lower = indexName.toLowerCase();
@@ -1945,7 +1947,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             price.source === "IGC" ||
             price.source === "USDA_AMS" ||
             price.source === "BARCHART_USDA" ||
-            price.source === "FUTURES_PROXY";
+            price.source === "FUTURES_PROXY" ||
+            price.source === "CLAL" ||
+            price.source === "CLAL" ||
+            price.source === "GRAINSPRICES" ||
+            price.source === "FSGRAIN" ||
+            price.source === "BCR" ||
+            price.source === "COMMODITY3";
           const isExternalRecord = hasCountry && countryMatches && sourceMatches;
           
           // Debug log for IGC records
@@ -1962,7 +1970,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // IGC mapping stays strict for known commodity mappings.
               // New commodities (not mapped yet) are allowed through to expand catalog coverage.
               if (price.source === "IGC") {
-                const preferredLabel = IGC_SERIES_MAPPING[country]?.[commodity];
+                const byCountry = IGC_SERIES_MAPPING[country] as Record<string, string> | undefined;
+                const preferredLabel = byCountry?.[commodity];
                 if (preferredLabel && !sourceLabelMatches(preferredLabel, label)) {
                   continue;
                 }
@@ -2012,6 +2021,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 sourceType: sourceDescriptor.sourceType,
                 usagePolicy: sourceDescriptor.usagePolicy,
                 visibility: sourceDescriptor.visibility,
+                fetchedAt: typeof metaObj.fetchedAt === "string" ? metaObj.fetchedAt : new Date(price.date).toISOString(),
+                provider: typeof metaObj.provider === "string" ? metaObj.provider : String(price.source || "manual"),
+                channel: typeof metaObj.channel === "string" ? metaObj.channel : "HTML_PAGE",
+                rawCommodity: typeof metaObj.rawCommodity === "string" ? metaObj.rawCommodity : commodity,
+                category: (metaObj.category || "other") as "grain" | "oilseed" | "other",
+                rawPrice: typeof metaObj.priceRaw === "number" ? metaObj.priceRaw : undefined,
+                rawUnit: typeof metaObj.rawUnit === "string" ? metaObj.rawUnit : undefined,
+                rawCurrency: typeof metaObj.rawCurrency === "string" ? metaObj.rawCurrency : undefined,
+                rawToUsdFxRate:
+                  typeof metaObj.rawToUsdFxRate === "number" ? metaObj.rawToUsdFxRate : undefined,
+                conversionNotes: typeof metaObj.conversionNotes === "string" ? metaObj.conversionNotes : undefined,
               };
               if (price.annualChangePct !== null && price.annualChangePct !== undefined) {
                 result.annualChange = parseFloat(price.annualChangePct.toString());
@@ -2084,6 +2104,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 sourceType: descriptor.sourceType,
                 usagePolicy: descriptor.usagePolicy,
                 visibility: descriptor.visibility,
+                fetchedAt: typeof meta.fetchedAt === "string" ? meta.fetchedAt : new Date(price.date).toISOString(),
+                provider: typeof meta.provider === "string" ? meta.provider : detectedSource,
+                channel: typeof meta.channel === "string" ? meta.channel : "HTML_PAGE",
+                rawCommodity: typeof meta.rawCommodity === "string" ? meta.rawCommodity : commodity,
+                category: (meta.category || "other") as "grain" | "oilseed" | "other",
+                rawPrice: typeof meta.priceRaw === "number" ? meta.priceRaw : undefined,
+                rawUnit: typeof meta.rawUnit === "string" ? meta.rawUnit : undefined,
+                rawCurrency: typeof meta.rawCurrency === "string" ? meta.rawCurrency : undefined,
+                rawToUsdFxRate: typeof meta.rawToUsdFxRate === "number" ? meta.rawToUsdFxRate : undefined,
+                conversionNotes: typeof meta.conversionNotes === "string" ? meta.conversionNotes : undefined,
               });
             }
           }
@@ -2101,11 +2131,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const failoverEvents: Array<Record<string, unknown>> = [];
 
         const sourceOrderByCountry: Record<"BR" | "AR" | "US", string[]> = {
-          BR: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
-          AR: ["IGC", "FUTURES_PROXY", "manual", "spike_telegram", "mock"],
-          US: ["USDA_AMS", "BARCHART_USDA", "IGC", "manual", "spike_telegram", "mock"],
+          BR: ["CLAL", "COMMODITY3", "FUTURES_PROXY", "GRAINSPRICES", "manual", "spike_telegram", "mock"],
+          AR: ["CLAL", "BCR", "FUTURES_PROXY", "GRAINSPRICES", "manual", "spike_telegram", "mock"],
+          US: ["CLAL", "USDA_AMS", "FSGRAIN", "BARCHART_USDA", "GRAINSPRICES", "IGC", "manual", "spike_telegram", "mock"],
         };
         const maxAgeDaysBySource: Record<string, number> = {
+          CLAL: 2,
+          GRAINSPRICES: 2,
+          FSGRAIN: 2,
+          BCR: 2,
+          COMMODITY3: 2,
           USDA_AMS: 2,
           BARCHART_USDA: 2,
           IGC: 2,
@@ -2463,6 +2498,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Market Dashboard] Final AR sources:`, finalArData.map(d => d.source));
       console.log(`[Market Dashboard] Final US sources:`, finalUsData.map(d => d.source));
 
+      let debugSourceStatus: any[] | undefined = undefined;
+      if (debugSources) {
+        try {
+          debugSourceStatus = await db
+            .select()
+            .from(marketPriceSourceStatus)
+            .where(or(eq(marketPriceSourceStatus.market, "US"), eq(marketPriceSourceStatus.market, "AR"), eq(marketPriceSourceStatus.market, "BR")))
+            .orderBy(desc(marketPriceSourceStatus.updatedAt));
+        } catch (error: any) {
+          debugSourceStatus = [{ error: error?.message || "failed_to_load_debug_source_status" }];
+        }
+      }
+
+      const marketHealth = (() => {
+        const mk = (items: MarketIndexDto[]) => {
+          if (!items || items.length === 0) {
+            return { status: "FAIL", lastSuccessfulUpdate: null, source: null };
+          }
+          const sorted = [...items].sort((a, b) => new Date(b.asOf).getTime() - new Date(a.asOf).getTime());
+          const latest = sorted[0];
+          const ageDays = Math.floor((Date.now() - new Date(latest.asOf).getTime()) / (1000 * 60 * 60 * 24));
+          const status = ageDays <= 1 ? "OK" : ageDays <= 3 ? "WARN" : "FAIL";
+          const provider = (latest as any).provider || latest.source;
+          const channel = (latest as any).channel || "HTML_PAGE";
+          return {
+            status,
+            lastSuccessfulUpdate: latest.asOf,
+            source: `${provider}(${channel})`,
+          };
+        };
+        return {
+          ua: mk(uaDataWithSeriesKey),
+          br: mk(finalBrData),
+          ar: mk(finalArData),
+          us: mk(finalUsData),
+        };
+      })();
+
       res.json({
         ua: uaDataWithSeriesKey.length > 0 ? uaDataWithSeriesKey : withSeriesKey([
           // Fallback sample data if no real data available
@@ -2484,10 +2557,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ar: finalArData,
         us: finalUsData,
         seriesStatus,
+        marketHealth,
+        ...(debugSources ? { debugSources: debugSourceStatus || [] } : {}),
       });
     } catch (error: any) {
       console.error("Error fetching market dashboard:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/market-ingestion/sources", async (_req, res) => {
+    try {
+      const activeProviders = new Set(
+        MARKET_COMMODITY_CONFIG.flatMap((cfg) => [cfg.primaryProvider, ...cfg.fallbackProviders]),
+      );
+
+      const statusRows = await db.select().from(marketPriceSourceStatus);
+      const successMap = new Map<string, { provider: string; channel: string; layer: "primary" | "fallback"; successCount: number }>();
+
+      for (const row of statusRows) {
+        const provider = row.provider;
+        if (!provider || !activeProviders.has(provider)) continue;
+        const layer = (row.sourceLayer || "primary") as "primary" | "fallback";
+        const key = `${provider}:${row.channel || "HTML_PAGE"}:${layer}`;
+        const prev = successMap.get(key);
+        const nextCount = (prev?.successCount || 0) + (row.lastSuccessAt ? 1 : 0);
+        successMap.set(key, {
+          provider,
+          channel: row.channel || "HTML_PAGE",
+          layer,
+          successCount: nextCount,
+        });
+      }
+
+      const allConfigured = Array.from(activeProviders).map((provider) => {
+        const primaryChannel = provider === "CLAL" ? "TESEO" : "HTML_PAGE";
+        const hasPrimary = Array.from(successMap.values()).some((v) => v.provider === provider && v.layer === "primary");
+        const hasFallback = Array.from(successMap.values()).some((v) => v.provider === provider && v.layer === "fallback");
+        return {
+          provider,
+          channel: primaryChannel,
+          enabled: true,
+          hasSuccess: hasPrimary || hasFallback,
+          hasPrimary,
+          hasFallback,
+        };
+      });
+
+      const primary = allConfigured.filter((s) => s.hasPrimary || s.provider === "CLAL");
+      const fallback = allConfigured.filter((s) => s.provider !== "CLAL" && s.enabled);
+
+      res.json({
+        primary,
+        fallback,
+        statement:
+          "Prices are refreshed daily. If primary feed is unavailable, the system falls back to secondary sources. All prices are normalized to USD/t.",
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "failed_to_load_sources" });
     }
   });
 
@@ -5043,7 +5170,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             eq(indexPrices.source, "IGC"),
             eq(indexPrices.source, "USDA_AMS"),
             eq(indexPrices.source, "BARCHART_USDA"),
-            eq(indexPrices.source, "FUTURES_PROXY")
+            eq(indexPrices.source, "FUTURES_PROXY"),
+            eq(indexPrices.source, "CLAL"),
+            eq(indexPrices.source, "CLAL"),
+            eq(indexPrices.source, "GRAINSPRICES"),
+            eq(indexPrices.source, "FSGRAIN"),
+            eq(indexPrices.source, "BCR"),
+            eq(indexPrices.source, "COMMODITY3")
           )
         )
         .orderBy(desc(indexPrices.date))
@@ -5239,6 +5372,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error toggling parser source:", error);
       res.status(500).json({ error: error.message || "Failed to toggle parser source" });
+    }
+  });
+
+  app.get("/api/admin/market-ingestion/status", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const limitRaw = Number.parseInt(String(req.query?.limit || "50"), 10);
+      const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 200) : 50;
+
+      const statusRows = await db
+        .select()
+        .from(marketPriceSourceStatus)
+        .orderBy(desc(marketPriceSourceStatus.updatedAt))
+        .limit(limit);
+
+      const fetchRows = await db
+        .select()
+        .from(marketPriceFetchLog)
+        .orderBy(desc(marketPriceFetchLog.createdAt))
+        .limit(limit);
+
+      res.json({ statusRows, fetchRows });
+    } catch (error: any) {
+      console.error("Error fetching market ingestion status:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch market ingestion status" });
+    }
+  });
+
+  app.get("/api/admin/market-ingestion/health", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const statusRows = await db.select().from(marketPriceSourceStatus);
+      const grouped = new Map<string, typeof statusRows>();
+      for (const row of statusRows) {
+        const key = row.market;
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key)!.push(row);
+      }
+
+      const latestUa = await db
+        .select()
+        .from(indexPrices)
+        .where(eq(indexPrices.country, "UA"))
+        .orderBy(desc(indexPrices.asOfDate), desc(indexPrices.date))
+        .limit(1);
+
+      const calcMarket = (rows: typeof statusRows) => {
+        if (!rows || rows.length === 0) return { status: "FAIL", lastSuccessAt: null, reason: "no_source_rows", lastErrors: [] as string[] };
+        const successRows = rows.filter((r) => r.lastSuccessAt);
+        if (successRows.length === 0) {
+          return {
+            status: "FAIL",
+            lastSuccessAt: null,
+            reason: "no_success",
+            lastErrors: rows.map((r) => r.lastError).filter(Boolean) as string[],
+          };
+        }
+        const latest = successRows.sort((a, b) => new Date(b.lastSuccessAt!).getTime() - new Date(a.lastSuccessAt!).getTime())[0];
+        const ageDays = Math.floor((Date.now() - new Date(latest.lastSuccessAt!).getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          status: ageDays <= 1 ? "OK" : ageDays <= 3 ? "WARN" : "FAIL",
+          lastSuccessAt: latest.lastSuccessAt,
+          reason: ageDays <= 1 ? "recent_success" : ageDays <= 3 ? "stale_success" : "old_success",
+          source: `${latest.provider}(${latest.channel || "HTML_PAGE"})`,
+          lastErrors: rows.map((r) => r.lastError).filter(Boolean).slice(0, 10) as string[],
+        };
+      };
+
+      const uaAsOf = latestUa[0]?.asOfDate || latestUa[0]?.date || null;
+      const uaAge = uaAsOf ? Math.floor((Date.now() - new Date(uaAsOf).getTime()) / (1000 * 60 * 60 * 24)) : 999;
+      const uaHealth = {
+        status: uaAge <= 1 ? "OK" : uaAge <= 3 ? "WARN" : "FAIL",
+        lastSuccessAt: uaAsOf ? new Date(uaAsOf).toISOString() : null,
+        source: latestUa[0]?.source || "manual",
+        reason: uaAsOf ? "latest_ua_index_price" : "no_ua_data",
+        lastErrors: [] as string[],
+      };
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        markets: {
+          UA: uaHealth,
+          US: calcMarket(grouped.get("US") || []),
+          AR: calcMarket(grouped.get("AR") || []),
+          BR: calcMarket(grouped.get("BR") || []),
+        },
+      });
+    } catch (error: any) {
+      console.error("Error fetching market ingestion health:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch market ingestion health" });
     }
   });
 

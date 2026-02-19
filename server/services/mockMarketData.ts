@@ -23,6 +23,11 @@ export interface MarketIndexDto {
     | "USDA_AMS"
     | "BARCHART_USDA"
     | "FUTURES_PROXY"
+    | "CLAL"
+    | "GRAINSPRICES"
+    | "FSGRAIN"
+    | "BCR"
+    | "COMMODITY3"
     | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
   dataStatus?: "fresh" | "stale" | "no_recent";
@@ -32,6 +37,16 @@ export interface MarketIndexDto {
   sourceType?: "official_api" | "official_file" | "public_html" | "editorial_article" | "internal";
   usagePolicy?: "open" | "restricted" | "unknown";
   visibility?: "public" | "internal_only";
+  fetchedAt?: string;
+  provider?: string;
+  channel?: string;
+  rawCommodity?: string;
+  category?: "grain" | "oilseed" | "other";
+  rawPrice?: number;
+  rawUnit?: string;
+  rawCurrency?: string;
+  rawToUsdFxRate?: number;
+  conversionNotes?: string;
   // Optional IGC-specific fields
   dailyChange?: number; // from dailyChangePct (alias for change24h, for backward compatibility)
   annualChange?: number; // from annualChangePct

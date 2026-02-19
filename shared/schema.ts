@@ -184,6 +184,72 @@ export const indexPrices = pgTable("index_prices", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const marketPrices = pgTable("market_prices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  market: text("market").notNull(), // US | AR | BR
+  commodity: text("commodity").notNull(),
+  category: text("category").notNull().default("other"), // grain | oilseed | other
+  variant: text("variant"),
+  rawCommodity: text("raw_commodity"),
+  basis: text("basis"),
+  unit: text("unit").notNull(), // canonical unit: USD/t
+  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
+  priceUsdPerTon: decimal("price_usd_per_ton", { precision: 18, scale: 8 }),
+  priceRaw: decimal("price_raw", { precision: 18, scale: 8 }),
+  rawUnit: text("raw_unit"),
+  rawCurrency: text("raw_currency"),
+  rawToUsdFxRate: decimal("raw_to_usd_fx_rate", { precision: 20, scale: 10 }),
+  conversionNotes: text("conversion_notes"),
+  asOf: timestamp("as_of").notNull(),
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+  provider: text("provider").notNull(),
+  channel: text("channel").notNull().default("HTML_PAGE"),
+  sourceUrl: text("source_url").notNull(),
+  sourceLayer: text("source_layer").notNull().default("primary"), // primary | fallback
+  confidence: decimal("confidence", { precision: 5, scale: 4 }),
+  freshnessStatus: text("freshness_status").notNull().default("fresh"), // fresh | stale | failed
+  needsReview: text("needs_review", { enum: ["true", "false"] }).notNull().default("false"),
+  rawMeta: text("raw_meta"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const marketPriceFetchLog = pgTable("market_price_fetch_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  provider: text("provider").notNull(),
+  channel: text("channel").notNull().default("HTML_PAGE"),
+  market: text("market").notNull(),
+  commodity: text("commodity").notNull(),
+  sourceUrl: text("source_url").notNull(),
+  sourceLayer: text("source_layer").notNull().default("primary"),
+  status: text("status").notNull(), // ok | failed
+  statusCode: integer("status_code"),
+  latencyMs: integer("latency_ms"),
+  pointCount: integer("point_count").notNull().default(0),
+  confidence: decimal("confidence", { precision: 5, scale: 4 }),
+  asOf: timestamp("as_of"),
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const marketPriceSourceStatus = pgTable("market_price_source_status", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  provider: text("provider").notNull(),
+  channel: text("channel").notNull().default("HTML_PAGE"),
+  market: text("market").notNull(),
+  commodity: text("commodity").notNull(),
+  sourceLayer: text("source_layer").notNull().default("primary"),
+  sourceUrl: text("source_url").notNull(),
+  freshnessStatus: text("freshness_status").notNull().default("failed"), // fresh | stale | failed
+  lastFetchedAt: timestamp("last_fetched_at"),
+  lastSuccessAt: timestamp("last_success_at"),
+  lastAsOf: timestamp("last_as_of"),
+  lastLatencyMs: integer("last_latency_ms"),
+  confidence: decimal("confidence", { precision: 5, scale: 4 }),
+  lastError: text("last_error"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const commodityIndexPrices = pgTable("commodity_index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   indexId: varchar("index_id").notNull().references(() => indexes.id),
@@ -471,6 +537,22 @@ export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
   createdAt: true,
 });
 
+export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMarketPriceFetchLogSchema = createInsertSchema(marketPriceFetchLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const upsertMarketPriceSourceStatusSchema = createInsertSchema(marketPriceSourceStatus).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export const insertIndexSchema = createInsertSchema(indexes).omit({
   id: true,
   createdAt: true,
@@ -564,6 +646,12 @@ export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type AppSetting = typeof appSettings.$inferSelect;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
+export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;
+export type MarketPrice = typeof marketPrices.$inferSelect;
+export type InsertMarketPriceFetchLog = z.infer<typeof insertMarketPriceFetchLogSchema>;
+export type MarketPriceFetchLog = typeof marketPriceFetchLog.$inferSelect;
+export type UpsertMarketPriceSourceStatus = z.infer<typeof upsertMarketPriceSourceStatusSchema>;
+export type MarketPriceSourceStatus = typeof marketPriceSourceStatus.$inferSelect;
 export type InsertIndex = z.infer<typeof insertIndexSchema>;
 export type Index = typeof indexes.$inferSelect;
 export type InsertCommodityIndexPrice = z.infer<typeof insertCommodityIndexPriceSchema>;
