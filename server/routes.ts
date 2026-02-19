@@ -44,6 +44,9 @@ import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 import { getSourceDescriptor } from "./services/sourceCatalog";
 import { findSpreadSpec } from "./services/specRegistry";
 import { MARKET_COMMODITY_CONFIG } from "./ingestion/config";
+import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingestion/scheduler/marketIngestionJob";
+import { providerDefinitionsFor } from "./ingestion/config";
+import { fetchAndParseProvider } from "./ingestion/sources/common";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -288,6 +291,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health check must be available even if background jobs (pollers/scrapers) are failing.
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true });
+  });
+  app.get("/api/version", (_req, res) => {
+    res.json({
+      gitSha:
+        process.env.RAILWAY_GIT_COMMIT_SHA ||
+        process.env.GIT_COMMIT_SHA ||
+        process.env.VERCEL_GIT_COMMIT_SHA ||
+        "unknown",
+      buildTime: process.env.BUILD_TIME || null,
+      env: process.env.NODE_ENV || "development",
+    });
   });
 
   // Register auth routes
@@ -2483,8 +2497,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           seriesKey: `${row.country}:${String(row.commodity || "").toLowerCase()}:${row.basis}`,
         }));
 
-      const allowBrArMockFallback = process.env.ALLOW_BR_AR_MOCK_FALLBACK !== "false";
-      const allowMockFallback = !marketIngestionEnabled || allowBrArMockFallback;
+      const allowDemoData = process.env.ALLOW_DEMO_DATA === "1";
+      const isProdEnv = (process.env.NODE_ENV || "development") === "production";
+      const allowMockFallback = !isProdEnv || allowDemoData || !marketIngestionEnabled;
       const finalBrData = withSeriesKey(
         brDataNoMock.length > 0
           ? brDataNoMock
@@ -2703,6 +2718,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           us: mk(finalUsData),
         };
       })();
+      const dataAlerts = {
+        br:
+          finalBrData.length === 0
+            ? marketIngestionEnabled
+              ? "Ingestion enabled but no BR market data produced yet."
+              : "Market ingestion is disabled."
+            : null,
+        ar:
+          finalArData.length === 0
+            ? marketIngestionEnabled
+              ? "Ingestion enabled but no AR market data produced yet."
+              : "Market ingestion is disabled."
+            : null,
+        us:
+          finalUsData.length === 0
+            ? marketIngestionEnabled
+              ? "Ingestion enabled but no US market data produced yet."
+              : "Market ingestion is disabled."
+            : null,
+      };
 
       res.json({
         ua: uaDataWithSeriesKey.length > 0 ? uaDataWithSeriesKey : withSeriesKey([
@@ -2726,6 +2761,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         us: finalUsData,
         seriesStatus,
         marketHealth,
+        dataAlerts,
         ...(debugSources ? { debugSources: debugSourceStatus || [] } : {}),
       });
     } catch (error: any) {
@@ -5638,6 +5674,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching market ingestion health:", error);
       res.status(500).json({ error: error.message || "Failed to fetch market ingestion health" });
+    }
+  });
+
+  app.get("/api/admin/market-ingestion/runtime", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+      const runtime = getMarketIngestionRuntimeState();
+      const latestFetch = await db
+        .select()
+        .from(marketPriceFetchLog)
+        .orderBy(desc(marketPriceFetchLog.createdAt))
+        .limit(20);
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        ingestion: runtime,
+        env: {
+          nodeEnv: process.env.NODE_ENV || "development",
+          marketIngestionEnabled: process.env.ENABLE_MARKET_INGESTION !== "false",
+          allowDemoData: process.env.ALLOW_DEMO_DATA === "1",
+          disablePrimary: process.env.INGESTION_DISABLE_PRIMARY === "1",
+          disabledVendors: (process.env.INGESTION_DISABLE_VENDOR || "")
+            .split(",")
+            .map((v) => v.trim().toUpperCase())
+            .filter(Boolean),
+        },
+        lastFetchAttempts: latestFetch.map((row) => ({
+          provider: row.provider,
+          channel: row.channel,
+          market: row.market,
+          commodity: row.commodity,
+          sourceLayer: row.sourceLayer,
+          status: row.status,
+          statusCode: row.statusCode,
+          latencyMs: row.latencyMs,
+          pointCount: row.pointCount,
+          asOf: row.asOf ? new Date(row.asOf).toISOString() : null,
+          createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : null,
+          error: row.error,
+        })),
+      });
+    } catch (error: any) {
+      console.error("Error fetching market ingestion runtime:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch market ingestion runtime" });
+    }
+  });
+
+  app.get("/api/admin/market-ingestion/db-check", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const tableNames = ["market_prices", "market_price_fetch_log", "market_price_source_status", "fx_rates"];
+      const tableExists = new Map<string, boolean>();
+      for (const table of tableNames) {
+        const rows = await db.execute(sql`
+          select exists (
+            select 1
+            from information_schema.tables
+            where table_schema = 'public' and table_name = ${table}
+          ) as exists
+        `);
+        const exists = Boolean((rows as any)?.rows?.[0]?.exists);
+        tableExists.set(table, exists);
+      }
+
+      const counts = {
+        marketPrices: tableExists.get("market_prices")
+          ? Number((await db.execute(sql`select count(*)::int as c from market_prices`) as any)?.rows?.[0]?.c || 0)
+          : 0,
+        marketPriceFetchLog: tableExists.get("market_price_fetch_log")
+          ? Number((await db.execute(sql`select count(*)::int as c from market_price_fetch_log`) as any)?.rows?.[0]?.c || 0)
+          : 0,
+        marketPriceSourceStatus: tableExists.get("market_price_source_status")
+          ? Number((await db.execute(sql`select count(*)::int as c from market_price_source_status`) as any)?.rows?.[0]?.c || 0)
+          : 0,
+        fxRates: tableExists.get("fx_rates")
+          ? Number((await db.execute(sql`select count(*)::int as c from fx_rates`) as any)?.rows?.[0]?.c || 0)
+          : 0,
+      };
+
+      const latestByMarket = tableExists.get("market_prices")
+        ? (await db.execute(sql`
+            select
+              market,
+              commodity,
+              basis,
+              max(as_of) as max_as_of,
+              max(fetched_at) as max_fetched_at
+            from market_prices
+            group by market, commodity, basis
+            order by max_fetched_at desc
+            limit 100
+          `) as any)?.rows || []
+        : [];
+
+      const recentFetch = tableExists.get("market_price_fetch_log")
+        ? (await db.execute(sql`
+            select
+              provider,
+              channel,
+              market,
+              commodity,
+              source_layer,
+              status,
+              status_code,
+              latency_ms,
+              point_count,
+              as_of,
+              created_at,
+              error
+            from market_price_fetch_log
+            order by created_at desc
+            limit 20
+          `) as any)?.rows || []
+        : [];
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        tables: Object.fromEntries(tableNames.map((name) => [name, tableExists.get(name) || false])),
+        counts,
+        latestByMarket,
+        recentFetch,
+      });
+    } catch (error: any) {
+      console.error("Error fetching market ingestion db-check:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch market ingestion db-check" });
+    }
+  });
+
+  app.post("/api/admin/market-ingestion/run-now", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+      const marketRaw = String(req.query.market || "").toUpperCase();
+      const markets = marketRaw && ["US", "AR", "BR"].includes(marketRaw) ? [marketRaw as "US" | "AR" | "BR"] : undefined;
+      const result = await runMarketIngestionOnce({ markets });
+      res.json({
+        ok: true,
+        triggeredAt: new Date().toISOString(),
+        markets: markets || ["US", "AR", "BR"],
+        result,
+      });
+    } catch (error: any) {
+      console.error("Error running market ingestion now:", error);
+      res.status(500).json({ error: error.message || "Failed to run market ingestion" });
+    }
+  });
+
+  app.get("/api/admin/market-ingestion/probe", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await findUserById(req.user!.id);
+      if (!hasBrokerPermissions(user?.role)) {
+        return res.status(403).json({ error: "Forbidden: broker role required" });
+      }
+
+      const vendor = String(req.query.vendor || "").toUpperCase();
+      const market = String(req.query.market || "").toUpperCase() as "US" | "AR" | "BR";
+      if (!vendor || !["US", "AR", "BR"].includes(market)) {
+        return res.status(400).json({ error: "vendor and market query params are required" });
+      }
+
+      const defs = providerDefinitionsFor(vendor, market);
+      if (defs.length === 0) {
+        return res.status(404).json({ error: "No provider definitions found", vendor, market });
+      }
+
+      const target = defs[0];
+      const parsed = await fetchAndParseProvider(target, "primary");
+      res.json({
+        vendor,
+        market,
+        url: target.url,
+        statusCode: parsed.statusCode,
+        latencyMs: parsed.latencyMs,
+        confidence: parsed.confidence,
+        hasDate: parsed.hasDate,
+        hasHistory: parsed.hasHistory,
+        updateSignal: parsed.updateSignal,
+        pointCount: parsed.points.length,
+        sample: parsed.points.slice(0, 3).map((point) => ({
+          market: point.market,
+          commodity: point.commodity,
+          basis: point.basis,
+          asOf: point.asOf,
+          fetchedAt: point.fetchedAt,
+          price: point.price,
+          source: point.source.vendor,
+          channel: point.source.channel,
+        })),
+        notes: parsed.notes,
+      });
+    } catch (error: any) {
+      console.error("Error probing market ingestion source:", error);
+      res.status(500).json({ error: error.message || "Failed to probe source" });
     }
   });
 

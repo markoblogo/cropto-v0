@@ -10,6 +10,39 @@ const ENABLED = process.env.ENABLE_MARKET_INGESTION !== "false";
 const DISABLE_PRIMARY = process.env.INGESTION_DISABLE_PRIMARY === "1";
 let timer: NodeJS.Timeout | null = null;
 
+type RuntimeState = {
+  enabled: boolean;
+  intervalHours: number;
+  schedulerRunning: boolean;
+  startedAt: string | null;
+  lastRunAt: string | null;
+  lastSuccessAt: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
+  lastUpserted: number;
+  lastFailedPrimaries: number;
+  disablePrimary: boolean;
+  disabledVendors: string[];
+};
+
+const runtimeState: RuntimeState = {
+  enabled: ENABLED,
+  intervalHours: INTERVAL_HOURS,
+  schedulerRunning: false,
+  startedAt: null,
+  lastRunAt: null,
+  lastSuccessAt: null,
+  lastErrorAt: null,
+  lastErrorMessage: null,
+  lastUpserted: 0,
+  lastFailedPrimaries: 0,
+  disablePrimary: DISABLE_PRIMARY,
+  disabledVendors: (process.env.INGESTION_DISABLE_VENDOR || "")
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean),
+};
+
 function isFresh(asOf: string | null): boolean {
   if (!asOf) return false;
   const ts = new Date(`${asOf}T00:00:00.000Z`).getTime();
@@ -185,6 +218,7 @@ async function tryProvider(
 }
 
 export async function runMarketIngestionOnce(options?: { markets?: IngestionMarket[]; historyDays?: number }): Promise<{ upserted: number; failedPrimaries: number }> {
+  runtimeState.lastRunAt = new Date().toISOString();
   await ensureIngestionTables();
   let upserted = 0;
   let failedPrimaries = 0;
@@ -217,7 +251,12 @@ export async function runMarketIngestionOnce(options?: { markets?: IngestionMark
     }
   }
 
-  console.log(`[MarketIngestion] completed upserted=${upserted} failedPrimaries=${failedPrimaries}`);
+  runtimeState.lastUpserted = upserted;
+  runtimeState.lastFailedPrimaries = failedPrimaries;
+  runtimeState.lastSuccessAt = new Date().toISOString();
+  runtimeState.lastErrorAt = null;
+  runtimeState.lastErrorMessage = null;
+  console.log(`[MarketIngestion] tick completed upserted=${upserted} failedPrimaries=${failedPrimaries}`);
   return { upserted, failedPrimaries };
 }
 
@@ -229,14 +268,20 @@ export function startMarketIngestionScheduler(): void {
   if (timer) return;
 
   const intervalMs = Math.max(1, INTERVAL_HOURS) * 60 * 60 * 1000;
+  runtimeState.schedulerRunning = true;
+  runtimeState.startedAt = new Date().toISOString();
   console.log(`[MarketIngestion] scheduler started interval=${INTERVAL_HOURS}h`);
 
   runMarketIngestionOnce().catch((error) => {
+    runtimeState.lastErrorAt = new Date().toISOString();
+    runtimeState.lastErrorMessage = error?.message || String(error);
     console.error("[MarketIngestion] initial run failed:", error?.message || error);
   });
 
   timer = setInterval(() => {
     runMarketIngestionOnce().catch((error) => {
+      runtimeState.lastErrorAt = new Date().toISOString();
+      runtimeState.lastErrorMessage = error?.message || String(error);
       console.error("[MarketIngestion] scheduled run failed:", error?.message || error);
     });
   }, intervalMs);
@@ -246,4 +291,18 @@ export function stopMarketIngestionScheduler(): void {
   if (!timer) return;
   clearInterval(timer);
   timer = null;
+  runtimeState.schedulerRunning = false;
+}
+
+export function getMarketIngestionRuntimeState(): RuntimeState {
+  return {
+    ...runtimeState,
+    enabled: ENABLED,
+    intervalHours: INTERVAL_HOURS,
+    disablePrimary: DISABLE_PRIMARY,
+    disabledVendors: (process.env.INGESTION_DISABLE_VENDOR || "")
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean),
+  };
 }
