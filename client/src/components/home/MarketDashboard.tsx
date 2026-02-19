@@ -164,6 +164,7 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               {typeof item.rawToUsdFxRate === "number" ? (
                 <div>fx: {item.rawCurrency || "N/A"} {"->"} USD = {item.rawToUsdFxRate.toFixed(8)}</div>
               ) : null}
+              {item.conversionNotes ? <div>conversion: {item.conversionNotes}</div> : null}
               {item.alternatives && item.alternatives.length > 0 ? (
                 <div>alternatives: {item.alternatives.length}</div>
               ) : null}

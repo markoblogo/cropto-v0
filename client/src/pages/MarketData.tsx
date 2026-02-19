@@ -276,6 +276,7 @@ export default function MarketData() {
                           <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
                           <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
                           <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          <div>conversion: {index.conversionNotes || "n/a"}</div>
                         </div>
                       ) : null}
                     </CardContent>
@@ -324,6 +325,7 @@ export default function MarketData() {
                           <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
                           <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
                           <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          <div>conversion: {index.conversionNotes || "n/a"}</div>
                         </div>
                       ) : null}
                     </CardContent>
@@ -368,13 +370,14 @@ export default function MarketData() {
                         {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
                           <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
                         ) : null}
-                        {debugSources ? (
-                          <div className="text-xs text-muted-foreground space-y-0.5">
-                            <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
-                            <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
-                            <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
-                          </div>
-                        ) : null}
+                      {debugSources ? (
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
+                          <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
+                          <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          <div>conversion: {index.conversionNotes || "n/a"}</div>
+                        </div>
+                      ) : null}
                       </CardContent>
                     </Card>
                   ))}

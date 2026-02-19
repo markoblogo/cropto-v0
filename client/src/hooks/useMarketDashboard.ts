@@ -32,6 +32,7 @@ export interface MarketIndexDto {
   priceStatus?: "fresh" | "stale" | "missing";
   lastFetchStatus?: "ok" | "failed" | "unknown";
   lastFetchError?: string | null;
+  needsReview?: boolean;
   isMockData?: boolean;
   confidence?: "high" | "medium" | "low";
   freshnessDays?: number;
@@ -49,6 +50,7 @@ export interface MarketIndexDto {
   rawCurrency?: string;
   rawToUsdFxRate?: number;
   conversionNotes?: string;
+  invalidReason?: string | null;
   alternatives?: Array<{
     provider: string;
     source: string;
