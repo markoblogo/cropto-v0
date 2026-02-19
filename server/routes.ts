@@ -2387,6 +2387,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
 
+          if (lastKnown && failoverOrder.includes("last_known")) {
+            // Keep the latest real row visible even when very stale.
+            // This prevents silent fallback to mock data and surfaces true provider lineage.
+            selected.push({
+              ...lastKnown,
+              sourceTier: "last_known",
+              isStale: true,
+              dataStatus: "stale",
+              priceStatus: "stale",
+              confidence: "low",
+            });
+            failoverEvents.push({
+              event: "source_using_very_stale_last_known",
+              country,
+              key,
+              from: order[0],
+              lastKnownSource: lastKnown.source,
+              freshnessDays: lastKnownFreshness,
+              graceDays,
+            });
+            continue;
+          }
+
           if (
             lastKnown &&
             failoverOrder.includes("synthetic") &&
@@ -2693,23 +2716,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ar: deriveMarketHealth(finalArData),
         us: deriveMarketHealth(finalUsData),
       };
+      const marketStatusRows = new Map<"BR" | "AR" | "US", number>();
+      for (const row of sourceStatusRows) {
+        const market = row.market as "BR" | "AR" | "US";
+        marketStatusRows.set(market, (marketStatusRows.get(market) || 0) + 1);
+      }
       const dataAlerts = {
         br:
           finalBrData.length === 0
             ? marketIngestionEnabled
-              ? "Ingestion enabled but no BR market data produced yet."
+              ? (marketStatusRows.get("BR") || 0) > 0
+                ? "No BR price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
+                : "Ingestion enabled, but scheduler has not produced BR source status yet."
               : "Market ingestion is disabled."
             : null,
         ar:
           finalArData.length === 0
             ? marketIngestionEnabled
-              ? "Ingestion enabled but no AR market data produced yet."
+              ? (marketStatusRows.get("AR") || 0) > 0
+                ? "No AR price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
+                : "Ingestion enabled, but scheduler has not produced AR source status yet."
               : "Market ingestion is disabled."
             : null,
         us:
           finalUsData.length === 0
             ? marketIngestionEnabled
-              ? "Ingestion enabled but no US market data produced yet."
+              ? (marketStatusRows.get("US") || 0) > 0
+                ? "No US price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
+                : "Ingestion enabled, but scheduler has not produced US source status yet."
               : "Market ingestion is disabled."
             : null,
       };
@@ -5658,7 +5692,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hasBrokerPermissions(user?.role)) {
         return res.status(403).json({ error: "Forbidden: broker role required" });
       }
-      const runtime = getMarketIngestionRuntimeState();
+      const inProcessRuntime = getMarketIngestionRuntimeState();
+      let persistedRuntime: Record<string, unknown> | null = null;
+      try {
+        const runtimeSetting = await db.execute(sql`
+          select value
+          from app_settings
+          where key = 'market_ingestion_runtime'
+          limit 1
+        `);
+        const raw = (runtimeSetting as any)?.rows?.[0]?.value;
+        if (typeof raw === "string") {
+          persistedRuntime = JSON.parse(raw);
+        }
+      } catch {
+        persistedRuntime = null;
+      }
+
+      let dbConnected = true;
+      try {
+        await db.execute(sql`select 1 as ok`);
+      } catch {
+        dbConnected = false;
+      }
+      const tableRows = await db.execute(sql`
+        select table_name
+        from information_schema.tables
+        where table_schema = 'public'
+          and table_name in ('market_prices', 'market_price_fetch_log', 'market_price_source_status')
+      `);
+      const tableSet = new Set<string>(((tableRows as any)?.rows || []).map((r: any) => String(r.table_name)));
+      const dbSchemaOk =
+        tableSet.has("market_prices") &&
+        tableSet.has("market_price_fetch_log") &&
+        tableSet.has("market_price_source_status");
+
+      const latestByMarket = dbSchemaOk
+        ? await db.execute(sql`
+            select
+              market,
+              count(*)::int as total_rows,
+              count(*) filter (where fetched_at >= now() - interval '7 days')::int as rows_7d,
+              max(as_of) as max_as_of,
+              max(fetched_at) as max_fetched_at
+            from market_prices
+            where market in ('US', 'AR', 'BR')
+            group by market
+          `)
+        : ({ rows: [] } as any);
+      const derivedSchedulerRunning = (() => {
+        const lastTick = String(
+          (persistedRuntime?.lastRunAt as string) ||
+            (persistedRuntime?.updatedAt as string) ||
+            inProcessRuntime.lastRunAt ||
+            ""
+        );
+        const ts = Date.parse(lastTick);
+        if (!Number.isFinite(ts)) return false;
+        const intervalMs = Math.max(1, inProcessRuntime.intervalHours) * 60 * 60 * 1000;
+        return Date.now() - ts <= intervalMs * 2;
+      })();
+      const ingestionEnabled = process.env.ENABLE_MARKET_INGESTION !== "false";
+      const disabledReason = !ingestionEnabled
+        ? "ENABLE_MARKET_INGESTION=false"
+        : !dbConnected
+          ? "DATABASE_UNREACHABLE"
+          : !dbSchemaOk
+            ? "DB_SCHEMA_MISSING"
+            : null;
       const latestFetch = await db
         .select()
         .from(marketPriceFetchLog)
@@ -5667,10 +5768,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         generatedAt: new Date().toISOString(),
-        ingestion: runtime,
+        ingestion: {
+          ...inProcessRuntime,
+          ...(persistedRuntime || {}),
+          ingestionEnabled,
+          schedulerRunning: derivedSchedulerRunning,
+          disabledReason,
+        },
+        dbConnected,
+        dbSchemaOk,
+        latestByMarket: (latestByMarket as any)?.rows || [],
         env: {
           nodeEnv: process.env.NODE_ENV || "development",
-          marketIngestionEnabled: process.env.ENABLE_MARKET_INGESTION !== "false",
+          marketIngestionEnabled: ingestionEnabled,
           allowDemoData: process.env.ALLOW_DEMO_DATA === "1",
           disablePrimary: process.env.INGESTION_DISABLE_PRIMARY === "1",
           disabledVendors: (process.env.INGESTION_DISABLE_VENDOR || "")
@@ -5734,6 +5844,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ? Number((await db.execute(sql`select count(*)::int as c from fx_rates`) as any)?.rows?.[0]?.c || 0)
           : 0,
       };
+      const marketSummary = tableExists.get("market_prices")
+        ? (await db.execute(sql`
+            select
+              market,
+              count(*)::int as count_rows,
+              max(as_of) as max_as_of,
+              max(fetched_at) as max_fetched_at,
+              count(*) filter (where fetched_at >= now() - interval '7 days')::int as count_rows_7d
+            from market_prices
+            where market in ('US','AR','BR','UA')
+            group by market
+          `) as any)?.rows || []
+        : [];
 
       const latestByMarket = tableExists.get("market_prices")
         ? (await db.execute(sql`
@@ -5775,8 +5898,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generatedAt: new Date().toISOString(),
         tables: Object.fromEntries(tableNames.map((name) => [name, tableExists.get(name) || false])),
         counts,
+        marketSummary,
         latestByMarket,
         recentFetch,
+        status:
+          !tableExists.get("market_prices") || !tableExists.get("market_price_source_status")
+            ? "migrations_missing"
+            : counts.marketPrices === 0
+              ? "db_empty"
+              : "db_ok",
       });
     } catch (error: any) {
       console.error("Error fetching market ingestion db-check:", error);
@@ -5793,11 +5923,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const marketRaw = String(req.query.market || "").toUpperCase();
       const markets = marketRaw && ["US", "AR", "BR"].includes(marketRaw) ? [marketRaw as "US" | "AR" | "BR"] : undefined;
       const result = await runMarketIngestionOnce({ markets });
+      const activeConfigs = MARKET_COMMODITY_CONFIG.filter((cfg) => !markets || markets.includes(cfg.market));
+      const vendorsTried = activeConfigs.map((cfg) => ({
+        market: cfg.market,
+        commodity: cfg.commodity,
+        primary: cfg.primaryProvider,
+        fallback: cfg.fallbackProviders,
+      }));
       res.json({
         ok: true,
         triggeredAt: new Date().toISOString(),
         markets: markets || ["US", "AR", "BR"],
         result,
+        vendorsTried,
+        notes:
+          result.upserted > 0
+            ? "Rows upserted to market_prices/index_prices."
+            : "No rows upserted. Check /api/admin/market-ingestion/probe and runtime/db-check endpoints.",
       });
     } catch (error: any) {
       console.error("Error running market ingestion now:", error);

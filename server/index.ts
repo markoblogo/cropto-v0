@@ -9,6 +9,8 @@ import auditLog from "./middleware/auditLog";
 import { autoImportDemoData } from "../scripts/auto-import-demo-data";
 import { seedCommodityIndexes } from "./seed/commodityIndexes";
 import { db } from "./db";
+import { startFxIngestionScheduler } from "./ingestion/scheduler/fxIngestionJob";
+import { startMarketIngestionScheduler } from "./ingestion/scheduler/marketIngestionJob";
 import path from "path";
 
 const app = express();
@@ -116,6 +118,7 @@ app.use((req, res, next) => {
   // otherwise Railway health checks / edge routing may mark the deployment as unhealthy.
   (async () => {
     if (!process.env.DATABASE_URL) return;
+    const startIngestionScheduler = process.env.START_INGESTION_SCHEDULER !== "0";
 
     // Seed commodity indexes (required for Telegram scraper)
     try {
@@ -129,6 +132,18 @@ app.use((req, res, next) => {
       await autoImportDemoData(db);
     } catch (error: any) {
       console.error("⚠️  Warning: Failed to auto-import demo data:", error.message);
+    }
+
+    if (startIngestionScheduler) {
+      try {
+        startFxIngestionScheduler();
+        startMarketIngestionScheduler();
+        console.log("[MarketIngestion] scheduler bootstrap started in web process");
+      } catch (error: any) {
+        console.error("⚠️  Warning: Failed to start ingestion scheduler:", error?.message || error);
+      }
+    } else {
+      console.log("[MarketIngestion] scheduler bootstrap disabled via START_INGESTION_SCHEDULER=0");
     }
   })().catch((err: any) => {
     console.error("⚠️  Warning: Background startup task failed:", err?.message || err);
