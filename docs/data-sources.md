@@ -29,9 +29,11 @@ Data is refreshed daily by the market ingestion job and may use fallback provide
 - Primary: internal curated feed (`spike_telegram`/`manual`) with USD/t normalization.
 
 ## Freshness rules
-- `Fresh`: `asOf` is today or yesterday
-- `Stale`: `asOf` older than 1 day
-- `Failed`: no successful fetch for provider/market/commodity
+- `As of`: provider quote date/time mapped to the series point.
+- `Fetched`: timestamp when Cropto ingestion retrieved/processed the quote.
+- `Fresh`: `asOf` is today or yesterday.
+- `Stale`: `asOf` older than 1 day.
+- `Failed`: no successful fetch for provider/market/commodity.
 
 ## Data model
 - `market_prices`: normalized price points
@@ -45,3 +47,21 @@ Data is refreshed daily by the market ingestion job and may use fallback provide
 - Product display currency is canonical `USD/t`; raw quote and FX are shown only in `?debugSources=1`.
 - Failover simulation for verification: set `INGESTION_DISABLE_PRIMARY=1` (or `INGESTION_DISABLE_VENDOR=CLAL`) and confirm fallback source appears in UI.
 - Debug mode: append `?debugSources=1` to market pages.
+
+## Operational Notes
+- Required env vars:
+  - `DATABASE_URL`
+  - `ENABLE_MARKET_INGESTION` (optional, defaults enabled)
+  - `INGEST_HISTORY_DAYS` (optional)
+  - FX layer: `OPENEXCHANGERATES_APP_ID` (optional), otherwise ER API fallback is used.
+- Commands:
+  - `npm run ingest:probe`
+  - `npm run ingest:smoke`
+  - `npm run ingest:backfill -- --market=BR --days=365`
+- Failure simulation / fallback:
+  - `INGESTION_DISABLE_PRIMARY=1`
+  - `INGESTION_DISABLE_VENDOR=CLAL,BCR`
+  - `INGESTION_DISABLE_VENDOR_<VENDOR>=1`
+- Status endpoints:
+  - `GET /api/market-ingestion/sources`
+  - `GET /api/admin/market-ingestion/health` (broker/admin auth required)

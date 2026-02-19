@@ -86,10 +86,18 @@ function inferRawUnit(body: string): string {
 
 function extractFailureSnippet(body: string, keywords: string[] = []): string {
   const probe = keywords.find((k) => body.toLowerCase().includes(k.toLowerCase()));
-  if (!probe) return body.slice(0, 2000);
+  if (!probe) return sanitizeSnippet(body.slice(0, 2000));
   const idx = body.toLowerCase().indexOf(probe.toLowerCase());
   const start = Math.max(0, idx - 600);
-  return body.slice(start, start + 2400);
+  return sanitizeSnippet(body.slice(start, start + 2400));
+}
+
+function sanitizeSnippet(input: string): string {
+  return input
+    .replace(/postgres(?:ql)?:\/\/[^\s"'<>]+/gi, "postgresql://[redacted]")
+    .replace(/\b[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{20,}\b/g, "[redacted-jwt]")
+    .replace(/\b(SUPABASE_SERVICE_ROLE_KEY|DATABASE_URL|SESSION_SECRET|JWT_SECRET)\b\s*[:=]\s*["']?[^"'\s<]+/gi, "$1=[redacted]")
+    .replace(/\b(authorization|token)\b\s*[:=]\s*["']?bearer\s+[A-Za-z0-9._\-+/=]+/gi, "$1=Bearer [redacted]");
 }
 
 function extractDatePricePairs(body: string, customPriceRegex?: string): Array<{ asOf: string; price: number }> {

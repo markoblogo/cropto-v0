@@ -3,9 +3,14 @@ dist
 .DS_Store
 server/public
 vite.config.ts.*
-*.tar.gzproject.zip
+*.tar.gz
+project.zip
 # Secrets
 .env
 .env.*
 !.env.example
 tmp/
+tmp/ingest_probe/
+logs/
+*.dump
+*.sql
