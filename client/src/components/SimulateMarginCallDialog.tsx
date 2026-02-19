@@ -24,6 +24,12 @@ import { z } from "zod";
 import { Activity } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+const simulateFormSchema = z.object({
+  indexPrice: z.coerce.number().positive().min(0.00000001),
+});
+
+type SimulateFormData = z.infer<typeof simulateFormSchema>;
+
 interface SimulateMarginCallDialogProps {
   optionId: string;
   commodity?: string;
@@ -40,17 +46,15 @@ export function SimulateMarginCallDialog({
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
 
-  const simulateFormSchema = z.object({
-    indexPrice: z
-      .coerce.number()
-      .positive(t("dialog.simulate.validation.positive"))
-      .min(0.00000001, t("dialog.simulate.validation.min")),
-  });
-
-  type SimulateFormData = z.infer<typeof simulateFormSchema>;
-
   const form = useForm<SimulateFormData>({
-    resolver: zodResolver(simulateFormSchema),
+    resolver: zodResolver(
+      simulateFormSchema.extend({
+        indexPrice: z
+          .coerce.number()
+          .positive(t("dialog.simulate.validation.positive"))
+          .min(0.00000001, t("dialog.simulate.validation.min")),
+      })
+    ),
     defaultValues: {
       indexPrice: 0,
     },

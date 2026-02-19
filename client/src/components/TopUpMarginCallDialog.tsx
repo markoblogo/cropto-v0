@@ -30,6 +30,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+const topUpSchema = z.object({
+  amount: z.coerce.number().positive().min(0.00000001),
+  currency: z.enum(["CROPT", "FIAT"]),
+});
+
+type TopUpFormValues = z.infer<typeof topUpSchema>;
+
 interface TopUpMarginCallDialogProps {
   marginCallId: string;
   onTopUp: (data: TopUpFormValues & { marginCallId: string }) => Promise<void>;
@@ -44,20 +51,18 @@ export function TopUpMarginCallDialog({
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
 
-  const topUpSchema = z.object({
-    amount: z.coerce
-      .number()
-      .positive(t("dialog.topup.validation.positive"))
-      .min(0.00000001, t("dialog.topup.validation.min")),
-    currency: z.enum(["CROPT", "FIAT"], {
-      required_error: t("dialog.topup.validation.currencyRequired"),
-    }),
-  });
-
-  type TopUpFormValues = z.infer<typeof topUpSchema>;
-
   const form = useForm<TopUpFormValues>({
-    resolver: zodResolver(topUpSchema),
+    resolver: zodResolver(
+      topUpSchema.extend({
+        amount: z.coerce
+          .number()
+          .positive(t("dialog.topup.validation.positive"))
+          .min(0.00000001, t("dialog.topup.validation.min")),
+        currency: z.enum(["CROPT", "FIAT"], {
+          required_error: t("dialog.topup.validation.currencyRequired"),
+        }),
+      })
+    ),
     defaultValues: {
       amount: 0,
       currency: "CROPT",

@@ -24,6 +24,12 @@ import { z } from "zod";
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+const forceSettleFormSchema = z.object({
+  reason: z.string().min(10).max(500),
+});
+
+type ForceSettleFormData = z.infer<typeof forceSettleFormSchema>;
+
 interface ForceSettleDialogProps {
   optionId: string;
   optionTitle: string;
@@ -40,17 +46,15 @@ export function ForceSettleDialog({
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
 
-  const forceSettleFormSchema = z.object({
-    reason: z
-      .string()
-      .min(10, t("dialog.forceSettle.validation.reasonMin"))
-      .max(500, t("dialog.forceSettle.validation.reasonMax")),
-  });
-
-  type ForceSettleFormData = z.infer<typeof forceSettleFormSchema>;
-
   const form = useForm<ForceSettleFormData>({
-    resolver: zodResolver(forceSettleFormSchema),
+    resolver: zodResolver(
+      forceSettleFormSchema.extend({
+        reason: z
+          .string()
+          .min(10, t("dialog.forceSettle.validation.reasonMin"))
+          .max(500, t("dialog.forceSettle.validation.reasonMax")),
+      })
+    ),
     defaultValues: {
       reason: "",
     },
