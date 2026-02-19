@@ -2,12 +2,17 @@
 
 ## /api/version
 ```json
-{"gitSha":"e6ec8d48de5c12d3f9791482b1c4c523f83f543c","buildTime":null,"env":"production"}
+{
+  "gitSha": "665be1f62d7e0d335683e42b63bcad536b5cfe73",
+  "buildTime": null,
+  "env": "production"
+}
 ```
 
-## /api/market-dashboard?debugSources=1 (trimmed)
+## /api/market-dashboard?debugSources=1 (summary)
 ```json
 {
+  "capturedAt": "2026-02-19T17:19:49.422592Z",
   "marketHealth": {
     "ua": {
       "status": "OK",
@@ -15,307 +20,41 @@
       "source": "spike_telegram(HTML_PAGE)"
     },
     "br": {
-      "status": "WARN",
-      "lastSuccessfulUpdate": "2026-02-16T10:00:47.962Z",
-      "source": "Demo data(HTML_PAGE)"
+      "status": "FAIL",
+      "lastSuccessfulUpdate": null,
+      "source": null
     },
     "ar": {
-      "status": "WARN",
-      "lastSuccessfulUpdate": "2026-02-16T10:00:47.973Z",
-      "source": "Demo data(HTML_PAGE)"
+      "status": "FAIL",
+      "lastSuccessfulUpdate": null,
+      "source": null
     },
     "us": {
-      "status": "WARN",
-      "lastSuccessfulUpdate": "2026-02-16T10:00:47.948Z",
-      "source": "Demo data(HTML_PAGE)"
+      "status": "FAIL",
+      "lastSuccessfulUpdate": null,
+      "source": null
     }
   },
   "dataAlerts": {
-    "br": null,
-    "ar": null,
-    "us": null
+    "br": "Ingestion enabled but no BR market data produced yet.",
+    "ar": "Ingestion enabled but no AR market data produced yet.",
+    "us": "Ingestion enabled but no US market data produced yet."
   },
-  "ua_sample": [
-    {
-      "commodity": "corn",
-      "grade": null,
-      "country": "UA",
-      "basis": "CPT Odesa (export)",
-      "price": 212,
-      "currency": "USD",
-      "change24h": -2,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-19T16:36:44.000Z",
-      "source": "spike_telegram",
-      "provider": "spike_telegram",
-      "channel": "HTML_PAGE",
-      "fetchedAt": "2026-02-19T16:36:44.000Z",
-      "dataStatus": "fresh",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "seriesKey": "UA:corn:CPT Odesa (export)"
-    },
-    {
-      "commodity": "wheat",
-      "grade": "feed",
-      "country": "UA",
-      "basis": "CPT Odesa (export)",
-      "price": 210,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-19T16:36:44.000Z",
-      "source": "spike_telegram",
-      "provider": "spike_telegram",
-      "channel": "HTML_PAGE",
-      "fetchedAt": "2026-02-19T16:36:44.000Z",
-      "dataStatus": "fresh",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "seriesKey": "UA:wheat:CPT Odesa (export)"
+  "counts": {
+    "ua": 7,
+    "br": 0,
+    "ar": 0,
+    "us": 0
+  },
+  "debugSourcesSummary": {
+    "count": 3,
+    "byMarket": {
+      "US": 3
     }
-  ],
-  "br_sample": [
-    {
-      "commodity": "soybeans",
-      "grade": null,
-      "country": "BR",
-      "basis": "FOB Santos",
-      "price": 485.5,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-16T10:00:47.962Z",
-      "source": "mock",
-      "confidence": "medium",
-      "freshnessDays": 3,
-      "isStale": false,
-      "sourceType": "internal",
-      "usagePolicy": "open",
-      "visibility": "public",
-      "fetchedAt": "2026-02-16T10:00:47.962Z",
-      "provider": "MOCK",
-      "channel": "HTML_PAGE",
-      "rawCommodity": "soybeans",
-      "category": "other",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "lastFetchError": null,
-      "sourceTier": "secondary",
-      "dataStatus": "fresh",
-      "seriesKey": "BR:soybeans:FOB Santos"
-    },
-    {
-      "commodity": "corn",
-      "grade": null,
-      "country": "BR",
-      "basis": "FOB Santos",
-      "price": 245.8,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-16T10:00:47.962Z",
-      "source": "mock",
-      "confidence": "medium",
-      "freshnessDays": 3,
-      "isStale": false,
-      "sourceType": "internal",
-      "usagePolicy": "open",
-      "visibility": "public",
-      "fetchedAt": "2026-02-16T10:00:47.962Z",
-      "provider": "MOCK",
-      "channel": "HTML_PAGE",
-      "rawCommodity": "corn",
-      "category": "other",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "lastFetchError": null,
-      "sourceTier": "secondary",
-      "dataStatus": "fresh",
-      "seriesKey": "BR:corn:FOB Santos"
-    }
-  ],
-  "ar_sample": [
-    {
-      "commodity": "wheat",
-      "grade": null,
-      "country": "AR",
-      "basis": "FOB Up River",
-      "price": 285,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-16T10:00:47.973Z",
-      "source": "mock",
-      "confidence": "medium",
-      "freshnessDays": 3,
-      "isStale": false,
-      "sourceType": "internal",
-      "usagePolicy": "open",
-      "visibility": "public",
-      "fetchedAt": "2026-02-16T10:00:47.973Z",
-      "provider": "MOCK",
-      "channel": "HTML_PAGE",
-      "rawCommodity": "wheat",
-      "category": "other",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "lastFetchError": null,
-      "sourceTier": "secondary",
-      "dataStatus": "fresh",
-      "seriesKey": "AR:wheat:FOB Up River"
-    },
-    {
-      "commodity": "corn",
-      "grade": null,
-      "country": "AR",
-      "basis": "FOB Up River",
-      "price": 238.5,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-16T10:00:47.973Z",
-      "source": "mock",
-      "confidence": "medium",
-      "freshnessDays": 3,
-      "isStale": false,
-      "sourceType": "internal",
-      "usagePolicy": "open",
-      "visibility": "public",
-      "fetchedAt": "2026-02-16T10:00:47.973Z",
-      "provider": "MOCK",
-      "channel": "HTML_PAGE",
-      "rawCommodity": "corn",
-      "category": "other",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "lastFetchError": null,
-      "sourceTier": "secondary",
-      "dataStatus": "fresh",
-      "seriesKey": "AR:corn:FOB Up River"
-    }
-  ],
-  "us_sample": [
-    {
-      "commodity": "wheat",
-      "grade": null,
-      "country": "US",
-      "basis": "FOB Gulf",
-      "price": 290,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-16T10:00:47.948Z",
-      "source": "mock",
-      "confidence": "medium",
-      "freshnessDays": 3,
-      "isStale": false,
-      "sourceType": "internal",
-      "usagePolicy": "open",
-      "visibility": "public",
-      "fetchedAt": "2026-02-16T10:00:47.948Z",
-      "provider": "MOCK",
-      "channel": "HTML_PAGE",
-      "rawCommodity": "wheat",
-      "category": "other",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "lastFetchError": null,
-      "sourceTier": "secondary",
-      "dataStatus": "fresh",
-      "seriesKey": "US:wheat:FOB Gulf"
-    },
-    {
-      "commodity": "soybeans",
-      "grade": null,
-      "country": "US",
-      "basis": "FOB Gulf",
-      "price": 495,
-      "currency": "USD",
-      "change24h": 0,
-      "change7d": 0,
-      "change30d": 0,
-      "asOf": "2026-02-16T10:00:47.948Z",
-      "source": "mock",
-      "confidence": "medium",
-      "freshnessDays": 3,
-      "isStale": false,
-      "sourceType": "internal",
-      "usagePolicy": "open",
-      "visibility": "public",
-      "fetchedAt": "2026-02-16T10:00:47.948Z",
-      "provider": "MOCK",
-      "channel": "HTML_PAGE",
-      "rawCommodity": "soybeans",
-      "category": "other",
-      "priceStatus": "fresh",
-      "lastFetchStatus": "unknown",
-      "lastFetchError": null,
-      "sourceTier": "secondary",
-      "dataStatus": "fresh",
-      "seriesKey": "US:soybeans:FOB Gulf"
-    }
-  ],
-  "debugSources_count": 3,
-  "debugSources_sample": [
-    {
-      "id": "dd9b096e-45dc-46e7-8093-953022cd093c",
-      "provider": "CLAL",
-      "channel": "TESEO",
-      "market": "US",
-      "commodity": "soybeans",
-      "sourceLayer": "primary",
-      "sourceUrl": "https://teseo.clal.it/en/?section=cereals_price_usa",
-      "freshnessStatus": "stale",
-      "lastFetchedAt": "2026-02-19T15:26:18.628Z",
-      "lastSuccessAt": "2026-02-19T15:26:18.628Z",
-      "lastAsOf": "2026-02-04T00:00:00.000Z",
-      "lastLatencyMs": 6456,
-      "confidence": "0.9000",
-      "lastError": null,
-      "updatedAt": "2026-02-19T15:26:18.647Z"
-    },
-    {
-      "id": "26354519-6c85-42c9-bd6c-48727e7e3ce6",
-      "provider": "CLAL",
-      "channel": "TESEO",
-      "market": "US",
-      "commodity": "wheat",
-      "sourceLayer": "primary",
-      "sourceUrl": "https://teseo.clal.it/en/?section=cereals_price_usa",
-      "freshnessStatus": "stale",
-      "lastFetchedAt": "2026-02-19T15:26:11.304Z",
-      "lastSuccessAt": "2026-02-19T15:26:11.304Z",
-      "lastAsOf": "2026-02-04T00:00:00.000Z",
-      "lastLatencyMs": 6422,
-      "confidence": "0.9000",
-      "lastError": null,
-      "updatedAt": "2026-02-19T15:26:11.324Z"
-    },
-    {
-      "id": "4f20ae5b-038d-42f6-bcc2-288deaf4e5d4",
-      "provider": "CLAL",
-      "channel": "TESEO",
-      "market": "US",
-      "commodity": "corn",
-      "sourceLayer": "primary",
-      "sourceUrl": "https://teseo.clal.it/en/?section=cereals_price_usa",
-      "freshnessStatus": "stale",
-      "lastFetchedAt": "2026-02-19T15:26:04.000Z",
-      "lastSuccessAt": "2026-02-19T15:26:04.000Z",
-      "lastAsOf": "2026-02-04T00:00:00.000Z",
-      "lastLatencyMs": 6629,
-      "confidence": "0.9000",
-      "lastError": null,
-      "updatedAt": "2026-02-19T15:26:04.021Z"
-    }
-  ]
+  }
 }
 ```
+
+## Notes
+- BR/AR/US currently have zero selected rows in dashboard payload.
+- Debug source status currently exists only for US, indicating scheduler/provider attempts are not producing BR/AR rows.

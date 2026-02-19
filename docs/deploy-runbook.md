@@ -23,10 +23,20 @@ Use this when `/api/version` on `https://cropto.abvx.xyz` does not match the lat
 ## Mandatory env checks
 - `DATABASE_URL` set for both web and jobs services.
 - `ENABLE_MARKET_INGESTION` not set to `false`.
+- `START_INGESTION_SCHEDULER=1` on web service (unless ingestion runs in dedicated jobs service).
 - `ALLOW_DEMO_DATA` should be unset or `0` in production.
 - `INGESTION_DISABLE_PRIMARY` should be unset unless doing controlled failover testing.
 
-## Post-deploy smoke
-- `GET /api/market-dashboard?debugSources=1`
-- `GET /api/admin/market-ingestion/runtime` (admin/broker token)
-- `GET /api/admin/market-ingestion/db-check` (admin/broker token)
+## 2-minute verification (curl)
+1. `curl -sS https://cropto.abvx.xyz/api/version`
+2. `curl -sS -H "Authorization: Bearer <admin_token>" https://cropto.abvx.xyz/api/admin/market-ingestion/runtime`
+3. `curl -sS -H "Authorization: Bearer <admin_token>" https://cropto.abvx.xyz/api/admin/market-ingestion/db-check`
+4. `curl -sS -X POST -H "Authorization: Bearer <admin_token>" "https://cropto.abvx.xyz/api/admin/market-ingestion/run-now?market=BR"`
+5. `curl -sS "https://cropto.abvx.xyz/api/market-dashboard?debugSources=1"`
+
+Expected:
+- `/api/version` SHA equals `release/demo` HEAD.
+- runtime => `ingestion.schedulerRunning=true`, `dbConnected=true`, `dbSchemaOk=true`.
+- db-check => table status `db_ok` and `marketSummary` shows BR/AR/US counts.
+- run-now => `result.upserted > 0` (or clear sanitized failure reason + vendor list).
+- dashboard debug => BR/AR/US use real providers when rows exist; mock appears only when demo mode is explicitly allowed.
