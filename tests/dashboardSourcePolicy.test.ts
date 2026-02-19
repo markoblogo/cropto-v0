@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
-import { deriveMarketHealth, selectCountryRows } from '../server/services/dashboardSourcePolicy';
+import { deriveMarketHealth, selectCountryRows, selectTruthSeriesPerCommodity } from '../server/services/dashboardSourcePolicy';
+import { normalizeCommodity } from '../shared/commodities';
 import type { MarketIndexDto } from '../server/services/mockMarketData';
 
 function row(overrides: Partial<MarketIndexDto>): MarketIndexDto {
@@ -20,6 +21,15 @@ function row(overrides: Partial<MarketIndexDto>): MarketIndexDto {
 }
 
 describe('dashboard source policy', () => {
+  it('normalizes commodity aliases to canonical keys', () => {
+    expect(normalizeCommodity('maize').commodity).toBe('corn');
+    expect(normalizeCommodity('corn').commodity).toBe('corn');
+    expect(normalizeCommodity('soy').commodity).toBe('soybeans');
+    expect(normalizeCommodity('soya').commodity).toBe('soybeans');
+    expect(normalizeCommodity('soia').commodity).toBe('soybeans');
+    expect(normalizeCommodity('soybeans').commodity).toBe('soybeans');
+  });
+
   it('real stale beats mock fresh', () => {
     const staleReal = row({ source: 'CLAL', priceStatus: 'stale', dataStatus: 'stale', isMockData: false });
     const freshMock = row({ source: 'mock', isMockData: true, priceStatus: 'fresh', dataStatus: 'fresh' });
@@ -47,5 +57,46 @@ describe('dashboard source policy', () => {
     const health = deriveMarketHealth([staleReal]);
     expect(health.status).toBe('WARN');
     expect(health.source).toContain('CLAL');
+  });
+
+  it('selects primary over fallback for same canonical commodity', () => {
+    const primary = row({
+      commodity: 'corn',
+      source: 'CLAL',
+      provider: 'CLAL',
+      sourceTier: 'primary',
+      priceStatus: 'fresh',
+      dataStatus: 'fresh',
+      asOf: '2026-02-19T00:00:00.000Z',
+    });
+    const fallback = row({
+      commodity: 'maize',
+      source: 'GRAINSPRICES',
+      provider: 'GRAINSPRICES',
+      sourceTier: 'secondary',
+      priceStatus: 'fresh',
+      dataStatus: 'fresh',
+      asOf: '2026-02-19T00:00:00.000Z',
+    });
+
+    const selected = selectTruthSeriesPerCommodity([fallback, primary], {
+      providerPriority: ['CLAL', 'GRAINSPRICES'],
+      debug: true,
+    });
+
+    expect(selected).toHaveLength(1);
+    expect(selected[0].commodity).toBe('corn');
+    expect(selected[0].provider).toBe('CLAL');
+    expect(selected[0].alternatives?.length).toBe(1);
+  });
+
+  it('deduplicates corn and maize into one card', () => {
+    const rows = [
+      row({ commodity: 'corn', source: 'CLAL', provider: 'CLAL', sourceTier: 'primary' }),
+      row({ commodity: 'maize', source: 'IGC', provider: 'IGC', sourceTier: 'secondary' }),
+    ];
+    const selected = selectTruthSeriesPerCommodity(rows, { providerPriority: ['CLAL', 'IGC'] });
+    expect(selected).toHaveLength(1);
+    expect(selected[0].commodity).toBe('corn');
   });
 });

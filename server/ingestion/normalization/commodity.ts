@@ -1,4 +1,5 @@
 import type { CommodityCategory } from "../types";
+import { normalizeCommodity as normalizeCanonicalCommodity } from "@shared/commodities";
 
 const ALIASES: Array<{ re: RegExp; commodity: string; category: CommodityCategory; variant?: string }> = [
   { re: /\bmais\b|\bmaize\b|\bcorn\b/i, commodity: "corn", category: "grain" },
@@ -34,6 +35,17 @@ export function normalizeCommodity(rawName: string): { commodity: string; catego
 
   for (const alias of ALIASES) {
     if (alias.re.test(value)) return { commodity: alias.commodity, category: alias.category, variant: alias.variant };
+  }
+
+  const normalized = normalizeCanonicalCommodity(value);
+  if (normalized.commodity && normalized.commodity !== "unknown") {
+    if (/grain|cereal|wheat|corn|maize|barley|sorghum|oat|rye|rice/i.test(value)) {
+      return { commodity: normalized.commodity, category: "grain" };
+    }
+    if (/oilseed|soy|sunflower|rapeseed|canola|colza|meal|oil/i.test(value)) {
+      return { commodity: normalized.commodity, category: "oilseed" };
+    }
+    return { commodity: normalized.commodity, category: "other" };
   }
 
   if (/grain|cereal|wheat|corn|maize|barley|sorghum|oat|rye|rice/i.test(value)) {

@@ -30,6 +30,7 @@ import {
 import { processDeadlines } from "./cron/scheduler";
 import { emailService } from "./utils/emailMock";
 import { normalizeLegacyCommodity, WHEAT_115_NAME } from "./utils/commodity";
+import { normalizeCommodity as normalizeCanonicalCommodity } from "@shared/commodities";
 import { computeExpiryWindow } from "./expiryWindows";
 import { serializeOptionToJson } from "./optionJson";
 import { calculateInitialMargin, checkMarginCall, autoLiquidateIfNeeded } from "./marginEngine";
@@ -40,7 +41,7 @@ import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
 import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
-import { deriveMarketHealth, selectCountryRows } from "./services/dashboardSourcePolicy";
+import { deriveMarketHealth, selectCountryRows, selectTruthSeriesPerCommodity } from "./services/dashboardSourcePolicy";
 import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 import { getSourceDescriptor } from "./services/sourceCatalog";
 import { findSpreadSpec } from "./services/specRegistry";
@@ -1413,6 +1414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
         } else {
+          const canonicalCommodity = normalizeCanonicalCommodity(commodityStr).commodity;
           // Query from indexPrices external rows first (country/commodity/label columns)
           const externalPrices = await db
             .select()
@@ -1420,13 +1422,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .where(
               and(
                 eq(indexPrices.country, countryStr),
-                sql`LOWER(${indexPrices.commodity}) = LOWER(${commodityStr})`,
                 eq(indexPrices.label, basisStr)
               )
             )
             .orderBy(asc(indexPrices.date));
 
           for (const price of externalPrices) {
+            const rowCommodity = normalizeCanonicalCommodity(String(price.commodity || "")).commodity;
+            if (rowCommodity !== canonicalCommodity) continue;
             history.push({
               date: new Date(price.asOfDate || price.date).toISOString().split("T")[0],
               price: parseFloat(price.price),
@@ -1443,11 +1446,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             for (const price of allPrices) {
               try {
                 const meta = price.meta ? JSON.parse(price.meta) : {};
-                const metaCommodity = String(meta.commodity || price.commodity || "").toLowerCase();
+                const metaCommodity = normalizeCanonicalCommodity(String(meta.commodity || price.commodity || "")).commodity;
                 const metaBasis = String(meta.basis || meta.label || price.label || "");
                 if (
                   meta.country === countryStr &&
-                  metaCommodity === commodityStr.toLowerCase() &&
+                  metaCommodity === canonicalCommodity &&
                   metaBasis === basisStr
                 ) {
                   history.push({
@@ -2542,6 +2545,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : []
       );
       const uaDataWithSeriesKey = withSeriesKey(uaDataFiltered);
+      const truthUaData = selectTruthSeriesPerCommodity(uaDataWithSeriesKey, {
+        providerPriority: ["SPIKE_TELEGRAM", "MANUAL", "MOCK"],
+        debug: debugSources,
+      });
+      const truthBrData = selectTruthSeriesPerCommodity(finalBrData, {
+        providerPriority: ["CLAL", "COMMODITY3", "BCR", "FSGRAIN", "GRAINSPRICES", "IGC", "USDA_AMS", "BARCHART_USDA", "FUTURES_PROXY", "MANUAL", "MOCK"],
+        debug: debugSources,
+      });
+      const truthArData = selectTruthSeriesPerCommodity(finalArData, {
+        providerPriority: ["CLAL", "BCR", "COMMODITY3", "FSGRAIN", "GRAINSPRICES", "IGC", "USDA_AMS", "BARCHART_USDA", "FUTURES_PROXY", "MANUAL", "MOCK"],
+        debug: debugSources,
+      });
+      const truthUsData = selectTruthSeriesPerCommodity(finalUsData, {
+        providerPriority: ["CLAL", "USDA_AMS", "FSGRAIN", "BARCHART_USDA", "GRAINSPRICES", "IGC", "FUTURES_PROXY", "MANUAL", "MOCK"],
+        debug: debugSources,
+      });
 
       const buildSeriesStatus = (
         country: "UA" | "BR" | "AR" | "US",
@@ -2627,10 +2646,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const seriesStatus = {
-        ua: buildSeriesStatus("UA", uaDataWithSeriesKey, []),
-        br: buildSeriesStatus("BR", finalBrData, failoverEvents),
-        ar: buildSeriesStatus("AR", finalArData, failoverEvents),
-        us: buildSeriesStatus("US", finalUsData, failoverEvents),
+        ua: buildSeriesStatus("UA", truthUaData, []),
+        br: buildSeriesStatus("BR", truthBrData, failoverEvents),
+        ar: buildSeriesStatus("AR", truthArData, failoverEvents),
+        us: buildSeriesStatus("US", truthUsData, failoverEvents),
       };
 
       // Persist mock data to index_prices for history charts if no real records exist.
@@ -2688,14 +2707,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      if (allowMockFallback && usDataNoMock.length === 0) await persistMockData("US", finalUsData);
-      if (allowMockFallback && brDataNoMock.length === 0) await persistMockData("BR", finalBrData);
-      if (allowMockFallback && arDataNoMock.length === 0) await persistMockData("AR", finalArData);
+      if (allowMockFallback && usDataNoMock.length === 0) await persistMockData("US", truthUsData);
+      if (allowMockFallback && brDataNoMock.length === 0) await persistMockData("BR", truthBrData);
+      if (allowMockFallback && arDataNoMock.length === 0) await persistMockData("AR", truthArData);
 
-      console.log(`[Market Dashboard] Final - BR: ${finalBrData.length}, AR: ${finalArData.length}, US: ${finalUsData.length} records`);
-      console.log(`[Market Dashboard] Final BR sources:`, finalBrData.map(d => d.source));
-      console.log(`[Market Dashboard] Final AR sources:`, finalArData.map(d => d.source));
-      console.log(`[Market Dashboard] Final US sources:`, finalUsData.map(d => d.source));
+      console.log(`[Market Dashboard] Final - BR: ${truthBrData.length}, AR: ${truthArData.length}, US: ${truthUsData.length} records`);
+      console.log(`[Market Dashboard] Final BR sources:`, truthBrData.map(d => d.source));
+      console.log(`[Market Dashboard] Final AR sources:`, truthArData.map(d => d.source));
+      console.log(`[Market Dashboard] Final US sources:`, truthUsData.map(d => d.source));
 
       let debugSourceStatus: any[] | undefined = undefined;
       if (debugSources) {
@@ -2711,10 +2730,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const marketHealth = {
-        ua: deriveMarketHealth(uaDataWithSeriesKey),
-        br: deriveMarketHealth(finalBrData),
-        ar: deriveMarketHealth(finalArData),
-        us: deriveMarketHealth(finalUsData),
+        ua: deriveMarketHealth(truthUaData),
+        br: deriveMarketHealth(truthBrData),
+        ar: deriveMarketHealth(truthArData),
+        us: deriveMarketHealth(truthUsData),
       };
       const marketStatusRows = new Map<"BR" | "AR" | "US", number>();
       for (const row of sourceStatusRows) {
@@ -2723,7 +2742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const dataAlerts = {
         br:
-          finalBrData.length === 0
+          truthBrData.length === 0
             ? marketIngestionEnabled
               ? (marketStatusRows.get("BR") || 0) > 0
                 ? "No BR price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
@@ -2731,7 +2750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               : "Market ingestion is disabled."
             : null,
         ar:
-          finalArData.length === 0
+          truthArData.length === 0
             ? marketIngestionEnabled
               ? (marketStatusRows.get("AR") || 0) > 0
                 ? "No AR price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
@@ -2739,7 +2758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               : "Market ingestion is disabled."
             : null,
         us:
-          finalUsData.length === 0
+          truthUsData.length === 0
             ? marketIngestionEnabled
               ? (marketStatusRows.get("US") || 0) > 0
                 ? "No US price rows available yet. Check provider failures in /api/admin/market-ingestion/runtime."
@@ -2749,7 +2768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       res.json({
-        ua: uaDataWithSeriesKey.length > 0 ? uaDataWithSeriesKey : withSeriesKey([
+        ua: truthUaData.length > 0 ? truthUaData : withSeriesKey([
           // Fallback sample data if no real data available
           {
             commodity: "corn",
@@ -2765,9 +2784,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             source: "manual" as const,
           },
         ]),
-        br: finalBrData,
-        ar: finalArData,
-        us: finalUsData,
+        br: truthBrData,
+        ar: truthArData,
+        us: truthUsData,
         seriesStatus,
         marketHealth,
         dataAlerts,
