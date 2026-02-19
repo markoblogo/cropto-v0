@@ -49,6 +49,7 @@ import { MARKET_COMMODITY_CONFIG } from "./ingestion/config";
 import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingestion/scheduler/marketIngestionJob";
 import { providerDefinitionsFor } from "./ingestion/config";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
+import { getRuntimeInfo } from "./runtimeInfo";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -295,14 +296,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ ok: true });
   });
   app.get("/api/version", (_req, res) => {
+    res.json(getRuntimeInfo());
+  });
+  app.get("/api/healthz", async (_req, res) => {
+    let dbConnected = true;
+    let migrationsOk = false;
+    try {
+      await db.execute(sql`select 1 as ok`);
+      const tableRows = await db.execute(sql`
+        select table_name
+        from information_schema.tables
+        where table_schema = 'public'
+          and table_name in ('market_prices', 'market_price_fetch_log', 'market_price_source_status')
+      `);
+      const tables = new Set<string>(((tableRows as any)?.rows || []).map((r: any) => String(r.table_name)));
+      migrationsOk =
+        tables.has("market_prices") &&
+        tables.has("market_price_fetch_log") &&
+        tables.has("market_price_source_status");
+    } catch {
+      dbConnected = false;
+      migrationsOk = false;
+    }
+    const runtime = getMarketIngestionRuntimeState();
+    const schedulerRunning = Boolean(runtime.schedulerRunning);
     res.json({
-      gitSha:
-        process.env.RAILWAY_GIT_COMMIT_SHA ||
-        process.env.GIT_COMMIT_SHA ||
-        process.env.VERCEL_GIT_COMMIT_SHA ||
-        "unknown",
-      buildTime: process.env.BUILD_TIME || null,
-      env: process.env.NODE_ENV || "development",
+      ok: true,
+      ...getRuntimeInfo(),
+      dbConnected,
+      migrationsOk,
+      schedulerRunning,
     });
   });
 

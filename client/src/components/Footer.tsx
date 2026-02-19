@@ -1,5 +1,7 @@
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 const COUNTRY_FLAGS = [
   { code: "ua", flag: "🇺🇦" },
@@ -38,6 +40,17 @@ function FlagLink({ href, flag, ariaLabel }: { href: string; flag: string; ariaL
 
 export function Footer() {
   const { t } = useTranslation();
+  const debugSources = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugSources") === "1";
+  const showBuildInfo = debugSources || !import.meta.env.PROD;
+  const { data: versionInfo } = useQuery<{ gitSha: string; buildTime: string | null; env: string }>({
+    queryKey: ["/api/version"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/version");
+      return res.json();
+    },
+    enabled: showBuildInfo,
+    staleTime: 60_000,
+  });
 
   const moreLinks = [
     { href: "/wallet", label: t("nav.wallet") },
@@ -142,7 +155,14 @@ export function Footer() {
               {t("footer.riskDisclosure")}
             </Link>
           </div>
-          <p>© 2026 {t("site.title")}. {t("footer.allRightsReserved")}</p>
+          <div className="text-right">
+            <p>© 2026 {t("site.title")}. {t("footer.allRightsReserved")}</p>
+            {showBuildInfo ? (
+              <p className="text-[11px]">
+                build: {versionInfo?.gitSha?.slice(0, 12) || "unknown"} · {versionInfo?.buildTime || "n/a"}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </footer>

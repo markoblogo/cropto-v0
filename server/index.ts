@@ -11,6 +11,7 @@ import { seedCommodityIndexes } from "./seed/commodityIndexes";
 import { db } from "./db";
 import { startFxIngestionScheduler } from "./ingestion/scheduler/fxIngestionJob";
 import { startMarketIngestionScheduler } from "./ingestion/scheduler/marketIngestionJob";
+import { getRuntimeInfo } from "./runtimeInfo";
 import path from "path";
 
 const app = express();
@@ -30,6 +31,14 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(blockServiceRole);
 app.use(auditLog);
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    const info = getRuntimeInfo();
+    res.setHeader("X-Cropto-GitSha", info.gitSha);
+    res.setHeader("X-Cropto-BuildTime", info.buildTime || "unknown");
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -77,6 +86,9 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
   registerSpotRoutes(app);
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ error: "API route not found" });
+  });
 
   // Static files uploaded by users (e.g. feedback screenshots)
   app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
