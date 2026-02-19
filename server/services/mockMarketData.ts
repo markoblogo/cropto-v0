@@ -31,6 +31,10 @@ export interface MarketIndexDto {
     | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
   dataStatus?: "fresh" | "stale" | "no_recent";
+  priceStatus?: "fresh" | "stale" | "missing";
+  lastFetchStatus?: "ok" | "failed" | "unknown";
+  lastFetchError?: string | null;
+  isMockData?: boolean;
   confidence?: "high" | "medium" | "low";
   freshnessDays?: number;
   isStale?: boolean;
@@ -74,6 +78,14 @@ export function getMockMarketDataBR(): MarketIndexDto[] {
       change30d: 5.2,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
     {
       commodity: "corn",
@@ -87,6 +99,14 @@ export function getMockMarketDataBR(): MarketIndexDto[] {
       change30d: -3.1,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
   ];
 }
@@ -109,6 +129,14 @@ export function getMockMarketDataAR(): MarketIndexDto[] {
       change30d: 4.8,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
     {
       commodity: "corn",
@@ -122,6 +150,14 @@ export function getMockMarketDataAR(): MarketIndexDto[] {
       change30d: -2.5,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
     {
       commodity: "wheat",
@@ -135,6 +171,14 @@ export function getMockMarketDataAR(): MarketIndexDto[] {
       change30d: -1.2,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
   ];
 }
@@ -157,6 +201,14 @@ export function getMockMarketDataUS(): MarketIndexDto[] {
       change30d: -2.0,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
     {
       commodity: "wheat",
@@ -170,6 +222,14 @@ export function getMockMarketDataUS(): MarketIndexDto[] {
       change30d: 3.5,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
     {
       commodity: "soybeans",
@@ -183,6 +243,14 @@ export function getMockMarketDataUS(): MarketIndexDto[] {
       change30d: 4.2,
       asOf: now,
       source: "mock",
+      fetchedAt: now,
+      provider: "Demo data",
+      channel: "HTML_PAGE",
+      sourceTier: "secondary",
+      dataStatus: "fresh",
+      priceStatus: "fresh",
+      lastFetchStatus: "unknown",
+      isMockData: true,
     },
   ];
 }

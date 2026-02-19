@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, marketPriceSourceStatus, marketPriceFetchLog, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, marketPrices, marketPriceSourceStatus, marketPriceFetchLog, type HealthUpdateResponse } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte, inArray } from "drizzle-orm";
@@ -1823,6 +1823,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/market-dashboard", async (req, res) => {
     try {
       const debugSources = req.query.debugSources === "1" || req.query.debugSources === "true";
+      const marketIngestionEnabled = process.env.ENABLE_MARKET_INGESTION !== "false";
+      const asIsoString = (value: Date | string | null | undefined): string | null => {
+        if (!value) return null;
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+      };
+      const computePriceStatus = (
+        asOf: Date | string | null | undefined
+      ): "fresh" | "stale" | "missing" => {
+        const days = computeFreshnessDays(asOf);
+        if (!Number.isFinite(days)) return "missing";
+        if (days <= 1) return "fresh";
+        if (days <= STALE_MAX_AGE_DAYS) return "stale";
+        return "missing";
+      };
+      const computeLastFetchStatus = (row?: {
+        freshnessStatus: string;
+        lastFetchedAt: Date | null;
+        lastSuccessAt: Date | null;
+        lastError: string | null;
+      } | null): "ok" | "failed" | "unknown" => {
+        if (!row) return "unknown";
+        if (row.freshnessStatus === "failed") return "failed";
+        if (!row.lastFetchedAt && !row.lastSuccessAt) return "unknown";
+        if (row.lastFetchedAt && row.lastSuccessAt) {
+          if (row.lastFetchedAt.getTime() > row.lastSuccessAt.getTime() && row.lastError) {
+            return "failed";
+          }
+          return "ok";
+        }
+        return row.lastSuccessAt ? "ok" : "failed";
+      };
       // Helper function to extract commodity name and grade from index name
       function extractCommodityAndGrade(indexName: string): { commodity: string; grade: string | null } {
         const lower = indexName.toLowerCase();
@@ -1889,6 +1921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const basis = categoryToBasis(index.category);
           const price = latestPrice ? parseFloat(latestPrice.price) : 0;
           const asOf = latestPrice?.timestamp ? new Date(latestPrice.timestamp).toISOString() : new Date().toISOString();
+          const uaPriceStatus = computePriceStatus(asOf);
 
           // For now, set change values to 0 (we can calculate them later from price history)
           return {
@@ -1903,6 +1936,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             change30d: 0,
             asOf,
             source: "spike_telegram" as const,
+            provider: "spike_telegram",
+            channel: "HTML_PAGE",
+            fetchedAt: asIsoString(latestPrice?.timestamp) || asOf,
+            dataStatus: uaPriceStatus === "missing" ? "no_recent" : uaPriceStatus,
+            priceStatus: uaPriceStatus,
+            lastFetchStatus: "unknown" as const,
           };
         })
       );
@@ -1915,6 +1954,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(indexPrices)
         .orderBy(desc(indexPrices.date));
+      const ingestionRows = await db
+        .select()
+        .from(marketPrices)
+        .where(inArray(marketPrices.market, ["US", "AR", "BR"]))
+        .orderBy(desc(marketPrices.asOf), desc(marketPrices.fetchedAt), desc(marketPrices.updatedAt));
+      const sourceStatusRows = await db
+        .select()
+        .from(marketPriceSourceStatus)
+        .where(inArray(marketPriceSourceStatus.market, ["US", "AR", "BR"]))
+        .orderBy(desc(marketPriceSourceStatus.updatedAt));
+      const sourceStatusByMarketProvider = new Map<
+        string,
+        {
+          freshnessStatus: string;
+          lastFetchedAt: Date | null;
+          lastSuccessAt: Date | null;
+          lastError: string | null;
+        }
+      >();
+      for (const row of sourceStatusRows) {
+        const key = `${row.market}:${String(row.provider || "").toUpperCase()}`;
+        if (sourceStatusByMarketProvider.has(key)) continue;
+        sourceStatusByMarketProvider.set(key, {
+          freshnessStatus: row.freshnessStatus,
+          lastFetchedAt: row.lastFetchedAt,
+          lastSuccessAt: row.lastSuccessAt,
+          lastError: row.lastError,
+        });
+      }
 
       console.log(`[Market Dashboard] Loaded ${allIndexPrices.length} indexPrices from DB`);
       console.log(`[Market Dashboard] IGC records: ${allIndexPrices.filter(p => p.source === "IGC").length}`);
@@ -1937,6 +2005,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!targetMap.has(key)) targetMap.set(key, []);
         targetMap.get(key)!.push(value);
       };
+
+      const seenIngestionSeries = new Set<string>();
+      for (const row of ingestionRows) {
+        try {
+          const market = row.market as "BR" | "AR" | "US";
+          if (market !== "BR" && market !== "AR" && market !== "US") continue;
+          const key = `${market}:${row.commodity}:${row.basis || ""}`;
+          if (seenIngestionSeries.has(key)) continue;
+          seenIngestionSeries.add(key);
+          const asOf = asIsoString(row.asOf);
+          if (!asOf) continue;
+          const fetchedAt = asIsoString(row.fetchedAt) || asOf;
+          const price = Number.parseFloat(String(row.priceUsdPerTon || row.price));
+          if (!Number.isFinite(price) || price <= 0) continue;
+          const provider = String(row.provider || "").toUpperCase() || "manual";
+          const providerStatus = sourceStatusByMarketProvider.get(`${market}:${provider}`);
+          const priceStatus = computePriceStatus(asOf);
+          pushCandidate(market, `${row.commodity}:${row.basis || ""}`, {
+            commodity: row.commodity,
+            grade: row.variant || null,
+            country: market,
+            basis: row.basis || "",
+            price,
+            currency: "USD",
+            change24h: 0,
+            change7d: 0,
+            change30d: 0,
+            asOf,
+            source: provider as any,
+            confidence: row.confidence ? "high" : "medium",
+            freshnessDays: computeFreshnessDays(asOf),
+            isStale: priceStatus === "stale",
+            dataStatus: priceStatus === "missing" ? "no_recent" : priceStatus,
+            priceStatus,
+            sourceType: "public_html",
+            usagePolicy: "open",
+            visibility: "public",
+            fetchedAt,
+            provider: provider,
+            channel: row.channel || "HTML_PAGE",
+            rawCommodity: row.rawCommodity || row.commodity,
+            category: (row.category as "grain" | "oilseed" | "other") || "other",
+            rawPrice: row.priceRaw ? Number.parseFloat(String(row.priceRaw)) : undefined,
+            rawUnit: row.rawUnit || undefined,
+            rawCurrency: row.rawCurrency || undefined,
+            rawToUsdFxRate: row.rawToUsdFxRate ? Number.parseFloat(String(row.rawToUsdFxRate)) : undefined,
+            conversionNotes: row.conversionNotes || undefined,
+            sourceTier: row.sourceLayer === "primary" ? "primary" : "secondary",
+            lastFetchStatus: computeLastFetchStatus(providerStatus),
+            lastFetchError: providerStatus?.lastError || null,
+          });
+        } catch {
+          // ignore malformed ingestion rows
+        }
+      }
 
       for (const price of allIndexPrices) {
         try {
@@ -2003,6 +2126,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const freshnessDays = computeFreshnessDays(asOfDateRaw);
               const sourceDescriptor = getSourceDescriptor(String(price.source || "manual"));
               const metaObj = price.meta ? JSON.parse(price.meta) : {};
+              const provider = (typeof metaObj.provider === "string" ? metaObj.provider : String(price.source || "manual")).toUpperCase();
+              const providerStatus = sourceStatusByMarketProvider.get(`${country}:${provider}`);
+              const priceStatus = computePriceStatus(asOfDateRaw);
               const result: MarketIndexDto = {
                 commodity,
                 grade: null,
@@ -2022,7 +2148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 usagePolicy: sourceDescriptor.usagePolicy,
                 visibility: sourceDescriptor.visibility,
                 fetchedAt: typeof metaObj.fetchedAt === "string" ? metaObj.fetchedAt : new Date(price.date).toISOString(),
-                provider: typeof metaObj.provider === "string" ? metaObj.provider : String(price.source || "manual"),
+                provider: provider,
                 channel: typeof metaObj.channel === "string" ? metaObj.channel : "HTML_PAGE",
                 rawCommodity: typeof metaObj.rawCommodity === "string" ? metaObj.rawCommodity : commodity,
                 category: (metaObj.category || "other") as "grain" | "oilseed" | "other",
@@ -2032,6 +2158,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 rawToUsdFxRate:
                   typeof metaObj.rawToUsdFxRate === "number" ? metaObj.rawToUsdFxRate : undefined,
                 conversionNotes: typeof metaObj.conversionNotes === "string" ? metaObj.conversionNotes : undefined,
+                priceStatus,
+                lastFetchStatus: computeLastFetchStatus(providerStatus),
+                lastFetchError: providerStatus?.lastError || null,
               };
               if (price.annualChangePct !== null && price.annualChangePct !== undefined) {
                 result.annualChange = parseFloat(price.annualChangePct.toString());
@@ -2085,6 +2214,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const detectedSource = (meta.source || price.source || "manual") as string;
               const descriptor = getSourceDescriptor(detectedSource);
               const freshnessDays = computeFreshnessDays(price.asOfDate || price.date);
+              const priceStatus = computePriceStatus(price.asOfDate || price.date);
+              const provider = (typeof meta.provider === "string" ? meta.provider : detectedSource).toUpperCase();
+              const providerStatus = sourceStatusByMarketProvider.get(`${country}:${provider}`);
 
               pushCandidate(country, key, {
                 commodity,
@@ -2105,7 +2237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 usagePolicy: descriptor.usagePolicy,
                 visibility: descriptor.visibility,
                 fetchedAt: typeof meta.fetchedAt === "string" ? meta.fetchedAt : new Date(price.date).toISOString(),
-                provider: typeof meta.provider === "string" ? meta.provider : detectedSource,
+                provider,
                 channel: typeof meta.channel === "string" ? meta.channel : "HTML_PAGE",
                 rawCommodity: typeof meta.rawCommodity === "string" ? meta.rawCommodity : commodity,
                 category: (meta.category || "other") as "grain" | "oilseed" | "other",
@@ -2114,6 +2246,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 rawCurrency: typeof meta.rawCurrency === "string" ? meta.rawCurrency : undefined,
                 rawToUsdFxRate: typeof meta.rawToUsdFxRate === "number" ? meta.rawToUsdFxRate : undefined,
                 conversionNotes: typeof meta.conversionNotes === "string" ? meta.conversionNotes : undefined,
+                priceStatus,
+                lastFetchStatus: computeLastFetchStatus(providerStatus),
+                lastFetchError: providerStatus?.lastError || null,
               });
             }
           }
@@ -2165,7 +2300,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const secondaryMaxAge = spreadSpec?.secondaryMaxAgeDays ?? 3;
           const graceDays = spreadSpec?.graceDays ?? 1;
 
-          const sorted = [...candidates].sort((a, b) => {
+          const candidatesWithoutMock = candidates.some((c) => c.source !== "mock")
+            ? candidates.filter((c) => c.source !== "mock")
+            : candidates;
+          const sorted = [...candidatesWithoutMock].sort((a, b) => {
             const aIdx = Math.max(0, order.indexOf(a.source));
             const bIdx = Math.max(0, order.indexOf(b.source));
             if (aIdx !== bIdx) return aIdx - bIdx;
@@ -2182,12 +2320,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               : undefined;
 
           if (freshPrimary) {
-            selected.push({ ...freshPrimary, sourceTier: "primary", isStale: false, dataStatus: "fresh" });
+            selected.push({
+              ...freshPrimary,
+              sourceTier: "primary",
+              isStale: false,
+              dataStatus: "fresh",
+              priceStatus: "fresh",
+            });
             continue;
           }
 
           if (freshSecondary) {
-            selected.push({ ...freshSecondary, sourceTier: "secondary", isStale: false, dataStatus: "fresh" });
+            selected.push({
+              ...freshSecondary,
+              sourceTier: "secondary",
+              isStale: false,
+              dataStatus: "fresh",
+              priceStatus: "fresh",
+            });
             failoverEvents.push({
               event: "source_failover_primary_to_secondary",
               country,
@@ -2207,6 +2357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sourceTier: "last_known",
               isStale: true,
               dataStatus: "stale",
+              priceStatus: "stale",
               confidence: lastKnown.confidence === "high" ? "medium" : (lastKnown.confidence || "medium"),
             });
             failoverEvents.push({
@@ -2247,6 +2398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               confidence: "low",
               isStale: false,
               dataStatus: "fresh",
+              priceStatus: "fresh",
               sourceType: "internal",
               usagePolicy: "open",
               visibility: "public",
@@ -2293,6 +2445,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const brData = brResolved.selected;
       const arData = arResolved.selected;
       const usData = usResolved.selected;
+      const stripMockWhenRealExists = (rows: MarketIndexDto[]): MarketIndexDto[] => {
+        if (!rows.some((row) => row.source !== "mock")) return rows;
+        return rows.filter((row) => row.source !== "mock");
+      };
+      const brDataNoMock = stripMockWhenRealExists(brData);
+      const arDataNoMock = stripMockWhenRealExists(arData);
+      const usDataNoMock = stripMockWhenRealExists(usData);
 
       const failoverEvents = [...usResolved.failoverEvents, ...brResolved.failoverEvents, ...arResolved.failoverEvents];
       if (failoverEvents.length > 0) {
@@ -2325,22 +2484,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
 
       const allowBrArMockFallback = process.env.ALLOW_BR_AR_MOCK_FALLBACK !== "false";
+      const allowMockFallback = !marketIngestionEnabled || allowBrArMockFallback;
       const finalBrData = withSeriesKey(
-        brData.length > 0
-          ? brData
-          : allowBrArMockFallback
+        brDataNoMock.length > 0
+          ? brDataNoMock
+          : allowMockFallback
             ? getMockMarketDataBR().map((m) => ({ ...m, sourceTier: "secondary" as const }))
             : []
       );
       const finalArData = withSeriesKey(
-        arData.length > 0
-          ? arData
-          : allowBrArMockFallback
+        arDataNoMock.length > 0
+          ? arDataNoMock
+          : allowMockFallback
             ? getMockMarketDataAR().map((m) => ({ ...m, sourceTier: "secondary" as const }))
             : []
       );
       const finalUsData = withSeriesKey(
-        usData.length > 0 ? usData : getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }))
+        usDataNoMock.length > 0
+          ? usDataNoMock
+          : allowMockFallback
+            ? getMockMarketDataUS().map((m) => ({ ...m, sourceTier: "secondary" as const }))
+            : []
       );
       const uaDataWithSeriesKey = withSeriesKey(uaDataFiltered);
 
@@ -2489,9 +2653,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      if (usData.length === 0) await persistMockData("US", finalUsData);
-      if (allowBrArMockFallback && brData.length === 0) await persistMockData("BR", finalBrData);
-      if (allowBrArMockFallback && arData.length === 0) await persistMockData("AR", finalArData);
+      if (allowMockFallback && usDataNoMock.length === 0) await persistMockData("US", finalUsData);
+      if (allowMockFallback && brDataNoMock.length === 0) await persistMockData("BR", finalBrData);
+      if (allowMockFallback && arDataNoMock.length === 0) await persistMockData("AR", finalArData);
 
       console.log(`[Market Dashboard] Final - BR: ${finalBrData.length}, AR: ${finalArData.length}, US: ${finalUsData.length} records`);
       console.log(`[Market Dashboard] Final BR sources:`, finalBrData.map(d => d.source));
@@ -2517,14 +2681,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return { status: "FAIL", lastSuccessfulUpdate: null, source: null };
           }
           const sorted = [...items].sort((a, b) => new Date(b.asOf).getTime() - new Date(a.asOf).getTime());
-          const latest = sorted[0];
-          const ageDays = Math.floor((Date.now() - new Date(latest.asOf).getTime()) / (1000 * 60 * 60 * 24));
-          const status = ageDays <= 1 ? "OK" : ageDays <= 3 ? "WARN" : "FAIL";
-          const provider = (latest as any).provider || latest.source;
-          const channel = (latest as any).channel || "HTML_PAGE";
+          const successful = sorted.filter((item) => (item.priceStatus || item.dataStatus) !== "no_recent" && item.priceStatus !== "missing");
+          const latest = successful[0] || sorted[0];
+          const hasMock = sorted.some((item) => item.source === "mock");
+          const hasStale = sorted.some((item) => (item.priceStatus || item.dataStatus) === "stale");
+          const hasMissing = sorted.every((item) => (item.priceStatus || item.dataStatus) === "no_recent" || item.priceStatus === "missing");
+          const hasLastFetchFailed = sorted.some((item) => item.lastFetchStatus === "failed");
+          const status = hasMissing ? "FAIL" : hasMock || hasStale || hasLastFetchFailed ? "WARN" : "OK";
+          const provider = latest?.source === "mock" ? "Demo data" : ((latest as any).provider || latest?.source || "n/a");
+          const channel = (latest as any)?.channel || "HTML_PAGE";
           return {
             status,
-            lastSuccessfulUpdate: latest.asOf,
+            lastSuccessfulUpdate: latest?.asOf || null,
             source: `${provider}(${channel})`,
           };
         };
