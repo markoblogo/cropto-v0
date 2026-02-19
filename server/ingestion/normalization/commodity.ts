@@ -1,5 +1,5 @@
 import type { CommodityCategory } from "../types";
-import { normalizeCommodity as normalizeCanonicalCommodity } from "@shared/commodities";
+import { normalizeCommodity as normalizeCanonicalCommodity } from "../../../shared/commodities";
 
 const ALIASES: Array<{ re: RegExp; commodity: string; category: CommodityCategory; variant?: string }> = [
   { re: /\bmais\b|\bmaize\b|\bcorn\b/i, commodity: "corn", category: "grain" },

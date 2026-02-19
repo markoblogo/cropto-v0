@@ -2894,6 +2894,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/market-ingestion/public-sample", async (req, res) => {
+    try {
+      const market = String(req.query.market || "").toUpperCase();
+      const commodityRaw = String(req.query.commodity || "").toLowerCase();
+      const commodity = normalizeCanonicalCommodity(commodityRaw).commodity;
+      const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || "20"), 10) || 20, 1), 50);
+      if (!["BR", "AR", "US", "UA"].includes(market)) {
+        return res.status(400).json({ error: "market must be BR/AR/US/UA" });
+      }
+      if (!commodity || commodity === "unknown") {
+        return res.status(400).json({ error: "commodity is required" });
+      }
+
+      const rows = await db
+        .select()
+        .from(marketPrices)
+        .where(and(eq(marketPrices.market, market), eq(marketPrices.commodity, commodity)))
+        .orderBy(desc(marketPrices.fetchedAt))
+        .limit(limit);
+
+      const sample = rows.map((row) => {
+        let meta: Record<string, unknown> = {};
+        try {
+          meta = row.rawMeta ? JSON.parse(row.rawMeta) : {};
+        } catch {
+          meta = {};
+        }
+        return {
+          asOf: row.asOf ? new Date(row.asOf).toISOString() : null,
+          fetchedAt: row.fetchedAt ? new Date(row.fetchedAt).toISOString() : null,
+          provider: row.provider,
+          channel: row.channel,
+          rawPrice: row.priceRaw ? Number.parseFloat(String(row.priceRaw)) : null,
+          rawCurrency: row.rawCurrency || null,
+          rawUnit: row.rawUnit || null,
+          rawTextSnippet: typeof meta.rawTextSnippet === "string" ? String(meta.rawTextSnippet).slice(0, 220) : null,
+          priceUsdPerTon: row.priceUsdPerTon ? Number.parseFloat(String(row.priceUsdPerTon)) : null,
+          conversionNotes: row.conversionNotes || null,
+          needsReview: row.needsReview === "true",
+          invalidReason: typeof meta.invalidReason === "string" ? meta.invalidReason : null,
+          sourceUrl: row.sourceUrl || null,
+        };
+      });
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        market,
+        commodity,
+        count: sample.length,
+        sample,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: "Failed to fetch public sample" });
+    }
+  });
+
   // GET /debug/index-prices/raw - diagnostic raw rows for ETL verification
   app.get("/debug/index-prices/raw", authenticateToken, async (req: AuthRequest, res) => {
     try {
