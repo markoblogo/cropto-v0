@@ -40,6 +40,7 @@ import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
 import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
+import { deriveMarketHealth, selectCountryRows } from "./services/dashboardSourcePolicy";
 import { IGC_SERIES_MAPPING } from "./services/igcSeriesMapping";
 import { getSourceDescriptor } from "./services/sourceCatalog";
 import { findSpreadSpec } from "./services/specRegistry";
@@ -2459,13 +2460,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const brData = brResolved.selected;
       const arData = arResolved.selected;
       const usData = usResolved.selected;
-      const stripMockWhenRealExists = (rows: MarketIndexDto[]): MarketIndexDto[] => {
-        if (!rows.some((row) => row.source !== "mock")) return rows;
-        return rows.filter((row) => row.source !== "mock");
-      };
-      const brDataNoMock = stripMockWhenRealExists(brData);
-      const arDataNoMock = stripMockWhenRealExists(arData);
-      const usDataNoMock = stripMockWhenRealExists(usData);
+      const brDataNoMock = selectCountryRows(brData, false).selected;
+      const arDataNoMock = selectCountryRows(arData, false).selected;
+      const usDataNoMock = selectCountryRows(usData, false).selected;
 
       const failoverEvents = [...usResolved.failoverEvents, ...brResolved.failoverEvents, ...arResolved.failoverEvents];
       if (failoverEvents.length > 0) {
@@ -2690,34 +2687,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const marketHealth = (() => {
-        const mk = (items: MarketIndexDto[]) => {
-          if (!items || items.length === 0) {
-            return { status: "FAIL", lastSuccessfulUpdate: null, source: null };
-          }
-          const sorted = [...items].sort((a, b) => new Date(b.asOf).getTime() - new Date(a.asOf).getTime());
-          const successful = sorted.filter((item) => (item.priceStatus || item.dataStatus) !== "no_recent" && item.priceStatus !== "missing");
-          const latest = successful[0] || sorted[0];
-          const hasMock = sorted.some((item) => item.source === "mock");
-          const hasStale = sorted.some((item) => (item.priceStatus || item.dataStatus) === "stale");
-          const hasMissing = sorted.every((item) => (item.priceStatus || item.dataStatus) === "no_recent" || item.priceStatus === "missing");
-          const hasLastFetchFailed = sorted.some((item) => item.lastFetchStatus === "failed");
-          const status = hasMissing ? "FAIL" : hasMock || hasStale || hasLastFetchFailed ? "WARN" : "OK";
-          const provider = latest?.source === "mock" ? "Demo data" : ((latest as any).provider || latest?.source || "n/a");
-          const channel = (latest as any)?.channel || "HTML_PAGE";
-          return {
-            status,
-            lastSuccessfulUpdate: latest?.asOf || null,
-            source: `${provider}(${channel})`,
-          };
-        };
-        return {
-          ua: mk(uaDataWithSeriesKey),
-          br: mk(finalBrData),
-          ar: mk(finalArData),
-          us: mk(finalUsData),
-        };
-      })();
+      const marketHealth = {
+        ua: deriveMarketHealth(uaDataWithSeriesKey),
+        br: deriveMarketHealth(finalBrData),
+        ar: deriveMarketHealth(finalArData),
+        us: deriveMarketHealth(finalUsData),
+      };
       const dataAlerts = {
         br:
           finalBrData.length === 0
