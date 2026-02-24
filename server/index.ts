@@ -12,6 +12,7 @@ import { db } from "./db";
 import { startFxIngestionScheduler } from "./ingestion/scheduler/fxIngestionJob";
 import { startMarketIngestionScheduler } from "./ingestion/scheduler/marketIngestionJob";
 import { getRuntimeInfo } from "./runtimeInfo";
+import { registerMonitorRoutes } from "./monitor/routes";
 import path from "path";
 
 const app = express();
@@ -86,6 +87,7 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
   registerSpotRoutes(app);
+  registerMonitorRoutes(app);
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "API route not found" });
   });
