@@ -311,7 +311,7 @@ export function MarketDashboard() {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6">
           <div>
             <h2 className="text-3xl font-bold tracking-tight mb-2">
               {t('home.market.title')}
@@ -319,18 +319,6 @@ export function MarketDashboard() {
             <p className="text-muted-foreground">
               {t('home.market.subtitle')}
             </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setLocation("/arbitrage")}
-          >
-            <TrendingUp className="mr-2 h-4 w-4" />
-            {t('home.market.compareMarkets')}
-          </Button>
-        </div>
-        <div className="mb-6 w-full md:mb-5 md:flex md:justify-end">
-          <div className="w-full md:max-w-sm">
-            <InvestorDeckCallout />
           </div>
         </div>
         {selectedHealth ? (
@@ -348,12 +336,30 @@ export function MarketDashboard() {
         ) : null}
 
         <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as MarketCountryTab)} className="w-full">
-          <TabsList className="grid w-full max-w-lg grid-cols-4">
-            <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
-            <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
-            <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
-            <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
-          </TabsList>
+          <div className="mb-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center lg:grid-cols-[minmax(0,1fr)_320px_auto]">
+            <div className="min-w-0 md:col-start-1 md:row-start-1">
+              <TabsList className="grid w-full max-w-xl grid-cols-4">
+                <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
+                <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
+                <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+                <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <div className="md:col-start-2 md:row-start-1 md:justify-self-end lg:col-start-3">
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/arbitrage")}
+              >
+                <TrendingUp className="mr-2 h-4 w-4" />
+                {t('home.market.compareMarkets')}
+              </Button>
+            </div>
+
+            <div className="w-full md:col-span-2 md:row-start-2 lg:col-span-1 lg:col-start-2 lg:row-start-1">
+              <InvestorDeckCallout />
+            </div>
+          </div>
 
           <TabsContent value="ua" className="mt-6">
             <MarketTab 
