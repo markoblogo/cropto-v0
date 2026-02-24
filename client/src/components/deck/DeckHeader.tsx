@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { Button } from "@/components/ui/button";
 import type { DeckNavItem } from "@/components/deck/deck-content";
 import { CROPTO_MAIN_SITE_URL } from "@/components/deck/deck-content";
@@ -29,7 +30,7 @@ export function DeckHeader({ navItems }: DeckHeaderProps) {
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <a href="#overview" className="flex items-center gap-3 rounded-md px-1 py-1 hover-elevate">
-          <img src="/cropto-logo.png" alt="Cropto" className="h-8 w-auto" />
+          <ThemeAwareLogo alt="Cropto" className="h-8 w-auto" />
           <span className="hidden text-base font-semibold sm:inline">Cropto</span>
         </a>
 

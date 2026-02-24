@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -160,12 +161,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
         <div className="flex items-center justify-between h-14 gap-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 hover-elevate rounded-lg px-2 py-1 -ml-2">
-            <img 
-              src="/cropto-logo.png" 
-              alt={t('site.logoAlt')}
-              className="h-7 w-auto"
-              data-testid="img-header-logo"
-            />
+            <ThemeAwareLogo alt={t('site.logoAlt')} className="h-7 w-auto" testId="img-header-logo" />
             <span className="font-bold text-lg hidden sm:inline">{t('site.title')}</span>
           </Link>
 

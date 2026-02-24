@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
 const COUNTRY_FLAGS = [
   { code: "ua", flag: "🇺🇦" },
@@ -70,7 +71,7 @@ export function Footer() {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-xl border border-border/70 bg-background/85 p-2.5 md:col-span-2 xl:col-span-1">
             <div className="flex items-center gap-2.5">
-              <img src="/cropto-logo.png" alt={t("site.logoAlt")} className="h-8 w-auto" />
+              <ThemeAwareLogo alt={t("site.logoAlt")} className="h-8 w-auto" />
               <p className="text-sm font-semibold text-foreground">{t("site.title")}</p>
             </div>
             <p className="mt-1.5 max-w-xs text-sm leading-5 text-foreground/75">{t("footer.description")}</p>

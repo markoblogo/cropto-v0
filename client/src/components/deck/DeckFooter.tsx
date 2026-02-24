@@ -1,4 +1,5 @@
 import { CROPTO_MAIN_SITE_URL, DECK_PAGE_COPY } from "@/components/deck/deck-content";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
 export function DeckFooter() {
   return (
@@ -6,7 +7,7 @@ export function DeckFooter() {
       <div className="container mx-auto grid gap-3 px-4 py-6 sm:px-6 lg:grid-cols-[1.4fr_1fr] lg:px-8">
         <div className="space-y-2.5">
           <div className="flex items-center gap-3">
-            <img src="/cropto-logo.png" alt="Cropto" className="h-8 w-auto" />
+            <ThemeAwareLogo alt="Cropto" className="h-8 w-auto" />
             <p className="text-base font-semibold text-foreground">Cropto</p>
           </div>
           <p className="max-w-xl text-sm leading-6 text-foreground/78">
