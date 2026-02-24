@@ -179,14 +179,14 @@ export function DeckNativeVideo() {
   }, [apiFailed, isPlayerReady, prefersReducedMotion]);
 
   return (
-    <section className="border-b border-border/60 py-16 sm:py-20">
-      <div className="container mx-auto space-y-5 px-4 sm:px-6 lg:px-8">
+    <section className="border-b border-border/60 py-14 sm:py-16">
+      <div className="container mx-auto space-y-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl space-y-3">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{DECK_PAGE_COPY.videoTitle}</h2>
-          <p className="text-base leading-8 text-muted-foreground sm:text-lg">{DECK_PAGE_COPY.videoIntro}</p>
+          <p className="text-base leading-8 text-foreground/82 sm:text-lg">{DECK_PAGE_COPY.videoIntro}</p>
         </div>
 
-        <Card className="overflow-hidden border-border/85 bg-gradient-to-b from-muted/55 via-card to-card shadow-xl">
+        <Card className="overflow-hidden border-border/90 bg-gradient-to-b from-muted/70 via-card to-card shadow-xl transition-all duration-300 hover:border-primary/35 hover:shadow-2xl">
           <CardContent className="p-0">
             <div ref={sectionRef} className="relative aspect-video w-full bg-black">
               <div id={playerContainerIdRef.current} className="h-full w-full" />
@@ -210,9 +210,9 @@ export function DeckNativeVideo() {
           </CardContent>
         </Card>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-foreground/72">
           <span>Muted autoplay in viewport, loop enabled.</span>
-          <Button variant="outline" size="sm" className="transition-all hover:-translate-y-0.5" asChild>
+          <Button variant="outline" size="sm" className="transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-md" asChild>
             <a href={CROPTO_DECK_VIDEO_SOURCE_URL} target="_blank" rel="noreferrer">
               Open on YouTube
             </a>

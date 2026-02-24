@@ -7,9 +7,9 @@ interface DeckCtaBandProps {
 
 export function DeckCtaBand({ onViewDeck }: DeckCtaBandProps) {
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-14 sm:py-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-2xl border border-primary/35 bg-[linear-gradient(120deg,hsl(var(--foreground))_0%,hsl(var(--foreground))_55%,hsl(var(--primary))_160%)] p-8 text-background shadow-2xl dark:bg-[linear-gradient(120deg,hsl(0_0%_14%)_0%,hsl(0_0%_18%)_55%,hsl(var(--primary)/0.35)_150%)]">
+        <div className="overflow-hidden rounded-2xl border border-primary/35 bg-[linear-gradient(120deg,hsl(var(--foreground))_0%,hsl(var(--foreground))_55%,hsl(var(--primary))_160%)] p-7 text-background shadow-2xl dark:bg-[linear-gradient(120deg,hsl(0_0%_14%)_0%,hsl(0_0%_18%)_55%,hsl(var(--primary)/0.35)_150%)]">
           <div className="max-w-3xl space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-background/75 dark:text-foreground/70">Next Step</p>
             <h3 className="text-2xl font-semibold leading-tight sm:text-3xl">{DECK_PAGE_COPY.ctaBandTitle}</h3>
