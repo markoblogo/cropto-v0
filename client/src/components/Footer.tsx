@@ -2,6 +2,8 @@ import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Badge } from "@/components/ui/badge";
+import { FileText } from "lucide-react";
 
 const COUNTRY_FLAGS = [
   { code: "ua", flag: "🇺🇦" },
@@ -100,33 +102,57 @@ export function Footer() {
             </Link>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-background/80 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.optionsTrading")}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {COUNTRY_FLAGS.map(({ code, flag }) => (
-                <FlagLink
-                  key={`opt-${code}`}
-                  href={`/options?country=${code}`}
-                  flag={flag}
-                  ariaLabel={`${t("nav.optionsTrading")} — ${countryLabel(code, t)}`}
-                />
-              ))}
+          <div className="grid gap-2.5">
+            <div className="rounded-xl border border-border/60 bg-background/80 p-2.5">
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.optionsTrading")}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {COUNTRY_FLAGS.map(({ code, flag }) => (
+                  <FlagLink
+                    key={`opt-${code}`}
+                    href={`/options?country=${code}`}
+                    flag={flag}
+                    ariaLabel={`${t("nav.optionsTrading")} — ${countryLabel(code, t)}`}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/80 p-2.5">
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.marketData")}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {COUNTRY_FLAGS.map(({ code, flag }) => (
+                  <FlagLink
+                    key={`mkt-${code}`}
+                    href={`/market-data?country=${code}`}
+                    flag={flag}
+                    ariaLabel={`${t("footer.marketData")} — ${countryLabel(code, t)}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-background/80 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.marketData")}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {COUNTRY_FLAGS.map(({ code, flag }) => (
-                <FlagLink
-                  key={`mkt-${code}`}
-                  href={`/market-data?country=${code}`}
-                  flag={flag}
-                  ariaLabel={`${t("footer.marketData")} — ${countryLabel(code, t)}`}
-                />
-              ))}
+          <Link
+            href="/deck"
+            className="group relative overflow-hidden rounded-xl border border-primary/35 bg-gradient-to-br from-primary/10 via-background/85 to-gold/10 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Open Cropto partner and investor deck"
+          >
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/45 to-transparent" />
+            <div className="mb-1.5 flex items-center justify-between">
+              <Badge variant="outline" className="border-primary/35 bg-primary/5 text-[10px] uppercase tracking-wide text-foreground/80">
+                Partner / Investor
+              </Badge>
+              <FileText className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden="true" />
             </div>
-          </div>
+            <p className="text-sm font-semibold text-foreground">Cropto Deck</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Market thesis, roadmap, investor overview.</p>
+            <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span>Slides + PDF</span>
+            </div>
+            <p className="mt-1.5 text-sm font-semibold text-primary">
+              Open deck
+              <span className="ml-1 inline-block transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transform-none">→</span>
+            </p>
+          </Link>
 
           <div className="rounded-xl border border-border/60 bg-background/80 p-3">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
