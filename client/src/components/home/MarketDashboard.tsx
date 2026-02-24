@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { commodityDisplayName } from "@shared/commodities";
+import { InvestorDeckCallout } from "@/components/home/InvestorDeckCallout";
 
 interface HistoryDataPoint {
   date: string;
@@ -326,6 +327,11 @@ export function MarketDashboard() {
             <TrendingUp className="mr-2 h-4 w-4" />
             {t('home.market.compareMarkets')}
           </Button>
+        </div>
+        <div className="mb-6 w-full md:mb-5 md:flex md:justify-end">
+          <div className="w-full md:max-w-sm">
+            <InvestorDeckCallout />
+          </div>
         </div>
         {selectedHealth ? (
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
