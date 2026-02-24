@@ -311,61 +311,69 @@ export function MarketDashboard() {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative lg:min-h-[156px] lg:pr-[390px] xl:pr-[430px]">
-          <div className="hidden lg:block lg:absolute lg:right-[118px] lg:top-0 lg:w-[300px] xl:right-[138px] xl:w-[330px]">
-            <InvestorDeckCallout />
-          </div>
-
-        <div className="mb-6">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight mb-2">
-              {t('home.market.title')}
-            </h2>
-            <p className="text-muted-foreground">
-              {t('home.market.subtitle')}
-            </p>
-          </div>
-        </div>
-        {selectedHealth ? (
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
-            <span>·</span>
-            <span>Source: {selectedHealth.source || "n/a"}</span>
-            <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
-          </div>
-        ) : null}
-        {selectedDataAlert ? (
-          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            {selectedDataAlert}
-          </div>
-        ) : null}
-        </div>
-
         <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as MarketCountryTab)} className="w-full">
-          <div className="mb-5 space-y-3">
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-              <div className="min-w-0">
+          <div className="mb-5 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-4">
+              <div>
+                <h2 className="mb-2 text-3xl font-bold tracking-tight">
+                  {t('home.market.title')}
+                </h2>
+                <p className="text-muted-foreground">
+                  {t('home.market.subtitle')}
+                </p>
+              </div>
+
+              {selectedHealth ? (
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
+                  <span>·</span>
+                  <span>Source: {selectedHealth.source || "n/a"}</span>
+                  <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
+                </div>
+              ) : null}
+
+              {selectedDataAlert ? (
+                <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  {selectedDataAlert}
+                </div>
+              ) : null}
+
+              <div className="w-full lg:hidden">
+                <InvestorDeckCallout />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center lg:block">
+                <div className="min-w-0">
               <TabsList className="grid w-full max-w-xl grid-cols-4">
                 <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
                 <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
                 <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
                 <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
               </TabsList>
-              </div>
+                </div>
 
-              <div className="md:justify-self-end">
+                <div className="md:justify-self-end lg:hidden">
+                  <Button
+                    variant="outline"
+                    onClick={() => setLocation("/arbitrage")}
+                  >
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    {t('home.market.compareMarkets')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden space-y-3 lg:block">
+              <InvestorDeckCallout />
               <Button
                 variant="outline"
+                className="w-full justify-center"
                 onClick={() => setLocation("/arbitrage")}
               >
                 <TrendingUp className="mr-2 h-4 w-4" />
                 {t('home.market.compareMarkets')}
               </Button>
-              </div>
-            </div>
-
-            <div className="w-full lg:hidden">
-              <InvestorDeckCallout />
             </div>
           </div>
 
