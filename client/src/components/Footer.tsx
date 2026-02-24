@@ -66,19 +66,19 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border/70 bg-muted/85">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-xl border border-border/60 bg-background/80 p-3 md:col-span-2 xl:col-span-1">
+          <div className="rounded-xl border border-border/70 bg-background/85 p-2.5 md:col-span-2 xl:col-span-1">
             <div className="flex items-center gap-2.5">
               <img src="/cropto-logo.png" alt={t("site.logoAlt")} className="h-8 w-auto" />
-              <p className="font-semibold text-foreground">{t("site.title")}</p>
+              <p className="text-sm font-semibold text-foreground">{t("site.title")}</p>
             </div>
-            <p className="mt-2 max-w-xs text-xs leading-5 text-muted-foreground">{t("footer.description")}</p>
+            <p className="mt-1.5 max-w-xs text-sm leading-5 text-foreground/75">{t("footer.description")}</p>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-background/80 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.indexTrading")}</p>
-            <div className="mb-2 flex flex-wrap gap-1.5">
+          <div className="rounded-xl border border-border/70 bg-background/85 p-2.5">
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-foreground/75">{t("footer.indexTrading")}</p>
+            <div className="mb-1.5 flex flex-wrap gap-1.5">
               {COUNTRY_FLAGS.map(({ code, flag }) => (
                 <FlagLink
                   key={`idx-${code}`}
@@ -92,7 +92,7 @@ export function Footer() {
               href="/arbitrage"
               aria-label={t("nav.tradeArbitrage")}
               title={t("nav.tradeArbitrage")}
-              className="inline-flex w-full items-center justify-center gap-1 rounded-full border border-primary/35 bg-primary/10 px-2 py-1.5 text-sm transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="inline-flex w-full items-center justify-center gap-1 rounded-full border border-primary/35 bg-primary/10 px-2 py-1.5 text-sm font-medium transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               {COUNTRY_FLAGS.map(({ code, flag }) => (
                 <span key={`arb-${code}`} className="text-base" aria-hidden="true">
@@ -103,8 +103,8 @@ export function Footer() {
           </div>
 
           <div className="grid gap-2.5">
-            <div className="rounded-xl border border-border/60 bg-background/80 p-2.5">
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.optionsTrading")}</p>
+            <div className="rounded-xl border border-border/70 bg-background/85 p-2.5">
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-foreground/75">{t("footer.optionsTrading")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {COUNTRY_FLAGS.map(({ code, flag }) => (
                   <FlagLink
@@ -116,8 +116,8 @@ export function Footer() {
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-border/60 bg-background/80 p-2.5">
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("footer.marketData")}</p>
+            <div className="rounded-xl border border-border/70 bg-background/85 p-2.5">
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-foreground/75">{t("footer.marketData")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {COUNTRY_FLAGS.map(({ code, flag }) => (
                   <FlagLink
@@ -133,34 +133,35 @@ export function Footer() {
 
           <Link
             href="/deck"
-            className="group relative overflow-hidden rounded-xl border border-primary/35 bg-gradient-to-br from-primary/10 via-background/85 to-gold/10 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="group relative overflow-hidden rounded-xl border border-primary/45 bg-gradient-to-br from-primary/15 via-background/90 to-gold/15 p-2.5 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/70 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="Open Cropto partner and investor deck"
           >
             <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/45 to-transparent" />
+            <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-primary/12 to-transparent opacity-0 transition-all duration-1000 group-hover:left-full group-hover:opacity-100 motion-reduce:hidden" />
             <div className="mb-1.5 flex items-center justify-between">
-              <Badge variant="outline" className="border-primary/35 bg-primary/5 text-[10px] uppercase tracking-wide text-foreground/80">
+              <Badge variant="outline" className="border-primary/40 bg-primary/10 text-[10px] font-semibold uppercase tracking-wide text-foreground/85">
                 Partner / Investor
               </Badge>
-              <FileText className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden="true" />
+              <FileText className="h-4 w-4 text-foreground/65 transition-colors group-hover:text-primary" aria-hidden="true" />
             </div>
-            <p className="text-sm font-semibold text-foreground">Cropto Deck</p>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Market thesis, roadmap, investor overview.</p>
-            <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <p className="text-[15px] font-semibold text-foreground">Cropto Deck</p>
+            <p className="mt-1 text-sm leading-5 text-foreground/78">Market thesis, roadmap, investor overview.</p>
+            <div className="mt-1.5 flex items-center gap-2 text-[11px] text-foreground/65">
               <span>Slides + PDF</span>
             </div>
-            <p className="mt-1.5 text-sm font-semibold text-primary">
+            <p className="mt-1 text-sm font-semibold text-primary">
               Open deck
               <span className="ml-1 inline-block transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transform-none">→</span>
             </p>
           </Link>
 
-          <div className="rounded-xl border border-border/60 bg-background/80 p-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <div className="rounded-xl border border-border/70 bg-background/85 p-2.5">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
               {moreLinks.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="truncate text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  className="truncate text-sm text-foreground/72 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
                   {item.label}
                 </Link>
@@ -169,7 +170,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 border-t border-border/60 pt-3 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div className="mt-3 flex flex-col gap-1.5 border-t border-border/60 pt-2.5 text-xs text-foreground/65 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/privacy" className="transition-colors hover:text-foreground">
               {t("footer.privacyPolicy")}
