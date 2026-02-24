@@ -7,7 +7,7 @@ interface DeckCtaBandProps {
 
 export function DeckCtaBand({ onViewDeck }: DeckCtaBandProps) {
   return (
-    <section className="py-14 sm:py-16">
+    <section className="py-16 sm:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-2xl border border-primary/35 bg-[linear-gradient(120deg,hsl(var(--foreground))_0%,hsl(var(--foreground))_55%,hsl(var(--primary))_160%)] p-8 text-background shadow-2xl dark:bg-[linear-gradient(120deg,hsl(0_0%_14%)_0%,hsl(0_0%_18%)_55%,hsl(var(--primary)/0.35)_150%)]">
           <div className="max-w-3xl space-y-4">
@@ -18,7 +18,7 @@ export function DeckCtaBand({ onViewDeck }: DeckCtaBandProps) {
               <Button
                 size="lg"
                 variant="secondary"
-                className="shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5"
+                className="bg-amber-300 text-amber-950 shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl"
                 onClick={onViewDeck}
               >
                 {DECK_PAGE_COPY.viewDeckCta}
@@ -26,7 +26,7 @@ export function DeckCtaBand({ onViewDeck }: DeckCtaBandProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-background/30 bg-transparent text-background hover:bg-background/10 dark:border-foreground/30 dark:text-foreground"
+                className="border-lime-300/45 bg-lime-300/90 text-lime-950 shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-lime-200 dark:border-foreground/30 dark:text-lime-950"
                 asChild
               >
                 <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">

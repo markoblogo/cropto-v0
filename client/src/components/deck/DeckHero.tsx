@@ -51,60 +51,61 @@ export function DeckHero({ onViewDeck }: DeckHeroProps) {
   }, [slides.length, prefersReducedMotion]);
 
   return (
-    <section id="overview" className="scroll-mt-24 border-b border-border/60 bg-gradient-to-b from-muted/50 via-background to-background">
-      <div className="container mx-auto grid gap-7 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-10 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card/35 p-6 shadow-xl backdrop-blur-[2px] sm:p-8">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/15 via-transparent to-transparent dark:from-white/5" />
-          <p className="relative mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Partner & Investor Page</p>
-          <h1 className="relative text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-[2.8rem]">
-            {DECK_PAGE_COPY.heroTitle}
-          </h1>
-          <p className="relative mt-5 max-w-2xl text-base leading-8 text-foreground/90 sm:text-lg">{DECK_PAGE_COPY.heroSubtitle}</p>
-          <p className="relative mt-3 max-w-2xl text-sm leading-7 text-foreground/75">{DECK_PAGE_COPY.heroMicrocopy}</p>
-
-          <div className="relative mt-7 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" className="transition-all hover:-translate-y-0.5 hover:shadow-lg" onClick={onViewDeck}>
-              {DECK_PAGE_COPY.viewDeckCta}
-            </Button>
-            <Button size="lg" variant="outline" className="transition-all hover:-translate-y-0.5" asChild>
-              <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
-                {DECK_PAGE_COPY.exploreProductCta}
-              </a>
-            </Button>
+    <section id="overview" className="scroll-mt-24 border-b border-border/60">
+      <div className="relative isolate overflow-hidden">
+        {slides.map((slide, index) => (
+          <div
+            key={`${slide.src}-${index}`}
+            className="absolute inset-0 transition-opacity duration-1000 motion-reduce:transition-none"
+            style={{ opacity: index === activeIndex ? 1 : 0 }}
+            aria-hidden={index !== activeIndex}
+          >
+            <img src={slide.src} alt={slide.alt} className="h-full w-full object-cover" />
           </div>
-        </div>
+        ))}
 
-        <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-2xl">
-          <div className="relative aspect-[16/10]">
-            {slides.map((slide, index) => (
-              <div
-                key={`${slide.src}-${index}`}
-                className="absolute inset-0 transition-opacity duration-1000 motion-reduce:transition-none"
-                style={{ opacity: index === activeIndex ? 1 : 0 }}
-                aria-hidden={index !== activeIndex}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/62 to-black/35 dark:from-black/88 dark:via-black/72 dark:to-black/40" />
+        <div className="absolute inset-y-0 left-0 w-[58%] bg-gradient-to-r from-black/50 to-transparent" />
+
+        <div className="relative container mx-auto px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <div className="max-w-3xl rounded-2xl border border-white/20 bg-black/30 p-6 shadow-2xl backdrop-blur-[3px] sm:p-8 lg:p-10">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Partner & Investor Page</p>
+            <h1 className="text-3xl font-semibold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-6xl [text-shadow:0_2px_16px_rgba(0,0,0,0.45)]">
+              {DECK_PAGE_COPY.heroTitle}
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-white/92 sm:text-lg">{DECK_PAGE_COPY.heroSubtitle}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/78 sm:text-base">{DECK_PAGE_COPY.heroMicrocopy}</p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button
+                size="lg"
+                className="bg-amber-300 text-amber-950 shadow-lg shadow-black/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl"
+                onClick={onViewDeck}
               >
-                <img src={slide.src} alt={slide.alt} className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-black/78 via-black/35 to-black/20" />
-                <div className="absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-black/48 to-transparent" />
-              </div>
-            ))}
-
-            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-              <p className="max-w-md text-sm font-medium leading-6 text-white [text-shadow:0_1px_8px_rgba(0,0,0,0.45)] sm:text-base">
-                Cropto builds risk transfer infrastructure for local commodity realities and scalable digital liquidity.
-              </p>
-              {slides.length > 1 ? (
-                <div className="flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1 backdrop-blur">
-                  {slides.map((_, index) => (
-                    <span
-                      key={`dot-${index}`}
-                      className={`h-1.5 w-1.5 rounded-full transition-colors ${index === activeIndex ? "bg-white" : "bg-white/40"}`}
-                    />
-                  ))}
-                </div>
-              ) : null}
+                {DECK_PAGE_COPY.viewDeckCta}
+              </Button>
+              <Button
+                size="lg"
+                className="border border-lime-300/70 bg-lime-300/85 text-lime-950 shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-lime-200"
+                asChild
+              >
+                <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
+                  {DECK_PAGE_COPY.exploreProductCta}
+                </a>
+              </Button>
             </div>
           </div>
+
+          {slides.length > 1 ? (
+            <div className="mt-6 flex items-center gap-2">
+              {slides.map((_, index) => (
+                <span
+                  key={`dot-${index}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${index === activeIndex ? "w-8 bg-primary" : "w-3 bg-white/45"}`}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

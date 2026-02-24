@@ -22,6 +22,7 @@ export type DeckEcosystemLink = {
   label: string;
   href: string;
   description: string;
+  tag: string;
 };
 
 export const CROPTO_MAIN_SITE_URL = "https://cropto.abvx.xyz/";
@@ -209,21 +210,25 @@ export const DECK_ECOSYSTEM_LINKS: DeckEcosystemLink[] = [
     label: "Spike.brokers",
     href: "https://spike.broker/",
     description: "Broker infrastructure partner",
+    tag: "Partner",
   },
   {
     label: "Trade Solution",
     href: "https://trade-solution.eu/",
     description: "Commodity trade and operations context",
+    tag: "Related Project",
   },
   {
     label: "Liqua",
     href: "https://liqua.abvx.xyz/",
     description: "Related market infrastructure project",
+    tag: "Ecosystem",
   },
   {
     label: "Cropto beta",
     href: "https://cropto.abvx.xyz/",
     description: "Current product environment",
+    tag: "Beta",
   },
 ];
 

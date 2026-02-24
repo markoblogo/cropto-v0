@@ -186,7 +186,7 @@ export function DeckNativeVideo() {
           <p className="text-base leading-8 text-muted-foreground sm:text-lg">{DECK_PAGE_COPY.videoIntro}</p>
         </div>
 
-        <Card className="overflow-hidden border-border/80 bg-card/80 shadow-lg">
+        <Card className="overflow-hidden border-border/85 bg-gradient-to-b from-muted/55 via-card to-card shadow-xl">
           <CardContent className="p-0">
             <div ref={sectionRef} className="relative aspect-video w-full bg-black">
               <div id={playerContainerIdRef.current} className="h-full w-full" />
@@ -210,10 +210,9 @@ export function DeckNativeVideo() {
           </CardContent>
         </Card>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span>Muted autoplay in viewport, loop enabled.</span>
-          <span aria-hidden="true">•</span>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm" className="transition-all hover:-translate-y-0.5" asChild>
             <a href={CROPTO_DECK_VIDEO_SOURCE_URL} target="_blank" rel="noreferrer">
               Open on YouTube
             </a>
