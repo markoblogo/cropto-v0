@@ -312,54 +312,61 @@ export function MarketDashboard() {
     <section className="py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as MarketCountryTab)} className="w-full">
-          <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12 xl:gap-4">
-            <div className="md:col-span-1 xl:col-span-6">
-              <h2 className="mb-2 text-3xl font-bold tracking-tight">
-                {t('home.market.title')}
-              </h2>
-              <p className="text-muted-foreground">
-                {t('home.market.subtitle')}
-              </p>
+          <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] md:gap-4 xl:[grid-template-columns:minmax(0,1.6fr)_minmax(320px,420px)_auto] xl:items-start xl:gap-6">
+            <div className="space-y-4 md:min-w-0 xl:col-start-1">
+              <div>
+                <h2 className="mb-2 text-3xl font-bold tracking-tight">
+                  {t('home.market.title')}
+                </h2>
+                <p className="text-muted-foreground">
+                  {t('home.market.subtitle')}
+                </p>
+              </div>
+
+              {selectedHealth ? (
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
+                  <span>·</span>
+                  <span>Source: {selectedHealth.source || "n/a"}</span>
+                  <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
+                </div>
+              ) : null}
+
+              {selectedDataAlert ? (
+                <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  {selectedDataAlert}
+                </div>
+              ) : null}
+
+              <TabsList className="grid w-full max-w-xl grid-cols-4">
+                <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
+                <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
+                <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+                <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
+              </TabsList>
             </div>
 
-            <div className="md:col-span-1 xl:col-span-3">
+            <div className="space-y-3 md:col-start-2 xl:col-start-2">
               <InvestorDeckCallout />
-            </div>
-
-            <div className="md:col-span-2 xl:col-span-3 xl:justify-self-end">
               <Button
                 variant="outline"
-                className="w-full md:w-auto"
+                className="w-full justify-center md:inline-flex md:w-auto xl:hidden"
                 onClick={() => setLocation("/arbitrage")}
               >
                 <TrendingUp className="mr-2 h-4 w-4" />
                 {t('home.market.compareMarkets')}
               </Button>
             </div>
-          </div>
 
-          {selectedHealth ? (
-            <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
-              <span>·</span>
-              <span>Source: {selectedHealth.source || "n/a"}</span>
-              <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
+            <div className="hidden xl:col-start-3 xl:block xl:self-start">
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/arbitrage")}
+              >
+                <TrendingUp className="mr-2 h-4 w-4" />
+                {t('home.market.compareMarkets')}
+              </Button>
             </div>
-          ) : null}
-
-          {selectedDataAlert ? (
-            <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              {selectedDataAlert}
-            </div>
-          ) : null}
-
-          <div className="mb-5">
-            <TabsList className="grid w-full max-w-xl grid-cols-4">
-              <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
-              <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
-              <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
-              <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
-            </TabsList>
           </div>
 
           <TabsContent value="ua" className="mt-6">

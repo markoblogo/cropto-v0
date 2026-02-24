@@ -7,7 +7,7 @@ export function InvestorDeckCallout() {
     <Link
       href="/deck"
       aria-label="Open Cropto partner and investor deck"
-      className="group relative block overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-card via-background to-muted/45 p-3 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:p-3.5"
+      className="group relative block overflow-hidden rounded-xl border border-primary/35 bg-gradient-to-br from-background/95 via-card to-primary/5 p-3 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:p-3.5"
     >
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-primary/10 to-transparent opacity-0 transition-all duration-1000 group-hover:left-full group-hover:opacity-100 motion-reduce:hidden" />
@@ -23,7 +23,7 @@ export function InvestorDeckCallout() {
             </Badge>
           </div>
           <p className="text-base font-semibold leading-tight text-foreground md:text-[17px]">Cropto Deck</p>
-          <p className="text-xs leading-5 text-muted-foreground md:text-sm md:leading-6">
+          <p className="text-xs leading-5 text-foreground/72 md:text-sm md:leading-6">
             Market thesis, product roadmap, and investor overview.
           </p>
           <div className="hidden items-center gap-2 text-[11px] text-muted-foreground sm:flex xl:hidden">
