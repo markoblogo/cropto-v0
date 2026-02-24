@@ -95,6 +95,7 @@ function Router() {
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/risk-disclosure" component={RiskDisclosure} />
       <Route path="/deck" component={DeckPage} />
+      <Route path="/deck/" component={DeckPage} />
       <Route component={NotFound} />
     </Switch>
   );
