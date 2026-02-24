@@ -1,6 +1,13 @@
 node_modules
 dist
 .DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+*.tmp
+*.temp
 server/public
 vite.config.ts.*
 *.tar.gz

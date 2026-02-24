@@ -1,6 +1,7 @@
 {
-  "name": "rest-express",
-  "version": "1.0.0",
+  "name": "cropto-v0",
+  "version": "1.1.0",
+  "description": "Cropto commodity market infrastructure prototype with tokenized local grain indices, trading UI, and partner/investor deck.",
   "type": "module",
   "license": "MIT",
   "engines": {
