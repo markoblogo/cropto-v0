@@ -74,7 +74,7 @@ export function DeckHero({ onViewDeck }: DeckHeroProps) {
               {DECK_PAGE_COPY.heroTitle}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white sm:text-lg [text-shadow:0_1px_10px_rgba(0,0,0,0.45)]">{DECK_PAGE_COPY.heroSubtitle}</p>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/92 sm:text-base [text-shadow:0_1px_8px_rgba(0,0,0,0.4)]">{DECK_PAGE_COPY.heroMicrocopy}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-white sm:text-base [text-shadow:0_1px_8px_rgba(0,0,0,0.4)]">{DECK_PAGE_COPY.heroMicrocopy}</p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
