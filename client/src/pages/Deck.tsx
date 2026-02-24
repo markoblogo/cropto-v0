@@ -1,7 +1,7 @@
 import { HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeckContactForm } from "@/components/deck/DeckContactForm";
 import { DeckCtaBand } from "@/components/deck/DeckCtaBand";
 import { DeckEcosystemStrip } from "@/components/deck/DeckEcosystemStrip";
@@ -154,18 +154,20 @@ export default function DeckPage() {
                 </CardContent>
               </Card>
 
-              <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-br from-muted/80 via-card to-primary/10 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
+              <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-br from-muted/80 via-card to-primary/10 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-foreground">{DECK_PAGE_COPY.statusTitle}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex h-full flex-col gap-5">
+                <CardContent className="flex-1">
                   <p className="text-base leading-8 text-foreground/90">{DECK_PAGE_COPY.statusBody}</p>
+                </CardContent>
+                <CardFooter className="pt-2">
                   <Button className="mt-auto w-fit bg-amber-300 text-amber-950 shadow-md shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl" asChild>
                     <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
                       Explore current product environment
                     </a>
                   </Button>
-                </CardContent>
+                </CardFooter>
               </Card>
             </div>
           </div>
