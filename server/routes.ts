@@ -6427,7 +6427,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `${feedbackEntry.message}`,
       ].join("\n");
 
-      await Promise.all(
+      // Return immediately to keep form UX responsive; email delivery runs in background.
+      res.status(201).json(feedbackEntry);
+      void Promise.all(
         recipients.map(async (to) => {
           try {
             await emailService.sendEmail(to, "cropto deck", emailBody);
@@ -6436,8 +6438,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         })
       );
-
-      res.status(201).json(feedbackEntry);
     } catch (error) {
       console.error("Error creating feedback:", error);
       res.status(500).json({ error: "Failed to create feedback" });
