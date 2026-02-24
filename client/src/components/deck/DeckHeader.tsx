@@ -39,7 +39,7 @@ export function DeckHeader({ navItems }: DeckHeaderProps) {
               key={item.href}
               href={item.href}
               onClick={(event) => scrollToAnchor(event, item.href)}
-              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-md px-3 py-2 text-[14px] font-medium text-foreground/90 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               {item.label}
             </a>
@@ -63,7 +63,7 @@ export function DeckHeader({ navItems }: DeckHeaderProps) {
               key={`${item.href}-mobile`}
               href={item.href}
               onClick={(event) => scrollToAnchor(event, item.href)}
-              className="shrink-0 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="shrink-0 rounded-full border border-border/70 bg-card px-3 py-1.5 text-sm font-medium text-foreground/85 transition-colors hover:text-foreground"
             >
               {item.label}
             </a>

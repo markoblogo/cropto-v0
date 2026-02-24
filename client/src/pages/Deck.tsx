@@ -42,7 +42,7 @@ function SectionIntro({ label, title, body }: { label: string; title: string; bo
         {label}
       </Badge>
       <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
-      <p className="text-base leading-8 text-muted-foreground sm:text-lg">{body}</p>
+      <p className="text-base leading-8 text-foreground/80 sm:text-lg">{body}</p>
     </div>
   );
 }
@@ -59,14 +59,14 @@ export default function DeckPage() {
           <div className="container mx-auto space-y-10 px-4 sm:px-6 lg:px-8">
             <SectionIntro label="Problem" title={DECK_PAGE_COPY.problemTitle} body={DECK_PAGE_COPY.problemBody} />
 
-            <p className="max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">{DECK_PAGE_COPY.problemBody2}</p>
+            <p className="max-w-3xl text-base leading-8 text-foreground/75 sm:text-lg">{DECK_PAGE_COPY.problemBody2}</p>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {PROBLEM_BULLETS.map((item, index) => (
                 <Card
                   key={item}
-                  className={`transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md ${
-                    index === 0 ? "border-primary/35 bg-primary/5" : ""
+                  className={`border-border/80 bg-card/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md ${
+                    index === 0 ? "border-primary/35 bg-primary/5 shadow-md" : ""
                   }`}
                 >
                   <CardContent className="p-5">
@@ -76,7 +76,7 @@ export default function DeckPage() {
               ))}
             </div>
 
-            <Card className="border-primary/30 bg-primary/5 shadow-sm">
+            <Card className="border-primary/30 bg-primary/5 shadow-md">
               <CardHeader>
                 <CardTitle className="text-xl">{DECK_PAGE_COPY.notEnoughTitle}</CardTitle>
               </CardHeader>
@@ -90,11 +90,11 @@ export default function DeckPage() {
         <section id="product" className="scroll-mt-24 border-b border-border/60 py-16 sm:py-20 lg:py-24">
           <div className="container mx-auto space-y-10 px-4 sm:px-6 lg:px-8">
             <SectionIntro label="Product" title={DECK_PAGE_COPY.productTitle} body={DECK_PAGE_COPY.productBody} />
-            <p className="max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">{DECK_PAGE_COPY.productBody2}</p>
+            <p className="max-w-3xl text-base leading-8 text-foreground/75 sm:text-lg">{DECK_PAGE_COPY.productBody2}</p>
 
             <div className="grid gap-4 md:grid-cols-2">
               {PRODUCT_FEATURES.map((item) => (
-                <Card key={item.title} className="transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
+                <Card key={item.title} className="border-border/80 bg-card/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
                   <CardHeader>
                     <CardTitle className="text-lg">{item.title}</CardTitle>
                   </CardHeader>
@@ -105,10 +105,10 @@ export default function DeckPage() {
               ))}
             </div>
 
-            <Card>
+            <Card className="border-border/85 bg-card/85 shadow-sm">
               <CardHeader>
                 <CardTitle>{DECK_PAGE_COPY.marketScopeTitle}</CardTitle>
-                <CardDescription className="text-sm leading-7">{DECK_PAGE_COPY.marketScopeBody}</CardDescription>
+                  <CardDescription className="text-sm leading-7 text-foreground/70">{DECK_PAGE_COPY.marketScopeBody}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2.5">
@@ -125,7 +125,7 @@ export default function DeckPage() {
               <h3 className="text-2xl font-semibold tracking-tight">{DECK_PAGE_COPY.useCasesTitle}</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 {USE_CASES.map((item) => (
-                  <Card key={item.title} className="transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
+                  <Card key={item.title} className="border-border/80 bg-card/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
                     <CardHeader>
                       <CardTitle className="text-lg">{item.title}</CardTitle>
                     </CardHeader>
@@ -138,7 +138,7 @@ export default function DeckPage() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <Card className="h-full transition-all duration-300 hover:border-primary/35 hover:shadow-md">
+              <Card className="h-full border-border/85 bg-card/80 shadow-sm transition-all duration-300 hover:border-primary/35 hover:shadow-md">
                 <CardHeader>
                   <CardTitle>{DECK_PAGE_COPY.whyNowTitle}</CardTitle>
                 </CardHeader>
@@ -154,13 +154,13 @@ export default function DeckPage() {
                 </CardContent>
               </Card>
 
-              <Card className="h-full border-border/80 bg-muted/35 transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+              <Card className="h-full border-border/85 bg-muted/45 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md">
                 <CardHeader>
                   <CardTitle>{DECK_PAGE_COPY.statusTitle}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex h-full flex-col justify-between gap-5">
                   <p className="text-base leading-8 text-foreground/85">{DECK_PAGE_COPY.statusBody}</p>
-                  <Button variant="outline" className="w-fit transition-all hover:-translate-y-0.5" asChild>
+                  <Button className="w-fit bg-amber-300 text-amber-950 shadow-md shadow-primary/15 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-lg" asChild>
                     <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
                       Explore current product environment
                     </a>
@@ -177,7 +177,7 @@ export default function DeckPage() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               {MARKET_MODEL_STEPS.map((item) => (
-                <Card key={item.title} className="transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
+                <Card key={item.title} className="border-border/80 bg-card/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
                   <CardHeader>
                     <CardTitle className="text-base leading-7">{item.title}</CardTitle>
                   </CardHeader>
@@ -238,7 +238,7 @@ export default function DeckPage() {
             <SectionIntro label="FAQ" title={DECK_PAGE_COPY.faqTitle} body="Short answers to core partner and investor questions." />
             <div className="grid gap-4 md:grid-cols-2">
               {DECK_FAQ_ITEMS.map((item) => (
-                <Card key={item.question} className="h-full transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
+                <Card key={item.question} className="h-full border-border/85 bg-card/82 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
                   <CardHeader className="pb-3">
                     <div className="mb-2 flex items-center gap-2 text-primary/80">
                       <HelpCircle className="h-4 w-4" aria-hidden="true" />
@@ -247,7 +247,7 @@ export default function DeckPage() {
                     <CardTitle className="text-lg leading-7">{item.question}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-base leading-7 text-muted-foreground">{item.answer}</p>
+                    <p className="text-base leading-7 text-foreground/75">{item.answer}</p>
                   </CardContent>
                 </Card>
               ))}
