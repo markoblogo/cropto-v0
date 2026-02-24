@@ -1,0 +1,4 @@
+Add native teaser files here:
+- cropto-teaser.mp4 (required)
+- cropto-teaser.webm (optional)
+- cropto-teaser-poster.jpg (optional)

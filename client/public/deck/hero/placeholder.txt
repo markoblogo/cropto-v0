@@ -1,0 +1,1 @@
+Place hero images for /deck here. Then add image paths to CROPTO_DECK_HERO_IMAGES.
