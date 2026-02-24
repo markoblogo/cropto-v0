@@ -186,7 +186,7 @@ export function DeckNativeVideo() {
           <p className="text-base leading-8 text-foreground/82 sm:text-lg">{DECK_PAGE_COPY.videoIntro}</p>
         </div>
 
-        <Card className="overflow-hidden border-border/90 bg-gradient-to-b from-muted/70 via-card to-card shadow-xl transition-all duration-300 hover:border-primary/35 hover:shadow-2xl">
+        <Card className="overflow-hidden border-black/85 dark:border-white/85 bg-gradient-to-b from-muted/70 via-card to-card shadow-xl transition-all duration-300 hover:border-primary/35 hover:shadow-2xl">
           <CardContent className="p-0">
             <div ref={sectionRef} className="relative aspect-video w-full bg-black">
               <div id={playerContainerIdRef.current} className="h-full w-full" />
@@ -195,7 +195,7 @@ export function DeckNativeVideo() {
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/75 to-background p-8 text-center">
                   <div className="max-w-xl space-y-3">
                     <p className="text-base font-medium">Video player unavailable.</p>
-                    <p className="text-sm leading-7 text-muted-foreground">
+                    <p className="text-base leading-7 text-foreground/82">
                       Open the teaser directly on YouTube while the embedded player is unavailable.
                     </p>
                     <Button asChild>

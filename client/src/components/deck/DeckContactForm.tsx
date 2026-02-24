@@ -33,12 +33,12 @@ export function DeckContactForm() {
 
   if (isSubmitted) {
     return (
-      <Card className="border-primary/35 bg-gradient-to-b from-primary/12 to-card shadow-md">
+      <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-primary/12 to-card shadow-md">
         <CardHeader>
           <CardTitle className="text-xl">Request received</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm leading-7 text-foreground/78">
+          <p className="text-base leading-7 text-foreground/82">
             Thank you. Your message has been captured in this demo flow. A production contact endpoint can be connected
             when ready.
           </p>
@@ -57,7 +57,7 @@ export function DeckContactForm() {
   }
 
   return (
-    <Card className="border-border/90 bg-gradient-to-b from-card to-muted/30 shadow-md transition-all duration-300 hover:border-primary/35 hover:shadow-lg">
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/30 shadow-md transition-all duration-300 hover:border-primary/35 hover:shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl">Contact request</CardTitle>
       </CardHeader>

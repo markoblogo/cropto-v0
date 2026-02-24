@@ -14,7 +14,7 @@ export function DeckEcosystemStrip() {
               href={item.href}
               target="_blank"
               rel="noreferrer"
-              className="group relative overflow-hidden rounded-xl border border-primary/25 bg-gradient-to-br from-muted/80 via-card to-primary/10 px-4 py-3.5 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-primary/55 hover:shadow-xl hover:shadow-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="group relative overflow-hidden rounded-xl border border-black/85 dark:border-white/85 bg-gradient-to-br from-muted/80 via-card to-primary/10 px-4 py-3.5 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-primary/55 hover:shadow-xl hover:shadow-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-all duration-1000 group-hover:left-full group-hover:opacity-100 motion-reduce:hidden" />
               <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />

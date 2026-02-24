@@ -65,18 +65,18 @@ export default function DeckPage() {
               {PROBLEM_BULLETS.map((item, index) => (
                 <Card
                   key={item}
-                  className={`border-border/90 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg ${
-                    index === 0 ? "border-primary/40 bg-gradient-to-br from-primary/15 via-card to-muted/30 shadow-lg shadow-primary/10" : ""
+                  className={`border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg ${
+                    index === 0 ? "bg-gradient-to-br from-primary/15 via-card to-muted/30 shadow-lg shadow-primary/10" : ""
                   }`}
                 >
                   <CardContent className="p-5">
-                    <p className="text-sm leading-7 text-foreground/92">{item}</p>
+                    <p className="text-base leading-7 text-foreground/92">{item}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <Card className="border-primary/35 bg-gradient-to-br from-primary/12 via-card to-muted/30 shadow-lg">
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-br from-primary/12 via-card to-muted/30 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-xl text-foreground">{DECK_PAGE_COPY.notEnoughTitle}</CardTitle>
               </CardHeader>
@@ -94,26 +94,26 @@ export default function DeckPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               {PRODUCT_FEATURES.map((item) => (
-                <Card key={item.title} className="border-border/90 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-lg text-foreground">{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm leading-7 text-foreground/78">{item.description}</CardDescription>
+                    <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <Card className="border-border/90 bg-gradient-to-b from-card to-muted/30 shadow-md">
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/30 shadow-md">
               <CardHeader>
                 <CardTitle className="text-foreground">{DECK_PAGE_COPY.marketScopeTitle}</CardTitle>
-                  <CardDescription className="text-sm leading-7 text-foreground/78">{DECK_PAGE_COPY.marketScopeBody}</CardDescription>
+                  <CardDescription className="text-base leading-7 text-foreground/82">{DECK_PAGE_COPY.marketScopeBody}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2.5">
                   {TARGET_MARKETS.map((market) => (
-                    <Badge key={market} variant="outline" className="rounded-full border-border/90 bg-background/75 px-3 py-1 text-xs text-foreground/85">
+                    <Badge key={market} className="rounded-full border border-amber-400 bg-amber-300 px-3 py-1 text-xs font-semibold text-amber-950 shadow-sm shadow-amber-500/20">
                       {market}
                     </Badge>
                   ))}
@@ -125,12 +125,12 @@ export default function DeckPage() {
               <h3 className="text-2xl font-semibold tracking-tight">{DECK_PAGE_COPY.useCasesTitle}</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 {USE_CASES.map((item) => (
-                  <Card key={item.title} className="border-border/90 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                  <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
                     <CardHeader>
                       <CardTitle className="text-lg text-foreground">{item.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-sm leading-7 text-foreground/78">{item.description}</CardDescription>
+                      <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
                     </CardContent>
                   </Card>
                 ))}
@@ -138,7 +138,7 @@ export default function DeckPage() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <Card className="h-full border-border/90 bg-gradient-to-b from-card to-muted/30 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
+              <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/30 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-foreground">{DECK_PAGE_COPY.whyNowTitle}</CardTitle>
                 </CardHeader>
@@ -154,13 +154,13 @@ export default function DeckPage() {
                 </CardContent>
               </Card>
 
-              <Card className="h-full border-primary/30 bg-gradient-to-br from-muted/80 via-card to-primary/10 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
+              <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-br from-muted/80 via-card to-primary/10 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-foreground">{DECK_PAGE_COPY.statusTitle}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex h-full flex-col justify-between gap-5">
+                <CardContent className="flex h-full flex-col gap-5">
                   <p className="text-base leading-8 text-foreground/90">{DECK_PAGE_COPY.statusBody}</p>
-                  <Button className="mt-2 w-fit bg-amber-300 text-amber-950 shadow-md shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl" asChild>
+                  <Button className="mt-auto w-fit bg-amber-300 text-amber-950 shadow-md shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl" asChild>
                     <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
                       Explore current product environment
                     </a>
@@ -177,12 +177,12 @@ export default function DeckPage() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               {MARKET_MODEL_STEPS.map((item) => (
-                <Card key={item.title} className="border-border/90 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-base leading-7 text-foreground">{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm leading-7 text-foreground/78">{item.description}</CardDescription>
+                    <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
                   </CardContent>
                 </Card>
               ))}
@@ -202,13 +202,13 @@ export default function DeckPage() {
           <div className="container mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
             <SectionIntro label="Deck" title={DECK_PAGE_COPY.deckTitle} body={DECK_PAGE_COPY.deckIntro} />
 
-            <div className="overflow-hidden rounded-2xl border border-border/90 bg-gradient-to-b from-muted/75 via-card to-card p-3 shadow-[0_18px_40px_rgba(0,0,0,0.24)] transition-all duration-300 hover:border-primary/35 dark:shadow-[0_18px_42px_rgba(0,0,0,0.5)] sm:p-4">
-              <div className="mb-3 flex items-center justify-between rounded-lg border border-border/70 bg-background/85 px-4 py-2.5">
+            <div className="overflow-hidden rounded-2xl border border-black/85 dark:border-white/85 bg-gradient-to-b from-muted/75 via-card to-card p-3 shadow-[0_18px_40px_rgba(0,0,0,0.24)] transition-all duration-300 hover:border-primary/35 dark:shadow-[0_18px_42px_rgba(0,0,0,0.5)] sm:p-4">
+              <div className="mb-3 flex items-center justify-between rounded-lg border border-black/80 dark:border-white/80 bg-background/85 px-4 py-2.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground/75">Partner Deck</p>
                 <p className="text-xs text-foreground/65">Investor overview</p>
               </div>
 
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg border border-border/70 bg-card">
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg border border-black/80 dark:border-white/80 bg-card">
                 <iframe
                   title="Cropto investor deck"
                   src={CROPTO_GOOGLE_SLIDES_EMBED_URL}
@@ -238,7 +238,7 @@ export default function DeckPage() {
             <SectionIntro label="FAQ" title={DECK_PAGE_COPY.faqTitle} body="Short answers to core partner and investor questions." />
             <div className="grid gap-4 md:grid-cols-2">
               {DECK_FAQ_ITEMS.map((item) => (
-                <Card key={item.question} className="h-full border-border/90 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                <Card key={item.question} className="h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
                   <CardHeader className="pb-3">
                     <div className="mb-2 flex items-center gap-2 text-primary/90">
                       <HelpCircle className="h-4 w-4" aria-hidden="true" />
