@@ -26,12 +26,9 @@ export type DeckEcosystemLink = {
 
 export const CROPTO_MAIN_SITE_URL = "https://cropto.abvx.xyz/";
 
-// Source reference only. Playback UI on /deck uses native <video> from local public files.
+// YouTube source reference for teaser playback on /deck.
 export const CROPTO_DECK_VIDEO_SOURCE_URL = "https://youtu.be/zumLJKZQFxc";
-
-export const CROPTO_DECK_VIDEO_MP4_URL = "/deck/video/cropto-teaser.mp4";
-export const CROPTO_DECK_VIDEO_WEBM_URL = "/deck/video/cropto-teaser.webm";
-export const CROPTO_DECK_VIDEO_POSTER_URL = "/deck/video/cropto-teaser-poster.jpg";
+export const CROPTO_DECK_VIDEO_YOUTUBE_ID = "zumLJKZQFxc";
 
 export const CROPTO_GOOGLE_SLIDES_PUBLIC_URL =
   "https://docs.google.com/presentation/d/e/2PACX-1vS3ZuJDEm_pUcaHyDVa9PYffdDrZQXKatsHV3nISsDL5KlW9SFYYsvVsFf7NaahWPqViijK2RhQY9Jl/pub?start=true&loop=true&delayms=3000";

@@ -2,18 +2,89 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  CROPTO_DECK_VIDEO_MP4_URL,
-  CROPTO_DECK_VIDEO_POSTER_URL,
   CROPTO_DECK_VIDEO_SOURCE_URL,
-  CROPTO_DECK_VIDEO_WEBM_URL,
+  CROPTO_DECK_VIDEO_YOUTUBE_ID,
   DECK_PAGE_COPY,
 } from "@/components/deck/deck-content";
 
+type YTPlayerState = {
+  PLAYING: number;
+};
+
+type YTPlayer = {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  mute: () => void;
+  getPlayerState: () => number;
+  destroy: () => void;
+};
+
+type YTNamespace = {
+  Player: new (
+    elementId: string,
+    options: {
+      videoId: string;
+      playerVars: Record<string, number | string>;
+      events: {
+        onReady?: (event: { target: YTPlayer }) => void;
+        onError?: () => void;
+      };
+    },
+  ) => YTPlayer;
+  PlayerState: YTPlayerState;
+};
+
+declare global {
+  interface Window {
+    YT?: YTNamespace;
+    onYouTubeIframeAPIReady?: () => void;
+    __croptoYouTubeApiPromise?: Promise<YTNamespace>;
+  }
+}
+
+function loadYouTubeApi(): Promise<YTNamespace> {
+  if (window.YT?.Player) {
+    return Promise.resolve(window.YT);
+  }
+
+  if (window.__croptoYouTubeApiPromise) {
+    return window.__croptoYouTubeApiPromise;
+  }
+
+  window.__croptoYouTubeApiPromise = new Promise<YTNamespace>((resolve, reject) => {
+    const existingScript = document.querySelector<HTMLScriptElement>('script[src="https://www.youtube.com/iframe_api"]');
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      script.onerror = () => reject(new Error("Failed to load YouTube API"));
+      document.head.appendChild(script);
+    }
+
+    const timeout = window.setTimeout(() => {
+      reject(new Error("YouTube API load timeout"));
+    }, 15000);
+
+    window.onYouTubeIframeAPIReady = () => {
+      window.clearTimeout(timeout);
+      if (window.YT) {
+        resolve(window.YT);
+      } else {
+        reject(new Error("YouTube API unavailable"));
+      }
+    };
+  });
+
+  return window.__croptoYouTubeApiPromise;
+}
+
 export function DeckNativeVideo() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isReady, setIsReady] = useState(true);
+  const playerRef = useRef<YTPlayer | null>(null);
+  const playerContainerIdRef = useRef(`deck-youtube-player-${Math.random().toString(36).slice(2, 10)}`);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [apiFailed, setApiFailed] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -28,25 +99,72 @@ export function DeckNativeVideo() {
   }, []);
 
   useEffect(() => {
-    if (!sectionRef.current || !videoRef.current) {
+    let cancelled = false;
+
+    loadYouTubeApi()
+      .then((YT) => {
+        if (cancelled || playerRef.current) {
+          return;
+        }
+
+        playerRef.current = new YT.Player(playerContainerIdRef.current, {
+          videoId: CROPTO_DECK_VIDEO_YOUTUBE_ID,
+          playerVars: {
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,
+            loop: 1,
+            playlist: CROPTO_DECK_VIDEO_YOUTUBE_ID,
+          },
+          events: {
+            onReady: (event) => {
+              event.target.mute();
+              setIsPlayerReady(true);
+            },
+            onError: () => {
+              setApiFailed(true);
+            },
+          },
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setApiFailed(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      playerRef.current?.destroy();
+      playerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sectionRef.current || !playerRef.current || apiFailed) {
       return;
     }
-
-    const videoElement = videoRef.current;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (!entry || !videoElement || !isReady || prefersReducedMotion) {
+        if (!entry || !playerRef.current || !isPlayerReady) {
+          return;
+        }
+
+        if (prefersReducedMotion) {
+          playerRef.current.pauseVideo();
           return;
         }
 
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-          void videoElement.play().catch(() => {
-            // Ignore autoplay blocking and keep silent fallback behavior.
-          });
+          playerRef.current.mute();
+          playerRef.current.playVideo();
         } else {
-          videoElement.pause();
+          playerRef.current.pauseVideo();
         }
       },
       { threshold: [0.2, 0.5, 0.8] },
@@ -56,9 +174,9 @@ export function DeckNativeVideo() {
 
     return () => {
       observer.disconnect();
-      videoElement.pause();
+      playerRef.current?.pauseVideo();
     };
-  }, [isReady, prefersReducedMotion]);
+  }, [apiFailed, isPlayerReady, prefersReducedMotion]);
 
   return (
     <section className="border-b border-border/60 py-16 sm:py-20">
@@ -71,47 +189,36 @@ export function DeckNativeVideo() {
         <Card className="overflow-hidden border-border/80 bg-card/80 shadow-lg">
           <CardContent className="p-0">
             <div ref={sectionRef} className="relative aspect-video w-full bg-black">
-              {isReady ? (
-                <video
-                  ref={videoRef}
-                  className="h-full w-full object-cover"
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  poster={CROPTO_DECK_VIDEO_POSTER_URL}
-                  onError={() => {
-                    setIsReady(false);
-                  }}
-                >
-                  <source src={CROPTO_DECK_VIDEO_WEBM_URL} type="video/webm" />
-                  <source src={CROPTO_DECK_VIDEO_MP4_URL} type="video/mp4" />
-                </video>
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/70 to-background p-8 text-center">
+              <div id={playerContainerIdRef.current} className="h-full w-full" />
+
+              {apiFailed ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/75 to-background p-8 text-center">
                   <div className="max-w-xl space-y-3">
-                    <p className="text-base font-medium">Native teaser video is ready for integration.</p>
+                    <p className="text-base font-medium">Video player unavailable.</p>
                     <p className="text-sm leading-7 text-muted-foreground">
-                      Add `/deck/video/cropto-teaser.mp4` (optional webm/poster variants) and this section will autoplay on
-                      viewport, muted, looped, and pause when out of view.
+                      Open the teaser directly on YouTube while the embedded player is unavailable.
                     </p>
-                    <Button variant="outline" asChild>
+                    <Button asChild>
                       <a href={CROPTO_DECK_VIDEO_SOURCE_URL} target="_blank" rel="noreferrer">
-                        Open source reference
+                        Open on YouTube
                       </a>
                     </Button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </CardContent>
         </Card>
 
-        {isReady ? (
-          <p className="text-xs text-muted-foreground">
-            Playback is native HTML5 video, muted and looped, with viewport-based autoplay/pause behavior.
-          </p>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span>Muted autoplay in viewport, loop enabled.</span>
+          <span aria-hidden="true">•</span>
+          <Button variant="outline" size="sm" asChild>
+            <a href={CROPTO_DECK_VIDEO_SOURCE_URL} target="_blank" rel="noreferrer">
+              Open on YouTube
+            </a>
+          </Button>
+        </div>
       </div>
     </section>
   );
