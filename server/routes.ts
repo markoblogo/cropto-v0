@@ -6430,7 +6430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await Promise.all(
         recipients.map(async (to) => {
           try {
-            await emailService.sendEmail(to, "Cropto feedback", emailBody);
+            await emailService.sendEmail(to, "cropto deck", emailBody);
           } catch (emailError) {
             console.error(`[Feedback] Failed to send alert email to ${to}:`, emailError);
           }

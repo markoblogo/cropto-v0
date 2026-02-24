@@ -25,10 +25,47 @@ const INITIAL_FORM_STATE: ContactFormState = {
 export function DeckContactForm() {
   const [formState, setFormState] = useState<ContactFormState>(INITIAL_FORM_STATE);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsSubmitted(true);
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const composedMessage = [
+        formState.message.trim(),
+        "",
+        "---",
+        `Organization: ${formState.organization.trim()}`,
+        `Interest: ${formState.interest}`,
+      ].join("\n");
+
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formState.fullName.trim(),
+          email: formState.email.trim(),
+          role: formState.interest,
+          message: composedMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || "Failed to submit contact request");
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to submit contact request");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -47,6 +84,7 @@ export function DeckContactForm() {
             onClick={() => {
               setFormState(INITIAL_FORM_STATE);
               setIsSubmitted(false);
+              setSubmitError(null);
             }}
           >
             Send another request
@@ -122,8 +160,16 @@ export function DeckContactForm() {
             />
           </div>
 
+          {submitError ? (
+            <div className="sm:col-span-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {submitError}
+            </div>
+          ) : null}
+
           <div className="sm:col-span-2">
-            <Button type="submit">Submit request</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit request"}
+            </Button>
           </div>
         </form>
       </CardContent>
