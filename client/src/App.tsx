@@ -40,6 +40,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import RiskDisclosure from "@/pages/RiskDisclosure";
 import DeckPage from "@/pages/Deck";
+import MonitorPage from "@/pages/Monitor";
 import { useEffect } from "react";
 
 function RedirectToEducation() {
@@ -96,6 +97,8 @@ function Router() {
       <Route path="/risk-disclosure" component={RiskDisclosure} />
       <Route path="/deck" component={DeckPage} />
       <Route path="/deck/" component={DeckPage} />
+      <Route path="/monitor" component={MonitorPage} />
+      <Route path="/monitor/" component={MonitorPage} />
       <Route component={NotFound} />
     </Switch>
   );
