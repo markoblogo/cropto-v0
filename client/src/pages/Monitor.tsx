@@ -22,6 +22,9 @@ import { Input } from "@/components/ui/input";
 import { LiveVisualsPanel } from "@/components/monitor/LiveVisualsPanel";
 import { MiniSparkline as MiniSparklineSvg } from "@/components/monitor/MiniSparkline";
 import { MiniTrendMarker } from "@/components/monitor/MiniTrendMarker";
+import { MetricChip } from "@/components/monitor/MetricChip";
+import { StatusSourceStrip } from "@/components/monitor/StatusSourceStrip";
+import { IntensityBar } from "@/components/monitor/IntensityBar";
 import {
   formatChangeWithUnit,
   formatFxRate,
@@ -740,6 +743,18 @@ function metricUnitChip(unit?: string, fallback = "unit"): string {
   return unit;
 }
 
+function trendDirection(change?: number, changePct?: number): "up" | "down" | "flat" {
+  const base = typeof changePct === "number" ? changePct : change;
+  if (typeof base !== "number" || Number.isNaN(base) || base === 0) return "flat";
+  return base > 0 ? "up" : "down";
+}
+
+function trendIntensity(change?: number, changePct?: number): number | undefined {
+  const base = typeof changePct === "number" ? changePct : change;
+  if (typeof base !== "number" || Number.isNaN(base)) return undefined;
+  return Math.min(100, Math.max(12, Math.round(Math.abs(base) * 12)));
+}
+
 function DynamicMiniTrend({
   series,
   change,
@@ -815,7 +830,10 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
             <p className="text-[10px] uppercase tracking-[0.14em] text-foreground/65">{widget.venue}</p>
             <p className="text-sm font-semibold text-foreground">{widget.title}{widget.subtitle ? ` · ${widget.subtitle}` : ""}</p>
           </div>
-          <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
+          <div className="flex items-center gap-1">
+            <MetricChip label="PRICE" variant="type" tone="muted" />
+            <MetricChip label={unitLabel} variant="unit" tone="neutral" />
+          </div>
         </div>
 
         <div className="flex items-end justify-between gap-2">
@@ -827,6 +845,11 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
             {display.change == null ? "No delta" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
           </p>
         </div>
+        <IntensityBar
+          compact
+          value={trendIntensity(display.change, display.changePct)}
+          direction={trendDirection(display.change, display.changePct)}
+        />
         {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
         <div className="h-12">
@@ -837,12 +860,15 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
           />
         </div>
 
-        <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
-          <a href={widget.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-foreground">
-            {widget.sourceName}
-          </a>
-          <span>{widget.updatedAt ? formatRelative(widget.updatedAt) : widget.timeframe}</span>
-        </div>
+        <StatusSourceStrip
+          compact
+          status={widget.status}
+          statusClassName={grainStatusClass(widget.status)}
+          sourceName={widget.sourceName}
+          sourceUrl={widget.sourceUrl}
+          updatedLabel={widget.updatedAt ? formatRelative(widget.updatedAt) : widget.timeframe}
+          fallbackReason={widget.fallbackReason}
+        />
       </CardContent>
     </Card>
   );
@@ -850,12 +876,19 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
 
 function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
   const spreadPositive = (widget.spreadAbs ?? 0) >= 0;
+  const relDiff =
+    typeof widget.leftChangePct === "number" && typeof widget.rightChangePct === "number"
+      ? widget.leftChangePct - widget.rightChangePct
+      : undefined;
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardContent className="space-y-2 pt-3">
         <div className="flex items-start justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">{widget.title}</p>
-          <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
+          <div className="flex items-center gap-1">
+            <MetricChip label={widget.comparisonType === "proxy" ? "PROXY" : "SPREAD"} variant="type" tone="muted" />
+            <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-[11px] text-foreground/82">
           <div className="rounded-md border border-black/70 dark:border-white/70 bg-muted/55 p-2">
@@ -873,7 +906,20 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
             Spread: {spreadPositive ? "+" : ""}{widget.spreadAbs.toFixed(2)} {widget.spreadUnit || "rel"} {widget.spreadPct != null ? `(${spreadPositive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
           </p>
         ) : null}
+        <IntensityBar
+          compact
+          value={trendIntensity(relDiff)}
+          direction={trendDirection(relDiff)}
+        />
         <p className="text-[10px] text-foreground/65 line-clamp-2">{widget.note || (widget.comparisonType === "proxy" ? "Proxy cross-market comparison (not identical contracts)" : "Relative performance comparison.")}</p>
+        <StatusSourceStrip
+          compact
+          status={widget.status}
+          statusClassName={grainStatusClass(widget.status)}
+          sourceName={widget.sourceAttribution || "Derived comparison"}
+          updatedLabel={widget.updatedAt ? formatRelative(widget.updatedAt) : "n/a"}
+          fallbackReason={widget.fallbackReason}
+        />
       </CardContent>
     </Card>
   );
@@ -1067,8 +1113,24 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
       <CardContent className="space-y-2">
         <div className="flex items-end justify-between gap-2">
           <p className="text-xl font-bold text-foreground">{widget.primary}</p>
-          <p className="text-xs text-foreground/78">{widget.secondary} (metric)</p>
+          <div className="flex items-center gap-1">
+            <MetricChip label="SIGNAL" variant="type" tone="muted" />
+            <p className="text-xs text-foreground/78">{widget.secondary} (metric)</p>
+          </div>
         </div>
+        <IntensityBar
+          compact
+          value={
+            widget.status === "Rising"
+              ? 82
+              : widget.status === "Elevated"
+                ? 66
+                : widget.status === "Cooling"
+                  ? 28
+                  : 48
+          }
+          direction={widget.status === "Cooling" ? "down" : widget.status === "Stable" ? "flat" : "up"}
+        />
         <div className="h-10">
           <DynamicMiniTrend series={widget.series} />
         </div>
@@ -1096,7 +1158,10 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
           <p className="text-xs font-semibold text-foreground">{row.label}</p>
           <p className="text-[10px] text-foreground/65">{row.sublabel || row.region || "—"}</p>
         </div>
-        <Badge className={`text-[10px] ${grainStatusClass(row.status || "OFFLINE")}`}>{row.status || "OFFLINE"}</Badge>
+        <div className="flex items-center gap-1">
+          <MetricChip label="PRICE" variant="type" tone="muted" />
+          <Badge className={`text-[10px] ${grainStatusClass(row.status || "OFFLINE")}`}>{row.status || "OFFLINE"}</Badge>
+        </div>
       </div>
       <div className="mt-1 flex items-end justify-between gap-2">
         <p className="text-sm font-semibold text-foreground">
@@ -1107,6 +1172,12 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
           {display.change == null ? "n/a" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
         </p>
       </div>
+      <IntensityBar
+        compact
+        className="mt-1"
+        value={trendIntensity(display.change, display.changePct)}
+        direction={trendDirection(display.change, display.changePct)}
+      />
       <div className="mt-1 h-8">
         <DynamicMiniTrend
           series={row.price?.series || []}
@@ -1115,6 +1186,15 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
         />
       </div>
       {display.secondary ? <p className="mt-1 text-[10px] text-foreground/68">{display.secondary}</p> : null}
+      <div className="mt-1">
+        <StatusSourceStrip
+          compact
+          status={row.status || "OFFLINE"}
+          statusClassName={grainStatusClass(row.status || "OFFLINE")}
+          sourceName={row.sourceName}
+          updatedLabel={row.updatedAt ? formatRelative(row.updatedAt) : undefined}
+        />
+      </div>
     </div>
   );
 }
@@ -1135,12 +1215,23 @@ function GrainExpansionFallbackCard({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">{title}</CardTitle>
-          <Badge className={`text-[10px] ${grainStatusClass(status)}`}>{status}</Badge>
+          <div className="flex items-center gap-1">
+            <MetricChip label="fallback" variant="type" tone="muted" />
+            <Badge className={`text-[10px] ${grainStatusClass(status)}`}>{status}</Badge>
+          </div>
         </div>
         <CardDescription className="text-foreground/70">{subtitle}</CardDescription>
       </CardHeader>
-      <CardContent className="pt-2 text-sm text-foreground/72">
-        {reason || "Data temporarily unavailable. Source fallback is active."}
+      <CardContent className="space-y-2 pt-2 text-sm text-foreground/72">
+        <p>{reason || "Data temporarily unavailable. Source fallback is active."}</p>
+        <StatusSourceStrip
+          compact
+          status={status}
+          statusClassName={grainStatusClass(status)}
+          sourceName="Fallback data path"
+          updatedLabel="n/a"
+          fallbackReason={reason}
+        />
       </CardContent>
     </Card>
   );
@@ -1629,6 +1720,17 @@ export default function MonitorPage() {
                             {!cashWidget.rows.length ? (
                               <p className="text-sm text-foreground/72">No rows available from source.</p>
                             ) : null}
+                            <div className="sm:col-span-2 lg:col-span-3">
+                              <StatusSourceStrip
+                                compact
+                                status={cashWidget.status}
+                                statusClassName={grainStatusClass(cashWidget.status)}
+                                sourceName={cashWidget.sourceName}
+                                sourceUrl={cashWidget.sourceUrl}
+                                updatedLabel={cashWidget.updatedAt ? formatRelative(cashWidget.updatedAt) : cashWidget.timeframe}
+                                fallbackReason={cashWidget.fallbackReason}
+                              />
+                            </div>
                           </CardContent>
                         </Card>
                       ) : (
@@ -1656,6 +1758,17 @@ export default function MonitorPage() {
                             {!spotWidget.rows.length ? (
                               <p className="text-sm text-foreground/72">No rows available from source.</p>
                             ) : null}
+                            <div className="sm:col-span-2">
+                              <StatusSourceStrip
+                                compact
+                                status={spotWidget.status}
+                                statusClassName={grainStatusClass(spotWidget.status)}
+                                sourceName={spotWidget.sourceName}
+                                sourceUrl={spotWidget.sourceUrl}
+                                updatedLabel={spotWidget.updatedAt ? formatRelative(spotWidget.updatedAt) : spotWidget.timeframe}
+                                fallbackReason={spotWidget.fallbackReason}
+                              />
+                            </div>
                           </CardContent>
                         </Card>
                       ) : (
@@ -1693,13 +1806,35 @@ export default function MonitorPage() {
                               </div>
                             ))}
                             {indexWidget.weatherTieIn ? (
-                              <p className="text-[10px] text-foreground/68">
-                                {indexWidget.weatherTieIn.available ? `Weather-linked signal: ${formatMetricValue({ kind: "score", value: indexWidget.weatherTieIn.score })}` : "Weather tie-in: unavailable"}
-                              </p>
+                              <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-[10px] text-foreground/68">
+                                    {indexWidget.weatherTieIn.available ? `Weather-linked signal: ${formatMetricValue({ kind: "score", value: indexWidget.weatherTieIn.score })}` : "Weather tie-in: unavailable"}
+                                  </p>
+                                  <MetricChip label="SIGNAL" variant="type" tone="muted" />
+                                </div>
+                                {indexWidget.weatherTieIn.score != null ? (
+                                  <IntensityBar
+                                    compact
+                                    className="mt-1"
+                                    value={Math.min(100, Math.max(0, Math.round(indexWidget.weatherTieIn.score)))}
+                                    direction="up"
+                                  />
+                                ) : null}
+                              </div>
                             ) : null}
                             {!indexWidget.cards.length ? (
                               <p className="text-sm text-foreground/72">No composite cards available from source.</p>
                             ) : null}
+                            <StatusSourceStrip
+                              compact
+                              status={indexWidget.status}
+                              statusClassName={grainStatusClass(indexWidget.status)}
+                              sourceName={indexWidget.sourceName}
+                              sourceUrl={indexWidget.sourceUrl}
+                              updatedLabel={indexWidget.updatedAt ? formatRelative(indexWidget.updatedAt) : indexWidget.timeframe}
+                              fallbackReason={indexWidget.fallbackReason}
+                            />
                           </CardContent>
                         </Card>
                       ) : (
@@ -1727,6 +1862,17 @@ export default function MonitorPage() {
                             {!futuresWidget.rows.length ? (
                               <p className="text-sm text-foreground/72">No futures rows parsed from source.</p>
                             ) : null}
+                            <div className="md:col-span-3">
+                              <StatusSourceStrip
+                                compact
+                                status={futuresWidget.status}
+                                statusClassName={grainStatusClass(futuresWidget.status)}
+                                sourceName={futuresWidget.sourceName}
+                                sourceUrl={futuresWidget.sourceUrl}
+                                updatedLabel={futuresWidget.updatedAt ? formatRelative(futuresWidget.updatedAt) : futuresWidget.timeframe}
+                                fallbackReason={futuresWidget.fallbackReason}
+                              />
+                            </div>
                           </CardContent>
                         </Card>
                       ) : (
@@ -1754,11 +1900,39 @@ export default function MonitorPage() {
                               ))}
                             </div>
                             {livestockWidget.summary?.derivedCue ? (
-                              <p className="text-[10px] text-foreground/68">
-                                Derived cue: {livestockWidget.summary.derivedCue.label}
-                                {livestockWidget.summary.derivedCue.score != null ? ` (${Math.round(livestockWidget.summary.derivedCue.score)})` : ""}
-                              </p>
+                              <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-[10px] text-foreground/68">
+                                    Derived cue: {livestockWidget.summary.derivedCue.label}
+                                    {livestockWidget.summary.derivedCue.score != null ? ` (${Math.round(livestockWidget.summary.derivedCue.score)})` : ""}
+                                  </p>
+                                  <MetricChip label="SIGNAL" variant="type" tone="muted" />
+                                </div>
+                                {livestockWidget.summary.derivedCue.score != null ? (
+                                  <IntensityBar
+                                    compact
+                                    className="mt-1"
+                                    value={Math.min(100, Math.max(0, Math.round(livestockWidget.summary.derivedCue.score)))}
+                                    direction={
+                                      livestockWidget.summary.derivedCue.label === "Soft"
+                                        ? "down"
+                                        : livestockWidget.summary.derivedCue.label === "Mixed"
+                                          ? "flat"
+                                          : "up"
+                                    }
+                                  />
+                                ) : null}
+                              </div>
                             ) : null}
+                            <StatusSourceStrip
+                              compact
+                              status={livestockWidget.status}
+                              statusClassName={grainStatusClass(livestockWidget.status)}
+                              sourceName={livestockWidget.sourceName}
+                              sourceUrl={livestockWidget.sourceUrl}
+                              updatedLabel={livestockWidget.updatedAt ? formatRelative(livestockWidget.updatedAt) : livestockWidget.timeframe}
+                              fallbackReason={livestockWidget.fallbackReason}
+                            />
                           </CardContent>
                         </Card>
                       ) : (
@@ -1816,7 +1990,16 @@ export default function MonitorPage() {
                                 {macroWidget.items.map((item) => (
                                   <div key={item.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
                                     <div className="flex items-start justify-between gap-2">
-                                      <p className="text-[11px] font-semibold text-foreground">{item.label}</p>
+                                      <div>
+                                        <p className="text-[11px] font-semibold text-foreground">{item.label}</p>
+                                        <div className="mt-0.5 flex items-center gap-1">
+                                          <MetricChip
+                                            label={item.metricSemanticKind === "price" ? "PRICE" : item.metricSemanticKind.toUpperCase()}
+                                            variant="type"
+                                            tone={item.metricSemanticKind === "price" ? "neutral" : "muted"}
+                                          />
+                                        </div>
+                                      </div>
                                       {item.status ? <Badge className={`text-[10px] ${grainStatusClass(item.status)}`}>{item.status}</Badge> : null}
                                     </div>
                                     {item.metricSemanticKind === "price" && item.price ? (
@@ -1836,6 +2019,12 @@ export default function MonitorPage() {
                                             <p className="text-[10px] text-foreground/68">
                                               {display.change == null ? "No delta" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
                                             </p>
+                                            <IntensityBar
+                                              compact
+                                              className="mt-1"
+                                              value={trendIntensity(display.change, display.changePct)}
+                                              direction={trendDirection(display.change, display.changePct)}
+                                            />
                                             <div className="mt-1 h-8">
                                               <DynamicMiniTrend
                                                 series={item.series || []}
@@ -1858,6 +2047,12 @@ export default function MonitorPage() {
                                         <p className="text-[10px] text-foreground/68">
                                           {(item.valueChangePct != null ? formatPercent(item.valueChangePct) : "No delta")} • {item.metricSemanticKind}
                                         </p>
+                                        <IntensityBar
+                                          compact
+                                          className="mt-1"
+                                          value={trendIntensity(item.valueChange, item.valueChangePct)}
+                                          direction={trendDirection(item.valueChange, item.valueChangePct)}
+                                        />
                                         <div className="mt-1 h-8">
                                           <DynamicMiniTrend
                                             series={item.series || []}
@@ -1876,10 +2071,19 @@ export default function MonitorPage() {
                               <div className="grid gap-2 sm:grid-cols-2">
                                 {macroWidget.cards.map((card) => (
                                   <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
-                                    <p className="text-[11px] text-foreground/72">{card.label}</p>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <p className="text-[11px] text-foreground/72">{card.label}</p>
+                                      <MetricChip label="INDEX" variant="type" tone="muted" />
+                                    </div>
                                     <p className="text-base font-semibold text-foreground">
                                       {card.value == null ? card.valueText || "n/a" : formatIndexPoints(card.value)}
                                     </p>
+                                    <IntensityBar
+                                      compact
+                                      className="mt-1"
+                                      value={trendIntensity(undefined, card.deltaPct)}
+                                      direction={trendDirection(undefined, card.deltaPct)}
+                                    />
                                     <div className="mt-1 h-7">
                                       <DynamicMiniTrend
                                         series={card.series || []}
@@ -1890,6 +2094,15 @@ export default function MonitorPage() {
                                 ))}
                               </div>
                             )}
+                            <StatusSourceStrip
+                              compact
+                              status={macroWidget.status}
+                              statusClassName={grainStatusClass(macroWidget.status)}
+                              sourceName={macroWidget.sourceName}
+                              sourceUrl={macroWidget.sourceUrl}
+                              updatedLabel={macroWidget.updatedAt ? formatRelative(macroWidget.updatedAt) : macroWidget.timeframe}
+                              fallbackReason={macroWidget.fallbackReason}
+                            />
                           </CardContent>
                         </Card>
                       ) : (
