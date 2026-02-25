@@ -317,7 +317,8 @@ type GrainWidgetKind =
   | "MACRO_AGRI_INDICES"
   | "USDA_MARS_REPORTS"
   | "US_CASH_EXPORT_CONTEXT"
-  | "USDA_MARS_DAILY_MARKET_RATES_TXT";
+  | "USDA_MARS_DAILY_MARKET_RATES_TXT"
+  | "ALPHAVANTAGE_GRAIN_BENCHMARKS";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -665,6 +666,42 @@ type GrainWidgetUsdaMarsDailyMarketRatesTxt = {
   fallbackReason?: string;
 };
 
+type GrainWidgetAlphaVantageBenchmarks = {
+  id: string;
+  kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<GrainWidgetRow & {
+    alphaFunction: string;
+    unitConfidence: "CONFIRMED" | "ASSUMED" | "UNKNOWN";
+    allowNormalization: boolean;
+    momChangePct?: number;
+    yoyChangePct?: number;
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "unknown";
+    byFunction?: Array<{
+      fn: string;
+      unitLabel: string;
+      unitConfidence: "CONFIRMED" | "ASSUMED" | "UNKNOWN";
+      allowNormalization: boolean;
+      seriesPoints: number;
+      cacheHit?: boolean;
+    }>;
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -674,7 +711,8 @@ type GrainWidget =
   | GrainWidgetMacroAgriIndices
   | GrainWidgetUsdaMarsReports
   | GrainWidgetUsCashExportContext
-  | GrainWidgetUsdaMarsDailyMarketRatesTxt;
+  | GrainWidgetUsdaMarsDailyMarketRatesTxt
+  | GrainWidgetAlphaVantageBenchmarks;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -1928,6 +1966,7 @@ export default function MonitorPage() {
       "USDA_MARS_REPORTS",
       "US_CASH_EXPORT_CONTEXT",
       "USDA_MARS_DAILY_MARKET_RATES_TXT",
+      "ALPHAVANTAGE_GRAIN_BENCHMARKS",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -2069,6 +2108,7 @@ export default function MonitorPage() {
                   const marsWidget = grainDataByKind["USDA_MARS_REPORTS"] as GrainWidgetUsdaMarsReports | undefined;
                   const usContextWidget = grainDataByKind["US_CASH_EXPORT_CONTEXT"] as GrainWidgetUsCashExportContext | undefined;
                   const marsDailyTxtWidget = grainDataByKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as GrainWidgetUsdaMarsDailyMarketRatesTxt | undefined;
+                  const alphaWidget = grainDataByKind["ALPHAVANTAGE_GRAIN_BENCHMARKS"] as GrainWidgetAlphaVantageBenchmarks | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -2732,6 +2772,86 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("USDA_MARS_DAILY_MARKET_RATES_TXT") ? "US Daily Market Rates (TXT)" : "US Daily Market Rates (TXT) (not configured)"}
                             subtitle="USDA AMS MARS TXT parsing"
+                          />
+                        </div>
+                      )}
+
+                      {alphaWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{alphaWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(alphaWidget.status)}`}>{alphaWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{alphaWidget.subtitle || "Open-ish free-key benchmark series"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {alphaWidget.rows.slice(0, 6).map((row) => (
+                                <div key={`${alphaWidget.id}-${row.id}`} className="rounded-md border border-black/60 dark:border-white/25 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.alphaFunction} variant="type" tone="muted" />
+                                      <MetricChip
+                                        label={row.unitConfidence === "CONFIRMED" ? "unit ok" : "unit unknown"}
+                                        variant="unit"
+                                        tone={row.unitConfidence === "CONFIRMED" ? "neutral" : "muted"}
+                                      />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "price", value: row.price?.nativeValueCurrent, unit: row.price?.nativeUnit || "USD (unit unknown)" })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">
+                                    {formatChangeWithUnit({
+                                      change: row.price?.nativeValueChange,
+                                      unit: row.price?.nativeUnit || "USD (unit unknown)",
+                                      pct: row.momChangePct ?? row.price?.nativeValueChangePct,
+                                    })}
+                                    {typeof row.yoyChangePct === "number" ? ` • YoY ${row.yoyChangePct >= 0 ? "+" : ""}${row.yoyChangePct.toFixed(2)}%` : ""}
+                                  </p>
+                                  <DynamicMiniTrend
+                                    series={row.price?.series || []}
+                                    change={row.price?.nativeValueChange}
+                                    changePct={row.momChangePct ?? row.price?.nativeValueChangePct}
+                                    status={row.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={row.sourceName || alphaWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: row.status,
+                                      sourceName: row.sourceName || alphaWidget.sourceName,
+                                      fallbackReason: alphaWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!alphaWidget.rows.length ? (
+                                <p className="text-[11px] text-foreground/68">No Alpha Vantage rows mapped in current cycle.</p>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {alphaWidget.summary?.coverage ? <MetricChip label={`coverage ${alphaWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {alphaWidget.summary?.cadence ? <MetricChip label={`cadence ${alphaWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={alphaWidget.status}
+                              statusClassName={grainStatusClass(alphaWidget.status)}
+                              sourceName={alphaWidget.sourceName}
+                              sourceUrl={alphaWidget.sourceUrl}
+                              updatedLabel={alphaWidget.updatedAt ? formatRelative(alphaWidget.updatedAt) : alphaWidget.timeframe}
+                              fallbackReason={alphaWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("ALPHAVANTAGE_GRAIN_BENCHMARKS") ? "Alpha Vantage Grain Benchmarks" : "Alpha Vantage Grain Benchmarks (not configured)"}
+                            subtitle="Wheat / Corn (free-key source)"
                           />
                         </div>
                       )}

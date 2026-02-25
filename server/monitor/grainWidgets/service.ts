@@ -8,6 +8,7 @@ import {
   GRAIN_WIDGETS_TIMEFRAME_DEFAULT,
 } from "./config";
 import { ApiFarmerProvider } from "./providers/apiFarmerProvider";
+import { AlphaVantageCommoditiesProvider } from "./providers/alphaVantageCommoditiesProvider";
 import { BarchartCashProvider } from "./providers/barchartCashProvider";
 import { CommoditicLivestockProvider } from "./providers/commoditicLivestockProvider";
 import { CommoditicProvider } from "./providers/commoditicProvider";
@@ -53,6 +54,8 @@ type ProviderRuntime = {
   reportsReturnedTop?: number;
   topScoreMin?: number;
   topScoreMax?: number;
+  unitConfidenceByFunction?: GrainWidgetsProviderDebug["unitConfidenceByFunction"];
+  cadence?: "daily" | "weekly" | "monthly" | "unknown";
   rowsReturned?: number;
   itemsReturned?: number;
   cardsReturned?: number;
@@ -76,6 +79,7 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   USDA_MARS_REPORTS: 6,
   US_CASH_EXPORT_CONTEXT: 3,
   USDA_MARS_DAILY_MARKET_RATES_TXT: 3,
+  ALPHAVANTAGE_GRAIN_BENCHMARKS: 2,
 };
 
 const WIDGET_ORDER: GrainWidgetKind[] = [
@@ -88,6 +92,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "USDA_MARS_REPORTS",
   "US_CASH_EXPORT_CONTEXT",
   "USDA_MARS_DAILY_MARKET_RATES_TXT",
+  "ALPHAVANTAGE_GRAIN_BENCHMARKS",
 ];
 
 function statusRank(status: GrainWidget["status"]): number {
@@ -111,7 +116,12 @@ function countStatuses(widgets: GrainWidget[]) {
 }
 
 function collectRows(widget: GrainWidget) {
-  if (widget.kind === "US_CASH_BIDS" || widget.kind === "GLOBAL_SPOT_TABLE" || widget.kind === "CBOT_FUTURES_SNAPSHOT") {
+  if (
+    widget.kind === "US_CASH_BIDS" ||
+    widget.kind === "GLOBAL_SPOT_TABLE" ||
+    widget.kind === "CBOT_FUTURES_SNAPSHOT" ||
+    widget.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS"
+  ) {
     return widget.rows;
   }
   if (widget.kind === "CROP_PRICE_INDEX") {
@@ -145,11 +155,20 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
     return { rows: widget.rows.length, items: 0, cards: 0 };
   }
+  if (widget.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
   return { rows: 0, items: 0, cards: 0 };
 }
 
 function mappedCountForWidget(widget: GrainWidget): number {
-  if (widget.kind === "US_CASH_BIDS" || widget.kind === "GLOBAL_SPOT_TABLE" || widget.kind === "CBOT_FUTURES_SNAPSHOT" || widget.kind === "LIVESTOCK_FEED_TIEIN") {
+  if (
+    widget.kind === "US_CASH_BIDS" ||
+    widget.kind === "GLOBAL_SPOT_TABLE" ||
+    widget.kind === "CBOT_FUTURES_SNAPSHOT" ||
+    widget.kind === "LIVESTOCK_FEED_TIEIN" ||
+    widget.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS"
+  ) {
     return widget.rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
   }
   if (widget.kind === "CROP_PRICE_INDEX") {
@@ -227,6 +246,7 @@ function classifyProviderErrorKind(error?: string): GrainWidgetsProviderDebug["e
   if (upper.includes("PARSE")) return "PARSE";
   if (upper.includes("EMPTY") || upper.includes("NO_MATCHING_REPORTS") || upper.includes("COVERAGE_EMPTY")) return "EMPTY";
   if (upper.includes("BLOCKED")) return "BLOCKED";
+  if (upper.includes("RATE_LIMIT")) return "RATE_LIMIT";
   return "UNKNOWN";
 }
 
@@ -242,6 +262,7 @@ export class GrainWidgetsService {
     USDA_MARS_REPORTS: [new UsdaMarsReportsProvider()],
     US_CASH_EXPORT_CONTEXT: [new UsCashExportContextProvider()],
     USDA_MARS_DAILY_MARKET_RATES_TXT: [new UsdaMarsDailyMarketRatesTxtProvider()],
+    ALPHAVANTAGE_GRAIN_BENCHMARKS: [new AlphaVantageCommoditiesProvider()],
   };
 
   private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
@@ -262,6 +283,7 @@ export class GrainWidgetsService {
     USDA_MARS_REPORTS: new MockGrainWidgetsProvider({ kind: "USDA_MARS_REPORTS" }),
     US_CASH_EXPORT_CONTEXT: new MockGrainWidgetsProvider({ kind: "US_CASH_EXPORT_CONTEXT" }),
     USDA_MARS_DAILY_MARKET_RATES_TXT: new MockGrainWidgetsProvider({ kind: "USDA_MARS_DAILY_MARKET_RATES_TXT" }),
+    ALPHAVANTAGE_GRAIN_BENCHMARKS: new MockGrainWidgetsProvider({ kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -384,6 +406,8 @@ export class GrainWidgetsService {
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
+          unitConfidenceByFunction: state?.unitConfidenceByFunction,
+          cadence: state?.cadence,
           errorKind: state?.errorKind,
           coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
@@ -471,6 +495,8 @@ export class GrainWidgetsService {
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
+          unitConfidenceByFunction: state?.unitConfidenceByFunction,
+          cadence: state?.cadence,
           errorKind: state?.errorKind,
           coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
@@ -499,7 +525,7 @@ export class GrainWidgetsService {
     this.providerRuntime.set(provider.id, {
       ...current,
       ...state,
-      expectedCount: EXPECTED_COVERAGE[provider.kind],
+      expectedCount: state.expectedCount ?? current.expectedCount ?? EXPECTED_COVERAGE[provider.kind],
     });
   }
 
@@ -538,6 +564,8 @@ export class GrainWidgetsService {
         parseMode: undefined,
         topScoreMin: undefined,
         topScoreMax: undefined,
+        unitConfidenceByFunction: undefined,
+        cadence: undefined,
       });
 
       try {
@@ -546,6 +574,7 @@ export class GrainWidgetsService {
         const usable = widgetHasUsableData(data);
         const usdaSummary = data.kind === "USDA_MARS_REPORTS" ? data.summary : undefined;
         const txtDebug = data.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? data.debug : undefined;
+        const alphaSummary = data.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS" ? data.summary : undefined;
         const metrics = widgetMetricCounts(data);
 
         if (!usable) {
@@ -557,6 +586,7 @@ export class GrainWidgetsService {
             errorKind: classifyProviderErrorKind(reason),
             sourceUrlUsed: data.sourceUrl,
             mappedCount,
+            expectedCount: alphaSummary?.expectedCount,
             reportsFetched: usdaSummary?.fetchedCount,
             reportsScanned: usdaSummary?.scannedCount,
             reportsMatchedInclude: usdaSummary?.matchedCount,
@@ -570,6 +600,12 @@ export class GrainWidgetsService {
             parseMode: txtDebug?.parseMode,
             topScoreMin: usdaSummary?.topScoreMin,
             topScoreMax: usdaSummary?.topScoreMax,
+            unitConfidenceByFunction: alphaSummary?.byFunction?.map((entry) => ({
+              fn: entry.fn,
+              unitConfidence: entry.unitConfidence,
+              allowNormalization: entry.allowNormalization,
+            })),
+            cadence: alphaSummary?.cadence,
             fallbackUsed: true,
           });
           continue;
@@ -590,6 +626,7 @@ export class GrainWidgetsService {
           errorKind: undefined,
           sourceUrlUsed: data.sourceUrl,
           mappedCount,
+          expectedCount: alphaSummary?.expectedCount,
           reportsFetched: usdaSummary?.fetchedCount,
           reportsScanned: usdaSummary?.scannedCount,
           reportsMatchedInclude: usdaSummary?.matchedCount,
@@ -603,6 +640,12 @@ export class GrainWidgetsService {
           parseMode: txtDebug?.parseMode,
           topScoreMin: usdaSummary?.topScoreMin,
           topScoreMax: usdaSummary?.topScoreMax,
+          unitConfidenceByFunction: alphaSummary?.byFunction?.map((entry) => ({
+            fn: entry.fn,
+            unitConfidence: entry.unitConfidence,
+            allowNormalization: entry.allowNormalization,
+          })),
+          cadence: alphaSummary?.cadence,
           widgetsReturned: [kind],
           fallbackUsed: ["DELAYED", "FALLBACK", "OFFLINE"].includes(data.status),
           notes: data.notes?.slice(0, 3),

@@ -1,4 +1,5 @@
 import { ApiFarmerProvider } from "../server/monitor/grainWidgets/providers/apiFarmerProvider";
+import { AlphaVantageCommoditiesProvider } from "../server/monitor/grainWidgets/providers/alphaVantageCommoditiesProvider";
 import { BarchartCashProvider } from "../server/monitor/grainWidgets/providers/barchartCashProvider";
 import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
@@ -45,6 +46,7 @@ async function run() {
   };
 
   const providers = [
+    new AlphaVantageCommoditiesProvider(),
     new BarchartCashProvider(),
     new TradingChartsFuturesProvider(),
     new DbNomicsSpotProvider(),
@@ -80,6 +82,18 @@ async function run() {
         console.log(
           `  usda_daily_txt rows=${widget.rows.length} linesMatched=${widget.debug?.linesMatched ?? 0}/${widget.debug?.linesFetched ?? 0} source=${widget.report.sourceUrl || widget.sourceUrl || "n/a"}`,
         );
+      }
+      if (widget.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS") {
+        console.log(
+          `  alpha coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} rows=${widget.rows.length}`,
+        );
+        if (widget.summary?.byFunction?.length) {
+          console.log(
+            `  alpha functions=${widget.summary.byFunction
+              .map((entry) => `${entry.fn}:${entry.unitConfidence}:${entry.allowNormalization ? "norm" : "native"}`)
+              .join(", ")}`,
+          );
+        }
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);
     } catch (error: any) {

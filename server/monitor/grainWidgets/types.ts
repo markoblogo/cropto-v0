@@ -18,7 +18,8 @@ export type GrainWidgetKind =
   | "MACRO_AGRI_INDICES"
   | "USDA_MARS_REPORTS"
   | "US_CASH_EXPORT_CONTEXT"
-  | "USDA_MARS_DAILY_MARKET_RATES_TXT";
+  | "USDA_MARS_DAILY_MARKET_RATES_TXT"
+  | "ALPHAVANTAGE_GRAIN_BENCHMARKS";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -383,6 +384,41 @@ export interface GrainWidgetUsdaMarsDailyMarketRatesTxt extends GrainWidgetBase 
   };
 }
 
+export type AlphaVantageUnitConfidence = "CONFIRMED" | "ASSUMED" | "UNKNOWN";
+
+export interface GrainWidgetAlphaVantageBenchmarkRow extends GrainWidgetTableRow {
+  alphaFunction: string;
+  unitConfidence: AlphaVantageUnitConfidence;
+  allowNormalization: boolean;
+  momChangePct?: number;
+  yoyChangePct?: number;
+}
+
+export interface GrainWidgetAlphaVantageGrainBenchmarks extends GrainWidgetBase {
+  kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS";
+  rows: GrainWidgetAlphaVantageBenchmarkRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "unknown";
+    normalizedCoverage?: {
+      ok: number;
+      partial: number;
+      fxMissing: number;
+      unavailable: number;
+    };
+    byFunction?: Array<{
+      fn: string;
+      unitLabel: string;
+      unitConfidence: AlphaVantageUnitConfidence;
+      allowNormalization: boolean;
+      seriesPoints: number;
+      cacheHit?: boolean;
+    }>;
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -393,7 +429,8 @@ export type GrainWidget =
   | GrainWidgetMacroAgriIndices
   | GrainWidgetUsdaMarsReports
   | GrainWidgetUsCashExportContext
-  | GrainWidgetUsdaMarsDailyMarketRatesTxt;
+  | GrainWidgetUsdaMarsDailyMarketRatesTxt
+  | GrainWidgetAlphaVantageGrainBenchmarks;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -445,12 +482,18 @@ export interface GrainWidgetsProviderDebug {
   reportsMatchedInclude?: number;
   reportsExcluded?: number;
   reportsReturnedTop?: number;
+  unitConfidenceByFunction?: Array<{
+    fn: string;
+    unitConfidence: AlphaVantageUnitConfidence;
+    allowNormalization: boolean;
+  }>;
   linesFetched?: number;
   linesMatched?: number;
   parseMode?: "strict";
   topScoreMin?: number;
   topScoreMax?: number;
-  errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "UNKNOWN";
+  cadence?: "daily" | "weekly" | "monthly" | "unknown";
+  errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
   sourceUrlUsed?: string;
   coverage?: string;
   fallbackChain?: "real->cache->mock";

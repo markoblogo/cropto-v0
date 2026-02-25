@@ -20,6 +20,7 @@ export const ENABLE_FAO_FFPI_PROVIDER = envBool("ENABLE_FAO_FFPI_PROVIDER", ENAB
 export const ENABLE_USDA_MARS_REPORTS_WIDGET = envBool("ENABLE_USDA_MARS_REPORTS_WIDGET", true);
 export const ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET = envBool("ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET", true);
 export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", true);
+export const ENABLE_ALPHAVANTAGE_PROVIDER = envBool("ENABLE_ALPHAVANTAGE_PROVIDER", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -103,6 +104,20 @@ export const USDA_MARS_FILE_URL_TEMPLATES = (
   .map((value) => value.trim())
   .filter(Boolean);
 export const USDA_MARS_DAILY_MAX_ROWS = envNum("USDA_MARS_DAILY_MAX_ROWS", 8);
+export const ALPHAVANTAGE_API_KEY = process.env.ALPHAVANTAGE_API_KEY || "";
+export const ALPHAVANTAGE_BASE_URL =
+  process.env.ALPHAVANTAGE_BASE_URL ||
+  "https://www.alphavantage.co/query";
+export const ALPHAVANTAGE_TIMEOUT_MS = envNum("ALPHAVANTAGE_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const ALPHAVANTAGE_CACHE_TTL_MS = envNum("ALPHAVANTAGE_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const ALPHAVANTAGE_INTERVAL = (process.env.ALPHAVANTAGE_INTERVAL || "monthly").trim() || "monthly";
+export const ALPHAVANTAGE_FUNCTIONS = (process.env.ALPHAVANTAGE_FUNCTIONS || "WHEAT,CORN")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const ALPHAVANTAGE_UNIT_MAP = process.env.ALPHAVANTAGE_UNIT_MAP || "";
+export const ALPHAVANTAGE_RATE_LIMIT_PER_MIN = envNum("ALPHAVANTAGE_RATE_LIMIT_PER_MIN", 5);
+export const ALPHAVANTAGE_BACKOFF_MS = envNum("ALPHAVANTAGE_BACKOFF_MS", 60_000);
 export const USDA_MARS_INCLUDE_KEYWORDS = (
   process.env.USDA_MARS_INCLUDE_KEYWORDS ||
   "grain,bid,bids,export,market rates,corn,wheat,soy,soybean,oilseed,portland,louisiana,texas"
