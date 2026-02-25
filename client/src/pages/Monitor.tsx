@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity } from "lucide-react";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,42 @@ type DebugResponse = {
     fallback: number;
     shownSourceIds: string[];
   };
+};
+
+type LogisticsIndicator = {
+  id: "bdi" | "usda_rail_tariff" | "logistics_pressure";
+  title: string;
+  subtitle: string;
+  unit: string;
+  value?: number;
+  change?: number;
+  changePercent?: number;
+  status: "live" | "stale" | "fallback" | "unavailable";
+  sourceName: string;
+  sourceUrl: string;
+  asOf?: string;
+  updateFrequency: string;
+  series: Array<{ label: string; value: number }>;
+  note?: string;
+};
+
+type LogisticsIndicatorsResponse = {
+  enabled: boolean;
+  indicators: LogisticsIndicator[];
+  generatedAt: string;
+  refreshMs?: number;
+  message?: string;
+};
+type CompactSignalStatus = "Rising" | "Stable" | "Elevated" | "Cooling";
+
+type CompactSignalWidget = {
+  id: string;
+  title: string;
+  status: CompactSignalStatus;
+  primary: string;
+  secondary: string;
+  note: string;
+  series: Array<{ label: string; value: number }>;
 };
 
 type SignalType = "Harvest" | "Export" | "Logistics" | "Policy" | "Weather" | "Futures" | "Markets";
@@ -191,6 +227,88 @@ function ImpactBadge({ impact }: { impact: Impact }) {
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${styles}`}>{impact}</span>;
 }
 
+function indicatorStatusClass(status: LogisticsIndicator["status"]) {
+  if (status === "live") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
+  if (status === "stale") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
+  if (status === "fallback") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
+  return "border-red-400/45 bg-red-500/20 text-red-100";
+}
+
+function indicatorStatusLabel(status: LogisticsIndicator["status"]) {
+  if (status === "live") return "Live";
+  if (status === "stale") return "Stale";
+  if (status === "fallback") return "Fallback";
+  return "Unavailable";
+}
+
+function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
+  const isPositive = (indicator.change ?? 0) >= 0;
+  const icon =
+    indicator.id === "bdi" ? <Waves className="h-3.5 w-3.5 text-primary-foreground" /> :
+      indicator.id === "usda_rail_tariff" ? <TrainFront className="h-3.5 w-3.5 text-primary-foreground" /> :
+        <Activity className="h-3.5 w-3.5 text-primary-foreground" />;
+
+  return (
+    <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="rounded-md border border-primary/35 bg-primary/12 p-1.5">{icon}</span>
+            <div>
+              <CardTitle className="text-sm leading-5">{indicator.title}</CardTitle>
+              <CardDescription className="text-[11px] text-slate-400">{indicator.subtitle}</CardDescription>
+            </div>
+          </div>
+          <Badge className={`text-[10px] uppercase tracking-wide ${indicatorStatusClass(indicator.status)}`}>
+            {indicatorStatusLabel(indicator.status)}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="flex items-end justify-between gap-2">
+          <p className="text-2xl font-bold text-white">
+            {indicator.value == null ? "n/a" : indicator.id === "logistics_pressure" ? Math.round(indicator.value) : indicator.value.toFixed(2)}
+            <span className="ml-1 text-xs font-medium text-slate-400">{indicator.unit}</span>
+          </p>
+          {indicator.change != null ? (
+            <p className={`text-xs font-semibold ${isPositive ? "text-emerald-300" : "text-red-300"}`}>
+              {isPositive ? "+" : ""}{indicator.change.toFixed(2)}
+              {indicator.changePercent != null ? ` (${isPositive ? "+" : ""}${indicator.changePercent.toFixed(2)}%)` : ""}
+            </p>
+          ) : (
+            <p className="text-xs text-slate-500">No delta</p>
+          )}
+        </div>
+
+        <div className="h-16">
+          {indicator.series.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={indicator.series}>
+                <XAxis dataKey="label" hide />
+                <YAxis hide />
+                <Tooltip />
+                <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/70 text-[11px] text-slate-400">
+              Snapshot unavailable
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
+          <a href={indicator.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-slate-200">
+            Source: {indicator.sourceName}
+          </a>
+          <span>{indicator.asOf ? formatRelative(indicator.asOf) : indicator.updateFrequency}</span>
+        </div>
+        {indicator.note ? <p className="text-[10px] text-slate-500 line-clamp-2">{indicator.note}</p> : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
   const signalType = classifySignalType(item);
   const impact = classifyImpact(item);
@@ -234,6 +352,44 @@ function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
         <span>{formatRelative(item.published_at)}</span>
       </div>
     </a>
+  );
+}
+
+function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
+  const statusClass =
+    widget.status === "Rising"
+      ? "border-red-400/45 bg-red-500/20 text-red-100"
+      : widget.status === "Elevated"
+        ? "border-amber-400/45 bg-amber-500/20 text-amber-100"
+        : widget.status === "Cooling"
+          ? "border-emerald-400/45 bg-emerald-500/20 text-emerald-100"
+          : "border-blue-400/45 bg-blue-500/20 text-blue-100";
+
+  return (
+    <Card className="border-white/12 bg-slate-950/74 text-slate-100">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-sm">{widget.title}</CardTitle>
+          <Badge className={`text-[10px] uppercase tracking-wide ${statusClass}`}>{widget.status}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="flex items-end justify-between gap-2">
+          <p className="text-xl font-bold text-white">{widget.primary}</p>
+          <p className="text-xs text-slate-300">{widget.secondary}</p>
+        </div>
+        <div className="h-10">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={widget.series}>
+              <XAxis dataKey="label" hide />
+              <YAxis hide />
+              <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-[10px] text-slate-400">{widget.note}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -289,6 +445,16 @@ export default function MonitorPage() {
     refetchInterval: 10 * 60 * 1000,
   });
 
+  const logisticsIndicatorsQuery = useQuery<LogisticsIndicatorsResponse>({
+    queryKey: ["monitor-logistics-indicators"],
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/logistics-indicators");
+      if (!response.ok) throw new Error("Failed to load logistics indicators");
+      return response.json();
+    },
+    refetchInterval: 5 * 60 * 1000,
+  });
+
   const debugQuery = useQuery<DebugResponse>({
     queryKey: ["monitor-debug"],
     enabled: debugEnabled,
@@ -302,6 +468,7 @@ export default function MonitorPage() {
 
   const feed = monitorQuery.data?.feed || [];
   const topSignals = monitorQuery.data?.topSignals || [];
+  const prioritySignals = topSignals.slice(0, 3);
   const chartFeed = useMemo(() => {
     if (chartWindow === "24h") return feed.filter((item) => inLastHours(item, 24));
     return feed.filter((item) => inLastHours(item, 24 * 7));
@@ -324,7 +491,7 @@ export default function MonitorPage() {
     });
   }, [feed]);
 
-  const blackSeaRisks = useMemo(() => {
+  const blackSeaSignals = useMemo(() => {
     return [...feed]
       .filter((item) => {
         const txt = `${item.title} ${item.summary || ""}`.toLowerCase();
@@ -337,8 +504,119 @@ export default function MonitorPage() {
         const riskTopic = item.topic_tags.some((tag) => ["logistics", "policy", "weather", "trade"].includes(tag));
         return regionHit && riskTopic;
       })
-      .sort((a, b) => b.relevance_score - a.relevance_score || Date.parse(b.published_at) - Date.parse(a.published_at))
-      .slice(0, 6);
+      .sort((a, b) => b.relevance_score - a.relevance_score || Date.parse(b.published_at) - Date.parse(a.published_at));
+  }, [feed]);
+  const blackSeaRisks = useMemo(() => blackSeaSignals.slice(0, 4), [blackSeaSignals]);
+
+  const widgetSeriesFor = useMemo(() => {
+    const build = (predicate: (item: MonitorItem) => boolean) => {
+      const series: Array<{ label: string; value: number }> = [];
+      for (let offset = 6; offset >= 0; offset -= 1) {
+        const dayDate = new Date(Date.now() - offset * 24 * 60 * 60 * 1000);
+        const day = dayDate.toISOString().slice(5, 10);
+        const start = new Date(dayDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(dayDate);
+        end.setHours(23, 59, 59, 999);
+        const count = feed.filter((item) => {
+          const ts = Date.parse(item.published_at);
+          return Number.isFinite(ts) && ts >= start.getTime() && ts <= end.getTime() && predicate(item);
+        }).length;
+        series.push({ label: day, value: count });
+      }
+      return series;
+    };
+
+    return {
+      blackSea: build((item) =>
+        item.region_tags.some((tag) => ["black sea", "ukraine", "romania", "bulgaria", "poland"].some((needle) => tag.includes(needle))),
+      ),
+      logistics: build((item) => item.topic_tags.includes("logistics")),
+      weather: build((item) => item.topic_tags.includes("weather")),
+      policy: build((item) => item.topic_tags.includes("policy") || item.topic_tags.includes("trade")),
+    };
+  }, [feed]);
+
+  const compactWidgets = useMemo<CompactSignalWidget[]>(() => {
+    const blackSea24h = blackSeaSignals.filter((item) => inLastHours(item, 24)).length;
+    const blackSea7d = blackSeaSignals.filter((item) => inLastHours(item, 24 * 7)).length;
+    const blackSeaStatus: CompactSignalStatus = blackSea24h >= 8 ? "Rising" : blackSea24h >= 4 ? "Elevated" : "Stable";
+
+    const logistics24h = feed.filter((item) => item.topic_tags.includes("logistics") && inLastHours(item, 24)).length;
+    const logisticsHigh24h = feed.filter((item) => item.topic_tags.includes("logistics") && inLastHours(item, 24) && classifyImpact(item) === "High").length;
+    const logisticsStatus: CompactSignalStatus = logisticsHigh24h >= 3 ? "Elevated" : logistics24h > 6 ? "Rising" : "Stable";
+
+    const weather24h = feed.filter((item) => item.topic_tags.includes("weather") && inLastHours(item, 24)).length;
+    const weatherByRegion = ["black sea", "eu", "us", "latam"]
+      .map((regionName) => ({ regionName, count: feed.filter((item) => item.topic_tags.includes("weather") && inRegion(item, regionName)).length }))
+      .sort((a, b) => b.count - a.count)[0];
+    const weatherStatus: CompactSignalStatus = weather24h >= 6 ? "Elevated" : weather24h >= 3 ? "Rising" : "Cooling";
+
+    const policy24h = feed.filter((item) => (item.topic_tags.includes("policy") || item.topic_tags.includes("trade")) && inLastHours(item, 24)).length;
+    const policyStatus: CompactSignalStatus = policy24h >= 7 ? "Rising" : policy24h >= 3 ? "Elevated" : "Stable";
+
+    return [
+      {
+        id: "black-sea-activity",
+        title: "Black Sea Activity",
+        status: blackSeaStatus,
+        primary: `${blackSea24h}`,
+        secondary: `7d: ${blackSea7d}`,
+        note: "Mentions tagged to Black Sea corridor risk.",
+        series: widgetSeriesFor.blackSea,
+      },
+      {
+        id: "logistics-pressure",
+        title: "Logistics Pressure",
+        status: logisticsStatus,
+        primary: `${logisticsHigh24h} high`,
+        secondary: `24h logistics: ${logistics24h}`,
+        note: "High-impact logistics signals over 24h.",
+        series: widgetSeriesFor.logistics,
+      },
+      {
+        id: "weather-risk",
+        title: "Weather Risk Pulse",
+        status: weatherStatus,
+        primary: `${weather24h}`,
+        secondary: `Hot region: ${asLabel(weatherByRegion?.regionName || "black sea")}`,
+        note: "Weather-tagged signals across active regions.",
+        series: widgetSeriesFor.weather,
+      },
+      {
+        id: "policy-pressure",
+        title: "Policy / Trade Friction",
+        status: policyStatus,
+        primary: `${policy24h}`,
+        secondary: "24h policy & trade",
+        note: "Regulatory and trade-flow pressure monitor.",
+        series: widgetSeriesFor.policy,
+      },
+    ];
+  }, [blackSeaSignals, feed, widgetSeriesFor]);
+
+  const marketNarrative = useMemo(() => {
+    const logistics24 = feed.filter((item) => item.topic_tags.includes("logistics") && inLastHours(item, 24)).length;
+    const policy24 = feed.filter((item) => (item.topic_tags.includes("policy") || item.topic_tags.includes("trade")) && inLastHours(item, 24)).length;
+    const weather24 = feed.filter((item) => item.topic_tags.includes("weather") && inLastHours(item, 24)).length;
+    const high24 = feed.filter((item) => inLastHours(item, 24) && classifyImpact(item) === "High").length;
+    const score = logistics24 * 2 + policy24 * 2 + weather24 + high24 * 3;
+    if (score >= 30) {
+      return {
+        status: "Elevated",
+        line: "Risk tone is elevated: logistics and policy signals are driving near-term volatility narratives.",
+      };
+    }
+    if (score >= 18) {
+      return {
+        status: "Rising",
+        line: "Signal flow is building across logistics and weather channels; monitor hedge timing and corridor exposure.",
+      };
+    }
+    return {
+      status: "Stable",
+      line: "Narrative remains balanced with moderate signal density and no broad stress cluster.",
+    };
   }, [feed]);
 
   const cropVolumeData = useMemo(() => {
@@ -427,17 +705,113 @@ export default function MonitorPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-12">
+          <LiveVisualsPanel debugEnabled={debugEnabled} compact />
+
+          <div className="grid gap-3 xl:grid-cols-12">
+            <Card className="xl:col-span-5 border-red-400/35 bg-[linear-gradient(160deg,rgba(127,29,29,0.24),rgba(10,14,26,0.92)_36%)] text-slate-100 shadow-[0_0_0_1px_rgba(248,113,113,0.14)]">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-red-400" />
+                  <CardTitle className="text-base">Black Sea Watch</CardTitle>
+                </div>
+                <CardDescription className="text-slate-400">Live corridor risk context for logistics, policy and weather</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid grid-cols-3 gap-1.5 rounded-md border border-white/10 bg-slate-950/55 p-1.5 text-[10px]">
+                  <div>
+                    <p className="text-slate-400">Activity</p>
+                    <p className="font-semibold text-white">{blackSeaSignals.filter((item) => inLastHours(item, 24)).length}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">High impact</p>
+                    <p className="font-semibold text-red-300">{blackSeaSignals.filter((item) => inLastHours(item, 24) && classifyImpact(item) === "High").length}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">7d total</p>
+                    <p className="font-semibold text-amber-300">{blackSeaSignals.filter((item) => inLastHours(item, 24 * 7)).length}</p>
+                  </div>
+                </div>
+                {blackSeaRisks.map((item) => (
+                  <a key={`bs-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/80 p-2 hover:border-red-400/35">
+                    <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
+                    <p className="mt-1 text-[10px] text-slate-400">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
+                  </a>
+                ))}
+              </CardContent>
+            </Card>
+
+            <div className="xl:col-span-7 grid gap-3 sm:grid-cols-2">
+              {compactWidgets.map((widget) => (
+                <CompactWidgetCard key={widget.id} widget={widget} />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-12">
+            <Card className="xl:col-span-6 border-primary/35 bg-slate-950/76 text-slate-100">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" />
+                  <CardTitle className="text-base">Top Signals (Priority)</CardTitle>
+                </div>
+                <CardDescription className="text-slate-400">Top three decision-relevant signals</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                {prioritySignals.map((item, index) => (
+                  <SignalCard key={item.id} item={item} rank={index} />
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="xl:col-span-3 border-white/12 bg-slate-950/76 text-slate-100">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Market Narrative (24h)</CardTitle>
+                <CardDescription className="text-slate-400">Rule-based summary from active signals</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Badge className={`${marketNarrative.status === "Elevated" ? "border-red-400/45 bg-red-500/20 text-red-100" : marketNarrative.status === "Rising" ? "border-amber-400/45 bg-amber-500/20 text-amber-100" : "border-blue-400/45 bg-blue-500/20 text-blue-100"} text-[10px] uppercase tracking-wide`}>
+                  {marketNarrative.status}
+                </Badge>
+                <p className="text-sm leading-6 text-slate-200">{marketNarrative.line}</p>
+              </CardContent>
+            </Card>
+
+            <div className="xl:col-span-3 grid gap-3">
+              {logisticsIndicatorsQuery.data?.enabled ? (
+                (logisticsIndicatorsQuery.data?.indicators || []).slice(0, 2).map((indicator) => (
+                  <Card key={`mini-${indicator.id}`} className="border-white/12 bg-slate-950/72 text-slate-100">
+                    <CardContent className="pt-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-slate-200">{indicator.title}</p>
+                        <Badge className={`text-[10px] ${indicatorStatusClass(indicator.status)}`}>{indicatorStatusLabel(indicator.status)}</Badge>
+                      </div>
+                      <div className="mt-1 flex items-end justify-between">
+                        <p className="text-lg font-bold text-white">{indicator.value == null ? "n/a" : indicator.value.toFixed(2)}</p>
+                        <p className="text-[10px] text-slate-400">{indicator.change != null ? `${indicator.change >= 0 ? "+" : ""}${indicator.change.toFixed(2)}` : "no delta"}</p>
+                      </div>
+                      <p className="mt-1 text-[10px] text-slate-500 line-clamp-2">{indicator.sourceName}</p>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+                  <CardContent className="pt-4 text-xs text-slate-400">Logistics indicators disabled.</CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-white/12 bg-slate-950/70 text-slate-100">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Market Pulse</CardTitle>
+                <CardTitle className="text-base">Market Pulse (Secondary)</CardTitle>
                 <CardDescription className="text-slate-400">24h directional intensity by crop</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2">
+              <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {pulseByCrop.map((entry) => (
-                  <div key={entry.crop} className="rounded-lg border border-white/10 bg-slate-900/80 p-2.5">
+                  <div key={entry.crop} className="rounded-lg border border-white/10 bg-slate-900/80 p-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">{asLabel(entry.crop)}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">{asLabel(entry.crop)}</p>
                       {entry.direction === "up" ? (
                         <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                       ) : entry.direction === "down" ? (
@@ -446,121 +820,83 @@ export default function MonitorPage() {
                         <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
                       )}
                     </div>
-                    <p className="mt-1 text-xl font-semibold text-white">{entry.now24h}</p>
-                    <p className="text-[11px] text-slate-400">Signals 24h • total {entry.total}</p>
+                    <p className="mt-1 text-lg font-semibold text-white">{entry.now24h}</p>
+                    <p className="text-[10px] text-slate-400">24h • total {entry.total}</p>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-4 border-primary/40 bg-slate-950/80 text-slate-100 shadow-[0_0_0_1px_rgba(154,163,58,0.25)]">
+            <Card className="xl:col-span-5 border-primary/30 bg-slate-950/74 text-slate-100">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-lg">Cropto UA Indices</CardTitle>
-                  <Badge className="border-primary/40 bg-primary/15 text-primary-foreground">Core</Badge>
+                  <CardTitle className="text-base">Cropto UA Indices (Secondary)</CardTitle>
+                  <Badge className="border-primary/40 bg-primary/15 text-primary-foreground">Internal</Badge>
                 </div>
-                <CardDescription className="text-slate-400">Internal index feed</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="rounded-md border border-primary/30 bg-primary/10 px-2.5 py-2 text-[11px] text-primary-foreground/90">
-                  High-signal regional snapshots for Ukraine. Values update independently from media signals.
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
+              <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {!indicesQuery.data?.enabled ? (
                   <p className="text-sm text-slate-400">Coming soon</p>
                 ) : indicesQuery.data?.items?.length ? (
                   indicesQuery.data.items.slice(0, 6).map((item) => (
-                    <div key={item.slug} className="rounded-lg border border-primary/25 bg-[linear-gradient(180deg,rgba(154,163,58,0.14),rgba(15,23,42,0.85)_28%,rgba(15,23,42,0.93))] p-2.5">
-                      <p className="text-xs font-semibold text-slate-100 line-clamp-1">{item.name}</p>
+                    <div key={item.slug} className="rounded-lg border border-primary/25 bg-slate-900/82 p-2">
+                      <p className="text-[11px] font-semibold text-slate-100 line-clamp-1">{item.name}</p>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-2xl font-bold text-white">${item.value.toFixed(2)}</p>
-                        <Badge className={`${item.change != null && item.change >= 0 ? "border-emerald-400/45 bg-emerald-500/15 text-emerald-100" : "border-red-400/45 bg-red-500/15 text-red-100"} text-[10px]`}>
+                        <p className="text-lg font-bold text-white">${item.value.toFixed(2)}</p>
+                        <p className={`text-[10px] font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-300" : "text-red-300"}`}>
                           {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
-                        </Badge>
+                        </p>
                       </div>
-                      <p className="mt-1 text-[10px] text-slate-400">{formatRelative(item.updatedAt)} • {item.source}</p>
                     </div>
                   ))
                 ) : (
                   <p className="text-sm text-slate-400">No index snapshots available yet.</p>
                 )}
-                </div>
               </CardContent>
             </Card>
 
-            <div className="xl:col-span-3 grid gap-4">
-              <Card className="border-red-400/35 bg-[linear-gradient(160deg,rgba(127,29,29,0.24),rgba(10,14,26,0.92)_36%)] text-slate-100 shadow-[0_0_0_1px_rgba(248,113,113,0.14)]">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-4 w-4 text-red-400" />
-                    <CardTitle className="text-base">Black Sea Watch</CardTitle>
-                  </div>
-                  <CardDescription className="text-slate-400">Top logistics/policy/weather risks</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="grid grid-cols-3 gap-1.5 rounded-md border border-white/10 bg-slate-950/55 p-1.5 text-[10px]">
-                    <div>
-                      <p className="text-slate-400">Activity</p>
-                      <p className="font-semibold text-white">{blackSeaRisks.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-400">High impact</p>
-                      <p className="font-semibold text-red-300">{blackSeaRisks.filter((item) => classifyImpact(item) === "High").length}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-400">New 24h</p>
-                      <p className="font-semibold text-amber-300">{blackSeaRisks.filter((item) => inLastHours(item, 24)).length}</p>
-                    </div>
-                  </div>
-                  {blackSeaRisks.slice(0, 4).map((item) => (
-                    <a key={`bs-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/80 p-2 hover:border-red-400/35">
-                      <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
-                      <p className="mt-1 text-[10px] text-slate-400">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
-                    </a>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="border-primary/30 bg-slate-950/70 text-slate-100">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Live Visuals Dock</CardTitle>
-                  <CardDescription className="text-slate-400">Reserved high-visibility slot for live logistics/media tiles</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {["Port", "Logistics", "Weather", "Market Media"].map((tag) => (
-                      <Badge key={tag} className="border-primary/35 bg-primary/12 text-[10px] text-primary-foreground">
-                        {tag}
-                      </Badge>
+            <Card className="xl:col-span-2 border-white/12 bg-slate-950/65 text-slate-100">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Macro / FX</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {fxQuery.data.rates.slice(0, 4).map((rate) => (
+                      <div key={rate.currency} className="rounded-md border border-white/10 bg-slate-900/75 p-1.5">
+                        <p className="text-[10px] text-slate-400">{rate.currency}</p>
+                        <p className="text-sm font-semibold text-white">{rate.usdPerUnit.toFixed(4)}</p>
+                      </div>
                     ))}
                   </div>
-                  <p className="text-xs text-slate-300/90">Live Visuals panel is anchored below this hero row and ready for data-rich tiles in the next sprint.</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-white/12 bg-slate-950/65 text-slate-100">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Macro / FX Snapshot</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      {fxQuery.data.rates.slice(0, 4).map((rate) => (
-                        <div key={rate.currency} className="rounded-md border border-white/10 bg-slate-900/75 p-2">
-                          <p className="text-[10px] text-slate-400">{rate.currency}</p>
-                          <p className="text-sm font-semibold text-white">{rate.usdPerUnit.toFixed(4)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400">Coming soon</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                ) : (
+                  <p className="text-xs text-slate-400">Coming soon</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
-          <LiveVisualsPanel debugEnabled={debugEnabled} />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Freight & Logistics Indicators</h2>
+              <span className="text-[11px] text-slate-500">
+                {logisticsIndicatorsQuery.data?.enabled ? "Demo-grade, fallback-first" : "Disabled"}
+              </span>
+            </div>
+            {!logisticsIndicatorsQuery.data?.enabled ? (
+              <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+                <CardContent className="pt-6 text-sm text-slate-400">
+                  Indicators are disabled by feature flag.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-3 lg:grid-cols-3">
+                {(logisticsIndicatorsQuery.data?.indicators || []).map((indicator) => (
+                  <IndicatorCard key={indicator.id} indicator={indicator} />
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Card className="border-white/10 bg-slate-950/70 text-slate-100">

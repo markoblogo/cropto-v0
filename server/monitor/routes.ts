@@ -9,9 +9,11 @@ import {
 } from "./config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
+import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 
 const indexProvider = new CroptoUkraineIndexProvider();
+const logisticsIndicatorsService = new LogisticsIndicatorsService();
 
 function topEntries(record: Record<string, number>, limit = 5) {
   return Object.entries(record)
@@ -21,6 +23,8 @@ function topEntries(record: Record<string, number>, limit = 5) {
 }
 
 export function registerMonitorRoutes(app: Express): void {
+  logisticsIndicatorsService.start();
+
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
     if (!Number.isFinite(parsed)) return MONITOR_RELEVANCE_THRESHOLD;
@@ -137,6 +141,32 @@ export function registerMonitorRoutes(app: Express): void {
 
   app.get("/api/monitor/live-visuals", (_req, res) => {
     res.json(getLiveVisualTiles());
+  });
+
+  app.get("/api/monitor/logistics-indicators", async (_req, res) => {
+    if (!MONITOR_FEATURE_FLAGS.ENABLE_LOGISTICS_INDICATORS) {
+      return res.json({
+        enabled: false,
+        indicators: [],
+        generatedAt: new Date().toISOString(),
+        message: "Logistics indicators disabled",
+      });
+    }
+
+    try {
+      const payload = await logisticsIndicatorsService.listIndicators();
+      return res.json({
+        enabled: true,
+        ...payload,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        enabled: true,
+        indicators: [],
+        generatedAt: new Date().toISOString(),
+        message: error?.message || "Failed to load logistics indicators",
+      });
+    }
   });
 
   app.get("/api/monitor/debug", async (_req, res) => {

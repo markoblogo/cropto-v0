@@ -15,6 +15,7 @@ export const MONITOR_FEATURE_FLAGS: MonitorFeatureFlags = {
   ENABLE_WEATHER_PLACEHOLDER: flag("ENABLE_WEATHER_PLACEHOLDER", true),
   ENABLE_DEBUG_DASHBOARD: flag("ENABLE_DEBUG_DASHBOARD", true),
   ENABLE_LIVE_VISUALS: flag("ENABLE_LIVE_VISUALS", true),
+  ENABLE_LOGISTICS_INDICATORS: flag("ENABLE_LOGISTICS_INDICATORS", true),
 };
 
 export const MONITOR_RELEVANCE_THRESHOLD = Number.parseInt(
@@ -40,7 +41,7 @@ export const MONITOR_CACHE_TTL_MS = Number.parseInt(
   10,
 );
 
-export const LIVE_VISUALS_MAX_TILES = Number.parseInt(process.env.LIVE_VISUALS_MAX_TILES || "4", 10);
+export const LIVE_VISUALS_MAX_TILES = Number.parseInt(process.env.LIVE_VISUALS_MAX_TILES || "5", 10);
 export const LIVE_VISUALS_ENABLE_AUTO_REFRESH =
   process.env.LIVE_VISUALS_ENABLE_AUTO_REFRESH == null
     ? true
@@ -50,6 +51,21 @@ export const LIVE_VISUALS_DEFAULT_REFRESH_SEC = Number.parseInt(
   process.env.LIVE_VISUALS_DEFAULT_REFRESH_SEC || "60",
   10,
 );
+
+export const LOGISTICS_INDICATORS_REFRESH_MS = Number.parseInt(
+  process.env.LOGISTICS_INDICATORS_REFRESH_MS || String(15 * 60 * 1000),
+  10,
+);
+
+export const LOGISTICS_INDICATORS_CACHE_TTL_MS = Number.parseInt(
+  process.env.LOGISTICS_INDICATORS_CACHE_TTL_MS || String(20 * 60 * 1000),
+  10,
+);
+
+export const BDI_SOURCE_URL =
+  process.env.BDI_SOURCE_URL || "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BDIY";
+export const USDA_GTR_RAIL_TARIFF_URL =
+  process.env.USDA_GTR_RAIL_TARIFF_URL || "https://www.ams.usda.gov/sites/default/files/media/GTRTable7.csv";
 
 // Wave 1 sources (RSS/Atom first). Keep enabled flags tunable without code changes.
 export const MONITOR_SOURCES: MonitorSource[] = [

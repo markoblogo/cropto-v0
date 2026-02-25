@@ -25,6 +25,7 @@ export type MonitorFeatureFlags = {
   ENABLE_WEATHER_PLACEHOLDER: boolean;
   ENABLE_DEBUG_DASHBOARD: boolean;
   ENABLE_LIVE_VISUALS: boolean;
+  ENABLE_LOGISTICS_INDICATORS: boolean;
 };
 
 export type MonitorNewsItem = {
@@ -113,4 +114,28 @@ export type LiveVisualTileData = {
   attribution?: string;
   tags: string[];
   error?: string;
+};
+
+export type LogisticsIndicatorStatus = "live" | "stale" | "fallback" | "unavailable";
+
+export type LogisticsIndicatorPoint = {
+  label: string;
+  value: number;
+};
+
+export type LogisticsIndicatorData = {
+  id: "bdi" | "usda_rail_tariff" | "logistics_pressure";
+  title: string;
+  subtitle: string;
+  unit: string;
+  value?: number;
+  change?: number;
+  changePercent?: number;
+  status: LogisticsIndicatorStatus;
+  sourceName: string;
+  sourceUrl: string;
+  asOf?: string;
+  updateFrequency: string;
+  series: LogisticsIndicatorPoint[];
+  note?: string;
 };

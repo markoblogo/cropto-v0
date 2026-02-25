@@ -69,10 +69,10 @@ function renderRelative(iso?: string) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function TilePreview({ tile, large, autoRefreshEnabled }: { tile: LiveVisualTile; large: boolean; autoRefreshEnabled: boolean }) {
+function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveVisualTile; large: boolean; autoRefreshEnabled: boolean; compact: boolean }) {
   const [refreshTick, setRefreshTick] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
-  const previewHeight = large ? "h-[210px] lg:h-[230px]" : "h-[124px]";
+  const previewHeight = large ? (compact ? "h-[170px] lg:h-[185px]" : "h-[210px] lg:h-[230px]") : (compact ? "h-[110px]" : "h-[124px]");
 
   useEffect(() => {
     if (tile.renderMode !== "image") return;
@@ -138,9 +138,9 @@ function TilePreview({ tile, large, autoRefreshEnabled }: { tile: LiveVisualTile
   );
 }
 
-function LiveVisualTileCard({ tile, large, autoRefreshEnabled }: { tile: LiveVisualTile; large?: boolean; autoRefreshEnabled: boolean }) {
+function LiveVisualTileCard({ tile, large, autoRefreshEnabled, compact }: { tile: LiveVisualTile; large?: boolean; autoRefreshEnabled: boolean; compact: boolean }) {
   return (
-    <div className="flex h-full flex-col rounded-xl border border-white/12 bg-slate-950/78 p-3">
+    <div className={`flex h-full flex-col rounded-xl border border-white/12 bg-slate-950/78 ${compact ? "p-2.5" : "p-3"}`}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <Badge className={`text-[10px] uppercase tracking-wide ${statusClass(tile.status)}`}>{tile.status}</Badge>
         <div className="flex items-center gap-1.5">
@@ -156,7 +156,7 @@ function LiveVisualTileCard({ tile, large, autoRefreshEnabled }: { tile: LiveVis
         <p className="text-xs text-slate-400 line-clamp-1">{tile.region} • {tile.subtitle}</p>
       </div>
 
-      <TilePreview tile={tile} large={!!large} autoRefreshEnabled={autoRefreshEnabled} />
+      <TilePreview tile={tile} large={!!large} autoRefreshEnabled={autoRefreshEnabled} compact={compact} />
 
       <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
         <span className="truncate">{tile.sourceName}</span>
@@ -182,7 +182,7 @@ function LiveVisualTileCard({ tile, large, autoRefreshEnabled }: { tile: LiveVis
   );
 }
 
-export function LiveVisualsPanel({ debugEnabled = false }: { debugEnabled?: boolean }) {
+export function LiveVisualsPanel({ debugEnabled = false, compact = false }: { debugEnabled?: boolean; compact?: boolean }) {
   const query = useQuery<LiveVisualsResponse>({
     queryKey: ["monitor-live-visuals"],
     queryFn: async () => {
@@ -206,7 +206,7 @@ export function LiveVisualsPanel({ debugEnabled = false }: { debugEnabled?: bool
 
   return (
     <Card className="border-primary/30 bg-slate-950/72 text-slate-100 shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
-      <CardHeader>
+      <CardHeader className={compact ? "pb-3" : undefined}>
         <div className="flex items-center justify-between gap-2">
           <div>
             <CardTitle className="text-lg">Live Logistics & Market Visuals</CardTitle>
@@ -217,7 +217,7 @@ export function LiveVisualsPanel({ debugEnabled = false }: { debugEnabled?: bool
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={compact ? "space-y-2" : "space-y-3"}>
         {!primary ? (
           <div className="rounded-lg border border-dashed border-white/20 bg-slate-900/70 p-4 text-sm text-slate-400">
             Live visuals coming soon.
@@ -225,11 +225,11 @@ export function LiveVisualsPanel({ debugEnabled = false }: { debugEnabled?: bool
         ) : (
           <div className="grid gap-3 xl:grid-cols-12">
             <div className="xl:col-span-7">
-              <LiveVisualTileCard tile={primary} large autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} />
+              <LiveVisualTileCard tile={primary} large autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} compact={compact} />
             </div>
             <div className="xl:col-span-5 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-2">
               {secondary.map((tile) => (
-                <LiveVisualTileCard key={tile.id} tile={tile} autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} />
+                <LiveVisualTileCard key={tile.id} tile={tile} autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} compact={compact} />
               ))}
               {!secondary.length ? (
                 <div className="rounded-xl border border-dashed border-white/20 bg-slate-900/75 p-3 text-sm text-slate-400">No secondary tiles configured.</div>
@@ -238,7 +238,7 @@ export function LiveVisualsPanel({ debugEnabled = false }: { debugEnabled?: bool
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+        <div className={`flex flex-wrap items-center gap-2 text-slate-400 ${compact ? "text-[11px]" : "text-xs"}`}>
           <span className="inline-flex items-center gap-1"><Signal className="h-3 w-3" /> tiles: {tiles.length}</span>
           <span className="inline-flex items-center gap-1"><RefreshCw className="h-3 w-3" /> auto-refresh: {query.data?.settings.autoRefreshEnabled ? "on" : "off"}</span>
           {fallbackCount > 0 ? <span>fallback: {fallbackCount}</span> : null}
