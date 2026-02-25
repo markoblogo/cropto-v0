@@ -1008,6 +1008,33 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
   );
 }
 
+function GrainExpansionFallbackCard({
+  title,
+  subtitle,
+  status = "OFFLINE",
+  reason,
+}: {
+  title: string;
+  subtitle: string;
+  status?: GrainWidgetStatus;
+  reason?: string;
+}) {
+  return (
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-base">{title}</CardTitle>
+          <Badge className={`text-[10px] ${grainStatusClass(status)}`}>{status}</Badge>
+        </div>
+        <CardDescription className="text-foreground/70">{subtitle}</CardDescription>
+      </CardHeader>
+      <CardContent className="pt-2 text-sm text-foreground/72">
+        {reason || "Data temporarily unavailable. Source fallback is active."}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function MonitorPage() {
   const [crop, setCrop] = useState("all");
   const [topic, setTopic] = useState("all");
@@ -1019,6 +1046,7 @@ export default function MonitorPage() {
   const [chartWindow, setChartWindow] = useState<"24h" | "7d">("24h");
   const [priceDisplayMode, setPriceDisplayMode] = useState<PriceDisplayMode>("USD_TON");
   const [temperatureDisplayMode, setTemperatureDisplayMode] = useState<TemperatureDisplayMode>("C");
+  const [grainExpansionCollapsed, setGrainExpansionCollapsed] = useState(false);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1325,12 +1353,17 @@ export default function MonitorPage() {
     { id: "oilseedsBiofuels", title: "Oilseeds / Biofuels", items: panelItems.oilseedsBiofuels },
   ] as const;
 
-  const grainDataWidgets = useMemo(() => {
-    const byKind = grainWidgetsQuery.data?.widgets.byKind || {};
-    const order = grainWidgetsQuery.data?.widgets.order || [];
-    return order
-      .map((kind) => byKind[kind])
-      .filter((widget): widget is GrainWidget => Boolean(widget));
+  const grainDataOrder = useMemo(() => {
+    const defaultOrder: GrainWidgetKind[] = ["US_CASH_BIDS", "GLOBAL_SPOT_TABLE", "CROP_PRICE_INDEX", "CBOT_FUTURES_SNAPSHOT"];
+    const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
+      defaultOrder.includes(kind),
+    );
+    const unique = Array.from(new Set([...rawOrder, ...defaultOrder]));
+    return unique as GrainWidgetKind[];
+  }, [grainWidgetsQuery.data]);
+
+  const grainDataByKind = useMemo(() => {
+    return (grainWidgetsQuery.data?.widgets.byKind || {}) as Partial<Record<GrainWidgetKind, GrainWidget>>;
   }, [grainWidgetsQuery.data]);
 
   return (
@@ -1429,12 +1462,22 @@ export default function MonitorPage() {
                   {grainWidgetsQuery.data?.meta.partialFailure ? "Cash / Spot / Index / Futures (partial/fallback)" : "Cash / Spot / Index / Futures"}
                 </span>
               </div>
-              <span className="text-[11px] text-foreground/65 dark:text-slate-500">
-                {grainWidgetsQuery.data?.meta.cacheAgeSec != null ? `cache ${grainWidgetsQuery.data.meta.cacheAgeSec}s` : "loading"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-foreground/65 dark:text-slate-500">
+                  {grainWidgetsQuery.data?.meta.cacheAgeSec != null ? `cache ${grainWidgetsQuery.data.meta.cacheAgeSec}s` : "loading"}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
+                  onClick={() => setGrainExpansionCollapsed((v) => !v)}
+                >
+                  {grainExpansionCollapsed ? "Expand" : "Collapse"}
+                </Button>
+              </div>
             </div>
 
-            {!grainWidgetsQuery.data || grainDataWidgets.length === 0 ? (
+            {grainExpansionCollapsed ? null : !grainWidgetsQuery.data ? (
               <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground">
                 <CardContent className="pt-6 text-sm text-foreground/72">
                   Grain data expansion widgets are temporarily unavailable.
@@ -1442,83 +1485,132 @@ export default function MonitorPage() {
               </Card>
             ) : (
               <div className="grid gap-3 xl:grid-cols-12">
-                <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.title || "Cash (US)"}</CardTitle>
-                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.status || "OFFLINE")}`}>
-                        {(grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.status || "OFFLINE"}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-foreground/70">{(grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.subtitle || "USDA cash grains / bids"}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {((grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.rows || []).map((row) => (
-                      <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
-                    ))}
-                  </CardContent>
-                </Card>
+                {(() => {
+                  const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
+                  const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
+                  const indexWidget = grainDataByKind["CROP_PRICE_INDEX"] as GrainWidgetCropIndex | undefined;
+                  const futuresWidget = grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined;
 
-                <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.title || "Spot (Global)"}</CardTitle>
-                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.status || "OFFLINE")}`}>
-                        {(grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.status || "OFFLINE"}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-foreground/70">{(grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.subtitle || "Wheat / Corn / Soy / Rapeseed"}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-2 sm:grid-cols-2">
-                    {((grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.rows || []).map((row) => (
-                      <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
-                    ))}
-                  </CardContent>
-                </Card>
+                  return (
+                    <>
+                      {cashWidget ? (
+                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-base">{cashWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(cashWidget.status)}`}>{cashWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{cashWidget.subtitle || "USDA cash grains / bids"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            {cashWidget.rows.map((row) => (
+                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                            ))}
+                            {!cashWidget.rows.length ? (
+                              <p className="text-sm text-foreground/72">No rows available from source.</p>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("US_CASH_BIDS") ? "Cash (US)" : "Cash (US) (not configured)"}
+                            subtitle="USDA cash grains / regional bids"
+                          />
+                        </div>
+                      )}
 
-                <Card className="xl:col-span-4 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.title || "Index (Composite)"}</CardTitle>
-                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.status || "OFFLINE")}`}>
-                        {(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.status || "OFFLINE"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {((grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.cards || []).map((card) => (
-                      <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
-                        <p className="text-[11px] text-foreground/72">{card.label}</p>
-                        <p className="text-lg font-semibold text-foreground">{card.value == null ? card.valueText || "n/a" : card.value.toFixed(2)}</p>
-                        <p className="text-[10px] text-foreground/65">{card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}</p>
-                      </div>
-                    ))}
-                    {(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.weatherTieIn ? (
-                      <p className="text-[10px] text-foreground/68">
-                        {(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex).weatherTieIn?.available
-                          ? `Weather-linked signal: ${(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex).weatherTieIn?.score ?? "n/a"}`
-                          : "Weather tie-in: unavailable"}
-                      </p>
-                    ) : null}
-                  </CardContent>
-                </Card>
+                      {spotWidget ? (
+                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-base">{spotWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(spotWidget.status)}`}>{spotWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{spotWidget.subtitle || "Wheat / Corn / Soy / Rapeseed"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="grid gap-2 sm:grid-cols-2">
+                            {spotWidget.rows.map((row) => (
+                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                            ))}
+                            {!spotWidget.rows.length ? (
+                              <p className="text-sm text-foreground/72">No rows available from source.</p>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("GLOBAL_SPOT_TABLE") ? "Spot (Global)" : "Spot (Global) (not configured)"}
+                            subtitle="Wheat / Corn / Soy / Rapeseed"
+                          />
+                        </div>
+                      )}
 
-                <Card className="xl:col-span-8 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.title || "Futures (CBOT)"}</CardTitle>
-                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.status || "OFFLINE")}`}>
-                        {(grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.status || "OFFLINE"}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-foreground/70">{(grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.subtitle || "Intraday futures snapshot"}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-2 md:grid-cols-3">
-                    {((grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.rows || []).map((row) => (
-                      <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
-                    ))}
-                  </CardContent>
-                </Card>
+                      {indexWidget ? (
+                        <Card className="xl:col-span-4 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-base">{indexWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(indexWidget.status)}`}>{indexWidget.status}</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            {indexWidget.cards.map((card) => (
+                              <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
+                                <p className="text-[11px] text-foreground/72">{card.label}</p>
+                                <p className="text-lg font-semibold text-foreground">{card.value == null ? card.valueText || "n/a" : card.value.toFixed(2)}</p>
+                                <p className="text-[10px] text-foreground/65">{card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}</p>
+                              </div>
+                            ))}
+                            {indexWidget.weatherTieIn ? (
+                              <p className="text-[10px] text-foreground/68">
+                                {indexWidget.weatherTieIn.available ? `Weather-linked signal: ${indexWidget.weatherTieIn.score ?? "n/a"}` : "Weather tie-in: unavailable"}
+                              </p>
+                            ) : null}
+                            {!indexWidget.cards.length ? (
+                              <p className="text-sm text-foreground/72">No composite cards available from source.</p>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-4">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("CROP_PRICE_INDEX") ? "Index (Composite)" : "Index (Composite) (not configured)"}
+                            subtitle="Crop price composite"
+                          />
+                        </div>
+                      )}
+
+                      {futuresWidget ? (
+                        <Card className="xl:col-span-8 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-base">{futuresWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(futuresWidget.status)}`}>{futuresWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{futuresWidget.subtitle || "Intraday futures snapshot"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="grid gap-2 md:grid-cols-3">
+                            {futuresWidget.rows.map((row) => (
+                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                            ))}
+                            {!futuresWidget.rows.length ? (
+                              <p className="text-sm text-foreground/72">No futures rows parsed from source.</p>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-8">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("CBOT_FUTURES_SNAPSHOT") ? "Futures (CBOT)" : "Futures (CBOT) (not configured)"}
+                            subtitle="Intraday futures snapshot"
+                          />
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>
