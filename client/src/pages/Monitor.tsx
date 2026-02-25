@@ -523,7 +523,7 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
         </div>
         <p className="text-xs font-semibold text-primary">{widget.relativeMoveSignal}</p>
         {widget.spreadAbs != null ? (
-          <p className={`text-[11px] font-semibold ${spreadPositive ? "text-emerald-300" : "text-red-300"}`}>
+          <p className={`text-[11px] font-semibold ${spreadPositive ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
             Spread: {spreadPositive ? "+" : ""}{widget.spreadAbs.toFixed(2)} {widget.spreadUnit || ""} {widget.spreadPct != null ? `(${spreadPositive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
           </p>
         ) : null}
@@ -536,9 +536,9 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
 function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
   const isPositive = (indicator.valueChange ?? 0) >= 0;
   const icon =
-    indicator.type === "bdi" ? <Waves className="h-3.5 w-3.5 text-primary-foreground" /> :
-      indicator.type === "rail_tariff" ? <TrainFront className="h-3.5 w-3.5 text-primary-foreground" /> :
-        <Activity className="h-3.5 w-3.5 text-primary-foreground" />;
+    indicator.type === "bdi" ? <Waves className="h-3.5 w-3.5 text-foreground dark:text-primary-foreground" /> :
+      indicator.type === "rail_tariff" ? <TrainFront className="h-3.5 w-3.5 text-foreground dark:text-primary-foreground" /> :
+        <Activity className="h-3.5 w-3.5 text-foreground dark:text-primary-foreground" />;
 
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
@@ -563,7 +563,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
             <span className="ml-1 text-xs font-medium text-foreground/65">{indicator.unit}</span>
           </p>
           {indicator.valueChange != null ? (
-            <p className={`text-xs font-semibold ${isPositive ? "text-emerald-300" : "text-red-300"}`}>
+            <p className={`text-xs font-semibold ${isPositive ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
               {isPositive ? "+" : ""}{indicator.valueChange.toFixed(2)}
               {indicator.valueChangePct != null ? ` (${isPositive ? "+" : ""}${indicator.valueChangePct.toFixed(2)}%)` : ""}
             </p>
@@ -597,7 +597,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
         </div>
         <div className="flex items-center gap-2">
           {indicator.level ? (
-            <Badge className="border-primary/35 bg-primary/12 text-[10px] text-primary-foreground">{indicator.level}</Badge>
+            <Badge className="border-primary/35 bg-primary/12 text-[10px] text-foreground dark:text-primary-foreground">{indicator.level}</Badge>
           ) : null}
           <span className="text-[10px] text-foreground/70">{indicator.trendLabel}</span>
         </div>
@@ -632,7 +632,7 @@ function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
       }`}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
-        <Badge className={`text-[10px] uppercase tracking-wide ${isPriority ? "border-primary/55 bg-primary/20 text-primary-foreground" : "border-primary/45 bg-primary/15 text-primary-foreground"}`}>
+        <Badge className={`text-[10px] uppercase tracking-wide ${isPriority ? "border-primary/55 bg-primary/20 text-foreground dark:text-primary-foreground" : "border-primary/45 bg-primary/15 text-foreground dark:text-primary-foreground"}`}>
           {signalType}
         </Badge>
         <ImpactBadge impact={impact} />
@@ -664,12 +664,12 @@ function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
 function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
   const statusClass =
     widget.status === "Rising"
-      ? "border-red-400/45 bg-red-500/20 text-red-100"
+      ? "border-red-600/45 bg-red-500/15 text-red-900 dark:text-red-100"
       : widget.status === "Elevated"
-        ? "border-amber-400/45 bg-amber-500/20 text-amber-100"
+        ? "border-amber-600/45 bg-amber-500/15 text-amber-900 dark:text-amber-100"
         : widget.status === "Cooling"
-          ? "border-emerald-400/45 bg-emerald-500/20 text-emerald-100"
-          : "border-blue-400/45 bg-blue-500/20 text-blue-100";
+          ? "border-emerald-600/45 bg-emerald-500/15 text-emerald-900 dark:text-emerald-100"
+          : "border-blue-600/45 bg-blue-500/15 text-blue-900 dark:text-blue-100";
 
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
@@ -1014,7 +1014,7 @@ export default function MonitorPage() {
         <div className="space-y-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
-              <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-primary-foreground">Cropto Monitor</Badge>
+              <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
               <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
               <p className="max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
                 Operational signal view for grains and oilseeds across markets, logistics, policy, and Black Sea risk corridors.
@@ -1156,7 +1156,7 @@ export default function MonitorPage() {
                 <CardDescription className="text-foreground/70 dark:text-slate-400">Rule-based summary from active signals</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Badge className={`${marketNarrative.status === "Elevated" ? "border-red-400/45 bg-red-500/20 text-red-100" : marketNarrative.status === "Rising" ? "border-amber-400/45 bg-amber-500/20 text-amber-100" : "border-blue-400/45 bg-blue-500/20 text-blue-100"} text-[10px] uppercase tracking-wide`}>
+                <Badge className={`${marketNarrative.status === "Elevated" ? "border-red-500/45 bg-red-500/15 text-red-900 dark:text-red-100" : marketNarrative.status === "Rising" ? "border-amber-500/45 bg-amber-500/15 text-amber-900 dark:text-amber-100" : "border-blue-500/45 bg-blue-500/15 text-blue-900 dark:text-blue-100"} text-[10px] uppercase tracking-wide`}>
                   {marketNarrative.status}
                 </Badge>
                 <p className="text-sm leading-6 text-foreground/86 dark:text-slate-200">{marketNarrative.line}</p>
@@ -1218,7 +1218,7 @@ export default function MonitorPage() {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">Cropto UA Indices (Secondary)</CardTitle>
-                  <Badge className="border-primary/40 bg-primary/15 text-primary-foreground">Internal</Badge>
+                  <Badge className="border-primary/40 bg-primary/15 text-foreground dark:text-primary-foreground">Internal</Badge>
                 </div>
               </CardHeader>
               <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -1230,7 +1230,7 @@ export default function MonitorPage() {
                       <p className="text-[11px] font-semibold text-foreground dark:text-slate-100 line-clamp-1">{item.name}</p>
                       <div className="mt-1 flex items-end justify-between">
                         <p className="text-lg font-bold text-foreground dark:text-white">${item.value.toFixed(2)}</p>
-                        <p className={`text-[10px] font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-300" : "text-red-300"}`}>
+                        <p className={`text-[10px] font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
                           {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
                         </p>
                       </div>
@@ -1468,10 +1468,10 @@ export default function MonitorPage() {
                       <CardTitle className="text-sm">{panel.title}</CardTitle>
                       <div className="flex items-center gap-1.5">
                         <Badge className="border-black/60 dark:border-white/40 bg-muted/65 dark:bg-white/5 text-[10px] text-foreground/75 dark:text-slate-300">{panel.items.length} items</Badge>
-                        <Badge className="border-red-400/40 bg-red-500/15 text-[10px] text-red-100">
+                        <Badge className="border-red-500/45 bg-red-500/15 text-[10px] text-red-900 dark:text-red-100">
                           {panel.items.filter((item) => classifyImpact(item) === "High").length} high
                         </Badge>
-                        <Badge className="border-amber-400/40 bg-amber-500/15 text-[10px] text-amber-100">
+                        <Badge className="border-amber-500/45 bg-amber-500/15 text-[10px] text-amber-900 dark:text-amber-100">
                           {panel.items.filter((item) => inLastHours(item, 24)).length} new
                         </Badge>
                       </div>
@@ -1488,7 +1488,7 @@ export default function MonitorPage() {
                             <p className="line-clamp-2 text-xs font-medium text-foreground dark:text-slate-100">{item.title}</p>
                             <div className="mt-1 flex flex-wrap gap-1">
                               {item.topic_tags.slice(0, 2).map((tag) => (
-                                <span key={`${item.id}-tag-${tag}`} className="rounded-full border border-primary/35 bg-primary/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-primary-foreground/95">
+                                <span key={`${item.id}-tag-${tag}`} className="rounded-full border border-primary/35 bg-primary/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-foreground/95 dark:text-primary-foreground/95">
                                   {asLabel(tag)}
                                 </span>
                               ))}
@@ -1516,7 +1516,7 @@ export default function MonitorPage() {
           </div>
 
           {debugEnabled ? (
-            <Card className="border-amber-500/40 bg-amber-500/10 text-slate-100">
+            <Card className="border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-slate-100">
               <CardHeader>
                 <CardTitle className="text-base">Debug Dashboard</CardTitle>
               </CardHeader>

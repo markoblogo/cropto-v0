@@ -45,10 +45,10 @@ type LiveVisualsResponse = {
 };
 
 function statusClass(status: LiveVisualTile["status"]) {
-  if (status === "LIVE") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
-  if (status === "REFRESH") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
-  if (status === "EXTERNAL") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
-  return "border-red-400/45 bg-red-500/20 text-red-100";
+  if (status === "LIVE") return "border-emerald-600/45 bg-emerald-500/15 text-emerald-900 dark:text-emerald-100";
+  if (status === "REFRESH") return "border-blue-600/45 bg-blue-500/15 text-blue-900 dark:text-blue-100";
+  if (status === "EXTERNAL") return "border-amber-600/45 bg-amber-500/15 text-amber-900 dark:text-amber-100";
+  return "border-red-600/45 bg-red-500/15 text-red-900 dark:text-red-100";
 }
 
 function providerLabel(providerType: LiveVisualTile["providerType"]) {
@@ -90,7 +90,7 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
 
   if (tile.renderMode === "embed" && tile.previewUrl && !embedFailed) {
     return (
-      <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-white/12 bg-slate-950/60`}>
+      <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-black/25 bg-muted/50 dark:border-white/12 dark:bg-slate-950/60`}>
         <iframe
           title={tile.title}
           src={tile.previewUrl}
@@ -107,17 +107,17 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
 
   if (tile.renderMode === "embed" && embedFailed) {
     return (
-      <div className={`flex ${previewHeight} w-full flex-col justify-between rounded-md border border-white/12 bg-[linear-gradient(160deg,rgba(148,163,184,0.14),rgba(15,23,42,0.85)_38%,rgba(15,23,42,0.92))] p-3`}>
-        <div className="flex items-center gap-2 text-slate-200">
+      <div className={`flex ${previewHeight} w-full flex-col justify-between rounded-md border border-black/25 bg-gradient-to-br from-background via-muted/55 to-muted/75 p-3 dark:border-white/12 dark:bg-[linear-gradient(160deg,rgba(148,163,184,0.14),rgba(15,23,42,0.85)_38%,rgba(15,23,42,0.92))]`}>
+        <div className="flex items-center gap-2 text-foreground dark:text-slate-200">
           <span className="rounded-full border border-primary/35 bg-primary/12 p-1.5">
-            <Globe className="h-3.5 w-3.5 text-primary-foreground" />
+            <Globe className="h-3.5 w-3.5 text-primary" />
           </span>
           <p className="text-xs font-medium">Embed unavailable</p>
         </div>
-        <p className="text-xs leading-5 text-slate-300/95 line-clamp-3">
+        <p className="text-xs leading-5 text-foreground/85 dark:text-slate-300/95 line-clamp-3">
           This media source blocked embedding. Open the official source page.
         </p>
-        <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">External fallback mode</p>
+        <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/70 dark:text-slate-400">External fallback mode</p>
       </div>
     );
   }
@@ -125,7 +125,7 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
   if (tile.renderMode === "image" && tile.previewUrl && !imageFailed) {
     const src = autoRefreshEnabled ? `${tile.previewUrl}${tile.previewUrl.includes("?") ? "&" : "?"}t=${refreshTick}` : tile.previewUrl;
     return (
-      <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-white/12 bg-slate-950/60`}>
+      <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-black/25 bg-muted/50 dark:border-white/12 dark:bg-slate-950/60`}>
         <img
           src={src}
           alt={tile.title}
@@ -140,23 +140,23 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
 
   if (tile.renderMode === "external") {
     return (
-      <div className={`flex ${previewHeight} w-full flex-col justify-between rounded-md border border-white/12 bg-[linear-gradient(160deg,rgba(148,163,184,0.14),rgba(15,23,42,0.85)_38%,rgba(15,23,42,0.92))] p-3`}>
-        <div className="flex items-center gap-2 text-slate-200">
+      <div className={`flex ${previewHeight} w-full flex-col justify-between rounded-md border border-black/25 bg-gradient-to-br from-background via-muted/55 to-muted/75 p-3 dark:border-white/12 dark:bg-[linear-gradient(160deg,rgba(148,163,184,0.14),rgba(15,23,42,0.85)_38%,rgba(15,23,42,0.92))]`}>
+        <div className="flex items-center gap-2 text-foreground dark:text-slate-200">
           <span className="rounded-full border border-primary/35 bg-primary/12 p-1.5">
-            <Globe className="h-3.5 w-3.5 text-primary-foreground" />
+            <Globe className="h-3.5 w-3.5 text-primary" />
           </span>
           <p className="text-xs font-medium">{tile.category} Visual Source</p>
         </div>
-        <p className="text-xs leading-5 text-slate-300/95 line-clamp-3">
+        <p className="text-xs leading-5 text-foreground/85 dark:text-slate-300/95 line-clamp-3">
           {tile.subtitle || "Open source page for live context and operational visuals."}
         </p>
-        <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">External source preview mode</p>
+        <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/70 dark:text-slate-400">External source preview mode</p>
       </div>
     );
   }
 
   return (
-    <div className={`flex ${previewHeight} w-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/80 px-3 text-center text-xs text-slate-400`}>
+    <div className={`flex ${previewHeight} w-full items-center justify-center rounded-md border border-dashed border-black/30 bg-muted/60 px-3 text-center text-xs text-foreground/70 dark:border-white/20 dark:bg-slate-900/80 dark:text-slate-400`}>
       Source preview unavailable. Open source for live feed.
     </div>
   );
@@ -164,25 +164,25 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
 
 function LiveVisualTileCard({ tile, large, autoRefreshEnabled, compact }: { tile: LiveVisualTile; large?: boolean; autoRefreshEnabled: boolean; compact: boolean }) {
   return (
-    <div className={`flex h-full flex-col rounded-xl border border-white/12 bg-slate-950/78 ${compact ? "p-2.5" : "p-3"}`}>
+    <div className={`flex h-full flex-col rounded-xl border border-black/80 bg-card/96 text-foreground dark:border-white/12 dark:bg-slate-950/78 dark:text-slate-100 ${compact ? "p-2.5" : "p-3"}`}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <Badge className={`text-[10px] uppercase tracking-wide ${statusClass(tile.status)}`}>{tile.status}</Badge>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-slate-400">{tile.category}</span>
-          <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-slate-300">
+          <span className="text-[10px] text-foreground/75 dark:text-slate-400">{tile.category}</span>
+          <span className="rounded-full border border-black/30 bg-black/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-foreground/75 dark:border-white/20 dark:bg-white/5 dark:text-slate-300">
             {providerLabel(tile.providerType)}
           </span>
         </div>
       </div>
 
       <div className="mb-2 space-y-1">
-        <p className={`font-semibold text-slate-100 line-clamp-1 ${large ? "text-base" : "text-sm"}`}>{tile.title}</p>
-        <p className="text-xs text-slate-400 line-clamp-1">{tile.region} • {tile.subtitle}</p>
+        <p className={`font-semibold text-foreground dark:text-slate-100 line-clamp-1 ${large ? "text-base" : "text-sm"}`}>{tile.title}</p>
+        <p className="text-xs text-foreground/72 dark:text-slate-400 line-clamp-1">{tile.region} • {tile.subtitle}</p>
       </div>
 
       <TilePreview tile={tile} large={!!large} autoRefreshEnabled={autoRefreshEnabled} compact={compact} />
 
-      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
+      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-foreground/72 dark:text-slate-400">
         <span className="truncate">{tile.sourceName}</span>
         <span>{renderRelative(tile.updatedAt || tile.checkedAt)}</span>
       </div>
@@ -190,12 +190,12 @@ function LiveVisualTileCard({ tile, large, autoRefreshEnabled, compact }: { tile
       <div className="mt-2 flex items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1">
           {(tile.tags || []).slice(0, 2).map((tag) => (
-            <span key={`${tile.id}-${tag}`} className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-300">
+            <span key={`${tile.id}-${tag}`} className="rounded-full border border-black/35 bg-black/5 px-1.5 py-0.5 text-[10px] text-foreground/80 dark:border-white/20 dark:bg-white/5 dark:text-slate-300">
               {tag}
             </span>
           ))}
         </div>
-        <Button asChild size="sm" variant="outline" className="h-7 border-primary/30 text-xs text-slate-100 hover:border-primary/55">
+        <Button asChild size="sm" variant="outline" className="h-7 border-primary/45 text-xs text-foreground hover:border-primary/65 dark:text-slate-100">
           <a href={tile.externalUrl} target="_blank" rel="noreferrer">
             Open Source
             <ExternalLink className="ml-1 h-3 w-3" />
@@ -229,21 +229,21 @@ export function LiveVisualsPanel({ debugEnabled = false, compact = false }: { de
   }
 
   return (
-    <Card className="border-primary/30 bg-slate-950/72 text-slate-100 shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
+    <Card className="border-black/85 bg-gradient-to-b from-card via-card to-muted/45 text-foreground shadow-[0_14px_40px_rgba(0,0,0,0.15)] dark:border-primary/30 dark:bg-slate-950/72 dark:text-slate-100 dark:shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
       <CardHeader className={compact ? "pb-3" : undefined}>
         <div className="flex items-center justify-between gap-2">
           <div>
             <CardTitle className="text-lg">Live Logistics & Market Visuals</CardTitle>
-            <CardDescription className="text-slate-400">Near-live port, logistics, weather and market media context</CardDescription>
+            <CardDescription className="text-foreground/70 dark:text-slate-400">Near-live port, logistics, weather and market media context</CardDescription>
           </div>
-          <Badge className="border-primary/40 bg-primary/15 text-[10px] uppercase tracking-[0.16em] text-primary-foreground">
+          <Badge className="border-primary/45 bg-primary/15 text-[10px] uppercase tracking-[0.16em] text-foreground dark:text-primary-foreground">
             Live Visuals
           </Badge>
         </div>
       </CardHeader>
       <CardContent className={compact ? "space-y-2" : "space-y-3"}>
         {!primary ? (
-          <div className="rounded-lg border border-dashed border-white/20 bg-slate-900/70 p-4 text-sm text-slate-400">
+          <div className="rounded-lg border border-dashed border-black/30 bg-muted/60 p-4 text-sm text-foreground/70 dark:border-white/20 dark:bg-slate-900/70 dark:text-slate-400">
             Live visuals coming soon.
           </div>
         ) : (
@@ -256,20 +256,20 @@ export function LiveVisualsPanel({ debugEnabled = false, compact = false }: { de
                 <LiveVisualTileCard key={tile.id} tile={tile} autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} compact={compact} />
               ))}
               {!secondary.length ? (
-                <div className="rounded-xl border border-dashed border-white/20 bg-slate-900/75 p-3 text-sm text-slate-400">No secondary tiles configured.</div>
+                <div className="rounded-xl border border-dashed border-black/30 bg-muted/60 p-3 text-sm text-foreground/70 dark:border-white/20 dark:bg-slate-900/75 dark:text-slate-400">No secondary tiles configured.</div>
               ) : null}
             </div>
           </div>
         )}
 
-        <div className={`flex flex-wrap items-center gap-2 text-slate-400 ${compact ? "text-[11px]" : "text-xs"}`}>
+        <div className={`flex flex-wrap items-center gap-2 text-foreground/70 dark:text-slate-400 ${compact ? "text-[11px]" : "text-xs"}`}>
           <span className="inline-flex items-center gap-1"><Signal className="h-3 w-3" /> tiles: {tiles.length}</span>
           <span className="inline-flex items-center gap-1"><RefreshCw className="h-3 w-3" /> auto-refresh: {query.data?.settings.autoRefreshEnabled ? "on" : "off"}</span>
           {fallbackCount > 0 ? <span>fallback: {fallbackCount}</span> : null}
         </div>
 
         {debugEnabled && summary ? (
-          <div className="rounded-md border border-amber-500/35 bg-amber-500/10 p-2.5 text-xs text-amber-100">
+          <div className="rounded-md border border-amber-500/45 bg-amber-500/15 p-2.5 text-xs text-amber-900 dark:text-amber-100">
             <p>sources: {summary.enabled}/{summary.total} enabled, active tiles: {summary.active}, disabled: {summary.disabled}, fallback: {summary.fallback}</p>
             <p>shown ids: {summary.shownSourceIds.join(", ") || "none"}</p>
           </div>
