@@ -21,6 +21,7 @@ export const ENABLE_USDA_MARS_REPORTS_WIDGET = envBool("ENABLE_USDA_MARS_REPORTS
 export const ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET = envBool("ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET", true);
 export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", true);
 export const ENABLE_USDA_GTR_LOGISTICS_WIDGET = envBool("ENABLE_USDA_GTR_LOGISTICS_WIDGET", true);
+export const ENABLE_FAOSTAT_PP_WIDGET = envBool("ENABLE_FAOSTAT_PP_WIDGET", true);
 export const ENABLE_COUNTRY_MULTI_WIDGET_MOCK = envBool(
   "ENABLE_COUNTRY_MULTI_WIDGET_MOCK",
   process.env.NODE_ENV !== "production",
@@ -127,6 +128,14 @@ export const USDA_GTR_DATASET_URLS = (
 export const USDA_GTR_TIMEOUT_MS = envNum("USDA_GTR_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 export const USDA_GTR_CACHE_TTL_MS = envNum("USDA_GTR_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const USDA_GTR_MAX_SIGNALS = envNum("USDA_GTR_MAX_SIGNALS", 4);
+export const FAOSTAT_BASE_URL =
+  process.env.FAOSTAT_BASE_URL ||
+  "https://fenixservices.fao.org/faostat/api/v1/en";
+export const FAOSTAT_DATASOURCE = process.env.FAOSTAT_DATASOURCE || "production";
+export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const FAOSTAT_CACHE_TTL_MS = envNum("FAOSTAT_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const FAOSTAT_DISCOVERY_TTL_MS = envNum("FAOSTAT_DISCOVERY_TTL_MS", 7 * 24 * 60 * 60 * 1000);
+export const FAOSTAT_MAX_YEARS = envNum("FAOSTAT_MAX_YEARS", 5);
 export const ALPHAVANTAGE_API_KEY = process.env.ALPHAVANTAGE_API_KEY || "";
 export const ALPHAVANTAGE_BASE_URL =
   process.env.ALPHAVANTAGE_BASE_URL ||

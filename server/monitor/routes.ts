@@ -17,11 +17,13 @@ import {
   ENABLE_DBNOMICS_SPOT_PROVIDER,
   ENABLE_FAO_FFPI_PROVIDER,
   ENABLE_NASDAQ_DATALINK_PROVIDER,
+  ENABLE_FAOSTAT_PP_WIDGET,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_REPORTS_WIDGET,
   FAO_FFPI_URL,
+  FAOSTAT_BASE_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   NASDAQ_API_KEY,
@@ -414,7 +416,7 @@ export function registerMonitorRoutes(app: Express): void {
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "FAOSTAT_PP_MULTI_COUNTRY"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
@@ -423,6 +425,7 @@ export function registerMonitorRoutes(app: Express): void {
         "alpha-vantage-commodities": "ALPHAVANTAGE_GRAIN_BENCHMARKS",
         "nasdaq-datalink": "NASDAQ_DATA_LINK_SNAPSHOT",
         "usda-gtr-logistics": "USDA_GTR_LOGISTICS_SNAPSHOT",
+        "faostat-pp": "FAOSTAT_PP_MULTI_COUNTRY",
       };
 
       const sourceMatchesProvider = (sourceName?: string, providerId?: string) => {
@@ -434,6 +437,7 @@ export function registerMonitorRoutes(app: Express): void {
         if (id.includes("alpha-vantage")) return source.includes("alpha vantage");
         if (id.includes("nasdaq")) return source.includes("nasdaq");
         if (id.includes("usda-gtr")) return source.includes("usda");
+        if (id.includes("faostat")) return source.includes("faostat");
         if (id.includes("us-cash-export-context")) return source.includes("usda") || source.includes("open data");
         return false;
       };
@@ -447,9 +451,10 @@ export function registerMonitorRoutes(app: Express): void {
         "alpha-vantage-commodities": Math.max(2, ALPHAVANTAGE_FUNCTIONS.length),
         "nasdaq-datalink": Math.max(2, NASDAQ_DATASETS.length),
         "usda-gtr-logistics": 2,
+        "faostat-pp": 5,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "usda-gtr-logistics"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "usda-gtr-logistics", "faostat-pp"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -487,6 +492,13 @@ export function registerMonitorRoutes(app: Express): void {
           datasetStatuses: provider?.datasetStatuses,
           rowsParsed: provider?.rowsParsed,
           parseWarnings: provider?.parseWarnings,
+          areaCodes: provider?.areaCodes,
+          itemCodes: provider?.itemCodes,
+          elementCode: provider?.elementCode,
+          elementLabel: provider?.elementLabel,
+          observationsByCrop: provider?.observationsByCrop,
+          discoveryCacheHit: provider?.discoveryCacheHit,
+          query: provider?.query,
           cadence: provider?.cadence,
           lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
           cacheHit: Boolean(provider?.cacheHit),
@@ -521,6 +533,7 @@ export function registerMonitorRoutes(app: Express): void {
         "ALPHAVANTAGE_GRAIN_BENCHMARKS",
         "NASDAQ_DATA_LINK_SNAPSHOT",
         "USDA_GTR_LOGISTICS_SNAPSHOT",
+        "FAOSTAT_PP_MULTI_COUNTRY",
       ] as const).map((widgetKind) => {
         const widget = byKind[widgetKind] as any;
         const rowsCount = Array.isArray(widget?.rows) ? widget.rows.length : 0;
@@ -532,6 +545,7 @@ export function registerMonitorRoutes(app: Express): void {
         const alphaFunctionsCount = Array.isArray(widget?.summary?.byFunction) ? widget.summary.byFunction.length : 0;
         const datasetStatusesCount = Array.isArray(widget?.summary?.datasetStatuses) ? widget.summary.datasetStatuses.length : 0;
         const logisticsItemsCount = widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" && Array.isArray(widget?.items) ? widget.items.length : 0;
+        const faostatRowsCount = widget?.kind === "FAOSTAT_PP_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const seriesPointsCount =
           (Array.isArray(widget?.rows) ? widget.rows.flatMap((row: any) => row?.price?.series || []).length : 0) +
           (Array.isArray(widget?.items) ? widget.items.flatMap((item: any) => item?.series || []).length : 0) +
@@ -553,6 +567,7 @@ export function registerMonitorRoutes(app: Express): void {
           alphaFunctionsCount,
           datasetStatusesCount,
           logisticsItemsCount,
+          faostatRowsCount,
           dailyMetadataSourceUrl: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.metadataSourceUrl : undefined,
           dailyDownloadUrlUsed: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined,
           dailyReportFound: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.dailyReportFound : undefined,
@@ -585,6 +600,10 @@ export function registerMonitorRoutes(app: Express): void {
       const nasdaqProbeResult = await probeUrl(nasdaqProbeRawUrl);
       const usdaGtrProbeUrl = USDA_GTR_DATASET_URLS[0] || "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report";
       const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl);
+      const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area?datasource=production`;
+      const faostatProbe = await probeUrl(faostatProbeUrl);
+      const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?datasource=production&area=231&item=15&year=2022&output_type=json`;
+      const faostatSampleProbe = await probeUrl(faostatSampleProbeUrl);
 
       res.json({
         runtime: {
@@ -606,6 +625,7 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_USDA_GTR_LOGISTICS_WIDGET,
             ENABLE_ALPHAVANTAGE_PROVIDER,
             ENABLE_NASDAQ_DATALINK_PROVIDER,
+            ENABLE_FAOSTAT_PP_WIDGET,
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
             FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
             USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
@@ -614,6 +634,7 @@ export function registerMonitorRoutes(app: Express): void {
             ALPHAVANTAGE_API_KEY: ALPHAVANTAGE_API_KEY ? "present" : "missing",
             NASDAQ_BASE_URL: NASDAQ_BASE_URL ? "present" : "missing",
             NASDAQ_API_KEY: NASDAQ_API_KEY ? "present" : "missing",
+            FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
             GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
             GRAIN_WIDGETS_CACHE_TTL_MS,
           },
@@ -635,6 +656,8 @@ export function registerMonitorRoutes(app: Express): void {
             url: nasdaqProbeUrl,
           },
           usdaGtrLogistics: usdaGtrProbe,
+          faostatPp: faostatProbe,
+          faostatPpSample: faostatSampleProbe,
         },
       });
     } catch (error: any) {

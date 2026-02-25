@@ -4,6 +4,7 @@ import { BarchartCashProvider } from "../server/monitor/grainWidgets/providers/b
 import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
+import { FaostatProducerPricesProvider } from "../server/monitor/grainWidgets/providers/faostatProducerPricesProvider";
 import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers/nasdaqDataLinkProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
@@ -44,6 +45,10 @@ function widgetCoverage(widget: GrainWidget): string {
     const mapped = widget.items.filter((item) => item.current != null).length;
     return `${mapped}/${widget.items.length || 0}`;
   }
+  if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
+    const mapped = widget.rows.filter((row) => row.current != null).length;
+    return `${mapped}/${widget.rows.length || 0}`;
+  }
   return "n/a";
 }
 
@@ -68,6 +73,7 @@ async function run() {
     new UsCashExportContextProvider(),
     new NasdaqDataLinkProvider(),
     new UsdaGtrLogisticsProvider(),
+    new FaostatProducerPricesProvider(),
   ];
 
   console.log("grain-widgets smoke start");
@@ -116,6 +122,11 @@ async function run() {
       if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
         console.log(
           `  usda_gtr coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} rowsParsed=${widget.debug?.rowsParsed ?? 0}`,
+        );
+      }
+      if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
+        console.log(
+          `  faostat territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} element=${widget.debug?.elementCode || "n/a"} rows=${widget.rows.length}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

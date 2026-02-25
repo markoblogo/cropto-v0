@@ -28,6 +28,7 @@ async function run() {
   const mars = providers.find((p) => p.providerId === "usda-mars-public") || { providerId: "usda-mars-public" };
   const alpha = providers.find((p) => p.providerId === "alpha-vantage-commodities") || { providerId: "alpha-vantage-commodities" };
   const gtr = providers.find((p) => p.providerId === "usda-gtr-logistics") || { providerId: "usda-gtr-logistics" };
+  const faostat = providers.find((p) => p.providerId === "faostat-pp") || { providerId: "faostat-pp" };
 
   const marsWidget = (Array.isArray(data?.widgets) ? data.widgets : []).find((w: any) => w.widgetKind === "USDA_MARS_REPORTS");
   const reportsMatched = marsWidget?.reportsCount ?? mars?.mappedCount ?? 0;
@@ -38,6 +39,7 @@ async function run() {
   console.log(`${line(mars)} reportsMatched=${reportsMatched}`);
   console.log(line(alpha));
   console.log(line(gtr));
+  console.log(line(faostat));
 }
 
 run().catch((error: any) => {

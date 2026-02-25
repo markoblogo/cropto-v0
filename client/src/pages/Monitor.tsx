@@ -320,7 +320,8 @@ type GrainWidgetKind =
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
   | "NASDAQ_DATA_LINK_SNAPSHOT"
-  | "USDA_GTR_LOGISTICS_SNAPSHOT";
+  | "USDA_GTR_LOGISTICS_SNAPSHOT"
+  | "FAOSTAT_PP_MULTI_COUNTRY";
 
 type GrainTerritoryMeta = {
   territoryScope?: "GLOBAL" | "COUNTRY_FIXED" | "COUNTRY_MULTI";
@@ -794,6 +795,52 @@ type GrainWidgetUsdaGtrLogisticsSnapshot = GrainTerritoryMeta & {
   fallbackReason?: string;
 };
 
+type GrainWidgetFaostatPpMultiCountry = GrainTerritoryMeta & {
+  id: string;
+  kind: "FAOSTAT_PP_MULTI_COUNTRY";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<{
+    crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
+    label: string;
+    current: number;
+    unit: string;
+    cadence: "monthly" | "annual";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+    territory?: { code: string; label: string };
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "monthly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    areaCodes?: string[];
+    itemCodes?: string[];
+    elementCode?: string;
+    elementLabel?: string;
+    observationsByCrop?: Array<{ crop: string; count: number }>;
+    discoveryCacheHit?: boolean;
+    query?: string;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -806,7 +853,8 @@ type GrainWidget =
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
   | GrainWidgetAlphaVantageBenchmarks
   | GrainWidgetNasdaqDataLinkSnapshot
-  | GrainWidgetUsdaGtrLogisticsSnapshot;
+  | GrainWidgetUsdaGtrLogisticsSnapshot
+  | GrainWidgetFaostatPpMultiCountry;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -2251,6 +2299,7 @@ export default function MonitorPage() {
       "ALPHAVANTAGE_GRAIN_BENCHMARKS",
       "NASDAQ_DATA_LINK_SNAPSHOT",
       "USDA_GTR_LOGISTICS_SNAPSHOT",
+      "FAOSTAT_PP_MULTI_COUNTRY",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -2468,6 +2517,7 @@ export default function MonitorPage() {
                   const alphaWidget = grainDataByKind["ALPHAVANTAGE_GRAIN_BENCHMARKS"] as GrainWidgetAlphaVantageBenchmarks | undefined;
                   const nasdaqWidget = grainDataByKind["NASDAQ_DATA_LINK_SNAPSHOT"] as GrainWidgetNasdaqDataLinkSnapshot | undefined;
                   const usdaGtrWidget = grainDataByKind["USDA_GTR_LOGISTICS_SNAPSHOT"] as GrainWidgetUsdaGtrLogisticsSnapshot | undefined;
+                  const faostatWidget = grainDataByKind["FAOSTAT_PP_MULTI_COUNTRY"] as GrainWidgetFaostatPpMultiCountry | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -2559,6 +2609,82 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("GLOBAL_SPOT_TABLE") ? "Spot (Global)" : "Spot (Global) (not configured)"}
                             subtitle="Wheat / Corn / Soy / Rapeseed"
+                          />
+                        </div>
+                      )}
+
+                      {faostatWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{faostatWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(faostatWidget.status)}`}>{faostatWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{faostatWidget.subtitle || "FAOSTAT PP by selected territory"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(faostatWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={faostatWidget} value={grainCountry} onChange={setGrainCountry} />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {faostatWidget.rows.slice(0, 5).map((row, idx) => (
+                                <div key={`${faostatWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={row.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">
+                                    {formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}
+                                  </p>
+                                  <DynamicMiniTrend
+                                    series={row.series || []}
+                                    change={row.changeAbs}
+                                    changePct={row.changePct}
+                                    status={faostatWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={faostatWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: faostatWidget.status,
+                                      sourceName: faostatWidget.sourceName,
+                                      fallbackReason: faostatWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!faostatWidget.rows.length ? (
+                                <p className="text-[11px] text-foreground/68">No crop rows mapped for selected territory.</p>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {faostatWidget.summary?.coverage ? <MetricChip label={`coverage ${faostatWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {faostatWidget.summary?.cadence ? <MetricChip label={`cadence ${faostatWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                              {debugEnabled && faostatWidget.debug?.elementCode ? <MetricChip label={`element ${faostatWidget.debug.elementCode}`} variant="provider" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={faostatWidget.status}
+                              statusClassName={grainStatusClass(faostatWidget.status)}
+                              sourceName={faostatWidget.sourceName}
+                              sourceUrl={faostatWidget.sourceUrl}
+                              updatedLabel={faostatWidget.updatedAt ? formatRelative(faostatWidget.updatedAt) : faostatWidget.timeframe}
+                              fallbackReason={faostatWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("FAOSTAT_PP_MULTI_COUNTRY") ? "Regional Producer Prices (FAOSTAT)" : "Regional Producer Prices (FAOSTAT) (not configured)"}
+                            subtitle="Multi-country producer price snapshot"
                           />
                         </div>
                       )}

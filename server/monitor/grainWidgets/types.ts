@@ -22,7 +22,8 @@ export type GrainWidgetKind =
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
   | "NASDAQ_DATA_LINK_SNAPSHOT"
-  | "USDA_GTR_LOGISTICS_SNAPSHOT";
+  | "USDA_GTR_LOGISTICS_SNAPSHOT"
+  | "FAOSTAT_PP_MULTI_COUNTRY";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -502,6 +503,46 @@ export interface GrainWidgetUsdaGtrLogisticsSnapshot extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetFaostatPpRow {
+  crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
+  label: string;
+  current: number;
+  unit: string;
+  cadence: "monthly" | "annual";
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+  territory?: {
+    code: string;
+    label: string;
+  };
+}
+
+export interface GrainWidgetFaostatPpMultiCountry extends GrainWidgetBase {
+  kind: "FAOSTAT_PP_MULTI_COUNTRY";
+  rows: GrainWidgetFaostatPpRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "monthly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    areaCodes?: string[];
+    itemCodes?: string[];
+    elementCode?: string;
+    elementLabel?: string;
+    observationsByCrop?: Array<{ crop: string; count: number }>;
+    discoveryCacheHit?: boolean;
+    query?: string;
+    warnings?: string[];
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -515,7 +556,8 @@ export type GrainWidget =
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
   | GrainWidgetAlphaVantageGrainBenchmarks
   | GrainWidgetNasdaqDataLinkSnapshot
-  | GrainWidgetUsdaGtrLogisticsSnapshot;
+  | GrainWidgetUsdaGtrLogisticsSnapshot
+  | GrainWidgetFaostatPpMultiCountry;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -583,11 +625,18 @@ export interface GrainWidgetsProviderDebug {
   linesMatched?: number;
   rowsParsed?: number;
   parseWarnings?: string[];
+  areaCodes?: string[];
+  itemCodes?: string[];
+  elementCode?: string;
+  elementLabel?: string;
+  observationsByCrop?: Array<{ crop: string; count: number }>;
+  discoveryCacheHit?: boolean;
+  query?: string;
   downloadUrlUsed?: string;
   parseMode?: "strict";
   topScoreMin?: number;
   topScoreMax?: number;
-  cadence?: "daily" | "weekly" | "monthly" | "unknown";
+  cadence?: "daily" | "weekly" | "monthly" | "annual" | "unknown";
   errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
   sourceUrlUsed?: string;
   coverage?: string;

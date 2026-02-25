@@ -2,6 +2,7 @@ import type {
   GrainWidget,
   GrainWidgetAlphaVantageGrainBenchmarks,
   GrainWidgetCropPriceIndex,
+  GrainWidgetFaostatPpMultiCountry,
   GrainWidgetNasdaqDataLinkSnapshot,
   GrainWidgetUsdaGtrLogisticsSnapshot,
   GrainWidgetKind,
@@ -741,6 +742,108 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           rowsParsed: 24,
           parseWarnings: ["mock_fallback_mode"],
         },
+      };
+      return widget;
+    }
+
+    if (this.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
+      const territoryCode = String(ctx.country || "UA").toUpperCase();
+      const territoryLabelMap: Record<string, string> = {
+        UA: "Ukraine",
+        US: "United States",
+        BR: "Brazil",
+        AR: "Argentina",
+        EU: "European Union",
+      };
+      const territoryLabel = territoryLabelMap[territoryCode] || "Ukraine";
+      const points = Math.max(7, ctx.seriesPoints);
+      const widget: GrainWidgetFaostatPpMultiCountry = {
+        id: "grain-faostat-pp-multi-country",
+        kind: "FAOSTAT_PP_MULTI_COUNTRY",
+        title: "Regional Producer Prices (FAOSTAT)",
+        subtitle: "FAOSTAT PP (producer prices)",
+        status: "FALLBACK",
+        sourceName: "FAOSTAT (PP)",
+        sourceAttribution: "Data: FAOSTAT Producer Prices",
+        sourceUrl: "https://fenixservices.fao.org/faostat/api/v1/en/data/PP",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "COUNTRY_MULTI",
+        territory: { code: territoryCode, label: territoryLabel },
+        supportedTerritories: [
+          { code: "UA", label: "Ukraine" },
+          { code: "US", label: "United States" },
+          { code: "BR", label: "Brazil" },
+          { code: "AR", label: "Argentina" },
+          { code: "EU", label: "European Union" },
+        ],
+        territorySelector: {
+          paramName: "country",
+          default: "UA",
+          current: territoryCode,
+          persistKey: "monitor_country_FAOSTAT_PP_MULTI_COUNTRY",
+        },
+        rows: [
+          {
+            crop: "WHEAT",
+            label: "Wheat",
+            current: 248.6,
+            unit: "USD/t",
+            cadence: "annual",
+            changeAbs: 6.1,
+            changePct: 2.51,
+            series: deriveSeries(248.6, 6.1, points),
+            confidence: "MED",
+            territory: { code: territoryCode, label: territoryLabel },
+          },
+          {
+            crop: "MAIZE",
+            label: "Maize (Corn)",
+            current: 219.4,
+            unit: "USD/t",
+            cadence: "annual",
+            changeAbs: -2.4,
+            changePct: -1.08,
+            series: deriveSeries(219.4, -2.4, points),
+            confidence: "MED",
+            territory: { code: territoryCode, label: territoryLabel },
+          },
+          {
+            crop: "SOY",
+            label: "Soybeans",
+            current: 403.8,
+            unit: "USD/t",
+            cadence: "annual",
+            changeAbs: 4.3,
+            changePct: 1.08,
+            series: deriveSeries(403.8, 4.3, points),
+            confidence: "MED",
+            territory: { code: territoryCode, label: territoryLabel },
+          },
+        ],
+        summary: {
+          expectedCount: 5,
+          mappedCount: 3,
+          coverage: "3/5",
+          cadence: "annual",
+          selectedTerritory: territoryCode,
+        },
+        debug: {
+          sourceUrlUsed: "https://fenixservices.fao.org/faostat/api/v1/en/data/PP",
+          areaCodes: [territoryCode],
+          itemCodes: ["WHEAT", "MAIZE", "SOYBEANS"],
+          elementCode: "5532",
+          elementLabel: "Producer Price (USD/tonne)",
+          observationsByCrop: [
+            { crop: "WHEAT", count: 5 },
+            { crop: "MAIZE", count: 5 },
+            { crop: "SOY", count: 5 },
+          ],
+          discoveryCacheHit: true,
+          warnings: ["mock_fallback_mode"],
+        },
+        notes: ["Mock fallback payload for FAOSTAT PP multi-country widget"],
+        fallbackReason: reason,
       };
       return widget;
     }
