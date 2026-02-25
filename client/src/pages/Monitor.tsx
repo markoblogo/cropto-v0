@@ -367,10 +367,10 @@ function SignalTag({ value, kind }: { value: string; kind: "crop" | "topic" | "r
   const base = "text-[10px] font-medium px-2 py-0.5 rounded-full border";
   const classes =
     kind === "crop"
-      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
+      ? "border-emerald-500/45 bg-emerald-500/12 text-emerald-900 dark:text-emerald-100"
       : kind === "region"
-        ? "border-blue-400/40 bg-blue-400/10 text-blue-100"
-        : "border-amber-400/40 bg-amber-400/10 text-amber-100";
+        ? "border-blue-500/45 bg-blue-500/12 text-blue-900 dark:text-blue-100"
+        : "border-amber-500/45 bg-amber-500/12 text-amber-900 dark:text-amber-100";
 
   return <span className={`${base} ${classes}`}>{asLabel(value)}</span>;
 }
@@ -378,19 +378,19 @@ function SignalTag({ value, kind }: { value: string; kind: "crop" | "topic" | "r
 function ImpactBadge({ impact }: { impact: Impact }) {
   const styles =
     impact === "High"
-      ? "border-red-400/55 bg-red-500/20 text-red-100"
+      ? "border-red-500/55 bg-red-500/18 text-red-900 dark:text-red-100"
       : impact === "Medium"
-        ? "border-amber-400/55 bg-amber-500/20 text-amber-100"
-        : "border-emerald-400/55 bg-emerald-500/20 text-emerald-100";
+        ? "border-amber-500/55 bg-amber-500/18 text-amber-900 dark:text-amber-100"
+        : "border-emerald-500/55 bg-emerald-500/18 text-emerald-900 dark:text-emerald-100";
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${styles}`}>{impact}</span>;
 }
 
 function indicatorStatusClass(status: LogisticsIndicator["status"]) {
-  if (status === "LIVE") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
-  if (status === "REFRESH") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
-  if (status === "DELAYED") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
-  if (status === "FALLBACK") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
-  return "border-red-400/45 bg-red-500/20 text-red-100";
+  if (status === "LIVE") return "border-emerald-500/45 bg-emerald-500/18 text-emerald-900 dark:text-emerald-100";
+  if (status === "REFRESH") return "border-cyan-500/45 bg-cyan-500/18 text-cyan-900 dark:text-cyan-100";
+  if (status === "DELAYED") return "border-amber-500/45 bg-amber-500/18 text-amber-900 dark:text-amber-100";
+  if (status === "FALLBACK") return "border-blue-500/45 bg-blue-500/18 text-blue-900 dark:text-blue-100";
+  return "border-red-500/45 bg-red-500/18 text-red-900 dark:text-red-100";
 }
 
 function indicatorStatusLabel(status: LogisticsIndicator["status"]) {
@@ -398,12 +398,12 @@ function indicatorStatusLabel(status: LogisticsIndicator["status"]) {
 }
 
 function grainStatusClass(status: GrainWidgetStatus) {
-  if (status === "LIVE") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
-  if (status === "REFRESH") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
-  if (status === "DELAYED") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
-  if (status === "INDICATIVE") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
-  if (status === "FALLBACK") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
-  return "border-red-400/45 bg-red-500/20 text-red-100";
+  if (status === "LIVE") return "border-emerald-500/45 bg-emerald-500/18 text-emerald-900 dark:text-emerald-100";
+  if (status === "REFRESH") return "border-cyan-500/45 bg-cyan-500/18 text-cyan-900 dark:text-cyan-100";
+  if (status === "DELAYED") return "border-amber-500/45 bg-amber-500/18 text-amber-900 dark:text-amber-100";
+  if (status === "INDICATIVE") return "border-cyan-500/45 bg-cyan-500/18 text-cyan-900 dark:text-cyan-100";
+  if (status === "FALLBACK") return "border-blue-500/45 bg-blue-500/18 text-blue-900 dark:text-blue-100";
+  return "border-red-500/45 bg-red-500/18 text-red-900 dark:text-red-100";
 }
 
 function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMode) {
@@ -454,26 +454,26 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
       : `${display.currency || ""}/${display.unit}`
     : display.currency || "";
   return (
-    <Card className="border-white/12 bg-slate-950/76 text-slate-100">
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardContent className="space-y-2 pt-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{widget.venue}</p>
-            <p className="text-sm font-semibold text-white">{widget.title}{widget.subtitle ? ` · ${widget.subtitle}` : ""}</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-foreground/65">{widget.venue}</p>
+            <p className="text-sm font-semibold text-foreground">{widget.title}{widget.subtitle ? ` · ${widget.subtitle}` : ""}</p>
           </div>
           <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
         </div>
 
         <div className="flex items-end justify-between gap-2">
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             {display.value == null ? "n/a" : display.value.toFixed(2)}
-            <span className="ml-1 text-[10px] font-medium text-slate-400">{unitLabel}</span>
+            <span className="ml-1 text-[10px] font-medium text-foreground/65">{unitLabel}</span>
           </p>
           <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
             {display.change == null ? "No delta" : `${positive ? "+" : ""}${display.change.toFixed(2)}${display.changePct != null ? ` (${positive ? "+" : ""}${display.changePct.toFixed(2)}%)` : ""}`}
           </p>
         </div>
-        {display.secondary ? <p className="text-[10px] text-slate-500">{display.secondary}</p> : null}
+        {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
         <div className="h-12">
           {widget.series.length ? (
@@ -485,14 +485,14 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/70 text-[10px] text-slate-400">
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-black/40 dark:border-white/30 bg-muted/55 text-[10px] text-foreground/70">
               Unavailable
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
-          <a href={widget.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-slate-200">
+        <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
+          <a href={widget.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-foreground">
             {widget.sourceName}
           </a>
           <span>{widget.updatedAt ? formatRelative(widget.updatedAt) : widget.timeframe}</span>
@@ -505,20 +505,20 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
 function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
   const spreadPositive = (widget.spreadAbs ?? 0) >= 0;
   return (
-    <Card className="border-white/10 bg-slate-950/68 text-slate-100">
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardContent className="space-y-2 pt-3">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-xs font-semibold text-slate-200">{widget.title}</p>
+          <p className="text-xs font-semibold text-foreground">{widget.title}</p>
           <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
-          <div className="rounded-md border border-white/10 bg-slate-900/70 p-2">
-            <p className="text-[10px] text-slate-400">{widget.leftLabel}</p>
-            <p className="mt-0.5 font-semibold text-white">{widget.leftChangePct == null ? "n/a" : `${widget.leftChangePct >= 0 ? "+" : ""}${widget.leftChangePct.toFixed(2)}%`}</p>
+        <div className="grid grid-cols-2 gap-2 text-[11px] text-foreground/82">
+          <div className="rounded-md border border-black/70 dark:border-white/70 bg-muted/55 p-2">
+            <p className="text-[10px] text-foreground/65">{widget.leftLabel}</p>
+            <p className="mt-0.5 font-semibold text-foreground">{widget.leftChangePct == null ? "n/a" : `${widget.leftChangePct >= 0 ? "+" : ""}${widget.leftChangePct.toFixed(2)}%`}</p>
           </div>
-          <div className="rounded-md border border-white/10 bg-slate-900/70 p-2">
-            <p className="text-[10px] text-slate-400">{widget.rightLabel}</p>
-            <p className="mt-0.5 font-semibold text-white">{widget.rightChangePct == null ? "n/a" : `${widget.rightChangePct >= 0 ? "+" : ""}${widget.rightChangePct.toFixed(2)}%`}</p>
+          <div className="rounded-md border border-black/70 dark:border-white/70 bg-muted/55 p-2">
+            <p className="text-[10px] text-foreground/65">{widget.rightLabel}</p>
+            <p className="mt-0.5 font-semibold text-foreground">{widget.rightChangePct == null ? "n/a" : `${widget.rightChangePct >= 0 ? "+" : ""}${widget.rightChangePct.toFixed(2)}%`}</p>
           </div>
         </div>
         <p className="text-xs font-semibold text-primary">{widget.relativeMoveSignal}</p>
@@ -527,7 +527,7 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
             Spread: {spreadPositive ? "+" : ""}{widget.spreadAbs.toFixed(2)} {widget.spreadUnit || ""} {widget.spreadPct != null ? `(${spreadPositive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
           </p>
         ) : null}
-        <p className="text-[10px] text-slate-500 line-clamp-2">{widget.note || (widget.comparisonType === "proxy" ? "Proxy cross-market comparison (not identical contracts)" : "Relative performance comparison.")}</p>
+        <p className="text-[10px] text-foreground/65 line-clamp-2">{widget.note || (widget.comparisonType === "proxy" ? "Proxy cross-market comparison (not identical contracts)" : "Relative performance comparison.")}</p>
       </CardContent>
     </Card>
   );
@@ -541,14 +541,14 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
         <Activity className="h-3.5 w-3.5 text-primary-foreground" />;
 
   return (
-    <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="rounded-md border border-primary/35 bg-primary/12 p-1.5">{icon}</span>
             <div>
               <CardTitle className="text-sm leading-5">{indicator.title}</CardTitle>
-              <CardDescription className="text-[11px] text-slate-400">{indicator.subtitle}</CardDescription>
+              <CardDescription className="text-[11px] text-foreground/70">{indicator.subtitle}</CardDescription>
             </div>
           </div>
           <Badge className={`text-[10px] uppercase tracking-wide ${indicatorStatusClass(indicator.status)}`}>
@@ -558,9 +558,9 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="flex items-end justify-between gap-2">
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             {indicator.valueCurrent == null ? "n/a" : indicator.type === "logistics_pressure" ? Math.round(indicator.valueCurrent) : indicator.valueCurrent.toFixed(2)}
-            <span className="ml-1 text-xs font-medium text-slate-400">{indicator.unit}</span>
+            <span className="ml-1 text-xs font-medium text-foreground/65">{indicator.unit}</span>
           </p>
           {indicator.valueChange != null ? (
             <p className={`text-xs font-semibold ${isPositive ? "text-emerald-300" : "text-red-300"}`}>
@@ -568,7 +568,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
               {indicator.valueChangePct != null ? ` (${isPositive ? "+" : ""}${indicator.valueChangePct.toFixed(2)}%)` : ""}
             </p>
           ) : (
-            <p className="text-xs text-slate-500">No delta</p>
+            <p className="text-xs text-foreground/60">No delta</p>
           )}
         </div>
 
@@ -583,14 +583,14 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/70 text-[11px] text-slate-400">
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-black/40 dark:border-white/30 bg-muted/55 text-[11px] text-foreground/70">
               Snapshot unavailable
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
-          <a href={indicator.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-slate-200">
+        <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
+          <a href={indicator.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-foreground">
             Source: {indicator.sourceName}
           </a>
           <span>{indicator.updatedAt ? formatRelative(indicator.updatedAt) : indicator.timeframe}</span>
@@ -599,17 +599,17 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           {indicator.level ? (
             <Badge className="border-primary/35 bg-primary/12 text-[10px] text-primary-foreground">{indicator.level}</Badge>
           ) : null}
-          <span className="text-[10px] text-slate-400">{indicator.trendLabel}</span>
+          <span className="text-[10px] text-foreground/70">{indicator.trendLabel}</span>
         </div>
         {indicator.components ? (
           <div className="flex flex-wrap gap-1">
-            <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-300">Black Sea {indicator.components.blackSeaFocus}</span>
-            <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-300">Friction {indicator.components.frictionFactors}</span>
-            <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-300">Confidence {indicator.components.confidence}</span>
+            <span className="rounded-full border border-black/60 dark:border-white/45 bg-muted/60 px-1.5 py-0.5 text-[9px] text-foreground/78">Black Sea {indicator.components.blackSeaFocus}</span>
+            <span className="rounded-full border border-black/60 dark:border-white/45 bg-muted/60 px-1.5 py-0.5 text-[9px] text-foreground/78">Friction {indicator.components.frictionFactors}</span>
+            <span className="rounded-full border border-black/60 dark:border-white/45 bg-muted/60 px-1.5 py-0.5 text-[9px] text-foreground/78">Confidence {indicator.components.confidence}</span>
           </div>
         ) : null}
-        {indicator.explanation ? <p className="text-[10px] text-slate-300/90 line-clamp-2">{indicator.explanation}</p> : null}
-        <p className="text-[10px] text-slate-500 line-clamp-2">{indicator.notes?.[0] || indicator.sourceAttribution}</p>
+        {indicator.explanation ? <p className="text-[10px] text-foreground/80 line-clamp-2">{indicator.explanation}</p> : null}
+        <p className="text-[10px] text-foreground/65 line-clamp-2">{indicator.notes?.[0] || indicator.sourceAttribution}</p>
       </CardContent>
     </Card>
   );
@@ -625,10 +625,10 @@ function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
       href={item.url}
       target="_blank"
       rel="noreferrer"
-      className={`group block rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(154,163,58,0.2)] ${
+      className={`group block rounded-xl border p-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(154,163,58,0.18)] ${
         isPriority
-          ? "border-primary/45 bg-[linear-gradient(160deg,rgba(154,163,58,0.16),rgba(10,14,26,0.86)_36%,rgba(10,14,26,0.92))] shadow-[0_0_0_1px_rgba(154,163,58,0.2)] hover:border-primary/70"
-          : "border-white/12 bg-slate-900/75 hover:border-primary/55"
+          ? "border-black/85 dark:border-white/85 bg-gradient-to-br from-primary/14 via-card to-muted/45 shadow-[0_0_0_1px_rgba(154,163,58,0.22)] hover:border-primary/70"
+          : "border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 hover:border-primary/55"
       }`}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -640,8 +640,8 @@ function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
       {isPriority ? (
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary/90">Priority Signal #{rank! + 1}</p>
       ) : null}
-      <p className="text-sm font-semibold leading-6 text-slate-100">{item.title}</p>
-      <p className="mt-1 text-xs leading-5 text-slate-300/90 line-clamp-2">{whyItMatters(item, signalType)}</p>
+      <p className="text-sm font-semibold leading-6 text-foreground">{item.title}</p>
+      <p className="mt-1 text-xs leading-5 text-foreground/82 line-clamp-2">{whyItMatters(item, signalType)}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {item.crop_tags.slice(0, 2).map((tag) => (
           <SignalTag key={`crop-${item.id}-${tag}`} value={tag} kind="crop" />
@@ -653,7 +653,7 @@ function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
           <SignalTag key={`region-${item.id}-${tag}`} value={tag} kind="region" />
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-2 flex items-center justify-between text-[11px] text-foreground/68">
         <span className="truncate">{item.source_name}</span>
         <span>{formatRelative(item.published_at)}</span>
       </div>
@@ -672,7 +672,7 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
           : "border-blue-400/45 bg-blue-500/20 text-blue-100";
 
   return (
-    <Card className="border-white/12 bg-slate-950/74 text-slate-100">
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-sm">{widget.title}</CardTitle>
@@ -681,8 +681,8 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="flex items-end justify-between gap-2">
-          <p className="text-xl font-bold text-white">{widget.primary}</p>
-          <p className="text-xs text-slate-300">{widget.secondary}</p>
+          <p className="text-xl font-bold text-foreground">{widget.primary}</p>
+          <p className="text-xs text-foreground/78">{widget.secondary}</p>
         </div>
         <div className="h-10">
           <ResponsiveContainer width="100%" height="100%">
@@ -693,7 +693,7 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-[10px] text-slate-400">{widget.note}</p>
+        <p className="text-[10px] text-foreground/68">{widget.note}</p>
       </CardContent>
     </Card>
   );
@@ -1010,17 +1010,17 @@ export default function MonitorPage() {
     <div className="min-h-screen bg-background text-foreground">
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
       <main>
-      <section id="overview" className="rounded-none border-b border-primary/25 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-slate-100 shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-6">
+      <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-6">
         <div className="space-y-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
               <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-primary-foreground">Cropto Monitor</Badge>
-              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Commodity Signals Terminal</h1>
-              <p className="max-w-3xl text-sm text-slate-300 sm:text-base">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
+              <p className="max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
                 Operational signal view for grains and oilseeds across markets, logistics, policy, and Black Sea risk corridors.
               </p>
             </div>
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-foreground/70 dark:text-slate-400">
               Updated: {monitorQuery.data?.generatedAt ? new Date(monitorQuery.data.generatedAt).toLocaleString() : "loading"}
             </div>
           </div>
@@ -1030,17 +1030,17 @@ export default function MonitorPage() {
           <div id="grain-markets-core" className="scroll-mt-24 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Grain Markets Core</h2>
-                <span className="text-[11px] text-slate-500">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/82 dark:text-slate-300">Grain Markets Core</h2>
+                <span className="text-[11px] text-foreground/65 dark:text-slate-500">
                   {grainMarketsQuery.data?.meta?.partialFailure ? "CBOT + Euronext (partial/fallback)" : "CBOT + Euronext (core)"}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-slate-400">
+              <div className="flex items-center gap-2 text-[10px] text-foreground/65 dark:text-slate-400">
                 <span className="uppercase tracking-wide">Price</span>
                 <Button
                   size="sm"
                   variant={priceDisplayMode === "USD_TON" ? "default" : "outline"}
-                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
                   onClick={() => setPriceDisplayMode("USD_TON")}
                 >
                   USD/t
@@ -1048,7 +1048,7 @@ export default function MonitorPage() {
                 <Button
                   size="sm"
                   variant={priceDisplayMode === "NATIVE" ? "default" : "outline"}
-                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
                   onClick={() => setPriceDisplayMode("NATIVE")}
                 >
                   Native
@@ -1057,7 +1057,7 @@ export default function MonitorPage() {
                 <Button
                   size="sm"
                   variant={temperatureDisplayMode === "C" ? "default" : "outline"}
-                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
                   onClick={() => setTemperatureDisplayMode("C")}
                 >
                   °C
@@ -1065,7 +1065,7 @@ export default function MonitorPage() {
                 <Button
                   size="sm"
                   variant={temperatureDisplayMode === "F" ? "default" : "outline"}
-                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
                   onClick={() => setTemperatureDisplayMode("F")}
                 >
                   °F
@@ -1073,8 +1073,8 @@ export default function MonitorPage() {
               </div>
             </div>
             {!grainMarketsQuery.data || (grainMarketsQuery.data.widgets.cbot.length === 0 && grainMarketsQuery.data.widgets.euronext.length === 0) ? (
-              <Card className="border-white/12 bg-slate-950/72 text-slate-100">
-                <CardContent className="pt-6 text-sm text-slate-400">
+              <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground">
+                <CardContent className="pt-6 text-sm text-foreground/72">
                   Grain markets core is temporarily unavailable.
                 </CardContent>
               </Card>
@@ -1095,33 +1095,33 @@ export default function MonitorPage() {
           </div>
 
           <div id="top-signals" className="scroll-mt-24 grid gap-3 xl:grid-cols-12">
-            <Card className="xl:col-span-5 border-red-400/35 bg-[linear-gradient(160deg,rgba(127,29,29,0.24),rgba(10,14,26,0.92)_36%)] text-slate-100 shadow-[0_0_0_1px_rgba(248,113,113,0.14)]">
+            <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-br from-red-100/70 via-card to-muted/35 dark:from-red-900/25 dark:via-card dark:to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-red-400/55 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="h-4 w-4 text-red-400" />
                   <CardTitle className="text-base">Black Sea Watch</CardTitle>
                 </div>
-                <CardDescription className="text-slate-400">Live corridor risk context for logistics, policy and weather</CardDescription>
+                <CardDescription className="text-foreground/70 dark:text-slate-400">Live corridor risk context for logistics, policy and weather</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="grid grid-cols-3 gap-1.5 rounded-md border border-white/10 bg-slate-950/55 p-1.5 text-[10px]">
+                <div className="grid grid-cols-3 gap-1.5 rounded-md border border-black/70 dark:border-white/30 bg-muted/60 dark:bg-slate-950/55 p-1.5 text-[10px]">
                   <div>
-                    <p className="text-slate-400">Activity</p>
-                    <p className="font-semibold text-white">{blackSeaSignals.filter((item) => inLastHours(item, 24)).length}</p>
+                    <p className="text-foreground/65 dark:text-slate-400">Activity</p>
+                    <p className="font-semibold text-foreground dark:text-white">{blackSeaSignals.filter((item) => inLastHours(item, 24)).length}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">High impact</p>
+                    <p className="text-foreground/65 dark:text-slate-400">High impact</p>
                     <p className="font-semibold text-red-300">{blackSeaSignals.filter((item) => inLastHours(item, 24) && classifyImpact(item) === "High").length}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">7d total</p>
+                    <p className="text-foreground/65 dark:text-slate-400">7d total</p>
                     <p className="font-semibold text-amber-300">{blackSeaSignals.filter((item) => inLastHours(item, 24 * 7)).length}</p>
                   </div>
                 </div>
                 {blackSeaRisks.map((item) => (
-                  <a key={`bs-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/80 p-2 hover:border-red-400/35">
-                    <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
-                    <p className="mt-1 text-[10px] text-slate-400">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
+                  <a key={`bs-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/80 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:border-red-400/35 hover:shadow-md">
+                    <p className="line-clamp-2 text-xs font-medium text-foreground dark:text-slate-100">{item.title}</p>
+                    <p className="mt-1 text-[10px] text-foreground/68 dark:text-slate-400">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
                   </a>
                 ))}
               </CardContent>
@@ -1135,13 +1135,13 @@ export default function MonitorPage() {
           </div>
 
           <div className="grid gap-3 xl:grid-cols-12">
-            <Card className="xl:col-span-6 border-primary/35 bg-slate-950/76 text-slate-100">
+            <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-400" />
                   <CardTitle className="text-base">Top Signals (Priority)</CardTitle>
                 </div>
-                <CardDescription className="text-slate-400">Top three decision-relevant signals</CardDescription>
+                <CardDescription className="text-foreground/70 dark:text-slate-400">Top three decision-relevant signals</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2">
                 {prioritySignals.map((item, index) => (
@@ -1150,71 +1150,71 @@ export default function MonitorPage() {
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-3 border-white/12 bg-slate-950/76 text-slate-100">
+            <Card className="xl:col-span-3 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Market Narrative (24h)</CardTitle>
-                <CardDescription className="text-slate-400">Rule-based summary from active signals</CardDescription>
+                <CardDescription className="text-foreground/70 dark:text-slate-400">Rule-based summary from active signals</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Badge className={`${marketNarrative.status === "Elevated" ? "border-red-400/45 bg-red-500/20 text-red-100" : marketNarrative.status === "Rising" ? "border-amber-400/45 bg-amber-500/20 text-amber-100" : "border-blue-400/45 bg-blue-500/20 text-blue-100"} text-[10px] uppercase tracking-wide`}>
                   {marketNarrative.status}
                 </Badge>
-                <p className="text-sm leading-6 text-slate-200">{marketNarrative.line}</p>
+                <p className="text-sm leading-6 text-foreground/86 dark:text-slate-200">{marketNarrative.line}</p>
               </CardContent>
             </Card>
 
             <div className="xl:col-span-3 grid gap-3">
               {logisticsIndicatorsQuery.data?.enabled ? (
                 (logisticsIndicatorsQuery.data?.widgets || []).slice(0, 2).map((indicator) => (
-                  <Card key={`mini-${indicator.id}`} className="border-white/12 bg-slate-950/72 text-slate-100">
+                  <Card key={`mini-${indicator.id}`} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
                     <CardContent className="pt-3">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-slate-200">{indicator.title}</p>
+                        <p className="text-xs font-semibold text-foreground dark:text-slate-200">{indicator.title}</p>
                         <Badge className={`text-[10px] ${indicatorStatusClass(indicator.status)}`}>{indicatorStatusLabel(indicator.status)}</Badge>
                       </div>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-lg font-bold text-white">{indicator.valueCurrent == null ? "n/a" : indicator.valueCurrent.toFixed(2)}</p>
-                        <p className="text-[10px] text-slate-400">{indicator.valueChange != null ? `${indicator.valueChange >= 0 ? "+" : ""}${indicator.valueChange.toFixed(2)}` : "no delta"}</p>
+                        <p className="text-lg font-bold text-foreground dark:text-white">{indicator.valueCurrent == null ? "n/a" : indicator.valueCurrent.toFixed(2)}</p>
+                        <p className="text-[10px] text-foreground/68 dark:text-slate-400">{indicator.valueChange != null ? `${indicator.valueChange >= 0 ? "+" : ""}${indicator.valueChange.toFixed(2)}` : "no delta"}</p>
                       </div>
-                      <p className="mt-1 text-[10px] text-slate-500 line-clamp-2">{indicator.sourceName}</p>
+                      <p className="mt-1 text-[10px] text-foreground/65 dark:text-slate-500 line-clamp-2">{indicator.sourceName}</p>
                     </CardContent>
                   </Card>
                 ))
               ) : (
-                <Card className="border-white/12 bg-slate-950/72 text-slate-100">
-                  <CardContent className="pt-4 text-xs text-slate-400">Logistics indicators disabled.</CardContent>
+                <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100">
+                  <CardContent className="pt-4 text-xs text-foreground/72 dark:text-slate-400">Logistics indicators disabled.</CardContent>
                 </Card>
               )}
             </div>
           </div>
 
           <div className="grid gap-3 xl:grid-cols-12">
-            <Card className="xl:col-span-5 border-white/12 bg-slate-950/70 text-slate-100">
+            <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Market Pulse (Secondary)</CardTitle>
-                <CardDescription className="text-slate-400">24h directional intensity by crop</CardDescription>
+                <CardDescription className="text-foreground/70 dark:text-slate-400">24h directional intensity by crop</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {pulseByCrop.map((entry) => (
-                  <div key={entry.crop} className="rounded-lg border border-white/10 bg-slate-900/80 p-2">
+                  <div key={entry.crop} className="rounded-lg border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/80 p-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">{asLabel(entry.crop)}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/80 dark:text-slate-300">{asLabel(entry.crop)}</p>
                       {entry.direction === "up" ? (
                         <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                       ) : entry.direction === "down" ? (
                         <TrendingDown className="h-3.5 w-3.5 text-red-400" />
                       ) : (
-                        <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
+                        <ArrowRight className="h-3.5 w-3.5 text-foreground/65 dark:text-slate-400" />
                       )}
                     </div>
-                    <p className="mt-1 text-lg font-semibold text-white">{entry.now24h}</p>
-                    <p className="text-[10px] text-slate-400">24h • total {entry.total}</p>
+                    <p className="mt-1 text-lg font-semibold text-foreground dark:text-white">{entry.now24h}</p>
+                    <p className="text-[10px] text-foreground/65 dark:text-slate-400">24h • total {entry.total}</p>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-5 border-primary/30 bg-slate-950/74 text-slate-100">
+            <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">Cropto UA Indices (Secondary)</CardTitle>
@@ -1223,13 +1223,13 @@ export default function MonitorPage() {
               </CardHeader>
               <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {!indicesQuery.data?.enabled ? (
-                  <p className="text-sm text-slate-400">Coming soon</p>
+                  <p className="text-sm text-foreground/72 dark:text-slate-400">Coming soon</p>
                 ) : indicesQuery.data?.items?.length ? (
                   indicesQuery.data.items.slice(0, 6).map((item) => (
-                    <div key={item.slug} className="rounded-lg border border-primary/25 bg-slate-900/82 p-2">
-                      <p className="text-[11px] font-semibold text-slate-100 line-clamp-1">{item.name}</p>
+                    <div key={item.slug} className="rounded-lg border border-black/70 dark:border-primary/25 bg-muted/55 dark:bg-slate-900/82 p-2">
+                      <p className="text-[11px] font-semibold text-foreground dark:text-slate-100 line-clamp-1">{item.name}</p>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-lg font-bold text-white">${item.value.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-foreground dark:text-white">${item.value.toFixed(2)}</p>
                         <p className={`text-[10px] font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-300" : "text-red-300"}`}>
                           {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
                         </p>
@@ -1237,12 +1237,12 @@ export default function MonitorPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-400">No index snapshots available yet.</p>
+                  <p className="text-sm text-foreground/72 dark:text-slate-400">No index snapshots available yet.</p>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-2 border-white/12 bg-slate-950/65 text-slate-100">
+            <Card className="xl:col-span-2 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Macro / FX</CardTitle>
               </CardHeader>
@@ -1250,14 +1250,14 @@ export default function MonitorPage() {
                 {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
                   <div className="grid grid-cols-1 gap-1.5">
                     {fxQuery.data.rates.slice(0, 4).map((rate) => (
-                      <div key={rate.currency} className="rounded-md border border-white/10 bg-slate-900/75 p-1.5">
-                        <p className="text-[10px] text-slate-400">{rate.currency}</p>
-                        <p className="text-sm font-semibold text-white">{rate.usdPerUnit.toFixed(4)}</p>
+                      <div key={rate.currency} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5">
+                        <p className="text-[10px] text-foreground/65 dark:text-slate-400">{rate.currency}</p>
+                        <p className="text-sm font-semibold text-foreground dark:text-white">{rate.usdPerUnit.toFixed(4)}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400">Coming soon</p>
+                  <p className="text-xs text-foreground/72 dark:text-slate-400">Coming soon</p>
                 )}
               </CardContent>
             </Card>
@@ -1265,14 +1265,14 @@ export default function MonitorPage() {
 
           <div id="logistics-indicators" className="scroll-mt-24 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Freight & Logistics Indicators</h2>
-              <span className="text-[11px] text-slate-500">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/82 dark:text-slate-300">Freight & Logistics Indicators</h2>
+              <span className="text-[11px] text-foreground/65 dark:text-slate-500">
                 {logisticsIndicatorsQuery.data?.enabled ? "Demo-grade, fallback-first" : "Disabled"}
               </span>
             </div>
             {!logisticsIndicatorsQuery.data?.enabled ? (
-              <Card className="border-white/12 bg-slate-950/72 text-slate-100">
-                <CardContent className="pt-6 text-sm text-slate-400">
+              <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100">
+                <CardContent className="pt-6 text-sm text-foreground/72 dark:text-slate-400">
                   Indicators are disabled by feature flag.
                 </CardContent>
               </Card>
@@ -1286,11 +1286,11 @@ export default function MonitorPage() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm">Signal Volume by Crop</CardTitle>
-                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                  <span className="text-[10px] text-foreground/65 dark:text-slate-400">{chartWindow}</span>
                 </div>
               </CardHeader>
               <CardContent className="h-36">
@@ -1303,14 +1303,14 @@ export default function MonitorPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
-              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: signal mentions tagged by crop.</div>
+              <div className="px-4 pb-3 text-[10px] text-foreground/65 dark:text-slate-400">Legend: signal mentions tagged by crop.</div>
             </Card>
 
-            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm">Signal Volume by Topic</CardTitle>
-                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                  <span className="text-[10px] text-foreground/65 dark:text-slate-400">{chartWindow}</span>
                 </div>
               </CardHeader>
               <CardContent className="h-36">
@@ -1323,14 +1323,14 @@ export default function MonitorPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
-              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: markets/trade/logistics/policy/weather/harvest tags.</div>
+              <div className="px-4 pb-3 text-[10px] text-foreground/65 dark:text-slate-400">Legend: markets/trade/logistics/policy/weather/harvest tags.</div>
             </Card>
 
-            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm">Region Activity</CardTitle>
-                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                  <span className="text-[10px] text-foreground/65 dark:text-slate-400">{chartWindow}</span>
                 </div>
               </CardHeader>
               <CardContent className="h-36">
@@ -1343,14 +1343,14 @@ export default function MonitorPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
-              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: region-tagged signals by corridor.</div>
+              <div className="px-4 pb-3 text-[10px] text-foreground/65 dark:text-slate-400">Legend: region-tagged signals by corridor.</div>
             </Card>
 
-            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm">Mentions Trend ({chartWindow})</CardTitle>
-                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                  <span className="text-[10px] text-foreground/65 dark:text-slate-400">{chartWindow}</span>
                 </div>
               </CardHeader>
               <CardContent className="h-36">
@@ -1364,81 +1364,81 @@ export default function MonitorPage() {
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
-              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: total relevant mentions over recent days.</div>
+              <div className="px-4 pb-3 text-[10px] text-foreground/65 dark:text-slate-400">Legend: total relevant mentions over recent days.</div>
             </Card>
           </div>
           <div className="flex items-center gap-1.5">
-            <p className="text-xs uppercase tracking-wide text-slate-400">Micro-widget range</p>
-            <Button size="sm" variant={chartWindow === "24h" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-white/20 text-slate-200" onClick={() => setChartWindow("24h")}>
+            <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Micro-widget range</p>
+            <Button size="sm" variant={chartWindow === "24h" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-black/70 dark:border-white/30 text-foreground dark:text-slate-200" onClick={() => setChartWindow("24h")}>
               24h
             </Button>
-            <Button size="sm" variant={chartWindow === "7d" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-white/20 text-slate-200" onClick={() => setChartWindow("7d")}>
+            <Button size="sm" variant={chartWindow === "7d" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-black/70 dark:border-white/30 text-foreground dark:text-slate-200" onClick={() => setChartWindow("7d")}>
               7d
             </Button>
           </div>
 
-          <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+          <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
             <CardHeader>
               <CardTitle className="text-lg">Filters</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 lg:grid-cols-5">
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Crop</p>
+                  <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Crop</p>
                   <div className="flex flex-wrap gap-1.5">
                     {CROPS.map((item) => (
-                      <Button key={item} size="sm" variant={crop === item ? "default" : "outline"} onClick={() => setCrop(item)} className="h-7 px-2.5 text-xs capitalize border-white/20 text-slate-200">
+                      <Button key={item} size="sm" variant={crop === item ? "default" : "outline"} onClick={() => setCrop(item)} className="h-7 px-2.5 text-xs capitalize border-black/70 dark:border-white/30 text-foreground dark:text-slate-200">
                         {item}
                       </Button>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Topic</p>
+                  <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Topic</p>
                   <div className="flex flex-wrap gap-1.5">
                     {TOPICS.map((item) => (
-                      <Button key={item} size="sm" variant={topic === item ? "default" : "outline"} onClick={() => setTopic(item)} className="h-7 px-2.5 text-xs capitalize border-white/20 text-slate-200">
+                      <Button key={item} size="sm" variant={topic === item ? "default" : "outline"} onClick={() => setTopic(item)} className="h-7 px-2.5 text-xs capitalize border-black/70 dark:border-white/30 text-foreground dark:text-slate-200">
                         {item}
                       </Button>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Region</p>
+                  <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Region</p>
                   <div className="flex flex-wrap gap-1.5">
                     {REGIONS.map((item) => (
-                      <Button key={item} size="sm" variant={region === item ? "default" : "outline"} onClick={() => setRegion(item)} className="h-7 px-2.5 text-xs capitalize border-white/20 text-slate-200">
+                      <Button key={item} size="sm" variant={region === item ? "default" : "outline"} onClick={() => setRegion(item)} className="h-7 px-2.5 text-xs capitalize border-black/70 dark:border-white/30 text-foreground dark:text-slate-200">
                         {item}
                       </Button>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Time</p>
+                  <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Time</p>
                   <div className="flex gap-1.5">
-                    <Button size="sm" variant={time === "24h" ? "default" : "outline"} onClick={() => setTime("24h")} className="h-7 px-3 text-xs border-white/20 text-slate-200">
+                    <Button size="sm" variant={time === "24h" ? "default" : "outline"} onClick={() => setTime("24h")} className="h-7 px-3 text-xs border-black/70 dark:border-white/30 text-foreground dark:text-slate-200">
                       24h
                     </Button>
-                    <Button size="sm" variant={time === "7d" ? "default" : "outline"} onClick={() => setTime("7d")} className="h-7 px-3 text-xs border-white/20 text-slate-200">
+                    <Button size="sm" variant={time === "7d" ? "default" : "outline"} onClick={() => setTime("7d")} className="h-7 px-3 text-xs border-black/70 dark:border-white/30 text-foreground dark:text-slate-200">
                       7d
                     </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Search</p>
-                  <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Keyword" className="h-8 border-white/20 bg-slate-900/70 text-slate-100" />
+                  <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Search</p>
+                  <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Keyword" className="h-8 border-black/70 dark:border-white/30 bg-background/80 dark:bg-slate-900/70 text-foreground dark:text-slate-100" />
                 </div>
               </div>
 
               {debugEnabled ? (
                 <div className="flex items-center gap-2">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Threshold</p>
+                  <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Threshold</p>
                   {[2, 3, 4, 5].map((value) => (
-                    <Button key={value} size="sm" variant={threshold === value ? "default" : "outline"} className="h-7 px-2.5 text-xs border-white/20 text-slate-200" onClick={() => setThreshold(value)}>
+                    <Button key={value} size="sm" variant={threshold === value ? "default" : "outline"} className="h-7 px-2.5 text-xs border-black/70 dark:border-white/30 text-foreground dark:text-slate-200" onClick={() => setThreshold(value)}>
                       {value}
                     </Button>
                   ))}
-                  <p className="text-xs text-slate-400">Current: {monitorQuery.data?.filters.threshold ?? threshold}</p>
+                  <p className="text-xs text-foreground/70 dark:text-slate-400">Current: {monitorQuery.data?.filters.threshold ?? threshold}</p>
                 </div>
               ) : null}
             </CardContent>
@@ -1447,7 +1447,7 @@ export default function MonitorPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-400" />
-              <h2 className="text-lg font-semibold text-slate-100">Top Signals</h2>
+              <h2 className="text-lg font-semibold text-foreground dark:text-slate-100">Top Signals</h2>
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               {topSignals.slice(0, 8).map((item, index) => (
@@ -1462,12 +1462,12 @@ export default function MonitorPage() {
               const visibleItems = expanded ? panel.items.slice(0, 12) : panel.items.slice(0, 6);
 
               return (
-                <Card key={panel.id} className="border-white/12 bg-slate-950/70 text-slate-100">
+                <Card key={panel.id} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
                       <CardTitle className="text-sm">{panel.title}</CardTitle>
                       <div className="flex items-center gap-1.5">
-                        <Badge className="border-white/20 bg-white/5 text-[10px] text-slate-300">{panel.items.length} items</Badge>
+                        <Badge className="border-black/60 dark:border-white/40 bg-muted/65 dark:bg-white/5 text-[10px] text-foreground/75 dark:text-slate-300">{panel.items.length} items</Badge>
                         <Badge className="border-red-400/40 bg-red-500/15 text-[10px] text-red-100">
                           {panel.items.filter((item) => classifyImpact(item) === "High").length} high
                         </Badge>
@@ -1479,13 +1479,13 @@ export default function MonitorPage() {
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {visibleItems.map((item) => (
-                      <a key={`${panel.id}-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/75 p-2 hover:border-primary/45">
+                      <a key={`${panel.id}-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-md">
                         <div className="flex items-start gap-2">
                           <span className={`mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
                             classifyImpact(item) === "High" ? "bg-red-400" : classifyImpact(item) === "Medium" ? "bg-amber-300" : "bg-emerald-400"
                           }`} />
                           <div className="min-w-0 flex-1">
-                            <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
+                            <p className="line-clamp-2 text-xs font-medium text-foreground dark:text-slate-100">{item.title}</p>
                             <div className="mt-1 flex flex-wrap gap-1">
                               {item.topic_tags.slice(0, 2).map((tag) => (
                                 <span key={`${item.id}-tag-${tag}`} className="rounded-full border border-primary/35 bg-primary/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-primary-foreground/95">
@@ -1493,12 +1493,12 @@ export default function MonitorPage() {
                                 </span>
                               ))}
                             </div>
-                            <p className="mt-1 text-[10px] text-slate-400">{item.source_name} • {formatRelative(item.published_at)}</p>
+                            <p className="mt-1 text-[10px] text-foreground/68 dark:text-slate-400">{item.source_name} • {formatRelative(item.published_at)}</p>
                           </div>
                         </div>
                       </a>
                     ))}
-                    {!panel.items.length ? <p className="text-xs text-slate-400">No items in this module for current filters.</p> : null}
+                    {!panel.items.length ? <p className="text-xs text-foreground/70 dark:text-slate-400">No items in this module for current filters.</p> : null}
                     {panel.items.length > 6 ? (
                       <Button
                         variant="ghost"
