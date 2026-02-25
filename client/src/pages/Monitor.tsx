@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { LiveVisualsPanel } from "@/components/monitor/LiveVisualsPanel";
+import { MiniSparkline as MiniSparklineSvg } from "@/components/monitor/MiniSparkline";
+import { MiniTrendMarker } from "@/components/monitor/MiniTrendMarker";
 import {
   formatChangeWithUnit,
   formatFxRate,
@@ -738,32 +740,22 @@ function metricUnitChip(unit?: string, fallback = "unit"): string {
   return unit;
 }
 
-function MiniSparkline({
+function DynamicMiniTrend({
   series,
-  dataKey = "value",
+  change,
+  changePct,
 }: {
-  series: Array<{ ts?: string; label?: string; value: number }>;
-  dataKey?: "value";
+  series?: Array<{ ts?: string; label?: string; value: number }>;
+  change?: number;
+  changePct?: number;
 }) {
-  if (!series.length) {
-    return (
-      <div className="flex h-full items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-foreground/35" />
-        <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
-        <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
-        <span className="text-[10px] text-foreground/55">No series</span>
-      </div>
-    );
+  if (series && series.length >= 2) {
+    return <MiniSparklineSvg points={series.map((p) => ({ value: p.value }))} />;
   }
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={series}>
-        <XAxis dataKey="ts" hide />
-        <YAxis hide />
-        <Line type="monotone" dataKey={dataKey} stroke="#9AA33A" strokeWidth={2} dot={false} />
-      </LineChart>
-    </ResponsiveContainer>
-  );
+  if (typeof change === "number" || typeof changePct === "number") {
+    return <MiniTrendMarker change={change} changePct={changePct} />;
+  }
+  return <MiniTrendMarker />;
 }
 
 function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMode) {
@@ -838,7 +830,11 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
         {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
         <div className="h-12">
-          <MiniSparkline series={widget.series} />
+          <DynamicMiniTrend
+            series={widget.series}
+            change={display.change}
+            changePct={display.changePct}
+          />
         </div>
 
         <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
@@ -971,7 +967,11 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
         </div>
 
         <div className="h-16">
-          <MiniSparkline series={indicator.series} />
+          <DynamicMiniTrend
+            series={indicator.series}
+            change={indicator.valueChange}
+            changePct={indicator.valueChangePct}
+          />
         </div>
 
         <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
@@ -1070,7 +1070,7 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
           <p className="text-xs text-foreground/78">{widget.secondary} (metric)</p>
         </div>
         <div className="h-10">
-          <MiniSparkline series={widget.series} />
+          <DynamicMiniTrend series={widget.series} />
         </div>
         <p className="text-[10px] text-foreground/68">{widget.note}</p>
       </CardContent>
@@ -1108,7 +1108,11 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
         </p>
       </div>
       <div className="mt-1 h-8">
-        <MiniSparkline series={row.price?.series || []} />
+        <DynamicMiniTrend
+          series={row.price?.series || []}
+          change={display.change}
+          changePct={display.changePct}
+        />
       </div>
       {display.secondary ? <p className="mt-1 text-[10px] text-foreground/68">{display.secondary}</p> : null}
     </div>
@@ -1680,7 +1684,11 @@ export default function MonitorPage() {
                                 </p>
                                 <p className="text-[10px] text-foreground/65">{card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}</p>
                                 <div className="mt-1 h-7">
-                                  <MiniSparkline series={card.series || []} />
+                                  <DynamicMiniTrend
+                                    series={card.series || []}
+                                    change={card.delta}
+                                    changePct={card.deltaPct}
+                                  />
                                 </div>
                               </div>
                             ))}
@@ -1829,7 +1837,11 @@ export default function MonitorPage() {
                                               {display.change == null ? "No delta" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
                                             </p>
                                             <div className="mt-1 h-8">
-                                              <MiniSparkline series={item.series || []} />
+                                              <DynamicMiniTrend
+                                                series={item.series || []}
+                                                change={display.change}
+                                                changePct={display.changePct}
+                                              />
                                             </div>
                                             {display.secondary ? <p className="text-[10px] text-foreground/68">{display.secondary}</p> : null}
                                           </>
@@ -1847,7 +1859,11 @@ export default function MonitorPage() {
                                           {(item.valueChangePct != null ? formatPercent(item.valueChangePct) : "No delta")} • {item.metricSemanticKind}
                                         </p>
                                         <div className="mt-1 h-8">
-                                          <MiniSparkline series={item.series || []} />
+                                          <DynamicMiniTrend
+                                            series={item.series || []}
+                                            change={item.valueChange}
+                                            changePct={item.valueChangePct}
+                                          />
                                         </div>
                                       </>
                                     )}
@@ -1865,7 +1881,10 @@ export default function MonitorPage() {
                                       {card.value == null ? card.valueText || "n/a" : formatIndexPoints(card.value)}
                                     </p>
                                     <div className="mt-1 h-7">
-                                      <MiniSparkline series={card.series || []} />
+                                      <DynamicMiniTrend
+                                        series={card.series || []}
+                                        changePct={card.deltaPct}
+                                      />
                                     </div>
                                   </div>
                                 ))}
@@ -1985,7 +2004,11 @@ export default function MonitorPage() {
                         </p>
                       </div>
                       <div className="mt-1 h-8">
-                        <MiniSparkline series={indicator.series} />
+                        <DynamicMiniTrend
+                          series={indicator.series}
+                          change={indicator.valueChange}
+                          changePct={indicator.valueChangePct}
+                        />
                       </div>
                       <p className="mt-1 text-[10px] text-foreground/65 dark:text-slate-500 line-clamp-2">{indicator.sourceName}</p>
                     </CardContent>
