@@ -4,6 +4,7 @@ import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/com
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
+import { UsdaMarsReportsProvider } from "../server/monitor/grainWidgets/providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProviderContext } from "../server/monitor/grainWidgets/providers/types";
 import type { GrainWidget } from "../server/monitor/grainWidgets/types";
 
@@ -43,6 +44,7 @@ async function run() {
     new CommoditicProvider(),
     new FaoFfpiProvider(),
     new ApiFarmerProvider(),
+    new UsdaMarsReportsProvider(),
   ];
 
   console.log("grain-widgets smoke start");

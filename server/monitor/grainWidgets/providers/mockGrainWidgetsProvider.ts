@@ -2,6 +2,7 @@ import type {
   GrainWidget,
   GrainWidgetCropPriceIndex,
   GrainWidgetKind,
+  GrainWidgetUsdaMarsReports,
   GrainWidgetTableRow,
   GrainWidgetUSCashBids,
   GrainWidgetGlobalSpotTable,
@@ -331,6 +332,63 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
         fx: { eurUsd: ctx.eurUsd },
         fallbackReason: reason,
       });
+    }
+
+    if (this.kind === "USDA_MARS_REPORTS") {
+      const widget: GrainWidgetUsdaMarsReports = {
+        id: "grain-usda-mars-reports",
+        kind: "USDA_MARS_REPORTS",
+        title: "USDA MARS Grain Reports",
+        subtitle: "Metadata-driven report flow (no PDF/TXT parsing)",
+        status: "FALLBACK",
+        sourceName: "USDA AMS MARS API",
+        sourceAttribution: "Data: USDA AMS MARS (public)",
+        sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReports?format=json",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        reports: [
+          {
+            id: "mars-r1",
+            title: "Daily Grain Bids - Portland",
+            reportId: "MARS-DEMO-001",
+            fileType: "PDF",
+            category: "Regional bids",
+            publishedAt: ctx.now.toISOString(),
+            sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/MARS-DEMO-001?format=json",
+          },
+          {
+            id: "mars-r2",
+            title: "Export Grain Bids - Gulf",
+            reportId: "MARS-DEMO-002",
+            fileType: "TXT",
+            category: "Export bids",
+            publishedAt: ctx.now.toISOString(),
+            sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/MARS-DEMO-002?format=json",
+          },
+          {
+            id: "mars-r3",
+            title: "Daily Market Rates - Corn and Wheat",
+            reportId: "MARS-DEMO-003",
+            fileType: "PDF",
+            category: "Market rates",
+            publishedAt: ctx.now.toISOString(),
+            sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/MARS-DEMO-003?format=json",
+          },
+        ],
+        summary: {
+          fetchedCount: 12,
+          matchedCount: 5,
+          shownCount: 3,
+          categories: [
+            { label: "Regional bids", count: 1 },
+            { label: "Export bids", count: 1 },
+            { label: "Market rates", count: 1 },
+          ],
+        },
+        notes: ["Mock fallback payload (metadata-only report list)"],
+        fallbackReason: reason,
+      };
+      return widget;
     }
 
     const rows: GrainWidgetTableRow[] = [

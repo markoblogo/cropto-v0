@@ -314,7 +314,8 @@ type GrainWidgetKind =
   | "CBOT_FUTURES_SNAPSHOT"
   | "CBOT_FUTURES_CURVE"
   | "LIVESTOCK_FEED_TIEIN"
-  | "MACRO_AGRI_INDICES";
+  | "MACRO_AGRI_INDICES"
+  | "USDA_MARS_REPORTS";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -505,6 +506,7 @@ type GrainWidgetMacroAgriIndices = {
     label: string;
     metricSemanticKind: "price" | "index" | "composite" | "signal";
     status?: GrainWidgetStatus;
+    sourceName?: string;
     price?: GrainWidgetTableCellPrice;
     valueCurrent?: number;
     valueChange?: number;
@@ -540,13 +542,46 @@ type GrainWidgetMacroAgriIndices = {
   fallbackReason?: string;
 };
 
+type GrainWidgetUsdaMarsReports = {
+  id: string;
+  kind: "USDA_MARS_REPORTS";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  reports: Array<{
+    id: string;
+    title: string;
+    publishedAt?: string;
+    reportDate?: string;
+    reportId?: string;
+    fileType?: "PDF" | "TXT" | "HTML" | "OTHER";
+    category?: string;
+    sourceUrl?: string;
+    notes?: string[];
+  }>;
+  summary?: {
+    fetchedCount: number;
+    matchedCount: number;
+    shownCount: number;
+    categories?: Array<{ label: string; count: number }>;
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
   | GrainWidgetCropIndex
   | GrainWidgetFuturesSnapshot
   | GrainWidgetLivestockFeedTieIn
-  | GrainWidgetMacroAgriIndices;
+  | GrainWidgetMacroAgriIndices
+  | GrainWidgetUsdaMarsReports;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -765,6 +800,16 @@ function trendIntensity(change?: number, changePct?: number): number | undefined
   return Math.min(100, Math.max(12, Math.round(Math.abs(base) * 12)));
 }
 
+function isTrustworthySeriesSource(args: { status?: string; sourceName?: string; fallbackReason?: string }): boolean {
+  const status = String(args.status || "").toUpperCase();
+  if (status === "OFFLINE" || status === "FALLBACK") return false;
+  const source = String(args.sourceName || "").toLowerCase();
+  const reason = String(args.fallbackReason || "").toLowerCase();
+  if (source.includes("demo sample") || source.includes("mock")) return false;
+  if (reason.includes("mock") || reason.includes("coverage_empty")) return false;
+  return true;
+}
+
 function isValidEmbedUrl(url?: string): boolean {
   if (!url) return false;
   try {
@@ -787,6 +832,8 @@ function DynamicMiniTrend({
   cardKind,
   compact = true,
   forcedMode,
+  trustedSeries,
+  minPoints,
 }: {
   series?: Array<{ ts?: string; label?: string; value: number }>;
   change?: number;
@@ -797,6 +844,8 @@ function DynamicMiniTrend({
   cardKind: MonitorCardKind;
   compact?: boolean;
   forcedMode?: "sparkline" | "trend_marker" | "neutral";
+  trustedSeries?: boolean;
+  minPoints?: number;
 }) {
   const decision = forcedMode ? { mode: forcedMode, reason: "forced" as const } : getMiniTrendRenderMode({
     series,
@@ -805,6 +854,8 @@ function DynamicMiniTrend({
     status,
     preferMarkerForFallback,
     policy: getSectionTrendPolicy(section),
+    trustedSeries,
+    minPoints,
   });
   const slotClass = getTrendSlotClass({
     section,
@@ -946,6 +997,12 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
           status={widget.status}
           section="core"
           cardKind="instrument"
+          trustedSeries={isTrustworthySeriesSource({
+            status: widget.status,
+            sourceName: widget.sourceName,
+            fallbackReason: widget.fallbackReason,
+          })}
+          minPoints={3}
           forcedMode={trendDecision.mode}
         />
 
@@ -1274,6 +1331,12 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
     changePct: display.changePct,
     status: row.status,
     policy: getSectionTrendPolicy("expansion"),
+    trustedSeries: isTrustworthySeriesSource({
+      status: row.status,
+      sourceName: row.sourceName,
+      fallbackReason: row.notes?.find((note) => note.toLowerCase().includes("coverage")),
+    }),
+    minPoints: 3,
   });
   const rowVariant: CardSizeVariant = resolveCardSizeVariant({
     section: "expansion",
@@ -1324,6 +1387,12 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
         status={row.status}
         section="expansion"
         cardKind="row"
+        trustedSeries={isTrustworthySeriesSource({
+          status: row.status,
+          sourceName: row.sourceName,
+          fallbackReason: row.notes?.find((note) => note.toLowerCase().includes("coverage")),
+        })}
+        minPoints={3}
         forcedMode={trendDecision.mode}
       />
       {display.secondary ? <p className="mt-0.5 text-[10px] text-foreground/68">{display.secondary}</p> : null}
@@ -1713,6 +1782,7 @@ export default function MonitorPage() {
       "CBOT_FUTURES_SNAPSHOT",
       "LIVESTOCK_FEED_TIEIN",
       "MACRO_AGRI_INDICES",
+      "USDA_MARS_REPORTS",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -1813,7 +1883,7 @@ export default function MonitorPage() {
             )}
           </div>
 
-          <div id="grain-data-expansion" className="scroll-mt-24 space-y-1.5 rounded-lg border border-black/50 dark:border-white/20 bg-background/30 p-2">
+          <div id="grain-data-expansion" className="scroll-mt-24 space-y-1 rounded-lg border border-black/50 dark:border-white/20 bg-background/30 p-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/82 dark:text-slate-300">Grain Data Expansion</h2>
@@ -1843,7 +1913,7 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid auto-rows-fr gap-2 xl:grid-cols-12">
+              <div className="grid auto-rows-fr gap-1.5 xl:grid-cols-12">
                 {(() => {
                   const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
                   const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
@@ -1851,6 +1921,7 @@ export default function MonitorPage() {
                   const futuresWidget = grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined;
                   const livestockWidget = grainDataByKind["LIVESTOCK_FEED_TIEIN"] as GrainWidgetLivestockFeedTieIn | undefined;
                   const macroWidget = grainDataByKind["MACRO_AGRI_INDICES"] as GrainWidgetMacroAgriIndices | undefined;
+                  const marsWidget = grainDataByKind["USDA_MARS_REPORTS"] as GrainWidgetUsdaMarsReports | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -1963,6 +2034,12 @@ export default function MonitorPage() {
                                   status={card.status || indexWidget.status}
                                   section="expansion"
                                   cardKind="index"
+                                  trustedSeries={isTrustworthySeriesSource({
+                                    status: card.status || indexWidget.status,
+                                    sourceName: indexWidget.sourceName,
+                                    fallbackReason: indexWidget.fallbackReason,
+                                  })}
+                                  minPoints={3}
                                 />
                               </div>
                             ))}
@@ -2193,6 +2270,12 @@ export default function MonitorPage() {
                                               status={item.status || macroWidget.status}
                                               section="expansion"
                                               cardKind="index"
+                                              trustedSeries={isTrustworthySeriesSource({
+                                                status: item.status || macroWidget.status,
+                                                sourceName: item.sourceName || macroWidget.sourceName,
+                                                fallbackReason: macroWidget.fallbackReason,
+                                              })}
+                                              minPoints={3}
                                             />
                                             {display.secondary ? <p className="text-[10px] text-foreground/68">{display.secondary}</p> : null}
                                           </>
@@ -2222,6 +2305,12 @@ export default function MonitorPage() {
                                           status={item.status || macroWidget.status}
                                           section="expansion"
                                           cardKind="index"
+                                          trustedSeries={isTrustworthySeriesSource({
+                                            status: item.status || macroWidget.status,
+                                            sourceName: item.sourceName || macroWidget.sourceName,
+                                            fallbackReason: macroWidget.fallbackReason,
+                                          })}
+                                          minPoints={3}
                                         />
                                       </>
                                     )}
@@ -2253,6 +2342,12 @@ export default function MonitorPage() {
                                       status={card.status || macroWidget.status}
                                       section="expansion"
                                       cardKind="index"
+                                      trustedSeries={isTrustworthySeriesSource({
+                                        status: card.status || macroWidget.status,
+                                        sourceName: macroWidget.sourceName,
+                                        fallbackReason: macroWidget.fallbackReason,
+                                      })}
+                                      minPoints={3}
                                     />
                                   </div>
                                 ))}
@@ -2274,6 +2369,66 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("MACRO_AGRI_INDICES") ? "Macro Agri Indices" : "Macro Agri Indices (not configured)"}
                             subtitle="API/Embed macro index context with fallback"
+                          />
+                        </div>
+                      )}
+
+                      {marsWidget ? (
+                        <Card className="xl:col-span-12 h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{marsWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(marsWidget.status)}`}>{marsWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{marsWidget.subtitle || "Metadata-only grain market report flow"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            {marsWidget.reports.length ? (
+                              <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-3">
+                                {marsWidget.reports.map((report) => (
+                                  <a
+                                    key={report.id}
+                                    href={report.sourceUrl || marsWidget.sourceUrl || "#"}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block rounded-md border border-black/60 dark:border-white/25 bg-background/50 p-1.5 hover:border-primary/40"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <p className="text-[11px] font-semibold text-foreground line-clamp-1">{report.category || "Report"}</p>
+                                      <MetricChip label={report.fileType || "OTHER"} variant="type" tone="muted" />
+                                    </div>
+                                    <p className="mt-0.5 text-[11px] text-foreground/85 line-clamp-2">{report.title}</p>
+                                    <p className="mt-1 text-[10px] text-foreground/65">
+                                      {report.reportId ? `ID ${report.reportId}` : "ID n/a"} • {report.publishedAt ? formatRelative(report.publishedAt) : "date n/a"}
+                                    </p>
+                                  </a>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-foreground/72">No grain-relevant reports matched current keyword filter.</p>
+                            )}
+                            <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
+                              <span>
+                                {`reports ${marsWidget.summary?.shownCount ?? marsWidget.reports.length}/${marsWidget.summary?.matchedCount ?? marsWidget.reports.length} matched`}
+                              </span>
+                              <span>{`fetched ${marsWidget.summary?.fetchedCount ?? 0}`}</span>
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={marsWidget.status}
+                              statusClassName={grainStatusClass(marsWidget.status)}
+                              sourceName={marsWidget.sourceName}
+                              sourceUrl={marsWidget.sourceUrl}
+                              updatedLabel={marsWidget.updatedAt ? formatRelative(marsWidget.updatedAt) : marsWidget.timeframe}
+                              fallbackReason={marsWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-12">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("USDA_MARS_REPORTS") ? "USDA MARS Grain Reports" : "USDA MARS Grain Reports (not configured)"}
+                            subtitle="Metadata-driven report context"
                           />
                         </div>
                       )}

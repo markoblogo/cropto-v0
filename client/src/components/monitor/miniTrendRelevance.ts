@@ -10,6 +10,8 @@ export function getMiniTrendRenderMode(args: {
   status?: string;
   preferMarkerForFallback?: boolean;
   policy?: MiniTrendPolicy;
+  trustedSeries?: boolean;
+  minPoints?: number;
 }): { mode: MiniTrendRenderMode; reason: string } {
   const policy = args.policy ?? "strict";
   const hasDelta =
@@ -30,9 +32,14 @@ export function getMiniTrendRenderMode(args: {
     return { mode: hasDelta ? "trend_marker" : "neutral", reason: "fallback_status" };
   }
 
+  if (args.trustedSeries === false) {
+    return { mode: hasDelta ? "trend_marker" : "neutral", reason: "series_untrusted" };
+  }
+
   const rawSeries = args.series || [];
   const validSeries = rawSeries.filter((p) => typeof p?.value === "number" && Number.isFinite(p.value));
-  if (validSeries.length < 2) {
+  const minPoints = args.minPoints ?? (policy === "relaxed" ? 3 : 4);
+  if (validSeries.length < minPoints) {
     return { mode: hasDelta ? "trend_marker" : "neutral", reason: "no_series" };
   }
 
@@ -47,7 +54,12 @@ export function getMiniTrendRenderMode(args: {
     return { mode: hasDelta ? "trend_marker" : "neutral", reason: "low_variation" };
   }
 
-  if (policy === "strict" && validSeries.length < 3) {
+  const unique = new Set(values.map((value) => Number(value.toFixed(6)))).size;
+  if (unique < 2) {
+    return { mode: hasDelta ? "trend_marker" : "neutral", reason: "flat_series" };
+  }
+
+  if (policy === "strict" && validSeries.length < 5) {
     return { mode: hasDelta ? "trend_marker" : "neutral", reason: "strict_low_points" };
   }
 

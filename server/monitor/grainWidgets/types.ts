@@ -15,7 +15,8 @@ export type GrainWidgetKind =
   | "CBOT_FUTURES_SNAPSHOT"
   | "CBOT_FUTURES_CURVE"
   | "LIVESTOCK_FEED_TIEIN"
-  | "MACRO_AGRI_INDICES";
+  | "MACRO_AGRI_INDICES"
+  | "USDA_MARS_REPORTS";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -286,6 +287,29 @@ export interface GrainWidgetMacroAgriIndices extends GrainWidgetBase {
   summary?: GrainWidgetMacroAgriIndicesSummary;
 }
 
+export interface GrainWidgetUsdaMarsReportItem {
+  id: string;
+  title: string;
+  publishedAt?: string;
+  reportDate?: string;
+  reportId?: string;
+  fileType?: "PDF" | "TXT" | "HTML" | "OTHER";
+  category?: string;
+  sourceUrl?: string;
+  notes?: string[];
+}
+
+export interface GrainWidgetUsdaMarsReports extends GrainWidgetBase {
+  kind: "USDA_MARS_REPORTS";
+  reports: GrainWidgetUsdaMarsReportItem[];
+  summary?: {
+    fetchedCount: number;
+    matchedCount: number;
+    shownCount: number;
+    categories?: Array<{ label: string; count: number }>;
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -293,7 +317,8 @@ export type GrainWidget =
   | GrainWidgetCbotFuturesSnapshot
   | GrainWidgetCbotFuturesCurve
   | GrainWidgetLivestockFeedTieIn
-  | GrainWidgetMacroAgriIndices;
+  | GrainWidgetMacroAgriIndices
+  | GrainWidgetUsdaMarsReports;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -344,6 +369,7 @@ export interface GrainWidgetsProviderDebug {
   coverage?: string;
   fallbackChain?: "real->cache->mock";
   fallbackUsed?: boolean;
+  notes?: string[];
   error?: string;
 }
 

@@ -17,6 +17,7 @@ export const ENABLE_DBNOMICS_WIDGETS = envBool("ENABLE_DBNOMICS_WIDGETS", true);
 export const ENABLE_DBNOMICS_SPOT_PROVIDER = envBool("ENABLE_DBNOMICS_SPOT_PROVIDER", ENABLE_DBNOMICS_WIDGETS);
 export const ENABLE_FAO_FFPI_WIDGETS = envBool("ENABLE_FAO_FFPI_WIDGETS", true);
 export const ENABLE_FAO_FFPI_PROVIDER = envBool("ENABLE_FAO_FFPI_PROVIDER", ENABLE_FAO_FFPI_WIDGETS);
+export const ENABLE_USDA_MARS_REPORTS_WIDGET = envBool("ENABLE_USDA_MARS_REPORTS_WIDGET", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -77,7 +78,24 @@ export const FAO_FFPI_TIMEOUT_MS = envNum("FAO_FFPI_TIMEOUT_MS", GRAIN_WIDGETS_F
 export const FAO_FFPI_PARSER_MODE = (process.env.FAO_FFPI_PARSER_MODE || "auto").toLowerCase() === "csv" ? "csv" : "auto";
 export const USDA_FAS_PSD_API_URL = process.env.USDA_FAS_PSD_API_URL || "";
 export const USDA_FAS_PSD_API_KEY = process.env.USDA_FAS_PSD_API_KEY || "";
-export const USDA_MARS_BASE_URL = process.env.USDA_MARS_BASE_URL || "https://usda.library.cornell.edu/api/v3.1";
+export const USDA_MARS_BASE_URL = process.env.USDA_MARS_BASE_URL || "https://marsapi.ams.usda.gov/services/v3.1/public";
+export const USDA_MARS_REPORTS_LIMIT = envNum("USDA_MARS_REPORTS_LIMIT", 50);
+export const USDA_MARS_GRAIN_WIDGET_LIMIT = envNum("USDA_MARS_GRAIN_WIDGET_LIMIT", 6);
+export const USDA_MARS_TIMEOUT_MS = envNum("USDA_MARS_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const USDA_MARS_INCLUDE_KEYWORDS = (
+  process.env.USDA_MARS_INCLUDE_KEYWORDS ||
+  "grain,bid,bids,export,market rates,corn,wheat,soy,soybean,oilseed,portland,louisiana,texas"
+)
+  .split(",")
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean);
+export const USDA_MARS_EXCLUDE_KEYWORDS = (
+  process.env.USDA_MARS_EXCLUDE_KEYWORDS ||
+  "livestock,poultry,dairy,eggs,hay"
+)
+  .split(",")
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean);
 
 export const TRADINGCHARTS_CBOT_URL =
   process.env.TRADINGCHARTS_CBOT_URL ||

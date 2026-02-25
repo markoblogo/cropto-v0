@@ -16,6 +16,7 @@ import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
+import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
   GrainWidget,
@@ -46,6 +47,7 @@ type ProviderRuntime = {
   widgetsReturned?: GrainWidgetKind[];
   fallbackUsed?: boolean;
   cacheHit?: boolean;
+  notes?: string[];
 };
 
 const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
@@ -55,6 +57,7 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   CROP_PRICE_INDEX: 3,
   LIVESTOCK_FEED_TIEIN: 2,
   MACRO_AGRI_INDICES: 2,
+  USDA_MARS_REPORTS: 6,
 };
 
 const WIDGET_ORDER: GrainWidgetKind[] = [
@@ -64,6 +67,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "CBOT_FUTURES_SNAPSHOT",
   "LIVESTOCK_FEED_TIEIN",
   "MACRO_AGRI_INDICES",
+  "USDA_MARS_REPORTS",
 ];
 
 function statusRank(status: GrainWidget["status"]): number {
@@ -112,6 +116,9 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "MACRO_AGRI_INDICES") {
     return { rows: 0, items: widget.items?.length || 0, cards: widget.cards?.length || 0 };
   }
+  if (widget.kind === "USDA_MARS_REPORTS") {
+    return { rows: 0, items: widget.reports.length, cards: 0 };
+  }
   return { rows: 0, items: 0, cards: 0 };
 }
 
@@ -127,6 +134,9 @@ function mappedCountForWidget(widget: GrainWidget): number {
       if (item.metricSemanticKind === "price") return item.price?.nativeValueCurrent != null || item.price?.normalizedValueCurrent != null;
       return item.valueCurrent != null;
     }).length;
+  }
+  if (widget.kind === "USDA_MARS_REPORTS") {
+    return widget.reports.length;
   }
   return 0;
 }
@@ -167,6 +177,7 @@ export class GrainWidgetsService {
     CBOT_FUTURES_CURVE: [],
     LIVESTOCK_FEED_TIEIN: [new CommoditicLivestockProvider()],
     MACRO_AGRI_INDICES: [new TradingEconomicsAgriProvider()],
+    USDA_MARS_REPORTS: [new UsdaMarsReportsProvider()],
   };
 
   private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
@@ -184,6 +195,7 @@ export class GrainWidgetsService {
     CBOT_FUTURES_CURVE: new MockGrainWidgetsProvider({ kind: "CBOT_FUTURES_SNAPSHOT" }),
     LIVESTOCK_FEED_TIEIN: new MockGrainWidgetsProvider({ kind: "LIVESTOCK_FEED_TIEIN" }),
     MACRO_AGRI_INDICES: new MockGrainWidgetsProvider({ kind: "MACRO_AGRI_INDICES" }),
+    USDA_MARS_REPORTS: new MockGrainWidgetsProvider({ kind: "USDA_MARS_REPORTS" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -297,6 +309,7 @@ export class GrainWidgetsService {
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
           fallbackChain: "real->cache->mock",
           fallbackUsed: state?.fallbackUsed,
+          notes: state?.notes,
           error: state?.error,
         } satisfies GrainWidgetsProviderDebug;
       }),
@@ -369,6 +382,7 @@ export class GrainWidgetsService {
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
           fallbackChain: "real->cache->mock",
           fallbackUsed: state?.fallbackUsed,
+          notes: state?.notes,
           error: state?.error,
         };
       }),
@@ -452,6 +466,7 @@ export class GrainWidgetsService {
           mappedCount,
           widgetsReturned: [kind],
           fallbackUsed: ["DELAYED", "FALLBACK", "OFFLINE"].includes(data.status),
+          notes: data.notes?.slice(0, 3),
         });
 
         return;
