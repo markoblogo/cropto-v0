@@ -338,7 +338,7 @@ export function MarketDashboard() {
               <InvestorDeckCallout />
             </div>
 
-            <div className="lg:col-start-3 lg:row-start-1 lg:self-start">
+            <div className="flex flex-col gap-2 lg:col-start-3 lg:row-start-1 lg:self-start">
               <Button
                 variant="outline"
                 className="w-full justify-center lg:w-auto"
@@ -346,6 +346,13 @@ export function MarketDashboard() {
               >
                 <TrendingUp className="mr-2 h-4 w-4" />
                 {t('home.market.compareMarkets')}
+              </Button>
+              <Button
+                variant="default"
+                className="w-full justify-center lg:w-auto"
+                onClick={() => setLocation("/monitor")}
+              >
+                Open Monitor
               </Button>
             </div>
 

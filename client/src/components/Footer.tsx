@@ -168,6 +168,12 @@ export function Footer() {
                 </Link>
               ))}
             </div>
+            <Link
+              href="/monitor"
+              className="mt-2 inline-flex w-full items-center justify-center rounded-md border border-primary/60 bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              Open Monitor
+            </Link>
           </div>
         </div>
 

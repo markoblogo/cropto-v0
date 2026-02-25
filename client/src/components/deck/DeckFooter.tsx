@@ -24,6 +24,10 @@ export function DeckFooter() {
                 View deck section
               </a>
               <span className="text-foreground/55" aria-hidden="true">,</span>
+              <a className="transition-colors hover:text-foreground" href="/monitor">
+                Open monitor
+              </a>
+              <span className="text-foreground/55" aria-hidden="true">,</span>
               <a className="transition-colors hover:text-foreground" href="#contact">
                 Contact section
               </a>

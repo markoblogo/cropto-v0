@@ -49,6 +49,11 @@ export function DeckHeader({ navItems }: DeckHeaderProps) {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Button variant="default" size="sm" asChild>
+            <a href="/monitor">
+              Open Monitor
+            </a>
+          </Button>
           <Button variant="outline" size="sm" asChild>
             <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
               Back to Cropto
