@@ -25,6 +25,7 @@ import { MiniTrendMarker } from "@/components/monitor/MiniTrendMarker";
 import { MetricChip } from "@/components/monitor/MetricChip";
 import { StatusSourceStrip } from "@/components/monitor/StatusSourceStrip";
 import { IntensityBar } from "@/components/monitor/IntensityBar";
+import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
 import {
   formatChangeWithUnit,
   formatFxRate,
@@ -771,18 +772,29 @@ function DynamicMiniTrend({
   series,
   change,
   changePct,
+  status,
+  preferMarkerForFallback = true,
 }: {
   series?: Array<{ ts?: string; label?: string; value: number }>;
   change?: number;
   changePct?: number;
+  status?: string;
+  preferMarkerForFallback?: boolean;
 }) {
-  if (series && series.length >= 2) {
-    return <MiniSparklineSvg points={series.map((p) => ({ value: p.value }))} />;
+  const decision = getMiniTrendRenderMode({
+    series,
+    change,
+    changePct,
+    status,
+    preferMarkerForFallback,
+  });
+  if (decision.mode === "sparkline") {
+    return <MiniSparklineSvg points={(series || []).map((p) => ({ value: p.value }))} className="text-foreground/82" />;
   }
-  if (typeof change === "number" || typeof changePct === "number") {
-    return <MiniTrendMarker change={change} changePct={changePct} />;
+  if (decision.mode === "trend_marker") {
+    return <MiniTrendMarker change={change} changePct={changePct} className="opacity-80" />;
   }
-  return <MiniTrendMarker />;
+  return <MiniTrendMarker className="opacity-45" />;
 }
 
 function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMode) {
@@ -836,7 +848,7 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
   );
   return (
     <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-      <CardContent className="space-y-1.5 pt-2.5">
+      <CardContent className="space-y-1 pt-2 pb-2">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[10px] uppercase tracking-[0.14em] text-foreground/65">{widget.venue}</p>
@@ -864,11 +876,12 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
         />
         {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
-        <div className="h-12">
+        <div className="h-10">
           <DynamicMiniTrend
             series={widget.series}
             change={display.change}
             changePct={display.changePct}
+            status={widget.status}
           />
         </div>
 
@@ -894,7 +907,7 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
       : undefined;
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-      <CardContent className="space-y-2 pt-3">
+      <CardContent className="space-y-1.5 pt-2.5 pb-2">
         <div className="flex items-start justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">{widget.title}</p>
           <div className="flex items-center gap-1">
@@ -1035,6 +1048,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
             series={indicator.series}
             change={indicator.valueChange}
             changePct={indicator.valueChangePct}
+            status={indicator.status}
           />
         </div>
 
@@ -1125,13 +1139,13 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
 
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-sm">{widget.title}</CardTitle>
           <Badge className={`text-[10px] uppercase tracking-wide ${statusClass}`}>{widget.status}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-1.5 pt-0">
         <div className="flex items-end justify-between gap-2">
           <p className="text-xl font-bold text-foreground">{widget.primary}</p>
           <div className="flex items-center gap-1">
@@ -1152,8 +1166,8 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
           }
           direction={widget.status === "Cooling" ? "down" : widget.status === "Stable" ? "flat" : "up"}
         />
-        <div className="h-10">
-          <DynamicMiniTrend series={widget.series} />
+        <div className="h-8">
+          <DynamicMiniTrend series={widget.series} status={widget.status} />
         </div>
         <p className="text-[10px] text-foreground/68">{widget.note}</p>
         <StatusSourceStrip
@@ -1180,7 +1194,7 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
   );
 
   return (
-    <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-2 h-full">
+    <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5 h-full">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-semibold text-foreground">{row.label}</p>
@@ -1191,7 +1205,7 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
           <Badge className={`text-[10px] ${grainStatusClass(row.status || "OFFLINE")}`}>{row.status || "OFFLINE"}</Badge>
         </div>
       </div>
-      <div className="mt-1 flex items-end justify-between gap-2">
+      <div className="mt-0.5 flex items-end justify-between gap-2">
         <p className="text-sm font-semibold text-foreground">
           {formatNumber(display.value)}
           <span className="ml-1 text-[10px] text-foreground/65">{unitLabel}</span>
@@ -1202,19 +1216,20 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
       </div>
       <IntensityBar
         compact
-        className="mt-1"
+        className="mt-0.5"
         value={trendIntensity(display.change, display.changePct)}
         direction={trendDirection(display.change, display.changePct)}
       />
-      <div className="mt-1 h-8">
+      <div className="mt-0.5 h-7">
         <DynamicMiniTrend
           series={row.price?.series || []}
           change={display.change}
           changePct={display.changePct}
+          status={row.status}
         />
       </div>
-      {display.secondary ? <p className="mt-1 text-[10px] text-foreground/68">{display.secondary}</p> : null}
-      <div className="mt-1">
+      {display.secondary ? <p className="mt-0.5 text-[10px] text-foreground/68">{display.secondary}</p> : null}
+      <div className="mt-0.5">
         <StatusSourceStrip
           compact
           status={row.status || "OFFLINE"}
@@ -1609,7 +1624,7 @@ export default function MonitorPage() {
     <div className="min-h-screen bg-background text-foreground">
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
       <main>
-      <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-6">
+      <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-5">
         <div className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
@@ -1678,13 +1693,13 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-2.5 xl:grid-cols-12">
-                <div className="xl:col-span-8 grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-12">
+                <div className="xl:col-span-8 grid auto-rows-fr gap-2.5 md:grid-cols-2 xl:grid-cols-3">
                   {[...(grainMarketsQuery.data?.widgets.cbot || []), ...(grainMarketsQuery.data?.widgets.euronext || [])].map((widget) => (
                     <GrainInstrumentCard key={widget.instrumentKey} widget={widget} priceDisplayMode={priceDisplayMode} />
                   ))}
                 </div>
-                <div className="xl:col-span-4 grid gap-2.5">
+                <div className="xl:col-span-4 grid auto-rows-fr gap-2.5">
                   {(grainMarketsQuery.data?.widgets.comparisons || []).map((widget) => (
                     <GrainComparisonCard key={widget.id} widget={widget} />
                   ))}
@@ -1723,7 +1738,7 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-2.5 xl:grid-cols-12">
+              <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-12">
                 {(() => {
                   const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
                   const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
@@ -1746,7 +1761,7 @@ export default function MonitorPage() {
                     <>
                       {cashWidget ? (
                         <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                          <CardHeader className="pb-2">
+                          <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{cashWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(cashWidget.status)}`}>{cashWidget.status}</Badge>
@@ -1784,7 +1799,7 @@ export default function MonitorPage() {
 
                       {spotWidget ? (
                         <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                          <CardHeader className="pb-2">
+                          <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{spotWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(spotWidget.status)}`}>{spotWidget.status}</Badge>
@@ -1822,7 +1837,7 @@ export default function MonitorPage() {
 
                       {indexWidget ? (
                         <Card className="xl:col-span-4 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                          <CardHeader className="pb-2">
+                          <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{indexWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(indexWidget.status)}`}>{indexWidget.status}</Badge>
@@ -1841,6 +1856,7 @@ export default function MonitorPage() {
                                     series={card.series || []}
                                     change={card.delta}
                                     changePct={card.deltaPct}
+                                    status={card.status || indexWidget.status}
                                   />
                                 </div>
                               </div>
@@ -1888,7 +1904,7 @@ export default function MonitorPage() {
 
                       {futuresWidget ? (
                         <Card className="xl:col-span-8 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                          <CardHeader className="pb-2">
+                          <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{futuresWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(futuresWidget.status)}`}>{futuresWidget.status}</Badge>
@@ -1926,7 +1942,7 @@ export default function MonitorPage() {
 
                       {livestockWidget ? (
                         <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                          <CardHeader className="pb-2">
+                          <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{livestockWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(livestockWidget.status)}`}>{livestockWidget.status}</Badge>
@@ -1986,7 +2002,7 @@ export default function MonitorPage() {
 
                       {macroWidget ? (
                         <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-                          <CardHeader className="pb-2">
+                          <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{macroWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(macroWidget.status)}`}>{macroWidget.status}</Badge>
@@ -2070,6 +2086,7 @@ export default function MonitorPage() {
                                                 series={item.series || []}
                                                 change={display.change}
                                                 changePct={display.changePct}
+                                                status={item.status || macroWidget.status}
                                               />
                                             </div>
                                             {display.secondary ? <p className="text-[10px] text-foreground/68">{display.secondary}</p> : null}
@@ -2098,6 +2115,7 @@ export default function MonitorPage() {
                                             series={item.series || []}
                                             change={item.valueChange}
                                             changePct={item.valueChangePct}
+                                            status={item.status || macroWidget.status}
                                           />
                                         </div>
                                       </>
@@ -2128,6 +2146,7 @@ export default function MonitorPage() {
                                       <DynamicMiniTrend
                                         series={card.series || []}
                                         changePct={card.deltaPct}
+                                        status={card.status || macroWidget.status}
                                       />
                                     </div>
                                   </div>
@@ -2162,14 +2181,14 @@ export default function MonitorPage() {
 
           <div id="top-signals" className="scroll-mt-24 grid gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-br from-red-100/70 via-card to-muted/35 dark:from-red-900/25 dark:via-card dark:to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-red-400/55 hover:shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="h-4 w-4 text-red-400" />
                   <CardTitle className="text-base">Black Sea Watch</CardTitle>
                 </div>
                 <CardDescription className="text-foreground/70 dark:text-slate-400">Live corridor risk context for logistics, policy and weather</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-1.5">
                 <div className="grid grid-cols-3 gap-1.5 rounded-md border border-black/70 dark:border-white/30 bg-muted/60 dark:bg-slate-950/55 p-1.5 text-[10px]">
                   <div>
                     <p className="text-foreground/65 dark:text-slate-400">Activity</p>
@@ -2211,14 +2230,14 @@ export default function MonitorPage() {
 
           <div className="grid gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-400" />
                   <CardTitle className="text-base">Top Signals (Priority)</CardTitle>
                 </div>
                 <CardDescription className="text-foreground/70 dark:text-slate-400">Top three decision-relevant signals</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-2">
+              <CardContent className="grid gap-1.5">
                 {prioritySignals.map((item, index) => (
                   <SignalCard key={item.id} item={item} rank={index} />
                 ))}
@@ -2226,11 +2245,11 @@ export default function MonitorPage() {
             </Card>
 
             <Card className="xl:col-span-3 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1">
                 <CardTitle className="text-base">Market Narrative (24h)</CardTitle>
                 <CardDescription className="text-foreground/70 dark:text-slate-400">Rule-based summary from active signals</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 <Badge className={`${marketNarrative.status === "Elevated" ? "border-red-500/45 bg-red-500/15 text-red-900 dark:text-red-100" : marketNarrative.status === "Rising" ? "border-amber-500/45 bg-amber-500/15 text-amber-900 dark:text-amber-100" : "border-blue-500/45 bg-blue-500/15 text-blue-900 dark:text-blue-100"} text-[10px] uppercase tracking-wide`}>
                   {marketNarrative.status}
                 </Badge>
@@ -2238,11 +2257,11 @@ export default function MonitorPage() {
               </CardContent>
             </Card>
 
-            <div className="xl:col-span-3 grid gap-2.5">
+            <div className="xl:col-span-3 grid auto-rows-fr gap-2">
               {logisticsIndicatorsQuery.data?.enabled ? (
                 (logisticsIndicatorsQuery.data?.widgets || []).slice(0, 2).map((indicator) => (
                   <Card key={`mini-${indicator.id}`} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
-                    <CardContent className="space-y-1.5 pt-3">
+                    <CardContent className="space-y-1 pt-2.5 pb-2">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-semibold text-foreground dark:text-slate-200">{indicator.title}</p>
                         <div className="flex items-center gap-1">
@@ -2269,6 +2288,7 @@ export default function MonitorPage() {
                           series={indicator.series}
                           change={indicator.valueChange}
                           changePct={indicator.valueChangePct}
+                          status={indicator.status}
                         />
                       </div>
                       <StatusSourceStrip
@@ -2293,13 +2313,13 @@ export default function MonitorPage() {
 
           <div className="grid gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1">
                 <CardTitle className="text-base">Market Pulse (Secondary)</CardTitle>
                 <CardDescription className="text-foreground/70 dark:text-slate-400">24h directional intensity by crop</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <CardContent className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                 {pulseByCrop.map((entry) => (
-                  <div key={entry.crop} className="rounded-lg border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/80 p-2">
+                  <div key={entry.crop} className="rounded-lg border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/80 p-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/80 dark:text-slate-300">{asLabel(entry.crop)}</p>
@@ -2330,18 +2350,18 @@ export default function MonitorPage() {
             </Card>
 
             <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">Cropto UA Indices (Secondary)</CardTitle>
                   <Badge className="border-primary/40 bg-primary/15 text-foreground dark:text-primary-foreground">Internal</Badge>
                 </div>
               </CardHeader>
-              <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <CardContent className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                 {!indicesQuery.data?.enabled ? (
                   <p className="text-sm text-foreground/72 dark:text-slate-400">Coming soon</p>
                 ) : indicesQuery.data?.items?.length ? (
                   indicesQuery.data.items.slice(0, 6).map((item) => (
-                    <div key={item.slug} className="rounded-lg border border-black/70 dark:border-primary/25 bg-muted/55 dark:bg-slate-900/82 p-2">
+                    <div key={item.slug} className="rounded-lg border border-black/70 dark:border-primary/25 bg-muted/55 dark:bg-slate-900/82 p-1.5">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-[11px] font-semibold text-foreground dark:text-slate-100 line-clamp-1">{item.name}</p>
                         <MetricChip label="PRICE" variant="type" tone="muted" />
@@ -2376,14 +2396,14 @@ export default function MonitorPage() {
             </Card>
 
             <Card className="xl:col-span-2 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1">
                 <CardTitle className="text-sm">Macro / FX</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-1.5">
                 {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-1.5">
+                  <div className="grid grid-cols-1 gap-1">
                     {fxQuery.data.rates.slice(0, 4).map((rate) => (
-                      <div key={rate.currency} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5">
+                      <div key={rate.currency} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1">
                         <div className="flex items-center justify-between gap-1">
                           <p className="text-[10px] text-foreground/65 dark:text-slate-400">{rate.currency}/USD</p>
                           <MetricChip label="FX" variant="type" tone="muted" />
