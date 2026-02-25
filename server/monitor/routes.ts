@@ -9,11 +9,13 @@ import {
 } from "./config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
+import { GrainMarketsService } from "./grainMarkets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 
 const indexProvider = new CroptoUkraineIndexProvider();
 const logisticsIndicatorsService = new LogisticsIndicatorsService();
+const grainMarketsService = new GrainMarketsService();
 
 function topEntries(record: Record<string, number>, limit = 5) {
   return Object.entries(record)
@@ -24,6 +26,7 @@ function topEntries(record: Record<string, number>, limit = 5) {
 
 export function registerMonitorRoutes(app: Express): void {
   logisticsIndicatorsService.start();
+  grainMarketsService.start();
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
@@ -169,6 +172,34 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/monitor/grain-markets", async (_req, res) => {
+    if (!MONITOR_FEATURE_FLAGS.ENABLE_GRAIN_MARKETS_CORE) {
+      return res.json({
+        enabled: false,
+        widgets: [],
+        comparisons: [],
+        meta: { generatedAt: new Date().toISOString() },
+        message: "Grain markets core disabled",
+      });
+    }
+
+    try {
+      const payload = await grainMarketsService.list();
+      return res.json({
+        enabled: true,
+        ...payload,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        enabled: true,
+        widgets: [],
+        comparisons: [],
+        meta: { generatedAt: new Date().toISOString(), partialFailure: true },
+        message: error?.message || "Failed to load grain markets core",
+      });
+    }
+  });
+
   app.get("/api/monitor/debug", async (_req, res) => {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_DEBUG_DASHBOARD) {
       return res.status(404).json({ message: "Debug dashboard disabled" });
@@ -188,6 +219,7 @@ export function registerMonitorRoutes(app: Express): void {
       sourceErrors: stats.sourceErrors,
       liveVisuals: liveVisuals.summary,
       logisticsIndicators: logisticsIndicatorsService.debugSummary(),
+      grainMarkets: grainMarketsService.debugSummary(),
     });
   });
 }

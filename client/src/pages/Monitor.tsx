@@ -97,6 +97,20 @@ type DebugResponse = {
       lastError?: string;
     }>;
   };
+  grainMarkets?: {
+    enabled: boolean;
+    refreshMs: number;
+    cacheTtlMs: number;
+    providers: Array<{
+      id: string;
+      enabled: boolean;
+      status: string;
+      cacheAgeSec?: number;
+      lastSuccessAt?: string;
+      fallbackMode: boolean;
+      lastError?: string;
+    }>;
+  };
 };
 
 type LogisticsIndicator = {
@@ -132,6 +146,54 @@ type LogisticsIndicator = {
 type LogisticsIndicatorsResponse = {
   enabled: boolean;
   widgets: LogisticsIndicator[];
+  meta: {
+    generatedAt: string;
+    cacheAgeSec?: number;
+    partialFailure?: boolean;
+  };
+  message?: string;
+};
+
+type GrainWidgetStatus = "LIVE" | "DELAYED" | "INDICATIVE" | "FALLBACK" | "OFFLINE";
+
+type GrainInstrumentWidget = {
+  id: string;
+  venue: "CBOT/CME" | "Euronext";
+  instrument: string;
+  title: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution: string;
+  sourceUrl: string;
+  updatedAt?: string;
+  lastPrice?: number;
+  changeAbs?: number;
+  changePct?: number;
+  timeframe: "1d" | "7d" | "indicative";
+  unit: string;
+  series: Array<{ ts: string; value: number }>;
+  fallbackReason?: string;
+};
+
+type GrainComparisonWidget = {
+  id: string;
+  title: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution: string;
+  leftLabel: string;
+  rightLabel: string;
+  leftValue?: number;
+  rightValue?: number;
+  spread?: number;
+  spreadPct?: number;
+  note: string;
+};
+
+type GrainMarketsResponse = {
+  enabled: boolean;
+  widgets: GrainInstrumentWidget[];
+  comparisons: GrainComparisonWidget[];
   meta: {
     generatedAt: string;
     cacheAgeSec?: number;
@@ -267,6 +329,92 @@ function indicatorStatusClass(status: LogisticsIndicator["status"]) {
 
 function indicatorStatusLabel(status: LogisticsIndicator["status"]) {
   return status;
+}
+
+function grainStatusClass(status: GrainWidgetStatus) {
+  if (status === "LIVE") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
+  if (status === "DELAYED") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
+  if (status === "INDICATIVE") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
+  if (status === "FALLBACK") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
+  return "border-red-400/45 bg-red-500/20 text-red-100";
+}
+
+function GrainInstrumentCard({ widget }: { widget: GrainInstrumentWidget }) {
+  const positive = (widget.changeAbs ?? 0) >= 0;
+  return (
+    <Card className="border-white/12 bg-slate-950/76 text-slate-100">
+      <CardContent className="space-y-2 pt-3">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{widget.venue}</p>
+            <p className="text-sm font-semibold text-white">{widget.title}</p>
+          </div>
+          <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
+        </div>
+
+        <div className="flex items-end justify-between gap-2">
+          <p className="text-2xl font-bold text-white">
+            {widget.lastPrice == null ? "n/a" : widget.lastPrice.toFixed(2)}
+            <span className="ml-1 text-[10px] font-medium text-slate-400">{widget.unit}</span>
+          </p>
+          <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
+            {widget.changeAbs == null ? "No delta" : `${positive ? "+" : ""}${widget.changeAbs.toFixed(2)}${widget.changePct != null ? ` (${positive ? "+" : ""}${widget.changePct.toFixed(2)}%)` : ""}`}
+          </p>
+        </div>
+
+        <div className="h-12">
+          {widget.series.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={widget.series}>
+                <XAxis dataKey="ts" hide />
+                <YAxis hide />
+                <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/70 text-[10px] text-slate-400">
+              Unavailable
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
+          <a href={widget.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-slate-200">
+            {widget.sourceName}
+          </a>
+          <span>{widget.updatedAt ? formatRelative(widget.updatedAt) : widget.timeframe}</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
+  const positive = (widget.spread ?? 0) >= 0;
+  return (
+    <Card className="border-white/10 bg-slate-950/68 text-slate-100">
+      <CardContent className="space-y-2 pt-3">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-xs font-semibold text-slate-200">{widget.title}</p>
+          <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+          <div className="rounded-md border border-white/10 bg-slate-900/70 p-2">
+            <p className="text-[10px] text-slate-400">{widget.leftLabel}</p>
+            <p className="mt-0.5 font-semibold text-white">{widget.leftValue == null ? "n/a" : widget.leftValue.toFixed(2)}</p>
+          </div>
+          <div className="rounded-md border border-white/10 bg-slate-900/70 p-2">
+            <p className="text-[10px] text-slate-400">{widget.rightLabel}</p>
+            <p className="mt-0.5 font-semibold text-white">{widget.rightValue == null ? "n/a" : widget.rightValue.toFixed(2)}</p>
+          </div>
+        </div>
+        <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
+          Spread: {widget.spread == null ? "n/a" : `${positive ? "+" : ""}${widget.spread.toFixed(2)}`} {widget.spreadPct != null ? `(${positive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
+        </p>
+        <p className="text-[10px] text-slate-500 line-clamp-2">{widget.note}</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
@@ -492,6 +640,16 @@ export default function MonitorPage() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/logistics-indicators");
       if (!response.ok) throw new Error("Failed to load logistics indicators");
+      return response.json();
+    },
+    refetchInterval: 5 * 60 * 1000,
+  });
+
+  const grainMarketsQuery = useQuery<GrainMarketsResponse>({
+    queryKey: ["monitor-grain-markets-core"],
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/grain-markets");
+      if (!response.ok) throw new Error("Failed to load grain markets core");
       return response.json();
     },
     refetchInterval: 5 * 60 * 1000,
@@ -748,6 +906,35 @@ export default function MonitorPage() {
           </div>
 
           <LiveVisualsPanel debugEnabled={debugEnabled} compact />
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Grain Markets Core</h2>
+              <span className="text-[11px] text-slate-500">
+                {grainMarketsQuery.data?.enabled ? "CBOT/CME + Euronext (demo-grade)" : "Disabled"}
+              </span>
+            </div>
+            {!grainMarketsQuery.data?.enabled ? (
+              <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+                <CardContent className="pt-6 text-sm text-slate-400">
+                  Grain markets core is disabled by feature flag.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-3 xl:grid-cols-12">
+                <div className="xl:col-span-8 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {(grainMarketsQuery.data?.widgets || []).map((widget) => (
+                    <GrainInstrumentCard key={widget.id} widget={widget} />
+                  ))}
+                </div>
+                <div className="xl:col-span-4 grid gap-3">
+                  {(grainMarketsQuery.data?.comparisons || []).map((widget) => (
+                    <GrainComparisonCard key={widget.id} widget={widget} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="grid gap-3 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-red-400/35 bg-[linear-gradient(160deg,rgba(127,29,29,0.24),rgba(10,14,26,0.92)_36%)] text-slate-100 shadow-[0_0_0_1px_rgba(248,113,113,0.14)]">
@@ -1213,6 +1400,22 @@ export default function MonitorPage() {
                     <ul className="list-disc pl-5">
                       {debugQuery.data.logisticsIndicators.providers.map((provider) => (
                         <li key={`li-${provider.id}`}>
+                          {provider.id}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackMode)}
+                          {provider.lastError ? ` • err: ${provider.lastError}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {debugQuery.data?.grainMarkets ? (
+                  <div>
+                    <p className="font-medium">Grain markets core:</p>
+                    <p>
+                      enabled: {String(debugQuery.data.grainMarkets.enabled)} • refresh: {Math.round(debugQuery.data.grainMarkets.refreshMs / 1000)}s • cacheTTL: {Math.round(debugQuery.data.grainMarkets.cacheTtlMs / 1000)}s
+                    </p>
+                    <ul className="list-disc pl-5">
+                      {debugQuery.data.grainMarkets.providers.map((provider) => (
+                        <li key={`gm-${provider.id}`}>
                           {provider.id}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackMode)}
                           {provider.lastError ? ` • err: ${provider.lastError}` : ""}
                         </li>
