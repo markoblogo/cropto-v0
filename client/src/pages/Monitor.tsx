@@ -191,23 +191,31 @@ function ImpactBadge({ impact }: { impact: Impact }) {
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${styles}`}>{impact}</span>;
 }
 
-function SignalCard({ item }: { item: MonitorItem }) {
+function SignalCard({ item, rank }: { item: MonitorItem; rank?: number }) {
   const signalType = classifySignalType(item);
   const impact = classifyImpact(item);
+  const isPriority = typeof rank === "number" && rank < 3;
 
   return (
     <a
       href={item.url}
       target="_blank"
       rel="noreferrer"
-      className="group block rounded-xl border border-white/12 bg-slate-900/75 p-3 transition-all hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-[0_8px_24px_rgba(154,163,58,0.2)]"
+      className={`group block rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(154,163,58,0.2)] ${
+        isPriority
+          ? "border-primary/45 bg-[linear-gradient(160deg,rgba(154,163,58,0.16),rgba(10,14,26,0.86)_36%,rgba(10,14,26,0.92))] shadow-[0_0_0_1px_rgba(154,163,58,0.2)] hover:border-primary/70"
+          : "border-white/12 bg-slate-900/75 hover:border-primary/55"
+      }`}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
-        <Badge className="border-primary/45 bg-primary/15 text-[10px] uppercase tracking-wide text-primary-foreground">
+        <Badge className={`text-[10px] uppercase tracking-wide ${isPriority ? "border-primary/55 bg-primary/20 text-primary-foreground" : "border-primary/45 bg-primary/15 text-primary-foreground"}`}>
           {signalType}
         </Badge>
         <ImpactBadge impact={impact} />
       </div>
+      {isPriority ? (
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary/90">Priority Signal #{rank! + 1}</p>
+      ) : null}
       <p className="text-sm font-semibold leading-6 text-slate-100">{item.title}</p>
       <p className="mt-1 text-xs leading-5 text-slate-300/90 line-clamp-2">{whyItMatters(item, signalType)}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -237,6 +245,7 @@ export default function MonitorPage() {
   const [search, setSearch] = useState("");
   const [threshold, setThreshold] = useState(3);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
+  const [chartWindow, setChartWindow] = useState<"24h" | "7d">("24h");
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -293,6 +302,10 @@ export default function MonitorPage() {
 
   const feed = monitorQuery.data?.feed || [];
   const topSignals = monitorQuery.data?.topSignals || [];
+  const chartFeed = useMemo(() => {
+    if (chartWindow === "24h") return feed.filter((item) => inLastHours(item, 24));
+    return feed.filter((item) => inLastHours(item, 24 * 7));
+  }, [chartWindow, feed]);
 
   const pulseByCrop = useMemo(() => {
     return HERO_CROPS.map((cropName) => {
@@ -331,23 +344,23 @@ export default function MonitorPage() {
   const cropVolumeData = useMemo(() => {
     return HERO_CROPS.map((cropName) => ({
       name: asLabel(cropName),
-      count: feed.filter((item) => item.crop_tags.includes(cropName)).length,
+      count: chartFeed.filter((item) => item.crop_tags.includes(cropName)).length,
     }));
-  }, [feed]);
+  }, [chartFeed]);
 
   const topicVolumeData = useMemo(() => {
     return TOPICS.filter((v) => v !== "all").map((topicName) => ({
       name: asLabel(topicName),
-      count: feed.filter((item) => item.topic_tags.includes(topicName)).length,
+      count: chartFeed.filter((item) => item.topic_tags.includes(topicName)).length,
     }));
-  }, [feed]);
+  }, [chartFeed]);
 
   const regionVolumeData = useMemo(() => {
     return REGIONS.filter((v) => v !== "all").map((regionName) => ({
       name: asLabel(regionName),
-      count: feed.filter((item) => inRegion(item, regionName)).length,
+      count: chartFeed.filter((item) => inRegion(item, regionName)).length,
     }));
-  }, [feed]);
+  }, [chartFeed]);
 
   const mentionsTrendData = useMemo(() => {
     const buckets: Array<{ day: string; count: number }> = [];
@@ -358,14 +371,14 @@ export default function MonitorPage() {
       start.setHours(0, 0, 0, 0);
       const end = new Date(dayDate);
       end.setHours(23, 59, 59, 999);
-      const count = feed.filter((item) => {
+      const count = chartFeed.filter((item) => {
         const ts = Date.parse(item.published_at);
         return Number.isFinite(ts) && ts >= start.getTime() && ts <= end.getTime();
       }).length;
       buckets.push({ day, count });
     }
     return buckets;
-  }, [feed]);
+  }, [chartFeed]);
 
   const panelItems = useMemo(() => {
     const markets = feed.filter((item) => item.topic_tags.some((tag) => ["markets", "trade", "harvest"].includes(tag)));
@@ -448,18 +461,22 @@ export default function MonitorPage() {
                 </div>
                 <CardDescription className="text-slate-400">Internal index feed</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-2 sm:grid-cols-2">
+              <CardContent className="space-y-2">
+                <div className="rounded-md border border-primary/30 bg-primary/10 px-2.5 py-2 text-[11px] text-primary-foreground/90">
+                  High-signal regional snapshots for Ukraine. Values update independently from media signals.
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
                 {!indicesQuery.data?.enabled ? (
                   <p className="text-sm text-slate-400">Coming soon</p>
                 ) : indicesQuery.data?.items?.length ? (
                   indicesQuery.data.items.slice(0, 6).map((item) => (
-                    <div key={item.slug} className="rounded-lg border border-white/12 bg-slate-900/85 p-2.5">
-                      <p className="text-xs font-semibold text-slate-200 line-clamp-1">{item.name}</p>
+                    <div key={item.slug} className="rounded-lg border border-primary/25 bg-[linear-gradient(180deg,rgba(154,163,58,0.14),rgba(15,23,42,0.85)_28%,rgba(15,23,42,0.93))] p-2.5">
+                      <p className="text-xs font-semibold text-slate-100 line-clamp-1">{item.name}</p>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-xl font-bold text-white">${item.value.toFixed(2)}</p>
-                        <p className={`text-xs font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        <p className="text-2xl font-bold text-white">${item.value.toFixed(2)}</p>
+                        <Badge className={`${item.change != null && item.change >= 0 ? "border-emerald-400/45 bg-emerald-500/15 text-emerald-100" : "border-red-400/45 bg-red-500/15 text-red-100"} text-[10px]`}>
                           {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
-                        </p>
+                        </Badge>
                       </div>
                       <p className="mt-1 text-[10px] text-slate-400">{formatRelative(item.updatedAt)} • {item.source}</p>
                     </div>
@@ -467,11 +484,12 @@ export default function MonitorPage() {
                 ) : (
                   <p className="text-sm text-slate-400">No index snapshots available yet.</p>
                 )}
+                </div>
               </CardContent>
             </Card>
 
             <div className="xl:col-span-3 grid gap-4">
-              <Card className="border-red-400/30 bg-slate-950/75 text-slate-100">
+              <Card className="border-red-400/35 bg-[linear-gradient(160deg,rgba(127,29,29,0.24),rgba(10,14,26,0.92)_36%)] text-slate-100 shadow-[0_0_0_1px_rgba(248,113,113,0.14)]">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="h-4 w-4 text-red-400" />
@@ -480,12 +498,43 @@ export default function MonitorPage() {
                   <CardDescription className="text-slate-400">Top logistics/policy/weather risks</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5 rounded-md border border-white/10 bg-slate-950/55 p-1.5 text-[10px]">
+                    <div>
+                      <p className="text-slate-400">Activity</p>
+                      <p className="font-semibold text-white">{blackSeaRisks.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">High impact</p>
+                      <p className="font-semibold text-red-300">{blackSeaRisks.filter((item) => classifyImpact(item) === "High").length}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">New 24h</p>
+                      <p className="font-semibold text-amber-300">{blackSeaRisks.filter((item) => inLastHours(item, 24)).length}</p>
+                    </div>
+                  </div>
                   {blackSeaRisks.slice(0, 4).map((item) => (
                     <a key={`bs-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/80 p-2 hover:border-red-400/35">
                       <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
                       <p className="mt-1 text-[10px] text-slate-400">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
                     </a>
                   ))}
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/30 bg-slate-950/70 text-slate-100">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Live Visuals Dock</CardTitle>
+                  <CardDescription className="text-slate-400">Reserved high-visibility slot for live logistics/media tiles</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Port", "Logistics", "Weather", "Market Media"].map((tag) => (
+                      <Badge key={tag} className="border-primary/35 bg-primary/12 text-[10px] text-primary-foreground">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-300/90">Live Visuals panel is anchored below this hero row and ready for data-rich tiles in the next sprint.</p>
                 </CardContent>
               </Card>
 
@@ -516,7 +565,10 @@ export default function MonitorPage() {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Card className="border-white/10 bg-slate-950/70 text-slate-100">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm">Signal Volume by Crop</CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-sm">Signal Volume by Crop</CardTitle>
+                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                </div>
               </CardHeader>
               <CardContent className="h-36">
                 <ResponsiveContainer width="100%" height="100%">
@@ -528,11 +580,15 @@ export default function MonitorPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
+              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: signal mentions tagged by crop.</div>
             </Card>
 
             <Card className="border-white/10 bg-slate-950/70 text-slate-100">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm">Signal Volume by Topic</CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-sm">Signal Volume by Topic</CardTitle>
+                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                </div>
               </CardHeader>
               <CardContent className="h-36">
                 <ResponsiveContainer width="100%" height="100%">
@@ -544,11 +600,15 @@ export default function MonitorPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
+              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: markets/trade/logistics/policy/weather/harvest tags.</div>
             </Card>
 
             <Card className="border-white/10 bg-slate-950/70 text-slate-100">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm">Region Activity</CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-sm">Region Activity</CardTitle>
+                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                </div>
               </CardHeader>
               <CardContent className="h-36">
                 <ResponsiveContainer width="100%" height="100%">
@@ -560,11 +620,15 @@ export default function MonitorPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
+              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: region-tagged signals by corridor.</div>
             </Card>
 
             <Card className="border-white/10 bg-slate-950/70 text-slate-100">
               <CardHeader className="pb-1">
-                <CardTitle className="text-sm">Mentions Trend (7d)</CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-sm">Mentions Trend ({chartWindow})</CardTitle>
+                  <span className="text-[10px] text-slate-400">{chartWindow}</span>
+                </div>
               </CardHeader>
               <CardContent className="h-36">
                 <ResponsiveContainer width="100%" height="100%">
@@ -577,7 +641,17 @@ export default function MonitorPage() {
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
+              <div className="px-4 pb-3 text-[10px] text-slate-400">Legend: total relevant mentions over recent days.</div>
             </Card>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs uppercase tracking-wide text-slate-400">Micro-widget range</p>
+            <Button size="sm" variant={chartWindow === "24h" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-white/20 text-slate-200" onClick={() => setChartWindow("24h")}>
+              24h
+            </Button>
+            <Button size="sm" variant={chartWindow === "7d" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-white/20 text-slate-200" onClick={() => setChartWindow("7d")}>
+              7d
+            </Button>
           </div>
 
           <Card className="border-white/12 bg-slate-950/72 text-slate-100">
@@ -653,8 +727,8 @@ export default function MonitorPage() {
               <h2 className="text-lg font-semibold text-slate-100">Top Signals</h2>
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
-              {topSignals.slice(0, 8).map((item) => (
-                <SignalCard key={item.id} item={item} />
+              {topSignals.slice(0, 8).map((item, index) => (
+                <SignalCard key={item.id} item={item} rank={index} />
               ))}
             </div>
           </div>
@@ -669,14 +743,36 @@ export default function MonitorPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
                       <CardTitle className="text-sm">{panel.title}</CardTitle>
-                      <Badge className="border-white/20 bg-white/5 text-[10px] text-slate-300">{panel.items.length}</Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="border-white/20 bg-white/5 text-[10px] text-slate-300">{panel.items.length} items</Badge>
+                        <Badge className="border-red-400/40 bg-red-500/15 text-[10px] text-red-100">
+                          {panel.items.filter((item) => classifyImpact(item) === "High").length} high
+                        </Badge>
+                        <Badge className="border-amber-400/40 bg-amber-500/15 text-[10px] text-amber-100">
+                          {panel.items.filter((item) => inLastHours(item, 24)).length} new
+                        </Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {visibleItems.map((item) => (
                       <a key={`${panel.id}-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/75 p-2 hover:border-primary/45">
-                        <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
-                        <p className="mt-1 text-[10px] text-slate-400">{item.source_name} • {formatRelative(item.published_at)}</p>
+                        <div className="flex items-start gap-2">
+                          <span className={`mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
+                            classifyImpact(item) === "High" ? "bg-red-400" : classifyImpact(item) === "Medium" ? "bg-amber-300" : "bg-emerald-400"
+                          }`} />
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {item.topic_tags.slice(0, 2).map((tag) => (
+                                <span key={`${item.id}-tag-${tag}`} className="rounded-full border border-primary/35 bg-primary/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-primary-foreground/95">
+                                  {asLabel(tag)}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="mt-1 text-[10px] text-slate-400">{item.source_name} • {formatRelative(item.published_at)}</p>
+                          </div>
+                        </div>
                       </a>
                     ))}
                     {!panel.items.length ? <p className="text-xs text-slate-400">No items in this module for current filters.</p> : null}
