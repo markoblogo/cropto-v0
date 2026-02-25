@@ -8,6 +8,7 @@ import {
   MONITOR_SOURCES,
 } from "./config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
+import { getLiveVisualTiles } from "./liveVisuals";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 
 const indexProvider = new CroptoUkraineIndexProvider();
@@ -134,12 +135,17 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/monitor/live-visuals", (_req, res) => {
+    res.json(getLiveVisualTiles());
+  });
+
   app.get("/api/monitor/debug", async (_req, res) => {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_DEBUG_DASHBOARD) {
       return res.status(404).json({ message: "Debug dashboard disabled" });
     }
 
     const { stats } = await getMonitorNews(false);
+    const liveVisuals = getLiveVisualTiles();
     res.json({
       generatedAt: stats.generatedAt,
       sourcesTotal: stats.sourceCount,
@@ -150,6 +156,7 @@ export function registerMonitorRoutes(app: Express): void {
       topSourcesByRelevantItems: topEntries(stats.sourceAcceptedCounts, 8),
       noisySources: topEntries(stats.sourceNoiseCounts, 8),
       sourceErrors: stats.sourceErrors,
+      liveVisuals: liveVisuals.summary,
     });
   });
 }

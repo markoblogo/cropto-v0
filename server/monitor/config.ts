@@ -14,6 +14,7 @@ export const MONITOR_FEATURE_FLAGS: MonitorFeatureFlags = {
   ENABLE_LOGISTICS_PANEL: flag("ENABLE_LOGISTICS_PANEL", true),
   ENABLE_WEATHER_PLACEHOLDER: flag("ENABLE_WEATHER_PLACEHOLDER", true),
   ENABLE_DEBUG_DASHBOARD: flag("ENABLE_DEBUG_DASHBOARD", true),
+  ENABLE_LIVE_VISUALS: flag("ENABLE_LIVE_VISUALS", true),
 };
 
 export const MONITOR_RELEVANCE_THRESHOLD = Number.parseInt(
@@ -36,6 +37,17 @@ export const MONITOR_FETCH_TIMEOUT_MS = Number.parseInt(
 
 export const MONITOR_CACHE_TTL_MS = Number.parseInt(
   process.env.MONITOR_CACHE_TTL_MS || String(10 * 60 * 1000),
+  10,
+);
+
+export const LIVE_VISUALS_MAX_TILES = Number.parseInt(process.env.LIVE_VISUALS_MAX_TILES || "4", 10);
+export const LIVE_VISUALS_ENABLE_AUTO_REFRESH =
+  process.env.LIVE_VISUALS_ENABLE_AUTO_REFRESH == null
+    ? true
+    : process.env.LIVE_VISUALS_ENABLE_AUTO_REFRESH === "1" ||
+      process.env.LIVE_VISUALS_ENABLE_AUTO_REFRESH.toLowerCase() === "true";
+export const LIVE_VISUALS_DEFAULT_REFRESH_SEC = Number.parseInt(
+  process.env.LIVE_VISUALS_DEFAULT_REFRESH_SEC || "60",
   10,
 );
 

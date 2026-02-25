@@ -24,6 +24,7 @@ export type MonitorFeatureFlags = {
   ENABLE_LOGISTICS_PANEL: boolean;
   ENABLE_WEATHER_PLACEHOLDER: boolean;
   ENABLE_DEBUG_DASHBOARD: boolean;
+  ENABLE_LIVE_VISUALS: boolean;
 };
 
 export type MonitorNewsItem = {
@@ -66,4 +67,50 @@ export type MonitorIndexPoint = {
   change?: number;
   updatedAt: string;
   source: string;
+};
+
+export type LiveVisualProviderType = "embedded" | "image_refresh" | "external_link";
+export type LiveVisualStatus = "LIVE" | "REFRESH" | "EXTERNAL" | "OFFLINE";
+export type LiveVisualCategory = "Port" | "Logistics" | "Weather" | "Market Media" | "Rail";
+
+export type LiveVisualSourceConfig = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  region: string;
+  category: LiveVisualCategory;
+  providerType: LiveVisualProviderType;
+  sourceName: string;
+  url: string;
+  embedUrl?: string;
+  imageUrl?: string;
+  externalUrl?: string;
+  previewImageUrl?: string;
+  refreshIntervalSec?: number;
+  enabled: boolean;
+  priority: number;
+  statusHint?: string;
+  attribution?: string;
+  tags?: string[];
+};
+
+export type LiveVisualTileData = {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: LiveVisualCategory;
+  region: string;
+  providerType: LiveVisualProviderType;
+  renderMode: "embed" | "image" | "external" | "fallback";
+  status: LiveVisualStatus;
+  sourceName: string;
+  previewUrl?: string;
+  externalUrl: string;
+  refreshIntervalSec?: number;
+  checkedAt: string;
+  updatedAt?: string;
+  statusHint?: string;
+  attribution?: string;
+  tags: string[];
+  error?: string;
 };

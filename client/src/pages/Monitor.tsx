@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { LiveVisualsPanel } from "@/components/monitor/LiveVisualsPanel";
 
 type MonitorItem = {
   id: string;
@@ -74,6 +75,14 @@ type DebugResponse = {
   duplicatesRemoved: number;
   topSourcesByRelevantItems: Array<{ sourceId: string; count: number }>;
   noisySources: Array<{ sourceId: string; count: number }>;
+  liveVisuals?: {
+    total: number;
+    enabled: number;
+    active: number;
+    disabled: number;
+    fallback: number;
+    shownSourceIds: string[];
+  };
 };
 
 type SignalType = "Harvest" | "Export" | "Logistics" | "Policy" | "Weather" | "Futures" | "Markets";
@@ -502,6 +511,8 @@ export default function MonitorPage() {
             </div>
           </div>
 
+          <LiveVisualsPanel debugEnabled={debugEnabled} />
+
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Card className="border-white/10 bg-slate-950/70 text-slate-100">
               <CardHeader className="pb-1">
@@ -711,6 +722,14 @@ export default function MonitorPage() {
                     ))}
                   </ul>
                 </div>
+                {debugQuery.data?.liveVisuals ? (
+                  <div>
+                    <p className="font-medium">Live visuals:</p>
+                    <p>
+                      {debugQuery.data.liveVisuals.enabled}/{debugQuery.data.liveVisuals.total} enabled • active {debugQuery.data.liveVisuals.active} • fallback {debugQuery.data.liveVisuals.fallback}
+                    </p>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           ) : null}
