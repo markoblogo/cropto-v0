@@ -42,6 +42,20 @@ async function run() {
   console.log(line(gtr));
   console.log(line(faostat));
   console.log(line(fpma));
+  const discovery = data?.fpmaDiscovery;
+  if (discovery) {
+    console.log(
+      `fpma-discovery: countries=${discovery.countriesCount ?? 0} commodities=${discovery.commoditiesCount ?? 0} priceTypes=${discovery.priceTypesCount ?? 0} cacheHit=${discovery.cacheHit ? "yes" : "no"}`,
+    );
+  }
+  const resolution = Array.isArray(data?.fpmaResolutionTest) ? data.fpmaResolutionTest : [];
+  if (resolution.length) {
+    const short = resolution
+      .filter((entry: any) => entry?.crop === "WHEAT" && ["UA", "US", "BR", "AR"].includes(entry?.country))
+      .map((entry: any) => `${entry.country}:ok=${entry.ok ? "yes" : "no"} ids=${entry.idsCount ?? 0}`)
+      .join(", ");
+    if (short) console.log(`fpma-resolution: ${short}`);
+  }
 }
 
 run().catch((error: any) => {

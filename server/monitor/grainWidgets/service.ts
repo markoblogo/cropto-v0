@@ -75,9 +75,11 @@ type ProviderRuntime = {
   elementCode?: string;
   elementLabel?: string;
   observationsByCrop?: Array<{ crop: string; count: number }>;
-  discoveryCacheHit?: boolean;
   countryQueryUsed?: string;
   selectedPriceType?: "RETAIL" | "WHOLESALE";
+  discoveryFetchedAt?: string;
+  discoveryCacheHit?: boolean;
+  discoveryEndpointsTried?: Array<{ name: string; url: string; ok: boolean; status?: number }>;
   query?: string;
   downloadUrlUsed?: string;
   parseMode?: "strict";
@@ -607,9 +609,11 @@ export class GrainWidgetsService {
           elementCode: state?.elementCode,
           elementLabel: state?.elementLabel,
           observationsByCrop: state?.observationsByCrop,
-          discoveryCacheHit: state?.discoveryCacheHit,
           countryQueryUsed: state?.countryQueryUsed,
           selectedPriceType: state?.selectedPriceType,
+          discoveryFetchedAt: state?.discoveryFetchedAt,
+          discoveryCacheHit: state?.discoveryCacheHit,
+          discoveryEndpointsTried: state?.discoveryEndpointsTried,
           query: state?.query,
           downloadUrlUsed: state?.downloadUrlUsed,
           parseMode: state?.parseMode,
@@ -710,9 +714,11 @@ export class GrainWidgetsService {
           elementCode: state?.elementCode,
           elementLabel: state?.elementLabel,
           observationsByCrop: state?.observationsByCrop,
-          discoveryCacheHit: state?.discoveryCacheHit,
           countryQueryUsed: state?.countryQueryUsed,
           selectedPriceType: state?.selectedPriceType,
+          discoveryFetchedAt: state?.discoveryFetchedAt,
+          discoveryCacheHit: state?.discoveryCacheHit,
+          discoveryEndpointsTried: state?.discoveryEndpointsTried,
           query: state?.query,
           downloadUrlUsed: state?.downloadUrlUsed,
           parseMode: state?.parseMode,
@@ -793,9 +799,11 @@ export class GrainWidgetsService {
         elementCode: undefined,
         elementLabel: undefined,
         observationsByCrop: undefined,
-        discoveryCacheHit: undefined,
         countryQueryUsed: undefined,
         selectedPriceType: undefined,
+        discoveryFetchedAt: undefined,
+        discoveryCacheHit: undefined,
+        discoveryEndpointsTried: undefined,
         query: undefined,
         downloadUrlUsed: undefined,
         parseMode: undefined,
@@ -850,9 +858,11 @@ export class GrainWidgetsService {
             elementCode: faostatDebug?.elementCode,
             elementLabel: faostatDebug?.elementLabel,
             observationsByCrop: faostatDebug?.observationsByCrop,
-            discoveryCacheHit: faostatDebug?.discoveryCacheHit,
             countryQueryUsed: fpmaDebug?.countryQueryUsed,
             selectedPriceType: fpmaSummary?.selectedPriceType,
+            discoveryFetchedAt: fpmaDebug?.discoveryFetchedAt,
+            discoveryCacheHit: fpmaDebug?.discoveryCacheHit ?? faostatDebug?.discoveryCacheHit,
+            discoveryEndpointsTried: fpmaDebug?.discoveryEndpointsTried,
             query: fpmaDebug?.query || faostatDebug?.query,
             downloadUrlUsed: txtDebug?.downloadUrlUsed,
             parseMode: txtDebug?.parseMode,
@@ -904,9 +914,11 @@ export class GrainWidgetsService {
           elementCode: faostatDebug?.elementCode,
           elementLabel: faostatDebug?.elementLabel,
           observationsByCrop: faostatDebug?.observationsByCrop,
-          discoveryCacheHit: faostatDebug?.discoveryCacheHit,
           countryQueryUsed: fpmaDebug?.countryQueryUsed,
           selectedPriceType: fpmaSummary?.selectedPriceType,
+          discoveryFetchedAt: fpmaDebug?.discoveryFetchedAt,
+          discoveryCacheHit: fpmaDebug?.discoveryCacheHit ?? faostatDebug?.discoveryCacheHit,
+          discoveryEndpointsTried: fpmaDebug?.discoveryEndpointsTried,
           query: fpmaDebug?.query || faostatDebug?.query,
           downloadUrlUsed: txtDebug?.downloadUrlUsed,
           parseMode: txtDebug?.parseMode,

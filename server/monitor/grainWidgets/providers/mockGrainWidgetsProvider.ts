@@ -754,7 +754,7 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
         US: "United States",
         BR: "Brazil",
         AR: "Argentina",
-        EU: "European Union",
+        EU: "EU (proxy)",
       };
       const territoryLabel = territoryLabelMap[territoryCode] || "Ukraine";
       const points = Math.max(7, ctx.seriesPoints);
@@ -896,7 +896,7 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
         rows: [
           {
             crop: "WHEAT",
-            label: "Wheat (domestic)",
+            label: "Wheat",
             current: 9.42,
             unit: territoryCode === "UA" ? "UAH/kg" : territoryCode === "BR" ? "BRL/60kg" : "USD/t",
             currency: territoryCode === "UA" ? "UAH" : territoryCode === "BR" ? "BRL" : "USD",
@@ -909,7 +909,7 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           },
           {
             crop: "MAIZE",
-            label: "Maize (Corn) (domestic)",
+            label: "Maize (Corn)",
             current: 7.13,
             unit: territoryCode === "UA" ? "UAH/kg" : territoryCode === "AR" ? "ARS/t" : "USD/t",
             currency: territoryCode === "UA" ? "UAH" : territoryCode === "AR" ? "ARS" : "USD",
@@ -922,7 +922,7 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           },
           {
             crop: "SOY",
-            label: "Soybeans (domestic)",
+            label: "Soybeans",
             current: 14.87,
             unit: territoryCode === "UA" ? "UAH/kg" : territoryCode === "BR" ? "BRL/60kg" : "USD/t",
             currency: territoryCode === "UA" ? "UAH" : territoryCode === "BR" ? "BRL" : "USD",

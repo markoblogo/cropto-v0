@@ -584,6 +584,9 @@ export interface GrainWidgetFpmaMarketPricesMultiCountry extends GrainWidgetBase
     countryQueryUsed?: string;
     commodityIdsUsed?: string[];
     rowsParsed?: number;
+    discoveryFetchedAt?: string;
+    discoveryCacheHit?: boolean;
+    discoveryEndpointsTried?: Array<{ name: string; url: string; ok: boolean; status?: number }>;
     query?: string;
     warnings?: string[];
   };
@@ -678,9 +681,11 @@ export interface GrainWidgetsProviderDebug {
   elementCode?: string;
   elementLabel?: string;
   observationsByCrop?: Array<{ crop: string; count: number }>;
-  discoveryCacheHit?: boolean;
   countryQueryUsed?: string;
   selectedPriceType?: "RETAIL" | "WHOLESALE";
+  discoveryFetchedAt?: string;
+  discoveryCacheHit?: boolean;
+  discoveryEndpointsTried?: Array<{ name: string; url: string; ok: boolean; status?: number }>;
   query?: string;
   downloadUrlUsed?: string;
   parseMode?: "strict";

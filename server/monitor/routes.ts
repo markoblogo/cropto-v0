@@ -18,6 +18,7 @@ import {
   ENABLE_FAO_FFPI_PROVIDER,
   ENABLE_NASDAQ_DATALINK_PROVIDER,
   ENABLE_FAOSTAT_PP_WIDGET,
+  ENABLE_FPMA_DISCOVERY,
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
@@ -41,6 +42,7 @@ import { GrainMarketsService } from "./grainMarkets";
 import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
+import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 
 const indexProvider = new CroptoUkraineIndexProvider();
 const logisticsIndicatorsService = new LogisticsIndicatorsService();
@@ -172,6 +174,7 @@ export function registerMonitorRoutes(app: Express): void {
   }
 
   app.get("/api/monitor/config", (_req, res) => {
+    const grainWidgetsDebug = grainWidgetsService.debugSummary();
     res.json({
       flags: MONITOR_FEATURE_FLAGS,
       relevanceThreshold: {
@@ -395,6 +398,23 @@ export function registerMonitorRoutes(app: Express): void {
 
     const { stats } = await getMonitorNews(false);
     const liveVisuals = getLiveVisualTiles();
+    const grainWidgetsDebug = grainWidgetsService.debugSummary();
+    let fpmaDiscovery: ReturnType<typeof getFpmaDiscoveryDebug> | undefined;
+    try {
+      const snapshot = await fetchFpmaDiscoverySnapshot();
+      fpmaDiscovery = getFpmaDiscoveryDebug(snapshot);
+    } catch (error: any) {
+      fpmaDiscovery = {
+        cacheHit: false,
+        stale: false,
+        fetchedAt: undefined,
+        countriesCount: 0,
+        commoditiesCount: 0,
+        priceTypesCount: 0,
+        endpointsTried: [],
+        notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
+      };
+    }
     res.json({
       generatedAt: stats.generatedAt,
       sourcesTotal: stats.sourceCount,
@@ -408,7 +428,11 @@ export function registerMonitorRoutes(app: Express): void {
       liveVisuals: liveVisuals.summary,
       logisticsIndicators: logisticsIndicatorsService.debugSummary(),
       grainMarkets: grainMarketsService.debugSummary(),
-      grainWidgets: grainWidgetsService.debugSummary(),
+      grainWidgets: {
+        ...grainWidgetsDebug,
+        fpmaDiscovery,
+      },
+      fpmaDiscovery,
     });
   });
 
@@ -419,6 +443,24 @@ export function registerMonitorRoutes(app: Express): void {
       const grainWidgetsDebug = grainWidgetsService.debugSummary();
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
+      let fpmaDiscovery: ReturnType<typeof getFpmaDiscoveryDebug> | undefined;
+      let fpmaResolutionTest: Awaited<ReturnType<typeof runFpmaDiscoveryResolutionTest>> = [];
+      try {
+        const fpmaSnapshot = await fetchFpmaDiscoverySnapshot();
+        fpmaDiscovery = getFpmaDiscoveryDebug(fpmaSnapshot);
+        fpmaResolutionTest = await runFpmaDiscoveryResolutionTest();
+      } catch (error: any) {
+        fpmaDiscovery = {
+          cacheHit: false,
+          stale: false,
+          fetchedAt: undefined,
+          countriesCount: 0,
+          commoditiesCount: 0,
+          priceTypesCount: 0,
+          endpointsTried: [],
+          notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
+        };
+      }
 
       const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
@@ -505,7 +547,9 @@ export function registerMonitorRoutes(app: Express): void {
           elementCode: provider?.elementCode,
           elementLabel: provider?.elementLabel,
           observationsByCrop: provider?.observationsByCrop,
+          discoveryFetchedAt: provider?.discoveryFetchedAt,
           discoveryCacheHit: provider?.discoveryCacheHit,
+          discoveryEndpointsTried: provider?.discoveryEndpointsTried,
           countryQueryUsed: provider?.countryQueryUsed,
           selectedPriceType: provider?.selectedPriceType,
           query: provider?.query,
@@ -642,6 +686,7 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_ALPHAVANTAGE_PROVIDER,
             ENABLE_NASDAQ_DATALINK_PROVIDER,
             ENABLE_FAOSTAT_PP_WIDGET,
+            ENABLE_FPMA_DISCOVERY,
             ENABLE_FPMA_MARKET_PRICES_WIDGET,
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
             FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
@@ -658,6 +703,8 @@ export function registerMonitorRoutes(app: Express): void {
           },
         },
         providers: providerReport,
+        fpmaDiscovery,
+        fpmaResolutionTest,
         widgets: widgetSnapshot,
         networkProbe: {
           dbnomics: dbnomicsProbe,

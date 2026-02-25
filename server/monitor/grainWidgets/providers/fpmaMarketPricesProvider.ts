@@ -1,4 +1,5 @@
 import {
+  ENABLE_FPMA_DISCOVERY,
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
   FPMA_API_BASE_URL,
   FPMA_CACHE_TTL_MS,
@@ -17,11 +18,18 @@ import type {
 } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
+import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, resolveFpmaIds } from "./fpmaDiscovery";
 import { fetchTextWithTimeout, parseNumber } from "./utils";
 
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type PriceType = "RETAIL" | "WHOLESALE";
 type CropKey = GrainWidgetFpmaMarketPricesRow["crop"];
+type CropMapEntry = {
+  label: string;
+  synonyms: string[];
+  fpmaCommodityIds: string[];
+  notes?: string;
+};
 
 type NormalizedObs = {
   countryCode: string;
@@ -62,7 +70,7 @@ const territoryOptions = [
   { code: "US", label: "United States" },
   { code: "BR", label: "Brazil" },
   { code: "AR", label: "Argentina" },
-  { code: "EU", label: "European Union" },
+  { code: "EU", label: "EU (proxy)" },
 ] as const;
 
 const iso3to2: Record<string, string> = {
@@ -89,12 +97,32 @@ const countryNameToCode: Array<{ needle: RegExp; code: string }> = [
   { needle: /spain/i, code: "ES" },
 ];
 
-const cropLabels: Record<CropKey, string> = {
-  WHEAT: "Wheat (domestic)",
-  MAIZE: "Maize (Corn) (domestic)",
-  SOY: "Soybeans (domestic)",
-  RAPESEED: "Rapeseed (domestic)",
-  SUNFLOWER: "Sunflower (domestic)",
+const defaultCropMap: Record<CropKey, CropMapEntry> = {
+  WHEAT: {
+    label: "Wheat",
+    synonyms: ["wheat", "triticum", "soft wheat", "durum"],
+    fpmaCommodityIds: [],
+  },
+  MAIZE: {
+    label: "Maize (Corn)",
+    synonyms: ["maize", "corn", "yellow maize", "white maize"],
+    fpmaCommodityIds: [],
+  },
+  SOY: {
+    label: "Soybeans",
+    synonyms: ["soy", "soybean", "soybeans", "soya"],
+    fpmaCommodityIds: [],
+  },
+  RAPESEED: {
+    label: "Rapeseed (Canola)",
+    synonyms: ["rapeseed", "canola", "colza"],
+    fpmaCommodityIds: [],
+  },
+  SUNFLOWER: {
+    label: "Sunflower seed",
+    synonyms: ["sunflower", "sunflower seed", "sunflower seeds"],
+    fpmaCommodityIds: [],
+  },
 };
 
 function territoryFromCode(code?: string): { code: TerritoryCode; label: string } {
@@ -109,24 +137,37 @@ function selectedPriceType(raw?: string): PriceType {
   return normalized === "RETAIL" ? "RETAIL" : "WHOLESALE";
 }
 
-function parseCropMap(): Record<CropKey, string[]> {
+function parseCropMap(): Record<CropKey, CropMapEntry> {
   try {
     const parsed = JSON.parse(FPMA_CROP_MAP || "{}");
-    return {
-      WHEAT: Array.isArray(parsed?.WHEAT) ? parsed.WHEAT.map((v: string) => String(v).toLowerCase()) : ["wheat"],
-      MAIZE: Array.isArray(parsed?.MAIZE) ? parsed.MAIZE.map((v: string) => String(v).toLowerCase()) : ["maize", "corn"],
-      SOY: Array.isArray(parsed?.SOY) ? parsed.SOY.map((v: string) => String(v).toLowerCase()) : ["soy", "soybean"],
-      RAPESEED: Array.isArray(parsed?.RAPESEED) ? parsed.RAPESEED.map((v: string) => String(v).toLowerCase()) : ["rapeseed", "canola"],
-      SUNFLOWER: Array.isArray(parsed?.SUNFLOWER) ? parsed.SUNFLOWER.map((v: string) => String(v).toLowerCase()) : ["sunflower"],
-    };
+    const out = { ...defaultCropMap };
+    for (const crop of ["WHEAT", "MAIZE", "SOY", "RAPESEED", "SUNFLOWER"] as const) {
+      const value = parsed?.[crop];
+      if (!value) continue;
+      if (Array.isArray(value)) {
+        out[crop] = {
+          ...out[crop],
+          synonyms: value.map((v: unknown) => String(v).toLowerCase()).filter(Boolean),
+        };
+        continue;
+      }
+      if (typeof value === "object") {
+        const synonyms = Array.isArray((value as any).synonyms)
+          ? (value as any).synonyms.map((v: unknown) => String(v).toLowerCase()).filter(Boolean)
+          : out[crop].synonyms;
+        out[crop] = {
+          label: String((value as any).label || out[crop].label),
+          synonyms,
+          fpmaCommodityIds: Array.isArray((value as any).fpmaCommodityIds)
+            ? (value as any).fpmaCommodityIds.map((v: unknown) => String(v)).filter(Boolean)
+            : out[crop].fpmaCommodityIds,
+          notes: typeof (value as any).notes === "string" ? (value as any).notes : out[crop].notes,
+        };
+      }
+    }
+    return out;
   } catch {
-    return {
-      WHEAT: ["wheat"],
-      MAIZE: ["maize", "corn"],
-      SOY: ["soy", "soybean"],
-      RAPESEED: ["rapeseed", "canola"],
-      SUNFLOWER: ["sunflower"],
-    };
+    return defaultCropMap;
   }
 }
 
@@ -197,17 +238,17 @@ function parsePayloadRows(payload: any): any[] {
   return [];
 }
 
-function mapCrop(label: string, cropMap: Record<CropKey, string[]>): CropKey | undefined {
+function mapCrop(label: string, cropMap: Record<CropKey, CropMapEntry>): CropKey | undefined {
   const normalized = String(label || "").toLowerCase();
   if (!normalized) return undefined;
-  const entries = Object.entries(cropMap) as Array<[CropKey, string[]]>;
-  for (const [crop, aliases] of entries) {
-    if (aliases.some((alias) => normalized.includes(alias))) return crop;
+  const entries = Object.entries(cropMap) as Array<[CropKey, CropMapEntry]>;
+  for (const [crop, entry] of entries) {
+    if (entry.synonyms.some((alias) => normalized.includes(alias))) return crop;
   }
   return undefined;
 }
 
-function extractObservations(rows: any[], cropMap: Record<CropKey, string[]>): NormalizedObs[] {
+function extractObservations(rows: any[], cropMap: Record<CropKey, CropMapEntry>): NormalizedObs[] {
   const out: NormalizedObs[] = [];
 
   for (const row of rows) {
@@ -279,7 +320,7 @@ function extractObservations(rows: any[], cropMap: Record<CropKey, string[]>): N
       countryLabel,
       crop,
       commodityId,
-      commodityLabel: normalizeWhitespace(String(cropRaw || cropLabels[crop])),
+      commodityLabel: normalizeWhitespace(String(cropRaw || cropMap[crop]?.label || defaultCropMap[crop].label)),
       priceType,
       unit,
       currency,
@@ -377,8 +418,18 @@ function selectCodes(territory: TerritoryCode): string[] {
   return [territory];
 }
 
-function buildCandidateUrls(args: { base: string; path: string; territory: TerritoryCode; priceType: PriceType }): string[] {
+function buildCandidateUrls(args: {
+  base: string;
+  path: string;
+  territory: TerritoryCode;
+  priceType: PriceType;
+  resolved?: ReturnType<typeof resolveFpmaIds>;
+}): string[] {
   const root = `${args.base.replace(/\/+$/, "")}/${args.path.replace(/^\/+/, "")}`;
+  const resolvedCountry = args.resolved?.country?.id != null ? String(args.resolved.country.id) : args.resolved?.country?.code || args.territory;
+  const resolvedType = args.resolved?.priceType?.id != null ? String(args.resolved.priceType.id) : args.priceType.toLowerCase();
+  const resolvedCommodityIds = (args.resolved?.commodity?.ids || []).map((id) => String(id));
+
   const candidates = [
     `${root}?format=json`,
     `${root}?outputType=json`,
@@ -386,12 +437,22 @@ function buildCandidateUrls(args: { base: string; path: string; territory: Terri
     `${root}?format=json&adm0_code=${encodeURIComponent(args.territory)}`,
     `${root}?format=json&country=${encodeURIComponent(args.territory)}&priceType=${encodeURIComponent(args.priceType.toLowerCase())}`,
     `${root}?format=json&country=${encodeURIComponent(args.territory)}&price_type=${encodeURIComponent(args.priceType.toLowerCase())}`,
+    `${root}?format=json&country=${encodeURIComponent(resolvedCountry)}&priceType=${encodeURIComponent(resolvedType)}`,
+    `${root}?format=json&country=${encodeURIComponent(resolvedCountry)}&price_type=${encodeURIComponent(resolvedType)}`,
   ];
+  if (resolvedCommodityIds.length) {
+    candidates.push(
+      `${root}?format=json&country=${encodeURIComponent(resolvedCountry)}&commodity=${encodeURIComponent(resolvedCommodityIds.join(","))}&priceType=${encodeURIComponent(resolvedType)}`,
+      `${root}?format=json&country=${encodeURIComponent(resolvedCountry)}&commodity_id=${encodeURIComponent(resolvedCommodityIds.join(","))}&price_type=${encodeURIComponent(resolvedType)}`,
+      `${root}?format=json&adm0_code=${encodeURIComponent(resolvedCountry)}&cm_id=${encodeURIComponent(resolvedCommodityIds.join(","))}&pt_id=${encodeURIComponent(resolvedType)}`,
+    );
+  }
   return Array.from(new Set(candidates));
 }
 
 function toFpmaRow(args: {
   series: CropSeries;
+  cropMap: Record<CropKey, CropMapEntry>;
   territory: { code: TerritoryCode; label: string };
   confidence: GrainWidgetFpmaMarketPricesRow["confidence"];
   notes?: string[];
@@ -407,7 +468,7 @@ function toFpmaRow(args: {
 
   return {
     crop: args.series.crop,
-    label: cropLabels[args.series.crop],
+    label: args.cropMap[args.series.crop]?.label || defaultCropMap[args.series.crop].label,
     current: Number(latest.value.toFixed(4)),
     unit: args.series.unit,
     currency: args.series.currency,
@@ -448,10 +509,49 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
     const warnings: string[] = [];
     const parseResults: NormalizedObs[] = [];
     let sourceUrlUsed: string | undefined;
+    const resolvedByCrop = new Map<CropKey, ReturnType<typeof resolveFpmaIds>>();
+    const resolutionNotes: string[] = [];
+    let discoverySummary: ReturnType<typeof getFpmaDiscoveryDebug> | undefined;
+
+    if (ENABLE_FPMA_DISCOVERY) {
+      const discovery = await fetchFpmaDiscoverySnapshot();
+      discoverySummary = getFpmaDiscoveryDebug(discovery);
+      for (const crop of ["WHEAT", "MAIZE", "SOY", "RAPESEED", "SUNFLOWER"] as const) {
+        const resolved = resolveFpmaIds(discovery, {
+          countryCode: territory.code,
+          cropKey: crop,
+          priceType: selectedType,
+        });
+        resolvedByCrop.set(crop, resolved);
+        if (!resolved.ok) {
+          resolutionNotes.push(`${crop.toLowerCase()}:resolver_${resolved.methodUsed}`);
+        }
+        if (resolved.warnings?.length) {
+          resolutionNotes.push(...resolved.warnings.map((warning) => `${crop.toLowerCase()}:${warning}`));
+        }
+      }
+      if (discoverySummary.notes?.length) warnings.push(...discoverySummary.notes.map((note) => `discovery:${note}`));
+    }
 
     const allUrls: string[] = [];
     for (const path of FPMA_DATA_PATHS) {
-      allUrls.push(...buildCandidateUrls({ base: FPMA_API_BASE_URL, path, territory: territory.code, priceType: selectedType }));
+      allUrls.push(...buildCandidateUrls({
+        base: FPMA_API_BASE_URL,
+        path,
+        territory: territory.code,
+        priceType: selectedType,
+      }));
+      for (const crop of ["WHEAT", "MAIZE", "SOY", "RAPESEED", "SUNFLOWER"] as const) {
+        const resolved = resolvedByCrop.get(crop);
+        if (!resolved) continue;
+        allUrls.push(...buildCandidateUrls({
+          base: FPMA_API_BASE_URL,
+          path,
+          territory: territory.code,
+          priceType: selectedType,
+          resolved,
+        }));
+      }
     }
 
     for (const url of allUrls) {
@@ -500,6 +600,7 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
       const built = territory.code === "EU"
         ? toFpmaRow({
             series: aggregateEuSeries(candidates) || candidates.sort((a, b) => b.points.length - a.points.length)[0],
+            cropMap,
             territory,
             confidence: "MED",
             notes: [
@@ -509,14 +610,24 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
           })
         : toFpmaRow({
             series: candidates.sort((a, b) => b.points.length - a.points.length)[0],
+            cropMap,
             territory,
             confidence: byType.length ? "HIGH" : "MED",
             notes: byType.length ? undefined : [`price_type_fallback:${selectedType.toLowerCase()}`],
           });
 
-      if (!built) continue;
+      if (!built) {
+        if (crop === "RAPESEED") warnings.push("rapeseed_missing_no_proxy");
+        continue;
+      }
       const picked = candidates.sort((a, b) => b.points.length - a.points.length)[0];
       if (picked?.commodityId) commodityIdsUsed.add(picked.commodityId);
+      const resolved = resolvedByCrop.get(crop);
+      for (const resolvedId of resolved?.commodity?.ids || []) commodityIdsUsed.add(String(resolvedId));
+      for (const mappedId of cropMap[crop].fpmaCommodityIds) commodityIdsUsed.add(mappedId);
+      if (territory.code === "EU") {
+        built.notes = [...(built.notes || []), "EU (proxy)"];
+      }
       rows.push(built);
     }
 
@@ -530,6 +641,7 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
         : rows.some((row) => row.cadence === "annual")
           ? "annual"
           : "unknown";
+    const debugWarnings = Array.from(new Set([...(warnings || []), ...resolutionNotes]));
 
     const widget: GrainWidgetFpmaMarketPricesMultiCountry = {
       id: "grain-fpma-market-prices-multi-country",
@@ -567,15 +679,23 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
         selectedPriceType: selectedType,
       },
       notes: mappedCount
-        ? ["Native units preserved (no forced USD/t conversion)", "FPMA coverage varies by country and crop"]
+        ? ["Native units preserved (no forced USD/t conversion)", "FPMA coverage varies by country and crop", territory.code === "EU" ? "EU (proxy): median over FR,DE,PL,RO,ES" : "No proxy substitution for missing rapeseed"]
         : ["no_data_for_country"],
       debug: {
         sourceUrlUsed: sourceUrlUsed || FPMA_API_BASE_URL,
         countryQueryUsed: territory.code,
         commodityIdsUsed: Array.from(commodityIdsUsed),
         rowsParsed: parseResults.length,
+        discoveryFetchedAt: discoverySummary?.fetchedAt,
+        discoveryCacheHit: discoverySummary?.cacheHit,
+        discoveryEndpointsTried: discoverySummary?.endpointsTried?.map((item) => ({
+          name: item.name,
+          url: item.url,
+          ok: item.ok,
+          status: item.status,
+        })),
         query: sourceUrlUsed ? new URL(sourceUrlUsed).search : undefined,
-        warnings: warnings.length ? warnings : undefined,
+        warnings: debugWarnings.length ? debugWarnings : undefined,
       },
     };
 

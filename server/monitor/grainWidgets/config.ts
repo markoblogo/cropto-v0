@@ -23,6 +23,7 @@ export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", 
 export const ENABLE_USDA_GTR_LOGISTICS_WIDGET = envBool("ENABLE_USDA_GTR_LOGISTICS_WIDGET", true);
 export const ENABLE_FAOSTAT_PP_WIDGET = envBool("ENABLE_FAOSTAT_PP_WIDGET", true);
 export const ENABLE_FPMA_MARKET_PRICES_WIDGET = envBool("ENABLE_FPMA_MARKET_PRICES_WIDGET", true);
+export const ENABLE_FPMA_DISCOVERY = envBool("ENABLE_FPMA_DISCOVERY", true);
 export const ENABLE_COUNTRY_MULTI_WIDGET_MOCK = envBool(
   "ENABLE_COUNTRY_MULTI_WIDGET_MOCK",
   process.env.NODE_ENV !== "production",
@@ -149,6 +150,8 @@ export const FPMA_DATA_PATHS = (
   .filter(Boolean);
 export const FPMA_TIMEOUT_MS = envNum("FPMA_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 export const FPMA_CACHE_TTL_MS = envNum("FPMA_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const FPMA_DISCOVERY_TTL_MS = envNum("FPMA_DISCOVERY_TTL_MS", 7 * 24 * 60 * 60 * 1000);
+export const FPMA_DISCOVERY_CACHE_TTL_MS = envNum("FPMA_DISCOVERY_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FPMA_MAX_POINTS = envNum("FPMA_MAX_POINTS", 12);
 export const FPMA_DEFAULT_PRICE_TYPE = (process.env.FPMA_DEFAULT_PRICE_TYPE || "WHOLESALE").toUpperCase() === "RETAIL"
   ? "RETAIL"
@@ -156,6 +159,13 @@ export const FPMA_DEFAULT_PRICE_TYPE = (process.env.FPMA_DEFAULT_PRICE_TYPE || "
 export const FPMA_SUPPORTED_PRICE_TYPES = (
   process.env.FPMA_SUPPORTED_PRICE_TYPES ||
   "WHOLESALE,RETAIL"
+)
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter((value): value is "WHOLESALE" | "RETAIL" => value === "WHOLESALE" || value === "RETAIL");
+export const FPMA_PRICE_TYPES = (
+  process.env.FPMA_PRICE_TYPES ||
+  FPMA_SUPPORTED_PRICE_TYPES.join(",")
 )
   .split(",")
   .map((value) => value.trim().toUpperCase())
@@ -170,11 +180,36 @@ export const FPMA_EU_PROXY_COUNTRIES = (
 export const FPMA_CROP_MAP =
   process.env.FPMA_CROP_MAP ||
   JSON.stringify({
-    WHEAT: ["wheat"],
-    MAIZE: ["maize", "corn"],
-    SOY: ["soybean", "soybeans", "soy"],
-    RAPESEED: ["rapeseed", "canola"],
-    SUNFLOWER: ["sunflower", "sunflower seed"],
+    WHEAT: {
+      label: "Wheat",
+      synonyms: ["wheat", "triticum", "soft wheat", "durum"],
+      fpmaCommodityIds: [],
+      notes: "Prefer generic wheat; avoid milling-only classes unless explicitly present.",
+    },
+    MAIZE: {
+      label: "Maize (Corn)",
+      synonyms: ["maize", "corn", "yellow maize", "white maize"],
+      fpmaCommodityIds: [],
+      notes: "Maize and corn are canonical synonyms of the same crop.",
+    },
+    SOY: {
+      label: "Soybeans",
+      synonyms: ["soy", "soybean", "soybeans", "soya"],
+      fpmaCommodityIds: [],
+      notes: "Soybeans only (not soybean meal/oil) in FPMA tile.",
+    },
+    RAPESEED: {
+      label: "Rapeseed (Canola)",
+      synonyms: ["rapeseed", "canola", "colza"],
+      fpmaCommodityIds: [],
+      notes: "If rapeseed is missing do not proxy with vegetable oils inside FPMA tile.",
+    },
+    SUNFLOWER: {
+      label: "Sunflower seed",
+      synonyms: ["sunflower", "sunflower seed", "sunflower seeds"],
+      fpmaCommodityIds: [],
+      notes: "Seed-level prices; do not mix with sunflower oil unless explicitly returned.",
+    },
   });
 export const ALPHAVANTAGE_API_KEY = process.env.ALPHAVANTAGE_API_KEY || "";
 export const ALPHAVANTAGE_BASE_URL =
