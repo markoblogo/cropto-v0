@@ -720,6 +720,8 @@ type GrainWidgetNasdaqDataLinkSnapshot = {
     label: string;
     nativeValueCurrent?: number;
     nativeUnit: string;
+    cadence?: string;
+    frequency?: string;
     changeAbs?: number;
     changePct?: number;
     series?: Array<{ ts: string; value: number }>;
@@ -958,6 +960,111 @@ function grainStatusClass(status: GrainWidgetStatus) {
 function metricUnitChip(unit?: string, fallback = "unit"): string {
   if (!unit) return fallback;
   return unit;
+}
+
+type NasdaqCadence = "daily" | "weekly" | "monthly" | "unknown";
+
+const NASDAQ_GROUP_DEFS = [
+  {
+    id: "rates",
+    title: "Rates",
+    codes: ["DFF", "DGS2", "DGS10", "T10Y2Y"],
+  },
+  {
+    id: "usd",
+    title: "USD",
+    codes: ["DTWEXBGS"],
+  },
+  {
+    id: "energy-inflation",
+    title: "Energy & Inflation",
+    codes: ["DCOILWTICO", "DHHNGSP", "CPIAUCSL", "PPIACO"],
+  },
+] as const;
+
+const NASDAQ_LABEL_MAP: Record<string, string> = {
+  DFF: "Fed Funds Rate",
+  DGS2: "US 2Y Treasury Yield",
+  DGS10: "US 10Y Treasury Yield",
+  T10Y2Y: "10Y-2Y Spread",
+  DTWEXBGS: "USD Broad Index",
+  DCOILWTICO: "WTI Crude",
+  DHHNGSP: "Henry Hub Gas",
+  CPIAUCSL: "CPI (Urban)",
+  PPIACO: "PPI (Commodities)",
+};
+
+const NASDAQ_UNIT_FALLBACK_MAP: Record<string, string> = {
+  DFF: "%",
+  DGS2: "%",
+  DGS10: "%",
+  T10Y2Y: "pp",
+  DTWEXBGS: "index",
+  DCOILWTICO: "USD",
+  DHHNGSP: "USD",
+  CPIAUCSL: "index",
+  PPIACO: "index",
+};
+
+function nasdaqSeriesPoints(item: GrainWidgetNasdaqDataLinkSnapshot["items"][number]): Array<{ ts: string; value: number }> {
+  return (item.series || []).filter((point) => typeof point.value === "number" && Number.isFinite(point.value) && Number.isFinite(Date.parse(point.ts)));
+}
+
+function nasdaqDatasetCode(dataset: string): string {
+  const normalized = String(dataset || "").trim().toUpperCase();
+  const parts = normalized.split("/");
+  return (parts[parts.length - 1] || normalized).trim();
+}
+
+function normalizeNasdaqUnit(unit?: string): string | undefined {
+  if (!unit) return undefined;
+  const raw = String(unit).trim();
+  if (!raw || raw.toLowerCase() === "value") return undefined;
+  if (raw.toLowerCase() === "pct" || raw.toLowerCase() === "percent") return "%";
+  return raw;
+}
+
+function inferNasdaqCadenceFromSeries(series?: Array<{ ts: string; value: number }>): NasdaqCadence {
+  const points = (series || [])
+    .map((point) => ({ ts: Date.parse(point.ts), value: point.value }))
+    .filter((point) => Number.isFinite(point.ts) && Number.isFinite(point.value))
+    .sort((a, b) => a.ts - b.ts);
+  if (points.length < 3) return "unknown";
+
+  const diffsDays: number[] = [];
+  for (let idx = 1; idx < points.length; idx += 1) {
+    const diff = Math.round((points[idx].ts - points[idx - 1].ts) / 86_400_000);
+    if (diff > 0) diffsDays.push(diff);
+  }
+  if (!diffsDays.length) return "unknown";
+  const sorted = [...diffsDays].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  if (median <= 2) return "daily";
+  if (median <= 10) return "weekly";
+  if (median <= 40) return "monthly";
+  return "unknown";
+}
+
+function resolveNasdaqCadence(item: GrainWidgetNasdaqDataLinkSnapshot["items"][number]): NasdaqCadence {
+  const fromPayload = String(item.cadence || item.frequency || "").toLowerCase();
+  if (fromPayload.includes("day")) return "daily";
+  if (fromPayload.includes("week")) return "weekly";
+  if (fromPayload.includes("month")) return "monthly";
+  return inferNasdaqCadenceFromSeries(item.series);
+}
+
+function resolveNasdaqUnitLabel(item: GrainWidgetNasdaqDataLinkSnapshot["items"][number]): { unit: string; unknown: boolean } {
+  const payloadUnit = normalizeNasdaqUnit(item.nativeUnit);
+  if (payloadUnit) return { unit: payloadUnit, unknown: false };
+  const code = nasdaqDatasetCode(item.dataset);
+  const mapped = NASDAQ_UNIT_FALLBACK_MAP[code];
+  if (mapped) return { unit: mapped, unknown: false };
+  return { unit: "unit unknown", unknown: true };
+}
+
+function resolveNasdaqLabel(item: GrainWidgetNasdaqDataLinkSnapshot["items"][number]): string {
+  const code = nasdaqDatasetCode(item.dataset);
+  return NASDAQ_LABEL_MAP[code] || item.label || code;
 }
 
 function trendDirection(change?: number, changePct?: number): "up" | "down" | "flat" {
@@ -2909,51 +3016,114 @@ export default function MonitorPage() {
                             <CardDescription className="text-foreground/68">{nasdaqWidget.subtitle || "Macro/gov snapshot from Nasdaq Data Link"}</CardDescription>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
-                            <div className="grid gap-1.5 sm:grid-cols-2">
-                              {nasdaqWidget.items.slice(0, 8).map((item) => (
-                                <div key={`${nasdaqWidget.id}-${item.id}`} className="rounded-md border border-black/60 dark:border-white/25 bg-background/45 p-1.5">
-                                  <div className="flex items-center justify-between gap-1">
-                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{item.label}</p>
-                                    <div className="flex items-center gap-1">
-                                      <MetricChip label={item.dataset} variant="type" tone="muted" />
-                                      <MetricChip
-                                        label={item.unitConfidence === "CONFIRMED" ? "unit ok" : "unit unknown"}
-                                        variant="unit"
-                                        tone={item.unitConfidence === "CONFIRMED" ? "neutral" : "muted"}
-                                      />
+                            {(() => {
+                              const items = nasdaqWidget.items.slice(0, 8);
+                              const grouped = NASDAQ_GROUP_DEFS.map((group) => {
+                                const groupItems = items.filter((item) => (group.codes as readonly string[]).includes(nasdaqDatasetCode(item.dataset)));
+                                const knownCadences = Array.from(new Set(groupItems.map((item) => resolveNasdaqCadence(item)).filter((value) => value !== "unknown")));
+                                const sharedCadence = knownCadences.length === 1 ? knownCadences[0] : undefined;
+                                return {
+                                  ...group,
+                                  items: groupItems,
+                                  sharedCadence,
+                                };
+                              }).filter((group) => group.items.length > 0);
+                              const uncategorized = items.filter(
+                                (item) => !NASDAQ_GROUP_DEFS.some((group) => (group.codes as readonly string[]).includes(nasdaqDatasetCode(item.dataset))),
+                              );
+
+                              if (!grouped.length && !uncategorized.length) {
+                                return <p className="text-[11px] text-foreground/68">No Nasdaq Data Link series mapped in current cycle.</p>;
+                              }
+
+                              return (
+                                <div className="space-y-1.5">
+                                  {grouped.map((group) => (
+                                    <div key={`${nasdaqWidget.id}-${group.id}`} className="rounded-md border border-black/55 dark:border-white/22 bg-background/40 p-1.5">
+                                      <div className="mb-1 flex items-center justify-between gap-2">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/78">{group.title}</p>
+                                        <div className="flex items-center gap-1">
+                                          {group.sharedCadence ? <MetricChip label={group.sharedCadence} variant="type" tone="muted" /> : null}
+                                        </div>
+                                      </div>
+                                      <div className="grid gap-1 sm:grid-cols-2">
+                                        {group.items.map((item) => {
+                                          const cadence = resolveNasdaqCadence(item);
+                                          const unit = resolveNasdaqUnitLabel(item);
+                                          const series = nasdaqSeriesPoints(item);
+                                          return (
+                                            <div key={`${nasdaqWidget.id}-${group.id}-${item.id}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                              <div className="flex items-center justify-between gap-1">
+                                                <p className="text-[11px] text-foreground/85 line-clamp-1">{resolveNasdaqLabel(item)}</p>
+                                                <div className="flex items-center gap-1">
+                                                  <MetricChip label={unit.unit} variant="unit" tone={unit.unknown ? "muted" : "neutral"} />
+                                                  {!group.sharedCadence && cadence !== "unknown" ? <MetricChip label={cadence} variant="type" tone="muted" /> : null}
+                                                  {!group.sharedCadence && cadence === "unknown" && debugEnabled ? <MetricChip label="unknown cadence" variant="type" tone="muted" /> : null}
+                                                </div>
+                                              </div>
+                                              {debugEnabled ? <p className="text-[9px] text-foreground/55 mt-0.5">{item.dataset}</p> : null}
+                                              <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                                {formatMetricValue({ kind: "index", value: item.nativeValueCurrent, unit: unit.unit })}
+                                              </p>
+                                              <p className="text-[10px] text-foreground/65">
+                                                {formatChangeWithUnit({
+                                                  change: item.changeAbs,
+                                                  unit: unit.unit,
+                                                  pct: item.changePct,
+                                                })}
+                                              </p>
+                                              <DynamicMiniTrend
+                                                series={series}
+                                                change={item.changeAbs}
+                                                changePct={item.changePct}
+                                                status={nasdaqWidget.status}
+                                                section="expansion"
+                                                cardKind="row"
+                                                sourceName={nasdaqWidget.sourceName}
+                                                trustedSeries={isTrustworthySeriesSource({
+                                                  status: nasdaqWidget.status,
+                                                  sourceName: nasdaqWidget.sourceName,
+                                                  fallbackReason: nasdaqWidget.fallbackReason,
+                                                })}
+                                                debugEnabled={debugEnabled}
+                                              />
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
                                     </div>
-                                  </div>
-                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
-                                    {formatMetricValue({ kind: "index", value: item.nativeValueCurrent, unit: item.nativeUnit })}
-                                  </p>
-                                  <p className="text-[10px] text-foreground/65">
-                                    {formatChangeWithUnit({
-                                      change: item.changeAbs,
-                                      unit: item.nativeUnit,
-                                      pct: item.changePct,
-                                    })}
-                                  </p>
-                                  <DynamicMiniTrend
-                                    series={item.series || []}
-                                    change={item.changeAbs}
-                                    changePct={item.changePct}
-                                    status={nasdaqWidget.status}
-                                    section="expansion"
-                                    cardKind="row"
-                                    sourceName={nasdaqWidget.sourceName}
-                                    trustedSeries={isTrustworthySeriesSource({
-                                      status: nasdaqWidget.status,
-                                      sourceName: nasdaqWidget.sourceName,
-                                      fallbackReason: nasdaqWidget.fallbackReason,
-                                    })}
-                                    debugEnabled={debugEnabled}
-                                  />
+                                  ))}
+                                  {uncategorized.length ? (
+                                    <div className="rounded-md border border-black/50 dark:border-white/20 bg-background/40 p-1.5">
+                                      <div className="mb-1 flex items-center justify-between gap-2">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/78">Other</p>
+                                      </div>
+                                      <div className="grid gap-1 sm:grid-cols-2">
+                                        {uncategorized.map((item) => {
+                                          const cadence = resolveNasdaqCadence(item);
+                                          const unit = resolveNasdaqUnitLabel(item);
+                                          return (
+                                            <div key={`${nasdaqWidget.id}-other-${item.id}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                              <div className="flex items-center justify-between gap-1">
+                                                <p className="text-[11px] text-foreground/85 line-clamp-1">{resolveNasdaqLabel(item)}</p>
+                                                <div className="flex items-center gap-1">
+                                                  <MetricChip label={unit.unit} variant="unit" tone={unit.unknown ? "muted" : "neutral"} />
+                                                  {cadence !== "unknown" ? <MetricChip label={cadence} variant="type" tone="muted" /> : null}
+                                                </div>
+                                              </div>
+                                              {debugEnabled ? <p className="text-[9px] text-foreground/55 mt-0.5">{item.dataset}</p> : null}
+                                              <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                                {formatMetricValue({ kind: "index", value: item.nativeValueCurrent, unit: unit.unit })}
+                                              </p>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ) : null}
                                 </div>
-                              ))}
-                              {!nasdaqWidget.items.length ? (
-                                <p className="text-[11px] text-foreground/68">No Nasdaq Data Link series mapped in current cycle.</p>
-                              ) : null}
-                            </div>
+                              );
+                            })()}
                             <div className="flex flex-wrap items-center gap-1">
                               {nasdaqWidget.summary?.coverage ? <MetricChip label={`coverage ${nasdaqWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
                               {nasdaqWidget.summary?.datasetStatuses?.some((entry) => entry.status === "forbidden")
