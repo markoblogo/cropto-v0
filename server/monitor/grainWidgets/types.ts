@@ -295,6 +295,12 @@ export interface GrainWidgetUsdaMarsReportItem {
   reportId?: string;
   fileType?: "PDF" | "TXT" | "HTML" | "OTHER";
   category?: string;
+  score?: number;
+  tags?: {
+    region?: string;
+    type?: string;
+    crops?: string[];
+  };
   sourceUrl?: string;
   notes?: string[];
 }
@@ -304,8 +310,14 @@ export interface GrainWidgetUsdaMarsReports extends GrainWidgetBase {
   reports: GrainWidgetUsdaMarsReportItem[];
   summary?: {
     fetchedCount: number;
+    scannedCount?: number;
     matchedCount: number;
+    excludedCount?: number;
     shownCount: number;
+    reportsReturnedTop?: number;
+    moreReportsCount?: number;
+    topScoreMin?: number;
+    topScoreMax?: number;
     categories?: Array<{ label: string; count: number }>;
   };
 }
@@ -365,6 +377,14 @@ export interface GrainWidgetsProviderDebug {
   cardsReturned?: number;
   mappedCount?: number;
   expectedCount?: number;
+  reportsFetched?: number;
+  reportsScanned?: number;
+  reportsMatchedInclude?: number;
+  reportsExcluded?: number;
+  reportsReturnedTop?: number;
+  topScoreMin?: number;
+  topScoreMax?: number;
+  errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "UNKNOWN";
   sourceUrlUsed?: string;
   coverage?: string;
   fallbackChain?: "real->cache->mock";

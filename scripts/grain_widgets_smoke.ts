@@ -57,6 +57,11 @@ async function run() {
     try {
       const widget = await provider.getWidget(ctx);
       console.log(`[${provider.id}] status=${widget.status} kind=${widget.kind} coverage=${widgetCoverage(widget)} source=${widget.sourceUrl || "n/a"}`);
+      if (widget.kind === "USDA_MARS_REPORTS") {
+        console.log(
+          `  usda_reports fetched=${widget.summary?.fetchedCount ?? 0} scanned=${widget.summary?.scannedCount ?? 0} matched=${widget.summary?.matchedCount ?? 0} returned=${widget.summary?.reportsReturnedTop ?? widget.reports.length}`,
+        );
+      }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);
     } catch (error: any) {
       const reason = error?.message || "fetch_failed";

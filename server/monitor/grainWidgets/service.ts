@@ -41,8 +41,16 @@ type ProviderRuntime = {
   lastAttemptAt?: string;
   lastSuccessAt?: string;
   error?: string;
+  errorKind?: GrainWidgetsProviderDebug["errorKind"];
   mappedCount?: number;
   expectedCount?: number;
+  reportsFetched?: number;
+  reportsScanned?: number;
+  reportsMatchedInclude?: number;
+  reportsExcluded?: number;
+  reportsReturnedTop?: number;
+  topScoreMin?: number;
+  topScoreMax?: number;
   sourceUrlUsed?: string;
   widgetsReturned?: GrainWidgetKind[];
   fallbackUsed?: boolean;
@@ -166,6 +174,23 @@ function runtimeStatusFromWidget(widget: GrainWidget): GrainWidgetsProviderDebug
   if (widget.status === "OFFLINE") return "error";
   if (widget.status === "FALLBACK" || widget.status === "DELAYED" || widget.status === "INDICATIVE") return "partial";
   return "ok";
+}
+
+function classifyProviderErrorKind(error?: string): GrainWidgetsProviderDebug["errorKind"] {
+  if (!error) return undefined;
+  const upper = error.toUpperCase();
+  if (upper.includes("ENOTFOUND")) return "DNS";
+  if (upper.includes("ETIMEDOUT") || upper.includes("ABORT_ERR") || upper.includes("TIMEOUT")) return "TIMEOUT";
+  const httpCode = error.match(/HTTP\s+(\d{3})/i);
+  if (httpCode) {
+    const code = Number.parseInt(httpCode[1], 10);
+    if (code >= 400 && code < 500) return code === 403 ? "BLOCKED" : "HTTP_4XX";
+    if (code >= 500) return "HTTP_5XX";
+  }
+  if (upper.includes("PARSE")) return "PARSE";
+  if (upper.includes("EMPTY") || upper.includes("NO_MATCHING_REPORTS") || upper.includes("COVERAGE_EMPTY")) return "EMPTY";
+  if (upper.includes("BLOCKED")) return "BLOCKED";
+  return "UNKNOWN";
 }
 
 export class GrainWidgetsService {
@@ -305,6 +330,14 @@ export class GrainWidgetsService {
           widgetsReturned: state?.widgetsReturned || (ownsCache ? [provider.kind] : []),
           mappedCount: state?.mappedCount,
           expectedCount: state?.expectedCount,
+          reportsFetched: state?.reportsFetched,
+          reportsScanned: state?.reportsScanned,
+          reportsMatchedInclude: state?.reportsMatchedInclude,
+          reportsExcluded: state?.reportsExcluded,
+          reportsReturnedTop: state?.reportsReturnedTop,
+          topScoreMin: state?.topScoreMin,
+          topScoreMax: state?.topScoreMax,
+          errorKind: state?.errorKind,
           coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
           fallbackChain: "real->cache->mock",
@@ -378,6 +411,14 @@ export class GrainWidgetsService {
           widgetsReturned: state?.widgetsReturned || (ownsCache ? [provider.kind] : []),
           mappedCount: state?.mappedCount,
           expectedCount: state?.expectedCount,
+          reportsFetched: state?.reportsFetched,
+          reportsScanned: state?.reportsScanned,
+          reportsMatchedInclude: state?.reportsMatchedInclude,
+          reportsExcluded: state?.reportsExcluded,
+          reportsReturnedTop: state?.reportsReturnedTop,
+          topScoreMin: state?.topScoreMin,
+          topScoreMax: state?.topScoreMax,
+          errorKind: state?.errorKind,
           coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
           fallbackChain: "real->cache->mock",
@@ -430,12 +471,21 @@ export class GrainWidgetsService {
         lastAttemptAt: attemptAt,
         cacheHit: false,
         widgetsReturned: [],
+        errorKind: undefined,
+        reportsFetched: undefined,
+        reportsScanned: undefined,
+        reportsMatchedInclude: undefined,
+        reportsExcluded: undefined,
+        reportsReturnedTop: undefined,
+        topScoreMin: undefined,
+        topScoreMax: undefined,
       });
 
       try {
         const data = await provider.getWidget(ctx);
         const mappedCount = mappedCountForWidget(data);
         const usable = widgetHasUsableData(data);
+        const usdaSummary = data.kind === "USDA_MARS_REPORTS" ? data.summary : undefined;
 
         if (!usable) {
           const reason = data.fallbackReason || "coverage_empty";
@@ -443,8 +493,16 @@ export class GrainWidgetsService {
           this.recordProviderState(provider, {
             status: "partial",
             error: reason,
+            errorKind: classifyProviderErrorKind(reason),
             sourceUrlUsed: data.sourceUrl,
             mappedCount,
+            reportsFetched: usdaSummary?.fetchedCount,
+            reportsScanned: usdaSummary?.scannedCount,
+            reportsMatchedInclude: usdaSummary?.matchedCount,
+            reportsExcluded: usdaSummary?.excludedCount,
+            reportsReturnedTop: usdaSummary?.reportsReturnedTop ?? usdaSummary?.shownCount,
+            topScoreMin: usdaSummary?.topScoreMin,
+            topScoreMax: usdaSummary?.topScoreMax,
             fallbackUsed: true,
           });
           continue;
@@ -462,8 +520,16 @@ export class GrainWidgetsService {
           status: runtimeStatusFromWidget(data),
           lastSuccessAt: attemptAt,
           error: undefined,
+          errorKind: undefined,
           sourceUrlUsed: data.sourceUrl,
           mappedCount,
+          reportsFetched: usdaSummary?.fetchedCount,
+          reportsScanned: usdaSummary?.scannedCount,
+          reportsMatchedInclude: usdaSummary?.matchedCount,
+          reportsExcluded: usdaSummary?.excludedCount,
+          reportsReturnedTop: usdaSummary?.reportsReturnedTop ?? usdaSummary?.shownCount,
+          topScoreMin: usdaSummary?.topScoreMin,
+          topScoreMax: usdaSummary?.topScoreMax,
           widgetsReturned: [kind],
           fallbackUsed: ["DELAYED", "FALLBACK", "OFFLINE"].includes(data.status),
           notes: data.notes?.slice(0, 3),
@@ -476,6 +542,7 @@ export class GrainWidgetsService {
         this.recordProviderState(provider, {
           status: "error",
           error: reason,
+          errorKind: classifyProviderErrorKind(reason),
           mappedCount: 0,
           widgetsReturned: [],
           fallbackUsed: true,

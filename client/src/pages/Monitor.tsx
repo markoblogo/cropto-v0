@@ -561,13 +561,25 @@ type GrainWidgetUsdaMarsReports = {
     reportId?: string;
     fileType?: "PDF" | "TXT" | "HTML" | "OTHER";
     category?: string;
+    score?: number;
+    tags?: {
+      region?: string;
+      type?: string;
+      crops?: string[];
+    };
     sourceUrl?: string;
     notes?: string[];
   }>;
   summary?: {
     fetchedCount: number;
+    scannedCount?: number;
     matchedCount: number;
+    excludedCount?: number;
     shownCount: number;
+    reportsReturnedTop?: number;
+    moreReportsCount?: number;
+    topScoreMin?: number;
+    topScoreMax?: number;
     categories?: Array<{ label: string; count: number }>;
   };
   notes?: string[];
@@ -2398,6 +2410,17 @@ export default function MonitorPage() {
                                       <MetricChip label={report.fileType || "OTHER"} variant="type" tone="muted" />
                                     </div>
                                     <p className="mt-0.5 text-[11px] text-foreground/85 line-clamp-2">{report.title}</p>
+                                    <div className="mt-1 flex flex-wrap gap-1">
+                                      {report.tags?.type ? (
+                                        <MetricChip label={report.tags.type} variant="type" tone="muted" />
+                                      ) : null}
+                                      {report.tags?.region ? (
+                                        <MetricChip label={report.tags.region} variant="provider" tone="neutral" />
+                                      ) : null}
+                                      {report.tags?.crops?.slice(0, 2).map((crop: string) => (
+                                        <MetricChip key={`${report.id}-${crop}`} label={crop.toUpperCase()} variant="unit" tone="accent" />
+                                      ))}
+                                    </div>
                                     <p className="mt-1 text-[10px] text-foreground/65">
                                       {report.reportId ? `ID ${report.reportId}` : "ID n/a"} • {report.publishedAt ? formatRelative(report.publishedAt) : "date n/a"}
                                     </p>
@@ -2411,7 +2434,13 @@ export default function MonitorPage() {
                               <span>
                                 {`reports ${marsWidget.summary?.shownCount ?? marsWidget.reports.length}/${marsWidget.summary?.matchedCount ?? marsWidget.reports.length} matched`}
                               </span>
-                              <span>{`fetched ${marsWidget.summary?.fetchedCount ?? 0}`}</span>
+                              <span>
+                                {`scanned ${marsWidget.summary?.scannedCount ?? marsWidget.summary?.fetchedCount ?? 0}`}
+                                {typeof marsWidget.summary?.excludedCount === "number" ? ` • excluded ${marsWidget.summary.excludedCount}` : ""}
+                                {typeof marsWidget.summary?.moreReportsCount === "number" && marsWidget.summary.moreReportsCount > 0
+                                  ? ` • +${marsWidget.summary.moreReportsCount} more`
+                                  : ""}
+                              </span>
                             </div>
                             <StatusSourceStrip
                               compact

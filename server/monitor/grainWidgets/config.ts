@@ -79,9 +79,17 @@ export const FAO_FFPI_PARSER_MODE = (process.env.FAO_FFPI_PARSER_MODE || "auto")
 export const USDA_FAS_PSD_API_URL = process.env.USDA_FAS_PSD_API_URL || "";
 export const USDA_FAS_PSD_API_KEY = process.env.USDA_FAS_PSD_API_KEY || "";
 export const USDA_MARS_BASE_URL = process.env.USDA_MARS_BASE_URL || "https://marsapi.ams.usda.gov/services/v3.1/public";
+export const USDA_MARS_PUBLISHED_LIST_PATHS = (
+  process.env.USDA_MARS_PUBLISHED_LIST_PATHS ||
+  "listPublishedReports?format=json,reports/listPublishedReports?format=json"
+)
+  .split(",")
+  .map((value) => value.trim().replace(/^\/+/, ""))
+  .filter(Boolean);
 export const USDA_MARS_REPORTS_LIMIT = envNum("USDA_MARS_REPORTS_LIMIT", 50);
 export const USDA_MARS_GRAIN_WIDGET_LIMIT = envNum("USDA_MARS_GRAIN_WIDGET_LIMIT", 6);
 export const USDA_MARS_TIMEOUT_MS = envNum("USDA_MARS_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const USDA_MARS_MAX_REPORTS_SCAN = envNum("USDA_MARS_MAX_REPORTS_SCAN", 200);
 export const USDA_MARS_INCLUDE_KEYWORDS = (
   process.env.USDA_MARS_INCLUDE_KEYWORDS ||
   "grain,bid,bids,export,market rates,corn,wheat,soy,soybean,oilseed,portland,louisiana,texas"
