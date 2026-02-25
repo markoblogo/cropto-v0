@@ -19,7 +19,8 @@ export type GrainWidgetKind =
   | "USDA_MARS_REPORTS"
   | "US_CASH_EXPORT_CONTEXT"
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
-  | "ALPHAVANTAGE_GRAIN_BENCHMARKS";
+  | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
+  | "NASDAQ_DATA_LINK_SNAPSHOT";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -423,6 +424,36 @@ export interface GrainWidgetAlphaVantageGrainBenchmarks extends GrainWidgetBase 
   };
 }
 
+export interface GrainWidgetNasdaqDataLinkItem {
+  id: string;
+  dataset: string;
+  label: string;
+  nativeValueCurrent?: number;
+  nativeUnit: string;
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  unitConfidence: AlphaVantageUnitConfidence;
+  notes?: string[];
+}
+
+export interface GrainWidgetNasdaqDataLinkSnapshot extends GrainWidgetBase {
+  kind: "NASDAQ_DATA_LINK_SNAPSHOT";
+  items: GrainWidgetNasdaqDataLinkItem[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    datasetStatuses?: Array<{
+      dataset: string;
+      status: "ok" | "error" | "forbidden" | "rate_limited" | "empty" | "parse_error";
+      errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
+      sourceUrlUsed?: string;
+      note?: string;
+    }>;
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -434,7 +465,8 @@ export type GrainWidget =
   | GrainWidgetUsdaMarsReports
   | GrainWidgetUsCashExportContext
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
-  | GrainWidgetAlphaVantageGrainBenchmarks;
+  | GrainWidgetAlphaVantageGrainBenchmarks
+  | GrainWidgetNasdaqDataLinkSnapshot;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -490,6 +522,13 @@ export interface GrainWidgetsProviderDebug {
     fn: string;
     unitConfidence: AlphaVantageUnitConfidence;
     allowNormalization: boolean;
+  }>;
+  datasetStatuses?: Array<{
+    dataset: string;
+    status: "ok" | "error" | "forbidden" | "rate_limited" | "empty" | "parse_error";
+    errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
+    sourceUrlUsed?: string;
+    note?: string;
   }>;
   linesFetched?: number;
   linesMatched?: number;

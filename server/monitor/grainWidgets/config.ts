@@ -21,6 +21,8 @@ export const ENABLE_USDA_MARS_REPORTS_WIDGET = envBool("ENABLE_USDA_MARS_REPORTS
 export const ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET = envBool("ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET", true);
 export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", true);
 export const ENABLE_ALPHAVANTAGE_PROVIDER = envBool("ENABLE_ALPHAVANTAGE_PROVIDER", true);
+export const ENABLE_NASDAQ_DATALINK_PROVIDER = envBool("ENABLE_NASDAQ_DATALINK_PROVIDER", true);
+export const ENABLE_NASDAQ_CHRIS = envBool("ENABLE_NASDAQ_CHRIS", false);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -121,6 +123,25 @@ export const ALPHAVANTAGE_FUNCTIONS = (process.env.ALPHAVANTAGE_FUNCTIONS || "WH
 export const ALPHAVANTAGE_UNIT_MAP = process.env.ALPHAVANTAGE_UNIT_MAP || "";
 export const ALPHAVANTAGE_RATE_LIMIT_PER_MIN = envNum("ALPHAVANTAGE_RATE_LIMIT_PER_MIN", 5);
 export const ALPHAVANTAGE_BACKOFF_MS = envNum("ALPHAVANTAGE_BACKOFF_MS", 60_000);
+export const NASDAQ_API_KEY = process.env.NASDAQ_API_KEY || "";
+export const NASDAQ_BASE_URL =
+  process.env.NASDAQ_BASE_URL ||
+  "https://data.nasdaq.com/api/v3";
+export const NASDAQ_TIMEOUT_MS = envNum("NASDAQ_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const NASDAQ_CACHE_TTL_MS = envNum("NASDAQ_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const NASDAQ_DATASETS = (
+  process.env.NASDAQ_DATASETS ||
+  "FRED/DGS10,FRED/DGS2,FRED/DTWEXBGS,FRED/T10Y2Y"
+)
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const NASDAQ_CHRIS_DATASETS = (process.env.NASDAQ_CHRIS_DATASETS || "")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const NASDAQ_UNIT_MAP = process.env.NASDAQ_UNIT_MAP || "";
+export const NASDAQ_SERIES_COLUMN_MAP = process.env.NASDAQ_SERIES_COLUMN_MAP || "";
 export const USDA_MARS_INCLUDE_KEYWORDS = (
   process.env.USDA_MARS_INCLUDE_KEYWORDS ||
   "grain,bid,bids,export,market rates,corn,wheat,soy,soybean,oilseed,portland,louisiana,texas"

@@ -15,6 +15,7 @@ import { CommoditicProvider } from "./providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "./providers/dbNomicsSpotProvider";
 import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
+import { NasdaqDataLinkProvider } from "./providers/nasdaqDataLinkProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
 import { UsCashExportContextProvider } from "./providers/usCashExportContextProvider";
@@ -56,6 +57,7 @@ type ProviderRuntime = {
   topScoreMax?: number;
   unitConfidenceByFunction?: GrainWidgetsProviderDebug["unitConfidenceByFunction"];
   cadence?: "daily" | "weekly" | "monthly" | "unknown";
+  datasetStatuses?: GrainWidgetsProviderDebug["datasetStatuses"];
   rowsReturned?: number;
   itemsReturned?: number;
   cardsReturned?: number;
@@ -81,6 +83,7 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   US_CASH_EXPORT_CONTEXT: 3,
   USDA_MARS_DAILY_MARKET_RATES_TXT: 3,
   ALPHAVANTAGE_GRAIN_BENCHMARKS: 2,
+  NASDAQ_DATA_LINK_SNAPSHOT: 4,
 };
 
 const WIDGET_ORDER: GrainWidgetKind[] = [
@@ -94,6 +97,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "US_CASH_EXPORT_CONTEXT",
   "USDA_MARS_DAILY_MARKET_RATES_TXT",
   "ALPHAVANTAGE_GRAIN_BENCHMARKS",
+  "NASDAQ_DATA_LINK_SNAPSHOT",
 ];
 
 function statusRank(status: GrainWidget["status"]): number {
@@ -159,6 +163,9 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS") {
     return { rows: widget.rows.length, items: 0, cards: 0 };
   }
+  if (widget.kind === "NASDAQ_DATA_LINK_SNAPSHOT") {
+    return { rows: 0, items: widget.items.length, cards: 0 };
+  }
   return { rows: 0, items: 0, cards: 0 };
 }
 
@@ -191,6 +198,9 @@ function mappedCountForWidget(widget: GrainWidget): number {
   }
   if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
     return widget.rows.length;
+  }
+  if (widget.kind === "NASDAQ_DATA_LINK_SNAPSHOT") {
+    return widget.items.filter((item) => item.nativeValueCurrent != null).length;
   }
   return 0;
 }
@@ -267,6 +277,7 @@ export class GrainWidgetsService {
     US_CASH_EXPORT_CONTEXT: [new UsCashExportContextProvider()],
     USDA_MARS_DAILY_MARKET_RATES_TXT: [new UsdaMarsDailyMarketRatesTxtProvider()],
     ALPHAVANTAGE_GRAIN_BENCHMARKS: [new AlphaVantageCommoditiesProvider()],
+    NASDAQ_DATA_LINK_SNAPSHOT: [new NasdaqDataLinkProvider()],
   };
 
   private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
@@ -288,6 +299,7 @@ export class GrainWidgetsService {
     US_CASH_EXPORT_CONTEXT: new MockGrainWidgetsProvider({ kind: "US_CASH_EXPORT_CONTEXT" }),
     USDA_MARS_DAILY_MARKET_RATES_TXT: new MockGrainWidgetsProvider({ kind: "USDA_MARS_DAILY_MARKET_RATES_TXT" }),
     ALPHAVANTAGE_GRAIN_BENCHMARKS: new MockGrainWidgetsProvider({ kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS" }),
+    NASDAQ_DATA_LINK_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "NASDAQ_DATA_LINK_SNAPSHOT" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -413,6 +425,7 @@ export class GrainWidgetsService {
           topScoreMax: state?.topScoreMax,
           unitConfidenceByFunction: state?.unitConfidenceByFunction,
           cadence: state?.cadence,
+          datasetStatuses: state?.datasetStatuses,
           errorKind: state?.errorKind,
           coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
@@ -503,6 +516,7 @@ export class GrainWidgetsService {
           topScoreMax: state?.topScoreMax,
           unitConfidenceByFunction: state?.unitConfidenceByFunction,
           cadence: state?.cadence,
+          datasetStatuses: state?.datasetStatuses,
           errorKind: state?.errorKind,
           coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
           sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
@@ -573,6 +587,7 @@ export class GrainWidgetsService {
         topScoreMax: undefined,
         unitConfidenceByFunction: undefined,
         cadence: undefined,
+        datasetStatuses: undefined,
       });
 
       try {
@@ -582,6 +597,7 @@ export class GrainWidgetsService {
         const usdaSummary = data.kind === "USDA_MARS_REPORTS" ? data.summary : undefined;
         const txtDebug = data.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? data.debug : undefined;
         const alphaSummary = data.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS" ? data.summary : undefined;
+        const nasdaqSummary = data.kind === "NASDAQ_DATA_LINK_SNAPSHOT" ? data.summary : undefined;
         const metrics = widgetMetricCounts(data);
 
         if (!usable) {
@@ -593,7 +609,7 @@ export class GrainWidgetsService {
             errorKind: classifyProviderErrorKind(reason),
             sourceUrlUsed: data.sourceUrl,
             mappedCount,
-            expectedCount: alphaSummary?.expectedCount,
+            expectedCount: alphaSummary?.expectedCount ?? nasdaqSummary?.expectedCount,
             reportsFetched: usdaSummary?.fetchedCount,
             reportsScanned: usdaSummary?.scannedCount,
             reportsMatchedInclude: usdaSummary?.matchedCount,
@@ -614,6 +630,7 @@ export class GrainWidgetsService {
               allowNormalization: entry.allowNormalization,
             })),
             cadence: alphaSummary?.cadence,
+            datasetStatuses: nasdaqSummary?.datasetStatuses,
             fallbackUsed: true,
           });
           continue;
@@ -634,7 +651,7 @@ export class GrainWidgetsService {
           errorKind: undefined,
           sourceUrlUsed: data.sourceUrl,
           mappedCount,
-          expectedCount: alphaSummary?.expectedCount,
+          expectedCount: alphaSummary?.expectedCount ?? nasdaqSummary?.expectedCount,
           reportsFetched: usdaSummary?.fetchedCount,
           reportsScanned: usdaSummary?.scannedCount,
           reportsMatchedInclude: usdaSummary?.matchedCount,
@@ -655,6 +672,7 @@ export class GrainWidgetsService {
             allowNormalization: entry.allowNormalization,
           })),
           cadence: alphaSummary?.cadence,
+          datasetStatuses: nasdaqSummary?.datasetStatuses,
           widgetsReturned: [kind],
           fallbackUsed: ["DELAYED", "FALLBACK", "OFFLINE"].includes(data.status),
           notes: data.notes?.slice(0, 3),

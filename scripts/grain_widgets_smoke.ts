@@ -4,6 +4,7 @@ import { BarchartCashProvider } from "../server/monitor/grainWidgets/providers/b
 import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
+import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers/nasdaqDataLinkProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
 import { UsdaMarsDailyMarketRatesTxtProvider } from "../server/monitor/grainWidgets/providers/usdaMarsDailyMarketRatesTxtProvider";
@@ -34,6 +35,10 @@ function widgetCoverage(widget: GrainWidget): string {
   if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
     return `${widget.rows.length}/${widget.rows.length || 0}`;
   }
+  if (widget.kind === "NASDAQ_DATA_LINK_SNAPSHOT") {
+    const mapped = widget.items.filter((item) => item.nativeValueCurrent != null).length;
+    return `${mapped}/${widget.items.length || 0}`;
+  }
   return "n/a";
 }
 
@@ -56,6 +61,7 @@ async function run() {
     new UsdaMarsReportsProvider(),
     new UsdaMarsDailyMarketRatesTxtProvider(),
     new UsCashExportContextProvider(),
+    new NasdaqDataLinkProvider(),
   ];
 
   console.log("grain-widgets smoke start");
@@ -94,6 +100,12 @@ async function run() {
               .join(", ")}`,
           );
         }
+      }
+      if (widget.kind === "NASDAQ_DATA_LINK_SNAPSHOT") {
+        const forbidden = (widget.summary?.datasetStatuses || []).filter((entry) => entry.status === "forbidden").length;
+        console.log(
+          `  nasdaq coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} items=${widget.items.length} forbidden=${forbidden}`,
+        );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);
     } catch (error: any) {

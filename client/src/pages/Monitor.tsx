@@ -318,7 +318,8 @@ type GrainWidgetKind =
   | "USDA_MARS_REPORTS"
   | "US_CASH_EXPORT_CONTEXT"
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
-  | "ALPHAVANTAGE_GRAIN_BENCHMARKS";
+  | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
+  | "NASDAQ_DATA_LINK_SNAPSHOT";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -702,6 +703,45 @@ type GrainWidgetAlphaVantageBenchmarks = {
   fallbackReason?: string;
 };
 
+type GrainWidgetNasdaqDataLinkSnapshot = {
+  id: string;
+  kind: "NASDAQ_DATA_LINK_SNAPSHOT";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  items: Array<{
+    id: string;
+    dataset: string;
+    label: string;
+    nativeValueCurrent?: number;
+    nativeUnit: string;
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    unitConfidence: "CONFIRMED" | "ASSUMED" | "UNKNOWN";
+    notes?: string[];
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    datasetStatuses?: Array<{
+      dataset: string;
+      status: "ok" | "error" | "forbidden" | "rate_limited" | "empty" | "parse_error";
+      errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
+      sourceUrlUsed?: string;
+      note?: string;
+    }>;
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -712,7 +752,8 @@ type GrainWidget =
   | GrainWidgetUsdaMarsReports
   | GrainWidgetUsCashExportContext
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
-  | GrainWidgetAlphaVantageBenchmarks;
+  | GrainWidgetAlphaVantageBenchmarks
+  | GrainWidgetNasdaqDataLinkSnapshot;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -1967,6 +2008,7 @@ export default function MonitorPage() {
       "US_CASH_EXPORT_CONTEXT",
       "USDA_MARS_DAILY_MARKET_RATES_TXT",
       "ALPHAVANTAGE_GRAIN_BENCHMARKS",
+      "NASDAQ_DATA_LINK_SNAPSHOT",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -2109,6 +2151,7 @@ export default function MonitorPage() {
                   const usContextWidget = grainDataByKind["US_CASH_EXPORT_CONTEXT"] as GrainWidgetUsCashExportContext | undefined;
                   const marsDailyTxtWidget = grainDataByKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as GrainWidgetUsdaMarsDailyMarketRatesTxt | undefined;
                   const alphaWidget = grainDataByKind["ALPHAVANTAGE_GRAIN_BENCHMARKS"] as GrainWidgetAlphaVantageBenchmarks | undefined;
+                  const nasdaqWidget = grainDataByKind["NASDAQ_DATA_LINK_SNAPSHOT"] as GrainWidgetNasdaqDataLinkSnapshot | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -2852,6 +2895,87 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("ALPHAVANTAGE_GRAIN_BENCHMARKS") ? "Alpha Vantage Grain Benchmarks" : "Alpha Vantage Grain Benchmarks (not configured)"}
                             subtitle="Wheat / Corn (free-key source)"
+                          />
+                        </div>
+                      )}
+
+                      {nasdaqWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{nasdaqWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(nasdaqWidget.status)}`}>{nasdaqWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{nasdaqWidget.subtitle || "Macro/gov snapshot from Nasdaq Data Link"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {nasdaqWidget.items.slice(0, 8).map((item) => (
+                                <div key={`${nasdaqWidget.id}-${item.id}`} className="rounded-md border border-black/60 dark:border-white/25 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{item.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={item.dataset} variant="type" tone="muted" />
+                                      <MetricChip
+                                        label={item.unitConfidence === "CONFIRMED" ? "unit ok" : "unit unknown"}
+                                        variant="unit"
+                                        tone={item.unitConfidence === "CONFIRMED" ? "neutral" : "muted"}
+                                      />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "index", value: item.nativeValueCurrent, unit: item.nativeUnit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">
+                                    {formatChangeWithUnit({
+                                      change: item.changeAbs,
+                                      unit: item.nativeUnit,
+                                      pct: item.changePct,
+                                    })}
+                                  </p>
+                                  <DynamicMiniTrend
+                                    series={item.series || []}
+                                    change={item.changeAbs}
+                                    changePct={item.changePct}
+                                    status={nasdaqWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={nasdaqWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: nasdaqWidget.status,
+                                      sourceName: nasdaqWidget.sourceName,
+                                      fallbackReason: nasdaqWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!nasdaqWidget.items.length ? (
+                                <p className="text-[11px] text-foreground/68">No Nasdaq Data Link series mapped in current cycle.</p>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {nasdaqWidget.summary?.coverage ? <MetricChip label={`coverage ${nasdaqWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {nasdaqWidget.summary?.datasetStatuses?.some((entry) => entry.status === "forbidden")
+                                ? <MetricChip label="premium series denied" variant="type" tone="muted" />
+                                : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={nasdaqWidget.status}
+                              statusClassName={grainStatusClass(nasdaqWidget.status)}
+                              sourceName={nasdaqWidget.sourceName}
+                              sourceUrl={nasdaqWidget.sourceUrl}
+                              updatedLabel={nasdaqWidget.updatedAt ? formatRelative(nasdaqWidget.updatedAt) : nasdaqWidget.timeframe}
+                              fallbackReason={nasdaqWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("NASDAQ_DATA_LINK_SNAPSHOT") ? "Nasdaq Data Link Snapshot" : "Nasdaq Data Link Snapshot (not configured)"}
+                            subtitle="Macro/gov datasets (FRED + optional CHRIS)"
                           />
                         </div>
                       )}
