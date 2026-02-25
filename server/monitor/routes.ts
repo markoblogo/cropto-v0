@@ -343,7 +343,7 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
-  app.get("/api/monitor/grain-widgets", async (_req, res) => {
+  app.get("/api/monitor/grain-widgets", async (req, res) => {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_GRAIN_WIDGETS_EXPANSION) {
       return res.json({
         enabled: false,
@@ -360,7 +360,8 @@ export function registerMonitorRoutes(app: Express): void {
     }
 
     try {
-      const payload = await grainWidgetsService.list();
+      const country = typeof req.query.country === "string" ? req.query.country : undefined;
+      const payload = await grainWidgetsService.list({ country });
       return res.json({
         enabled: true,
         ...payload,
@@ -538,6 +539,8 @@ export function registerMonitorRoutes(app: Express): void {
         return {
           widgetKind,
           widgetStatus: widget?.status || "OFFLINE",
+          territoryScope: widget?.territoryScope,
+          territory: widget?.territory,
           sourceName: widget?.sourceName,
           sourceAttribution: widget?.sourceAttribution,
           updatedAt: widget?.updatedAt,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bar,
@@ -322,6 +322,18 @@ type GrainWidgetKind =
   | "NASDAQ_DATA_LINK_SNAPSHOT"
   | "USDA_GTR_LOGISTICS_SNAPSHOT";
 
+type GrainTerritoryMeta = {
+  territoryScope?: "GLOBAL" | "COUNTRY_FIXED" | "COUNTRY_MULTI";
+  territory?: { code: string; label: string };
+  supportedTerritories?: Array<{ code: string; label: string }>;
+  territorySelector?: {
+    paramName: "country";
+    default: string;
+    current: string;
+    persistKey: string;
+  };
+};
+
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
   nativeValueChange?: number;
@@ -351,9 +363,10 @@ type GrainWidgetRow = {
   updatedAt?: string;
   tags?: string[];
   notes?: string[];
+  territory?: { code: string; label: string };
 };
 
-type GrainWidgetCashBids = {
+type GrainWidgetCashBids = GrainTerritoryMeta & {
   id: string;
   kind: "US_CASH_BIDS";
   title: string;
@@ -385,7 +398,7 @@ type GrainWidgetCashBids = {
   fallbackReason?: string;
 };
 
-type GrainWidgetGlobalSpot = {
+type GrainWidgetGlobalSpot = GrainTerritoryMeta & {
   id: string;
   kind: "GLOBAL_SPOT_TABLE";
   title: string;
@@ -411,7 +424,7 @@ type GrainWidgetGlobalSpot = {
   fallbackReason?: string;
 };
 
-type GrainWidgetCropIndex = {
+type GrainWidgetCropIndex = GrainTerritoryMeta & {
   id: string;
   kind: "CROP_PRICE_INDEX";
   title: string;
@@ -444,7 +457,7 @@ type GrainWidgetCropIndex = {
   fallbackReason?: string;
 };
 
-type GrainWidgetFuturesSnapshot = {
+type GrainWidgetFuturesSnapshot = GrainTerritoryMeta & {
   id: string;
   kind: "CBOT_FUTURES_SNAPSHOT";
   title: string;
@@ -464,7 +477,7 @@ type GrainWidgetFuturesSnapshot = {
   fallbackReason?: string;
 };
 
-type GrainWidgetLivestockFeedTieIn = {
+type GrainWidgetLivestockFeedTieIn = GrainTerritoryMeta & {
   id: string;
   kind: "LIVESTOCK_FEED_TIEIN";
   title: string;
@@ -494,7 +507,7 @@ type GrainWidgetLivestockFeedTieIn = {
   fallbackReason?: string;
 };
 
-type GrainWidgetMacroAgriIndices = {
+type GrainWidgetMacroAgriIndices = GrainTerritoryMeta & {
   id: string;
   kind: "MACRO_AGRI_INDICES";
   title: string;
@@ -547,7 +560,7 @@ type GrainWidgetMacroAgriIndices = {
   fallbackReason?: string;
 };
 
-type GrainWidgetUsdaMarsReports = {
+type GrainWidgetUsdaMarsReports = GrainTerritoryMeta & {
   id: string;
   kind: "USDA_MARS_REPORTS";
   title: string;
@@ -591,7 +604,7 @@ type GrainWidgetUsdaMarsReports = {
   fallbackReason?: string;
 };
 
-type GrainWidgetUsCashExportContext = {
+type GrainWidgetUsCashExportContext = GrainTerritoryMeta & {
   id: string;
   kind: "US_CASH_EXPORT_CONTEXT";
   title: string;
@@ -623,7 +636,7 @@ type GrainWidgetUsCashExportContext = {
   fallbackReason?: string;
 };
 
-type GrainWidgetUsdaMarsDailyMarketRatesTxt = {
+type GrainWidgetUsdaMarsDailyMarketRatesTxt = GrainTerritoryMeta & {
   id: string;
   kind: "USDA_MARS_DAILY_MARKET_RATES_TXT";
   title: string;
@@ -668,7 +681,7 @@ type GrainWidgetUsdaMarsDailyMarketRatesTxt = {
   fallbackReason?: string;
 };
 
-type GrainWidgetAlphaVantageBenchmarks = {
+type GrainWidgetAlphaVantageBenchmarks = GrainTerritoryMeta & {
   id: string;
   kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS";
   title: string;
@@ -704,7 +717,7 @@ type GrainWidgetAlphaVantageBenchmarks = {
   fallbackReason?: string;
 };
 
-type GrainWidgetNasdaqDataLinkSnapshot = {
+type GrainWidgetNasdaqDataLinkSnapshot = GrainTerritoryMeta & {
   id: string;
   kind: "NASDAQ_DATA_LINK_SNAPSHOT";
   title: string;
@@ -745,7 +758,7 @@ type GrainWidgetNasdaqDataLinkSnapshot = {
   fallbackReason?: string;
 };
 
-type GrainWidgetUsdaGtrLogisticsSnapshot = {
+type GrainWidgetUsdaGtrLogisticsSnapshot = GrainTerritoryMeta & {
   id: string;
   kind: "USDA_GTR_LOGISTICS_SNAPSHOT";
   title: string;
@@ -998,6 +1011,39 @@ function grainStatusClass(status: GrainWidgetStatus) {
 function metricUnitChip(unit?: string, fallback = "unit"): string {
   if (!unit) return fallback;
   return unit;
+}
+
+function territoryChipLabel(widget?: GrainTerritoryMeta): string {
+  if (!widget?.territory?.code) return "Global";
+  const code = widget.territory.code.toUpperCase();
+  if (code === "GLOBAL") return "Global";
+  if (code === "EU") return "EU";
+  if (code === "BLACK_SEA") return "Black Sea";
+  return code;
+}
+
+function territorySortRank(code?: string): number {
+  const normalized = String(code || "GLOBAL").toUpperCase();
+  const order = ["UA", "BLACK_SEA", "EU", "US", "BR", "AR", "GLOBAL"];
+  const idx = order.indexOf(normalized);
+  return idx >= 0 ? idx : order.length + 1;
+}
+
+function sourceSortKey(widget: GrainTerritoryMeta & { sourceName?: string }): string {
+  return String(widget.sourceName || "").toLowerCase();
+}
+
+function sortRowsForView(rows: GrainWidgetRow[], mode: "territory" | "source"): GrainWidgetRow[] {
+  return [...rows].sort((a, b) => {
+    if (mode === "territory") {
+      const territoryCmp = territorySortRank(a.territory?.code) - territorySortRank(b.territory?.code);
+      if (territoryCmp !== 0) return territoryCmp;
+      return String(a.sourceName || "").localeCompare(String(b.sourceName || ""));
+    }
+    const sourceCmp = String(a.sourceName || "").localeCompare(String(b.sourceName || ""));
+    if (sourceCmp !== 0) return sourceCmp;
+    return territorySortRank(a.territory?.code) - territorySortRank(b.territory?.code);
+  });
 }
 
 type NasdaqCadence = "daily" | "weekly" | "monthly" | "unknown";
@@ -1726,6 +1772,7 @@ function GrainDataRow({ row, priceDisplayMode, debugEnabled = false }: { row: Gr
         </div>
         <div className="flex items-center gap-1">
           <MetricChip label="PRICE" variant="type" tone="muted" />
+          <MetricChip label={territoryChipLabel({ territory: row.territory })} variant="unit" tone="neutral" />
           <Badge className={`text-[10px] ${grainStatusClass(row.status || "OFFLINE")}`}>{row.status || "OFFLINE"}</Badge>
         </div>
       </div>
@@ -1821,6 +1868,34 @@ function GrainExpansionFallbackCard({
   );
 }
 
+function TerritorySelector({
+  widget,
+  value,
+  onChange,
+}: {
+  widget?: GrainTerritoryMeta;
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  if (widget?.territoryScope !== "COUNTRY_MULTI") return null;
+  const options = widget.supportedTerritories || [];
+  if (options.length < 2) return null;
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="h-7 rounded-md border border-black/60 bg-background/80 px-2 text-[10px] uppercase tracking-wide text-foreground dark:border-white/30"
+      aria-label="Select territory"
+    >
+      {options.map((option) => (
+        <option key={option.code} value={option.code}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export default function MonitorPage() {
   const [crop, setCrop] = useState("all");
   const [topic, setTopic] = useState("all");
@@ -1833,8 +1908,27 @@ export default function MonitorPage() {
   const [priceDisplayMode, setPriceDisplayMode] = useState<PriceDisplayMode>("USD_TON");
   const [temperatureDisplayMode, setTemperatureDisplayMode] = useState<TemperatureDisplayMode>("C");
   const [grainExpansionCollapsed, setGrainExpansionCollapsed] = useState(false);
+  const [grainGroupBy, setGrainGroupBy] = useState<"territory" | "source">(() => {
+    if (typeof window === "undefined") return "territory";
+    const saved = window.localStorage.getItem("monitor_grain_group_by");
+    return saved === "source" ? "source" : "territory";
+  });
+  const [grainCountry, setGrainCountry] = useState<string>(() => {
+    if (typeof window === "undefined") return "US";
+    return window.localStorage.getItem("monitor_country_global") || "US";
+  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("monitor_grain_group_by", grainGroupBy);
+  }, [grainGroupBy]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("monitor_country_global", grainCountry);
+  }, [grainCountry]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1899,9 +1993,11 @@ export default function MonitorPage() {
   });
 
   const grainWidgetsQuery = useQuery<GrainWidgetsResponse>({
-    queryKey: ["monitor-grain-widgets"],
+    queryKey: ["monitor-grain-widgets", grainCountry],
     queryFn: async () => {
-      const response = await fetch("/api/monitor/grain-widgets");
+      const params = new URLSearchParams();
+      params.set("country", grainCountry);
+      const response = await fetch(`/api/monitor/grain-widgets?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to load grain data expansion widgets");
       return response.json();
     },
@@ -2167,6 +2263,39 @@ export default function MonitorPage() {
     return (grainWidgetsQuery.data?.widgets.byKind || {}) as Partial<Record<GrainWidgetKind, GrainWidget>>;
   }, [grainWidgetsQuery.data]);
 
+  const grainExpansionGroups = useMemo(() => {
+    const widgets = Object.values(grainDataByKind).filter(Boolean) as GrainWidget[];
+    const grouped = new Map<string, GrainWidget[]>();
+    for (const widget of widgets) {
+      const key =
+        grainGroupBy === "territory"
+          ? territoryChipLabel(widget)
+          : String(widget.sourceName || "Unknown source");
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(widget);
+    }
+    const sortedGroups = Array.from(grouped.entries())
+      .map(([key, values]) => ({
+        key,
+        values: values.sort((a, b) => {
+          if (grainGroupBy === "territory") {
+            const territoryCmp = territorySortRank(a.territory?.code) - territorySortRank(b.territory?.code);
+            if (territoryCmp !== 0) return territoryCmp;
+          }
+          return sourceSortKey(a).localeCompare(sourceSortKey(b));
+        }),
+      }))
+      .sort((a, b) => {
+        if (grainGroupBy === "territory") {
+          const rankA = territorySortRank(a.values[0]?.territory?.code);
+          const rankB = territorySortRank(b.values[0]?.territory?.code);
+          return rankA - rankB;
+        }
+        return a.key.localeCompare(b.key);
+      });
+    return sortedGroups;
+  }, [grainDataByKind, grainGroupBy]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
@@ -2264,6 +2393,35 @@ export default function MonitorPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-wide text-foreground/62">Group by</span>
+                <Button
+                  size="sm"
+                  variant={grainGroupBy === "territory" ? "default" : "outline"}
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
+                  onClick={() => setGrainGroupBy("territory")}
+                >
+                  Territory
+                </Button>
+                <Button
+                  size="sm"
+                  variant={grainGroupBy === "source" ? "default" : "outline"}
+                  className="h-7 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
+                  onClick={() => setGrainGroupBy("source")}
+                >
+                  Source
+                </Button>
+                <span className="text-[10px] uppercase tracking-wide text-foreground/62">Country</span>
+                <select
+                  value={grainCountry}
+                  onChange={(event) => setGrainCountry(event.target.value)}
+                  className="h-7 rounded-md border border-black/60 bg-background/80 px-2 text-[10px] uppercase tracking-wide text-foreground dark:border-white/30"
+                  aria-label="Global country switcher"
+                >
+                  <option value="US">US</option>
+                  <option value="UA">UA</option>
+                  <option value="BR">BR</option>
+                  <option value="AR">AR</option>
+                </select>
                 <span className="text-[11px] text-foreground/65 dark:text-slate-500">
                   {grainWidgetsQuery.data?.meta.cacheAgeSec != null ? `cache ${grainWidgetsQuery.data.meta.cacheAgeSec}s` : "loading"}
                 </span>
@@ -2285,7 +2443,18 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid auto-rows-[minmax(0,1fr)] items-start gap-1.5 xl:grid-cols-12">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-1">
+                  {grainExpansionGroups.map((group) => (
+                    <MetricChip
+                      key={`group-${group.key}`}
+                      label={`${group.key} (${group.values.length})`}
+                      variant={grainGroupBy === "territory" ? "unit" : "provider"}
+                      tone={grainGroupBy === "territory" ? "neutral" : "muted"}
+                    />
+                  ))}
+                </div>
+                <div className="grid auto-rows-[minmax(0,1fr)] items-start gap-1.5 xl:grid-cols-12">
                 {(() => {
                   const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
                   const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
@@ -2320,9 +2489,12 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(cashWidget.status)}`}>{cashWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/70">{cashWidget.subtitle || "USDA cash grains / bids"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(cashWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-                            {cashWidget.rows.map((row) => (
+                            {sortRowsForView(cashWidget.rows, grainGroupBy).map((row) => (
                               <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                             ))}
                             {!cashWidget.rows.length ? (
@@ -2358,9 +2530,12 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(spotWidget.status)}`}>{spotWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/70">{spotWidget.subtitle || "Wheat / Corn / Soy / Rapeseed"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(spotWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="grid gap-1.5 sm:grid-cols-2">
-                            {spotWidget.rows.map((row) => (
+                            {sortRowsForView(spotWidget.rows, grainGroupBy).map((row) => (
                               <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                             ))}
                             {!spotWidget.rows.length ? (
@@ -2394,6 +2569,10 @@ export default function MonitorPage() {
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{indexWidget.title}</CardTitle>
                               <Badge className={`text-[10px] ${grainStatusClass(indexWidget.status)}`}>{indexWidget.status}</Badge>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(indexWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={indexWidget} value={grainCountry} onChange={setGrainCountry} />
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
@@ -2470,9 +2649,12 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(futuresWidget.status)}`}>{futuresWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/70">{futuresWidget.subtitle || "Intraday futures snapshot"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(futuresWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="grid gap-1.5 md:grid-cols-3">
-                            {futuresWidget.rows.map((row) => (
+                            {sortRowsForView(futuresWidget.rows, grainGroupBy).map((row) => (
                               <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                             ))}
                             {!futuresWidget.rows.length ? (
@@ -2508,10 +2690,13 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(livestockWidget.status)}`}>{livestockWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/70">{livestockWidget.subtitle || "Soy meal / feed-side indicators"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(livestockWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             <div className="grid gap-1.5 sm:grid-cols-2">
-                              {livestockWidget.rows.map((row) => (
+                              {sortRowsForView(livestockWidget.rows, grainGroupBy).map((row) => (
                                 <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                               ))}
                             </div>
@@ -2568,6 +2753,9 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(macroWidget.status)}`}>{macroWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/70">{macroWidget.subtitle || "Macro agri index context"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(macroWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             {macroEmbedUnavailable ? (
@@ -2762,6 +2950,9 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(marsWidget.status)}`}>{marsWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/68">{marsWidget.subtitle || "Metadata-only grain market report flow"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(marsWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             {marsWidget.reports.length ? (
@@ -2841,6 +3032,9 @@ export default function MonitorPage() {
                             <CardDescription className="text-foreground/68">
                               {usContextWidget.subtitle || "Metadata-only: daily bids & export indications"}
                             </CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(usContextWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             <div className="grid grid-cols-2 gap-1.5 rounded-md border border-black/60 dark:border-white/25 bg-background/50 p-1.5 text-[11px]">
@@ -2920,6 +3114,9 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(marsDailyTxtWidget.status)}`}>{marsDailyTxtWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/68">{marsDailyTxtWidget.subtitle || "USDA AMS MARS TXT extraction"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(marsDailyTxtWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             <div className="grid gap-1.5">
@@ -2974,6 +3171,9 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(alphaWidget.status)}`}>{alphaWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/68">{alphaWidget.subtitle || "Open-ish free-key benchmark series"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(alphaWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             <div className="grid gap-1.5 sm:grid-cols-2">
@@ -3054,6 +3254,9 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(nasdaqWidget.status)}`}>{nasdaqWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/68">{nasdaqWidget.subtitle || "Macro/gov snapshot from Nasdaq Data Link"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(nasdaqWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             {(() => {
@@ -3198,6 +3401,9 @@ export default function MonitorPage() {
                               <Badge className={`text-[10px] ${grainStatusClass(usdaGtrWidget.status)}`}>{usdaGtrWidget.status}</Badge>
                             </div>
                             <CardDescription className="text-foreground/68">{usdaGtrWidget.subtitle || "USDA grain transportation proxies"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(usdaGtrWidget)} variant="unit" tone="neutral" />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-1.5">
                             <div className="grid gap-1 sm:grid-cols-2">
@@ -3270,6 +3476,7 @@ export default function MonitorPage() {
                     </>
                   );
                 })()}
+                </div>
               </div>
             )}
           </div>

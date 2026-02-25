@@ -7,6 +7,7 @@ export type GrainWidgetStatus =
   | "OFFLINE";
 
 export type GrainWidgetsTimeframe = "1d" | "7d";
+export type GrainWidgetTerritoryScope = "GLOBAL" | "COUNTRY_FIXED" | "COUNTRY_MULTI";
 
 export type GrainWidgetKind =
   | "US_CASH_BIDS"
@@ -90,6 +91,21 @@ export interface GrainWidgetBase {
   timeframe?: GrainWidgetsTimeframe;
   notes?: string[];
   fallbackReason?: string;
+  territoryScope?: GrainWidgetTerritoryScope;
+  territory?: {
+    code: string;
+    label: string;
+  };
+  supportedTerritories?: Array<{
+    code: string;
+    label: string;
+  }>;
+  territorySelector?: {
+    paramName: "country";
+    default: string;
+    current: string;
+    persistKey: string;
+  };
 }
 
 export interface GrainWidgetTableCellPrice extends GrainWidgetPriceValue {
@@ -110,6 +126,10 @@ export interface GrainWidgetTableRow {
   tags?: string[];
   notes?: string[];
   metricSemanticKind?: GrainMetricSemanticKind;
+  territory?: {
+    code: string;
+    label: string;
+  };
 }
 
 export interface GrainWidgetStatCard {

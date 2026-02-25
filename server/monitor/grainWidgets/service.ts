@@ -26,6 +26,7 @@ import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./provid
 import type {
   GrainWidget,
   GrainWidgetKind,
+  GrainWidgetTerritoryScope,
   GrainWidgetsDebug,
   GrainWidgetsMeta,
   GrainWidgetsProviderDebug,
@@ -104,6 +105,95 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "NASDAQ_DATA_LINK_SNAPSHOT",
   "USDA_GTR_LOGISTICS_SNAPSHOT",
 ];
+
+type TerritoryMeta = {
+  scope: GrainWidgetTerritoryScope;
+  territory: { code: string; label: string };
+  supportedTerritories?: Array<{ code: string; label: string }>;
+  selectorDefault?: string;
+};
+
+function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): TerritoryMeta {
+  if (
+    kind === "GLOBAL_SPOT_TABLE" ||
+    kind === "CROP_PRICE_INDEX" ||
+    kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS" ||
+    kind === "NASDAQ_DATA_LINK_SNAPSHOT"
+  ) {
+    return {
+      scope: "GLOBAL",
+      territory: { code: "GLOBAL", label: "Global" },
+    };
+  }
+  if (
+    kind === "USDA_MARS_REPORTS" ||
+    kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ||
+    kind === "US_CASH_EXPORT_CONTEXT" ||
+    kind === "US_CASH_BIDS" ||
+    kind === "CBOT_FUTURES_SNAPSHOT" ||
+    kind === "USDA_GTR_LOGISTICS_SNAPSHOT"
+  ) {
+    return {
+      scope: "COUNTRY_FIXED",
+      territory: { code: "US", label: "United States" },
+    };
+  }
+  if (kind === "MACRO_AGRI_INDICES") {
+    return {
+      scope: "COUNTRY_FIXED",
+      territory: { code: "EU", label: "European Union" },
+    };
+  }
+  if (kind === "LIVESTOCK_FEED_TIEIN") {
+    return {
+      scope: "COUNTRY_FIXED",
+      territory: { code: "GLOBAL", label: "Global" },
+    };
+  }
+  return {
+    scope: "GLOBAL",
+    territory: { code: "GLOBAL", label: "Global" },
+  };
+}
+
+function applyTerritoryMeta(widget: GrainWidget, country?: string): GrainWidget {
+  const meta = territoryMetaForWidget(widget.kind, country);
+  const next: GrainWidget = {
+    ...widget,
+    territoryScope: widget.territoryScope || meta.scope,
+    territory: widget.territory || meta.territory,
+    supportedTerritories: widget.supportedTerritories || meta.supportedTerritories,
+    territorySelector: widget.territorySelector || (meta.scope === "COUNTRY_MULTI"
+      ? {
+          paramName: "country",
+          default: meta.selectorDefault || "US",
+          current: String(country || meta.selectorDefault || "US").toUpperCase(),
+          persistKey: `monitor_country_${widget.kind}`,
+        }
+      : undefined),
+  } as GrainWidget;
+
+  if (
+    next.kind === "US_CASH_BIDS" ||
+    next.kind === "GLOBAL_SPOT_TABLE" ||
+    next.kind === "CBOT_FUTURES_SNAPSHOT" ||
+    next.kind === "CROP_PRICE_INDEX" ||
+    next.kind === "LIVESTOCK_FEED_TIEIN" ||
+    next.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS"
+  ) {
+    const rows = next.kind === "CROP_PRICE_INDEX" ? (next.rows || []) : next.rows;
+    const mappedRows = rows.map((row) => ({
+      ...row,
+      territory: row.territory || next.territory,
+    }));
+    if (next.kind === "CROP_PRICE_INDEX") {
+      next.rows = mappedRows;
+    } else {
+      next.rows = mappedRows as typeof next.rows;
+    }
+  }
+  return next;
+}
 
 function statusRank(status: GrainWidget["status"]): number {
   if (status === "LIVE") return 6;
@@ -320,6 +410,7 @@ export class GrainWidgetsService {
   private refreshInFlight: Promise<void> | null = null;
   private timer: NodeJS.Timeout | null = null;
   private lastFxRateUsed: number | null = null;
+  private lastCountry: string = "US";
 
   start(): void {
     if (this.timer) return;
@@ -328,7 +419,8 @@ export class GrainWidgetsService {
     }, GRAIN_WIDGETS_REFRESH_MS);
   }
 
-  async list(): Promise<GrainWidgetsResponse> {
+  async list(opts?: { country?: string }): Promise<GrainWidgetsResponse> {
+    const selectedCountry = String(opts?.country || this.lastCountry || "US").toUpperCase();
     if (!ENABLE_GRAIN_WIDGETS_EXPANSION) {
       return {
         widgets: {
@@ -345,7 +437,9 @@ export class GrainWidgetsService {
       };
     }
 
-    await this.refreshAll(false);
+    const force = selectedCountry !== this.lastCountry;
+    this.lastCountry = selectedCountry;
+    await this.refreshAll(force, selectedCountry);
 
     const enabledKinds = WIDGET_ORDER.filter((kind) => (this.providerChains[kind] || []).some((provider) => provider.enabled));
     const widgets: GrainWidget[] = [];
@@ -357,7 +451,7 @@ export class GrainWidgetsService {
       const cached = this.cache.get(kind);
       if (!cached) continue;
       const age = now - cached.fetchedAt;
-      let data = cached.data;
+      let data = applyTerritoryMeta(cached.data, selectedCountry);
       if (age > GRAIN_WIDGETS_CACHE_TTL_MS && (data.status === "LIVE" || data.status === "REFRESH" || data.status === "INDICATIVE")) {
         data = {
           ...data,
@@ -610,7 +704,8 @@ export class GrainWidgetsService {
       });
 
       try {
-        const data = await provider.getWidget(ctx);
+        const rawData = await provider.getWidget(ctx);
+        const data = applyTerritoryMeta(rawData, ctx.country);
         const mappedCount = mappedCountForWidget(data);
         const usable = widgetHasUsableData(data);
         const usdaSummary = data.kind === "USDA_MARS_REPORTS" ? data.summary : undefined;
@@ -730,15 +825,15 @@ export class GrainWidgetsService {
 
     if (ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK) {
       const mockProvider = this.mockProviders[kind];
-      const data = mockProvider.mockFallback(reason, ctx);
+      const data = applyTerritoryMeta(mockProvider.mockFallback(reason, ctx), ctx.country);
       this.cache.set(kind, {
         providerId: mockProvider.id,
         fetchedAt: now,
-        data: {
-          ...data,
-          status: "FALLBACK",
-          fallbackReason: reason,
-        },
+      data: {
+        ...data,
+        status: "FALLBACK",
+        fallbackReason: reason,
+      },
         lastError: reason,
         chainTried,
       });
@@ -751,7 +846,7 @@ export class GrainWidgetsService {
       providerId: provider.id,
       fetchedAt: now,
       data: {
-        ...provider.mockFallback(reason, ctx),
+        ...applyTerritoryMeta(provider.mockFallback(reason, ctx), ctx.country),
         status: "OFFLINE",
         fallbackReason: reason,
       },
@@ -760,7 +855,7 @@ export class GrainWidgetsService {
     });
   }
 
-  private async refreshAll(force: boolean): Promise<void> {
+  private async refreshAll(force: boolean, country?: string): Promise<void> {
     if (this.refreshInFlight) return this.refreshInFlight;
     this.refreshInFlight = (async () => {
       const now = Date.now();
@@ -770,6 +865,7 @@ export class GrainWidgetsService {
         timeframe: GRAIN_WIDGETS_TIMEFRAME_DEFAULT,
         seriesPoints: GRAIN_WIDGETS_SERIES_POINTS,
         eurUsd,
+        country,
         getCachedWidget: (kind) => this.cache.get(kind)?.data,
       };
 

@@ -13,6 +13,7 @@ import type {
   GrainWidgetGlobalSpotTable,
   GrainWidgetCbotFuturesSnapshot,
 } from "../types";
+import { ENABLE_COUNTRY_MULTI_WIDGET_MOCK } from "../config";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { deriveSeries } from "./utils";
 import { buildLivestockTieInWidget } from "../builders/livestockTieInBuilder";
@@ -264,11 +265,19 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
     }
 
     if (this.kind === "CROP_PRICE_INDEX") {
+      const country = String(ctx.country || "US").toUpperCase();
+      const territoryLabelMap: Record<string, string> = {
+        US: "United States",
+        UA: "Ukraine",
+        BR: "Brazil",
+        AR: "Argentina",
+      };
+      const currentLabel = territoryLabelMap[country] || "United States";
       const widget: GrainWidgetCropPriceIndex = {
         id: "grain-crop-price-index",
         kind: "CROP_PRICE_INDEX",
-        title: "Crop Price Index",
-        subtitle: "Wheat / Soy / Oilseeds composite",
+        title: ENABLE_COUNTRY_MULTI_WIDGET_MOCK ? "Crop Price Index (Mock Multi-Country)" : "Crop Price Index",
+        subtitle: ENABLE_COUNTRY_MULTI_WIDGET_MOCK ? "Mock COUNTRY_MULTI selector path" : "Wheat / Soy / Oilseeds composite",
         status: "FALLBACK",
         sourceName: "Demo sample",
         sourceAttribution: "Data: Demo fallback sample",
@@ -284,6 +293,26 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           label: "Weather-linked signal",
           notes: ["Weather tie-in not available in current provider response"],
         },
+        territoryScope: ENABLE_COUNTRY_MULTI_WIDGET_MOCK ? "COUNTRY_MULTI" : "GLOBAL",
+        territory: ENABLE_COUNTRY_MULTI_WIDGET_MOCK
+          ? { code: country, label: currentLabel }
+          : { code: "GLOBAL", label: "Global" },
+        supportedTerritories: ENABLE_COUNTRY_MULTI_WIDGET_MOCK
+          ? [
+              { code: "US", label: "United States" },
+              { code: "UA", label: "Ukraine" },
+              { code: "BR", label: "Brazil" },
+              { code: "AR", label: "Argentina" },
+            ]
+          : undefined,
+        territorySelector: ENABLE_COUNTRY_MULTI_WIDGET_MOCK
+          ? {
+              paramName: "country",
+              default: "US",
+              current: country,
+              persistKey: "monitor_country_CROP_PRICE_INDEX",
+            }
+          : undefined,
         fallbackReason: reason,
       };
       return widget;
