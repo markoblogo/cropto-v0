@@ -755,6 +755,18 @@ function trendIntensity(change?: number, changePct?: number): number | undefined
   return Math.min(100, Math.max(12, Math.round(Math.abs(base) * 12)));
 }
 
+function isValidEmbedUrl(url?: string): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    if (!["https:", "http:"].includes(parsed.protocol)) return false;
+    if (parsed.href.toLowerCase().includes("404")) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function DynamicMiniTrend({
   series,
   change,
@@ -1265,6 +1277,8 @@ export default function MonitorPage() {
   const [priceDisplayMode, setPriceDisplayMode] = useState<PriceDisplayMode>("USD_TON");
   const [temperatureDisplayMode, setTemperatureDisplayMode] = useState<TemperatureDisplayMode>("C");
   const [grainExpansionCollapsed, setGrainExpansionCollapsed] = useState(false);
+  const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
+  const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1596,7 +1610,7 @@ export default function MonitorPage() {
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
       <main>
       <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-6">
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
               <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
@@ -1610,7 +1624,7 @@ export default function MonitorPage() {
             </div>
           </div>
 
-          <LiveVisualsPanel debugEnabled={debugEnabled} compact />
+          {showLiveVisualsHero ? <LiveVisualsPanel debugEnabled={debugEnabled} compact /> : null}
 
           <div id="grain-markets-core" className="scroll-mt-24 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1717,6 +1731,16 @@ export default function MonitorPage() {
                   const futuresWidget = grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined;
                   const livestockWidget = grainDataByKind["LIVESTOCK_FEED_TIEIN"] as GrainWidgetLivestockFeedTieIn | undefined;
                   const macroWidget = grainDataByKind["MACRO_AGRI_INDICES"] as GrainWidgetMacroAgriIndices | undefined;
+                  const macroEmbedRenderable =
+                    !!macroWidget &&
+                    macroWidget.renderMode === "embed" &&
+                    allowMacroEmbedFrames &&
+                    macroWidget.embed?.status === "AVAILABLE" &&
+                    isValidEmbedUrl(macroWidget.embed?.embedUrl);
+                  const macroEmbedUnavailable =
+                    !!macroWidget &&
+                    macroWidget.renderMode === "embed" &&
+                    !macroEmbedRenderable;
 
                   return (
                     <>
@@ -1970,11 +1994,11 @@ export default function MonitorPage() {
                             <CardDescription className="text-foreground/70">{macroWidget.subtitle || "Macro agri index context"}</CardDescription>
                           </CardHeader>
                           <CardContent className="space-y-2">
-                            {macroWidget.renderMode === "embed" && (macroWidget.embed?.status === "BLOCKED" || !macroWidget.embed?.embedUrl) ? (
+                            {macroEmbedUnavailable ? (
                               <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-3">
                                 <p className="text-sm font-semibold text-foreground">Embed unavailable</p>
                                 <p className="mt-1 text-[11px] text-foreground/68">
-                                  {macroWidget.summary?.modeReason || "Embed is blocked by source policy. External source is available."}
+                                  {macroWidget.summary?.modeReason || (!allowMacroEmbedFrames ? "Embed previews are disabled in hero for demo polish. External source is available." : "Embed is blocked by source policy or URL is invalid. External source is available.")}
                                 </p>
                                 {macroWidget.embed?.externalUrl ? (
                                   <a
@@ -1989,11 +2013,11 @@ export default function MonitorPage() {
                               </div>
                             ) : null}
 
-                            {macroWidget.renderMode === "embed" && macroWidget.embed?.status === "AVAILABLE" && macroWidget.embed?.embedUrl ? (
+                            {macroEmbedRenderable ? (
                               <div className="overflow-hidden rounded-md border border-black/70 dark:border-white/30 bg-muted/40">
                                 <iframe
-                                  src={macroWidget.embed.embedUrl}
-                                  title={macroWidget.embed.title || "Macro Agri Embed"}
+                                  src={macroWidget.embed?.embedUrl}
+                                  title={macroWidget.embed?.title || "Macro Agri Embed"}
                                   className="h-[280px] w-full"
                                   loading="lazy"
                                   referrerPolicy="no-referrer"
@@ -2136,7 +2160,7 @@ export default function MonitorPage() {
             )}
           </div>
 
-          <div id="top-signals" className="scroll-mt-24 grid gap-3 xl:grid-cols-12">
+          <div id="top-signals" className="scroll-mt-24 grid gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-br from-red-100/70 via-card to-muted/35 dark:from-red-900/25 dark:via-card dark:to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-red-400/55 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
@@ -2178,14 +2202,14 @@ export default function MonitorPage() {
               </CardContent>
             </Card>
 
-            <div className="xl:col-span-7 grid gap-3 sm:grid-cols-2">
+            <div className="xl:col-span-7 grid gap-2.5 sm:grid-cols-2">
               {compactWidgets.map((widget) => (
                 <CompactWidgetCard key={widget.id} widget={widget} />
               ))}
             </div>
           </div>
 
-          <div className="grid gap-3 xl:grid-cols-12">
+          <div className="grid gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
@@ -2214,7 +2238,7 @@ export default function MonitorPage() {
               </CardContent>
             </Card>
 
-            <div className="xl:col-span-3 grid gap-3">
+            <div className="xl:col-span-3 grid gap-2.5">
               {logisticsIndicatorsQuery.data?.enabled ? (
                 (logisticsIndicatorsQuery.data?.widgets || []).slice(0, 2).map((indicator) => (
                   <Card key={`mini-${indicator.id}`} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
@@ -2267,7 +2291,7 @@ export default function MonitorPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 xl:grid-cols-12">
+          <div className="grid gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md transition-all duration-300 hover:border-primary/45 hover:shadow-lg">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Market Pulse (Secondary)</CardTitle>
