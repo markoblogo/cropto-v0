@@ -27,6 +27,7 @@ export type MonitorFeatureFlags = {
   ENABLE_LIVE_VISUALS: boolean;
   ENABLE_LOGISTICS_INDICATORS: boolean;
   ENABLE_GRAIN_MARKETS_CORE: boolean;
+  ENABLE_GRAIN_WIDGETS_EXPANSION: boolean;
 };
 
 export type MonitorNewsItem = {

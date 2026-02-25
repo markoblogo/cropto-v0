@@ -124,6 +124,30 @@ type DebugResponse = {
       error?: string;
     }>;
   };
+  grainWidgets?: {
+    enabled: boolean;
+    refreshMs: number;
+    cacheTtlMs: number;
+    providers: Array<{
+      providerId: string;
+      kind: GrainWidgetKind;
+      enabled: boolean;
+      status: string;
+      cacheAgeSec?: number;
+      lastSuccessAt?: string;
+      fallbackUsed?: boolean;
+      error?: string;
+    }>;
+    normalization?: {
+      defaults: {
+        price: "USD/t";
+        temperature: "C";
+      };
+      fxRateUsed?: number;
+      normalizedCount: number;
+      nativeFallbackCount: number;
+    };
+  };
 };
 
 type LogisticsIndicator = {
@@ -258,6 +282,209 @@ type GrainMarketsResponse = {
   };
   message?: string;
 };
+
+type GrainWidgetKind =
+  | "US_CASH_BIDS"
+  | "GLOBAL_SPOT_TABLE"
+  | "CROP_PRICE_INDEX"
+  | "CBOT_FUTURES_SNAPSHOT"
+  | "CBOT_FUTURES_CURVE";
+
+type GrainWidgetTableCellPrice = {
+  nativeValueCurrent?: number;
+  nativeValueChange?: number;
+  nativeValueChangePct?: number;
+  nativeCurrency?: string;
+  nativeUnit?: string;
+  normalizedValueCurrent?: number;
+  normalizedValueChange?: number;
+  normalizedValueChangePct?: number;
+  normalizedCurrency?: "USD";
+  normalizedUnit?: "t";
+  normalizationStatus: "OK" | "PARTIAL" | "FX_MISSING" | "UNAVAILABLE";
+  normalizationMethod?: string;
+  series?: Array<{ ts: string; value: number }>;
+};
+
+type GrainWidgetRow = {
+  id: string;
+  label: string;
+  sublabel?: string;
+  region?: string;
+  commodityGroup?: "Grains" | "Oilseeds" | "Composite";
+  price?: GrainWidgetTableCellPrice;
+  status?: GrainWidgetStatus;
+  sourceName?: string;
+  sourceAttribution?: string;
+  updatedAt?: string;
+  tags?: string[];
+  notes?: string[];
+};
+
+type GrainWidgetCashBids = {
+  id: string;
+  kind: "US_CASH_BIDS";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: GrainWidgetRow[];
+  summary?: {
+    rowCount: number;
+    normalizedCoverage?: {
+      ok: number;
+      partial: number;
+      fxMissing: number;
+      unavailable: number;
+    };
+    spreadCue?: {
+      min?: number;
+      max?: number;
+      range?: number;
+      unit?: string;
+      label?: string;
+    };
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetGlobalSpot = {
+  id: string;
+  kind: "GLOBAL_SPOT_TABLE";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: GrainWidgetRow[];
+  summary?: {
+    rowCount: number;
+    momentumLabel?: "Firm" | "Soft" | "Mixed" | "Flat";
+    normalizedCoverage?: {
+      ok: number;
+      partial: number;
+      fxMissing: number;
+      unavailable: number;
+    };
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetCropIndex = {
+  id: string;
+  kind: "CROP_PRICE_INDEX";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  cards: Array<{
+    id: string;
+    label: string;
+    value?: number;
+    valueText?: string;
+    delta?: number;
+    deltaPct?: number;
+    status?: GrainWidgetStatus;
+    series?: Array<{ ts: string; value: number }>;
+  }>;
+  rows?: GrainWidgetRow[];
+  weatherTieIn?: {
+    available: boolean;
+    label?: string;
+    score?: number;
+    status?: GrainWidgetStatus;
+    notes?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetFuturesSnapshot = {
+  id: string;
+  kind: "CBOT_FUTURES_SNAPSHOT";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: GrainWidgetRow[];
+  summary?: {
+    contractsParsed?: number;
+    parseMode?: "snapshot" | "curve-lite";
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidget = GrainWidgetCashBids | GrainWidgetGlobalSpot | GrainWidgetCropIndex | GrainWidgetFuturesSnapshot;
+
+type GrainWidgetsResponse = {
+  enabled?: boolean;
+  widgets: {
+    byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
+    order: GrainWidgetKind[];
+  };
+  meta: {
+    generatedAt: string;
+    partialFailure: boolean;
+    cacheAgeSec?: number;
+    timeframe: "1d" | "7d";
+    enabledWidgetKinds: GrainWidgetKind[];
+    returnedWidgetKinds: GrainWidgetKind[];
+    counts?: {
+      totalWidgets: number;
+      live: number;
+      delayed: number;
+      indicative: number;
+      fallback: number;
+      offline: number;
+    };
+    normalization?: {
+      normalizedRowsOk: number;
+      normalizedRowsPartial: number;
+      fxMissing: number;
+      unavailable: number;
+      fxRateUsed?: number;
+    };
+  };
+  debug?: {
+    providers: Array<{
+      providerId: string;
+      providerType?: string;
+      enabled: boolean;
+      status: string;
+      cacheAgeSec?: number;
+      fallbackUsed?: boolean;
+      error?: string;
+    }>;
+    normalization?: {
+      fxRateUsed?: number;
+      rowsByStatus?: {
+        OK: number;
+        PARTIAL: number;
+        FX_MISSING: number;
+        UNAVAILABLE: number;
+      };
+    };
+  };
+  message?: string;
+};
 type CompactSignalStatus = "Rising" | "Stable" | "Elevated" | "Cooling";
 
 type CompactSignalWidget = {
@@ -282,6 +509,7 @@ const HERO_CROPS = ["wheat", "corn", "soy", "rapeseed", "sunflower"] as const;
 const MONITOR_NAV_ITEMS = [
   { href: "#overview", label: "Overview" },
   { href: "#grain-markets-core", label: "Grain Markets" },
+  { href: "#grain-data-expansion", label: "Market Depth" },
   { href: "#top-signals", label: "Top Signals" },
   { href: "#terminal-panels", label: "Panels" },
   { href: "#logistics-indicators", label: "Logistics" },
@@ -533,6 +761,55 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
   );
 }
 
+function formatWidgetRowPrice(row: GrainWidgetRow, mode: PriceDisplayMode) {
+  const price = row.price;
+  if (!price) {
+    return {
+      value: undefined,
+      change: undefined,
+      changePct: undefined,
+      unit: undefined,
+      currency: undefined,
+      secondary: "No price",
+    };
+  }
+
+  if (mode === "NATIVE") {
+    return {
+      value: price.nativeValueCurrent ?? price.normalizedValueCurrent,
+      change: price.nativeValueChange ?? price.normalizedValueChange,
+      changePct: price.nativeValueChangePct ?? price.normalizedValueChangePct,
+      unit: price.nativeUnit,
+      currency: price.nativeCurrency,
+      secondary:
+        price.normalizationStatus === "OK" && price.normalizedValueCurrent != null
+          ? `${price.normalizedValueCurrent.toFixed(2)} USD/t`
+          : undefined,
+    };
+  }
+  if (price.normalizationStatus === "OK" && price.normalizedValueCurrent != null) {
+    return {
+      value: price.normalizedValueCurrent,
+      change: price.normalizedValueChange,
+      changePct: price.normalizedValueChangePct,
+      unit: "t",
+      currency: "USD",
+      secondary:
+        price.nativeValueCurrent != null
+          ? `${price.nativeValueCurrent.toFixed(2)} ${price.nativeUnit || ""}`.trim()
+          : undefined,
+    };
+  }
+  return {
+    value: price.nativeValueCurrent ?? price.normalizedValueCurrent,
+    change: price.nativeValueChange ?? price.normalizedValueChange,
+    changePct: price.nativeValueChangePct ?? price.normalizedValueChangePct,
+    unit: price.nativeUnit,
+    currency: price.nativeCurrency,
+    secondary: price.normalizationStatus === "FX_MISSING" ? "USD/t unavailable (FX missing)" : "Native units",
+  };
+}
+
 function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
   const isPositive = (indicator.valueChange ?? 0) >= 0;
   const icon =
@@ -699,6 +976,38 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
   );
 }
 
+function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDisplayMode: PriceDisplayMode }) {
+  const display = formatWidgetRowPrice(row, priceDisplayMode);
+  const positive = (display.change ?? 0) >= 0;
+  const unitLabel = display.unit
+    ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
+      ? display.unit
+      : `${display.currency || ""}/${display.unit}`
+    : display.currency || "";
+
+  return (
+    <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold text-foreground">{row.label}</p>
+          <p className="text-[10px] text-foreground/65">{row.sublabel || row.region || "—"}</p>
+        </div>
+        <Badge className={`text-[10px] ${grainStatusClass(row.status || "OFFLINE")}`}>{row.status || "OFFLINE"}</Badge>
+      </div>
+      <div className="mt-1 flex items-end justify-between gap-2">
+        <p className="text-sm font-semibold text-foreground">
+          {display.value == null ? "n/a" : display.value.toFixed(2)}
+          <span className="ml-1 text-[10px] text-foreground/65">{unitLabel}</span>
+        </p>
+        <p className={`text-[10px] font-semibold ${positive ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
+          {display.change == null ? "n/a" : `${positive ? "+" : ""}${display.change.toFixed(2)}${display.changePct != null ? ` (${positive ? "+" : ""}${display.changePct.toFixed(2)}%)` : ""}`}
+        </p>
+      </div>
+      {display.secondary ? <p className="mt-1 text-[10px] text-foreground/68">{display.secondary}</p> : null}
+    </div>
+  );
+}
+
 export default function MonitorPage() {
   const [crop, setCrop] = useState("all");
   const [topic, setTopic] = useState("all");
@@ -768,6 +1077,16 @@ export default function MonitorPage() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/grain-markets");
       if (!response.ok) throw new Error("Failed to load grain markets core");
+      return response.json();
+    },
+    refetchInterval: 5 * 60 * 1000,
+  });
+
+  const grainWidgetsQuery = useQuery<GrainWidgetsResponse>({
+    queryKey: ["monitor-grain-widgets"],
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/grain-widgets");
+      if (!response.ok) throw new Error("Failed to load grain data expansion widgets");
       return response.json();
     },
     refetchInterval: 5 * 60 * 1000,
@@ -1006,6 +1325,14 @@ export default function MonitorPage() {
     { id: "oilseedsBiofuels", title: "Oilseeds / Biofuels", items: panelItems.oilseedsBiofuels },
   ] as const;
 
+  const grainDataWidgets = useMemo(() => {
+    const byKind = grainWidgetsQuery.data?.widgets.byKind || {};
+    const order = grainWidgetsQuery.data?.widgets.order || [];
+    return order
+      .map((kind) => byKind[kind])
+      .filter((widget): widget is GrainWidget => Boolean(widget));
+  }, [grainWidgetsQuery.data]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
@@ -1090,6 +1417,108 @@ export default function MonitorPage() {
                     <GrainComparisonCard key={widget.id} widget={widget} />
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
+
+          <div id="grain-data-expansion" className="scroll-mt-24 space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/82 dark:text-slate-300">Grain Data Expansion</h2>
+                <span className="text-[11px] text-foreground/65 dark:text-slate-500">
+                  {grainWidgetsQuery.data?.meta.partialFailure ? "Cash / Spot / Index / Futures (partial/fallback)" : "Cash / Spot / Index / Futures"}
+                </span>
+              </div>
+              <span className="text-[11px] text-foreground/65 dark:text-slate-500">
+                {grainWidgetsQuery.data?.meta.cacheAgeSec != null ? `cache ${grainWidgetsQuery.data.meta.cacheAgeSec}s` : "loading"}
+              </span>
+            </div>
+
+            {!grainWidgetsQuery.data || grainDataWidgets.length === 0 ? (
+              <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground">
+                <CardContent className="pt-6 text-sm text-foreground/72">
+                  Grain data expansion widgets are temporarily unavailable.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-3 xl:grid-cols-12">
+                <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.title || "Cash (US)"}</CardTitle>
+                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.status || "OFFLINE")}`}>
+                        {(grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.status || "OFFLINE"}
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-foreground/70">{(grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.subtitle || "USDA cash grains / bids"}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {((grainWidgetsQuery.data.widgets.byKind.US_CASH_BIDS as GrainWidgetCashBids | undefined)?.rows || []).map((row) => (
+                      <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.title || "Spot (Global)"}</CardTitle>
+                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.status || "OFFLINE")}`}>
+                        {(grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.status || "OFFLINE"}
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-foreground/70">{(grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.subtitle || "Wheat / Corn / Soy / Rapeseed"}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-2 sm:grid-cols-2">
+                    {((grainWidgetsQuery.data.widgets.byKind.GLOBAL_SPOT_TABLE as GrainWidgetGlobalSpot | undefined)?.rows || []).map((row) => (
+                      <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="xl:col-span-4 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.title || "Index (Composite)"}</CardTitle>
+                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.status || "OFFLINE")}`}>
+                        {(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.status || "OFFLINE"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {((grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.cards || []).map((card) => (
+                      <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
+                        <p className="text-[11px] text-foreground/72">{card.label}</p>
+                        <p className="text-lg font-semibold text-foreground">{card.value == null ? card.valueText || "n/a" : card.value.toFixed(2)}</p>
+                        <p className="text-[10px] text-foreground/65">{card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}</p>
+                      </div>
+                    ))}
+                    {(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex | undefined)?.weatherTieIn ? (
+                      <p className="text-[10px] text-foreground/68">
+                        {(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex).weatherTieIn?.available
+                          ? `Weather-linked signal: ${(grainWidgetsQuery.data.widgets.byKind.CROP_PRICE_INDEX as GrainWidgetCropIndex).weatherTieIn?.score ?? "n/a"}`
+                          : "Weather tie-in: unavailable"}
+                      </p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+
+                <Card className="xl:col-span-8 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-base">{(grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.title || "Futures (CBOT)"}</CardTitle>
+                      <Badge className={`text-[10px] ${grainStatusClass((grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.status || "OFFLINE")}`}>
+                        {(grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.status || "OFFLINE"}
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-foreground/70">{(grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.subtitle || "Intraday futures snapshot"}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-2 md:grid-cols-3">
+                    {((grainWidgetsQuery.data.widgets.byKind.CBOT_FUTURES_SNAPSHOT as GrainWidgetFuturesSnapshot | undefined)?.rows || []).map((row) => (
+                      <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                    ))}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>
@@ -1582,6 +2011,27 @@ export default function MonitorPage() {
                     <ul className="list-disc pl-5">
                       {debugQuery.data.grainMarkets.providers.map((provider) => (
                         <li key={`gm-${provider.providerId}`}>
+                          {provider.providerId}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackUsed)}
+                          {provider.error ? ` • err: ${provider.error}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {debugQuery.data?.grainWidgets ? (
+                  <div>
+                    <p className="font-medium">Grain widgets expansion:</p>
+                    <p>
+                      enabled: {String(debugQuery.data.grainWidgets.enabled)} • refresh: {Math.round(debugQuery.data.grainWidgets.refreshMs / 1000)}s • cacheTTL: {Math.round(debugQuery.data.grainWidgets.cacheTtlMs / 1000)}s
+                    </p>
+                    {debugQuery.data.grainWidgets.normalization ? (
+                      <p>
+                        normalized: {debugQuery.data.grainWidgets.normalization.normalizedCount} • native fallback: {debugQuery.data.grainWidgets.normalization.nativeFallbackCount} • fx EURUSD: {debugQuery.data.grainWidgets.normalization.fxRateUsed?.toFixed(4) ?? "n/a"}
+                      </p>
+                    ) : null}
+                    <ul className="list-disc pl-5">
+                      {debugQuery.data.grainWidgets.providers.map((provider) => (
+                        <li key={`gw-${provider.providerId}`}>
                           {provider.providerId}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackUsed)}
                           {provider.error ? ` • err: ${provider.error}` : ""}
                         </li>

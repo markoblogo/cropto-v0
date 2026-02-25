@@ -10,12 +10,14 @@ import {
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
 import { GrainMarketsService } from "./grainMarkets";
+import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 
 const indexProvider = new CroptoUkraineIndexProvider();
 const logisticsIndicatorsService = new LogisticsIndicatorsService();
 const grainMarketsService = new GrainMarketsService();
+const grainWidgetsService = new GrainWidgetsService();
 
 function topEntries(record: Record<string, number>, limit = 5) {
   return Object.entries(record)
@@ -27,6 +29,7 @@ function topEntries(record: Record<string, number>, limit = 5) {
 export function registerMonitorRoutes(app: Express): void {
   logisticsIndicatorsService.start();
   grainMarketsService.start();
+  grainWidgetsService.start();
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
@@ -210,6 +213,44 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/monitor/grain-widgets", async (_req, res) => {
+    if (!MONITOR_FEATURE_FLAGS.ENABLE_GRAIN_WIDGETS_EXPANSION) {
+      return res.json({
+        enabled: false,
+        widgets: { byKind: {}, order: [] },
+        meta: {
+          generatedAt: new Date().toISOString(),
+          partialFailure: false,
+          timeframe: "1d",
+          enabledWidgetKinds: [],
+          returnedWidgetKinds: [],
+        },
+        message: "Grain widgets expansion disabled",
+      });
+    }
+
+    try {
+      const payload = await grainWidgetsService.list();
+      return res.json({
+        enabled: true,
+        ...payload,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        enabled: true,
+        widgets: { byKind: {}, order: [] },
+        meta: {
+          generatedAt: new Date().toISOString(),
+          partialFailure: true,
+          timeframe: "1d",
+          enabledWidgetKinds: [],
+          returnedWidgetKinds: [],
+        },
+        message: error?.message || "Failed to load grain widgets",
+      });
+    }
+  });
+
   app.get("/api/monitor/debug", async (_req, res) => {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_DEBUG_DASHBOARD) {
       return res.status(404).json({ message: "Debug dashboard disabled" });
@@ -230,6 +271,7 @@ export function registerMonitorRoutes(app: Express): void {
       liveVisuals: liveVisuals.summary,
       logisticsIndicators: logisticsIndicatorsService.debugSummary(),
       grainMarkets: grainMarketsService.debugSummary(),
+      grainWidgets: grainWidgetsService.debugSummary(),
     });
   });
 }

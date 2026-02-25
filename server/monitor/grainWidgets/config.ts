@@ -1,0 +1,46 @@
+function envBool(name: string, fallback: boolean): boolean {
+  const raw = process.env[name];
+  if (raw == null) return fallback;
+  return raw === "1" || raw.toLowerCase() === "true";
+}
+
+function envNum(name: string, fallback: number): number {
+  const raw = Number.parseInt(process.env[name] || "", 10);
+  return Number.isFinite(raw) ? raw : fallback;
+}
+
+export const ENABLE_GRAIN_WIDGETS_EXPANSION = envBool("ENABLE_GRAIN_WIDGETS_EXPANSION", true);
+export const ENABLE_BARCHART_CASH_WIDGETS = envBool("ENABLE_BARCHART_CASH_WIDGETS", true);
+export const ENABLE_COMMODITIC_WIDGETS = envBool("ENABLE_COMMODITIC_WIDGETS", true);
+export const ENABLE_APIFARMER_WIDGETS = envBool("ENABLE_APIFARMER_WIDGETS", true);
+export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
+export const ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK = envBool("ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK", true);
+
+export const GRAIN_WIDGETS_REFRESH_MS = envNum("GRAIN_WIDGETS_REFRESH_MS", 15 * 60 * 1000);
+export const GRAIN_WIDGETS_CACHE_TTL_MS = envNum("GRAIN_WIDGETS_CACHE_TTL_MS", 20 * 60 * 1000);
+export const GRAIN_WIDGETS_FETCH_TIMEOUT_MS = envNum("GRAIN_WIDGETS_FETCH_TIMEOUT_MS", 7000);
+export const GRAIN_WIDGETS_SERIES_POINTS = envNum("GRAIN_WIDGETS_SERIES_POINTS", 7);
+export const GRAIN_WIDGETS_TIMEFRAME_DEFAULT =
+  process.env.GRAIN_WIDGETS_TIMEFRAME_DEFAULT === "7d" ? "7d" : "1d";
+
+export const BARCHART_API_KEY = process.env.BARCHART_API_KEY || "";
+export const BARCHART_CASH_URL =
+  process.env.BARCHART_CASH_URL ||
+  "https://ondemand.websol.barchart.com/getQuote.json";
+export const BARCHART_CASH_SYMBOLS = process.env.BARCHART_CASH_SYMBOLS || "ZC*1,ZW*1,ZS*1";
+
+export const COMMODITIC_API_URL = process.env.COMMODITIC_API_URL || "";
+export const COMMODITIC_API_KEY = process.env.COMMODITIC_API_KEY || "";
+export const COMMODITIC_SOURCE_URL =
+  process.env.COMMODITIC_SOURCE_URL ||
+  "https://www.commoditic.com/";
+
+export const APIFARMER_API_URL = process.env.APIFARMER_API_URL || "";
+export const APIFARMER_API_KEY = process.env.APIFARMER_API_KEY || "";
+export const APIFARMER_SOURCE_URL =
+  process.env.APIFARMER_SOURCE_URL ||
+  "https://apifarmer.com/";
+
+export const TRADINGCHARTS_CBOT_URL =
+  process.env.TRADINGCHARTS_CBOT_URL ||
+  "https://futures.tradingcharts.com/marketquotes/CBOT.html";
