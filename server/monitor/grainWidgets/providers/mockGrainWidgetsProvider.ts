@@ -586,7 +586,7 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
         status: "FALLBACK",
         sourceName: "USDA AMS MARS",
         sourceAttribution: "USDA MARS Daily Market Rates (TXT)",
-        sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/3420?format=json",
+        sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReports?format=json",
         updatedAt: ctx.now.toISOString(),
         timeframe: ctx.timeframe,
         report: {

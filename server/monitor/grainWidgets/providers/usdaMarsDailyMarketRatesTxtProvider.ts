@@ -4,6 +4,8 @@ import {
   USDA_MARS_DAILY_MAX_ROWS,
   USDA_MARS_DAILY_REPORT_ID,
   USDA_MARS_FILE_URL_TEMPLATES,
+  USDA_MARS_MNREPORTS_BASE_URL,
+  USDA_MARS_PUBLISHED_LIST_PATHS,
   USDA_MARS_TIMEOUT_MS,
 } from "../config";
 import type { GrainWidgetUsdaMarsDailyMarketRatesTxt, GrainWidgetUsdaMarsDailyMarketRatesTxtRow } from "../types";
@@ -11,11 +13,19 @@ import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types"
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
 import { normalizeGrainPriceToUsdTon } from "../../grainMarkets/normalization";
 
-type RawReportMeta = {
+type MarsPublishedReport = {
+  id?: number | string;
+  reportId?: number | string;
   fileName?: string;
   fileExtension?: string;
+  extension?: string;
+  file_type?: string;
+  fileType?: string;
   publishedDate?: string;
-  reportId?: number | string;
+  publishDate?: string;
+  releaseDate?: string;
+  reportTitle?: string;
+  title?: string;
   reportURL?: string;
   reportUrl?: string;
   url?: string;
@@ -27,10 +37,29 @@ type ParsedLine = {
   warning?: string;
 };
 
+function toBase(url: string): string {
+  return url.replace(/\/+$/, "");
+}
+
+function joinUrl(base: string, path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${toBase(base)}/${path.replace(/^\/+/, "")}`;
+}
+
 function parseDateIso(value?: string): string | undefined {
   if (!value) return undefined;
   const ts = Date.parse(value);
   return Number.isFinite(ts) ? new Date(ts).toISOString() : undefined;
+}
+
+function flattenReports(payload: any): MarsPublishedReport[] {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.results)) return payload.results;
+  if (Array.isArray(payload.items)) return payload.items;
+  if (Array.isArray(payload.listPublishedReportsResult)) return payload.listPublishedReportsResult;
+  return [];
 }
 
 function normalizeSection(line: string): string | undefined {
@@ -154,27 +183,18 @@ function parseLine(line: string, section?: string): ParsedLine | undefined {
   };
 }
 
-function applyTemplate(urlTemplate: string, fileName: string): string {
-  return urlTemplate.replaceAll("{fileName}", encodeURIComponent(fileName));
+function applyTemplate(urlTemplate: string, fileName: string, ext: string): string {
+  return urlTemplate
+    .replaceAll("{fileName}", encodeURIComponent(fileName))
+    .replaceAll("{ext}", encodeURIComponent(ext));
 }
 
-function extractMeta(payload: any): RawReportMeta | undefined {
-  const candidate =
-    payload?.data ||
-    payload?.result ||
-    payload?.report ||
-    (Array.isArray(payload?.results) ? payload.results[0] : undefined) ||
-    payload;
-  if (!candidate || typeof candidate !== "object") return undefined;
-  return {
-    fileName: String(candidate.fileName || candidate.filename || candidate.file_name || "").trim() || undefined,
-    fileExtension: String(candidate.fileExtension || candidate.extension || candidate.file_type || "").trim() || undefined,
-    publishedDate: String(candidate.publishedDate || candidate.publishDate || candidate.releaseDate || "").trim() || undefined,
-    reportId: candidate.reportId || candidate.id || USDA_MARS_DAILY_REPORT_ID,
-    reportURL: candidate.reportURL,
-    reportUrl: candidate.reportUrl,
-    url: candidate.url,
-  };
+function reportExtension(report: MarsPublishedReport): string {
+  return String(report.fileExtension || report.extension || report.file_type || report.fileType || "").trim().toLowerCase();
+}
+
+function reportFileName(report: MarsPublishedReport): string {
+  return String(report.fileName || "").trim().replace(/\.(txt|pdf|html?)$/i, "");
 }
 
 async function fetchTextResponse(url: string, timeoutMs: number): Promise<{ text: string; contentType: string | null }> {
@@ -196,6 +216,42 @@ async function fetchTextResponse(url: string, timeoutMs: number): Promise<{ text
   }
 }
 
+async function fetchPublishedReports(base: string): Promise<{ rows: MarsPublishedReport[]; sourceUrlUsed: string }> {
+  const urls = USDA_MARS_PUBLISHED_LIST_PATHS.map((path) => joinUrl(base, path));
+  let lastError: string | undefined;
+  for (const sourceUrlUsed of urls) {
+    try {
+      const response = await fetchTextResponse(sourceUrlUsed, USDA_MARS_TIMEOUT_MS);
+      const payload = JSON.parse(response.text);
+      const rows = flattenReports(payload);
+      if (rows.length) return { rows, sourceUrlUsed };
+      lastError = `empty_data:${sourceUrlUsed}`;
+    } catch (error: any) {
+      lastError = error?.message || "fetch_failed";
+    }
+  }
+  throw new Error(`usda_mars_published_list_failed:${lastError || "fetch_failed"}`);
+}
+
+function findDailyReport(rows: MarsPublishedReport[]): MarsPublishedReport | undefined {
+  return rows.find((report) => {
+    const idValue = String(report.id ?? report.reportId ?? "").trim();
+    return idValue === String(USDA_MARS_DAILY_REPORT_ID);
+  });
+}
+
+function buildDownloadCandidates(report: MarsPublishedReport, ext: string): string[] {
+  const fileName = reportFileName(report);
+  const direct = [
+    String(report.reportURL || "").trim(),
+    String(report.reportUrl || "").trim(),
+    String(report.url || "").trim(),
+    `${toBase(USDA_MARS_MNREPORTS_BASE_URL)}/${encodeURIComponent(fileName)}.${encodeURIComponent(ext)}`,
+    ...USDA_MARS_FILE_URL_TEMPLATES.map((template) => applyTemplate(template, fileName, ext)),
+  ].filter(Boolean);
+  return Array.from(new Set(direct));
+}
+
 export class UsdaMarsDailyMarketRatesTxtProvider implements GrainWidgetsProvider {
   id = "usda-mars-daily-txt";
   kind = "USDA_MARS_DAILY_MARKET_RATES_TXT" as const;
@@ -203,41 +259,124 @@ export class UsdaMarsDailyMarketRatesTxtProvider implements GrainWidgetsProvider
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "USDA_MARS_DAILY_MARKET_RATES_TXT" });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetUsdaMarsDailyMarketRatesTxt> {
-    const metadataUrl = `${USDA_MARS_BASE_URL}/listPublishedReport/${USDA_MARS_DAILY_REPORT_ID}?format=json`;
-    const metadataResp = await fetchTextResponse(metadataUrl, USDA_MARS_TIMEOUT_MS);
-    const metadataPayload = JSON.parse(metadataResp.text);
-    const meta = extractMeta(metadataPayload);
-    if (!meta?.fileName) {
-      throw new Error("usda_mars_daily_txt_missing_filename");
-    }
-    const extension = String(meta.fileExtension || "").toLowerCase();
-    if (extension && extension !== "txt") {
-      throw new Error(`expected_txt_missing:${extension}`);
+    const { rows, sourceUrlUsed: metadataSourceUrl } = await fetchPublishedReports(USDA_MARS_BASE_URL);
+    const dailyReport = findDailyReport(rows);
+    if (!dailyReport) {
+      return {
+        id: "grain-usda-mars-daily-market-rates-txt",
+        kind: "USDA_MARS_DAILY_MARKET_RATES_TXT",
+        title: "US Daily Market Rates (TXT)",
+        subtitle: "USDA AMS MARS (metadata + TXT parse)",
+        status: "INDICATIVE",
+        sourceName: "USDA AMS MARS",
+        sourceAttribution: "USDA MARS Daily Market Rates (TXT)",
+        sourceUrl: metadataSourceUrl,
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        report: {
+          reportId: USDA_MARS_DAILY_REPORT_ID,
+          fileType: "txt",
+          sourceUrl: metadataSourceUrl,
+        },
+        rows: [],
+        notes: ["daily_report_not_in_list", "metadata_source:listPublishedReports"],
+        debug: {
+          linesFetched: 0,
+          linesMatched: 0,
+          parseMode: "strict",
+          reportsFetched: rows.length,
+          metadataSourceUrl,
+          dailyReportFound: false,
+          warnings: ["daily_report_not_in_list"],
+        },
+      };
     }
 
-    const fileNameRaw = meta.fileName.replace(/\.txt$/i, "");
-    const downloadCandidates = [
-      meta.reportURL,
-      meta.reportUrl,
-      meta.url,
-      ...USDA_MARS_FILE_URL_TEMPLATES.map((template) => applyTemplate(template, fileNameRaw)),
-    ].filter((url): url is string => Boolean(url));
+    const fileName = reportFileName(dailyReport);
+    const ext = reportExtension(dailyReport) || "txt";
+    if (!fileName) {
+      return {
+        id: "grain-usda-mars-daily-market-rates-txt",
+        kind: "USDA_MARS_DAILY_MARKET_RATES_TXT",
+        title: "US Daily Market Rates (TXT)",
+        subtitle: "USDA AMS MARS (metadata + TXT parse)",
+        status: "INDICATIVE",
+        sourceName: "USDA AMS MARS",
+        sourceAttribution: "USDA MARS Daily Market Rates (TXT)",
+        sourceUrl: metadataSourceUrl,
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        report: {
+          reportId: Number(dailyReport.id || dailyReport.reportId || USDA_MARS_DAILY_REPORT_ID),
+          publishedAt: parseDateIso(String(dailyReport.publishedDate || dailyReport.publishDate || dailyReport.releaseDate || "")),
+          fileType: "txt",
+          sourceUrl: metadataSourceUrl,
+        },
+        rows: [],
+        notes: ["daily_report_filename_missing", "metadata_source:listPublishedReports"],
+        debug: {
+          linesFetched: 0,
+          linesMatched: 0,
+          parseMode: "strict",
+          reportsFetched: rows.length,
+          metadataSourceUrl,
+          dailyReportFound: true,
+          warnings: ["daily_report_filename_missing"],
+        },
+      };
+    }
 
+    if (ext !== "txt" && ext !== "text") {
+      return {
+        id: "grain-usda-mars-daily-market-rates-txt",
+        kind: "USDA_MARS_DAILY_MARKET_RATES_TXT",
+        title: "US Daily Market Rates (TXT)",
+        subtitle: "USDA AMS MARS (metadata + TXT parse)",
+        status: "INDICATIVE",
+        sourceName: "USDA AMS MARS",
+        sourceAttribution: "USDA MARS Daily Market Rates (TXT)",
+        sourceUrl: metadataSourceUrl,
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        report: {
+          reportId: Number(dailyReport.id || dailyReport.reportId || USDA_MARS_DAILY_REPORT_ID),
+          publishedAt: parseDateIso(String(dailyReport.publishedDate || dailyReport.publishDate || dailyReport.releaseDate || "")),
+          fileName,
+          fileType: "txt",
+          sourceUrl: metadataSourceUrl,
+        },
+        rows: [],
+        notes: [`expected_txt_missing:${ext}`],
+        debug: {
+          linesFetched: 0,
+          linesMatched: 0,
+          parseMode: "strict",
+          reportsFetched: rows.length,
+          metadataSourceUrl,
+          dailyReportFound: true,
+          warnings: [`expected_txt_missing:${ext}`],
+        },
+      };
+    }
+
+    const downloadCandidates = buildDownloadCandidates(dailyReport, ext === "text" ? "txt" : ext);
     let txtContent = "";
-    let sourceUrlUsed = metadataUrl;
+    let downloadUrlUsed: string | undefined;
     let lastDownloadError = "";
+
     for (const url of downloadCandidates) {
       try {
         const response = await fetchTextResponse(url, USDA_MARS_TIMEOUT_MS);
         const looksText = (response.contentType || "").includes("text") || response.text.includes("\n");
         if (!looksText) throw new Error("non_text_payload");
         txtContent = response.text;
-        sourceUrlUsed = url;
+        downloadUrlUsed = url;
         break;
       } catch (error: any) {
         lastDownloadError = error?.message || "download_failed";
       }
     }
+
     if (!txtContent) {
       throw new Error(`usda_mars_daily_txt_download_failed:${lastDownloadError || "no_url_succeeded"}`);
     }
@@ -265,6 +404,8 @@ export class UsdaMarsDailyMarketRatesTxtProvider implements GrainWidgetsProvider
     const highMedRows = parsedRows.filter((row) => row.confidence === "HIGH" || row.confidence === "MED");
     const notes: string[] = [
       "TXT-only strict parse; PDF/TXT body parsing is limited to confident numeric rows.",
+      `metadata_source:${metadataSourceUrl}`,
+      ...(downloadUrlUsed ? [`download_url:${downloadUrlUsed}`] : []),
     ];
     if (warnings.length) notes.push(`warnings:${warnings.slice(0, 2).join(" | ")}`);
 
@@ -276,15 +417,15 @@ export class UsdaMarsDailyMarketRatesTxtProvider implements GrainWidgetsProvider
       status: highMedRows.length > 0 ? "REFRESH" : "INDICATIVE",
       sourceName: "USDA AMS MARS",
       sourceAttribution: "USDA MARS Daily Market Rates (TXT)",
-      sourceUrl: sourceUrlUsed,
+      sourceUrl: metadataSourceUrl,
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       report: {
-        reportId: Number(meta.reportId || USDA_MARS_DAILY_REPORT_ID),
-        publishedAt: parseDateIso(meta.publishedDate),
-        fileName: meta.fileName,
+        reportId: Number(dailyReport.id || dailyReport.reportId || USDA_MARS_DAILY_REPORT_ID),
+        publishedAt: parseDateIso(String(dailyReport.publishedDate || dailyReport.publishDate || dailyReport.releaseDate || "")),
+        fileName,
         fileType: "txt",
-        sourceUrl: sourceUrlUsed,
+        sourceUrl: downloadUrlUsed || metadataSourceUrl,
       },
       rows: highMedRows,
       notes,
@@ -292,6 +433,10 @@ export class UsdaMarsDailyMarketRatesTxtProvider implements GrainWidgetsProvider
         linesFetched: lines.length,
         linesMatched: highMedRows.length,
         parseMode: "strict",
+        reportsFetched: rows.length,
+        metadataSourceUrl,
+        downloadUrlUsed,
+        dailyReportFound: true,
         matchedSections: Array.from(matchedSections),
         warnings: warnings.slice(0, 5),
       },

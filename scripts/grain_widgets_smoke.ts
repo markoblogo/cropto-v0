@@ -80,7 +80,7 @@ async function run() {
       }
       if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
         console.log(
-          `  usda_daily_txt rows=${widget.rows.length} linesMatched=${widget.debug?.linesMatched ?? 0}/${widget.debug?.linesFetched ?? 0} source=${widget.report.sourceUrl || widget.sourceUrl || "n/a"}`,
+          `  usda_daily_txt list_ok=${widget.debug?.metadataSourceUrl ? "yes" : "no"} daily_found=${widget.debug?.dailyReportFound === false ? "no" : "yes"} download=${widget.debug?.downloadUrlUsed || "n/a"} linesMatched=${widget.debug?.linesMatched ?? 0}/${widget.debug?.linesFetched ?? 0} rows=${widget.rows.length}`,
         );
       }
       if (widget.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS") {

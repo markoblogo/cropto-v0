@@ -379,6 +379,10 @@ export interface GrainWidgetUsdaMarsDailyMarketRatesTxt extends GrainWidgetBase 
     linesFetched: number;
     linesMatched: number;
     parseMode: "strict";
+    reportsFetched?: number;
+    metadataSourceUrl?: string;
+    downloadUrlUsed?: string;
+    dailyReportFound?: boolean;
     matchedSections?: string[];
     warnings?: string[];
   };
@@ -489,6 +493,7 @@ export interface GrainWidgetsProviderDebug {
   }>;
   linesFetched?: number;
   linesMatched?: number;
+  downloadUrlUsed?: string;
   parseMode?: "strict";
   topScoreMin?: number;
   topScoreMax?: number;

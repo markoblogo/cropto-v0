@@ -96,9 +96,12 @@ export const USDA_MARS_MAX_REPORTS_SCAN = envNum("USDA_MARS_MAX_REPORTS_SCAN", 2
 export const US_CASH_EXPORT_CONTEXT_TOP_N = envNum("US_CASH_EXPORT_CONTEXT_TOP_N", 3);
 export const US_CASH_EXPORT_CONTEXT_MAX_REPORTS_SCAN = envNum("US_CASH_EXPORT_CONTEXT_MAX_REPORTS_SCAN", USDA_MARS_MAX_REPORTS_SCAN);
 export const USDA_MARS_DAILY_REPORT_ID = envNum("USDA_MARS_DAILY_REPORT_ID", 3420);
+export const USDA_MARS_MNREPORTS_BASE_URL =
+  process.env.USDA_MARS_MNREPORTS_BASE_URL ||
+  "https://www.ams.usda.gov/mnreports";
 export const USDA_MARS_FILE_URL_TEMPLATES = (
   process.env.USDA_MARS_FILE_URL_TEMPLATES ||
-  "https://marsapi.ams.usda.gov/marsapi/reports/{fileName}.txt,https://marsapi.ams.usda.gov/services/v3.1/public/downloadReport/{fileName},https://marsapi.ams.usda.gov/services/v3.1/public/reports/{fileName}.txt"
+  "https://www.ams.usda.gov/mnreports/{fileName}.{ext},https://marsapi.ams.usda.gov/marsapi/reports/{fileName}.txt,https://marsapi.ams.usda.gov/services/v3.1/public/reports/{fileName}.txt"
 )
   .split(",")
   .map((value) => value.trim())

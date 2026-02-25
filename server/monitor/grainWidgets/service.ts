@@ -61,6 +61,7 @@ type ProviderRuntime = {
   cardsReturned?: number;
   linesFetched?: number;
   linesMatched?: number;
+  downloadUrlUsed?: string;
   parseMode?: "strict";
   sourceUrlUsed?: string;
   widgetsReturned?: GrainWidgetKind[];
@@ -206,6 +207,9 @@ function widgetHasUsableData(widget: GrainWidget): boolean {
       widget.summary.regions.length > 0 ||
       (widget.summary.cadenceHints?.length || 0) > 0;
     return hasTopReports || hasSummarySignals;
+  }
+  if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
+    return widget.rows.length > 0 || widget.debug?.dailyReportFound === false || (widget.notes || []).some((note) => note.includes("daily_report_not_in_list"));
   }
   const counts = widgetMetricCounts(widget);
   const mapped = mappedCountForWidget(widget);
@@ -403,6 +407,7 @@ export class GrainWidgetsService {
           cardsReturned: state?.cardsReturned,
           linesFetched: state?.linesFetched,
           linesMatched: state?.linesMatched,
+          downloadUrlUsed: state?.downloadUrlUsed,
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
@@ -492,6 +497,7 @@ export class GrainWidgetsService {
           cardsReturned: state?.cardsReturned,
           linesFetched: state?.linesFetched,
           linesMatched: state?.linesMatched,
+          downloadUrlUsed: state?.downloadUrlUsed,
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
@@ -561,6 +567,7 @@ export class GrainWidgetsService {
         cardsReturned: undefined,
         linesFetched: undefined,
         linesMatched: undefined,
+        downloadUrlUsed: undefined,
         parseMode: undefined,
         topScoreMin: undefined,
         topScoreMax: undefined,
@@ -597,6 +604,7 @@ export class GrainWidgetsService {
             cardsReturned: metrics.cards,
             linesFetched: txtDebug?.linesFetched,
             linesMatched: txtDebug?.linesMatched,
+            downloadUrlUsed: txtDebug?.downloadUrlUsed,
             parseMode: txtDebug?.parseMode,
             topScoreMin: usdaSummary?.topScoreMin,
             topScoreMax: usdaSummary?.topScoreMax,
@@ -637,6 +645,7 @@ export class GrainWidgetsService {
           cardsReturned: metrics.cards,
           linesFetched: txtDebug?.linesFetched,
           linesMatched: txtDebug?.linesMatched,
+          downloadUrlUsed: txtDebug?.downloadUrlUsed,
           parseMode: txtDebug?.parseMode,
           topScoreMin: usdaSummary?.topScoreMin,
           topScoreMax: usdaSummary?.topScoreMax,

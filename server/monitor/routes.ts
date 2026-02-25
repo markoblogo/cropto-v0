@@ -23,6 +23,7 @@ import {
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   USDA_MARS_BASE_URL,
+  USDA_MARS_MNREPORTS_BASE_URL,
 } from "./grainWidgets/config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
@@ -463,6 +464,9 @@ export function registerMonitorRoutes(app: Express): void {
           reportsReturnedTop: provider?.reportsReturnedTop,
           linesFetched: provider?.linesFetched,
           linesMatched: provider?.linesMatched,
+          downloadUrlUsed:
+            provider?.downloadUrlUsed ||
+            (widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined),
           parseMode: provider?.parseMode,
           topScoreMin: provider?.topScoreMin,
           topScoreMax: provider?.topScoreMax,
@@ -525,6 +529,9 @@ export function registerMonitorRoutes(app: Express): void {
           topReportsCount,
           txtRowsCount,
           alphaFunctionsCount,
+          dailyMetadataSourceUrl: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.metadataSourceUrl : undefined,
+          dailyDownloadUrlUsed: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined,
+          dailyReportFound: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.dailyReportFound : undefined,
           reportsToday: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? widget?.summary?.reportsToday ?? 0 : undefined,
           exportIndications: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? Boolean(widget?.summary?.exportIndications) : undefined,
           notes: (widget?.notes || []).slice(0, 4),
@@ -539,8 +546,10 @@ export function registerMonitorRoutes(app: Express): void {
         probeUrl(`${USDA_MARS_BASE_URL}/listPublishedReports?format=json`),
       ]);
       const marsDailyTxtSource =
+        (byKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as any)?.debug?.downloadUrlUsed ||
+        providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.downloadUrlUsed ||
         providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.sourceUrlUsed ||
-        `${USDA_MARS_BASE_URL}/listPublishedReport/3420?format=json`;
+        `${USDA_MARS_BASE_URL}/listPublishedReports?format=json`;
       const alphaProbeUrl = `${ALPHAVANTAGE_BASE_URL}?function=${encodeURIComponent(ALPHAVANTAGE_FUNCTIONS[0] || "WHEAT")}&interval=monthly${ALPHAVANTAGE_API_KEY ? "&apikey=REDACTED" : ""}`;
       const marsDailyTxtProbe = await probeUrl(marsDailyTxtSource);
       const alphaProbe = await probeUrl(ALPHAVANTAGE_BASE_URL);
@@ -566,6 +575,7 @@ export function registerMonitorRoutes(app: Express): void {
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
             FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
             USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
+            USDA_MARS_MNREPORTS_BASE_URL: USDA_MARS_MNREPORTS_BASE_URL ? "present" : "missing",
             ALPHAVANTAGE_BASE_URL: ALPHAVANTAGE_BASE_URL ? "present" : "missing",
             ALPHAVANTAGE_API_KEY: ALPHAVANTAGE_API_KEY ? "present" : "missing",
             GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
