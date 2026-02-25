@@ -41,7 +41,7 @@ export const MONITOR_CACHE_TTL_MS = Number.parseInt(
   10,
 );
 
-export const LIVE_VISUALS_MAX_TILES = Number.parseInt(process.env.LIVE_VISUALS_MAX_TILES || "5", 10);
+export const LIVE_VISUALS_MAX_TILES = Number.parseInt(process.env.LIVE_VISUALS_MAX_TILES || "4", 10);
 export const LIVE_VISUALS_ENABLE_AUTO_REFRESH =
   process.env.LIVE_VISUALS_ENABLE_AUTO_REFRESH == null
     ? true

@@ -98,11 +98,33 @@ export function getLiveVisualTiles() {
     };
   }
 
-  const eligible = LIVE_VISUAL_SOURCES.filter((source) => source.enabled)
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, Math.max(1, LIVE_VISUALS_MAX_TILES));
+  const eligible = LIVE_VISUAL_SOURCES.filter((source) => source.enabled).sort((a, b) => b.priority - a.priority);
+  const selected: LiveVisualSourceConfig[] = [];
+  const selectedIds = new Set<string>();
 
-  const tiles = eligible.map(normalizeSource);
+  const pickOne = (predicate: (source: LiveVisualSourceConfig) => boolean) => {
+    const candidate = eligible.find((source) => !selectedIds.has(source.id) && predicate(source));
+    if (!candidate) return;
+    selected.push(candidate);
+    selectedIds.add(candidate.id);
+  };
+
+  // Balanced top composition for mixed live view.
+  pickOne((source) => source.providerType === "embedded" && source.category === "Weather");
+  pickOne((source) => source.providerType === "image_refresh");
+  pickOne((source) => source.category === "Market Media");
+  pickOne((source) => source.providerType === "external_link" && source.category === "Port");
+
+  for (const source of eligible) {
+    if (selected.length >= Math.max(1, LIVE_VISUALS_MAX_TILES)) break;
+    if (selectedIds.has(source.id)) continue;
+    selected.push(source);
+    selectedIds.add(source.id);
+  }
+
+  const limited = selected.slice(0, Math.max(1, LIVE_VISUALS_MAX_TILES));
+
+  const tiles = limited.map(normalizeSource);
   const fallbackCount = tiles.filter((tile) => tile.renderMode === "fallback").length;
 
   return {

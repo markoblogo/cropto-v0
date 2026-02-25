@@ -72,7 +72,13 @@ function renderRelative(iso?: string) {
 function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveVisualTile; large: boolean; autoRefreshEnabled: boolean; compact: boolean }) {
   const [refreshTick, setRefreshTick] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
+  const [embedFailed, setEmbedFailed] = useState(false);
   const previewHeight = large ? (compact ? "h-[170px] lg:h-[185px]" : "h-[210px] lg:h-[230px]") : (compact ? "h-[110px]" : "h-[124px]");
+
+  useEffect(() => {
+    setEmbedFailed(false);
+    setImageFailed(false);
+  }, [tile.id, tile.previewUrl, tile.renderMode]);
 
   useEffect(() => {
     if (tile.renderMode !== "image") return;
@@ -82,7 +88,7 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
     return () => window.clearInterval(timer);
   }, [tile.renderMode, tile.refreshIntervalSec, autoRefreshEnabled]);
 
-  if (tile.renderMode === "embed" && tile.previewUrl) {
+  if (tile.renderMode === "embed" && tile.previewUrl && !embedFailed) {
     return (
       <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-white/12 bg-slate-950/60`}>
         <iframe
@@ -92,8 +98,26 @@ function TilePreview({ tile, large, autoRefreshEnabled, compact }: { tile: LiveV
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           sandbox="allow-scripts allow-same-origin allow-popups"
+          onError={() => setEmbedFailed(true)}
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-950/80 to-transparent" />
+      </div>
+    );
+  }
+
+  if (tile.renderMode === "embed" && embedFailed) {
+    return (
+      <div className={`flex ${previewHeight} w-full flex-col justify-between rounded-md border border-white/12 bg-[linear-gradient(160deg,rgba(148,163,184,0.14),rgba(15,23,42,0.85)_38%,rgba(15,23,42,0.92))] p-3`}>
+        <div className="flex items-center gap-2 text-slate-200">
+          <span className="rounded-full border border-primary/35 bg-primary/12 p-1.5">
+            <Globe className="h-3.5 w-3.5 text-primary-foreground" />
+          </span>
+          <p className="text-xs font-medium">Embed unavailable</p>
+        </div>
+        <p className="text-xs leading-5 text-slate-300/95 line-clamp-3">
+          This media source blocked embedding. Open the official source page.
+        </p>
+        <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">External fallback mode</p>
       </div>
     );
   }
