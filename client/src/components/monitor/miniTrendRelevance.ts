@@ -1,6 +1,7 @@
 type TrendPoint = { value: number };
 
 export type MiniTrendRenderMode = "sparkline" | "trend_marker" | "neutral";
+export type MiniTrendPolicy = "strict" | "relaxed" | "off";
 
 export function getMiniTrendRenderMode(args: {
   series?: TrendPoint[];
@@ -8,12 +9,18 @@ export function getMiniTrendRenderMode(args: {
   changePct?: number;
   status?: string;
   preferMarkerForFallback?: boolean;
+  policy?: MiniTrendPolicy;
 }): { mode: MiniTrendRenderMode; reason: string } {
+  const policy = args.policy ?? "strict";
   const hasDelta =
     (typeof args.change === "number" && Number.isFinite(args.change)) ||
     (typeof args.changePct === "number" && Number.isFinite(args.changePct));
   const status = (args.status || "").toUpperCase();
   const preferMarkerForFallback = args.preferMarkerForFallback ?? true;
+
+  if (policy === "off") {
+    return { mode: hasDelta ? "trend_marker" : "neutral", reason: "policy_off" };
+  }
 
   if (status === "OFFLINE") {
     return { mode: hasDelta ? "trend_marker" : "neutral", reason: "offline_status" };
@@ -34,9 +41,14 @@ export function getMiniTrendRenderMode(args: {
   const max = Math.max(...values);
   const variation = max - min;
 
-  // Flat or near-flat lines are noisy in compact cards; use marker/neutral instead.
-  if (variation < 1e-6) {
+  // Flat or near-flat lines are noisy in strict sections; relaxed keeps slightly flatter lines.
+  const variationThreshold = policy === "relaxed" ? 1e-8 : 1e-6;
+  if (variation < variationThreshold) {
     return { mode: hasDelta ? "trend_marker" : "neutral", reason: "low_variation" };
+  }
+
+  if (policy === "strict" && validSeries.length < 3) {
+    return { mode: hasDelta ? "trend_marker" : "neutral", reason: "strict_low_points" };
   }
 
   return { mode: "sparkline", reason: "valid_series" };

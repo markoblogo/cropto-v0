@@ -27,6 +27,15 @@ import { StatusSourceStrip } from "@/components/monitor/StatusSourceStrip";
 import { IntensityBar } from "@/components/monitor/IntensityBar";
 import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
 import {
+  getCardSizeClass,
+  getSectionTrendPolicy,
+  getTrendSlotClass,
+  resolveCardSizeVariant,
+  type MonitorCardKind,
+  type MonitorSectionLayer,
+  type CardSizeVariant,
+} from "@/components/monitor/uiRules";
+import {
   formatChangeWithUnit,
   formatFxRate,
   formatIndexPoints,
@@ -774,27 +783,55 @@ function DynamicMiniTrend({
   changePct,
   status,
   preferMarkerForFallback = true,
+  section,
+  cardKind,
+  compact = true,
+  forcedMode,
 }: {
   series?: Array<{ ts?: string; label?: string; value: number }>;
   change?: number;
   changePct?: number;
   status?: string;
   preferMarkerForFallback?: boolean;
+  section: MonitorSectionLayer;
+  cardKind: MonitorCardKind;
+  compact?: boolean;
+  forcedMode?: "sparkline" | "trend_marker" | "neutral";
 }) {
-  const decision = getMiniTrendRenderMode({
+  const decision = forcedMode ? { mode: forcedMode, reason: "forced" as const } : getMiniTrendRenderMode({
     series,
     change,
     changePct,
     status,
     preferMarkerForFallback,
+    policy: getSectionTrendPolicy(section),
   });
+  const slotClass = getTrendSlotClass({
+    section,
+    kind: cardKind,
+    mode: decision.mode,
+    compact,
+  });
+
   if (decision.mode === "sparkline") {
-    return <MiniSparklineSvg points={(series || []).map((p) => ({ value: p.value }))} className="text-foreground/82" />;
+    return (
+      <div className={slotClass}>
+        <MiniSparklineSvg points={(series || []).map((p) => ({ value: p.value }))} className="h-full w-full text-foreground/82" />
+      </div>
+    );
   }
   if (decision.mode === "trend_marker") {
-    return <MiniTrendMarker change={change} changePct={changePct} className="opacity-80" />;
+    return (
+      <div className={slotClass}>
+        <MiniTrendMarker change={change} changePct={changePct} className="h-full w-full opacity-80" />
+      </div>
+    );
   }
-  return <MiniTrendMarker className="opacity-45" />;
+  return (
+    <div className={slotClass}>
+      <MiniTrendMarker className="h-full w-full opacity-45" />
+    </div>
+  );
 }
 
 function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMode) {
@@ -839,6 +876,20 @@ function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMod
 function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstrumentWidget; priceDisplayMode: PriceDisplayMode }) {
   const display = formatPrimaryPrice(widget, priceDisplayMode);
   const positive = (display.change ?? 0) >= 0;
+  const trendDecision = getMiniTrendRenderMode({
+    series: widget.series,
+    change: display.change,
+    changePct: display.changePct,
+    status: widget.status,
+    policy: getSectionTrendPolicy("core"),
+  });
+  const cardVariant: CardSizeVariant = resolveCardSizeVariant({
+    section: "core",
+    kind: "instrument",
+    status: widget.status,
+    hasPrimaryValue: typeof display.value === "number",
+    hasTrend: trendDecision.mode === "sparkline",
+  });
   const unitLabel = metricUnitChip(
     display.unit
       ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
@@ -848,7 +899,7 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
   );
   return (
     <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-      <CardContent className="space-y-1 pt-2 pb-2">
+      <CardContent className={`${getCardSizeClass(cardVariant)} pt-2 pb-2`}>
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[10px] uppercase tracking-[0.14em] text-foreground/65">{widget.venue}</p>
@@ -876,14 +927,15 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
         />
         {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
-        <div className="h-10">
-          <DynamicMiniTrend
-            series={widget.series}
-            change={display.change}
-            changePct={display.changePct}
-            status={widget.status}
-          />
-        </div>
+        <DynamicMiniTrend
+          series={widget.series}
+          change={display.change}
+          changePct={display.changePct}
+          status={widget.status}
+          section="core"
+          cardKind="instrument"
+          forcedMode={trendDecision.mode}
+        />
 
         <StatusSourceStrip
           compact
@@ -901,13 +953,20 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
 
 function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
   const spreadPositive = (widget.spreadAbs ?? 0) >= 0;
+  const variant = resolveCardSizeVariant({
+    section: "core",
+    kind: "comparison",
+    status: widget.status,
+    hasPrimaryValue: widget.leftChangePct != null || widget.rightChangePct != null || widget.spreadAbs != null,
+    hasTrend: false,
+  });
   const relDiff =
     typeof widget.leftChangePct === "number" && typeof widget.rightChangePct === "number"
       ? widget.leftChangePct - widget.rightChangePct
       : undefined;
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-      <CardContent className="space-y-1.5 pt-2.5 pb-2">
+      <CardContent className={`${getCardSizeClass(variant)} pt-2.5 pb-2`}>
         <div className="flex items-start justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">{widget.title}</p>
           <div className="flex items-center gap-1">
@@ -1001,6 +1060,13 @@ function formatWidgetRowPrice(row: GrainWidgetRow, mode: PriceDisplayMode) {
 
 function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
   const isPositive = (indicator.valueChange ?? 0) >= 0;
+  const trendDecision = getMiniTrendRenderMode({
+    series: indicator.series,
+    change: indicator.valueChange,
+    changePct: indicator.valueChangePct,
+    status: indicator.status,
+    policy: getSectionTrendPolicy("context"),
+  });
   const icon =
     indicator.type === "bdi" ? <Waves className="h-3.5 w-3.5 text-foreground dark:text-primary-foreground" /> :
       indicator.type === "rail_tariff" ? <TrainFront className="h-3.5 w-3.5 text-foreground dark:text-primary-foreground" /> :
@@ -1043,14 +1109,16 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           direction={trendDirection(indicator.valueChange, indicator.valueChangePct)}
         />
 
-        <div className="h-16">
-          <DynamicMiniTrend
-            series={indicator.series}
-            change={indicator.valueChange}
-            changePct={indicator.valueChangePct}
-            status={indicator.status}
-          />
-        </div>
+        <DynamicMiniTrend
+          series={indicator.series}
+          change={indicator.valueChange}
+          changePct={indicator.valueChangePct}
+          status={indicator.status}
+          section="context"
+          cardKind="index"
+          compact={false}
+          forcedMode={trendDecision.mode}
+        />
 
         <StatusSourceStrip
           compact
@@ -1166,9 +1234,12 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
           }
           direction={widget.status === "Cooling" ? "down" : widget.status === "Stable" ? "flat" : "up"}
         />
-        <div className="h-8">
-          <DynamicMiniTrend series={widget.series} status={widget.status} />
-        </div>
+        <DynamicMiniTrend
+          series={widget.series}
+          status={widget.status}
+          section="context"
+          cardKind="signal"
+        />
         <p className="text-[10px] text-foreground/68">{widget.note}</p>
         <StatusSourceStrip
           compact
@@ -1185,6 +1256,20 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
 function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDisplayMode: PriceDisplayMode }) {
   const display = formatWidgetRowPrice(row, priceDisplayMode);
   const positive = (display.change ?? 0) >= 0;
+  const trendDecision = getMiniTrendRenderMode({
+    series: row.price?.series || [],
+    change: display.change,
+    changePct: display.changePct,
+    status: row.status,
+    policy: getSectionTrendPolicy("expansion"),
+  });
+  const rowVariant: CardSizeVariant = resolveCardSizeVariant({
+    section: "expansion",
+    kind: "row",
+    status: row.status,
+    hasPrimaryValue: typeof display.value === "number",
+    hasTrend: trendDecision.mode === "sparkline",
+  });
   const unitLabel = metricUnitChip(
     display.unit
       ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
@@ -1194,7 +1279,7 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
   );
 
   return (
-    <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5 h-full">
+    <div className={`rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5 h-full ${getCardSizeClass(rowVariant)}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-semibold text-foreground">{row.label}</p>
@@ -1220,14 +1305,15 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
         value={trendIntensity(display.change, display.changePct)}
         direction={trendDirection(display.change, display.changePct)}
       />
-      <div className="mt-0.5 h-7">
-        <DynamicMiniTrend
-          series={row.price?.series || []}
-          change={display.change}
-          changePct={display.changePct}
-          status={row.status}
-        />
-      </div>
+      <DynamicMiniTrend
+        series={row.price?.series || []}
+        change={display.change}
+        changePct={display.changePct}
+        status={row.status}
+        section="expansion"
+        cardKind="row"
+        forcedMode={trendDecision.mode}
+      />
       {display.secondary ? <p className="mt-0.5 text-[10px] text-foreground/68">{display.secondary}</p> : null}
       <div className="mt-0.5">
         <StatusSourceStrip
@@ -1253,9 +1339,16 @@ function GrainExpansionFallbackCard({
   status?: GrainWidgetStatus;
   reason?: string;
 }) {
+  const variant = resolveCardSizeVariant({
+    section: "expansion",
+    kind: "fallback",
+    status,
+    hasPrimaryValue: false,
+    hasTrend: false,
+  });
   return (
     <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">{title}</CardTitle>
           <div className="flex items-center gap-1">
@@ -1265,7 +1358,7 @@ function GrainExpansionFallbackCard({
         </div>
         <CardDescription className="text-foreground/70">{subtitle}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2 pt-2 text-sm text-foreground/72">
+      <CardContent className={`${getCardSizeClass(variant)} pt-1.5 text-sm text-foreground/72`}>
         <p>{reason || "Data temporarily unavailable. Source fallback is active."}</p>
         <StatusSourceStrip
           compact
@@ -1851,14 +1944,14 @@ export default function MonitorPage() {
                                   {card.value == null ? card.valueText || "n/a" : formatIndexPoints(card.value)}
                                 </p>
                                 <p className="text-[10px] text-foreground/65">{card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}</p>
-                                <div className="mt-1 h-7">
-                                  <DynamicMiniTrend
-                                    series={card.series || []}
-                                    change={card.delta}
-                                    changePct={card.deltaPct}
-                                    status={card.status || indexWidget.status}
-                                  />
-                                </div>
+                                <DynamicMiniTrend
+                                  series={card.series || []}
+                                  change={card.delta}
+                                  changePct={card.deltaPct}
+                                  status={card.status || indexWidget.status}
+                                  section="expansion"
+                                  cardKind="index"
+                                />
                               </div>
                             ))}
                             {indexWidget.weatherTieIn ? (
@@ -2081,14 +2174,14 @@ export default function MonitorPage() {
                                               value={trendIntensity(display.change, display.changePct)}
                                               direction={trendDirection(display.change, display.changePct)}
                                             />
-                                            <div className="mt-1 h-8">
-                                              <DynamicMiniTrend
-                                                series={item.series || []}
-                                                change={display.change}
-                                                changePct={display.changePct}
-                                                status={item.status || macroWidget.status}
-                                              />
-                                            </div>
+                                            <DynamicMiniTrend
+                                              series={item.series || []}
+                                              change={display.change}
+                                              changePct={display.changePct}
+                                              status={item.status || macroWidget.status}
+                                              section="expansion"
+                                              cardKind="index"
+                                            />
                                             {display.secondary ? <p className="text-[10px] text-foreground/68">{display.secondary}</p> : null}
                                           </>
                                         );
@@ -2110,14 +2203,14 @@ export default function MonitorPage() {
                                           value={trendIntensity(item.valueChange, item.valueChangePct)}
                                           direction={trendDirection(item.valueChange, item.valueChangePct)}
                                         />
-                                        <div className="mt-1 h-8">
-                                          <DynamicMiniTrend
-                                            series={item.series || []}
-                                            change={item.valueChange}
-                                            changePct={item.valueChangePct}
-                                            status={item.status || macroWidget.status}
-                                          />
-                                        </div>
+                                        <DynamicMiniTrend
+                                          series={item.series || []}
+                                          change={item.valueChange}
+                                          changePct={item.valueChangePct}
+                                          status={item.status || macroWidget.status}
+                                          section="expansion"
+                                          cardKind="index"
+                                        />
                                       </>
                                     )}
                                   </div>
@@ -2142,13 +2235,13 @@ export default function MonitorPage() {
                                       value={trendIntensity(undefined, card.deltaPct)}
                                       direction={trendDirection(undefined, card.deltaPct)}
                                     />
-                                    <div className="mt-1 h-7">
-                                      <DynamicMiniTrend
-                                        series={card.series || []}
-                                        changePct={card.deltaPct}
-                                        status={card.status || macroWidget.status}
-                                      />
-                                    </div>
+                                    <DynamicMiniTrend
+                                      series={card.series || []}
+                                      changePct={card.deltaPct}
+                                      status={card.status || macroWidget.status}
+                                      section="expansion"
+                                      cardKind="index"
+                                    />
                                   </div>
                                 ))}
                               </div>
@@ -2283,14 +2376,14 @@ export default function MonitorPage() {
                         value={trendIntensity(indicator.valueChange, indicator.valueChangePct)}
                         direction={trendDirection(indicator.valueChange, indicator.valueChangePct)}
                       />
-                      <div className="mt-1 h-8">
-                        <DynamicMiniTrend
-                          series={indicator.series}
-                          change={indicator.valueChange}
-                          changePct={indicator.valueChangePct}
-                          status={indicator.status}
-                        />
-                      </div>
+                      <DynamicMiniTrend
+                        series={indicator.series}
+                        change={indicator.valueChange}
+                        changePct={indicator.valueChangePct}
+                        status={indicator.status}
+                        section="context"
+                        cardKind="signal"
+                      />
                       <StatusSourceStrip
                         compact
                         status={indicatorStatusLabel(indicator.status)}
