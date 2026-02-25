@@ -12,7 +12,9 @@ import {
   YAxis,
 } from "recharts";
 import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity } from "lucide-react";
-import { MainLayout } from "@/components/layouts/MainLayout";
+import { DeckEcosystemStrip } from "@/components/deck/DeckEcosystemStrip";
+import { MonitorFooter } from "@/components/monitor/MonitorFooter";
+import { MonitorHeader } from "@/components/monitor/MonitorHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,6 +279,13 @@ const CROPS = ["all", "wheat", "corn", "soy", "rapeseed", "sunflower", "barley",
 const TOPICS = ["all", "markets", "trade", "logistics", "weather", "policy", "harvest"] as const;
 const REGIONS = ["all", "black sea", "eu", "us", "latam", "asia"] as const;
 const HERO_CROPS = ["wheat", "corn", "soy", "rapeseed", "sunflower"] as const;
+const MONITOR_NAV_ITEMS = [
+  { href: "#overview", label: "Overview" },
+  { href: "#grain-markets-core", label: "Grain Markets" },
+  { href: "#top-signals", label: "Top Signals" },
+  { href: "#terminal-panels", label: "Panels" },
+  { href: "#logistics-indicators", label: "Logistics" },
+] as const;
 
 type HeroCrop = (typeof HERO_CROPS)[number];
 
@@ -998,8 +1007,10 @@ export default function MonitorPage() {
   ] as const;
 
   return (
-    <MainLayout>
-      <section className="rounded-2xl border border-primary/30 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-slate-100 shadow-[0_24px_50px_rgba(0,0,0,0.45)] sm:p-6">
+    <div className="min-h-screen bg-background text-foreground">
+      <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
+      <main>
+      <section id="overview" className="rounded-none border-b border-primary/25 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-slate-100 shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-6">
         <div className="space-y-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
@@ -1016,7 +1027,7 @@ export default function MonitorPage() {
 
           <LiveVisualsPanel debugEnabled={debugEnabled} compact />
 
-          <div className="space-y-2">
+          <div id="grain-markets-core" className="scroll-mt-24 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Grain Markets Core</h2>
@@ -1083,7 +1094,7 @@ export default function MonitorPage() {
             )}
           </div>
 
-          <div className="grid gap-3 xl:grid-cols-12">
+          <div id="top-signals" className="scroll-mt-24 grid gap-3 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-red-400/35 bg-[linear-gradient(160deg,rgba(127,29,29,0.24),rgba(10,14,26,0.92)_36%)] text-slate-100 shadow-[0_0_0_1px_rgba(248,113,113,0.14)]">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
@@ -1252,7 +1263,7 @@ export default function MonitorPage() {
             </Card>
           </div>
 
-          <div className="space-y-2">
+          <div id="logistics-indicators" className="scroll-mt-24 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Freight & Logistics Indicators</h2>
               <span className="text-[11px] text-slate-500">
@@ -1445,7 +1456,7 @@ export default function MonitorPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+          <div id="terminal-panels" className="scroll-mt-24 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
             {panels.map((panel) => {
               const expanded = expandedPanel === panel.id;
               const visibleItems = expanded ? panel.items.slice(0, 12) : panel.items.slice(0, 6);
@@ -1583,6 +1594,9 @@ export default function MonitorPage() {
           ) : null}
         </div>
       </section>
-    </MainLayout>
+      <DeckEcosystemStrip />
+      </main>
+      <MonitorFooter />
+    </div>
   );
 }
