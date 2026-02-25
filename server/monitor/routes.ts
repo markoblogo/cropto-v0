@@ -147,14 +147,14 @@ export function registerMonitorRoutes(app: Express): void {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_LOGISTICS_INDICATORS) {
       return res.json({
         enabled: false,
-        indicators: [],
-        generatedAt: new Date().toISOString(),
+        widgets: [],
+        meta: { generatedAt: new Date().toISOString() },
         message: "Logistics indicators disabled",
       });
     }
 
     try {
-      const payload = await logisticsIndicatorsService.listIndicators();
+      const payload = await logisticsIndicatorsService.list();
       return res.json({
         enabled: true,
         ...payload,
@@ -162,8 +162,8 @@ export function registerMonitorRoutes(app: Express): void {
     } catch (error: any) {
       return res.status(500).json({
         enabled: true,
-        indicators: [],
-        generatedAt: new Date().toISOString(),
+        widgets: [],
+        meta: { generatedAt: new Date().toISOString(), partialFailure: true },
         message: error?.message || "Failed to load logistics indicators",
       });
     }
@@ -187,6 +187,7 @@ export function registerMonitorRoutes(app: Express): void {
       noisySources: topEntries(stats.sourceNoiseCounts, 8),
       sourceErrors: stats.sourceErrors,
       liveVisuals: liveVisuals.summary,
+      logisticsIndicators: logisticsIndicatorsService.debugSummary(),
     });
   });
 }

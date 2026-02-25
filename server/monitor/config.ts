@@ -52,21 +52,6 @@ export const LIVE_VISUALS_DEFAULT_REFRESH_SEC = Number.parseInt(
   10,
 );
 
-export const LOGISTICS_INDICATORS_REFRESH_MS = Number.parseInt(
-  process.env.LOGISTICS_INDICATORS_REFRESH_MS || String(15 * 60 * 1000),
-  10,
-);
-
-export const LOGISTICS_INDICATORS_CACHE_TTL_MS = Number.parseInt(
-  process.env.LOGISTICS_INDICATORS_CACHE_TTL_MS || String(20 * 60 * 1000),
-  10,
-);
-
-export const BDI_SOURCE_URL =
-  process.env.BDI_SOURCE_URL || "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BDIY";
-export const USDA_GTR_RAIL_TARIFF_URL =
-  process.env.USDA_GTR_RAIL_TARIFF_URL || "https://www.ams.usda.gov/sites/default/files/media/GTRTable7.csv";
-
 // Wave 1 sources (RSS/Atom first). Keep enabled flags tunable without code changes.
 export const MONITOR_SOURCES: MonitorSource[] = [
   {

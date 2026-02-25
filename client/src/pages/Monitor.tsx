@@ -83,30 +83,51 @@ type DebugResponse = {
     fallback: number;
     shownSourceIds: string[];
   };
+  logisticsIndicators?: {
+    enabled: boolean;
+    refreshMs: number;
+    cacheTtlMs: number;
+    providers: Array<{
+      id: string;
+      enabled: boolean;
+      status: string;
+      cacheAgeSec?: number;
+      lastSuccessAt?: string;
+      fallbackMode: boolean;
+      lastError?: string;
+    }>;
+  };
 };
 
 type LogisticsIndicator = {
-  id: "bdi" | "usda_rail_tariff" | "logistics_pressure";
+  id: string;
+  type: "bdi" | "rail_tariff" | "logistics_pressure";
   title: string;
   subtitle: string;
   unit: string;
-  value?: number;
-  change?: number;
-  changePercent?: number;
-  status: "live" | "stale" | "fallback" | "unavailable";
+  valueCurrent?: number;
+  valueChange?: number;
+  valueChangePct?: number;
+  status: "LIVE" | "REFRESH" | "DELAYED" | "FALLBACK" | "OFFLINE";
   sourceName: string;
+  sourceAttribution: string;
   sourceUrl: string;
-  asOf?: string;
-  updateFrequency: string;
-  series: Array<{ label: string; value: number }>;
+  updatedAt?: string;
+  timeframe: string;
+  trendLabel: "Rising" | "Cooling" | "Stable" | "Elevated";
+  series: Array<{ ts: string; value: number }>;
   note?: string;
+  fallbackReason?: string;
 };
 
 type LogisticsIndicatorsResponse = {
   enabled: boolean;
-  indicators: LogisticsIndicator[];
-  generatedAt: string;
-  refreshMs?: number;
+  widgets: LogisticsIndicator[];
+  meta: {
+    generatedAt: string;
+    cacheAgeSec?: number;
+    partialFailure?: boolean;
+  };
   message?: string;
 };
 type CompactSignalStatus = "Rising" | "Stable" | "Elevated" | "Cooling";
@@ -228,24 +249,22 @@ function ImpactBadge({ impact }: { impact: Impact }) {
 }
 
 function indicatorStatusClass(status: LogisticsIndicator["status"]) {
-  if (status === "live") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
-  if (status === "stale") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
-  if (status === "fallback") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
+  if (status === "LIVE") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
+  if (status === "REFRESH") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
+  if (status === "DELAYED") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
+  if (status === "FALLBACK") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
   return "border-red-400/45 bg-red-500/20 text-red-100";
 }
 
 function indicatorStatusLabel(status: LogisticsIndicator["status"]) {
-  if (status === "live") return "Live";
-  if (status === "stale") return "Stale";
-  if (status === "fallback") return "Fallback";
-  return "Unavailable";
+  return status;
 }
 
 function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
-  const isPositive = (indicator.change ?? 0) >= 0;
+  const isPositive = (indicator.valueChange ?? 0) >= 0;
   const icon =
-    indicator.id === "bdi" ? <Waves className="h-3.5 w-3.5 text-primary-foreground" /> :
-      indicator.id === "usda_rail_tariff" ? <TrainFront className="h-3.5 w-3.5 text-primary-foreground" /> :
+    indicator.type === "bdi" ? <Waves className="h-3.5 w-3.5 text-primary-foreground" /> :
+      indicator.type === "rail_tariff" ? <TrainFront className="h-3.5 w-3.5 text-primary-foreground" /> :
         <Activity className="h-3.5 w-3.5 text-primary-foreground" />;
 
   return (
@@ -267,13 +286,13 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
       <CardContent className="space-y-2">
         <div className="flex items-end justify-between gap-2">
           <p className="text-2xl font-bold text-white">
-            {indicator.value == null ? "n/a" : indicator.id === "logistics_pressure" ? Math.round(indicator.value) : indicator.value.toFixed(2)}
+            {indicator.valueCurrent == null ? "n/a" : indicator.type === "logistics_pressure" ? Math.round(indicator.valueCurrent) : indicator.valueCurrent.toFixed(2)}
             <span className="ml-1 text-xs font-medium text-slate-400">{indicator.unit}</span>
           </p>
-          {indicator.change != null ? (
+          {indicator.valueChange != null ? (
             <p className={`text-xs font-semibold ${isPositive ? "text-emerald-300" : "text-red-300"}`}>
-              {isPositive ? "+" : ""}{indicator.change.toFixed(2)}
-              {indicator.changePercent != null ? ` (${isPositive ? "+" : ""}${indicator.changePercent.toFixed(2)}%)` : ""}
+              {isPositive ? "+" : ""}{indicator.valueChange.toFixed(2)}
+              {indicator.valueChangePct != null ? ` (${isPositive ? "+" : ""}${indicator.valueChangePct.toFixed(2)}%)` : ""}
             </p>
           ) : (
             <p className="text-xs text-slate-500">No delta</p>
@@ -284,7 +303,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           {indicator.series.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={indicator.series}>
-                <XAxis dataKey="label" hide />
+                <XAxis dataKey="ts" hide />
                 <YAxis hide />
                 <Tooltip />
                 <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
@@ -301,9 +320,9 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           <a href={indicator.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-slate-200">
             Source: {indicator.sourceName}
           </a>
-          <span>{indicator.asOf ? formatRelative(indicator.asOf) : indicator.updateFrequency}</span>
+          <span>{indicator.updatedAt ? formatRelative(indicator.updatedAt) : indicator.timeframe}</span>
         </div>
-        {indicator.note ? <p className="text-[10px] text-slate-500 line-clamp-2">{indicator.note}</p> : null}
+        <p className="text-[10px] text-slate-500 line-clamp-2">{indicator.note || indicator.sourceAttribution}</p>
       </CardContent>
     </Card>
   );
@@ -778,7 +797,7 @@ export default function MonitorPage() {
 
             <div className="xl:col-span-3 grid gap-3">
               {logisticsIndicatorsQuery.data?.enabled ? (
-                (logisticsIndicatorsQuery.data?.indicators || []).slice(0, 2).map((indicator) => (
+                (logisticsIndicatorsQuery.data?.widgets || []).slice(0, 2).map((indicator) => (
                   <Card key={`mini-${indicator.id}`} className="border-white/12 bg-slate-950/72 text-slate-100">
                     <CardContent className="pt-3">
                       <div className="flex items-center justify-between gap-2">
@@ -786,8 +805,8 @@ export default function MonitorPage() {
                         <Badge className={`text-[10px] ${indicatorStatusClass(indicator.status)}`}>{indicatorStatusLabel(indicator.status)}</Badge>
                       </div>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-lg font-bold text-white">{indicator.value == null ? "n/a" : indicator.value.toFixed(2)}</p>
-                        <p className="text-[10px] text-slate-400">{indicator.change != null ? `${indicator.change >= 0 ? "+" : ""}${indicator.change.toFixed(2)}` : "no delta"}</p>
+                        <p className="text-lg font-bold text-white">{indicator.valueCurrent == null ? "n/a" : indicator.valueCurrent.toFixed(2)}</p>
+                        <p className="text-[10px] text-slate-400">{indicator.valueChange != null ? `${indicator.valueChange >= 0 ? "+" : ""}${indicator.valueChange.toFixed(2)}` : "no delta"}</p>
                       </div>
                       <p className="mt-1 text-[10px] text-slate-500 line-clamp-2">{indicator.sourceName}</p>
                     </CardContent>
@@ -891,7 +910,7 @@ export default function MonitorPage() {
               </Card>
             ) : (
               <div className="grid gap-3 lg:grid-cols-3">
-                {(logisticsIndicatorsQuery.data?.indicators || []).map((indicator) => (
+                {(logisticsIndicatorsQuery.data?.widgets || []).map((indicator) => (
                   <IndicatorCard key={indicator.id} indicator={indicator} />
                 ))}
               </div>
@@ -1160,6 +1179,22 @@ export default function MonitorPage() {
                     <p>
                       {debugQuery.data.liveVisuals.enabled}/{debugQuery.data.liveVisuals.total} enabled • active {debugQuery.data.liveVisuals.active} • fallback {debugQuery.data.liveVisuals.fallback}
                     </p>
+                  </div>
+                ) : null}
+                {debugQuery.data?.logisticsIndicators ? (
+                  <div>
+                    <p className="font-medium">Logistics indicators:</p>
+                    <p>
+                      enabled: {String(debugQuery.data.logisticsIndicators.enabled)} • refresh: {Math.round(debugQuery.data.logisticsIndicators.refreshMs / 1000)}s • cacheTTL: {Math.round(debugQuery.data.logisticsIndicators.cacheTtlMs / 1000)}s
+                    </p>
+                    <ul className="list-disc pl-5">
+                      {debugQuery.data.logisticsIndicators.providers.map((provider) => (
+                        <li key={`li-${provider.id}`}>
+                          {provider.id}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackMode)}
+                          {provider.lastError ? ` • err: ${provider.lastError}` : ""}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ) : null}
               </CardContent>
