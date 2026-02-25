@@ -338,6 +338,11 @@ export interface GrainWidgetsProviderDebug {
   rowsReturned?: number;
   itemsReturned?: number;
   cardsReturned?: number;
+  mappedCount?: number;
+  expectedCount?: number;
+  sourceUrlUsed?: string;
+  coverage?: string;
+  fallbackChain?: "real->cache->mock";
   fallbackUsed?: boolean;
   error?: string;
 }

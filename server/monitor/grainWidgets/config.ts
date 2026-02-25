@@ -30,21 +30,25 @@ export const GRAIN_WIDGETS_TIMEFRAME_DEFAULT =
 
 export const BARCHART_API_KEY = process.env.BARCHART_API_KEY || "";
 export const BARCHART_CASH_URL =
+  process.env.BARCHART_QUOTES_URL ||
   process.env.BARCHART_CASH_URL ||
   "https://ondemand.websol.barchart.com/getQuote.json";
 export const BARCHART_CASH_SYMBOLS = process.env.BARCHART_CASH_SYMBOLS || "ZC*1,ZW*1,ZS*1";
+export const BARCHART_TIMEOUT_MS = envNum("BARCHART_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 
 export const COMMODITIC_API_URL = process.env.COMMODITIC_API_URL || "";
 export const COMMODITIC_API_KEY = process.env.COMMODITIC_API_KEY || "";
 export const COMMODITIC_SOURCE_URL =
   process.env.COMMODITIC_SOURCE_URL ||
   "https://www.commoditic.com/";
+export const COMMODITIC_TIMEOUT_MS = envNum("COMMODITIC_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 
 export const APIFARMER_API_URL = process.env.APIFARMER_API_URL || "";
 export const APIFARMER_API_KEY = process.env.APIFARMER_API_KEY || "";
 export const APIFARMER_SOURCE_URL =
   process.env.APIFARMER_SOURCE_URL ||
   "https://apifarmer.com/";
+export const APIFARMER_TIMEOUT_MS = envNum("APIFARMER_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 
 export const TRADINGCHARTS_CBOT_URL =
   process.env.TRADINGCHARTS_CBOT_URL ||
@@ -56,6 +60,9 @@ export const TRADINGCHARTS_CBOT_URLS = (
   .split(",")
   .map((v) => v.trim())
   .filter(Boolean);
+export const TRADINGCHARTS_FETCH_TIMEOUT_MS = envNum("TRADINGCHARTS_FETCH_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const TRADINGCHARTS_USER_AGENT =
+  process.env.TRADINGCHARTS_USER_AGENT || "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)";
 
 export const COMMODITIC_LIVESTOCK_API_URL = process.env.COMMODITIC_LIVESTOCK_API_URL || "";
 export const COMMODITIC_LIVESTOCK_SOURCE_URL =

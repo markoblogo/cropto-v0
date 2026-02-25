@@ -2,8 +2,8 @@ import {
   APIFARMER_API_KEY,
   APIFARMER_API_URL,
   APIFARMER_SOURCE_URL,
+  APIFARMER_TIMEOUT_MS,
   ENABLE_APIFARMER_WIDGETS,
-  GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
 } from "../config";
 import type { GrainWidgetCropPriceIndex, GrainWidgetTableRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
@@ -60,8 +60,13 @@ export class ApiFarmerProvider implements GrainWidgetsProvider {
     if (!APIFARMER_API_URL) throw new Error("apifarmer_api_url_missing");
     const headers: HeadersInit = {};
     if (APIFARMER_API_KEY) headers.authorization = `Bearer ${APIFARMER_API_KEY}`;
-    const text = await fetchTextWithTimeout(APIFARMER_API_URL, GRAIN_WIDGETS_FETCH_TIMEOUT_MS, headers);
-    const payload = JSON.parse(text) as any;
+    const text = await fetchTextWithTimeout(APIFARMER_API_URL, APIFARMER_TIMEOUT_MS, headers);
+    let payload: any;
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      throw new Error("apifarmer_parse_error");
+    }
     const items = flatten(payload);
 
     const wheat = findItem(items, ["wheat"]);
@@ -72,7 +77,8 @@ export class ApiFarmerProvider implements GrainWidgetsProvider {
     const oilValue = parseNumber(oilseeds?.value ?? oilseeds?.price);
     const values = [wheatValue, soyValue, oilValue].filter((v): v is number => typeof v === "number");
     const indexValue = values.length ? Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(2)) : undefined;
-    const status = statusFromAvailability({ hasValue: indexValue != null, delayed: true });
+    const availableCount = values.length;
+    const status = availableCount >= 3 ? "REFRESH" : availableCount > 0 ? "INDICATIVE" : statusFromAvailability({ hasValue: false });
 
     const avgPct = [parseNumber(wheat?.changePct), parseNumber(soy?.changePct), parseNumber(oilseeds?.changePct)]
       .filter((v): v is number => typeof v === "number");
@@ -127,6 +133,7 @@ export class ApiFarmerProvider implements GrainWidgetsProvider {
       ],
       weatherTieIn,
       notes: values.length < 2 ? ["Low source coverage for composite index"] : undefined,
+      fallbackReason: values.length ? undefined : "coverage_empty",
     };
   }
 

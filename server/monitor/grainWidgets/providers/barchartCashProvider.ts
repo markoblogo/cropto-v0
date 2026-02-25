@@ -3,8 +3,8 @@ import {
   BARCHART_API_KEY,
   BARCHART_CASH_SYMBOLS,
   BARCHART_CASH_URL,
+  BARCHART_TIMEOUT_MS,
   ENABLE_BARCHART_CASH_WIDGETS,
-  GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
 } from "../config";
 import type { GrainWidgetTableRow, GrainWidgetUSCashBids } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
@@ -52,12 +52,23 @@ export class BarchartCashProvider implements GrainWidgetsProvider {
     });
     if (BARCHART_API_KEY) params.set("apikey", BARCHART_API_KEY);
 
-    const text = await fetchTextWithTimeout(`${BARCHART_CASH_URL}?${params.toString()}`, GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
-    const payload = JSON.parse(text) as { results?: BarchartQuote[]; data?: BarchartQuote[] };
-    if ((payload as any)?.status?.code && Number((payload as any).status.code) >= 400) {
-      throw new Error(`barchart_http_${(payload as any).status.code}`);
+    const text = await fetchTextWithTimeout(`${BARCHART_CASH_URL}?${params.toString()}`, BARCHART_TIMEOUT_MS);
+    let payload: any;
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      throw new Error("barchart_parse_error");
     }
-    const quotes = payload.results || payload.data || [];
+    const statusCode = Number(payload?.status?.code ?? payload?.code);
+    if (Number.isFinite(statusCode) && statusCode >= 400) {
+      if (statusCode === 401 || statusCode === 403) throw new Error(`barchart_unauthorized_${statusCode}`);
+      if (statusCode === 429) throw new Error("barchart_rate_limited");
+      throw new Error(`barchart_http_${statusCode}`);
+    }
+    const quotes = (Array.isArray(payload?.results) ? payload.results : undefined)
+      || (Array.isArray(payload?.data) ? payload.data : undefined)
+      || (Array.isArray(payload?.rows) ? payload.rows : undefined)
+      || [];
 
     const rows: GrainWidgetTableRow[] = [];
     for (const quote of quotes) {
@@ -96,12 +107,14 @@ export class BarchartCashProvider implements GrainWidgetsProvider {
 
     const values = rows.map((row) => row.price?.normalizedValueCurrent).filter((v): v is number => typeof v === "number");
     const available = rows.filter((row) => row.price?.nativeValueCurrent != null).length;
+    const expected = Object.keys(SYMBOL_MAP).length;
+    const status = available >= expected ? "REFRESH" : available > 0 ? "INDICATIVE" : "OFFLINE";
     return {
       id: "grain-us-cash-bids",
       kind: "US_CASH_BIDS",
       title: "Cash (US)",
       subtitle: "USDA cash grains / regional bids",
-      status: available ? (available >= 3 ? "REFRESH" : "INDICATIVE") : "OFFLINE",
+      status,
       sourceName: "Barchart",
       sourceAttribution: "Data: Barchart",
       sourceUrl: "https://www.barchart.com/ondemand/api/getQuote",
@@ -122,10 +135,11 @@ export class BarchartCashProvider implements GrainWidgetsProvider {
           : undefined,
       },
       notes: [
-        ...(rows.length < 3 ? [`${rows.length}/3 instruments available`] : []),
+        ...(available < expected ? [`coverage ${available}/${expected} instruments`] : []),
         ...(!BARCHART_API_KEY && hasApiKeyInUrl ? ["API key loaded from URL configuration"] : []),
         ...(!BARCHART_API_KEY && !hasApiKeyInUrl ? ["No API key configured; public/anonymous mode attempted"] : []),
       ].filter(Boolean),
+      fallbackReason: available ? undefined : "coverage_empty",
     };
   }
 

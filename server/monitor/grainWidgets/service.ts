@@ -31,6 +31,15 @@ type CacheEntry = {
   data: GrainWidget;
 };
 
+const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
+  US_CASH_BIDS: 3,
+  CBOT_FUTURES_SNAPSHOT: 3,
+  GLOBAL_SPOT_TABLE: 4,
+  CROP_PRICE_INDEX: 3,
+  LIVESTOCK_FEED_TIEIN: 2,
+  MACRO_AGRI_INDICES: 2,
+};
+
 function statusRank(status: GrainWidget["status"]): number {
   if (status === "LIVE") return 6;
   if (status === "REFRESH") return 5;
@@ -78,6 +87,30 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
     return { rows: 0, items: widget.items?.length || 0, cards: widget.cards?.length || 0 };
   }
   return { rows: 0, items: 0, cards: 0 };
+}
+
+function mappedCountForWidget(widget: GrainWidget): number {
+  if (widget.kind === "US_CASH_BIDS" || widget.kind === "GLOBAL_SPOT_TABLE" || widget.kind === "CBOT_FUTURES_SNAPSHOT" || widget.kind === "LIVESTOCK_FEED_TIEIN") {
+    return widget.rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
+  }
+  if (widget.kind === "CROP_PRICE_INDEX") {
+    return (widget.rows || []).filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
+  }
+  if (widget.kind === "MACRO_AGRI_INDICES") {
+    return (widget.items || []).filter((item) => {
+      if (item.metricSemanticKind === "price") return item.price?.nativeValueCurrent != null || item.price?.normalizedValueCurrent != null;
+      return item.valueCurrent != null;
+    }).length;
+  }
+  return 0;
+}
+
+function providerState(provider: GrainWidgetsProvider, cached?: CacheEntry): GrainWidgetsProviderDebug["status"] {
+  if (!provider.enabled) return "disabled";
+  if (!cached) return "error";
+  if (cached.data.status === "OFFLINE") return "error";
+  if (cached.data.status === "FALLBACK" || cached.data.status === "DELAYED" || cached.lastError) return "partial";
+  return "ok";
 }
 
 function collectPriceLikeMetrics(widgets: GrainWidget[]) {
@@ -206,11 +239,13 @@ export class GrainWidgetsService {
       providers: this.providers.map((provider) => {
         const cached = this.cache.get(provider.kind);
         const counts = cached ? widgetMetricCounts(cached.data) : { rows: 0, items: 0, cards: 0 };
+        const mappedCount = cached ? mappedCountForWidget(cached.data) : 0;
+        const expectedCount = EXPECTED_COVERAGE[provider.kind];
         return {
           providerId: provider.id,
           providerType: provider.id,
           enabled: provider.enabled,
-          status: !provider.enabled ? "disabled" : cached ? (cached.lastError ? "partial" : "ok") : "error",
+          status: providerState(provider, cached),
           lastSuccessAt: cached?.lastSuccessAt,
           lastAttemptAt: new Date().toISOString(),
           cacheAgeSec: cached ? Math.floor((now - cached.fetchedAt) / 1000) : undefined,
@@ -219,6 +254,11 @@ export class GrainWidgetsService {
           rowsReturned: counts.rows || undefined,
           itemsReturned: counts.items || undefined,
           cardsReturned: counts.cards || undefined,
+          mappedCount: cached ? mappedCount : undefined,
+          expectedCount,
+          coverage: expectedCount ? `${mappedCount}/${expectedCount}` : undefined,
+          sourceUrlUsed: cached?.data.sourceUrl,
+          fallbackChain: "real->cache->mock",
           fallbackUsed: cached ? ["DELAYED", "FALLBACK", "OFFLINE"].includes(cached.data.status) : undefined,
           error: cached?.lastError,
         } satisfies GrainWidgetsProviderDebug;
@@ -274,11 +314,13 @@ export class GrainWidgetsService {
       providers: this.providers.map((provider) => {
         const cached = this.cache.get(provider.kind);
         const counts = cached ? widgetMetricCounts(cached.data) : { rows: 0, items: 0, cards: 0 };
+        const mappedCount = cached ? mappedCountForWidget(cached.data) : 0;
+        const expectedCount = EXPECTED_COVERAGE[provider.kind];
         return {
           providerId: provider.id,
           providerType: provider.id,
           enabled: provider.enabled,
-          status: !provider.enabled ? "disabled" : cached ? (cached.lastError ? "partial" : "ok") : "error",
+          status: providerState(provider, cached),
           lastSuccessAt: cached?.lastSuccessAt,
           lastAttemptAt: new Date().toISOString(),
           cacheHit: Boolean(cached),
@@ -288,6 +330,11 @@ export class GrainWidgetsService {
           rowsReturned: counts.rows || undefined,
           itemsReturned: counts.items || undefined,
           cardsReturned: counts.cards || undefined,
+          mappedCount: cached ? mappedCount : undefined,
+          expectedCount,
+          coverage: expectedCount ? `${mappedCount}/${expectedCount}` : undefined,
+          sourceUrlUsed: cached?.data.sourceUrl,
+          fallbackChain: "real->cache->mock",
           fallbackUsed: cached ? ["DELAYED", "FALLBACK", "OFFLINE"].includes(cached.data.status) : undefined,
           error: cached?.lastError,
         };

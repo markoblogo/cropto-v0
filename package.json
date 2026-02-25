@@ -21,6 +21,7 @@
     "debug:igc": "tsx scripts/debugIgcIndexPrices.ts",
     "ingest:probe": "tsx scripts/ingest_probe.ts",
     "ingest:smoke": "tsx scripts/ingest_smoke.ts",
+    "grain-widgets:smoke": "node --import tsx scripts/grain_widgets_smoke.ts",
     "ingest:backfill": "tsx scripts/ingest_backfill.ts",
     "e2e:smoke": "tsx scripts/e2e_smoke.ts",
     "i18n:extract": "tsx scripts/extract-strings.ts",

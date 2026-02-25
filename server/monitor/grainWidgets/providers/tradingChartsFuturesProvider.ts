@@ -1,8 +1,9 @@
 import {
   ENABLE_TRADINGCHARTS_FUTURES_WIDGETS,
-  GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   TRADINGCHARTS_CBOT_URL,
   TRADINGCHARTS_CBOT_URLS,
+  TRADINGCHARTS_FETCH_TIMEOUT_MS,
+  TRADINGCHARTS_USER_AGENT,
 } from "../config";
 import type { GrainWidgetCbotFuturesSnapshot, GrainWidgetTableRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
@@ -36,9 +37,11 @@ function parseInstrumentBlock(raw: string, aliases: string[]): { last?: number; 
   const pctMatch = sample.match(/([+-]?\d+(?:\.\d+)?)\s*%/);
   const numbers = [...sample.matchAll(/([+-]?\d+(?:\.\d+)?)/g)]
     .map((match) => Number.parseFloat(match[1]))
-    .filter((num) => Number.isFinite(num));
-  const last = numbers.find((num) => num > 1);
-  const change = numbers.find((num) => num !== last && Math.abs(num) < 50);
+    .filter((num) => Number.isFinite(num))
+    .filter((num) => Math.abs(num) < 100000);
+  const candidates = numbers.filter((num) => num > 100 && num < 5000);
+  const last = candidates[0] ?? numbers.find((num) => num > 1);
+  const change = numbers.find((num) => num !== last && Math.abs(num) <= 50);
   const pct = pctMatch ? Number.parseFloat(pctMatch[1]) : undefined;
   return { last, change, pct };
 }
@@ -53,7 +56,9 @@ export class TradingChartsFuturesProvider implements GrainWidgetsProvider {
     let lastError = "unreachable";
     for (const url of TRADINGCHARTS_CBOT_URLS) {
       try {
-        const html = await fetchTextWithTimeout(url, GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+        const html = await fetchTextWithTimeout(url, TRADINGCHARTS_FETCH_TIMEOUT_MS, {
+          "user-agent": TRADINGCHARTS_USER_AGENT,
+        });
         return { html, sourceUrl: url };
       } catch (error: any) {
         lastError = error?.message || "fetch_failed";
@@ -93,12 +98,14 @@ export class TradingChartsFuturesProvider implements GrainWidgetsProvider {
     });
 
     const parsedCount = rows.filter((row) => row.price?.nativeValueCurrent != null).length;
+    const expected = MATCHERS.length;
+    const status = parsedCount >= expected ? "INDICATIVE" : parsedCount > 0 ? "INDICATIVE" : "OFFLINE";
     return {
       id: "grain-cbot-futures-snapshot",
       kind: "CBOT_FUTURES_SNAPSHOT",
       title: "Futures (CBOT)",
       subtitle: "Intraday snapshot",
-      status: parsedCount ? (parsedCount === MATCHERS.length ? "REFRESH" : "INDICATIVE") : "OFFLINE",
+      status,
       sourceName: "TradingCharts",
       sourceAttribution: "Data: TradingCharts (public)",
       sourceUrl,
@@ -108,10 +115,11 @@ export class TradingChartsFuturesProvider implements GrainWidgetsProvider {
       summary: {
         contractsParsed: parsedCount,
         parseMode: "snapshot",
+        notes: [`coverage ${parsedCount}/${expected}`],
       },
       fallbackReason: parsedCount ? "public_parse" : "parse_failed",
       notes: [
-        ...(parsedCount < MATCHERS.length ? [`${parsedCount}/${MATCHERS.length} contracts parsed`] : []),
+        ...(parsedCount < expected ? [`${parsedCount}/${expected} contracts parsed`] : []),
         ...(sourceUrl !== TRADINGCHARTS_CBOT_URL ? [`Fallback source URL used: ${sourceUrl}`] : []),
       ],
     };

@@ -2,8 +2,8 @@ import {
   COMMODITIC_API_KEY,
   COMMODITIC_API_URL,
   COMMODITIC_SOURCE_URL,
+  COMMODITIC_TIMEOUT_MS,
   ENABLE_COMMODITIC_WIDGETS,
-  GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
 } from "../config";
 import type { GrainWidgetGlobalSpotTable, GrainWidgetTableRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
@@ -70,8 +70,13 @@ export class CommoditicProvider implements GrainWidgetsProvider {
     if (!COMMODITIC_API_URL) throw new Error("commoditic_api_url_missing");
     const headers: HeadersInit = {};
     if (COMMODITIC_API_KEY) headers.authorization = `Bearer ${COMMODITIC_API_KEY}`;
-    const text = await fetchTextWithTimeout(COMMODITIC_API_URL, GRAIN_WIDGETS_FETCH_TIMEOUT_MS, headers);
-    const payload = JSON.parse(text) as any;
+    const text = await fetchTextWithTimeout(COMMODITIC_API_URL, COMMODITIC_TIMEOUT_MS, headers);
+    let payload: any;
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      throw new Error("commoditic_parse_error");
+    }
     const sourceRows = flatten(payload);
 
     const rows: GrainWidgetTableRow[] = MAP.map((config) => {
@@ -105,6 +110,7 @@ export class CommoditicProvider implements GrainWidgetsProvider {
     });
 
     const available = rows.filter((row) => row.price?.nativeValueCurrent != null).length;
+    const expected = MAP.length;
     const avgChange = rows
       .map((row) => row.price?.normalizedValueChangePct ?? row.price?.nativeValueChangePct)
       .filter((v): v is number => typeof v === "number");
@@ -116,7 +122,7 @@ export class CommoditicProvider implements GrainWidgetsProvider {
       kind: "GLOBAL_SPOT_TABLE",
       title: "Spot (Global)",
       subtitle: "Wheat / Corn / Soy / Rapeseed",
-      status: available ? "REFRESH" : "OFFLINE",
+      status: available >= expected ? "REFRESH" : available > 0 ? "INDICATIVE" : "OFFLINE",
       sourceName: "Commoditic",
       sourceAttribution: "Data: Commoditic",
       sourceUrl: COMMODITIC_SOURCE_URL,
@@ -128,7 +134,11 @@ export class CommoditicProvider implements GrainWidgetsProvider {
         momentumLabel,
         normalizedCoverage: coverage(rows),
       },
-      notes: available < MAP.length ? [`${available}/${MAP.length} instruments available`] : undefined,
+      notes: [
+        ...(available < expected ? [`coverage ${available}/${expected} instruments`] : []),
+        ...(COMMODITIC_API_KEY ? [] : ["No API key configured; open endpoint mode attempted"]),
+      ],
+      fallbackReason: available > 0 ? undefined : "coverage_empty",
     };
   }
 
