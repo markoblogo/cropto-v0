@@ -102,7 +102,8 @@ type DebugResponse = {
     refreshMs: number;
     cacheTtlMs: number;
     providers: Array<{
-      id: string;
+      providerId: string;
+      providerType?: string;
       enabled: boolean;
       status: string;
       cacheAgeSec?: number;
@@ -157,20 +158,21 @@ type LogisticsIndicatorsResponse = {
 type GrainWidgetStatus = "LIVE" | "DELAYED" | "INDICATIVE" | "FALLBACK" | "OFFLINE";
 
 type GrainInstrumentWidget = {
-  id: string;
-  venue: "CBOT/CME" | "Euronext";
-  instrument: string;
+  instrumentKey: string;
+  venue: "CBOT" | "EURONEXT";
   title: string;
+  subtitle?: string;
   status: GrainWidgetStatus;
   sourceName: string;
   sourceAttribution: string;
   sourceUrl: string;
   updatedAt?: string;
-  lastPrice?: number;
-  changeAbs?: number;
-  changePct?: number;
-  timeframe: "1d" | "7d" | "indicative";
-  unit: string;
+  valueCurrent?: number;
+  valueChange?: number;
+  valueChangePct?: number;
+  timeframe: "1d" | "7d";
+  currency?: string;
+  unit?: string;
   series: Array<{ ts: string; value: number }>;
   fallbackReason?: string;
 };
@@ -183,21 +185,37 @@ type GrainComparisonWidget = {
   sourceAttribution: string;
   leftLabel: string;
   rightLabel: string;
-  leftValue?: number;
-  rightValue?: number;
-  spread?: number;
-  spreadPct?: number;
+  comparisonType: "same-family" | "proxy";
+  leftChangePct?: number;
+  rightChangePct?: number;
+  relativeMoveSignal: "US outperforming" | "EU outperforming" | "Mixed" | "Flat" | "Unavailable";
+  trendLabel?: "Rising" | "Cooling" | "Stable" | "Mixed";
   note: string;
+  updatedAt: string;
+  fallbackReason?: string;
 };
 
 type GrainMarketsResponse = {
-  enabled: boolean;
-  widgets: GrainInstrumentWidget[];
-  comparisons: GrainComparisonWidget[];
+  enabled?: boolean;
+  widgets: {
+    cbot: GrainInstrumentWidget[];
+    euronext: GrainInstrumentWidget[];
+    comparisons: GrainComparisonWidget[];
+  };
   meta: {
     generatedAt: string;
     cacheAgeSec?: number;
     partialFailure?: boolean;
+  };
+  debug?: {
+    providers: Array<{
+      providerId: string;
+      providerType?: string;
+      enabled: boolean;
+      status: string;
+      fallbackUsed?: boolean;
+      error?: string;
+    }>;
   };
   message?: string;
 };
@@ -340,25 +358,25 @@ function grainStatusClass(status: GrainWidgetStatus) {
 }
 
 function GrainInstrumentCard({ widget }: { widget: GrainInstrumentWidget }) {
-  const positive = (widget.changeAbs ?? 0) >= 0;
+  const positive = (widget.valueChange ?? 0) >= 0;
   return (
     <Card className="border-white/12 bg-slate-950/76 text-slate-100">
       <CardContent className="space-y-2 pt-3">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">{widget.venue}</p>
-            <p className="text-sm font-semibold text-white">{widget.title}</p>
+            <p className="text-sm font-semibold text-white">{widget.title}{widget.subtitle ? ` · ${widget.subtitle}` : ""}</p>
           </div>
           <Badge className={`text-[10px] ${grainStatusClass(widget.status)}`}>{widget.status}</Badge>
         </div>
 
         <div className="flex items-end justify-between gap-2">
           <p className="text-2xl font-bold text-white">
-            {widget.lastPrice == null ? "n/a" : widget.lastPrice.toFixed(2)}
-            <span className="ml-1 text-[10px] font-medium text-slate-400">{widget.unit}</span>
+            {widget.valueCurrent == null ? "n/a" : widget.valueCurrent.toFixed(2)}
+            <span className="ml-1 text-[10px] font-medium text-slate-400">{widget.currency || ""}{widget.unit ? ` ${widget.unit}` : ""}</span>
           </p>
           <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
-            {widget.changeAbs == null ? "No delta" : `${positive ? "+" : ""}${widget.changeAbs.toFixed(2)}${widget.changePct != null ? ` (${positive ? "+" : ""}${widget.changePct.toFixed(2)}%)` : ""}`}
+            {widget.valueChange == null ? "No delta" : `${positive ? "+" : ""}${widget.valueChange.toFixed(2)}${widget.valueChangePct != null ? ` (${positive ? "+" : ""}${widget.valueChangePct.toFixed(2)}%)` : ""}`}
           </p>
         </div>
 
@@ -390,7 +408,6 @@ function GrainInstrumentCard({ widget }: { widget: GrainInstrumentWidget }) {
 }
 
 function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
-  const positive = (widget.spread ?? 0) >= 0;
   return (
     <Card className="border-white/10 bg-slate-950/68 text-slate-100">
       <CardContent className="space-y-2 pt-3">
@@ -401,17 +418,15 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
         <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
           <div className="rounded-md border border-white/10 bg-slate-900/70 p-2">
             <p className="text-[10px] text-slate-400">{widget.leftLabel}</p>
-            <p className="mt-0.5 font-semibold text-white">{widget.leftValue == null ? "n/a" : widget.leftValue.toFixed(2)}</p>
+            <p className="mt-0.5 font-semibold text-white">{widget.leftChangePct == null ? "n/a" : `${widget.leftChangePct >= 0 ? "+" : ""}${widget.leftChangePct.toFixed(2)}%`}</p>
           </div>
           <div className="rounded-md border border-white/10 bg-slate-900/70 p-2">
             <p className="text-[10px] text-slate-400">{widget.rightLabel}</p>
-            <p className="mt-0.5 font-semibold text-white">{widget.rightValue == null ? "n/a" : widget.rightValue.toFixed(2)}</p>
+            <p className="mt-0.5 font-semibold text-white">{widget.rightChangePct == null ? "n/a" : `${widget.rightChangePct >= 0 ? "+" : ""}${widget.rightChangePct.toFixed(2)}%`}</p>
           </div>
         </div>
-        <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
-          Spread: {widget.spread == null ? "n/a" : `${positive ? "+" : ""}${widget.spread.toFixed(2)}`} {widget.spreadPct != null ? `(${positive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
-        </p>
-        <p className="text-[10px] text-slate-500 line-clamp-2">{widget.note}</p>
+        <p className="text-xs font-semibold text-primary">{widget.relativeMoveSignal}</p>
+        <p className="text-[10px] text-slate-500 line-clamp-2">{widget.note || (widget.comparisonType === "proxy" ? "Proxy cross-market comparison (not identical contracts)" : "Relative performance comparison.")}</p>
       </CardContent>
     </Card>
   );
@@ -911,24 +926,24 @@ export default function MonitorPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Grain Markets Core</h2>
               <span className="text-[11px] text-slate-500">
-                {grainMarketsQuery.data?.enabled ? "CBOT/CME + Euronext (demo-grade)" : "Disabled"}
+                {grainMarketsQuery.data?.meta?.partialFailure ? "CBOT + Euronext (partial/fallback)" : "CBOT + Euronext (core)"}
               </span>
             </div>
-            {!grainMarketsQuery.data?.enabled ? (
+            {!grainMarketsQuery.data || (grainMarketsQuery.data.widgets.cbot.length === 0 && grainMarketsQuery.data.widgets.euronext.length === 0) ? (
               <Card className="border-white/12 bg-slate-950/72 text-slate-100">
                 <CardContent className="pt-6 text-sm text-slate-400">
-                  Grain markets core is disabled by feature flag.
+                  Grain markets core is temporarily unavailable.
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3 xl:grid-cols-12">
                 <div className="xl:col-span-8 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {(grainMarketsQuery.data?.widgets || []).map((widget) => (
-                    <GrainInstrumentCard key={widget.id} widget={widget} />
+                  {[...(grainMarketsQuery.data?.widgets.cbot || []), ...(grainMarketsQuery.data?.widgets.euronext || [])].map((widget) => (
+                    <GrainInstrumentCard key={widget.instrumentKey} widget={widget} />
                   ))}
                 </div>
                 <div className="xl:col-span-4 grid gap-3">
-                  {(grainMarketsQuery.data?.comparisons || []).map((widget) => (
+                  {(grainMarketsQuery.data?.widgets.comparisons || []).map((widget) => (
                     <GrainComparisonCard key={widget.id} widget={widget} />
                   ))}
                 </div>
@@ -1415,8 +1430,8 @@ export default function MonitorPage() {
                     </p>
                     <ul className="list-disc pl-5">
                       {debugQuery.data.grainMarkets.providers.map((provider) => (
-                        <li key={`gm-${provider.id}`}>
-                          {provider.id}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackMode)}
+                        <li key={`gm-${provider.providerId}`}>
+                          {provider.providerId}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackMode)}
                           {provider.lastError ? ` • err: ${provider.lastError}` : ""}
                         </li>
                       ))}

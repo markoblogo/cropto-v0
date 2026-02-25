@@ -1,77 +1,169 @@
-export type GrainWidgetStatus = "LIVE" | "DELAYED" | "INDICATIVE" | "FALLBACK" | "OFFLINE";
-export type GrainVenue = "CBOT/CME" | "Euronext";
+export type GrainMarketVenue = "CBOT" | "EURONEXT";
+export type GrainMarketCommodityGroup = "Grains" | "Oilseeds";
 
-export type GrainInstrumentKey =
-  | "corn"
-  | "wheat"
-  | "soy"
-  | "milling_wheat"
-  | "euronext_corn"
-  | "rapeseed";
+export type GrainMarketInstrumentKey =
+  | "CBOT_CORN"
+  | "CBOT_WHEAT"
+  | "CBOT_SOYBEANS"
+  | "EURONEXT_MILLING_WHEAT"
+  | "EURONEXT_CORN"
+  | "EURONEXT_RAPESEED";
 
-export type GrainSeriesPoint = {
+export type GrainMarketStatus =
+  | "LIVE"
+  | "REFRESH"
+  | "DELAYED"
+  | "INDICATIVE"
+  | "FALLBACK"
+  | "OFFLINE";
+
+export type GrainMarketTimeframe = "1d" | "7d";
+export type ComparisonType = "same-family" | "proxy";
+
+export type RelativeMoveSignal =
+  | "US outperforming"
+  | "EU outperforming"
+  | "Mixed"
+  | "Flat"
+  | "Unavailable";
+
+export interface GrainMarketPoint {
   ts: string;
   value: number;
-};
+}
 
-export type GrainInstrumentWidget = {
-  id: string;
-  instrumentKey: GrainInstrumentKey;
-  venue: GrainVenue;
-  instrument: string;
-  title: string;
-  status: GrainWidgetStatus;
+export interface GrainMarketInstrumentMeta {
+  key: GrainMarketInstrumentKey;
+  venue: GrainMarketVenue;
+  displayName: string;
+  shortName: string;
+  commodityGroup: GrainMarketCommodityGroup;
+  currency: string;
+  unit?: string;
+  sourceInstrumentId?: string;
+  updateCadenceHint?: string;
+}
+
+export interface GrainMarketQuoteNormalized extends GrainMarketInstrumentMeta {
+  status: GrainMarketStatus;
   sourceName: string;
-  sourceAttribution: string;
-  sourceUrl: string;
-  updatedAt?: string;
-  lastPrice?: number;
-  changeAbs?: number;
-  changePct?: number;
-  timeframe: "1d" | "7d" | "indicative";
-  unit: string;
-  series: GrainSeriesPoint[];
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  asOf?: string;
+  timeframe: GrainMarketTimeframe;
+  valueCurrent?: number;
+  valuePrevious?: number;
+  valueChange?: number;
+  valueChangePct?: number;
+  series?: GrainMarketPoint[];
+  notes?: string[];
   fallbackReason?: string;
-};
+  providerId?: string;
+  isCached?: boolean;
+  cacheAgeSec?: number;
+}
 
-export type GrainComparisonWidget = {
-  id: string;
+export interface GrainMarketWidgetItem {
+  instrumentKey: GrainMarketInstrumentKey;
+  venue: GrainMarketVenue;
   title: string;
-  status: GrainWidgetStatus;
+  subtitle?: string;
+  status: GrainMarketStatus;
   sourceName: string;
-  sourceAttribution: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  asOf?: string;
+  timeframe: GrainMarketTimeframe;
+  valueCurrent?: number;
+  valueChange?: number;
+  valueChangePct?: number;
+  currency?: string;
+  unit?: string;
+  series?: GrainMarketPoint[];
+  notes?: string[];
+  fallbackReason?: string;
+  venueBadge?: string;
+  marketLabel?: string;
+}
+
+export interface GrainMarketComparisonWidget {
+  id: "WHEAT_US_EU" | "CORN_US_EU" | "SOY_RAPE_PROXY";
+  title: string;
+  status: GrainMarketStatus;
+  comparisonType: ComparisonType;
+  leftInstrumentKey: GrainMarketInstrumentKey;
+  rightInstrumentKey: GrainMarketInstrumentKey;
   leftLabel: string;
   rightLabel: string;
-  leftValue?: number;
-  rightValue?: number;
-  spread?: number;
+  spreadAbs?: number;
+  spreadUnit?: string;
   spreadPct?: number;
-  note: string;
-};
+  leftChangePct?: number;
+  rightChangePct?: number;
+  relativeMoveSignal: RelativeMoveSignal;
+  trendLabel?: "Rising" | "Cooling" | "Stable" | "Mixed";
+  series?: GrainMarketPoint[];
+  note?: string;
+  sourceAttribution?: string;
+  updatedAt: string;
+  notes?: string[];
+  fallbackReason?: string;
+}
 
-export type GrainProviderDebug = {
-  id: string;
-  enabled: boolean;
-  status: GrainWidgetStatus;
+export interface GrainMarketsWidgetsPayload {
+  cbot: GrainMarketWidgetItem[];
+  euronext: GrainMarketWidgetItem[];
+  comparisons: GrainMarketComparisonWidget[];
+}
+
+export interface GrainMarketsMeta {
+  generatedAt: string;
+  partialFailure: boolean;
   cacheAgeSec?: number;
-  lastSuccessAt?: string;
-  fallbackMode: boolean;
-  lastError?: string;
-};
-
-export type GrainMarketsResponse = {
-  widgets: GrainInstrumentWidget[];
-  comparisons: GrainComparisonWidget[];
-  meta: {
-    generatedAt: string;
-    cacheAgeSec?: number;
-    partialFailure?: boolean;
+  timeframe: GrainMarketTimeframe;
+  instrumentsRequested: GrainMarketInstrumentKey[];
+  instrumentsReturned: GrainMarketInstrumentKey[];
+  counts?: {
+    total: number;
+    live: number;
+    delayed: number;
+    indicative: number;
+    fallback: number;
+    offline: number;
   };
-};
+}
 
-export interface GrainMarketsProvider {
-  id: "cbot" | "euronext";
+export interface GrainMarketsProviderDebug {
+  providerId: string;
+  providerType?: string;
   enabled: boolean;
-  getWidgets(): Promise<GrainInstrumentWidget[]>;
-  mockFallback(reason: string): GrainInstrumentWidget[];
+  status: "ok" | "partial" | "error" | "disabled";
+  lastSuccessAt?: string;
+  lastAttemptAt?: string;
+  cacheHit?: boolean;
+  cacheAgeSec?: number;
+  instrumentsRequested?: GrainMarketInstrumentKey[];
+  instrumentsReturned?: GrainMarketInstrumentKey[];
+  fallbackUsed?: boolean;
+  error?: string;
+}
+
+export interface GrainMarketsDebug {
+  providers: GrainMarketsProviderDebug[];
+  sourceErrors?: Array<{
+    providerId: string;
+    instrumentKey?: GrainMarketInstrumentKey;
+    message: string;
+  }>;
+  fallbackUsed?: Partial<Record<GrainMarketInstrumentKey, boolean>>;
+  symbolMapping?: Partial<Record<GrainMarketInstrumentKey, string>>;
+  unavailableInstruments?: GrainMarketInstrumentKey[];
+}
+
+export interface GrainMarketsResponse {
+  widgets: GrainMarketsWidgetsPayload;
+  meta: GrainMarketsMeta;
+  debug?: GrainMarketsDebug;
 }

@@ -176,9 +176,14 @@ export function registerMonitorRoutes(app: Express): void {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_GRAIN_MARKETS_CORE) {
       return res.json({
         enabled: false,
-        widgets: [],
-        comparisons: [],
-        meta: { generatedAt: new Date().toISOString() },
+        widgets: { cbot: [], euronext: [], comparisons: [] },
+        meta: {
+          generatedAt: new Date().toISOString(),
+          partialFailure: false,
+          timeframe: "1d",
+          instrumentsRequested: [],
+          instrumentsReturned: [],
+        },
         message: "Grain markets core disabled",
       });
     }
@@ -192,9 +197,14 @@ export function registerMonitorRoutes(app: Express): void {
     } catch (error: any) {
       return res.status(500).json({
         enabled: true,
-        widgets: [],
-        comparisons: [],
-        meta: { generatedAt: new Date().toISOString(), partialFailure: true },
+        widgets: { cbot: [], euronext: [], comparisons: [] },
+        meta: {
+          generatedAt: new Date().toISOString(),
+          partialFailure: true,
+          timeframe: "1d",
+          instrumentsRequested: [],
+          instrumentsReturned: [],
+        },
         message: error?.message || "Failed to load grain markets core",
       });
     }

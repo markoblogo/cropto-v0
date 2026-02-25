@@ -1,4 +1,4 @@
-import type { GrainSeriesPoint, GrainWidgetStatus } from "../types";
+import type { GrainMarketPoint, GrainMarketStatus } from "../types";
 
 export async function fetchTextWithTimeout(url: string, timeoutMs: number): Promise<string> {
   const controller = new AbortController();
@@ -38,40 +38,30 @@ export function normalizeDate(value: unknown): string | undefined {
   return undefined;
 }
 
-export function statusFromSource(primary: boolean, hasHistory: boolean): GrainWidgetStatus {
-  if (primary && hasHistory) return "LIVE";
-  if (primary) return "INDICATIVE";
-  if (hasHistory) return "DELAYED";
-  return "FALLBACK";
+export function statusFromSource(opts: { primary: boolean; hasValue: boolean; delayed?: boolean; fallback?: boolean }): GrainMarketStatus {
+  if (!opts.hasValue && opts.fallback) return "FALLBACK";
+  if (!opts.hasValue) return "OFFLINE";
+  if (opts.fallback) return "FALLBACK";
+  if (opts.delayed) return "DELAYED";
+  return opts.primary ? "REFRESH" : "INDICATIVE";
 }
 
-export function makeMockSeries(base: number, amplitude = 4, points = 12): GrainSeriesPoint[] {
-  const out: GrainSeriesPoint[] = [];
-  for (let i = points - 1; i >= 0; i -= 1) {
-    const drift = Math.sin((points - i) / 2.4) * amplitude + Math.cos((points - i) / 3.6) * (amplitude * 0.5);
-    const value = Math.max(0.01, base + drift);
-    out.push({
-      ts: new Date(Date.now() - i * 60 * 60 * 1000).toISOString(),
-      value: Number(value.toFixed(2)),
-    });
-  }
-  return out;
-}
-
-export function deriveSeriesFromLast(last: number, changeAbs?: number, points = 10): GrainSeriesPoint[] {
-  const prev = changeAbs != null ? last - changeAbs : last;
+export function deriveSeriesFromLast(last: number, change?: number, points = 12): GrainMarketPoint[] {
+  const prev = change != null ? last - change : last;
   const step = points <= 1 ? 0 : (last - prev) / (points - 1);
-  const now = Date.now();
   return Array.from({ length: points }).map((_, index) => ({
-    ts: new Date(now - (points - 1 - index) * 60 * 60 * 1000).toISOString(),
-    value: Number((prev + step * index).toFixed(2)),
+    ts: new Date(Date.now() - (points - 1 - index) * 60 * 60 * 1000).toISOString(),
+    value: Number((prev + step * index).toFixed(4)),
   }));
 }
 
-export function rankStatus(statuses: GrainWidgetStatus[]): GrainWidgetStatus {
-  if (statuses.includes("LIVE")) return "LIVE";
-  if (statuses.includes("DELAYED")) return "DELAYED";
-  if (statuses.includes("INDICATIVE")) return "INDICATIVE";
-  if (statuses.includes("FALLBACK")) return "FALLBACK";
-  return "OFFLINE";
+export function makeMockSeries(base: number, amplitude = 0.08, points = 12): GrainMarketPoint[] {
+  return Array.from({ length: points }).map((_, index) => {
+    const rev = points - 1 - index;
+    const drift = Math.sin(rev / 2.5) * amplitude + Math.cos(rev / 3.2) * (amplitude * 0.45);
+    return {
+      ts: new Date(Date.now() - rev * 60 * 60 * 1000).toISOString(),
+      value: Number(Math.max(0.0001, base + drift).toFixed(4)),
+    };
+  });
 }
