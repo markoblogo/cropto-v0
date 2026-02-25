@@ -992,9 +992,10 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
               <CardDescription className="text-[11px] text-foreground/70">{indicator.subtitle}</CardDescription>
             </div>
           </div>
-          <Badge className={`text-[10px] uppercase tracking-wide ${indicatorStatusClass(indicator.status)}`}>
-            {indicatorStatusLabel(indicator.status)}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <MetricChip label={indicator.type === "logistics_pressure" ? "SIGNAL" : "INDEX"} variant="type" tone="muted" />
+            <MetricChip label={metricUnitChip(indicator.unit)} variant="unit" tone="neutral" />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -1011,6 +1012,11 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
             <p className="text-xs text-foreground/60">No delta</p>
           )}
         </div>
+        <IntensityBar
+          compact
+          value={trendIntensity(indicator.valueChange, indicator.valueChangePct)}
+          direction={trendDirection(indicator.valueChange, indicator.valueChangePct)}
+        />
 
         <div className="h-16">
           <DynamicMiniTrend
@@ -1020,12 +1026,15 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
-          <a href={indicator.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-foreground">
-            Source: {indicator.sourceName}
-          </a>
-          <span>{indicator.updatedAt ? formatRelative(indicator.updatedAt) : indicator.timeframe}</span>
-        </div>
+        <StatusSourceStrip
+          compact
+          status={indicatorStatusLabel(indicator.status)}
+          statusClassName={indicatorStatusClass(indicator.status)}
+          sourceName={indicator.sourceName}
+          sourceUrl={indicator.sourceUrl}
+          updatedLabel={indicator.updatedAt ? formatRelative(indicator.updatedAt) : indicator.timeframe}
+          fallbackReason={indicator.fallbackReason}
+        />
         <div className="flex items-center gap-2">
           {indicator.level ? (
             <Badge className="border-primary/35 bg-primary/12 text-[10px] text-foreground dark:text-primary-foreground">{indicator.level}</Badge>
@@ -1135,6 +1144,13 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
           <DynamicMiniTrend series={widget.series} />
         </div>
         <p className="text-[10px] text-foreground/68">{widget.note}</p>
+        <StatusSourceStrip
+          compact
+          status={widget.status}
+          statusClassName={statusClass}
+          sourceName="Cropto signal pipeline"
+          updatedLabel="24h"
+        />
       </CardContent>
     </Card>
   );
@@ -2202,10 +2218,13 @@ export default function MonitorPage() {
               {logisticsIndicatorsQuery.data?.enabled ? (
                 (logisticsIndicatorsQuery.data?.widgets || []).slice(0, 2).map((indicator) => (
                   <Card key={`mini-${indicator.id}`} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
-                    <CardContent className="pt-3">
+                    <CardContent className="space-y-1.5 pt-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-semibold text-foreground dark:text-slate-200">{indicator.title}</p>
-                        <Badge className={`text-[10px] ${indicatorStatusClass(indicator.status)}`}>{indicatorStatusLabel(indicator.status)}</Badge>
+                        <div className="flex items-center gap-1">
+                          <MetricChip label="SIGNAL" variant="type" tone="muted" />
+                          <MetricChip label={metricUnitChip(indicator.unit)} variant="unit" tone="neutral" />
+                        </div>
                       </div>
                       <div className="mt-1 flex items-end justify-between">
                         <p className="text-lg font-bold text-foreground dark:text-white">
@@ -2216,6 +2235,11 @@ export default function MonitorPage() {
                           {indicator.valueChange != null ? formatChangeWithUnit({ change: indicator.valueChange, unit: indicator.unit }) : "no delta"}
                         </p>
                       </div>
+                      <IntensityBar
+                        compact
+                        value={trendIntensity(indicator.valueChange, indicator.valueChangePct)}
+                        direction={trendDirection(indicator.valueChange, indicator.valueChangePct)}
+                      />
                       <div className="mt-1 h-8">
                         <DynamicMiniTrend
                           series={indicator.series}
@@ -2223,7 +2247,15 @@ export default function MonitorPage() {
                           changePct={indicator.valueChangePct}
                         />
                       </div>
-                      <p className="mt-1 text-[10px] text-foreground/65 dark:text-slate-500 line-clamp-2">{indicator.sourceName}</p>
+                      <StatusSourceStrip
+                        compact
+                        status={indicatorStatusLabel(indicator.status)}
+                        statusClassName={indicatorStatusClass(indicator.status)}
+                        sourceName={indicator.sourceName}
+                        sourceUrl={indicator.sourceUrl}
+                        updatedLabel={indicator.updatedAt ? formatRelative(indicator.updatedAt) : indicator.timeframe}
+                        fallbackReason={indicator.fallbackReason}
+                      />
                     </CardContent>
                   </Card>
                 ))
@@ -2244,8 +2276,11 @@ export default function MonitorPage() {
               <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {pulseByCrop.map((entry) => (
                   <div key={entry.crop} className="rounded-lg border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/80 p-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/80 dark:text-slate-300">{asLabel(entry.crop)}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/80 dark:text-slate-300">{asLabel(entry.crop)}</p>
+                        <MetricChip label="SIGNAL" variant="type" tone="muted" />
+                      </div>
                       {entry.direction === "up" ? (
                         <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                       ) : entry.direction === "down" ? (
@@ -2258,6 +2293,12 @@ export default function MonitorPage() {
                       {entry.now24h}
                       <span className="ml-1 text-[10px] font-medium text-foreground/65">signals</span>
                     </p>
+                    <IntensityBar
+                      compact
+                      className="mt-1"
+                      value={Math.min(100, Math.max(10, entry.now24h * 8))}
+                      direction={entry.direction === "up" ? "up" : entry.direction === "down" ? "down" : "flat"}
+                    />
                     <p className="text-[10px] text-foreground/65 dark:text-slate-400">24h signals • total {entry.total} signals</p>
                   </div>
                 ))}
@@ -2277,7 +2318,10 @@ export default function MonitorPage() {
                 ) : indicesQuery.data?.items?.length ? (
                   indicesQuery.data.items.slice(0, 6).map((item) => (
                     <div key={item.slug} className="rounded-lg border border-black/70 dark:border-primary/25 bg-muted/55 dark:bg-slate-900/82 p-2">
-                      <p className="text-[11px] font-semibold text-foreground dark:text-slate-100 line-clamp-1">{item.name}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[11px] font-semibold text-foreground dark:text-slate-100 line-clamp-1">{item.name}</p>
+                        <MetricChip label="PRICE" variant="type" tone="muted" />
+                      </div>
                       <div className="mt-1 flex items-end justify-between">
                         <p className="text-lg font-bold text-foreground dark:text-white">
                           {formatPriceWithUnit(item.value, (item as any).unit || "USD/t")}
@@ -2286,6 +2330,19 @@ export default function MonitorPage() {
                           {item.change != null ? formatChangeWithUnit({ change: item.change, unit: (item as any).unit || "USD/t" }) : "n/a"}
                         </p>
                       </div>
+                      <IntensityBar
+                        compact
+                        className="mt-1"
+                        value={trendIntensity(item.change)}
+                        direction={trendDirection(item.change)}
+                      />
+                      <StatusSourceStrip
+                        compact
+                        status="REFRESH"
+                        statusClassName={grainStatusClass("REFRESH")}
+                        sourceName={item.source}
+                        updatedLabel={item.updatedAt ? formatRelative(item.updatedAt) : undefined}
+                      />
                     </div>
                   ))
                 ) : (
@@ -2298,12 +2355,15 @@ export default function MonitorPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Macro / FX</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-2">
                 {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
                   <div className="grid grid-cols-1 gap-1.5">
                     {fxQuery.data.rates.slice(0, 4).map((rate) => (
                       <div key={rate.currency} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5">
-                        <p className="text-[10px] text-foreground/65 dark:text-slate-400">{rate.currency}/USD</p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-[10px] text-foreground/65 dark:text-slate-400">{rate.currency}/USD</p>
+                          <MetricChip label="FX" variant="type" tone="muted" />
+                        </div>
                         <p className="text-sm font-semibold text-foreground dark:text-white">
                           {formatFxRate(rate.currency, "USD", rate.usdPerUnit)}
                           <span className="ml-1 text-[10px] font-medium text-foreground/65">rate</span>
@@ -2314,6 +2374,14 @@ export default function MonitorPage() {
                 ) : (
                   <p className="text-xs text-foreground/72 dark:text-slate-400">Coming soon</p>
                 )}
+                <StatusSourceStrip
+                  compact
+                  status={fxQuery.data?.mode === "live" ? "REFRESH" : "OFFLINE"}
+                  statusClassName={grainStatusClass(fxQuery.data?.mode === "live" ? "REFRESH" : "OFFLINE")}
+                  sourceName={fxQuery.data?.source || "Macro FX snapshot"}
+                  updatedLabel={fxQuery.data?.asOf ? formatRelative(fxQuery.data.asOf) : undefined}
+                  fallbackReason={fxQuery.data?.mode === "live" ? undefined : fxQuery.data?.message}
+                />
               </CardContent>
             </Card>
           </div>
