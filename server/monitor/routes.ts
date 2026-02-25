@@ -19,6 +19,7 @@ import {
   ENABLE_NASDAQ_DATALINK_PROVIDER,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
+  ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_REPORTS_WIDGET,
   FAO_FFPI_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
@@ -28,6 +29,7 @@ import {
   NASDAQ_DATASETS,
   USDA_MARS_BASE_URL,
   USDA_MARS_MNREPORTS_BASE_URL,
+  USDA_GTR_DATASET_URLS,
 } from "./grainWidgets/config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
@@ -411,7 +413,7 @@ export function registerMonitorRoutes(app: Express): void {
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
@@ -419,6 +421,7 @@ export function registerMonitorRoutes(app: Express): void {
         "usda-mars-daily-txt": "USDA_MARS_DAILY_MARKET_RATES_TXT",
         "alpha-vantage-commodities": "ALPHAVANTAGE_GRAIN_BENCHMARKS",
         "nasdaq-datalink": "NASDAQ_DATA_LINK_SNAPSHOT",
+        "usda-gtr-logistics": "USDA_GTR_LOGISTICS_SNAPSHOT",
       };
 
       const sourceMatchesProvider = (sourceName?: string, providerId?: string) => {
@@ -429,6 +432,7 @@ export function registerMonitorRoutes(app: Express): void {
         if (id.includes("usda")) return source.includes("usda");
         if (id.includes("alpha-vantage")) return source.includes("alpha vantage");
         if (id.includes("nasdaq")) return source.includes("nasdaq");
+        if (id.includes("usda-gtr")) return source.includes("usda");
         if (id.includes("us-cash-export-context")) return source.includes("usda") || source.includes("open data");
         return false;
       };
@@ -441,9 +445,10 @@ export function registerMonitorRoutes(app: Express): void {
         "usda-mars-daily-txt": 3,
         "alpha-vantage-commodities": Math.max(2, ALPHAVANTAGE_FUNCTIONS.length),
         "nasdaq-datalink": Math.max(2, NASDAQ_DATASETS.length),
+        "usda-gtr-logistics": 2,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "usda-gtr-logistics"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -479,6 +484,8 @@ export function registerMonitorRoutes(app: Express): void {
           topScoreMax: provider?.topScoreMax,
           unitConfidenceByFunction: provider?.unitConfidenceByFunction,
           datasetStatuses: provider?.datasetStatuses,
+          rowsParsed: provider?.rowsParsed,
+          parseWarnings: provider?.parseWarnings,
           cadence: provider?.cadence,
           lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
           cacheHit: Boolean(provider?.cacheHit),
@@ -512,6 +519,7 @@ export function registerMonitorRoutes(app: Express): void {
         "USDA_MARS_DAILY_MARKET_RATES_TXT",
         "ALPHAVANTAGE_GRAIN_BENCHMARKS",
         "NASDAQ_DATA_LINK_SNAPSHOT",
+        "USDA_GTR_LOGISTICS_SNAPSHOT",
       ] as const).map((widgetKind) => {
         const widget = byKind[widgetKind] as any;
         const rowsCount = Array.isArray(widget?.rows) ? widget.rows.length : 0;
@@ -522,6 +530,7 @@ export function registerMonitorRoutes(app: Express): void {
         const txtRowsCount = Array.isArray(widget?.rows) && widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget.rows.length : 0;
         const alphaFunctionsCount = Array.isArray(widget?.summary?.byFunction) ? widget.summary.byFunction.length : 0;
         const datasetStatusesCount = Array.isArray(widget?.summary?.datasetStatuses) ? widget.summary.datasetStatuses.length : 0;
+        const logisticsItemsCount = widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" && Array.isArray(widget?.items) ? widget.items.length : 0;
         const seriesPointsCount =
           (Array.isArray(widget?.rows) ? widget.rows.flatMap((row: any) => row?.price?.series || []).length : 0) +
           (Array.isArray(widget?.items) ? widget.items.flatMap((item: any) => item?.series || []).length : 0) +
@@ -540,6 +549,7 @@ export function registerMonitorRoutes(app: Express): void {
           txtRowsCount,
           alphaFunctionsCount,
           datasetStatusesCount,
+          logisticsItemsCount,
           dailyMetadataSourceUrl: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.metadataSourceUrl : undefined,
           dailyDownloadUrlUsed: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined,
           dailyReportFound: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.dailyReportFound : undefined,
@@ -570,6 +580,8 @@ export function registerMonitorRoutes(app: Express): void {
       const nasdaqProbeRawUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? `&api_key=${encodeURIComponent(NASDAQ_API_KEY)}` : ""}`;
       const nasdaqProbeUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? "&api_key=REDACTED" : ""}`;
       const nasdaqProbeResult = await probeUrl(nasdaqProbeRawUrl);
+      const usdaGtrProbeUrl = USDA_GTR_DATASET_URLS[0] || "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report";
+      const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl);
 
       res.json({
         runtime: {
@@ -588,6 +600,7 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_USDA_MARS_REPORTS_WIDGET,
             ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
             ENABLE_USDA_MARS_DAILY_TXT,
+            ENABLE_USDA_GTR_LOGISTICS_WIDGET,
             ENABLE_ALPHAVANTAGE_PROVIDER,
             ENABLE_NASDAQ_DATALINK_PROVIDER,
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
@@ -618,6 +631,7 @@ export function registerMonitorRoutes(app: Express): void {
             ...nasdaqProbeResult,
             url: nasdaqProbeUrl,
           },
+          usdaGtrLogistics: usdaGtrProbe,
         },
       });
     } catch (error: any) {

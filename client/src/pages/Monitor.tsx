@@ -319,7 +319,8 @@ type GrainWidgetKind =
   | "US_CASH_EXPORT_CONTEXT"
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
-  | "NASDAQ_DATA_LINK_SNAPSHOT";
+  | "NASDAQ_DATA_LINK_SNAPSHOT"
+  | "USDA_GTR_LOGISTICS_SNAPSHOT";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -744,6 +745,42 @@ type GrainWidgetNasdaqDataLinkSnapshot = {
   fallbackReason?: string;
 };
 
+type GrainWidgetUsdaGtrLogisticsSnapshot = {
+  id: string;
+  kind: "USDA_GTR_LOGISTICS_SNAPSHOT";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  items: Array<{
+    metric: "BARGE" | "RAIL" | "OCEAN" | "FUEL" | "TRANSIT" | "OTHER";
+    label: string;
+    current: number;
+    unit: string;
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "unknown";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    parseWarnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -755,7 +792,8 @@ type GrainWidget =
   | GrainWidgetUsCashExportContext
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
   | GrainWidgetAlphaVantageBenchmarks
-  | GrainWidgetNasdaqDataLinkSnapshot;
+  | GrainWidgetNasdaqDataLinkSnapshot
+  | GrainWidgetUsdaGtrLogisticsSnapshot;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -2116,6 +2154,7 @@ export default function MonitorPage() {
       "USDA_MARS_DAILY_MARKET_RATES_TXT",
       "ALPHAVANTAGE_GRAIN_BENCHMARKS",
       "NASDAQ_DATA_LINK_SNAPSHOT",
+      "USDA_GTR_LOGISTICS_SNAPSHOT",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -2259,6 +2298,7 @@ export default function MonitorPage() {
                   const marsDailyTxtWidget = grainDataByKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as GrainWidgetUsdaMarsDailyMarketRatesTxt | undefined;
                   const alphaWidget = grainDataByKind["ALPHAVANTAGE_GRAIN_BENCHMARKS"] as GrainWidgetAlphaVantageBenchmarks | undefined;
                   const nasdaqWidget = grainDataByKind["NASDAQ_DATA_LINK_SNAPSHOT"] as GrainWidgetNasdaqDataLinkSnapshot | undefined;
+                  const usdaGtrWidget = grainDataByKind["USDA_GTR_LOGISTICS_SNAPSHOT"] as GrainWidgetUsdaGtrLogisticsSnapshot | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -3146,6 +3186,84 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("NASDAQ_DATA_LINK_SNAPSHOT") ? "Nasdaq Data Link Snapshot" : "Nasdaq Data Link Snapshot (not configured)"}
                             subtitle="Macro/gov datasets (FRED + optional CHRIS)"
+                          />
+                        </div>
+                      )}
+
+                      {usdaGtrWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{usdaGtrWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(usdaGtrWidget.status)}`}>{usdaGtrWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{usdaGtrWidget.subtitle || "USDA grain transportation proxies"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1 sm:grid-cols-2">
+                              {usdaGtrWidget.items.slice(0, 4).map((item, idx) => (
+                                <div key={`${usdaGtrWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{item.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={item.metric} variant="type" tone="muted" />
+                                      <MetricChip label={item.unit} variant="unit" tone="neutral" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "index", value: item.current, unit: item.unit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">
+                                    {formatChangeWithUnit({
+                                      change: item.changeAbs,
+                                      unit: item.unit,
+                                      pct: item.changePct,
+                                    })}
+                                  </p>
+                                  <DynamicMiniTrend
+                                    series={item.series || []}
+                                    change={item.changeAbs}
+                                    changePct={item.changePct}
+                                    status={usdaGtrWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={usdaGtrWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: usdaGtrWidget.status,
+                                      sourceName: usdaGtrWidget.sourceName,
+                                      fallbackReason: usdaGtrWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!usdaGtrWidget.items.length ? (
+                                <p className="text-[11px] text-foreground/68">No USDA GTR logistics signals mapped in current cycle.</p>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {usdaGtrWidget.summary?.coverage ? <MetricChip label={`coverage ${usdaGtrWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {usdaGtrWidget.summary?.cadence ? <MetricChip label={`cadence ${usdaGtrWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                              {debugEnabled && usdaGtrWidget.debug?.rowsParsed != null ? (
+                                <MetricChip label={`rows ${usdaGtrWidget.debug.rowsParsed}`} variant="provider" tone="muted" />
+                              ) : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={usdaGtrWidget.status}
+                              statusClassName={grainStatusClass(usdaGtrWidget.status)}
+                              sourceName={usdaGtrWidget.sourceName}
+                              sourceUrl={usdaGtrWidget.sourceUrl}
+                              updatedLabel={usdaGtrWidget.updatedAt ? formatRelative(usdaGtrWidget.updatedAt) : usdaGtrWidget.timeframe}
+                              fallbackReason={usdaGtrWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("USDA_GTR_LOGISTICS_SNAPSHOT") ? "US Logistics (USDA GTR)" : "US Logistics (USDA GTR) (not configured)"}
+                            subtitle="Open logistics proxies: barge / rail / fuel"
                           />
                         </div>
                       )}

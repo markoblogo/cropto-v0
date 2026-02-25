@@ -20,6 +20,7 @@ import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesPr
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
 import { UsCashExportContextProvider } from "./providers/usCashExportContextProvider";
 import { UsdaMarsDailyMarketRatesTxtProvider } from "./providers/usdaMarsDailyMarketRatesTxtProvider";
+import { UsdaGtrLogisticsProvider } from "./providers/usdaGtrLogisticsProvider";
 import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
@@ -63,6 +64,8 @@ type ProviderRuntime = {
   cardsReturned?: number;
   linesFetched?: number;
   linesMatched?: number;
+  rowsParsed?: number;
+  parseWarnings?: string[];
   downloadUrlUsed?: string;
   parseMode?: "strict";
   sourceUrlUsed?: string;
@@ -84,6 +87,7 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   USDA_MARS_DAILY_MARKET_RATES_TXT: 3,
   ALPHAVANTAGE_GRAIN_BENCHMARKS: 2,
   NASDAQ_DATA_LINK_SNAPSHOT: 4,
+  USDA_GTR_LOGISTICS_SNAPSHOT: 2,
 };
 
 const WIDGET_ORDER: GrainWidgetKind[] = [
@@ -98,6 +102,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "USDA_MARS_DAILY_MARKET_RATES_TXT",
   "ALPHAVANTAGE_GRAIN_BENCHMARKS",
   "NASDAQ_DATA_LINK_SNAPSHOT",
+  "USDA_GTR_LOGISTICS_SNAPSHOT",
 ];
 
 function statusRank(status: GrainWidget["status"]): number {
@@ -166,6 +171,9 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "NASDAQ_DATA_LINK_SNAPSHOT") {
     return { rows: 0, items: widget.items.length, cards: 0 };
   }
+  if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
+    return { rows: 0, items: widget.items.length, cards: 0 };
+  }
   return { rows: 0, items: 0, cards: 0 };
 }
 
@@ -201,6 +209,9 @@ function mappedCountForWidget(widget: GrainWidget): number {
   }
   if (widget.kind === "NASDAQ_DATA_LINK_SNAPSHOT") {
     return widget.items.filter((item) => item.nativeValueCurrent != null).length;
+  }
+  if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
+    return widget.items.filter((item) => item.current != null).length;
   }
   return 0;
 }
@@ -278,6 +289,7 @@ export class GrainWidgetsService {
     USDA_MARS_DAILY_MARKET_RATES_TXT: [new UsdaMarsDailyMarketRatesTxtProvider()],
     ALPHAVANTAGE_GRAIN_BENCHMARKS: [new AlphaVantageCommoditiesProvider()],
     NASDAQ_DATA_LINK_SNAPSHOT: [new NasdaqDataLinkProvider()],
+    USDA_GTR_LOGISTICS_SNAPSHOT: [new UsdaGtrLogisticsProvider()],
   };
 
   private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
@@ -300,6 +312,7 @@ export class GrainWidgetsService {
     USDA_MARS_DAILY_MARKET_RATES_TXT: new MockGrainWidgetsProvider({ kind: "USDA_MARS_DAILY_MARKET_RATES_TXT" }),
     ALPHAVANTAGE_GRAIN_BENCHMARKS: new MockGrainWidgetsProvider({ kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS" }),
     NASDAQ_DATA_LINK_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "NASDAQ_DATA_LINK_SNAPSHOT" }),
+    USDA_GTR_LOGISTICS_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "USDA_GTR_LOGISTICS_SNAPSHOT" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -419,6 +432,8 @@ export class GrainWidgetsService {
           cardsReturned: state?.cardsReturned,
           linesFetched: state?.linesFetched,
           linesMatched: state?.linesMatched,
+          rowsParsed: state?.rowsParsed,
+          parseWarnings: state?.parseWarnings,
           downloadUrlUsed: state?.downloadUrlUsed,
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
@@ -510,6 +525,8 @@ export class GrainWidgetsService {
           cardsReturned: state?.cardsReturned,
           linesFetched: state?.linesFetched,
           linesMatched: state?.linesMatched,
+          rowsParsed: state?.rowsParsed,
+          parseWarnings: state?.parseWarnings,
           downloadUrlUsed: state?.downloadUrlUsed,
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
@@ -581,6 +598,8 @@ export class GrainWidgetsService {
         cardsReturned: undefined,
         linesFetched: undefined,
         linesMatched: undefined,
+        rowsParsed: undefined,
+        parseWarnings: undefined,
         downloadUrlUsed: undefined,
         parseMode: undefined,
         topScoreMin: undefined,
@@ -598,6 +617,7 @@ export class GrainWidgetsService {
         const txtDebug = data.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? data.debug : undefined;
         const alphaSummary = data.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS" ? data.summary : undefined;
         const nasdaqSummary = data.kind === "NASDAQ_DATA_LINK_SNAPSHOT" ? data.summary : undefined;
+        const gtrDebug = data.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? data.debug : undefined;
         const metrics = widgetMetricCounts(data);
 
         if (!usable) {
@@ -620,6 +640,8 @@ export class GrainWidgetsService {
             cardsReturned: metrics.cards,
             linesFetched: txtDebug?.linesFetched,
             linesMatched: txtDebug?.linesMatched,
+            rowsParsed: gtrDebug?.rowsParsed,
+            parseWarnings: gtrDebug?.parseWarnings,
             downloadUrlUsed: txtDebug?.downloadUrlUsed,
             parseMode: txtDebug?.parseMode,
             topScoreMin: usdaSummary?.topScoreMin,
@@ -662,6 +684,8 @@ export class GrainWidgetsService {
           cardsReturned: metrics.cards,
           linesFetched: txtDebug?.linesFetched,
           linesMatched: txtDebug?.linesMatched,
+          rowsParsed: gtrDebug?.rowsParsed,
+          parseWarnings: gtrDebug?.parseWarnings,
           downloadUrlUsed: txtDebug?.downloadUrlUsed,
           parseMode: txtDebug?.parseMode,
           topScoreMin: usdaSummary?.topScoreMin,

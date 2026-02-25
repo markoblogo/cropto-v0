@@ -3,6 +3,7 @@ import type {
   GrainWidgetAlphaVantageGrainBenchmarks,
   GrainWidgetCropPriceIndex,
   GrainWidgetNasdaqDataLinkSnapshot,
+  GrainWidgetUsdaGtrLogisticsSnapshot,
   GrainWidgetKind,
   GrainWidgetUsCashExportContext,
   GrainWidgetUsdaMarsDailyMarketRatesTxt,
@@ -649,6 +650,68 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
         ],
         notes: ["Mock fallback summary (metadata-only)"],
         fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
+      const points = Math.max(7, ctx.seriesPoints);
+      const widget: GrainWidgetUsdaGtrLogisticsSnapshot = {
+        id: "grain-usda-gtr-logistics-snapshot",
+        kind: "USDA_GTR_LOGISTICS_SNAPSHOT",
+        title: "US Logistics (USDA GTR)",
+        subtitle: "Barge / Rail / Fuel freight proxies",
+        status: "FALLBACK",
+        sourceName: "USDA AMS (GTR)",
+        sourceAttribution: "Data: USDA Grain Transportation Report",
+        sourceUrl: "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        items: [
+          {
+            metric: "BARGE",
+            label: "Barge Rate Index",
+            current: 611,
+            unit: "index",
+            changeAbs: 8,
+            changePct: 1.33,
+            series: deriveSeries(611, 8, points),
+            confidence: "HIGH",
+          },
+          {
+            metric: "RAIL",
+            label: "Rail Tariff Proxy",
+            current: 224,
+            unit: "index",
+            changeAbs: -2,
+            changePct: -0.88,
+            series: deriveSeries(224, -2, points),
+            confidence: "MED",
+          },
+          {
+            metric: "FUEL",
+            label: "Rail Fuel Surcharge Proxy",
+            current: 188,
+            unit: "index",
+            changeAbs: 4,
+            changePct: 2.17,
+            series: deriveSeries(188, 4, points),
+            confidence: "MED",
+          },
+        ],
+        summary: {
+          expectedCount: 3,
+          mappedCount: 3,
+          coverage: "3/3",
+          cadence: "weekly",
+        },
+        notes: ["Mock fallback payload for USDA GTR logistics snapshot"],
+        fallbackReason: reason,
+        debug: {
+          sourceUrlUsed: "https://www.ams.usda.gov/sites/default/files/media/GTRTable7.csv",
+          rowsParsed: 24,
+          parseWarnings: ["mock_fallback_mode"],
+        },
       };
       return widget;
     }

@@ -20,7 +20,8 @@ export type GrainWidgetKind =
   | "US_CASH_EXPORT_CONTEXT"
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
-  | "NASDAQ_DATA_LINK_SNAPSHOT";
+  | "NASDAQ_DATA_LINK_SNAPSHOT"
+  | "USDA_GTR_LOGISTICS_SNAPSHOT";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -454,6 +455,33 @@ export interface GrainWidgetNasdaqDataLinkSnapshot extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetUsdaGtrLogisticsItem {
+  metric: "BARGE" | "RAIL" | "OCEAN" | "FUEL" | "TRANSIT" | "OTHER";
+  label: string;
+  current: number;
+  unit: string;
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+}
+
+export interface GrainWidgetUsdaGtrLogisticsSnapshot extends GrainWidgetBase {
+  kind: "USDA_GTR_LOGISTICS_SNAPSHOT";
+  items: GrainWidgetUsdaGtrLogisticsItem[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "unknown";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    parseWarnings?: string[];
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -466,7 +494,8 @@ export type GrainWidget =
   | GrainWidgetUsCashExportContext
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
   | GrainWidgetAlphaVantageGrainBenchmarks
-  | GrainWidgetNasdaqDataLinkSnapshot;
+  | GrainWidgetNasdaqDataLinkSnapshot
+  | GrainWidgetUsdaGtrLogisticsSnapshot;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -532,6 +561,8 @@ export interface GrainWidgetsProviderDebug {
   }>;
   linesFetched?: number;
   linesMatched?: number;
+  rowsParsed?: number;
+  parseWarnings?: string[];
   downloadUrlUsed?: string;
   parseMode?: "strict";
   topScoreMin?: number;

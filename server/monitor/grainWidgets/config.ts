@@ -20,6 +20,7 @@ export const ENABLE_FAO_FFPI_PROVIDER = envBool("ENABLE_FAO_FFPI_PROVIDER", ENAB
 export const ENABLE_USDA_MARS_REPORTS_WIDGET = envBool("ENABLE_USDA_MARS_REPORTS_WIDGET", true);
 export const ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET = envBool("ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET", true);
 export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", true);
+export const ENABLE_USDA_GTR_LOGISTICS_WIDGET = envBool("ENABLE_USDA_GTR_LOGISTICS_WIDGET", true);
 export const ENABLE_ALPHAVANTAGE_PROVIDER = envBool("ENABLE_ALPHAVANTAGE_PROVIDER", true);
 export const ENABLE_NASDAQ_DATALINK_PROVIDER = envBool("ENABLE_NASDAQ_DATALINK_PROVIDER", true);
 export const ENABLE_NASDAQ_CHRIS = envBool("ENABLE_NASDAQ_CHRIS", false);
@@ -109,6 +110,19 @@ export const USDA_MARS_FILE_URL_TEMPLATES = (
   .map((value) => value.trim())
   .filter(Boolean);
 export const USDA_MARS_DAILY_MAX_ROWS = envNum("USDA_MARS_DAILY_MAX_ROWS", 8);
+export const USDA_GTR_BASE_URL =
+  process.env.USDA_GTR_BASE_URL ||
+  "https://www.ams.usda.gov/sites/default/files/media";
+export const USDA_GTR_DATASET_URLS = (
+  process.env.USDA_GTR_DATASET_URLS ||
+  `${USDA_GTR_BASE_URL}/GTRTable7.csv,${USDA_GTR_BASE_URL}/GTRTable8.csv`
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+export const USDA_GTR_TIMEOUT_MS = envNum("USDA_GTR_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const USDA_GTR_CACHE_TTL_MS = envNum("USDA_GTR_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const USDA_GTR_MAX_SIGNALS = envNum("USDA_GTR_MAX_SIGNALS", 4);
 export const ALPHAVANTAGE_API_KEY = process.env.ALPHAVANTAGE_API_KEY || "";
 export const ALPHAVANTAGE_BASE_URL =
   process.env.ALPHAVANTAGE_BASE_URL ||

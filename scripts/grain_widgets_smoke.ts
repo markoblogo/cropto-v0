@@ -8,6 +8,7 @@ import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
 import { UsdaMarsDailyMarketRatesTxtProvider } from "../server/monitor/grainWidgets/providers/usdaMarsDailyMarketRatesTxtProvider";
+import { UsdaGtrLogisticsProvider } from "../server/monitor/grainWidgets/providers/usdaGtrLogisticsProvider";
 import { UsdaMarsReportsProvider } from "../server/monitor/grainWidgets/providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProviderContext } from "../server/monitor/grainWidgets/providers/types";
 import type { GrainWidget } from "../server/monitor/grainWidgets/types";
@@ -39,6 +40,10 @@ function widgetCoverage(widget: GrainWidget): string {
     const mapped = widget.items.filter((item) => item.nativeValueCurrent != null).length;
     return `${mapped}/${widget.items.length || 0}`;
   }
+  if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
+    const mapped = widget.items.filter((item) => item.current != null).length;
+    return `${mapped}/${widget.items.length || 0}`;
+  }
   return "n/a";
 }
 
@@ -62,6 +67,7 @@ async function run() {
     new UsdaMarsDailyMarketRatesTxtProvider(),
     new UsCashExportContextProvider(),
     new NasdaqDataLinkProvider(),
+    new UsdaGtrLogisticsProvider(),
   ];
 
   console.log("grain-widgets smoke start");
@@ -105,6 +111,11 @@ async function run() {
         const forbidden = (widget.summary?.datasetStatuses || []).filter((entry) => entry.status === "forbidden").length;
         console.log(
           `  nasdaq coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} items=${widget.items.length} forbidden=${forbidden}`,
+        );
+      }
+      if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
+        console.log(
+          `  usda_gtr coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} rowsParsed=${widget.debug?.rowsParsed ?? 0}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);
