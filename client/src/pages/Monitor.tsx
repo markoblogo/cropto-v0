@@ -1,5 +1,17 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp } from "lucide-react";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,21 +76,147 @@ type DebugResponse = {
   noisySources: Array<{ sourceId: string; count: number }>;
 };
 
+type SignalType = "Harvest" | "Export" | "Logistics" | "Policy" | "Weather" | "Futures" | "Markets";
+type Impact = "High" | "Medium" | "Low";
+
 const CROPS = ["all", "wheat", "corn", "soy", "rapeseed", "sunflower", "barley", "oilseeds"] as const;
 const TOPICS = ["all", "markets", "trade", "logistics", "weather", "policy", "harvest"] as const;
-const REGIONS = ["all", "black sea", "eu", "us", "latam", "asia"];
+const REGIONS = ["all", "black sea", "eu", "us", "latam", "asia"] as const;
+const HERO_CROPS = ["wheat", "corn", "soy", "rapeseed", "sunflower"] as const;
 
-function TopicTag({ value, kind }: { value: string; kind: "crop" | "topic" | "region" }) {
+type HeroCrop = (typeof HERO_CROPS)[number];
+
+function asLabel(value: string): string {
+  if (value === "black sea") return "Black Sea";
+  if (value === "latam") return "LatAm";
+  if (value === "us") return "US";
+  if (value === "eu") return "EU";
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatRelative(iso: string): string {
+  const ts = Date.parse(iso);
+  if (!Number.isFinite(ts)) return "n/a";
+  const diffMinutes = Math.max(0, Math.floor((Date.now() - ts) / 60000));
+  if (diffMinutes < 1) return "just now";
+  if (diffMinutes < 60) return `${diffMinutes}m`;
+  const hours = Math.floor(diffMinutes / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+
+function inLastHours(item: MonitorItem, hours: number): boolean {
+  const ts = Date.parse(item.published_at);
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts <= hours * 60 * 60 * 1000;
+}
+
+function inRegion(item: MonitorItem, region: string): boolean {
+  const tags = item.region_tags.join(" ");
+  if (region === "latam") return tags.includes("brazil") || tags.includes("argentina");
+  if (region === "asia") return tags.includes("china") || tags.includes("india");
+  return tags.includes(region);
+}
+
+function classifySignalType(item: MonitorItem): SignalType {
+  const text = `${item.title} ${item.summary || ""}`.toLowerCase();
+  const topics = new Set(item.topic_tags.map((t) => t.toLowerCase()));
+
+  if (topics.has("harvest")) return "Harvest";
+  if (topics.has("logistics")) return "Logistics";
+  if (topics.has("policy")) return "Policy";
+  if (topics.has("weather")) return "Weather";
+  if (text.includes("futures") || text.includes("basis")) return "Futures";
+  if (text.includes("export") || text.includes("import") || text.includes("tender") || topics.has("trade")) return "Export";
+  return "Markets";
+}
+
+function classifyImpact(item: MonitorItem): Impact {
+  const score = item.relevance_score;
+  if (score >= 10) return "High";
+  if (score >= 6) return "Medium";
+  return "Low";
+}
+
+function whyItMatters(item: MonitorItem, signalType: SignalType): string {
+  const crop = item.crop_tags[0] ? asLabel(item.crop_tags[0]) : "grain markets";
+  const region = item.region_tags[0] ? asLabel(item.region_tags[0]) : "key corridors";
+
+  switch (signalType) {
+    case "Harvest":
+      return `Harvest flow changes can shift near-term ${crop} availability and basis behavior.`;
+    case "Export":
+      return `Trade flow updates can reprice ${crop} routes and export competitiveness in ${region}.`;
+    case "Logistics":
+      return `Logistics friction can widen spreads and alter delivery assumptions for ${crop}.`;
+    case "Policy":
+      return `Policy changes can re-route risk and liquidity across ${region} markets.`;
+    case "Weather":
+      return `Weather stress may affect production expectations and risk premiums in ${region}.`;
+    case "Futures":
+      return `Futures/basis shifts can change hedge efficiency for ${crop} exposures.`;
+    default:
+      return `This signal can influence short-term pricing and hedge decisions for ${crop}.`;
+  }
+}
+
+function SignalTag({ value, kind }: { value: string; kind: "crop" | "topic" | "region" }) {
+  const base = "text-[10px] font-medium px-2 py-0.5 rounded-full border";
   const classes =
     kind === "crop"
-      ? "border-primary/35 bg-primary/10 text-foreground"
+      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
       : kind === "region"
-        ? "border-blue-500/35 bg-blue-500/10 text-foreground"
-        : "border-border/70 bg-muted/65 text-foreground";
+        ? "border-blue-400/40 bg-blue-400/10 text-blue-100"
+        : "border-amber-400/40 bg-amber-400/10 text-amber-100";
+
+  return <span className={`${base} ${classes}`}>{asLabel(value)}</span>;
+}
+
+function ImpactBadge({ impact }: { impact: Impact }) {
+  const styles =
+    impact === "High"
+      ? "border-red-400/55 bg-red-500/20 text-red-100"
+      : impact === "Medium"
+        ? "border-amber-400/55 bg-amber-500/20 text-amber-100"
+        : "border-emerald-400/55 bg-emerald-500/20 text-emerald-100";
+  return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${styles}`}>{impact}</span>;
+}
+
+function SignalCard({ item }: { item: MonitorItem }) {
+  const signalType = classifySignalType(item);
+  const impact = classifyImpact(item);
+
   return (
-    <Badge variant="secondary" className={`text-[11px] capitalize ${classes}`}>
-      {value}
-    </Badge>
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noreferrer"
+      className="group block rounded-xl border border-white/12 bg-slate-900/75 p-3 transition-all hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-[0_8px_24px_rgba(154,163,58,0.2)]"
+    >
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <Badge className="border-primary/45 bg-primary/15 text-[10px] uppercase tracking-wide text-primary-foreground">
+          {signalType}
+        </Badge>
+        <ImpactBadge impact={impact} />
+      </div>
+      <p className="text-sm font-semibold leading-6 text-slate-100">{item.title}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-300/90 line-clamp-2">{whyItMatters(item, signalType)}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {item.crop_tags.slice(0, 2).map((tag) => (
+          <SignalTag key={`crop-${item.id}-${tag}`} value={tag} kind="crop" />
+        ))}
+        {item.topic_tags.slice(0, 2).map((tag) => (
+          <SignalTag key={`topic-${item.id}-${tag}`} value={tag} kind="topic" />
+        ))}
+        {item.region_tags.slice(0, 1).map((tag) => (
+          <SignalTag key={`region-${item.id}-${tag}`} value={tag} kind="region" />
+        ))}
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+        <span className="truncate">{item.source_name}</span>
+        <span>{formatRelative(item.published_at)}</span>
+      </div>
+    </a>
   );
 }
 
@@ -89,6 +227,7 @@ export default function MonitorPage() {
   const [time, setTime] = useState<"24h" | "7d">("24h");
   const [search, setSearch] = useState("");
   const [threshold, setThreshold] = useState(3);
+  const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -144,293 +283,439 @@ export default function MonitorPage() {
   });
 
   const feed = monitorQuery.data?.feed || [];
+  const topSignals = monitorQuery.data?.topSignals || [];
+
+  const pulseByCrop = useMemo(() => {
+    return HERO_CROPS.map((cropName) => {
+      const total = feed.filter((item) => item.crop_tags.includes(cropName)).length;
+      const now24h = feed.filter((item) => item.crop_tags.includes(cropName) && inLastHours(item, 24)).length;
+      const prev24h = feed.filter((item) => {
+        if (!item.crop_tags.includes(cropName)) return false;
+        const ts = Date.parse(item.published_at);
+        if (!Number.isFinite(ts)) return false;
+        const diff = Date.now() - ts;
+        return diff > 24 * 60 * 60 * 1000 && diff <= 48 * 60 * 60 * 1000;
+      }).length;
+      const delta = now24h - prev24h;
+      const direction = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+      return { crop: cropName, total, now24h, delta, direction };
+    });
+  }, [feed]);
+
+  const blackSeaRisks = useMemo(() => {
+    return [...feed]
+      .filter((item) => {
+        const txt = `${item.title} ${item.summary || ""}`.toLowerCase();
+        const regionHit =
+          item.region_tags.some((tag) =>
+            ["black sea", "ukraine", "russia", "romania", "bulgaria", "poland"].some((needle) =>
+              tag.includes(needle),
+            ),
+          ) || ["black sea", "ukraine", "russia", "romania", "bulgaria", "poland"].some((needle) => txt.includes(needle));
+        const riskTopic = item.topic_tags.some((tag) => ["logistics", "policy", "weather", "trade"].includes(tag));
+        return regionHit && riskTopic;
+      })
+      .sort((a, b) => b.relevance_score - a.relevance_score || Date.parse(b.published_at) - Date.parse(a.published_at))
+      .slice(0, 6);
+  }, [feed]);
+
+  const cropVolumeData = useMemo(() => {
+    return HERO_CROPS.map((cropName) => ({
+      name: asLabel(cropName),
+      count: feed.filter((item) => item.crop_tags.includes(cropName)).length,
+    }));
+  }, [feed]);
+
+  const topicVolumeData = useMemo(() => {
+    return TOPICS.filter((v) => v !== "all").map((topicName) => ({
+      name: asLabel(topicName),
+      count: feed.filter((item) => item.topic_tags.includes(topicName)).length,
+    }));
+  }, [feed]);
+
+  const regionVolumeData = useMemo(() => {
+    return REGIONS.filter((v) => v !== "all").map((regionName) => ({
+      name: asLabel(regionName),
+      count: feed.filter((item) => inRegion(item, regionName)).length,
+    }));
+  }, [feed]);
+
+  const mentionsTrendData = useMemo(() => {
+    const buckets: Array<{ day: string; count: number }> = [];
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const dayDate = new Date(Date.now() - offset * 24 * 60 * 60 * 1000);
+      const day = dayDate.toISOString().slice(5, 10);
+      const start = new Date(dayDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(dayDate);
+      end.setHours(23, 59, 59, 999);
+      const count = feed.filter((item) => {
+        const ts = Date.parse(item.published_at);
+        return Number.isFinite(ts) && ts >= start.getTime() && ts <= end.getTime();
+      }).length;
+      buckets.push({ day, count });
+    }
+    return buckets;
+  }, [feed]);
+
+  const panelItems = useMemo(() => {
+    const markets = feed.filter((item) => item.topic_tags.some((tag) => ["markets", "trade", "harvest"].includes(tag)));
+    const logistics = feed.filter((item) => item.topic_tags.includes("logistics"));
+    const policy = feed.filter((item) => item.topic_tags.some((tag) => ["policy", "trade"].includes(tag)));
+    const weather = feed.filter((item) => item.topic_tags.includes("weather"));
+    const blackSea = feed.filter((item) => inRegion(item, "black sea") || inRegion(item, "eu") || inRegion(item, "latam") === false && inRegion(item, "us") === false);
+    const oilseedsBiofuels = feed.filter((item) => {
+      const txt = `${item.title} ${item.summary || ""}`.toLowerCase();
+      return item.crop_tags.some((tag) => ["soy", "rapeseed", "sunflower", "oilseeds"].includes(tag)) || txt.includes("biofuel");
+    });
+
+    return {
+      markets,
+      logistics,
+      policy,
+      weather,
+      blackSea,
+      oilseedsBiofuels,
+    };
+  }, [feed]);
+
+  const panels = [
+    { id: "markets", title: "Markets", items: panelItems.markets },
+    { id: "logistics", title: "Logistics", items: panelItems.logistics },
+    { id: "policy", title: "Policy & Trade", items: panelItems.policy },
+    { id: "weather", title: "Weather Watch", items: panelItems.weather },
+    { id: "blackSea", title: "Black Sea", items: panelItems.blackSea },
+    { id: "oilseedsBiofuels", title: "Oilseeds / Biofuels", items: panelItems.oilseedsBiofuels },
+  ] as const;
 
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Badge variant="secondary" className="border border-primary/30 bg-primary/10 text-[11px] uppercase tracking-[0.16em]">
-            Cropto Monitor
-          </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Commodity Signals Monitor</h1>
-          <p className="max-w-3xl text-base text-muted-foreground">
-            Thematic monitoring for grains and oilseeds: markets, logistics, weather, and policy context with Cropto internal indices.
-          </p>
-        </div>
+      <section className="rounded-2xl border border-primary/30 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-slate-100 shadow-[0_24px_50px_rgba(0,0,0,0.45)] sm:p-6">
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-2">
+              <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-primary-foreground">Cropto Monitor</Badge>
+              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Commodity Signals Terminal</h1>
+              <p className="max-w-3xl text-sm text-slate-300 sm:text-base">
+                Operational signal view for grains and oilseeds across markets, logistics, policy, and Black Sea risk corridors.
+              </p>
+            </div>
+            <div className="text-xs text-slate-400">
+              Updated: {monitorQuery.data?.generatedAt ? new Date(monitorQuery.data.generatedAt).toLocaleString() : "loading"}
+            </div>
+          </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="border-primary/45 bg-gradient-to-br from-primary/14 via-card to-muted/20 shadow-lg">
-            <CardHeader>
-              <div className="flex items-center justify-between gap-3">
-                <CardTitle className="text-xl">Cropto Indices / Ukraine</CardTitle>
-                <Badge className="border-primary/35 bg-primary/15 text-foreground">Core signal layer</Badge>
-              </div>
-              <CardDescription>Internal index feed adapter</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {!indicesQuery.data?.enabled ? (
-                <p className="text-sm text-muted-foreground">Coming soon</p>
-              ) : indicesQuery.data?.items?.length ? (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {indicesQuery.data.items.slice(0, 8).map((item) => (
-                    <div key={item.slug} className="rounded-lg border border-black/80 bg-background/80 p-3 dark:border-white/80">
-                      <p className="text-sm font-semibold tracking-tight text-foreground">{item.name}</p>
+          <div className="grid gap-4 xl:grid-cols-12">
+            <Card className="xl:col-span-5 border-white/12 bg-slate-950/70 text-slate-100">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Market Pulse</CardTitle>
+                <CardDescription className="text-slate-400">24h directional intensity by crop</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2">
+                {pulseByCrop.map((entry) => (
+                  <div key={entry.crop} className="rounded-lg border border-white/10 bg-slate-900/80 p-2.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">{asLabel(entry.crop)}</p>
+                      {entry.direction === "up" ? (
+                        <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+                      ) : entry.direction === "down" ? (
+                        <TrendingDown className="h-3.5 w-3.5 text-red-400" />
+                      ) : (
+                        <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
+                      )}
+                    </div>
+                    <p className="mt-1 text-xl font-semibold text-white">{entry.now24h}</p>
+                    <p className="text-[11px] text-slate-400">Signals 24h • total {entry.total}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="xl:col-span-4 border-primary/40 bg-slate-950/80 text-slate-100 shadow-[0_0_0_1px_rgba(154,163,58,0.25)]">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-lg">Cropto UA Indices</CardTitle>
+                  <Badge className="border-primary/40 bg-primary/15 text-primary-foreground">Core</Badge>
+                </div>
+                <CardDescription className="text-slate-400">Internal index feed</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2 sm:grid-cols-2">
+                {!indicesQuery.data?.enabled ? (
+                  <p className="text-sm text-slate-400">Coming soon</p>
+                ) : indicesQuery.data?.items?.length ? (
+                  indicesQuery.data.items.slice(0, 6).map((item) => (
+                    <div key={item.slug} className="rounded-lg border border-white/12 bg-slate-900/85 p-2.5">
+                      <p className="text-xs font-semibold text-slate-200 line-clamp-1">{item.name}</p>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-2xl font-bold leading-none">${item.value.toFixed(2)}</p>
-                        <p className={`text-xs font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                        {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
+                        <p className="text-xl font-bold text-white">${item.value.toFixed(2)}</p>
+                        <p className={`text-xs font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
                         </p>
                       </div>
-                      <p className="mt-2 text-[11px] text-muted-foreground">{new Date(item.updatedAt).toLocaleString()}</p>
-                      <p className="text-[11px] text-muted-foreground">{item.source}</p>
+                      <p className="mt-1 text-[10px] text-slate-400">{formatRelative(item.updatedAt)} • {item.source}</p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No index snapshots available yet.</p>
-              )}
-            </CardContent>
-          </Card>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400">No index snapshots available yet.</p>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card className="border-border/80 bg-card/90 shadow-md">
-            <CardHeader>
-              <CardTitle className="text-xl">Macro / FX Snapshot</CardTitle>
-              <CardDescription>Lightweight cross-currency context</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {fxQuery.data.rates.map((rate) => (
-                      <div key={rate.currency} className="rounded-lg border border-black/80 bg-background/70 p-2.5 dark:border-white/80">
-                        <p className="text-xs text-muted-foreground">{rate.currency}</p>
-                        <p className="text-base font-semibold">{rate.usdPerUnit.toFixed(4)}</p>
-                      </div>
-                    ))}
+            <div className="xl:col-span-3 grid gap-4">
+              <Card className="border-red-400/30 bg-slate-950/75 text-slate-100">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="h-4 w-4 text-red-400" />
+                    <CardTitle className="text-base">Black Sea Watch</CardTitle>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {fxQuery.data.source || "FX"} • {fxQuery.data.asOf ? new Date(fxQuery.data.asOf).toLocaleString() : "n/a"}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">Coming soon. {fxQuery.data?.message || "Macro widget is temporarily unavailable."}</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="border-border/80 bg-card/90 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg">Filters</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 lg:grid-cols-5">
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Crop</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {CROPS.map((item) => (
-                    <Button key={item} size="sm" variant={crop === item ? "default" : "outline"} onClick={() => setCrop(item)} className="h-7 px-2.5 text-xs capitalize">
-                      {item}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Topic</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {TOPICS.map((item) => (
-                    <Button key={item} size="sm" variant={topic === item ? "default" : "outline"} onClick={() => setTopic(item)} className="h-7 px-2.5 text-xs capitalize">
-                      {item}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Region</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {REGIONS.map((item) => (
-                    <Button key={item} size="sm" variant={region === item ? "default" : "outline"} onClick={() => setRegion(item)} className="h-7 px-2.5 text-xs capitalize">
-                      {item}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Time</p>
-                <div className="flex gap-1.5">
-                  <Button size="sm" variant={time === "24h" ? "default" : "outline"} onClick={() => setTime("24h")} className="h-7 px-3 text-xs">
-                    24h
-                  </Button>
-                  <Button size="sm" variant={time === "7d" ? "default" : "outline"} onClick={() => setTime("7d")} className="h-7 px-3 text-xs">
-                    7d
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Search</p>
-                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Keyword" className="h-8" />
-              </div>
-            </div>
-            {debugEnabled ? (
-              <div className="flex items-center gap-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Threshold</p>
-                {[2, 3, 4, 5].map((value) => (
-                  <Button
-                    key={value}
-                    size="sm"
-                    variant={threshold === value ? "default" : "outline"}
-                    className="h-7 px-2.5 text-xs"
-                    onClick={() => setThreshold(value)}
-                  >
-                    {value}
-                  </Button>
-                ))}
-                <p className="text-xs text-muted-foreground">Use `?debug=1` to tune signal strictness.</p>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="space-y-4">
-            <Card className="border-primary/35 bg-gradient-to-br from-primary/10 via-card to-card shadow-md">
-              <CardHeader>
-                <CardTitle>Top Signals</CardTitle>
-                <CardDescription>Highest relevance items in current filter scope</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {(monitorQuery.data?.topSignals || []).slice(0, 8).map((item, idx) => (
-                  <a key={`signal-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-lg border border-black/80 bg-background/75 p-3 transition-all hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-md dark:border-white/80">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-semibold leading-6 text-foreground">{item.title}</p>
-                      <Badge className="border-primary/35 bg-primary/15 text-[10px]">#{idx + 1}</Badge>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {item.crop_tags.slice(0, 2).map((tag) => (
-                        <TopicTag key={`crop-${item.id}-${tag}`} value={tag} kind="crop" />
-                      ))}
-                      {item.topic_tags.slice(0, 2).map((tag) => (
-                        <TopicTag key={`topic-${item.id}-${tag}`} value={tag} kind="topic" />
-                      ))}
-                      {item.region_tags.slice(0, 1).map((tag) => (
-                        <TopicTag key={`region-${item.id}-${tag}`} value={tag} kind="region" />
-                      ))}
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {item.source_name} • score {item.relevance_score} • {new Date(item.published_at).toLocaleString()}
-                    </p>
-                  </a>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/80 bg-card/95 shadow-sm">
-              <CardHeader>
-                <CardTitle>News Feed</CardTitle>
-                <CardDescription>Rule-based thematic filtering with dedup</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {feed.map((item) => (
-                  <article key={item.id} className="rounded-lg border border-black/80 bg-background/75 p-3 dark:border-white/80">
-                    <a href={item.url} target="_blank" rel="noreferrer" className="text-sm font-semibold leading-6 text-foreground hover:text-primary">
-                      {item.title}
-                    </a>
-                    {item.summary ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{item.summary}</p> : null}
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {item.crop_tags.slice(0, 2).map((tag) => (
-                        <TopicTag key={`feed-crop-${item.id}-${tag}`} value={tag} kind="crop" />
-                      ))}
-                      {item.topic_tags.slice(0, 3).map((tag) => (
-                        <TopicTag key={`feed-topic-${item.id}-${tag}`} value={tag} kind="topic" />
-                      ))}
-                      {item.region_tags.slice(0, 2).map((tag) => (
-                        <TopicTag key={`feed-region-${item.id}-${tag}`} value={tag} kind="region" />
-                      ))}
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {item.source_name} • score {item.relevance_score} • {new Date(item.published_at).toLocaleString()}
-                    </p>
-                  </article>
-                ))}
-                {!feed.length ? <p className="text-sm text-muted-foreground">No items found for current filters.</p> : null}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-4">
-            <Card className="border-border/80 bg-card/95 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Logistics / Shipping</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {(monitorQuery.data?.sidePanels.logistics || []).slice(0, 8).map((item) => (
-                  <a key={`log-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-border/70 bg-background/70 p-2.5 text-sm hover:border-primary/35">
-                    <p className="line-clamp-2 font-medium">{item.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{item.source_name}</p>
-                  </a>
-                ))}
-                {!(monitorQuery.data?.sidePanels.logistics || []).length ? (
-                  <p className="text-sm text-muted-foreground">No logistics items in current scope.</p>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/80 bg-card/95 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Policy & Trade</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {(monitorQuery.data?.sidePanels.policy || []).slice(0, 8).map((item) => (
-                  <a key={`pol-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-border/70 bg-background/70 p-2.5 text-sm hover:border-primary/35">
-                    <p className="line-clamp-2 font-medium">{item.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{item.source_name}</p>
-                  </a>
-                ))}
-                {!(monitorQuery.data?.sidePanels.policy || []).length ? (
-                  <p className="text-sm text-muted-foreground">No policy/trade items in current scope.</p>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="border-dashed border-border/70 bg-muted/25">
-              <CardHeader>
-                <CardTitle className="text-base">Weather Risk</CardTitle>
-                <CardDescription>Coming soon</CardDescription>
-              </CardHeader>
-            </Card>
-
-            {debugEnabled ? (
-              <Card className="border-amber-500/45 bg-amber-500/5">
-                <CardHeader>
-                  <CardTitle className="text-base">Debug Dashboard</CardTitle>
+                  <CardDescription className="text-slate-400">Top logistics/policy/weather risks</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <p>Sources: {debugQuery.data?.sourcesEnabled ?? "-"} / {debugQuery.data?.sourcesTotal ?? "-"}</p>
-                  <p>Fetched (24h): {debugQuery.data?.itemsFetchedLast24h ?? "-"}</p>
-                  <p>After filtering: {debugQuery.data?.itemsAfterFiltering ?? "-"}</p>
-                  <p>Duplicates removed: {debugQuery.data?.duplicatesRemoved ?? "-"}</p>
-                  <div>
-                    <p className="font-medium">Top sources:</p>
-                    <ul className="list-disc pl-5">
-                      {(debugQuery.data?.topSourcesByRelevantItems || []).slice(0, 5).map((row) => (
-                        <li key={`top-${row.sourceId}`}>{row.sourceId}: {row.count}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="font-medium">Noisy sources:</p>
-                    <ul className="list-disc pl-5">
-                      {(debugQuery.data?.noisySources || []).slice(0, 5).map((row) => (
-                        <li key={`noise-${row.sourceId}`}>{row.sourceId}: {row.count}</li>
-                      ))}
-                    </ul>
-                  </div>
+                <CardContent className="space-y-2">
+                  {blackSeaRisks.slice(0, 4).map((item) => (
+                    <a key={`bs-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/80 p-2 hover:border-red-400/35">
+                      <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
+                      <p className="mt-1 text-[10px] text-slate-400">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
+                    </a>
+                  ))}
                 </CardContent>
               </Card>
-            ) : null}
+
+              <Card className="border-white/12 bg-slate-950/65 text-slate-100">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Macro / FX Snapshot</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {fxQuery.data?.mode === "live" && fxQuery.data.rates.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {fxQuery.data.rates.slice(0, 4).map((rate) => (
+                        <div key={rate.currency} className="rounded-md border border-white/10 bg-slate-900/75 p-2">
+                          <p className="text-[10px] text-slate-400">{rate.currency}</p>
+                          <p className="text-sm font-semibold text-white">{rate.usdPerUnit.toFixed(4)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">Coming soon</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm">Signal Volume by Crop</CardTitle>
+              </CardHeader>
+              <CardContent className="h-36">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={cropVolumeData}>
+                    <XAxis dataKey="name" hide />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#9AA33A" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm">Signal Volume by Topic</CardTitle>
+              </CardHeader>
+              <CardContent className="h-36">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topicVolumeData}>
+                    <XAxis dataKey="name" hide />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#F2C94C" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm">Region Activity</CardTitle>
+              </CardHeader>
+              <CardContent className="h-36">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={regionVolumeData}>
+                    <XAxis dataKey="name" hide />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#38BDF8" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="border-white/10 bg-slate-950/70 text-slate-100">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm">Mentions Trend (7d)</CardTitle>
+              </CardHeader>
+              <CardContent className="h-36">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={mentionsTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="day" tick={{ fill: "#94A3B8", fontSize: 10 }} />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="count" stroke="#9AA33A" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-white/12 bg-slate-950/72 text-slate-100">
+            <CardHeader>
+              <CardTitle className="text-lg">Filters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 lg:grid-cols-5">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Crop</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CROPS.map((item) => (
+                      <Button key={item} size="sm" variant={crop === item ? "default" : "outline"} onClick={() => setCrop(item)} className="h-7 px-2.5 text-xs capitalize border-white/20 text-slate-200">
+                        {item}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Topic</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TOPICS.map((item) => (
+                      <Button key={item} size="sm" variant={topic === item ? "default" : "outline"} onClick={() => setTopic(item)} className="h-7 px-2.5 text-xs capitalize border-white/20 text-slate-200">
+                        {item}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Region</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {REGIONS.map((item) => (
+                      <Button key={item} size="sm" variant={region === item ? "default" : "outline"} onClick={() => setRegion(item)} className="h-7 px-2.5 text-xs capitalize border-white/20 text-slate-200">
+                        {item}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Time</p>
+                  <div className="flex gap-1.5">
+                    <Button size="sm" variant={time === "24h" ? "default" : "outline"} onClick={() => setTime("24h")} className="h-7 px-3 text-xs border-white/20 text-slate-200">
+                      24h
+                    </Button>
+                    <Button size="sm" variant={time === "7d" ? "default" : "outline"} onClick={() => setTime("7d")} className="h-7 px-3 text-xs border-white/20 text-slate-200">
+                      7d
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Search</p>
+                  <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Keyword" className="h-8 border-white/20 bg-slate-900/70 text-slate-100" />
+                </div>
+              </div>
+
+              {debugEnabled ? (
+                <div className="flex items-center gap-2">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Threshold</p>
+                  {[2, 3, 4, 5].map((value) => (
+                    <Button key={value} size="sm" variant={threshold === value ? "default" : "outline"} className="h-7 px-2.5 text-xs border-white/20 text-slate-200" onClick={() => setThreshold(value)}>
+                      {value}
+                    </Button>
+                  ))}
+                  <p className="text-xs text-slate-400">Current: {monitorQuery.data?.filters.threshold ?? threshold}</p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-400" />
+              <h2 className="text-lg font-semibold text-slate-100">Top Signals</h2>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {topSignals.slice(0, 8).map((item) => (
+                <SignalCard key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+            {panels.map((panel) => {
+              const expanded = expandedPanel === panel.id;
+              const visibleItems = expanded ? panel.items.slice(0, 12) : panel.items.slice(0, 6);
+
+              return (
+                <Card key={panel.id} className="border-white/12 bg-slate-950/70 text-slate-100">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-sm">{panel.title}</CardTitle>
+                      <Badge className="border-white/20 bg-white/5 text-[10px] text-slate-300">{panel.items.length}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {visibleItems.map((item) => (
+                      <a key={`${panel.id}-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-md border border-white/10 bg-slate-900/75 p-2 hover:border-primary/45">
+                        <p className="line-clamp-2 text-xs font-medium text-slate-100">{item.title}</p>
+                        <p className="mt-1 text-[10px] text-slate-400">{item.source_name} • {formatRelative(item.published_at)}</p>
+                      </a>
+                    ))}
+                    {!panel.items.length ? <p className="text-xs text-slate-400">No items in this module for current filters.</p> : null}
+                    {panel.items.length > 6 ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-primary hover:text-primary"
+                        onClick={() => setExpandedPanel(expanded ? null : panel.id)}
+                      >
+                        {expanded ? "Collapse" : "View all"}
+                      </Button>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {debugEnabled ? (
+            <Card className="border-amber-500/40 bg-amber-500/10 text-slate-100">
+              <CardHeader>
+                <CardTitle className="text-base">Debug Dashboard</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p>Sources: {debugQuery.data?.sourcesEnabled ?? "-"} / {debugQuery.data?.sourcesTotal ?? "-"}</p>
+                <p>Fetched (24h): {debugQuery.data?.itemsFetchedLast24h ?? "-"}</p>
+                <p>After filtering: {debugQuery.data?.itemsAfterFiltering ?? "-"}</p>
+                <p>Duplicates removed: {debugQuery.data?.duplicatesRemoved ?? "-"}</p>
+                <div>
+                  <p className="font-medium">Top sources:</p>
+                  <ul className="list-disc pl-5">
+                    {(debugQuery.data?.topSourcesByRelevantItems || []).slice(0, 5).map((row) => (
+                      <li key={`top-${row.sourceId}`}>{row.sourceId}: {row.count}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium">Noisy sources:</p>
+                  <ul className="list-disc pl-5">
+                    {(debugQuery.data?.noisySources || []).slice(0, 5).map((row) => (
+                      <li key={`noise-${row.sourceId}`}>{row.sourceId}: {row.count}</li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
-      </div>
+      </section>
     </MainLayout>
   );
 }
