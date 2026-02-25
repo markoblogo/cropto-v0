@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import { lookup } from "node:dns/promises";
 import { latestFxSnapshot } from "../ingestion/storage/fxRepository";
 import {
   MONITOR_FEATURE_FLAGS,
@@ -7,6 +8,16 @@ import {
   MONITOR_RELEVANCE_THRESHOLD_MIN,
   MONITOR_SOURCES,
 } from "./config";
+import {
+  DBNOMICS_API_BASE_URL,
+  ENABLE_DBNOMICS_SPOT_PROVIDER,
+  ENABLE_FAO_FFPI_PROVIDER,
+  ENABLE_USDA_MARS_REPORTS_WIDGET,
+  FAO_FFPI_URL,
+  GRAIN_WIDGETS_CACHE_TTL_MS,
+  GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
+  USDA_MARS_BASE_URL,
+} from "./grainWidgets/config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
 import { GrainMarketsService } from "./grainMarkets";
@@ -24,6 +35,110 @@ function topEntries(record: Record<string, number>, limit = 5) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([sourceId, count]) => ({ sourceId, count }));
+}
+
+type ActivationErrorKind =
+  | "DNS"
+  | "TIMEOUT"
+  | "HTTP_4XX"
+  | "HTTP_5XX"
+  | "PARSE_ERROR"
+  | "EMPTY_DATA"
+  | "BLOCKED"
+  | "UNKNOWN";
+
+function classifyErrorKind(args: { message?: string; code?: string; httpStatus?: number }): ActivationErrorKind {
+  const message = String(args.message || "").toLowerCase();
+  const code = String(args.code || "").toUpperCase();
+  const status = args.httpStatus;
+  if (code === "ENOTFOUND" || message.includes("enotfound") || message.includes("could not resolve host")) return "DNS";
+  if (code === "ETIMEDOUT" || code === "ABORT_ERR" || message.includes("timed out") || message.includes("aborted")) return "TIMEOUT";
+  if (status != null && status >= 400 && status < 500) return "HTTP_4XX";
+  if (status != null && status >= 500) return "HTTP_5XX";
+  if (message.includes("parse")) return "PARSE_ERROR";
+  if (message.includes("empty") || message.includes("coverage_empty")) return "EMPTY_DATA";
+  if (status === 403 || message.includes("forbidden") || message.includes("blocked")) return "BLOCKED";
+  return "UNKNOWN";
+}
+
+function normalizeProviderError(error?: string) {
+  if (!error) return undefined;
+  const statusMatch = error.match(/HTTP\s+(\d{3})/i);
+  const httpStatus = statusMatch ? Number.parseInt(statusMatch[1], 10) : undefined;
+  const codeMatch = error.match(/\b(ENOTFOUND|ETIMEDOUT|ABORT_ERR)\b/i);
+  const code = codeMatch?.[1]?.toUpperCase();
+  return {
+    name: "ProviderError",
+    code,
+    message: error,
+    httpStatus,
+    errorKind: classifyErrorKind({ message: error, code, httpStatus }),
+  };
+}
+
+async function probeUrl(url: string): Promise<{
+  url: string;
+  ok: boolean;
+  httpStatus?: number;
+  resolvedIp?: string;
+  elapsedMs: number;
+  errorKind?: ActivationErrorKind;
+  errorMessage?: string;
+}> {
+  const started = Date.now();
+  const parsed = new URL(url);
+  let resolvedIp: string | undefined;
+  try {
+    const dns = await lookup(parsed.hostname);
+    resolvedIp = dns.address;
+  } catch {
+    resolvedIp = undefined;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    let response = await fetch(url, {
+      method: "HEAD",
+      signal: controller.signal,
+      headers: {
+        accept: "application/json,text/csv,text/plain,*/*",
+        "user-agent": "CroptoMonitor/activation-report",
+      },
+    });
+    if (response.status === 405 || response.status === 501) {
+      response = await fetch(url, {
+        method: "GET",
+        signal: controller.signal,
+        headers: {
+          accept: "application/json,text/csv,text/plain,*/*",
+          "user-agent": "CroptoMonitor/activation-report",
+        },
+      });
+    }
+    clearTimeout(timeout);
+    return {
+      url,
+      ok: response.ok,
+      httpStatus: response.status,
+      resolvedIp,
+      elapsedMs: Date.now() - started,
+      errorKind: response.ok ? undefined : classifyErrorKind({ httpStatus: response.status }),
+      errorMessage: response.ok ? undefined : `HTTP ${response.status}`,
+    };
+  } catch (error: any) {
+    clearTimeout(timeout);
+    const code = String(error?.cause?.code || error?.code || "");
+    const message = String(error?.message || "probe_failed");
+    return {
+      url,
+      ok: false,
+      resolvedIp,
+      elapsedMs: Date.now() - started,
+      errorKind: classifyErrorKind({ message, code }),
+      errorMessage: message,
+    };
+  }
 }
 
 export function registerMonitorRoutes(app: Express): void {
@@ -273,5 +388,165 @@ export function registerMonitorRoutes(app: Express): void {
       grainMarkets: grainMarketsService.debugSummary(),
       grainWidgets: grainWidgetsService.debugSummary(),
     });
+  });
+
+  app.get("/api/monitor/activation-report", async (_req, res) => {
+    try {
+      const nowIso = new Date().toISOString();
+      const grainWidgets = await grainWidgetsService.list();
+      const grainWidgetsDebug = grainWidgetsService.debugSummary();
+      const byKind = grainWidgets.widgets.byKind || {};
+      const providers = grainWidgetsDebug.providers || [];
+
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS"> = {
+        "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
+        "fao-ffpi": "CROP_PRICE_INDEX",
+        "usda-mars-public": "USDA_MARS_REPORTS",
+      };
+
+      const sourceMatchesProvider = (sourceName?: string, providerId?: string) => {
+        const source = String(sourceName || "").toLowerCase();
+        const id = String(providerId || "").toLowerCase();
+        if (id.includes("dbnomics")) return source.includes("dbnomics");
+        if (id.includes("fao")) return source.includes("fao");
+        if (id.includes("usda")) return source.includes("usda");
+        return false;
+      };
+
+      const expectedCoverage: Record<string, number> = {
+        "dbnomics-worldbank": 4,
+        "fao-ffpi": 3,
+        "usda-mars-public": 6,
+      };
+
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public"].map((providerId) => {
+        const provider = providers.find((item) => item.providerId === providerId);
+        const kind = providerToKind[providerId];
+        const widget = byKind[kind] as any;
+        const providerError = normalizeProviderError(provider?.error);
+        const status = widget && sourceMatchesProvider(widget.sourceName, providerId)
+          ? widget.status
+          : provider?.status === "ok"
+            ? "REFRESH"
+            : provider?.status === "partial"
+              ? "FALLBACK"
+              : "OFFLINE";
+
+        return {
+          providerId,
+          enabled: Boolean(provider?.enabled),
+          status,
+          sourceUrlUsed: provider?.sourceUrlUsed || widget?.sourceUrl,
+          expectedCount: provider?.expectedCount ?? expectedCoverage[providerId],
+          mappedCount: provider?.mappedCount ?? 0,
+          coverage: provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCoverage[providerId]}`,
+          lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
+          cacheHit: Boolean(provider?.cacheHit),
+          fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
+          lastError: providerError,
+          notes: provider?.notes,
+        };
+      });
+
+      const hasSparklineEligibleSeries = (widget: any): boolean => {
+        if (!widget) return false;
+        const rowSeries = (widget.rows || []).flatMap((row: any) => row?.price?.series || []);
+        const cardSeries = (widget.cards || []).flatMap((card: any) => card?.series || []);
+        const itemSeries = (widget.items || []).flatMap((item: any) => item?.series || []);
+        const allSeriesGroups = [rowSeries, cardSeries, itemSeries]
+          .filter((series) => Array.isArray(series) && series.length > 0);
+        return allSeriesGroups.some((series) => {
+          const values = series
+            .map((point: any) => point?.value)
+            .filter((value: any) => typeof value === "number" && Number.isFinite(value));
+          if (values.length < 3) return false;
+          return Math.max(...values) - Math.min(...values) > 1e-8;
+        });
+      };
+
+      const widgetSnapshot = ([
+        "GLOBAL_SPOT_TABLE",
+        "CROP_PRICE_INDEX",
+        "USDA_MARS_REPORTS",
+      ] as const).map((widgetKind) => {
+        const widget = byKind[widgetKind] as any;
+        const rowsCount = Array.isArray(widget?.rows) ? widget.rows.length : 0;
+        const itemsCount = Array.isArray(widget?.items) ? widget.items.length : 0;
+        const cardsCount = Array.isArray(widget?.cards) ? widget.cards.length : 0;
+        const reportsCount = Array.isArray(widget?.reports) ? widget.reports.length : 0;
+        const seriesPointsCount =
+          (Array.isArray(widget?.rows) ? widget.rows.flatMap((row: any) => row?.price?.series || []).length : 0) +
+          (Array.isArray(widget?.items) ? widget.items.flatMap((item: any) => item?.series || []).length : 0) +
+          (Array.isArray(widget?.cards) ? widget.cards.flatMap((card: any) => card?.series || []).length : 0);
+        return {
+          widgetKind,
+          widgetStatus: widget?.status || "OFFLINE",
+          sourceName: widget?.sourceName,
+          sourceAttribution: widget?.sourceAttribution,
+          updatedAt: widget?.updatedAt,
+          rowsCount,
+          itemsCount,
+          cardsCount,
+          reportsCount,
+          notes: (widget?.notes || []).slice(0, 4),
+          seriesPointsCount,
+          hasSparklineEligibleSeries: hasSparklineEligibleSeries(widget),
+        };
+      });
+
+      const [dbnomicsProbe, faoProbe, marsProbe] = await Promise.all([
+        probeUrl(`${DBNOMICS_API_BASE_URL}/series/WB/commodity_prices/FMAIZE.1W?observations=true`),
+        probeUrl(FAO_FFPI_URL),
+        probeUrl(`${USDA_MARS_BASE_URL}/listPublishedReports?format=json`),
+      ]);
+
+      res.json({
+        runtime: {
+          timestamp: nowIso,
+          appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
+          commit:
+            process.env.RAILWAY_GIT_COMMIT_SHA ||
+            process.env.RAILWAY_GIT_COMMIT ||
+            process.env.VERCEL_GIT_COMMIT_SHA ||
+            process.env.COMMIT_SHA ||
+            "unknown",
+          env: {
+            ENABLE_GRAIN_WIDGETS_EXPANSION: MONITOR_FEATURE_FLAGS.ENABLE_GRAIN_WIDGETS_EXPANSION,
+            ENABLE_DBNOMICS_SPOT_PROVIDER,
+            ENABLE_FAO_FFPI_PROVIDER,
+            ENABLE_USDA_MARS_REPORTS_WIDGET,
+            DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
+            FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
+            USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
+            GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
+            GRAIN_WIDGETS_CACHE_TTL_MS,
+          },
+        },
+        providers: providerReport,
+        widgets: widgetSnapshot,
+        networkProbe: {
+          dbnomics: dbnomicsProbe,
+          faoFfpi: faoProbe,
+          usdaMars: marsProbe,
+        },
+      });
+    } catch (error: any) {
+      res.status(200).json({
+        runtime: {
+          timestamp: new Date().toISOString(),
+          appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
+          commit:
+            process.env.RAILWAY_GIT_COMMIT_SHA ||
+            process.env.RAILWAY_GIT_COMMIT ||
+            process.env.VERCEL_GIT_COMMIT_SHA ||
+            process.env.COMMIT_SHA ||
+            "unknown",
+        },
+        error: {
+          message: error?.message || "activation_report_failed",
+          errorKind: classifyErrorKind({ message: error?.message }),
+        },
+      });
+    }
   });
 }
