@@ -2,6 +2,7 @@ import type {
   GrainWidget,
   GrainWidgetCropPriceIndex,
   GrainWidgetKind,
+  GrainWidgetUsCashExportContext,
   GrainWidgetUsdaMarsReports,
   GrainWidgetTableRow,
   GrainWidgetUSCashBids,
@@ -410,6 +411,61 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           ],
         },
         notes: ["Mock fallback payload (metadata-only report list)"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "US_CASH_EXPORT_CONTEXT") {
+      const widget: GrainWidgetUsCashExportContext = {
+        id: "grain-us-cash-export-context",
+        kind: "US_CASH_EXPORT_CONTEXT",
+        title: "US Cash / Export Context (USDA)",
+        subtitle: "Metadata-only: daily bids & export indications",
+        status: "FALLBACK",
+        sourceName: "USDA AMS MARS API",
+        sourceAttribution: "Data: USDA AMS MARS (public)",
+        sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReports?format=json",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        summary: {
+          exportIndications: true,
+          dailyBids: true,
+          marketRates: true,
+          reportsToday: 2,
+          regions: ["US Gulf", "US PNW", "US Midwest"],
+          cadenceHints: ["Daily", "Weekly"],
+        },
+        topReports: [
+          {
+            id: "uscx-r1",
+            title: "Export Grain Bids - Gulf",
+            publishedAt: ctx.now.toISOString(),
+            fileType: "TXT",
+            regionTag: "US Gulf",
+            typeTag: "Export",
+            url: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/MARS-DEMO-002?format=json",
+          },
+          {
+            id: "uscx-r2",
+            title: "Daily Grain Bids - Portland",
+            publishedAt: ctx.now.toISOString(),
+            fileType: "PDF",
+            regionTag: "US PNW",
+            typeTag: "Cash Bids",
+            url: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/MARS-DEMO-001?format=json",
+          },
+          {
+            id: "uscx-r3",
+            title: "Daily Market Rates - Corn and Wheat",
+            publishedAt: ctx.now.toISOString(),
+            fileType: "PDF",
+            regionTag: "US Midwest",
+            typeTag: "Market Rates",
+            url: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/MARS-DEMO-003?format=json",
+          },
+        ],
+        notes: ["Mock fallback summary (metadata-only)"],
         fallbackReason: reason,
       };
       return widget;

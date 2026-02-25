@@ -5,6 +5,7 @@ export interface GrainWidgetsProviderContext {
   timeframe: GrainWidgetsTimeframe;
   seriesPoints: number;
   eurUsd: number | null;
+  getCachedWidget?: (kind: GrainWidgetKind) => GrainWidget | undefined;
 }
 
 export interface GrainWidgetsProvider {

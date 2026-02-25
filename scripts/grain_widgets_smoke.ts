@@ -4,6 +4,7 @@ import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/com
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
+import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
 import { UsdaMarsReportsProvider } from "../server/monitor/grainWidgets/providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProviderContext } from "../server/monitor/grainWidgets/providers/types";
 import type { GrainWidget } from "../server/monitor/grainWidgets/types";
@@ -15,8 +16,10 @@ function widgetCoverage(widget: GrainWidget): string {
   }
   if (widget.kind === "CROP_PRICE_INDEX") {
     const rows = widget.rows || [];
-    const mapped = rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
-    return `${mapped}/${rows.length || 0}`;
+    const rowMapped = rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
+    const cards = widget.cards || [];
+    const cardMapped = cards.filter((card) => card.value != null || card.valueText != null).length;
+    return `${rowMapped + cardMapped}/${rows.length + cards.length || 0}`;
   }
   if (widget.kind === "MACRO_AGRI_INDICES") {
     const items = widget.items || [];
@@ -45,6 +48,7 @@ async function run() {
     new FaoFfpiProvider(),
     new ApiFarmerProvider(),
     new UsdaMarsReportsProvider(),
+    new UsCashExportContextProvider(),
   ];
 
   console.log("grain-widgets smoke start");
@@ -60,6 +64,11 @@ async function run() {
       if (widget.kind === "USDA_MARS_REPORTS") {
         console.log(
           `  usda_reports fetched=${widget.summary?.fetchedCount ?? 0} scanned=${widget.summary?.scannedCount ?? 0} matched=${widget.summary?.matchedCount ?? 0} returned=${widget.summary?.reportsReturnedTop ?? widget.reports.length}`,
+        );
+      }
+      if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
+        console.log(
+          `  us_context reportsToday=${widget.summary?.reportsToday ?? 0} export=${widget.summary?.exportIndications ? "yes" : "no"} regions=${(widget.summary?.regions || []).join("/") || "n/a"}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

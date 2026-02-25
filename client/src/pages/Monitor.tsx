@@ -315,7 +315,8 @@ type GrainWidgetKind =
   | "CBOT_FUTURES_CURVE"
   | "LIVESTOCK_FEED_TIEIN"
   | "MACRO_AGRI_INDICES"
-  | "USDA_MARS_REPORTS";
+  | "USDA_MARS_REPORTS"
+  | "US_CASH_EXPORT_CONTEXT";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -586,6 +587,38 @@ type GrainWidgetUsdaMarsReports = {
   fallbackReason?: string;
 };
 
+type GrainWidgetUsCashExportContext = {
+  id: string;
+  kind: "US_CASH_EXPORT_CONTEXT";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  summary: {
+    exportIndications: boolean;
+    dailyBids: boolean;
+    marketRates: boolean;
+    reportsToday: number;
+    regions: string[];
+    cadenceHints?: string[];
+  };
+  topReports: Array<{
+    id: string;
+    title: string;
+    publishedAt?: string;
+    fileType?: "PDF" | "TXT" | "HTML" | "OTHER";
+    regionTag?: string;
+    typeTag?: string;
+    url?: string;
+  }>;
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -593,7 +626,8 @@ type GrainWidget =
   | GrainWidgetFuturesSnapshot
   | GrainWidgetLivestockFeedTieIn
   | GrainWidgetMacroAgriIndices
-  | GrainWidgetUsdaMarsReports;
+  | GrainWidgetUsdaMarsReports
+  | GrainWidgetUsCashExportContext;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -1795,6 +1829,7 @@ export default function MonitorPage() {
       "LIVESTOCK_FEED_TIEIN",
       "MACRO_AGRI_INDICES",
       "USDA_MARS_REPORTS",
+      "US_CASH_EXPORT_CONTEXT",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -1934,6 +1969,7 @@ export default function MonitorPage() {
                   const livestockWidget = grainDataByKind["LIVESTOCK_FEED_TIEIN"] as GrainWidgetLivestockFeedTieIn | undefined;
                   const macroWidget = grainDataByKind["MACRO_AGRI_INDICES"] as GrainWidgetMacroAgriIndices | undefined;
                   const marsWidget = grainDataByKind["USDA_MARS_REPORTS"] as GrainWidgetUsdaMarsReports | undefined;
+                  const usContextWidget = grainDataByKind["US_CASH_EXPORT_CONTEXT"] as GrainWidgetUsCashExportContext | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -2386,7 +2422,7 @@ export default function MonitorPage() {
                       )}
 
                       {marsWidget ? (
-                        <Card className="xl:col-span-12 h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                        <Card className={`${usContextWidget ? "xl:col-span-6" : "xl:col-span-12"} h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm`}>
                           <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-sm">{marsWidget.title}</CardTitle>
@@ -2454,10 +2490,91 @@ export default function MonitorPage() {
                           </CardContent>
                         </Card>
                       ) : (
-                        <div className="xl:col-span-12">
+                        <div className={`${usContextWidget ? "xl:col-span-6" : "xl:col-span-12"}`}>
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("USDA_MARS_REPORTS") ? "USDA MARS Grain Reports" : "USDA MARS Grain Reports (not configured)"}
                             subtitle="Metadata-driven report context"
+                          />
+                        </div>
+                      )}
+
+                      {usContextWidget ? (
+                        <Card className="xl:col-span-6 h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{usContextWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(usContextWidget.status)}`}>{usContextWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">
+                              {usContextWidget.subtitle || "Metadata-only: daily bids & export indications"}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid grid-cols-2 gap-1.5 rounded-md border border-black/60 dark:border-white/25 bg-background/50 p-1.5 text-[11px]">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-foreground/72">Export indications</span>
+                                <MetricChip label={usContextWidget.summary.exportIndications ? "YES" : "NO"} variant="type" tone={usContextWidget.summary.exportIndications ? "accent" : "muted"} />
+                              </div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-foreground/72">Daily bids</span>
+                                <MetricChip label={usContextWidget.summary.dailyBids ? "YES" : "NO"} variant="type" tone={usContextWidget.summary.dailyBids ? "accent" : "muted"} />
+                              </div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-foreground/72">Market rates</span>
+                                <MetricChip label={usContextWidget.summary.marketRates ? "YES" : "NO"} variant="type" tone={usContextWidget.summary.marketRates ? "accent" : "muted"} />
+                              </div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-foreground/72">Reports today</span>
+                                <MetricChip label={`${usContextWidget.summary.reportsToday} reports`} variant="unit" tone="neutral" />
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {usContextWidget.summary.regions.map((region) => (
+                                <MetricChip key={`${usContextWidget.id}-${region}`} label={region} variant="provider" tone="neutral" />
+                              ))}
+                              {(usContextWidget.summary.cadenceHints || []).map((hint) => (
+                                <MetricChip key={`${usContextWidget.id}-${hint}`} label={hint} variant="type" tone="muted" />
+                              ))}
+                            </div>
+                            <div className="grid gap-1.5">
+                              {usContextWidget.topReports.slice(0, 3).map((report) => (
+                                <a
+                                  key={report.id}
+                                  href={report.url || usContextWidget.sourceUrl || "#"}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="block rounded-md border border-black/60 dark:border-white/25 bg-background/45 p-1.5 hover:border-primary/45"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[11px] text-foreground/86 line-clamp-1">{report.title}</p>
+                                    <MetricChip label={report.fileType || "OTHER"} variant="type" tone="muted" />
+                                  </div>
+                                  <p className="mt-0.5 text-[10px] text-foreground/65">
+                                    {(report.typeTag || "Report") + (report.regionTag ? ` • ${report.regionTag}` : "")}
+                                    {report.publishedAt ? ` • ${formatRelative(report.publishedAt)}` : ""}
+                                  </p>
+                                </a>
+                              ))}
+                              {!usContextWidget.topReports.length ? (
+                                <p className="text-[11px] text-foreground/68">No USDA links in current window. Context is built from open-data anchors.</p>
+                              ) : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={usContextWidget.status}
+                              statusClassName={grainStatusClass(usContextWidget.status)}
+                              sourceName={usContextWidget.sourceName}
+                              sourceUrl={usContextWidget.sourceUrl}
+                              updatedLabel={usContextWidget.updatedAt ? formatRelative(usContextWidget.updatedAt) : usContextWidget.timeframe}
+                              fallbackReason={usContextWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("US_CASH_EXPORT_CONTEXT") ? "US Cash / Export Context" : "US Cash / Export Context (not configured)"}
+                            subtitle="Metadata-driven US cash/export readout"
                           />
                         </div>
                       )}

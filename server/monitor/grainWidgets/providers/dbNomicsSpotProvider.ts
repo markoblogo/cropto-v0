@@ -92,6 +92,19 @@ function buildSeries(period: Array<string | number>, values: Array<number | stri
   return subset.map((entry) => ({ ts: toIsoFromPeriod(entry.period), value: Number(entry.value.toFixed(4)) }));
 }
 
+function detectCadence(period: Array<string | number>): "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Annual" | "Unknown" {
+  const sample = period
+    .map((value) => String(value || "").trim())
+    .find(Boolean);
+  if (!sample) return "Unknown";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sample)) return "Daily";
+  if (/^\d{4}-W\d{1,2}$/i.test(sample)) return "Weekly";
+  if (/^\d{4}-\d{2}$/.test(sample)) return "Monthly";
+  if (/^\d{4}-Q[1-4]$/i.test(sample)) return "Quarterly";
+  if (/^\d{4}$/.test(sample)) return "Annual";
+  return "Unknown";
+}
+
 function extractDoc(payload: any): DbnomicsSeriesDoc | undefined {
   const docs = payload?.series?.docs;
   if (!Array.isArray(docs) || !docs.length) return undefined;
@@ -130,7 +143,7 @@ export class DbNomicsSpotProvider implements GrainWidgetsProvider {
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetGlobalSpotTable> {
     const map = parseSeriesMap();
-    const notes: string[] = ["World Bank commodity_prices via DBnomics (annual cadence)"];
+    const notes: string[] = ["World Bank commodity_prices via DBnomics"];
     const rows: GrainWidgetTableRow[] = [];
     const sourceUrlsUsed: string[] = [];
 
@@ -212,6 +225,8 @@ export class DbNomicsSpotProvider implements GrainWidgetsProvider {
       });
 
       rows.push(normalized);
+      const cadence = detectCadence(periods);
+      notes.push(`${instrument.label}: cadence=${cadence}`);
     }
 
     const available = rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;

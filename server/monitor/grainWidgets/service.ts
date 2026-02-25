@@ -16,6 +16,7 @@ import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
+import { UsCashExportContextProvider } from "./providers/usCashExportContextProvider";
 import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
@@ -66,6 +67,7 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   LIVESTOCK_FEED_TIEIN: 2,
   MACRO_AGRI_INDICES: 2,
   USDA_MARS_REPORTS: 6,
+  US_CASH_EXPORT_CONTEXT: 3,
 };
 
 const WIDGET_ORDER: GrainWidgetKind[] = [
@@ -76,6 +78,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "LIVESTOCK_FEED_TIEIN",
   "MACRO_AGRI_INDICES",
   "USDA_MARS_REPORTS",
+  "US_CASH_EXPORT_CONTEXT",
 ];
 
 function statusRank(status: GrainWidget["status"]): number {
@@ -127,6 +130,9 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "USDA_MARS_REPORTS") {
     return { rows: 0, items: widget.reports.length, cards: 0 };
   }
+  if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
+    return { rows: 0, items: widget.topReports.length, cards: 0 };
+  }
   return { rows: 0, items: 0, cards: 0 };
 }
 
@@ -135,7 +141,9 @@ function mappedCountForWidget(widget: GrainWidget): number {
     return widget.rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
   }
   if (widget.kind === "CROP_PRICE_INDEX") {
-    return (widget.rows || []).filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
+    const rowCount = (widget.rows || []).filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
+    const cardCount = (widget.cards || []).filter((card) => card.value != null || card.valueText != null).length;
+    return rowCount + cardCount;
   }
   if (widget.kind === "MACRO_AGRI_INDICES") {
     return (widget.items || []).filter((item) => {
@@ -146,11 +154,25 @@ function mappedCountForWidget(widget: GrainWidget): number {
   if (widget.kind === "USDA_MARS_REPORTS") {
     return widget.reports.length;
   }
+  if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
+    return widget.topReports.length;
+  }
   return 0;
 }
 
 function widgetHasUsableData(widget: GrainWidget): boolean {
   if (widget.status === "OFFLINE") return false;
+  if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
+    const hasTopReports = widget.topReports.length > 0;
+    const hasSummarySignals =
+      widget.summary.reportsToday > 0 ||
+      widget.summary.exportIndications ||
+      widget.summary.dailyBids ||
+      widget.summary.marketRates ||
+      widget.summary.regions.length > 0 ||
+      (widget.summary.cadenceHints?.length || 0) > 0;
+    return hasTopReports || hasSummarySignals;
+  }
   const counts = widgetMetricCounts(widget);
   const mapped = mappedCountForWidget(widget);
   return mapped > 0 || counts.rows > 0 || counts.items > 0 || counts.cards > 0;
@@ -203,6 +225,7 @@ export class GrainWidgetsService {
     LIVESTOCK_FEED_TIEIN: [new CommoditicLivestockProvider()],
     MACRO_AGRI_INDICES: [new TradingEconomicsAgriProvider()],
     USDA_MARS_REPORTS: [new UsdaMarsReportsProvider()],
+    US_CASH_EXPORT_CONTEXT: [new UsCashExportContextProvider()],
   };
 
   private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
@@ -221,6 +244,7 @@ export class GrainWidgetsService {
     LIVESTOCK_FEED_TIEIN: new MockGrainWidgetsProvider({ kind: "LIVESTOCK_FEED_TIEIN" }),
     MACRO_AGRI_INDICES: new MockGrainWidgetsProvider({ kind: "MACRO_AGRI_INDICES" }),
     USDA_MARS_REPORTS: new MockGrainWidgetsProvider({ kind: "USDA_MARS_REPORTS" }),
+    US_CASH_EXPORT_CONTEXT: new MockGrainWidgetsProvider({ kind: "US_CASH_EXPORT_CONTEXT" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -603,6 +627,7 @@ export class GrainWidgetsService {
         timeframe: GRAIN_WIDGETS_TIMEFRAME_DEFAULT,
         seriesPoints: GRAIN_WIDGETS_SERIES_POINTS,
         eurUsd,
+        getCachedWidget: (kind) => this.cache.get(kind)?.data,
       };
 
       await Promise.all(WIDGET_ORDER.map((kind) => this.refreshKind(kind, ctx, now, force)));

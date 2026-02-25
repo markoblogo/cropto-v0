@@ -16,7 +16,8 @@ export type GrainWidgetKind =
   | "CBOT_FUTURES_CURVE"
   | "LIVESTOCK_FEED_TIEIN"
   | "MACRO_AGRI_INDICES"
-  | "USDA_MARS_REPORTS";
+  | "USDA_MARS_REPORTS"
+  | "US_CASH_EXPORT_CONTEXT";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -322,6 +323,29 @@ export interface GrainWidgetUsdaMarsReports extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetUsCashExportContextReportLink {
+  id: string;
+  title: string;
+  publishedAt?: string;
+  fileType?: "PDF" | "TXT" | "HTML" | "OTHER";
+  regionTag?: string;
+  typeTag?: string;
+  url?: string;
+}
+
+export interface GrainWidgetUsCashExportContext extends GrainWidgetBase {
+  kind: "US_CASH_EXPORT_CONTEXT";
+  summary: {
+    exportIndications: boolean;
+    dailyBids: boolean;
+    marketRates: boolean;
+    reportsToday: number;
+    regions: string[];
+    cadenceHints?: string[];
+  };
+  topReports: GrainWidgetUsCashExportContextReportLink[];
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -330,7 +354,8 @@ export type GrainWidget =
   | GrainWidgetCbotFuturesCurve
   | GrainWidgetLivestockFeedTieIn
   | GrainWidgetMacroAgriIndices
-  | GrainWidgetUsdaMarsReports;
+  | GrainWidgetUsdaMarsReports
+  | GrainWidgetUsCashExportContext;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;

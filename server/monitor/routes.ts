@@ -12,6 +12,7 @@ import {
   DBNOMICS_API_BASE_URL,
   ENABLE_DBNOMICS_SPOT_PROVIDER,
   ENABLE_FAO_FFPI_PROVIDER,
+  ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
   ENABLE_USDA_MARS_REPORTS_WIDGET,
   FAO_FFPI_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
@@ -398,10 +399,11 @@ export function registerMonitorRoutes(app: Express): void {
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
+        "us-cash-export-context": "US_CASH_EXPORT_CONTEXT",
       };
 
       const sourceMatchesProvider = (sourceName?: string, providerId?: string) => {
@@ -410,6 +412,7 @@ export function registerMonitorRoutes(app: Express): void {
         if (id.includes("dbnomics")) return source.includes("dbnomics");
         if (id.includes("fao")) return source.includes("fao");
         if (id.includes("usda")) return source.includes("usda");
+        if (id.includes("us-cash-export-context")) return source.includes("usda") || source.includes("open data");
         return false;
       };
 
@@ -417,9 +420,10 @@ export function registerMonitorRoutes(app: Express): void {
         "dbnomics-worldbank": 4,
         "fao-ffpi": 3,
         "usda-mars-public": 6,
+        "us-cash-export-context": 3,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -475,12 +479,14 @@ export function registerMonitorRoutes(app: Express): void {
         "GLOBAL_SPOT_TABLE",
         "CROP_PRICE_INDEX",
         "USDA_MARS_REPORTS",
+        "US_CASH_EXPORT_CONTEXT",
       ] as const).map((widgetKind) => {
         const widget = byKind[widgetKind] as any;
         const rowsCount = Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const itemsCount = Array.isArray(widget?.items) ? widget.items.length : 0;
         const cardsCount = Array.isArray(widget?.cards) ? widget.cards.length : 0;
         const reportsCount = Array.isArray(widget?.reports) ? widget.reports.length : 0;
+        const topReportsCount = Array.isArray(widget?.topReports) ? widget.topReports.length : 0;
         const seriesPointsCount =
           (Array.isArray(widget?.rows) ? widget.rows.flatMap((row: any) => row?.price?.series || []).length : 0) +
           (Array.isArray(widget?.items) ? widget.items.flatMap((item: any) => item?.series || []).length : 0) +
@@ -495,6 +501,9 @@ export function registerMonitorRoutes(app: Express): void {
           itemsCount,
           cardsCount,
           reportsCount,
+          topReportsCount,
+          reportsToday: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? widget?.summary?.reportsToday ?? 0 : undefined,
+          exportIndications: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? Boolean(widget?.summary?.exportIndications) : undefined,
           notes: (widget?.notes || []).slice(0, 4),
           seriesPointsCount,
           hasSparklineEligibleSeries: hasSparklineEligibleSeries(widget),
@@ -522,6 +531,7 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_DBNOMICS_SPOT_PROVIDER,
             ENABLE_FAO_FFPI_PROVIDER,
             ENABLE_USDA_MARS_REPORTS_WIDGET,
+            ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
             FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
             USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
