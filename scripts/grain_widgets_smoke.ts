@@ -5,6 +5,7 @@ import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/d
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
+import { UsdaMarsDailyMarketRatesTxtProvider } from "../server/monitor/grainWidgets/providers/usdaMarsDailyMarketRatesTxtProvider";
 import { UsdaMarsReportsProvider } from "../server/monitor/grainWidgets/providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProviderContext } from "../server/monitor/grainWidgets/providers/types";
 import type { GrainWidget } from "../server/monitor/grainWidgets/types";
@@ -29,6 +30,9 @@ function widgetCoverage(widget: GrainWidget): string {
     }).length;
     return `${mapped}/${items.length}`;
   }
+  if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
+    return `${widget.rows.length}/${widget.rows.length || 0}`;
+  }
   return "n/a";
 }
 
@@ -48,6 +52,7 @@ async function run() {
     new FaoFfpiProvider(),
     new ApiFarmerProvider(),
     new UsdaMarsReportsProvider(),
+    new UsdaMarsDailyMarketRatesTxtProvider(),
     new UsCashExportContextProvider(),
   ];
 
@@ -69,6 +74,11 @@ async function run() {
       if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
         console.log(
           `  us_context reportsToday=${widget.summary?.reportsToday ?? 0} export=${widget.summary?.exportIndications ? "yes" : "no"} regions=${(widget.summary?.regions || []).join("/") || "n/a"}`,
+        );
+      }
+      if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
+        console.log(
+          `  usda_daily_txt rows=${widget.rows.length} linesMatched=${widget.debug?.linesMatched ?? 0}/${widget.debug?.linesFetched ?? 0} source=${widget.report.sourceUrl || widget.sourceUrl || "n/a"}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

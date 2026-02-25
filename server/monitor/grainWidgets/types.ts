@@ -17,7 +17,8 @@ export type GrainWidgetKind =
   | "LIVESTOCK_FEED_TIEIN"
   | "MACRO_AGRI_INDICES"
   | "USDA_MARS_REPORTS"
-  | "US_CASH_EXPORT_CONTEXT";
+  | "US_CASH_EXPORT_CONTEXT"
+  | "USDA_MARS_DAILY_MARKET_RATES_TXT";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -346,6 +347,42 @@ export interface GrainWidgetUsCashExportContext extends GrainWidgetBase {
   topReports: GrainWidgetUsCashExportContextReportLink[];
 }
 
+export interface GrainWidgetUsdaMarsDailyMarketRatesTxtRow {
+  commodity: "WHEAT" | "CORN" | "SOY" | "OTHER";
+  market?: string;
+  label: string;
+  price: {
+    nativeValueCurrent: number;
+    nativeUnit: string;
+    normalizedValueCurrent?: number;
+    normalizedUnit?: "USD/t";
+  };
+  change?: {
+    nativeAbs?: number;
+    nativePct?: number;
+  };
+  confidence: "HIGH" | "MED" | "LOW";
+}
+
+export interface GrainWidgetUsdaMarsDailyMarketRatesTxt extends GrainWidgetBase {
+  kind: "USDA_MARS_DAILY_MARKET_RATES_TXT";
+  report: {
+    reportId: number;
+    publishedAt?: string;
+    fileName?: string;
+    fileType: "txt";
+    sourceUrl?: string;
+  };
+  rows: GrainWidgetUsdaMarsDailyMarketRatesTxtRow[];
+  debug?: {
+    linesFetched: number;
+    linesMatched: number;
+    parseMode: "strict";
+    matchedSections?: string[];
+    warnings?: string[];
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -355,7 +392,8 @@ export type GrainWidget =
   | GrainWidgetLivestockFeedTieIn
   | GrainWidgetMacroAgriIndices
   | GrainWidgetUsdaMarsReports
-  | GrainWidgetUsCashExportContext;
+  | GrainWidgetUsCashExportContext
+  | GrainWidgetUsdaMarsDailyMarketRatesTxt;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -407,6 +445,9 @@ export interface GrainWidgetsProviderDebug {
   reportsMatchedInclude?: number;
   reportsExcluded?: number;
   reportsReturnedTop?: number;
+  linesFetched?: number;
+  linesMatched?: number;
+  parseMode?: "strict";
   topScoreMin?: number;
   topScoreMax?: number;
   errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "UNKNOWN";

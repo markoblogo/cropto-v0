@@ -3,6 +3,7 @@ import type {
   GrainWidgetCropPriceIndex,
   GrainWidgetKind,
   GrainWidgetUsCashExportContext,
+  GrainWidgetUsdaMarsDailyMarketRatesTxt,
   GrainWidgetUsdaMarsReports,
   GrainWidgetTableRow,
   GrainWidgetUSCashBids,
@@ -466,6 +467,64 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           },
         ],
         notes: ["Mock fallback summary (metadata-only)"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
+      const widget: GrainWidgetUsdaMarsDailyMarketRatesTxt = {
+        id: "grain-usda-mars-daily-market-rates-txt",
+        kind: "USDA_MARS_DAILY_MARKET_RATES_TXT",
+        title: "US Daily Market Rates (TXT)",
+        subtitle: "USDA AMS MARS (metadata + TXT parse)",
+        status: "FALLBACK",
+        sourceName: "USDA AMS MARS",
+        sourceAttribution: "USDA MARS Daily Market Rates (TXT)",
+        sourceUrl: "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReport/3420?format=json",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        report: {
+          reportId: 3420,
+          publishedAt: ctx.now.toISOString(),
+          fileName: "daily_market_rates_demo",
+          fileType: "txt",
+          sourceUrl: "https://marsapi.ams.usda.gov/marsapi/reports/daily_market_rates_demo.txt",
+        },
+        rows: [
+          {
+            commodity: "WHEAT",
+            market: "US Gulf",
+            label: "HRW Wheat Gulf",
+            price: { nativeValueCurrent: 5.62, nativeUnit: "USD/bu", normalizedValueCurrent: 206.4, normalizedUnit: "USD/t" },
+            change: { nativeAbs: 0.04, nativePct: 0.72 },
+            confidence: "HIGH",
+          },
+          {
+            commodity: "CORN",
+            market: "US Midwest",
+            label: "Corn Elevator Bid",
+            price: { nativeValueCurrent: 471, nativeUnit: "c/bu", normalizedValueCurrent: 185.4, normalizedUnit: "USD/t" },
+            change: { nativeAbs: -2, nativePct: -0.42 },
+            confidence: "HIGH",
+          },
+          {
+            commodity: "SOY",
+            market: "US PNW",
+            label: "Soybeans PNW Bid",
+            price: { nativeValueCurrent: 11.14, nativeUnit: "USD/bu", normalizedValueCurrent: 409.2, normalizedUnit: "USD/t" },
+            change: { nativeAbs: 0.08, nativePct: 0.72 },
+            confidence: "MED",
+          },
+        ],
+        notes: ["Mock fallback payload for USDA TXT parser widget"],
+        debug: {
+          linesFetched: 120,
+          linesMatched: 3,
+          parseMode: "strict",
+          matchedSections: ["WHEAT", "CORN", "SOY", "MARKET_RATES"],
+          warnings: ["range_midpoint_used: Corn Elevator Bid"],
+        },
         fallbackReason: reason,
       };
       return widget;

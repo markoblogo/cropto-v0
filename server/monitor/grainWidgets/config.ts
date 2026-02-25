@@ -19,6 +19,7 @@ export const ENABLE_FAO_FFPI_WIDGETS = envBool("ENABLE_FAO_FFPI_WIDGETS", true);
 export const ENABLE_FAO_FFPI_PROVIDER = envBool("ENABLE_FAO_FFPI_PROVIDER", ENABLE_FAO_FFPI_WIDGETS);
 export const ENABLE_USDA_MARS_REPORTS_WIDGET = envBool("ENABLE_USDA_MARS_REPORTS_WIDGET", true);
 export const ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET = envBool("ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET", true);
+export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -93,6 +94,15 @@ export const USDA_MARS_TIMEOUT_MS = envNum("USDA_MARS_TIMEOUT_MS", GRAIN_WIDGETS
 export const USDA_MARS_MAX_REPORTS_SCAN = envNum("USDA_MARS_MAX_REPORTS_SCAN", 200);
 export const US_CASH_EXPORT_CONTEXT_TOP_N = envNum("US_CASH_EXPORT_CONTEXT_TOP_N", 3);
 export const US_CASH_EXPORT_CONTEXT_MAX_REPORTS_SCAN = envNum("US_CASH_EXPORT_CONTEXT_MAX_REPORTS_SCAN", USDA_MARS_MAX_REPORTS_SCAN);
+export const USDA_MARS_DAILY_REPORT_ID = envNum("USDA_MARS_DAILY_REPORT_ID", 3420);
+export const USDA_MARS_FILE_URL_TEMPLATES = (
+  process.env.USDA_MARS_FILE_URL_TEMPLATES ||
+  "https://marsapi.ams.usda.gov/marsapi/reports/{fileName}.txt,https://marsapi.ams.usda.gov/services/v3.1/public/downloadReport/{fileName},https://marsapi.ams.usda.gov/services/v3.1/public/reports/{fileName}.txt"
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+export const USDA_MARS_DAILY_MAX_ROWS = envNum("USDA_MARS_DAILY_MAX_ROWS", 8);
 export const USDA_MARS_INCLUDE_KEYWORDS = (
   process.env.USDA_MARS_INCLUDE_KEYWORDS ||
   "grain,bid,bids,export,market rates,corn,wheat,soy,soybean,oilseed,portland,louisiana,texas"

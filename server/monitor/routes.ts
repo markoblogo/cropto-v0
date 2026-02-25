@@ -13,6 +13,7 @@ import {
   ENABLE_DBNOMICS_SPOT_PROVIDER,
   ENABLE_FAO_FFPI_PROVIDER,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
+  ENABLE_USDA_MARS_DAILY_TXT,
   ENABLE_USDA_MARS_REPORTS_WIDGET,
   FAO_FFPI_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
@@ -399,11 +400,12 @@ export function registerMonitorRoutes(app: Express): void {
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
         "us-cash-export-context": "US_CASH_EXPORT_CONTEXT",
+        "usda-mars-daily-txt": "USDA_MARS_DAILY_MARKET_RATES_TXT",
       };
 
       const sourceMatchesProvider = (sourceName?: string, providerId?: string) => {
@@ -421,9 +423,10 @@ export function registerMonitorRoutes(app: Express): void {
         "fao-ffpi": 3,
         "usda-mars-public": 6,
         "us-cash-export-context": 3,
+        "usda-mars-daily-txt": 3,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -449,6 +452,9 @@ export function registerMonitorRoutes(app: Express): void {
           reportsMatchedInclude: provider?.reportsMatchedInclude,
           reportsExcluded: provider?.reportsExcluded,
           reportsReturnedTop: provider?.reportsReturnedTop,
+          linesFetched: provider?.linesFetched,
+          linesMatched: provider?.linesMatched,
+          parseMode: provider?.parseMode,
           topScoreMin: provider?.topScoreMin,
           topScoreMax: provider?.topScoreMax,
           lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
@@ -480,6 +486,7 @@ export function registerMonitorRoutes(app: Express): void {
         "CROP_PRICE_INDEX",
         "USDA_MARS_REPORTS",
         "US_CASH_EXPORT_CONTEXT",
+        "USDA_MARS_DAILY_MARKET_RATES_TXT",
       ] as const).map((widgetKind) => {
         const widget = byKind[widgetKind] as any;
         const rowsCount = Array.isArray(widget?.rows) ? widget.rows.length : 0;
@@ -487,6 +494,7 @@ export function registerMonitorRoutes(app: Express): void {
         const cardsCount = Array.isArray(widget?.cards) ? widget.cards.length : 0;
         const reportsCount = Array.isArray(widget?.reports) ? widget.reports.length : 0;
         const topReportsCount = Array.isArray(widget?.topReports) ? widget.topReports.length : 0;
+        const txtRowsCount = Array.isArray(widget?.rows) && widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget.rows.length : 0;
         const seriesPointsCount =
           (Array.isArray(widget?.rows) ? widget.rows.flatMap((row: any) => row?.price?.series || []).length : 0) +
           (Array.isArray(widget?.items) ? widget.items.flatMap((item: any) => item?.series || []).length : 0) +
@@ -502,6 +510,7 @@ export function registerMonitorRoutes(app: Express): void {
           cardsCount,
           reportsCount,
           topReportsCount,
+          txtRowsCount,
           reportsToday: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? widget?.summary?.reportsToday ?? 0 : undefined,
           exportIndications: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? Boolean(widget?.summary?.exportIndications) : undefined,
           notes: (widget?.notes || []).slice(0, 4),
@@ -515,6 +524,10 @@ export function registerMonitorRoutes(app: Express): void {
         probeUrl(FAO_FFPI_URL),
         probeUrl(`${USDA_MARS_BASE_URL}/listPublishedReports?format=json`),
       ]);
+      const marsDailyTxtSource =
+        providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.sourceUrlUsed ||
+        `${USDA_MARS_BASE_URL}/listPublishedReport/3420?format=json`;
+      const marsDailyTxtProbe = await probeUrl(marsDailyTxtSource);
 
       res.json({
         runtime: {
@@ -532,6 +545,7 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_FAO_FFPI_PROVIDER,
             ENABLE_USDA_MARS_REPORTS_WIDGET,
             ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
+            ENABLE_USDA_MARS_DAILY_TXT,
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
             FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
             USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
@@ -545,6 +559,7 @@ export function registerMonitorRoutes(app: Express): void {
           dbnomics: dbnomicsProbe,
           faoFfpi: faoProbe,
           usdaMars: marsProbe,
+          usdaMarsDailyTxt: marsDailyTxtProbe,
         },
       });
     } catch (error: any) {

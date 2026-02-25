@@ -17,6 +17,7 @@ import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
 import { UsCashExportContextProvider } from "./providers/usCashExportContextProvider";
+import { UsdaMarsDailyMarketRatesTxtProvider } from "./providers/usdaMarsDailyMarketRatesTxtProvider";
 import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
@@ -52,6 +53,12 @@ type ProviderRuntime = {
   reportsReturnedTop?: number;
   topScoreMin?: number;
   topScoreMax?: number;
+  rowsReturned?: number;
+  itemsReturned?: number;
+  cardsReturned?: number;
+  linesFetched?: number;
+  linesMatched?: number;
+  parseMode?: "strict";
   sourceUrlUsed?: string;
   widgetsReturned?: GrainWidgetKind[];
   fallbackUsed?: boolean;
@@ -68,6 +75,7 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   MACRO_AGRI_INDICES: 2,
   USDA_MARS_REPORTS: 6,
   US_CASH_EXPORT_CONTEXT: 3,
+  USDA_MARS_DAILY_MARKET_RATES_TXT: 3,
 };
 
 const WIDGET_ORDER: GrainWidgetKind[] = [
@@ -79,6 +87,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "MACRO_AGRI_INDICES",
   "USDA_MARS_REPORTS",
   "US_CASH_EXPORT_CONTEXT",
+  "USDA_MARS_DAILY_MARKET_RATES_TXT",
 ];
 
 function statusRank(status: GrainWidget["status"]): number {
@@ -133,6 +142,9 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
     return { rows: 0, items: widget.topReports.length, cards: 0 };
   }
+  if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
   return { rows: 0, items: 0, cards: 0 };
 }
 
@@ -156,6 +168,9 @@ function mappedCountForWidget(widget: GrainWidget): number {
   }
   if (widget.kind === "US_CASH_EXPORT_CONTEXT") {
     return widget.topReports.length;
+  }
+  if (widget.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT") {
+    return widget.rows.length;
   }
   return 0;
 }
@@ -226,6 +241,7 @@ export class GrainWidgetsService {
     MACRO_AGRI_INDICES: [new TradingEconomicsAgriProvider()],
     USDA_MARS_REPORTS: [new UsdaMarsReportsProvider()],
     US_CASH_EXPORT_CONTEXT: [new UsCashExportContextProvider()],
+    USDA_MARS_DAILY_MARKET_RATES_TXT: [new UsdaMarsDailyMarketRatesTxtProvider()],
   };
 
   private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
@@ -245,6 +261,7 @@ export class GrainWidgetsService {
     MACRO_AGRI_INDICES: new MockGrainWidgetsProvider({ kind: "MACRO_AGRI_INDICES" }),
     USDA_MARS_REPORTS: new MockGrainWidgetsProvider({ kind: "USDA_MARS_REPORTS" }),
     US_CASH_EXPORT_CONTEXT: new MockGrainWidgetsProvider({ kind: "US_CASH_EXPORT_CONTEXT" }),
+    USDA_MARS_DAILY_MARKET_RATES_TXT: new MockGrainWidgetsProvider({ kind: "USDA_MARS_DAILY_MARKET_RATES_TXT" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -359,6 +376,12 @@ export class GrainWidgetsService {
           reportsMatchedInclude: state?.reportsMatchedInclude,
           reportsExcluded: state?.reportsExcluded,
           reportsReturnedTop: state?.reportsReturnedTop,
+          rowsReturned: state?.rowsReturned,
+          itemsReturned: state?.itemsReturned,
+          cardsReturned: state?.cardsReturned,
+          linesFetched: state?.linesFetched,
+          linesMatched: state?.linesMatched,
+          parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
           errorKind: state?.errorKind,
@@ -440,6 +463,12 @@ export class GrainWidgetsService {
           reportsMatchedInclude: state?.reportsMatchedInclude,
           reportsExcluded: state?.reportsExcluded,
           reportsReturnedTop: state?.reportsReturnedTop,
+          rowsReturned: state?.rowsReturned,
+          itemsReturned: state?.itemsReturned,
+          cardsReturned: state?.cardsReturned,
+          linesFetched: state?.linesFetched,
+          linesMatched: state?.linesMatched,
+          parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
           errorKind: state?.errorKind,
@@ -501,6 +530,12 @@ export class GrainWidgetsService {
         reportsMatchedInclude: undefined,
         reportsExcluded: undefined,
         reportsReturnedTop: undefined,
+        rowsReturned: undefined,
+        itemsReturned: undefined,
+        cardsReturned: undefined,
+        linesFetched: undefined,
+        linesMatched: undefined,
+        parseMode: undefined,
         topScoreMin: undefined,
         topScoreMax: undefined,
       });
@@ -510,6 +545,8 @@ export class GrainWidgetsService {
         const mappedCount = mappedCountForWidget(data);
         const usable = widgetHasUsableData(data);
         const usdaSummary = data.kind === "USDA_MARS_REPORTS" ? data.summary : undefined;
+        const txtDebug = data.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? data.debug : undefined;
+        const metrics = widgetMetricCounts(data);
 
         if (!usable) {
           const reason = data.fallbackReason || "coverage_empty";
@@ -525,6 +562,12 @@ export class GrainWidgetsService {
             reportsMatchedInclude: usdaSummary?.matchedCount,
             reportsExcluded: usdaSummary?.excludedCount,
             reportsReturnedTop: usdaSummary?.reportsReturnedTop ?? usdaSummary?.shownCount,
+            rowsReturned: metrics.rows,
+            itemsReturned: metrics.items,
+            cardsReturned: metrics.cards,
+            linesFetched: txtDebug?.linesFetched,
+            linesMatched: txtDebug?.linesMatched,
+            parseMode: txtDebug?.parseMode,
             topScoreMin: usdaSummary?.topScoreMin,
             topScoreMax: usdaSummary?.topScoreMax,
             fallbackUsed: true,
@@ -552,6 +595,12 @@ export class GrainWidgetsService {
           reportsMatchedInclude: usdaSummary?.matchedCount,
           reportsExcluded: usdaSummary?.excludedCount,
           reportsReturnedTop: usdaSummary?.reportsReturnedTop ?? usdaSummary?.shownCount,
+          rowsReturned: metrics.rows,
+          itemsReturned: metrics.items,
+          cardsReturned: metrics.cards,
+          linesFetched: txtDebug?.linesFetched,
+          linesMatched: txtDebug?.linesMatched,
+          parseMode: txtDebug?.parseMode,
           topScoreMin: usdaSummary?.topScoreMin,
           topScoreMax: usdaSummary?.topScoreMax,
           widgetsReturned: [kind],

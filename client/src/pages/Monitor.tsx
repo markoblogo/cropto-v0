@@ -316,7 +316,8 @@ type GrainWidgetKind =
   | "LIVESTOCK_FEED_TIEIN"
   | "MACRO_AGRI_INDICES"
   | "USDA_MARS_REPORTS"
-  | "US_CASH_EXPORT_CONTEXT";
+  | "US_CASH_EXPORT_CONTEXT"
+  | "USDA_MARS_DAILY_MARKET_RATES_TXT";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -619,6 +620,51 @@ type GrainWidgetUsCashExportContext = {
   fallbackReason?: string;
 };
 
+type GrainWidgetUsdaMarsDailyMarketRatesTxt = {
+  id: string;
+  kind: "USDA_MARS_DAILY_MARKET_RATES_TXT";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  report: {
+    reportId: number;
+    publishedAt?: string;
+    fileName?: string;
+    fileType: "txt";
+    sourceUrl?: string;
+  };
+  rows: Array<{
+    commodity: "WHEAT" | "CORN" | "SOY" | "OTHER";
+    market?: string;
+    label: string;
+    price: {
+      nativeValueCurrent: number;
+      nativeUnit: string;
+      normalizedValueCurrent?: number;
+      normalizedUnit?: "USD/t";
+    };
+    change?: {
+      nativeAbs?: number;
+      nativePct?: number;
+    };
+    confidence: "HIGH" | "MED" | "LOW";
+  }>;
+  debug?: {
+    linesFetched: number;
+    linesMatched: number;
+    parseMode: "strict";
+    matchedSections?: string[];
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -627,7 +673,8 @@ type GrainWidget =
   | GrainWidgetLivestockFeedTieIn
   | GrainWidgetMacroAgriIndices
   | GrainWidgetUsdaMarsReports
-  | GrainWidgetUsCashExportContext;
+  | GrainWidgetUsCashExportContext
+  | GrainWidgetUsdaMarsDailyMarketRatesTxt;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -1830,6 +1877,7 @@ export default function MonitorPage() {
       "MACRO_AGRI_INDICES",
       "USDA_MARS_REPORTS",
       "US_CASH_EXPORT_CONTEXT",
+      "USDA_MARS_DAILY_MARKET_RATES_TXT",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -1970,6 +2018,7 @@ export default function MonitorPage() {
                   const macroWidget = grainDataByKind["MACRO_AGRI_INDICES"] as GrainWidgetMacroAgriIndices | undefined;
                   const marsWidget = grainDataByKind["USDA_MARS_REPORTS"] as GrainWidgetUsdaMarsReports | undefined;
                   const usContextWidget = grainDataByKind["US_CASH_EXPORT_CONTEXT"] as GrainWidgetUsCashExportContext | undefined;
+                  const marsDailyTxtWidget = grainDataByKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as GrainWidgetUsdaMarsDailyMarketRatesTxt | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -2575,6 +2624,60 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("US_CASH_EXPORT_CONTEXT") ? "US Cash / Export Context" : "US Cash / Export Context (not configured)"}
                             subtitle="Metadata-driven US cash/export readout"
+                          />
+                        </div>
+                      )}
+
+                      {marsDailyTxtWidget ? (
+                        <Card className="xl:col-span-6 h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{marsDailyTxtWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(marsDailyTxtWidget.status)}`}>{marsDailyTxtWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{marsDailyTxtWidget.subtitle || "USDA AMS MARS TXT extraction"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5">
+                              {marsDailyTxtWidget.rows.slice(0, 6).map((row, idx) => (
+                                <div key={`${marsDailyTxtWidget.id}-${idx}`} className="rounded-md border border-black/60 dark:border-white/25 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <MetricChip label={row.confidence} variant="type" tone={row.confidence === "HIGH" ? "accent" : "muted"} />
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {`${formatNumber(row.price.nativeValueCurrent)} ${row.price.nativeUnit}`}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">
+                                    {`${row.commodity}${row.market ? ` • ${row.market}` : ""}`}
+                                    {row.price.normalizedValueCurrent != null ? ` • ${formatNumber(row.price.normalizedValueCurrent)} USD/t` : ""}
+                                  </p>
+                                </div>
+                              ))}
+                              {!marsDailyTxtWidget.rows.length ? (
+                                <p className="text-[11px] text-foreground/68">No confident rows parsed from TXT in current cycle.</p>
+                              ) : null}
+                            </div>
+                            <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
+                              <span>{`report ${marsDailyTxtWidget.report.reportId} • ${marsDailyTxtWidget.report.fileType.toUpperCase()}`}</span>
+                              <span>{`matched ${marsDailyTxtWidget.debug?.linesMatched ?? marsDailyTxtWidget.rows.length}/${marsDailyTxtWidget.debug?.linesFetched ?? 0} lines`}</span>
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={marsDailyTxtWidget.status}
+                              statusClassName={grainStatusClass(marsDailyTxtWidget.status)}
+                              sourceName={marsDailyTxtWidget.sourceName}
+                              sourceUrl={marsDailyTxtWidget.report.sourceUrl || marsDailyTxtWidget.sourceUrl}
+                              updatedLabel={marsDailyTxtWidget.updatedAt ? formatRelative(marsDailyTxtWidget.updatedAt) : marsDailyTxtWidget.timeframe}
+                              fallbackReason={marsDailyTxtWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("USDA_MARS_DAILY_MARKET_RATES_TXT") ? "US Daily Market Rates (TXT)" : "US Daily Market Rates (TXT) (not configured)"}
+                            subtitle="USDA AMS MARS TXT parsing"
                           />
                         </div>
                       )}
