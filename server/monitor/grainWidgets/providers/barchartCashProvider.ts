@@ -1,4 +1,5 @@
 import {
+  BARCHART_ALLOW_NO_KEY,
   BARCHART_API_KEY,
   BARCHART_CASH_SYMBOLS,
   BARCHART_CASH_URL,
@@ -43,18 +44,23 @@ export class BarchartCashProvider implements GrainWidgetsProvider {
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "US_CASH_BIDS" });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetUSCashBids> {
-    if (!BARCHART_API_KEY) throw new Error("barchart_api_key_missing");
+    const hasApiKeyInUrl = BARCHART_CASH_URL.toLowerCase().includes("apikey=");
+    if (!BARCHART_API_KEY && !hasApiKeyInUrl && !BARCHART_ALLOW_NO_KEY) throw new Error("barchart_api_key_missing");
     const params = new URLSearchParams({
-      apikey: BARCHART_API_KEY,
       symbols: BARCHART_CASH_SYMBOLS,
       fields: "symbol,name,lastPrice,close,netChange,percentChange,tradeTimestamp,serverTimestamp",
     });
+    if (BARCHART_API_KEY) params.set("apikey", BARCHART_API_KEY);
 
     const text = await fetchTextWithTimeout(`${BARCHART_CASH_URL}?${params.toString()}`, GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
-    const payload = JSON.parse(text) as { results?: BarchartQuote[] };
+    const payload = JSON.parse(text) as { results?: BarchartQuote[]; data?: BarchartQuote[] };
+    if ((payload as any)?.status?.code && Number((payload as any).status.code) >= 400) {
+      throw new Error(`barchart_http_${(payload as any).status.code}`);
+    }
+    const quotes = payload.results || payload.data || [];
 
     const rows: GrainWidgetTableRow[] = [];
-    for (const quote of payload.results || []) {
+    for (const quote of quotes) {
       const symbol = String(quote.symbol || "").toUpperCase();
       const conf = SYMBOL_MAP[symbol];
       if (!conf) continue;
@@ -95,7 +101,7 @@ export class BarchartCashProvider implements GrainWidgetsProvider {
       kind: "US_CASH_BIDS",
       title: "Cash (US)",
       subtitle: "USDA cash grains / regional bids",
-      status: available ? "INDICATIVE" : "OFFLINE",
+      status: available ? (available >= 3 ? "REFRESH" : "INDICATIVE") : "OFFLINE",
       sourceName: "Barchart",
       sourceAttribution: "Data: Barchart",
       sourceUrl: "https://www.barchart.com/ondemand/api/getQuote",
@@ -115,7 +121,11 @@ export class BarchartCashProvider implements GrainWidgetsProvider {
             }
           : undefined,
       },
-      notes: rows.length < 3 ? [`${rows.length}/3 instruments available`] : undefined,
+      notes: [
+        ...(rows.length < 3 ? [`${rows.length}/3 instruments available`] : []),
+        ...(!BARCHART_API_KEY && hasApiKeyInUrl ? ["API key loaded from URL configuration"] : []),
+        ...(!BARCHART_API_KEY && !hasApiKeyInUrl ? ["No API key configured; public/anonymous mode attempted"] : []),
+      ].filter(Boolean),
     };
   }
 

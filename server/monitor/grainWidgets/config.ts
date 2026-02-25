@@ -19,6 +19,7 @@ export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDI
 export const ENABLE_TRADINGECONOMICS_API = envBool("ENABLE_TRADINGECONOMICS_API", true);
 export const ENABLE_TRADINGECONOMICS_EMBED = envBool("ENABLE_TRADINGECONOMICS_EMBED", true);
 export const ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK = envBool("ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK", true);
+export const BARCHART_ALLOW_NO_KEY = envBool("BARCHART_ALLOW_NO_KEY", true);
 
 export const GRAIN_WIDGETS_REFRESH_MS = envNum("GRAIN_WIDGETS_REFRESH_MS", 15 * 60 * 1000);
 export const GRAIN_WIDGETS_CACHE_TTL_MS = envNum("GRAIN_WIDGETS_CACHE_TTL_MS", 20 * 60 * 1000);
@@ -48,6 +49,13 @@ export const APIFARMER_SOURCE_URL =
 export const TRADINGCHARTS_CBOT_URL =
   process.env.TRADINGCHARTS_CBOT_URL ||
   "https://futures.tradingcharts.com/marketquotes/CBOT.html";
+export const TRADINGCHARTS_CBOT_URLS = (
+  process.env.TRADINGCHARTS_CBOT_URLS ||
+  `${TRADINGCHARTS_CBOT_URL},https://www.tradingcharts.com/marketquotes/CBOT.html,https://www.tradingcharts.com/quotes/futures.html`
+)
+  .split(",")
+  .map((v) => v.trim())
+  .filter(Boolean);
 
 export const COMMODITIC_LIVESTOCK_API_URL = process.env.COMMODITIC_LIVESTOCK_API_URL || "";
 export const COMMODITIC_LIVESTOCK_SOURCE_URL =

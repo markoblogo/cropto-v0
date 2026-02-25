@@ -335,6 +335,9 @@ export interface GrainWidgetsProviderDebug {
   cacheAgeSec?: number;
   widgetsRequested?: GrainWidgetKind[];
   widgetsReturned?: GrainWidgetKind[];
+  rowsReturned?: number;
+  itemsReturned?: number;
+  cardsReturned?: number;
   fallbackUsed?: boolean;
   error?: string;
 }
@@ -363,6 +366,7 @@ export interface GrainWidgetsDebug {
     };
     errors?: string[];
   };
+  fallbackChain?: "real->cache->mock";
   unavailableWidgets?: GrainWidgetKind[];
 }
 

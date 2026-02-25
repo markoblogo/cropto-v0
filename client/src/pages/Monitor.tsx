@@ -20,6 +20,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { LiveVisualsPanel } from "@/components/monitor/LiveVisualsPanel";
+import {
+  formatChangeWithUnit,
+  formatFxRate,
+  formatIndexPoints,
+  formatMetricValue,
+  formatNumber,
+  formatPercent,
+  formatPriceWithUnit,
+} from "@/components/monitor/formatters";
 
 type MonitorItem = {
   id: string;
@@ -486,6 +495,7 @@ type GrainWidgetMacroAgriIndices = {
     valueChange?: number;
     valueChangePct?: number;
     unitLabel?: string;
+    series?: Array<{ ts: string; value: number }>;
     notes?: string[];
   }>;
   cards?: Array<{
@@ -495,6 +505,7 @@ type GrainWidgetMacroAgriIndices = {
     valueText?: string;
     deltaPct?: number;
     status?: GrainWidgetStatus;
+    series?: Array<{ ts: string; value: number }>;
   }>;
   embed?: {
     enabled: boolean;
@@ -722,6 +733,39 @@ function grainStatusClass(status: GrainWidgetStatus) {
   return "border-red-500/45 bg-red-500/18 text-red-900 dark:text-red-100";
 }
 
+function metricUnitChip(unit?: string, fallback = "unit"): string {
+  if (!unit) return fallback;
+  return unit;
+}
+
+function MiniSparkline({
+  series,
+  dataKey = "value",
+}: {
+  series: Array<{ ts?: string; label?: string; value: number }>;
+  dataKey?: "value";
+}) {
+  if (!series.length) {
+    return (
+      <div className="flex h-full items-center gap-1.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-foreground/35" />
+        <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
+        <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
+        <span className="text-[10px] text-foreground/55">No series</span>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={series}>
+        <XAxis dataKey="ts" hide />
+        <YAxis hide />
+        <Line type="monotone" dataKey={dataKey} stroke="#9AA33A" strokeWidth={2} dot={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
 function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMode) {
   if (mode === "NATIVE") {
     return {
@@ -746,7 +790,7 @@ function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMod
       currency: "USD",
       secondary:
         widget.nativeValueCurrent != null
-          ? `${widget.nativeValueCurrent.toFixed(2)} ${widget.nativeUnit || ""}`.trim()
+          ? `${widget.nativeValueCurrent.toFixed(2)} ${widget.nativeUnit || "native unit"}`.trim()
           : undefined,
     };
   }
@@ -764,14 +808,16 @@ function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMod
 function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstrumentWidget; priceDisplayMode: PriceDisplayMode }) {
   const display = formatPrimaryPrice(widget, priceDisplayMode);
   const positive = (display.change ?? 0) >= 0;
-  const unitLabel = display.unit
-    ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
-      ? display.unit
-      : `${display.currency || ""}/${display.unit}`
-    : display.currency || "";
+  const unitLabel = metricUnitChip(
+    display.unit
+      ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
+        ? display.unit
+        : `${display.currency || ""}/${display.unit}`
+      : display.currency || "",
+  );
   return (
-    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-      <CardContent className="space-y-2 pt-3">
+    <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+      <CardContent className="space-y-1.5 pt-2.5">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[10px] uppercase tracking-[0.14em] text-foreground/65">{widget.venue}</p>
@@ -782,29 +828,17 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
 
         <div className="flex items-end justify-between gap-2">
           <p className="text-2xl font-bold text-foreground">
-            {display.value == null ? "n/a" : display.value.toFixed(2)}
+            {formatNumber(display.value)}
             <span className="ml-1 text-[10px] font-medium text-foreground/65">{unitLabel}</span>
           </p>
           <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
-            {display.change == null ? "No delta" : `${positive ? "+" : ""}${display.change.toFixed(2)}${display.changePct != null ? ` (${positive ? "+" : ""}${display.changePct.toFixed(2)}%)` : ""}`}
+            {display.change == null ? "No delta" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
           </p>
         </div>
         {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
         <div className="h-12">
-          {widget.series.length ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={widget.series}>
-                <XAxis dataKey="ts" hide />
-                <YAxis hide />
-                <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-black/40 dark:border-white/30 bg-muted/55 text-[10px] text-foreground/70">
-              Unavailable
-            </div>
-          )}
+          <MiniSparkline series={widget.series} />
         </div>
 
         <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
@@ -840,7 +874,7 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
         <p className="text-xs font-semibold text-primary">{widget.relativeMoveSignal}</p>
         {widget.spreadAbs != null ? (
           <p className={`text-[11px] font-semibold ${spreadPositive ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
-            Spread: {spreadPositive ? "+" : ""}{widget.spreadAbs.toFixed(2)} {widget.spreadUnit || ""} {widget.spreadPct != null ? `(${spreadPositive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
+            Spread: {spreadPositive ? "+" : ""}{widget.spreadAbs.toFixed(2)} {widget.spreadUnit || "rel"} {widget.spreadPct != null ? `(${spreadPositive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
           </p>
         ) : null}
         <p className="text-[10px] text-foreground/65 line-clamp-2">{widget.note || (widget.comparisonType === "proxy" ? "Proxy cross-market comparison (not identical contracts)" : "Relative performance comparison.")}</p>
@@ -884,7 +918,7 @@ function formatWidgetRowPrice(row: GrainWidgetRow, mode: PriceDisplayMode) {
       currency: "USD",
       secondary:
         price.nativeValueCurrent != null
-          ? `${price.nativeValueCurrent.toFixed(2)} ${price.nativeUnit || ""}`.trim()
+          ? `${price.nativeValueCurrent.toFixed(2)} ${price.nativeUnit || "native unit"}`.trim()
           : undefined,
     };
   }
@@ -924,13 +958,12 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
       <CardContent className="space-y-2">
         <div className="flex items-end justify-between gap-2">
           <p className="text-2xl font-bold text-foreground">
-            {indicator.valueCurrent == null ? "n/a" : indicator.type === "logistics_pressure" ? Math.round(indicator.valueCurrent) : indicator.valueCurrent.toFixed(2)}
+            {indicator.valueCurrent == null ? "n/a" : indicator.type === "logistics_pressure" ? Math.round(indicator.valueCurrent) : formatNumber(indicator.valueCurrent)}
             <span className="ml-1 text-xs font-medium text-foreground/65">{indicator.unit}</span>
           </p>
           {indicator.valueChange != null ? (
             <p className={`text-xs font-semibold ${isPositive ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
-              {isPositive ? "+" : ""}{indicator.valueChange.toFixed(2)}
-              {indicator.valueChangePct != null ? ` (${isPositive ? "+" : ""}${indicator.valueChangePct.toFixed(2)}%)` : ""}
+              {formatChangeWithUnit({ change: indicator.valueChange, unit: indicator.unit, pct: indicator.valueChangePct })}
             </p>
           ) : (
             <p className="text-xs text-foreground/60">No delta</p>
@@ -938,20 +971,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
         </div>
 
         <div className="h-16">
-          {indicator.series.length ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={indicator.series}>
-                <XAxis dataKey="ts" hide />
-                <YAxis hide />
-                <Tooltip />
-                <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-black/40 dark:border-white/30 bg-muted/55 text-[11px] text-foreground/70">
-              Snapshot unavailable
-            </div>
-          )}
+          <MiniSparkline series={indicator.series} />
         </div>
 
         <div className="flex items-center justify-between gap-2 text-[10px] text-foreground/65">
@@ -1047,16 +1067,10 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
       <CardContent className="space-y-2">
         <div className="flex items-end justify-between gap-2">
           <p className="text-xl font-bold text-foreground">{widget.primary}</p>
-          <p className="text-xs text-foreground/78">{widget.secondary}</p>
+          <p className="text-xs text-foreground/78">{widget.secondary} (metric)</p>
         </div>
         <div className="h-10">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={widget.series}>
-              <XAxis dataKey="label" hide />
-              <YAxis hide />
-              <Line type="monotone" dataKey="value" stroke="#9AA33A" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+          <MiniSparkline series={widget.series} />
         </div>
         <p className="text-[10px] text-foreground/68">{widget.note}</p>
       </CardContent>
@@ -1067,14 +1081,16 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
 function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDisplayMode: PriceDisplayMode }) {
   const display = formatWidgetRowPrice(row, priceDisplayMode);
   const positive = (display.change ?? 0) >= 0;
-  const unitLabel = display.unit
-    ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
-      ? display.unit
-      : `${display.currency || ""}/${display.unit}`
-    : display.currency || "";
+  const unitLabel = metricUnitChip(
+    display.unit
+      ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
+        ? display.unit
+        : `${display.currency || ""}/${display.unit}`
+      : display.currency || "",
+  );
 
   return (
-    <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-2">
+    <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-2 h-full">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-semibold text-foreground">{row.label}</p>
@@ -1084,12 +1100,15 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
       </div>
       <div className="mt-1 flex items-end justify-between gap-2">
         <p className="text-sm font-semibold text-foreground">
-          {display.value == null ? "n/a" : display.value.toFixed(2)}
+          {formatNumber(display.value)}
           <span className="ml-1 text-[10px] text-foreground/65">{unitLabel}</span>
         </p>
         <p className={`text-[10px] font-semibold ${positive ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
-          {display.change == null ? "n/a" : `${positive ? "+" : ""}${display.change.toFixed(2)}${display.changePct != null ? ` (${positive ? "+" : ""}${display.changePct.toFixed(2)}%)` : ""}`}
+          {display.change == null ? "n/a" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
         </p>
+      </div>
+      <div className="mt-1 h-8">
+        <MiniSparkline series={row.price?.series || []} />
       </div>
       {display.secondary ? <p className="mt-1 text-[10px] text-foreground/68">{display.secondary}</p> : null}
     </div>
@@ -1466,7 +1485,7 @@ export default function MonitorPage() {
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
       <main>
       <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-6">
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
               <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
@@ -1534,13 +1553,13 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3 xl:grid-cols-12">
-                <div className="xl:col-span-8 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-2.5 xl:grid-cols-12">
+                <div className="xl:col-span-8 grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
                   {[...(grainMarketsQuery.data?.widgets.cbot || []), ...(grainMarketsQuery.data?.widgets.euronext || [])].map((widget) => (
                     <GrainInstrumentCard key={widget.instrumentKey} widget={widget} priceDisplayMode={priceDisplayMode} />
                   ))}
                 </div>
-                <div className="xl:col-span-4 grid gap-3">
+                <div className="xl:col-span-4 grid gap-2.5">
                   {(grainMarketsQuery.data?.widgets.comparisons || []).map((widget) => (
                     <GrainComparisonCard key={widget.id} widget={widget} />
                   ))}
@@ -1579,7 +1598,7 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3 xl:grid-cols-12">
+              <div className="grid gap-2.5 xl:grid-cols-12">
                 {(() => {
                   const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
                   const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
@@ -1591,7 +1610,7 @@ export default function MonitorPage() {
                   return (
                     <>
                       {cashWidget ? (
-                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                        <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{cashWidget.title}</CardTitle>
@@ -1618,7 +1637,7 @@ export default function MonitorPage() {
                       )}
 
                       {spotWidget ? (
-                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                        <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{spotWidget.title}</CardTitle>
@@ -1645,7 +1664,7 @@ export default function MonitorPage() {
                       )}
 
                       {indexWidget ? (
-                        <Card className="xl:col-span-4 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                        <Card className="xl:col-span-4 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{indexWidget.title}</CardTitle>
@@ -1656,13 +1675,18 @@ export default function MonitorPage() {
                             {indexWidget.cards.map((card) => (
                               <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
                                 <p className="text-[11px] text-foreground/72">{card.label}</p>
-                                <p className="text-lg font-semibold text-foreground">{card.value == null ? card.valueText || "n/a" : card.value.toFixed(2)}</p>
+                                <p className="text-lg font-semibold text-foreground">
+                                  {card.value == null ? card.valueText || "n/a" : formatIndexPoints(card.value)}
+                                </p>
                                 <p className="text-[10px] text-foreground/65">{card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}</p>
+                                <div className="mt-1 h-7">
+                                  <MiniSparkline series={card.series || []} />
+                                </div>
                               </div>
                             ))}
                             {indexWidget.weatherTieIn ? (
                               <p className="text-[10px] text-foreground/68">
-                                {indexWidget.weatherTieIn.available ? `Weather-linked signal: ${indexWidget.weatherTieIn.score ?? "n/a"}` : "Weather tie-in: unavailable"}
+                                {indexWidget.weatherTieIn.available ? `Weather-linked signal: ${formatMetricValue({ kind: "score", value: indexWidget.weatherTieIn.score })}` : "Weather tie-in: unavailable"}
                               </p>
                             ) : null}
                             {!indexWidget.cards.length ? (
@@ -1680,7 +1704,7 @@ export default function MonitorPage() {
                       )}
 
                       {futuresWidget ? (
-                        <Card className="xl:col-span-8 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                        <Card className="xl:col-span-8 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{futuresWidget.title}</CardTitle>
@@ -1707,7 +1731,7 @@ export default function MonitorPage() {
                       )}
 
                       {livestockWidget ? (
-                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                        <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{livestockWidget.title}</CardTitle>
@@ -1739,7 +1763,7 @@ export default function MonitorPage() {
                       )}
 
                       {macroWidget ? (
-                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                        <Card className="xl:col-span-6 h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{macroWidget.title}</CardTitle>
@@ -1767,6 +1791,18 @@ export default function MonitorPage() {
                               </div>
                             ) : null}
 
+                            {macroWidget.renderMode === "embed" && macroWidget.embed?.status === "AVAILABLE" && macroWidget.embed?.embedUrl ? (
+                              <div className="overflow-hidden rounded-md border border-black/70 dark:border-white/30 bg-muted/40">
+                                <iframe
+                                  src={macroWidget.embed.embedUrl}
+                                  title={macroWidget.embed.title || "Macro Agri Embed"}
+                                  className="h-[280px] w-full"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ) : null}
+
                             {!!macroWidget.items?.length && (
                               <div className="grid gap-2 sm:grid-cols-2">
                                 {macroWidget.items.map((item) => (
@@ -1786,17 +1822,33 @@ export default function MonitorPage() {
                                         return (
                                           <>
                                             <p className="mt-1 text-lg font-semibold text-foreground">
-                                              {display.value == null ? "n/a" : display.value.toFixed(2)}
+                                              {formatNumber(display.value)}
                                               <span className="ml-1 text-[10px] font-medium text-foreground/65">{unitLabel}</span>
                                             </p>
-                                            <p className="text-[10px] text-foreground/68">{display.secondary}</p>
+                                            <p className="text-[10px] text-foreground/68">
+                                              {display.change == null ? "No delta" : formatChangeWithUnit({ change: display.change, unit: unitLabel, pct: display.changePct })}
+                                            </p>
+                                            <div className="mt-1 h-8">
+                                              <MiniSparkline series={item.series || []} />
+                                            </div>
+                                            {display.secondary ? <p className="text-[10px] text-foreground/68">{display.secondary}</p> : null}
                                           </>
                                         );
                                       })()
                                     ) : (
                                       <>
-                                        <p className="mt-1 text-lg font-semibold text-foreground">{item.valueCurrent == null ? "n/a" : item.valueCurrent.toFixed(2)}</p>
-                                        <p className="text-[10px] text-foreground/68">{item.unitLabel || "index points"}</p>
+                                        <p className="mt-1 text-lg font-semibold text-foreground">
+                                          {item.valueCurrent == null ? "n/a" : item.unitLabel?.toLowerCase().includes("score")
+                                            ? formatMetricValue({ kind: "score", value: item.valueCurrent })
+                                            : formatIndexPoints(item.valueCurrent)}
+                                          {item.valueCurrent != null ? <span className="ml-1 text-[10px] font-medium text-foreground/65">{item.unitLabel || "pts"}</span> : null}
+                                        </p>
+                                        <p className="text-[10px] text-foreground/68">
+                                          {(item.valueChangePct != null ? formatPercent(item.valueChangePct) : "No delta")} • {item.metricSemanticKind}
+                                        </p>
+                                        <div className="mt-1 h-8">
+                                          <MiniSparkline series={item.series || []} />
+                                        </div>
                                       </>
                                     )}
                                   </div>
@@ -1809,7 +1861,12 @@ export default function MonitorPage() {
                                 {macroWidget.cards.map((card) => (
                                   <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
                                     <p className="text-[11px] text-foreground/72">{card.label}</p>
-                                    <p className="text-base font-semibold text-foreground">{card.value == null ? card.valueText || "n/a" : card.value.toFixed(2)}</p>
+                                    <p className="text-base font-semibold text-foreground">
+                                      {card.value == null ? card.valueText || "n/a" : formatIndexPoints(card.value)}
+                                    </p>
+                                    <div className="mt-1 h-7">
+                                      <MiniSparkline series={card.series || []} />
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -1844,15 +1901,24 @@ export default function MonitorPage() {
                 <div className="grid grid-cols-3 gap-1.5 rounded-md border border-black/70 dark:border-white/30 bg-muted/60 dark:bg-slate-950/55 p-1.5 text-[10px]">
                   <div>
                     <p className="text-foreground/65 dark:text-slate-400">Activity</p>
-                    <p className="font-semibold text-foreground dark:text-white">{blackSeaSignals.filter((item) => inLastHours(item, 24)).length}</p>
+                    <p className="font-semibold text-foreground dark:text-white">
+                      {blackSeaSignals.filter((item) => inLastHours(item, 24)).length}
+                      <span className="ml-1 text-[9px] font-medium text-foreground/65">signals</span>
+                    </p>
                   </div>
                   <div>
                     <p className="text-foreground/65 dark:text-slate-400">High impact</p>
-                    <p className="font-semibold text-red-300">{blackSeaSignals.filter((item) => inLastHours(item, 24) && classifyImpact(item) === "High").length}</p>
+                    <p className="font-semibold text-red-300">
+                      {blackSeaSignals.filter((item) => inLastHours(item, 24) && classifyImpact(item) === "High").length}
+                      <span className="ml-1 text-[9px] font-medium text-foreground/65">signals</span>
+                    </p>
                   </div>
                   <div>
                     <p className="text-foreground/65 dark:text-slate-400">7d total</p>
-                    <p className="font-semibold text-amber-300">{blackSeaSignals.filter((item) => inLastHours(item, 24 * 7)).length}</p>
+                    <p className="font-semibold text-amber-300">
+                      {blackSeaSignals.filter((item) => inLastHours(item, 24 * 7)).length}
+                      <span className="ml-1 text-[9px] font-medium text-foreground/65">signals</span>
+                    </p>
                   </div>
                 </div>
                 {blackSeaRisks.map((item) => (
@@ -1910,8 +1976,16 @@ export default function MonitorPage() {
                         <Badge className={`text-[10px] ${indicatorStatusClass(indicator.status)}`}>{indicatorStatusLabel(indicator.status)}</Badge>
                       </div>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-lg font-bold text-foreground dark:text-white">{indicator.valueCurrent == null ? "n/a" : indicator.valueCurrent.toFixed(2)}</p>
-                        <p className="text-[10px] text-foreground/68 dark:text-slate-400">{indicator.valueChange != null ? `${indicator.valueChange >= 0 ? "+" : ""}${indicator.valueChange.toFixed(2)}` : "no delta"}</p>
+                        <p className="text-lg font-bold text-foreground dark:text-white">
+                          {indicator.valueCurrent == null ? "n/a" : formatNumber(indicator.valueCurrent)}
+                          <span className="ml-1 text-[10px] font-medium text-foreground/65">{metricUnitChip(indicator.unit)}</span>
+                        </p>
+                        <p className="text-[10px] text-foreground/68 dark:text-slate-400">
+                          {indicator.valueChange != null ? formatChangeWithUnit({ change: indicator.valueChange, unit: indicator.unit }) : "no delta"}
+                        </p>
+                      </div>
+                      <div className="mt-1 h-8">
+                        <MiniSparkline series={indicator.series} />
                       </div>
                       <p className="mt-1 text-[10px] text-foreground/65 dark:text-slate-500 line-clamp-2">{indicator.sourceName}</p>
                     </CardContent>
@@ -1944,8 +2018,11 @@ export default function MonitorPage() {
                         <ArrowRight className="h-3.5 w-3.5 text-foreground/65 dark:text-slate-400" />
                       )}
                     </div>
-                    <p className="mt-1 text-lg font-semibold text-foreground dark:text-white">{entry.now24h}</p>
-                    <p className="text-[10px] text-foreground/65 dark:text-slate-400">24h • total {entry.total}</p>
+                    <p className="mt-1 text-lg font-semibold text-foreground dark:text-white">
+                      {entry.now24h}
+                      <span className="ml-1 text-[10px] font-medium text-foreground/65">signals</span>
+                    </p>
+                    <p className="text-[10px] text-foreground/65 dark:text-slate-400">24h signals • total {entry.total} signals</p>
                   </div>
                 ))}
               </CardContent>
@@ -1966,9 +2043,11 @@ export default function MonitorPage() {
                     <div key={item.slug} className="rounded-lg border border-black/70 dark:border-primary/25 bg-muted/55 dark:bg-slate-900/82 p-2">
                       <p className="text-[11px] font-semibold text-foreground dark:text-slate-100 line-clamp-1">{item.name}</p>
                       <div className="mt-1 flex items-end justify-between">
-                        <p className="text-lg font-bold text-foreground dark:text-white">${item.value.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-foreground dark:text-white">
+                          {formatPriceWithUnit(item.value, (item as any).unit || "USD/t")}
+                        </p>
                         <p className={`text-[10px] font-semibold ${item.change != null && item.change >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
-                          {item.change != null ? `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}` : "n/a"}
+                          {item.change != null ? formatChangeWithUnit({ change: item.change, unit: (item as any).unit || "USD/t" }) : "n/a"}
                         </p>
                       </div>
                     </div>
@@ -1988,8 +2067,11 @@ export default function MonitorPage() {
                   <div className="grid grid-cols-1 gap-1.5">
                     {fxQuery.data.rates.slice(0, 4).map((rate) => (
                       <div key={rate.currency} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 dark:bg-slate-900/75 p-1.5">
-                        <p className="text-[10px] text-foreground/65 dark:text-slate-400">{rate.currency}</p>
-                        <p className="text-sm font-semibold text-foreground dark:text-white">{rate.usdPerUnit.toFixed(4)}</p>
+                        <p className="text-[10px] text-foreground/65 dark:text-slate-400">{rate.currency}/USD</p>
+                        <p className="text-sm font-semibold text-foreground dark:text-white">
+                          {formatFxRate(rate.currency, "USD", rate.usdPerUnit)}
+                          <span className="ml-1 text-[10px] font-medium text-foreground/65">rate</span>
+                        </p>
                       </div>
                     ))}
                   </div>

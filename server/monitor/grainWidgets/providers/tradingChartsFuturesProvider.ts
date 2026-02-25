@@ -2,6 +2,7 @@ import {
   ENABLE_TRADINGCHARTS_FUTURES_WIDGETS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   TRADINGCHARTS_CBOT_URL,
+  TRADINGCHARTS_CBOT_URLS,
 } from "../config";
 import type { GrainWidgetCbotFuturesSnapshot, GrainWidgetTableRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
@@ -48,8 +49,21 @@ export class TradingChartsFuturesProvider implements GrainWidgetsProvider {
   enabled = ENABLE_TRADINGCHARTS_FUTURES_WIDGETS;
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "CBOT_FUTURES_SNAPSHOT" });
 
+  private async fetchFirstAvailableHtml(): Promise<{ html: string; sourceUrl: string }> {
+    let lastError = "unreachable";
+    for (const url of TRADINGCHARTS_CBOT_URLS) {
+      try {
+        const html = await fetchTextWithTimeout(url, GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+        return { html, sourceUrl: url };
+      } catch (error: any) {
+        lastError = error?.message || "fetch_failed";
+      }
+    }
+    throw new Error(`tradingcharts_all_urls_failed:${lastError}`);
+  }
+
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetCbotFuturesSnapshot> {
-    const html = await fetchTextWithTimeout(TRADINGCHARTS_CBOT_URL, GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+    const { html, sourceUrl } = await this.fetchFirstAvailableHtml();
     const rows: GrainWidgetTableRow[] = MATCHERS.map((matcher) => {
       const parsed = parseInstrumentBlock(html, matcher.aliases);
       return normalizeRowPrice({
@@ -84,10 +98,10 @@ export class TradingChartsFuturesProvider implements GrainWidgetsProvider {
       kind: "CBOT_FUTURES_SNAPSHOT",
       title: "Futures (CBOT)",
       subtitle: "Intraday snapshot",
-      status: parsedCount ? "INDICATIVE" : "OFFLINE",
+      status: parsedCount ? (parsedCount === MATCHERS.length ? "REFRESH" : "INDICATIVE") : "OFFLINE",
       sourceName: "TradingCharts",
       sourceAttribution: "Data: TradingCharts (public)",
-      sourceUrl: TRADINGCHARTS_CBOT_URL,
+      sourceUrl,
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       rows,
@@ -96,7 +110,10 @@ export class TradingChartsFuturesProvider implements GrainWidgetsProvider {
         parseMode: "snapshot",
       },
       fallbackReason: parsedCount ? "public_parse" : "parse_failed",
-      notes: parsedCount < MATCHERS.length ? [`${parsedCount}/${MATCHERS.length} contracts parsed`] : undefined,
+      notes: [
+        ...(parsedCount < MATCHERS.length ? [`${parsedCount}/${MATCHERS.length} contracts parsed`] : []),
+        ...(sourceUrl !== TRADINGCHARTS_CBOT_URL ? [`Fallback source URL used: ${sourceUrl}`] : []),
+      ],
     };
   }
 

@@ -10,8 +10,10 @@ import {
 import { ApiFarmerProvider } from "./providers/apiFarmerProvider";
 import { BarchartCashProvider } from "./providers/barchartCashProvider";
 import { CommoditicProvider } from "./providers/commoditicProvider";
+import { CommoditicLivestockProvider } from "./providers/commoditicLivestockProvider";
 import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
+import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
   GrainWidget,
@@ -62,6 +64,22 @@ function collectRows(widget: GrainWidget) {
   return [];
 }
 
+function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number; cards: number } {
+  if (widget.kind === "US_CASH_BIDS" || widget.kind === "GLOBAL_SPOT_TABLE" || widget.kind === "CBOT_FUTURES_SNAPSHOT") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
+  if (widget.kind === "CROP_PRICE_INDEX") {
+    return { rows: widget.rows?.length || 0, items: 0, cards: widget.cards.length };
+  }
+  if (widget.kind === "LIVESTOCK_FEED_TIEIN") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
+  if (widget.kind === "MACRO_AGRI_INDICES") {
+    return { rows: 0, items: widget.items?.length || 0, cards: widget.cards?.length || 0 };
+  }
+  return { rows: 0, items: 0, cards: 0 };
+}
+
 function collectPriceLikeMetrics(widgets: GrainWidget[]) {
   const rowMetrics = widgets.flatMap((widget) => collectRows(widget)).filter((row) => row.price);
   const macroPriceMetrics = widgets
@@ -82,6 +100,8 @@ export class GrainWidgetsService {
     new TradingChartsFuturesProvider(),
     new CommoditicProvider(),
     new ApiFarmerProvider(),
+    new CommoditicLivestockProvider(),
+    new TradingEconomicsAgriProvider(),
   ];
 
   private readonly mockProviders: Record<GrainWidgetKind, GrainWidgetsProvider> = {
@@ -185,6 +205,7 @@ export class GrainWidgetsService {
     const debug: GrainWidgetsDebug = {
       providers: this.providers.map((provider) => {
         const cached = this.cache.get(provider.kind);
+        const counts = cached ? widgetMetricCounts(cached.data) : { rows: 0, items: 0, cards: 0 };
         return {
           providerId: provider.id,
           providerType: provider.id,
@@ -195,6 +216,9 @@ export class GrainWidgetsService {
           cacheAgeSec: cached ? Math.floor((now - cached.fetchedAt) / 1000) : undefined,
           widgetsRequested: [provider.kind],
           widgetsReturned: cached ? [cached.data.kind] : [],
+          rowsReturned: counts.rows || undefined,
+          itemsReturned: counts.items || undefined,
+          cardsReturned: counts.cards || undefined,
           fallbackUsed: cached ? ["DELAYED", "FALLBACK", "OFFLINE"].includes(cached.data.status) : undefined,
           error: cached?.lastError,
         } satisfies GrainWidgetsProviderDebug;
@@ -210,6 +234,7 @@ export class GrainWidgetsService {
           unavailableCount: macroEmbed.filter((status) => status === "UNAVAILABLE").length,
         },
       },
+      fallbackChain: "real->cache->mock",
       unavailableWidgets: enabledKinds.filter((kind) => !order.includes(kind)),
     };
 
@@ -248,6 +273,7 @@ export class GrainWidgetsService {
       cacheTtlMs: GRAIN_WIDGETS_CACHE_TTL_MS,
       providers: this.providers.map((provider) => {
         const cached = this.cache.get(provider.kind);
+        const counts = cached ? widgetMetricCounts(cached.data) : { rows: 0, items: 0, cards: 0 };
         return {
           providerId: provider.id,
           providerType: provider.id,
@@ -259,6 +285,9 @@ export class GrainWidgetsService {
           cacheAgeSec: cached ? Math.floor((now - cached.fetchedAt) / 1000) : undefined,
           widgetsRequested: [provider.kind],
           widgetsReturned: cached ? [cached.data.kind] : [],
+          rowsReturned: counts.rows || undefined,
+          itemsReturned: counts.items || undefined,
+          cardsReturned: counts.cards || undefined,
           fallbackUsed: cached ? ["DELAYED", "FALLBACK", "OFFLINE"].includes(cached.data.status) : undefined,
           error: cached?.lastError,
         };
