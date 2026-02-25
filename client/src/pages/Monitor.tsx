@@ -1089,8 +1089,9 @@ function GrainInstrumentCard({ widget, priceDisplayMode, debugEnabled = false }:
         : `${display.currency || ""}/${display.unit}`
       : display.currency || "",
   );
+  const showTrend = !(trendDecision.mode === "neutral" && display.change == null && display.changePct == null);
   return (
-    <Card className="h-full border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+    <Card className="h-full min-h-[168px] border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardContent className={`${getCardSizeClass(cardVariant)} pt-2 pb-2`}>
         <div className="flex items-start justify-between gap-2">
           <div>
@@ -1119,22 +1120,24 @@ function GrainInstrumentCard({ widget, priceDisplayMode, debugEnabled = false }:
         />
         {display.secondary ? <p className="text-[10px] text-foreground/65">{display.secondary}</p> : null}
 
-        <DynamicMiniTrend
-          series={widget.series}
-          change={display.change}
-          changePct={display.changePct}
-          status={widget.status}
-          section="core"
-          cardKind="instrument"
-          trustedSeries={isTrustworthySeriesSource({
-            status: widget.status,
-            sourceName: widget.sourceName,
-            fallbackReason: widget.fallbackReason,
-          })}
-          sourceName={widget.sourceName}
-          debugEnabled={debugEnabled}
-          forcedMode={trendDecision.mode}
-        />
+        {showTrend ? (
+          <DynamicMiniTrend
+            series={widget.series}
+            change={display.change}
+            changePct={display.changePct}
+            status={widget.status}
+            section="core"
+            cardKind="instrument"
+            trustedSeries={isTrustworthySeriesSource({
+              status: widget.status,
+              sourceName: widget.sourceName,
+              fallbackReason: widget.fallbackReason,
+            })}
+            sourceName={widget.sourceName}
+            debugEnabled={debugEnabled}
+            forcedMode={trendDecision.mode}
+          />
+        ) : null}
 
         <StatusSourceStrip
           compact
@@ -1164,7 +1167,7 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
       ? widget.leftChangePct - widget.rightChangePct
       : undefined;
   return (
-    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+    <Card className="h-full min-h-[164px] border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
       <CardContent className={`${getCardSizeClass(variant)} pt-2.5 pb-2`}>
         <div className="flex items-start justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">{widget.title}</p>
@@ -1488,9 +1491,10 @@ function GrainDataRow({ row, priceDisplayMode, debugEnabled = false }: { row: Gr
         : `${display.currency || ""}/${display.unit}`
       : display.currency || "",
   );
+  const showTrend = !(trendDecision.mode === "neutral" && display.change == null && display.changePct == null);
 
   return (
-    <div className={`rounded-sm border border-black/55 dark:border-white/20 bg-background/45 dark:bg-slate-900/55 p-1.5 h-full ${getCardSizeClass(rowVariant)}`}>
+    <div className={`rounded-sm border border-black/55 dark:border-white/20 bg-background/45 dark:bg-slate-900/55 p-1.5 h-auto ${getCardSizeClass(rowVariant)}`}>
       <div className="flex items-start justify-between gap-1.5">
         <div>
           <p className="text-[11px] font-semibold text-foreground">{row.label}</p>
@@ -1516,22 +1520,24 @@ function GrainDataRow({ row, priceDisplayMode, debugEnabled = false }: { row: Gr
         value={trendIntensity(display.change, display.changePct)}
         direction={trendDirection(display.change, display.changePct)}
       />
-      <DynamicMiniTrend
-        series={row.price?.series || []}
-        change={display.change}
-        changePct={display.changePct}
-        status={row.status}
-        section="expansion"
-        cardKind="row"
-        trustedSeries={isTrustworthySeriesSource({
-          status: row.status,
-          sourceName: row.sourceName,
-          fallbackReason: row.notes?.find((note) => note.toLowerCase().includes("coverage")),
-        })}
-        sourceName={row.sourceName}
-        debugEnabled={debugEnabled}
-        forcedMode={trendDecision.mode}
-      />
+      {showTrend ? (
+        <DynamicMiniTrend
+          series={row.price?.series || []}
+          change={display.change}
+          changePct={display.changePct}
+          status={row.status}
+          section="expansion"
+          cardKind="row"
+          trustedSeries={isTrustworthySeriesSource({
+            status: row.status,
+            sourceName: row.sourceName,
+            fallbackReason: row.notes?.find((note) => note.toLowerCase().includes("coverage")),
+          })}
+          sourceName={row.sourceName}
+          debugEnabled={debugEnabled}
+          forcedMode={trendDecision.mode}
+        />
+      ) : null}
       {display.secondary ? <p className="mt-0.5 text-[10px] text-foreground/68">{display.secondary}</p> : null}
       <div className="mt-0.5">
         <StatusSourceStrip
@@ -1565,8 +1571,8 @@ function GrainExpansionFallbackCard({
     hasTrend: false,
   });
   return (
-    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
-      <CardHeader className="pb-1">
+    <Card className="h-auto self-start border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+      <CardHeader className="pb-0.5">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">{title}</CardTitle>
           <div className="flex items-center gap-1">
@@ -1576,8 +1582,8 @@ function GrainExpansionFallbackCard({
         </div>
         <CardDescription className="text-foreground/70">{subtitle}</CardDescription>
       </CardHeader>
-      <CardContent className={`${getCardSizeClass(variant)} pt-1.5 text-sm text-foreground/72`}>
-        <p>{reason || "Data temporarily unavailable. Source fallback is active."}</p>
+      <CardContent className={`${getCardSizeClass(variant)} pt-1 text-xs text-foreground/72`}>
+        <p className="line-clamp-2">{reason || "Data temporarily unavailable. Source fallback is active."}</p>
         <StatusSourceStrip
           compact
           status={status}
@@ -2007,13 +2013,13 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid auto-rows-fr gap-2 xl:grid-cols-12">
-                <div className="xl:col-span-8 grid auto-rows-fr gap-2 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-2 xl:grid-cols-12">
+                <div className="xl:col-span-8 grid auto-rows-[minmax(0,1fr)] gap-2 md:grid-cols-2 xl:grid-cols-3">
                   {[...(grainMarketsQuery.data?.widgets.cbot || []), ...(grainMarketsQuery.data?.widgets.euronext || [])].map((widget) => (
                     <GrainInstrumentCard key={widget.instrumentKey} widget={widget} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                   ))}
                 </div>
-                <div className="xl:col-span-4 grid auto-rows-fr gap-2">
+                <div className="xl:col-span-4 grid auto-rows-[minmax(0,1fr)] gap-2">
                   {(grainMarketsQuery.data?.widgets.comparisons || []).map((widget) => (
                     <GrainComparisonCard key={widget.id} widget={widget} />
                   ))}
@@ -2052,7 +2058,7 @@ export default function MonitorPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid auto-rows-fr gap-1.5 xl:grid-cols-12">
+              <div className="grid auto-rows-[minmax(0,1fr)] items-start gap-1.5 xl:grid-cols-12">
                 {(() => {
                   const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
                   const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
@@ -2265,7 +2271,7 @@ export default function MonitorPage() {
                       )}
 
                       {livestockWidget ? (
-                        <Card className="xl:col-span-6 h-full border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
                           <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{livestockWidget.title}</CardTitle>
@@ -2325,7 +2331,7 @@ export default function MonitorPage() {
                       )}
 
                       {macroWidget ? (
-                        <Card className="xl:col-span-6 h-full border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
                           <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-base">{macroWidget.title}</CardTitle>
@@ -2519,7 +2525,7 @@ export default function MonitorPage() {
                       )}
 
                       {marsWidget ? (
-                        <Card className={`${usContextWidget ? "xl:col-span-6" : "xl:col-span-12"} h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm`}>
+                        <Card className={`${usContextWidget ? "xl:col-span-6" : "xl:col-span-12"} h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm`}>
                           <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-sm">{marsWidget.title}</CardTitle>
@@ -2596,7 +2602,7 @@ export default function MonitorPage() {
                       )}
 
                       {usContextWidget ? (
-                        <Card className="xl:col-span-6 h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
                           <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-sm">{usContextWidget.title}</CardTitle>
@@ -2677,7 +2683,7 @@ export default function MonitorPage() {
                       )}
 
                       {marsDailyTxtWidget ? (
-                        <Card className="xl:col-span-6 h-full border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
                           <CardHeader className="pb-1">
                             <div className="flex items-center justify-between gap-2">
                               <CardTitle className="text-sm">{marsDailyTxtWidget.title}</CardTitle>
@@ -2736,7 +2742,7 @@ export default function MonitorPage() {
             )}
           </div>
 
-          <div id="top-signals" className="scroll-mt-24 grid gap-2.5 xl:grid-cols-12">
+          <div id="top-signals" className="scroll-mt-24 grid items-start gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-5 border-black/65 dark:border-white/35 bg-gradient-to-br from-red-100/55 via-card to-muted/25 dark:from-red-900/18 dark:via-card dark:to-muted/25 text-foreground dark:text-slate-100 shadow-sm transition-all duration-300 hover:border-red-400/45 hover:shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center gap-2">
@@ -2778,14 +2784,14 @@ export default function MonitorPage() {
               </CardContent>
             </Card>
 
-            <div className="xl:col-span-7 grid gap-2.5 sm:grid-cols-2">
+            <div className="xl:col-span-7 grid auto-rows-min items-start gap-2.5 sm:grid-cols-2">
               {compactWidgets.map((widget) => (
                 <CompactWidgetCard key={widget.id} widget={widget} />
               ))}
             </div>
           </div>
 
-          <div className="grid gap-2.5 xl:grid-cols-12">
+          <div className="grid items-start gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-6 border-black/65 dark:border-white/35 bg-gradient-to-b from-card to-muted/25 text-foreground dark:text-slate-100 shadow-sm transition-all duration-300 hover:border-primary/35 hover:shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center gap-2">
