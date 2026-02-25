@@ -9,8 +9,10 @@ import {
 } from "./config";
 import { ApiFarmerProvider } from "./providers/apiFarmerProvider";
 import { BarchartCashProvider } from "./providers/barchartCashProvider";
-import { CommoditicProvider } from "./providers/commoditicProvider";
 import { CommoditicLivestockProvider } from "./providers/commoditicLivestockProvider";
+import { CommoditicProvider } from "./providers/commoditicProvider";
+import { DbNomicsSpotProvider } from "./providers/dbNomicsSpotProvider";
+import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
@@ -25,10 +27,25 @@ import type {
 } from "./types";
 
 type CacheEntry = {
+  providerId: string;
   fetchedAt: number;
   lastSuccessAt?: string;
   lastError?: string;
+  chainTried?: string[];
   data: GrainWidget;
+};
+
+type ProviderRuntime = {
+  status: GrainWidgetsProviderDebug["status"];
+  lastAttemptAt?: string;
+  lastSuccessAt?: string;
+  error?: string;
+  mappedCount?: number;
+  expectedCount?: number;
+  sourceUrlUsed?: string;
+  widgetsReturned?: GrainWidgetKind[];
+  fallbackUsed?: boolean;
+  cacheHit?: boolean;
 };
 
 const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
@@ -39,6 +56,15 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   LIVESTOCK_FEED_TIEIN: 2,
   MACRO_AGRI_INDICES: 2,
 };
+
+const WIDGET_ORDER: GrainWidgetKind[] = [
+  "US_CASH_BIDS",
+  "GLOBAL_SPOT_TABLE",
+  "CROP_PRICE_INDEX",
+  "CBOT_FUTURES_SNAPSHOT",
+  "LIVESTOCK_FEED_TIEIN",
+  "MACRO_AGRI_INDICES",
+];
 
 function statusRank(status: GrainWidget["status"]): number {
   if (status === "LIVE") return 6;
@@ -105,12 +131,11 @@ function mappedCountForWidget(widget: GrainWidget): number {
   return 0;
 }
 
-function providerState(provider: GrainWidgetsProvider, cached?: CacheEntry): GrainWidgetsProviderDebug["status"] {
-  if (!provider.enabled) return "disabled";
-  if (!cached) return "error";
-  if (cached.data.status === "OFFLINE") return "error";
-  if (cached.data.status === "FALLBACK" || cached.data.status === "DELAYED" || cached.lastError) return "partial";
-  return "ok";
+function widgetHasUsableData(widget: GrainWidget): boolean {
+  if (widget.status === "OFFLINE") return false;
+  const counts = widgetMetricCounts(widget);
+  const mapped = mappedCountForWidget(widget);
+  return mapped > 0 || counts.rows > 0 || counts.items > 0 || counts.cards > 0;
 }
 
 function collectPriceLikeMetrics(widgets: GrainWidget[]) {
@@ -127,15 +152,29 @@ function collectPriceLikeMetrics(widgets: GrainWidget[]) {
   return allPriceMetrics;
 }
 
+function runtimeStatusFromWidget(widget: GrainWidget): GrainWidgetsProviderDebug["status"] {
+  if (widget.status === "OFFLINE") return "error";
+  if (widget.status === "FALLBACK" || widget.status === "DELAYED" || widget.status === "INDICATIVE") return "partial";
+  return "ok";
+}
+
 export class GrainWidgetsService {
-  private readonly providers: GrainWidgetsProvider[] = [
-    new BarchartCashProvider(),
-    new TradingChartsFuturesProvider(),
-    new CommoditicProvider(),
-    new ApiFarmerProvider(),
-    new CommoditicLivestockProvider(),
-    new TradingEconomicsAgriProvider(),
-  ];
+  private readonly providerChains: Record<GrainWidgetKind, GrainWidgetsProvider[]> = {
+    US_CASH_BIDS: [new BarchartCashProvider()],
+    GLOBAL_SPOT_TABLE: [new DbNomicsSpotProvider(), new CommoditicProvider()],
+    CROP_PRICE_INDEX: [new FaoFfpiProvider(), new ApiFarmerProvider()],
+    CBOT_FUTURES_SNAPSHOT: [new TradingChartsFuturesProvider()],
+    CBOT_FUTURES_CURVE: [],
+    LIVESTOCK_FEED_TIEIN: [new CommoditicLivestockProvider()],
+    MACRO_AGRI_INDICES: [new TradingEconomicsAgriProvider()],
+  };
+
+  private readonly providers: GrainWidgetsProvider[] = Object.values(this.providerChains)
+    .flat()
+    .reduce<GrainWidgetsProvider[]>((acc, provider) => {
+      if (!acc.some((item) => item.id === provider.id)) acc.push(provider);
+      return acc;
+    }, []);
 
   private readonly mockProviders: Record<GrainWidgetKind, GrainWidgetsProvider> = {
     US_CASH_BIDS: new MockGrainWidgetsProvider({ kind: "US_CASH_BIDS" }),
@@ -148,6 +187,7 @@ export class GrainWidgetsService {
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
+  private readonly providerRuntime = new Map<string, ProviderRuntime>();
   private refreshInFlight: Promise<void> | null = null;
   private timer: NodeJS.Timeout | null = null;
   private lastFxRateUsed: number | null = null;
@@ -178,15 +218,14 @@ export class GrainWidgetsService {
 
     await this.refreshAll(false);
 
-    const enabledKinds = this.providers.filter((provider) => provider.enabled).map((provider) => provider.kind);
+    const enabledKinds = WIDGET_ORDER.filter((kind) => (this.providerChains[kind] || []).some((provider) => provider.enabled));
     const widgets: GrainWidget[] = [];
     const fallbackUsed: Partial<Record<GrainWidgetKind, boolean>> = {};
     const sourceErrors: Array<{ providerId: string; widgetKind?: GrainWidgetKind; rowId?: string; message: string }> = [];
     const now = Date.now();
 
-    for (const provider of this.providers) {
-      if (!provider.enabled) continue;
-      const cached = this.cache.get(provider.kind);
+    for (const kind of enabledKinds) {
+      const cached = this.cache.get(kind);
       if (!cached) continue;
       const age = now - cached.fetchedAt;
       let data = cached.data;
@@ -199,7 +238,7 @@ export class GrainWidgetsService {
       }
       widgets.push(data);
       if (statusRank(data.status) <= statusRank("FALLBACK")) fallbackUsed[data.kind] = true;
-      if (cached.lastError) sourceErrors.push({ providerId: provider.id, widgetKind: provider.kind, message: cached.lastError });
+      if (cached.lastError) sourceErrors.push({ providerId: cached.providerId, widgetKind: kind, message: cached.lastError });
     }
 
     const byKind = Object.fromEntries(widgets.map((widget) => [widget.kind, widget])) as GrainWidgetsResponse["widgets"]["byKind"];
@@ -237,30 +276,28 @@ export class GrainWidgetsService {
 
     const debug: GrainWidgetsDebug = {
       providers: this.providers.map((provider) => {
-        const cached = this.cache.get(provider.kind);
-        const counts = cached ? widgetMetricCounts(cached.data) : { rows: 0, items: 0, cards: 0 };
-        const mappedCount = cached ? mappedCountForWidget(cached.data) : 0;
-        const expectedCount = EXPECTED_COVERAGE[provider.kind];
+        const state = this.providerRuntime.get(provider.id);
+        const kindCache = this.cache.get(provider.kind);
+        const ownsCache = kindCache?.providerId === provider.id;
+
         return {
           providerId: provider.id,
           providerType: provider.id,
           enabled: provider.enabled,
-          status: providerState(provider, cached),
-          lastSuccessAt: cached?.lastSuccessAt,
-          lastAttemptAt: new Date().toISOString(),
-          cacheAgeSec: cached ? Math.floor((now - cached.fetchedAt) / 1000) : undefined,
+          status: state?.status || (provider.enabled ? "error" : "disabled"),
+          lastSuccessAt: state?.lastSuccessAt,
+          lastAttemptAt: state?.lastAttemptAt || new Date().toISOString(),
+          cacheHit: ownsCache ? true : state?.cacheHit,
+          cacheAgeSec: ownsCache && kindCache ? Math.floor((now - kindCache.fetchedAt) / 1000) : undefined,
           widgetsRequested: [provider.kind],
-          widgetsReturned: cached ? [cached.data.kind] : [],
-          rowsReturned: counts.rows || undefined,
-          itemsReturned: counts.items || undefined,
-          cardsReturned: counts.cards || undefined,
-          mappedCount: cached ? mappedCount : undefined,
-          expectedCount,
-          coverage: expectedCount ? `${mappedCount}/${expectedCount}` : undefined,
-          sourceUrlUsed: cached?.data.sourceUrl,
+          widgetsReturned: state?.widgetsReturned || (ownsCache ? [provider.kind] : []),
+          mappedCount: state?.mappedCount,
+          expectedCount: state?.expectedCount,
+          coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
+          sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
           fallbackChain: "real->cache->mock",
-          fallbackUsed: cached ? ["DELAYED", "FALLBACK", "OFFLINE"].includes(cached.data.status) : undefined,
-          error: cached?.lastError,
+          fallbackUsed: state?.fallbackUsed,
+          error: state?.error,
         } satisfies GrainWidgetsProviderDebug;
       }),
       sourceErrors: sourceErrors.length ? sourceErrors : undefined,
@@ -312,31 +349,27 @@ export class GrainWidgetsService {
       refreshMs: GRAIN_WIDGETS_REFRESH_MS,
       cacheTtlMs: GRAIN_WIDGETS_CACHE_TTL_MS,
       providers: this.providers.map((provider) => {
-        const cached = this.cache.get(provider.kind);
-        const counts = cached ? widgetMetricCounts(cached.data) : { rows: 0, items: 0, cards: 0 };
-        const mappedCount = cached ? mappedCountForWidget(cached.data) : 0;
-        const expectedCount = EXPECTED_COVERAGE[provider.kind];
+        const state = this.providerRuntime.get(provider.id);
+        const kindCache = this.cache.get(provider.kind);
+        const ownsCache = kindCache?.providerId === provider.id;
         return {
           providerId: provider.id,
           providerType: provider.id,
           enabled: provider.enabled,
-          status: providerState(provider, cached),
-          lastSuccessAt: cached?.lastSuccessAt,
-          lastAttemptAt: new Date().toISOString(),
-          cacheHit: Boolean(cached),
-          cacheAgeSec: cached ? Math.floor((now - cached.fetchedAt) / 1000) : undefined,
+          status: state?.status || (provider.enabled ? "error" : "disabled"),
+          lastSuccessAt: state?.lastSuccessAt,
+          lastAttemptAt: state?.lastAttemptAt || new Date().toISOString(),
+          cacheHit: ownsCache ? true : state?.cacheHit,
+          cacheAgeSec: ownsCache && kindCache ? Math.floor((now - kindCache.fetchedAt) / 1000) : undefined,
           widgetsRequested: [provider.kind],
-          widgetsReturned: cached ? [cached.data.kind] : [],
-          rowsReturned: counts.rows || undefined,
-          itemsReturned: counts.items || undefined,
-          cardsReturned: counts.cards || undefined,
-          mappedCount: cached ? mappedCount : undefined,
-          expectedCount,
-          coverage: expectedCount ? `${mappedCount}/${expectedCount}` : undefined,
-          sourceUrlUsed: cached?.data.sourceUrl,
+          widgetsReturned: state?.widgetsReturned || (ownsCache ? [provider.kind] : []),
+          mappedCount: state?.mappedCount,
+          expectedCount: state?.expectedCount,
+          coverage: state?.expectedCount != null ? `${state?.mappedCount || 0}/${state.expectedCount}` : undefined,
+          sourceUrlUsed: state?.sourceUrlUsed || (ownsCache ? kindCache?.data.sourceUrl : undefined),
           fallbackChain: "real->cache->mock",
-          fallbackUsed: cached ? ["DELAYED", "FALLBACK", "OFFLINE"].includes(cached.data.status) : undefined,
-          error: cached?.lastError,
+          fallbackUsed: state?.fallbackUsed,
+          error: state?.error,
         };
       }),
       normalization: {
@@ -353,6 +386,131 @@ export class GrainWidgetsService {
     };
   }
 
+  private recordProviderState(provider: GrainWidgetsProvider, state: Partial<ProviderRuntime>): void {
+    const current = this.providerRuntime.get(provider.id) || { status: provider.enabled ? "error" : "disabled" };
+    this.providerRuntime.set(provider.id, {
+      ...current,
+      ...state,
+      expectedCount: EXPECTED_COVERAGE[provider.kind],
+    });
+  }
+
+  private async refreshKind(kind: GrainWidgetKind, ctx: GrainWidgetsProviderContext, now: number, force: boolean): Promise<void> {
+    const chain = (this.providerChains[kind] || []).filter((provider) => provider.enabled);
+    const existing = this.cache.get(kind);
+    if (!chain.length) return;
+    if (!force && existing && now - existing.fetchedAt < GRAIN_WIDGETS_REFRESH_MS) {
+      const owner = chain.find((provider) => provider.id === existing.providerId);
+      if (owner) this.recordProviderState(owner, { status: runtimeStatusFromWidget(existing.data), cacheHit: true });
+      return;
+    }
+
+    const chainTried: string[] = [];
+    const errors: string[] = [];
+
+    for (const provider of chain) {
+      const attemptAt = new Date().toISOString();
+      chainTried.push(provider.id);
+      this.recordProviderState(provider, {
+        status: provider.enabled ? "partial" : "disabled",
+        lastAttemptAt: attemptAt,
+        cacheHit: false,
+        widgetsReturned: [],
+      });
+
+      try {
+        const data = await provider.getWidget(ctx);
+        const mappedCount = mappedCountForWidget(data);
+        const usable = widgetHasUsableData(data);
+
+        if (!usable) {
+          const reason = data.fallbackReason || "coverage_empty";
+          errors.push(`${provider.id}:${reason}`);
+          this.recordProviderState(provider, {
+            status: "partial",
+            error: reason,
+            sourceUrlUsed: data.sourceUrl,
+            mappedCount,
+            fallbackUsed: true,
+          });
+          continue;
+        }
+
+        this.cache.set(kind, {
+          providerId: provider.id,
+          fetchedAt: now,
+          lastSuccessAt: attemptAt,
+          data,
+          chainTried,
+        });
+
+        this.recordProviderState(provider, {
+          status: runtimeStatusFromWidget(data),
+          lastSuccessAt: attemptAt,
+          error: undefined,
+          sourceUrlUsed: data.sourceUrl,
+          mappedCount,
+          widgetsReturned: [kind],
+          fallbackUsed: ["DELAYED", "FALLBACK", "OFFLINE"].includes(data.status),
+        });
+
+        return;
+      } catch (error: any) {
+        const reason = error?.message || "fetch_failed";
+        errors.push(`${provider.id}:${reason}`);
+        this.recordProviderState(provider, {
+          status: "error",
+          error: reason,
+          mappedCount: 0,
+          widgetsReturned: [],
+          fallbackUsed: true,
+        });
+      }
+    }
+
+    const reason = errors.length ? errors.join(" | ") : "all_providers_failed";
+
+    if (existing) {
+      this.cache.set(kind, {
+        ...existing,
+        lastError: reason,
+        chainTried,
+      });
+      return;
+    }
+
+    if (ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK) {
+      const mockProvider = this.mockProviders[kind];
+      const data = mockProvider.mockFallback(reason, ctx);
+      this.cache.set(kind, {
+        providerId: mockProvider.id,
+        fetchedAt: now,
+        data: {
+          ...data,
+          status: "FALLBACK",
+          fallbackReason: reason,
+        },
+        lastError: reason,
+        chainTried,
+      });
+      return;
+    }
+
+    const provider = chain[0];
+    if (!provider) return;
+    this.cache.set(kind, {
+      providerId: provider.id,
+      fetchedAt: now,
+      data: {
+        ...provider.mockFallback(reason, ctx),
+        status: "OFFLINE",
+        fallbackReason: reason,
+      },
+      lastError: reason,
+      chainTried,
+    });
+  }
+
   private async refreshAll(force: boolean): Promise<void> {
     if (this.refreshInFlight) return this.refreshInFlight;
     this.refreshInFlight = (async () => {
@@ -365,53 +523,7 @@ export class GrainWidgetsService {
         eurUsd,
       };
 
-      await Promise.all(
-        this.providers.map(async (provider) => {
-          if (!provider.enabled) return;
-          const existing = this.cache.get(provider.kind);
-          if (!force && existing && now - existing.fetchedAt < GRAIN_WIDGETS_REFRESH_MS) return;
-          try {
-            const data = await provider.getWidget(ctx);
-            this.cache.set(provider.kind, {
-              fetchedAt: now,
-              lastSuccessAt: new Date().toISOString(),
-              data,
-            });
-          } catch (error: any) {
-            const reason = error?.message || "fetch_failed";
-            if (existing) {
-              this.cache.set(provider.kind, {
-                ...existing,
-                lastError: reason,
-              });
-              return;
-            }
-            if (ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK) {
-              const mockProvider = this.mockProviders[provider.kind];
-              const data = mockProvider.mockFallback(reason, ctx);
-              this.cache.set(provider.kind, {
-                fetchedAt: now,
-                data: {
-                  ...data,
-                  status: "FALLBACK",
-                  fallbackReason: reason,
-                },
-                lastError: reason,
-              });
-              return;
-            }
-            this.cache.set(provider.kind, {
-              fetchedAt: now,
-              data: {
-                ...provider.mockFallback(reason, ctx),
-                status: "OFFLINE",
-                fallbackReason: reason,
-              },
-              lastError: reason,
-            });
-          }
-        }),
-      );
+      await Promise.all(WIDGET_ORDER.map((kind) => this.refreshKind(kind, ctx, now, force)));
     })().finally(() => {
       this.refreshInFlight = null;
     });

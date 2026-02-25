@@ -1,6 +1,8 @@
 import { ApiFarmerProvider } from "../server/monitor/grainWidgets/providers/apiFarmerProvider";
 import { BarchartCashProvider } from "../server/monitor/grainWidgets/providers/barchartCashProvider";
 import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/commoditicProvider";
+import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
+import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import type { GrainWidgetsProviderContext } from "../server/monitor/grainWidgets/providers/types";
 import type { GrainWidget } from "../server/monitor/grainWidgets/types";
@@ -37,7 +39,9 @@ async function run() {
   const providers = [
     new BarchartCashProvider(),
     new TradingChartsFuturesProvider(),
+    new DbNomicsSpotProvider(),
     new CommoditicProvider(),
+    new FaoFfpiProvider(),
     new ApiFarmerProvider(),
   ];
 
