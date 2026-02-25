@@ -9,6 +9,9 @@ import type {
 } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { deriveSeries } from "./utils";
+import { buildLivestockTieInWidget } from "../builders/livestockTieInBuilder";
+import { buildMacroAgriIndicesWidget } from "../builders/macroAgriIndicesBuilder";
+import { mockLivestockTieInWidgetRaw, mockMacroAgriIndicesRaw } from "./mockPayloads";
 
 type MockProviderOptions = { kind: GrainWidgetKind };
 
@@ -278,6 +281,56 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
         fallbackReason: reason,
       };
       return widget;
+    }
+
+    if (this.kind === "LIVESTOCK_FEED_TIEIN") {
+      const rows = mockLivestockTieInWidgetRaw({
+        statusMode: "fallback",
+        includeCornFeed: true,
+        includeFxSensitiveRow: true,
+        partialMode: false,
+        sourceName: "Commoditic",
+        sourceAttribution: "Data: Commoditic",
+      });
+      return buildLivestockTieInWidget({
+        sourceName: "Commoditic",
+        sourceAttribution: "Data: Commoditic",
+        sourceUrl: "https://www.commoditic.com/",
+        updatedAt: ctx.now.toISOString(),
+        status: "FALLBACK",
+        rows,
+        fx: { eurUsd: ctx.eurUsd },
+        buildDerivedCue: true,
+        fallbackReason: reason,
+        derivedFrom: [{ source: "grainMarkets", key: "CBOT_SOYBEANS", label: "CBOT Soybeans" }],
+      });
+    }
+
+    if (this.kind === "MACRO_AGRI_INDICES") {
+      const raw = mockMacroAgriIndicesRaw({
+        statusMode: "fallback",
+        renderMode: "fallback",
+        includePriceLikeItem: true,
+        includeEmbedConfig: true,
+        embedBlocked: true,
+        partialMode: false,
+        sourceName: "TradingEconomics",
+        sourceAttribution: "Data: TradingEconomics",
+      });
+      return buildMacroAgriIndicesWidget({
+        sourceName: "TradingEconomics",
+        sourceAttribution: "Data: TradingEconomics",
+        sourceUrl: "https://tradingeconomics.com/commodities",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        renderMode: "fallback",
+        status: "FALLBACK",
+        items: raw.items,
+        cards: raw.cards,
+        embed: raw.embed,
+        fx: { eurUsd: ctx.eurUsd },
+        fallbackReason: reason,
+      });
     }
 
     const rows: GrainWidgetTableRow[] = [

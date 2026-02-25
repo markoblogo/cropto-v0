@@ -13,7 +13,26 @@ export type GrainWidgetKind =
   | "GLOBAL_SPOT_TABLE"
   | "CROP_PRICE_INDEX"
   | "CBOT_FUTURES_SNAPSHOT"
-  | "CBOT_FUTURES_CURVE";
+  | "CBOT_FUTURES_CURVE"
+  | "LIVESTOCK_FEED_TIEIN"
+  | "MACRO_AGRI_INDICES";
+
+export type GrainMetricSemanticKind =
+  | "price"
+  | "index"
+  | "composite"
+  | "signal";
+
+export type MacroAgriRenderMode =
+  | "api_series"
+  | "embed"
+  | "fallback";
+
+export type EmbedAvailabilityStatus =
+  | "AVAILABLE"
+  | "BLOCKED"
+  | "DISABLED"
+  | "UNAVAILABLE";
 
 export type GrainPriceNormalizationStatus =
   | "OK"
@@ -84,6 +103,7 @@ export interface GrainWidgetTableRow {
   updatedAt?: string;
   tags?: string[];
   notes?: string[];
+  metricSemanticKind?: GrainMetricSemanticKind;
 }
 
 export interface GrainWidgetStatCard {
@@ -175,12 +195,105 @@ export interface GrainWidgetCbotFuturesCurve extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetLivestockFeedRow extends GrainWidgetTableRow {
+  metricSemanticKind?: GrainMetricSemanticKind;
+  tieInCue?: {
+    label?: "Supportive" | "Neutral" | "Soft" | "Mixed";
+    score?: number;
+    notes?: string[];
+  };
+}
+
+export interface GrainWidgetLivestockFeedSummary {
+  rowCount: number;
+  derivedCue?: {
+    label: "Feed demand supportive" | "Mixed" | "Soft" | "Unavailable";
+    score?: number;
+    status?: GrainWidgetStatus;
+    notes?: string[];
+  };
+  normalizedCoverage?: {
+    ok: number;
+    partial: number;
+    fxMissing: number;
+    unavailable: number;
+  };
+}
+
+export interface GrainWidgetLivestockFeedTieIn extends GrainWidgetBase {
+  kind: "LIVESTOCK_FEED_TIEIN";
+  rows: GrainWidgetLivestockFeedRow[];
+  summary?: GrainWidgetLivestockFeedSummary;
+  derivedFrom?: Array<{
+    source: "grainMarkets" | "grainWidgets" | "external";
+    key: string;
+    label?: string;
+  }>;
+}
+
+export interface GrainWidgetMacroAgriIndexItem {
+  id: string;
+  label: string;
+  sublabel?: string;
+  region?: string;
+  metricSemanticKind: GrainMetricSemanticKind;
+  status?: GrainWidgetStatus;
+  price?: GrainWidgetPriceValue;
+  valueCurrent?: number;
+  valueChange?: number;
+  valueChangePct?: number;
+  unitLabel?: string;
+  valueLabel?: string;
+  series?: GrainWidgetPoint[];
+  sourceName?: string;
+  sourceAttribution?: string;
+  updatedAt?: string;
+  tags?: string[];
+  notes?: string[];
+}
+
+export interface GrainWidgetMacroAgriEmbedConfig {
+  enabled: boolean;
+  status: EmbedAvailabilityStatus;
+  providerName: string;
+  title?: string;
+  embedUrl?: string;
+  externalUrl?: string;
+  suggestedHeightPx?: number;
+  aspectRatio?: string;
+  notes?: string[];
+}
+
+export interface GrainWidgetMacroAgriIndicesSummary {
+  itemCount: number;
+  momentumLabel?: "Firm" | "Soft" | "Mixed" | "Flat" | "Unavailable";
+  renderMode: MacroAgriRenderMode;
+  modeReason?: string;
+  metricCoverage?: {
+    priceLikeItems: number;
+    indexItems: number;
+    compositeItems: number;
+    signalItems: number;
+  };
+}
+
+export interface GrainWidgetMacroAgriIndices extends GrainWidgetBase {
+  kind: "MACRO_AGRI_INDICES";
+  renderMode: MacroAgriRenderMode;
+  items?: GrainWidgetMacroAgriIndexItem[];
+  cards?: GrainWidgetStatCard[];
+  embed?: GrainWidgetMacroAgriEmbedConfig;
+  summary?: GrainWidgetMacroAgriIndicesSummary;
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
   | GrainWidgetCropPriceIndex
   | GrainWidgetCbotFuturesSnapshot
-  | GrainWidgetCbotFuturesCurve;
+  | GrainWidgetCbotFuturesCurve
+  | GrainWidgetLivestockFeedTieIn
+  | GrainWidgetMacroAgriIndices;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -203,8 +316,8 @@ export interface GrainWidgetsMeta {
     offline: number;
   };
   normalization?: {
-    normalizedRowsOk: number;
-    normalizedRowsPartial: number;
+    normalizedPriceMetricsOk: number;
+    normalizedPriceMetricsPartial: number;
     fxMissing: number;
     unavailable: number;
     fxRateUsed?: number;
@@ -242,6 +355,11 @@ export interface GrainWidgetsDebug {
       PARTIAL: number;
       FX_MISSING: number;
       UNAVAILABLE: number;
+    };
+    embed?: {
+      blockedCount: number;
+      disabledCount: number;
+      unavailableCount: number;
     };
     errors?: string[];
   };

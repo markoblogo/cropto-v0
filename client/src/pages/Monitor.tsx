@@ -288,7 +288,9 @@ type GrainWidgetKind =
   | "GLOBAL_SPOT_TABLE"
   | "CROP_PRICE_INDEX"
   | "CBOT_FUTURES_SNAPSHOT"
-  | "CBOT_FUTURES_CURVE";
+  | "CBOT_FUTURES_CURVE"
+  | "LIVESTOCK_FEED_TIEIN"
+  | "MACRO_AGRI_INDICES";
 
 type GrainWidgetTableCellPrice = {
   nativeValueCurrent?: number;
@@ -432,7 +434,93 @@ type GrainWidgetFuturesSnapshot = {
   fallbackReason?: string;
 };
 
-type GrainWidget = GrainWidgetCashBids | GrainWidgetGlobalSpot | GrainWidgetCropIndex | GrainWidgetFuturesSnapshot;
+type GrainWidgetLivestockFeedTieIn = {
+  id: string;
+  kind: "LIVESTOCK_FEED_TIEIN";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: GrainWidgetRow[];
+  summary?: {
+    rowCount: number;
+    derivedCue?: {
+      label: "Feed demand supportive" | "Mixed" | "Soft" | "Unavailable";
+      score?: number;
+      status?: GrainWidgetStatus;
+      notes?: string[];
+    };
+    normalizedCoverage?: {
+      ok: number;
+      partial: number;
+      fxMissing: number;
+      unavailable: number;
+    };
+  };
+  fallbackReason?: string;
+};
+
+type GrainWidgetMacroAgriIndices = {
+  id: string;
+  kind: "MACRO_AGRI_INDICES";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  renderMode: "api_series" | "embed" | "fallback";
+  items?: Array<{
+    id: string;
+    label: string;
+    metricSemanticKind: "price" | "index" | "composite" | "signal";
+    status?: GrainWidgetStatus;
+    price?: GrainWidgetTableCellPrice;
+    valueCurrent?: number;
+    valueChange?: number;
+    valueChangePct?: number;
+    unitLabel?: string;
+    notes?: string[];
+  }>;
+  cards?: Array<{
+    id: string;
+    label: string;
+    value?: number;
+    valueText?: string;
+    deltaPct?: number;
+    status?: GrainWidgetStatus;
+  }>;
+  embed?: {
+    enabled: boolean;
+    status: "AVAILABLE" | "BLOCKED" | "DISABLED" | "UNAVAILABLE";
+    providerName: string;
+    title?: string;
+    embedUrl?: string;
+    externalUrl?: string;
+    notes?: string[];
+  };
+  summary?: {
+    itemCount: number;
+    momentumLabel?: "Firm" | "Soft" | "Mixed" | "Flat" | "Unavailable";
+    renderMode: "api_series" | "embed" | "fallback";
+    modeReason?: string;
+  };
+  fallbackReason?: string;
+};
+
+type GrainWidget =
+  | GrainWidgetCashBids
+  | GrainWidgetGlobalSpot
+  | GrainWidgetCropIndex
+  | GrainWidgetFuturesSnapshot
+  | GrainWidgetLivestockFeedTieIn
+  | GrainWidgetMacroAgriIndices;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -1354,7 +1442,14 @@ export default function MonitorPage() {
   ] as const;
 
   const grainDataOrder = useMemo(() => {
-    const defaultOrder: GrainWidgetKind[] = ["US_CASH_BIDS", "GLOBAL_SPOT_TABLE", "CROP_PRICE_INDEX", "CBOT_FUTURES_SNAPSHOT"];
+    const defaultOrder: GrainWidgetKind[] = [
+      "US_CASH_BIDS",
+      "GLOBAL_SPOT_TABLE",
+      "CROP_PRICE_INDEX",
+      "CBOT_FUTURES_SNAPSHOT",
+      "LIVESTOCK_FEED_TIEIN",
+      "MACRO_AGRI_INDICES",
+    ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
     );
@@ -1490,6 +1585,8 @@ export default function MonitorPage() {
                   const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
                   const indexWidget = grainDataByKind["CROP_PRICE_INDEX"] as GrainWidgetCropIndex | undefined;
                   const futuresWidget = grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined;
+                  const livestockWidget = grainDataByKind["LIVESTOCK_FEED_TIEIN"] as GrainWidgetLivestockFeedTieIn | undefined;
+                  const macroWidget = grainDataByKind["MACRO_AGRI_INDICES"] as GrainWidgetMacroAgriIndices | undefined;
 
                   return (
                     <>
@@ -1605,6 +1702,125 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("CBOT_FUTURES_SNAPSHOT") ? "Futures (CBOT)" : "Futures (CBOT) (not configured)"}
                             subtitle="Intraday futures snapshot"
+                          />
+                        </div>
+                      )}
+
+                      {livestockWidget ? (
+                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-base">{livestockWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(livestockWidget.status)}`}>{livestockWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{livestockWidget.subtitle || "Soy meal / feed-side indicators"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {livestockWidget.rows.map((row) => (
+                                <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                              ))}
+                            </div>
+                            {livestockWidget.summary?.derivedCue ? (
+                              <p className="text-[10px] text-foreground/68">
+                                Derived cue: {livestockWidget.summary.derivedCue.label}
+                                {livestockWidget.summary.derivedCue.score != null ? ` (${Math.round(livestockWidget.summary.derivedCue.score)})` : ""}
+                              </p>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("LIVESTOCK_FEED_TIEIN") ? "Feed / Livestock Tie-in" : "Feed / Livestock Tie-in (not configured)"}
+                            subtitle="Soy meal, feed-side demand and linked cues"
+                          />
+                        </div>
+                      )}
+
+                      {macroWidget ? (
+                        <Card className="xl:col-span-6 border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground shadow-md">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-base">{macroWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(macroWidget.status)}`}>{macroWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{macroWidget.subtitle || "Macro agri index context"}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            {macroWidget.renderMode === "embed" && (macroWidget.embed?.status === "BLOCKED" || !macroWidget.embed?.embedUrl) ? (
+                              <div className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-3">
+                                <p className="text-sm font-semibold text-foreground">Embed unavailable</p>
+                                <p className="mt-1 text-[11px] text-foreground/68">
+                                  {macroWidget.summary?.modeReason || "Embed is blocked by source policy. External source is available."}
+                                </p>
+                                {macroWidget.embed?.externalUrl ? (
+                                  <a
+                                    href={macroWidget.embed.externalUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-2 inline-flex rounded-md border border-black/75 dark:border-white/40 px-2 py-1 text-[10px] font-medium hover:bg-muted/50"
+                                  >
+                                    Open Source
+                                  </a>
+                                ) : null}
+                              </div>
+                            ) : null}
+
+                            {!!macroWidget.items?.length && (
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {macroWidget.items.map((item) => (
+                                  <div key={item.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <p className="text-[11px] font-semibold text-foreground">{item.label}</p>
+                                      {item.status ? <Badge className={`text-[10px] ${grainStatusClass(item.status)}`}>{item.status}</Badge> : null}
+                                    </div>
+                                    {item.metricSemanticKind === "price" && item.price ? (
+                                      (() => {
+                                        const display = formatWidgetRowPrice({ id: item.id, label: item.label, price: item.price }, priceDisplayMode);
+                                        const unitLabel = display.unit
+                                          ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
+                                            ? display.unit
+                                            : `${display.currency || ""}/${display.unit}`
+                                          : display.currency || "";
+                                        return (
+                                          <>
+                                            <p className="mt-1 text-lg font-semibold text-foreground">
+                                              {display.value == null ? "n/a" : display.value.toFixed(2)}
+                                              <span className="ml-1 text-[10px] font-medium text-foreground/65">{unitLabel}</span>
+                                            </p>
+                                            <p className="text-[10px] text-foreground/68">{display.secondary}</p>
+                                          </>
+                                        );
+                                      })()
+                                    ) : (
+                                      <>
+                                        <p className="mt-1 text-lg font-semibold text-foreground">{item.valueCurrent == null ? "n/a" : item.valueCurrent.toFixed(2)}</p>
+                                        <p className="text-[10px] text-foreground/68">{item.unitLabel || "index points"}</p>
+                                      </>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {!!macroWidget.cards?.length && (
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {macroWidget.cards.map((card) => (
+                                  <div key={card.id} className="rounded-md border border-black/70 dark:border-white/30 bg-muted/55 p-2">
+                                    <p className="text-[11px] text-foreground/72">{card.label}</p>
+                                    <p className="text-base font-semibold text-foreground">{card.value == null ? card.valueText || "n/a" : card.value.toFixed(2)}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("MACRO_AGRI_INDICES") ? "Macro Agri Indices" : "Macro Agri Indices (not configured)"}
+                            subtitle="API/Embed macro index context with fallback"
                           />
                         </div>
                       )}

@@ -56,7 +56,24 @@ function collectRows(widget: GrainWidget) {
   if (widget.kind === "CROP_PRICE_INDEX") {
     return widget.rows || [];
   }
+  if (widget.kind === "LIVESTOCK_FEED_TIEIN") {
+    return widget.rows;
+  }
   return [];
+}
+
+function collectPriceLikeMetrics(widgets: GrainWidget[]) {
+  const rowMetrics = widgets.flatMap((widget) => collectRows(widget)).filter((row) => row.price);
+  const macroPriceMetrics = widgets
+    .filter((widget): widget is Extract<GrainWidget, { kind: "MACRO_AGRI_INDICES" }> => widget.kind === "MACRO_AGRI_INDICES")
+    .flatMap((widget) => widget.items || [])
+    .filter((item) => item.metricSemanticKind === "price" && item.price)
+    .map((item) => item.price!);
+  const allPriceMetrics = [
+    ...rowMetrics.map((row) => row.price!),
+    ...macroPriceMetrics,
+  ];
+  return allPriceMetrics;
 }
 
 export class GrainWidgetsService {
@@ -73,6 +90,8 @@ export class GrainWidgetsService {
     CROP_PRICE_INDEX: new MockGrainWidgetsProvider({ kind: "CROP_PRICE_INDEX" }),
     CBOT_FUTURES_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "CBOT_FUTURES_SNAPSHOT" }),
     CBOT_FUTURES_CURVE: new MockGrainWidgetsProvider({ kind: "CBOT_FUTURES_SNAPSHOT" }),
+    LIVESTOCK_FEED_TIEIN: new MockGrainWidgetsProvider({ kind: "LIVESTOCK_FEED_TIEIN" }),
+    MACRO_AGRI_INDICES: new MockGrainWidgetsProvider({ kind: "MACRO_AGRI_INDICES" }),
   };
 
   private readonly cache = new Map<GrainWidgetKind, CacheEntry>();
@@ -132,13 +151,17 @@ export class GrainWidgetsService {
 
     const byKind = Object.fromEntries(widgets.map((widget) => [widget.kind, widget])) as GrainWidgetsResponse["widgets"]["byKind"];
     const order = widgets.map((widget) => widget.kind);
-    const allRows = widgets.flatMap((widget) => collectRows(widget));
+    const priceMetrics = collectPriceLikeMetrics(widgets);
     const rowsByStatus = {
-      OK: allRows.filter((row) => row.price?.normalizationStatus === "OK").length,
-      PARTIAL: allRows.filter((row) => row.price?.normalizationStatus === "PARTIAL").length,
-      FX_MISSING: allRows.filter((row) => row.price?.normalizationStatus === "FX_MISSING").length,
-      UNAVAILABLE: allRows.filter((row) => row.price?.normalizationStatus === "UNAVAILABLE" || !row.price?.normalizationStatus).length,
+      OK: priceMetrics.filter((row) => row.normalizationStatus === "OK").length,
+      PARTIAL: priceMetrics.filter((row) => row.normalizationStatus === "PARTIAL").length,
+      FX_MISSING: priceMetrics.filter((row) => row.normalizationStatus === "FX_MISSING").length,
+      UNAVAILABLE: priceMetrics.filter((row) => row.normalizationStatus === "UNAVAILABLE" || !row.normalizationStatus).length,
     };
+    const macroEmbed = widgets
+      .filter((widget): widget is Extract<GrainWidget, { kind: "MACRO_AGRI_INDICES" }> => widget.kind === "MACRO_AGRI_INDICES")
+      .map((widget) => widget.embed?.status)
+      .filter(Boolean);
 
     const meta: GrainWidgetsMeta = {
       generatedAt: new Date().toISOString(),
@@ -151,8 +174,8 @@ export class GrainWidgetsService {
       returnedWidgetKinds: order,
       counts: countStatuses(widgets),
       normalization: {
-        normalizedRowsOk: rowsByStatus.OK,
-        normalizedRowsPartial: rowsByStatus.PARTIAL,
+        normalizedPriceMetricsOk: rowsByStatus.OK,
+        normalizedPriceMetricsPartial: rowsByStatus.PARTIAL,
         fxMissing: rowsByStatus.FX_MISSING,
         unavailable: rowsByStatus.UNAVAILABLE,
         fxRateUsed: this.lastFxRateUsed ?? undefined,
@@ -181,6 +204,11 @@ export class GrainWidgetsService {
       normalization: {
         fxRateUsed: this.lastFxRateUsed ?? undefined,
         rowsByStatus,
+        embed: {
+          blockedCount: macroEmbed.filter((status) => status === "BLOCKED").length,
+          disabledCount: macroEmbed.filter((status) => status === "DISABLED").length,
+          unavailableCount: macroEmbed.filter((status) => status === "UNAVAILABLE").length,
+        },
       },
       unavailableWidgets: enabledKinds.filter((kind) => !order.includes(kind)),
     };
@@ -213,7 +241,7 @@ export class GrainWidgetsService {
     };
   } {
     const now = Date.now();
-    const rows = [...this.cache.values()].flatMap((entry) => collectRows(entry.data));
+    const priceMetrics = collectPriceLikeMetrics([...this.cache.values()].map((entry) => entry.data));
     return {
       enabled: ENABLE_GRAIN_WIDGETS_EXPANSION,
       refreshMs: GRAIN_WIDGETS_REFRESH_MS,
@@ -237,13 +265,13 @@ export class GrainWidgetsService {
       }),
       normalization: {
         fxRateUsed: this.lastFxRateUsed ?? undefined,
-        normalizedCount: rows.filter((row) => row.price?.normalizationStatus === "OK").length,
-        nativeFallbackCount: rows.filter((row) => row.price?.normalizationStatus !== "OK").length,
+        normalizedCount: priceMetrics.filter((row) => row.normalizationStatus === "OK").length,
+        nativeFallbackCount: priceMetrics.filter((row) => row.normalizationStatus !== "OK").length,
         rowsByStatus: {
-          OK: rows.filter((row) => row.price?.normalizationStatus === "OK").length,
-          PARTIAL: rows.filter((row) => row.price?.normalizationStatus === "PARTIAL").length,
-          FX_MISSING: rows.filter((row) => row.price?.normalizationStatus === "FX_MISSING").length,
-          UNAVAILABLE: rows.filter((row) => row.price?.normalizationStatus === "UNAVAILABLE" || !row.price?.normalizationStatus).length,
+          OK: priceMetrics.filter((row) => row.normalizationStatus === "OK").length,
+          PARTIAL: priceMetrics.filter((row) => row.normalizationStatus === "PARTIAL").length,
+          FX_MISSING: priceMetrics.filter((row) => row.normalizationStatus === "FX_MISSING").length,
+          UNAVAILABLE: priceMetrics.filter((row) => row.normalizationStatus === "UNAVAILABLE" || !row.normalizationStatus).length,
         },
       },
     };
