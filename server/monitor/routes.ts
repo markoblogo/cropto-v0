@@ -18,12 +18,14 @@ import {
   ENABLE_FAO_FFPI_PROVIDER,
   ENABLE_NASDAQ_DATALINK_PROVIDER,
   ENABLE_FAOSTAT_PP_WIDGET,
+  ENABLE_FPMA_MARKET_PRICES_WIDGET,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_REPORTS_WIDGET,
   FAO_FFPI_URL,
   FAOSTAT_BASE_URL,
+  FPMA_API_BASE_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   NASDAQ_API_KEY,
@@ -363,7 +365,9 @@ export function registerMonitorRoutes(app: Express): void {
 
     try {
       const country = typeof req.query.country === "string" ? req.query.country : undefined;
-      const payload = await grainWidgetsService.list({ country });
+      const priceTypeRaw = typeof req.query.priceType === "string" ? req.query.priceType.toUpperCase() : undefined;
+      const priceType = priceTypeRaw === "RETAIL" || priceTypeRaw === "WHOLESALE" ? priceTypeRaw : undefined;
+      const payload = await grainWidgetsService.list({ country, priceType });
       return res.json({
         enabled: true,
         ...payload,
@@ -416,7 +420,7 @@ export function registerMonitorRoutes(app: Express): void {
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "FAOSTAT_PP_MULTI_COUNTRY"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
@@ -426,6 +430,7 @@ export function registerMonitorRoutes(app: Express): void {
         "nasdaq-datalink": "NASDAQ_DATA_LINK_SNAPSHOT",
         "usda-gtr-logistics": "USDA_GTR_LOGISTICS_SNAPSHOT",
         "faostat-pp": "FAOSTAT_PP_MULTI_COUNTRY",
+        "fpma-market-prices": "FPMA_MARKET_PRICES_MULTI_COUNTRY",
       };
 
       const sourceMatchesProvider = (sourceName?: string, providerId?: string) => {
@@ -438,6 +443,7 @@ export function registerMonitorRoutes(app: Express): void {
         if (id.includes("nasdaq")) return source.includes("nasdaq");
         if (id.includes("usda-gtr")) return source.includes("usda");
         if (id.includes("faostat")) return source.includes("faostat");
+        if (id.includes("fpma")) return source.includes("fpma");
         if (id.includes("us-cash-export-context")) return source.includes("usda") || source.includes("open data");
         return false;
       };
@@ -452,9 +458,10 @@ export function registerMonitorRoutes(app: Express): void {
         "nasdaq-datalink": Math.max(2, NASDAQ_DATASETS.length),
         "usda-gtr-logistics": 2,
         "faostat-pp": 5,
+        "fpma-market-prices": 5,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "usda-gtr-logistics", "faostat-pp"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "usda-gtr-logistics", "faostat-pp", "fpma-market-prices"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -494,10 +501,13 @@ export function registerMonitorRoutes(app: Express): void {
           parseWarnings: provider?.parseWarnings,
           areaCodes: provider?.areaCodes,
           itemCodes: provider?.itemCodes,
+          commodityIdsUsed: provider?.commodityIdsUsed,
           elementCode: provider?.elementCode,
           elementLabel: provider?.elementLabel,
           observationsByCrop: provider?.observationsByCrop,
           discoveryCacheHit: provider?.discoveryCacheHit,
+          countryQueryUsed: provider?.countryQueryUsed,
+          selectedPriceType: provider?.selectedPriceType,
           query: provider?.query,
           cadence: provider?.cadence,
           lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
@@ -534,6 +544,7 @@ export function registerMonitorRoutes(app: Express): void {
         "NASDAQ_DATA_LINK_SNAPSHOT",
         "USDA_GTR_LOGISTICS_SNAPSHOT",
         "FAOSTAT_PP_MULTI_COUNTRY",
+        "FPMA_MARKET_PRICES_MULTI_COUNTRY",
       ] as const).map((widgetKind) => {
         const widget = byKind[widgetKind] as any;
         const rowsCount = Array.isArray(widget?.rows) ? widget.rows.length : 0;
@@ -546,6 +557,7 @@ export function registerMonitorRoutes(app: Express): void {
         const datasetStatusesCount = Array.isArray(widget?.summary?.datasetStatuses) ? widget.summary.datasetStatuses.length : 0;
         const logisticsItemsCount = widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" && Array.isArray(widget?.items) ? widget.items.length : 0;
         const faostatRowsCount = widget?.kind === "FAOSTAT_PP_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
+        const fpmaRowsCount = widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const seriesPointsCount =
           (Array.isArray(widget?.rows) ? widget.rows.flatMap((row: any) => row?.price?.series || []).length : 0) +
           (Array.isArray(widget?.items) ? widget.items.flatMap((item: any) => item?.series || []).length : 0) +
@@ -568,6 +580,8 @@ export function registerMonitorRoutes(app: Express): void {
           datasetStatusesCount,
           logisticsItemsCount,
           faostatRowsCount,
+          fpmaRowsCount,
+          selectedPriceType: widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ? widget?.summary?.selectedPriceType : undefined,
           dailyMetadataSourceUrl: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.metadataSourceUrl : undefined,
           dailyDownloadUrlUsed: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined,
           dailyReportFound: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.dailyReportFound : undefined,
@@ -604,6 +618,8 @@ export function registerMonitorRoutes(app: Express): void {
       const faostatProbe = await probeUrl(faostatProbeUrl);
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?datasource=production&area=231&item=15&year=2022&output_type=json`;
       const faostatSampleProbe = await probeUrl(faostatSampleProbeUrl);
+      const fpmaProbeUrl = `${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`;
+      const fpmaProbe = await probeUrl(fpmaProbeUrl);
 
       res.json({
         runtime: {
@@ -626,6 +642,7 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_ALPHAVANTAGE_PROVIDER,
             ENABLE_NASDAQ_DATALINK_PROVIDER,
             ENABLE_FAOSTAT_PP_WIDGET,
+            ENABLE_FPMA_MARKET_PRICES_WIDGET,
             DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
             FAO_FFPI_URL: FAO_FFPI_URL ? "present" : "missing",
             USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
@@ -635,6 +652,7 @@ export function registerMonitorRoutes(app: Express): void {
             NASDAQ_BASE_URL: NASDAQ_BASE_URL ? "present" : "missing",
             NASDAQ_API_KEY: NASDAQ_API_KEY ? "present" : "missing",
             FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
+            FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
             GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
             GRAIN_WIDGETS_CACHE_TTL_MS,
           },
@@ -658,6 +676,7 @@ export function registerMonitorRoutes(app: Express): void {
           usdaGtrLogistics: usdaGtrProbe,
           faostatPp: faostatProbe,
           faostatPpSample: faostatSampleProbe,
+          fpmaMarketPrices: fpmaProbe,
         },
       });
     } catch (error: any) {

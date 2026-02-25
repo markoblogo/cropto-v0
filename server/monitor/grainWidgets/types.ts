@@ -23,7 +23,8 @@ export type GrainWidgetKind =
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
   | "NASDAQ_DATA_LINK_SNAPSHOT"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
-  | "FAOSTAT_PP_MULTI_COUNTRY";
+  | "FAOSTAT_PP_MULTI_COUNTRY"
+  | "FPMA_MARKET_PRICES_MULTI_COUNTRY";
 
 export type GrainMetricSemanticKind =
   | "price"
@@ -543,6 +544,51 @@ export interface GrainWidgetFaostatPpMultiCountry extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetFpmaMarketPricesRow {
+  crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
+  label: string;
+  current: number;
+  unit: string;
+  currency?: string;
+  cadence: "monthly" | "weekly" | "annual" | "unknown";
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+  territory?: {
+    code: string;
+    label: string;
+  };
+}
+
+export interface GrainWidgetFpmaMarketPricesMultiCountry extends GrainWidgetBase {
+  kind: "FPMA_MARKET_PRICES_MULTI_COUNTRY";
+  selector?: {
+    priceType?: {
+      current: "RETAIL" | "WHOLESALE";
+      options: Array<"RETAIL" | "WHOLESALE">;
+    };
+  };
+  rows: GrainWidgetFpmaMarketPricesRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "monthly" | "weekly" | "annual" | "unknown";
+    selectedTerritory?: string;
+    selectedPriceType?: "RETAIL" | "WHOLESALE";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    countryQueryUsed?: string;
+    commodityIdsUsed?: string[];
+    rowsParsed?: number;
+    query?: string;
+    warnings?: string[];
+  };
+}
+
 export type GrainWidget =
   | GrainWidgetUSCashBids
   | GrainWidgetGlobalSpotTable
@@ -557,7 +603,8 @@ export type GrainWidget =
   | GrainWidgetAlphaVantageGrainBenchmarks
   | GrainWidgetNasdaqDataLinkSnapshot
   | GrainWidgetUsdaGtrLogisticsSnapshot
-  | GrainWidgetFaostatPpMultiCountry;
+  | GrainWidgetFaostatPpMultiCountry
+  | GrainWidgetFpmaMarketPricesMultiCountry;
 
 export interface GrainWidgetsPayload {
   byKind: Partial<Record<GrainWidgetKind, GrainWidget>>;
@@ -627,10 +674,13 @@ export interface GrainWidgetsProviderDebug {
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];
+  commodityIdsUsed?: string[];
   elementCode?: string;
   elementLabel?: string;
   observationsByCrop?: Array<{ crop: string; count: number }>;
   discoveryCacheHit?: boolean;
+  countryQueryUsed?: string;
+  selectedPriceType?: "RETAIL" | "WHOLESALE";
   query?: string;
   downloadUrlUsed?: string;
   parseMode?: "strict";

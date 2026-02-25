@@ -22,6 +22,7 @@ export const ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET = envBool("ENABLE_US_CASH_EXPO
 export const ENABLE_USDA_MARS_DAILY_TXT = envBool("ENABLE_USDA_MARS_DAILY_TXT", true);
 export const ENABLE_USDA_GTR_LOGISTICS_WIDGET = envBool("ENABLE_USDA_GTR_LOGISTICS_WIDGET", true);
 export const ENABLE_FAOSTAT_PP_WIDGET = envBool("ENABLE_FAOSTAT_PP_WIDGET", true);
+export const ENABLE_FPMA_MARKET_PRICES_WIDGET = envBool("ENABLE_FPMA_MARKET_PRICES_WIDGET", true);
 export const ENABLE_COUNTRY_MULTI_WIDGET_MOCK = envBool(
   "ENABLE_COUNTRY_MULTI_WIDGET_MOCK",
   process.env.NODE_ENV !== "production",
@@ -136,6 +137,45 @@ export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", GRAIN_WIDGETS_FET
 export const FAOSTAT_CACHE_TTL_MS = envNum("FAOSTAT_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FAOSTAT_DISCOVERY_TTL_MS = envNum("FAOSTAT_DISCOVERY_TTL_MS", 7 * 24 * 60 * 60 * 1000);
 export const FAOSTAT_MAX_YEARS = envNum("FAOSTAT_MAX_YEARS", 5);
+export const FPMA_API_BASE_URL =
+  process.env.FPMA_API_BASE_URL ||
+  "https://fpma.fao.org/giews/fpmat4/api";
+export const FPMA_DATA_PATHS = (
+  process.env.FPMA_DATA_PATHS ||
+  "prices,PriceQuotation,v1/prices,v1/PriceQuotation"
+)
+  .split(",")
+  .map((value) => value.trim().replace(/^\/+/, ""))
+  .filter(Boolean);
+export const FPMA_TIMEOUT_MS = envNum("FPMA_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const FPMA_CACHE_TTL_MS = envNum("FPMA_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const FPMA_MAX_POINTS = envNum("FPMA_MAX_POINTS", 12);
+export const FPMA_DEFAULT_PRICE_TYPE = (process.env.FPMA_DEFAULT_PRICE_TYPE || "WHOLESALE").toUpperCase() === "RETAIL"
+  ? "RETAIL"
+  : "WHOLESALE";
+export const FPMA_SUPPORTED_PRICE_TYPES = (
+  process.env.FPMA_SUPPORTED_PRICE_TYPES ||
+  "WHOLESALE,RETAIL"
+)
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter((value): value is "WHOLESALE" | "RETAIL" => value === "WHOLESALE" || value === "RETAIL");
+export const FPMA_EU_PROXY_COUNTRIES = (
+  process.env.FPMA_EU_PROXY_COUNTRIES ||
+  "FR,DE,PL,RO,ES"
+)
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const FPMA_CROP_MAP =
+  process.env.FPMA_CROP_MAP ||
+  JSON.stringify({
+    WHEAT: ["wheat"],
+    MAIZE: ["maize", "corn"],
+    SOY: ["soybean", "soybeans", "soy"],
+    RAPESEED: ["rapeseed", "canola"],
+    SUNFLOWER: ["sunflower", "sunflower seed"],
+  });
 export const ALPHAVANTAGE_API_KEY = process.env.ALPHAVANTAGE_API_KEY || "";
 export const ALPHAVANTAGE_BASE_URL =
   process.env.ALPHAVANTAGE_BASE_URL ||

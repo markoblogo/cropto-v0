@@ -5,6 +5,7 @@ import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/com
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "../server/monitor/grainWidgets/providers/faostatProducerPricesProvider";
+import { FpmaMarketPricesProvider } from "../server/monitor/grainWidgets/providers/fpmaMarketPricesProvider";
 import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers/nasdaqDataLinkProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
@@ -49,6 +50,10 @@ function widgetCoverage(widget: GrainWidget): string {
     const mapped = widget.rows.filter((row) => row.current != null).length;
     return `${mapped}/${widget.rows.length || 0}`;
   }
+  if (widget.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
+    const mapped = widget.rows.filter((row) => row.current != null).length;
+    return `${mapped}/${widget.rows.length || 0}`;
+  }
   return "n/a";
 }
 
@@ -74,6 +79,7 @@ async function run() {
     new NasdaqDataLinkProvider(),
     new UsdaGtrLogisticsProvider(),
     new FaostatProducerPricesProvider(),
+    new FpmaMarketPricesProvider(),
   ];
 
   console.log("grain-widgets smoke start");
@@ -127,6 +133,11 @@ async function run() {
       if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
         console.log(
           `  faostat territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} element=${widget.debug?.elementCode || "n/a"} rows=${widget.rows.length}`,
+        );
+      }
+      if (widget.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
+        console.log(
+          `  fpma territory=${widget.territory?.code || "n/a"} priceType=${widget.summary?.selectedPriceType || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

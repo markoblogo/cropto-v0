@@ -321,7 +321,8 @@ type GrainWidgetKind =
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
   | "NASDAQ_DATA_LINK_SNAPSHOT"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
-  | "FAOSTAT_PP_MULTI_COUNTRY";
+  | "FAOSTAT_PP_MULTI_COUNTRY"
+  | "FPMA_MARKET_PRICES_MULTI_COUNTRY";
 
 type GrainTerritoryMeta = {
   territoryScope?: "GLOBAL" | "COUNTRY_FIXED" | "COUNTRY_MULTI";
@@ -841,6 +842,57 @@ type GrainWidgetFaostatPpMultiCountry = GrainTerritoryMeta & {
   fallbackReason?: string;
 };
 
+type GrainWidgetFpmaMarketPricesMultiCountry = GrainTerritoryMeta & {
+  id: string;
+  kind: "FPMA_MARKET_PRICES_MULTI_COUNTRY";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  selector?: {
+    priceType?: {
+      current: "RETAIL" | "WHOLESALE";
+      options: Array<"RETAIL" | "WHOLESALE">;
+    };
+  };
+  rows: Array<{
+    crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
+    label: string;
+    current: number;
+    unit: string;
+    currency?: string;
+    cadence: "monthly" | "weekly" | "annual" | "unknown";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+    territory?: { code: string; label: string };
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "monthly" | "weekly" | "annual" | "unknown";
+    selectedTerritory?: string;
+    selectedPriceType?: "RETAIL" | "WHOLESALE";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    countryQueryUsed?: string;
+    commodityIdsUsed?: string[];
+    rowsParsed?: number;
+    query?: string;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidget =
   | GrainWidgetCashBids
   | GrainWidgetGlobalSpot
@@ -854,7 +906,8 @@ type GrainWidget =
   | GrainWidgetAlphaVantageBenchmarks
   | GrainWidgetNasdaqDataLinkSnapshot
   | GrainWidgetUsdaGtrLogisticsSnapshot
-  | GrainWidgetFaostatPpMultiCountry;
+  | GrainWidgetFaostatPpMultiCountry
+  | GrainWidgetFpmaMarketPricesMultiCountry;
 
 type GrainWidgetsResponse = {
   enabled?: boolean;
@@ -1965,6 +2018,11 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return "US";
     return window.localStorage.getItem("monitor_country_global") || "US";
   });
+  const [grainPriceType, setGrainPriceType] = useState<"RETAIL" | "WHOLESALE">(() => {
+    if (typeof window === "undefined") return "WHOLESALE";
+    const saved = window.localStorage.getItem("monitor_price_type_fpma");
+    return saved === "RETAIL" ? "RETAIL" : "WHOLESALE";
+  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
 
@@ -1977,6 +2035,11 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("monitor_country_global", grainCountry);
   }, [grainCountry]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("monitor_price_type_fpma", grainPriceType);
+  }, [grainPriceType]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2041,10 +2104,11 @@ export default function MonitorPage() {
   });
 
   const grainWidgetsQuery = useQuery<GrainWidgetsResponse>({
-    queryKey: ["monitor-grain-widgets", grainCountry],
+    queryKey: ["monitor-grain-widgets", grainCountry, grainPriceType],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set("country", grainCountry);
+      params.set("priceType", grainPriceType);
       const response = await fetch(`/api/monitor/grain-widgets?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to load grain data expansion widgets");
       return response.json();
@@ -2300,6 +2364,7 @@ export default function MonitorPage() {
       "NASDAQ_DATA_LINK_SNAPSHOT",
       "USDA_GTR_LOGISTICS_SNAPSHOT",
       "FAOSTAT_PP_MULTI_COUNTRY",
+      "FPMA_MARKET_PRICES_MULTI_COUNTRY",
     ];
     const rawOrder = (grainWidgetsQuery.data?.widgets.order || []).filter((kind) =>
       defaultOrder.includes(kind),
@@ -2518,6 +2583,7 @@ export default function MonitorPage() {
                   const nasdaqWidget = grainDataByKind["NASDAQ_DATA_LINK_SNAPSHOT"] as GrainWidgetNasdaqDataLinkSnapshot | undefined;
                   const usdaGtrWidget = grainDataByKind["USDA_GTR_LOGISTICS_SNAPSHOT"] as GrainWidgetUsdaGtrLogisticsSnapshot | undefined;
                   const faostatWidget = grainDataByKind["FAOSTAT_PP_MULTI_COUNTRY"] as GrainWidgetFaostatPpMultiCountry | undefined;
+                  const fpmaWidget = grainDataByKind["FPMA_MARKET_PRICES_MULTI_COUNTRY"] as GrainWidgetFpmaMarketPricesMultiCountry | undefined;
                   const macroEmbedRenderable =
                     !!macroWidget &&
                     macroWidget.renderMode === "embed" &&
@@ -2685,6 +2751,96 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("FAOSTAT_PP_MULTI_COUNTRY") ? "Regional Producer Prices (FAOSTAT)" : "Regional Producer Prices (FAOSTAT) (not configured)"}
                             subtitle="Multi-country producer price snapshot"
+                          />
+                        </div>
+                      )}
+
+                      {fpmaWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">FPMA — Domestic Market Prices (wholesale/retail)</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(fpmaWidget.status)}`}>{fpmaWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{fpmaWidget.subtitle || "FAO FPMA domestic prices by selected territory"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(fpmaWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={fpmaWidget} value={grainCountry} onChange={setGrainCountry} />
+                              {fpmaWidget.selector?.priceType?.options?.length ? (
+                                <select
+                                  value={grainPriceType}
+                                  onChange={(event) => setGrainPriceType(event.target.value === "RETAIL" ? "RETAIL" : "WHOLESALE")}
+                                  className="h-7 rounded-md border border-black/60 bg-background/80 px-2 text-[10px] uppercase tracking-wide text-foreground dark:border-white/30"
+                                  aria-label="FPMA price type selector"
+                                >
+                                  {fpmaWidget.selector.priceType.options.map((option) => (
+                                    <option key={`fpma-type-${option}`} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : null}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {fpmaWidget.rows.slice(0, 5).map((row, idx) => (
+                                <div key={`${fpmaWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={row.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">
+                                    {formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}
+                                  </p>
+                                  <DynamicMiniTrend
+                                    series={row.series || []}
+                                    change={row.changeAbs}
+                                    changePct={row.changePct}
+                                    status={fpmaWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={fpmaWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: fpmaWidget.status,
+                                      sourceName: fpmaWidget.sourceName,
+                                      fallbackReason: fpmaWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!fpmaWidget.rows.length ? (
+                                <p className="text-[11px] text-foreground/68">No FPMA crop rows available for selected territory.</p>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {fpmaWidget.summary?.coverage ? <MetricChip label={`coverage ${fpmaWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {fpmaWidget.summary?.cadence ? <MetricChip label={`cadence ${fpmaWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                              {fpmaWidget.summary?.selectedPriceType ? <MetricChip label={`type ${fpmaWidget.summary.selectedPriceType.toLowerCase()}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={fpmaWidget.status}
+                              statusClassName={grainStatusClass(fpmaWidget.status)}
+                              sourceName={fpmaWidget.sourceName}
+                              sourceUrl={fpmaWidget.sourceUrl}
+                              updatedLabel={fpmaWidget.updatedAt ? formatRelative(fpmaWidget.updatedAt) : fpmaWidget.timeframe}
+                              fallbackReason={fpmaWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("FPMA_MARKET_PRICES_MULTI_COUNTRY") ? "Domestic Market Prices (FPMA)" : "Domestic Market Prices (FPMA) (not configured)"}
+                            subtitle="Multi-country domestic market prices"
                           />
                         </div>
                       )}

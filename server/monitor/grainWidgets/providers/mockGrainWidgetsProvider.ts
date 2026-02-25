@@ -3,6 +3,7 @@ import type {
   GrainWidgetAlphaVantageGrainBenchmarks,
   GrainWidgetCropPriceIndex,
   GrainWidgetFaostatPpMultiCountry,
+  GrainWidgetFpmaMarketPricesMultiCountry,
   GrainWidgetNasdaqDataLinkSnapshot,
   GrainWidgetUsdaGtrLogisticsSnapshot,
   GrainWidgetKind,
@@ -843,6 +844,112 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           warnings: ["mock_fallback_mode"],
         },
         notes: ["Mock fallback payload for FAOSTAT PP multi-country widget"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
+      const territoryCode = String(ctx.country || "UA").toUpperCase();
+      const territoryLabelMap: Record<string, string> = {
+        UA: "Ukraine",
+        US: "United States",
+        BR: "Brazil",
+        AR: "Argentina",
+        EU: "European Union",
+      };
+      const territoryLabel = territoryLabelMap[territoryCode] || "Ukraine";
+      const selectedPriceType = String(ctx.priceType || "WHOLESALE").toUpperCase() === "RETAIL" ? "RETAIL" : "WHOLESALE";
+      const points = Math.max(7, ctx.seriesPoints);
+      const widget: GrainWidgetFpmaMarketPricesMultiCountry = {
+        id: "grain-fpma-market-prices-multi-country",
+        kind: "FPMA_MARKET_PRICES_MULTI_COUNTRY",
+        title: "Domestic Market Prices (FPMA)",
+        subtitle: "FAO FPMA (wholesale/retail)",
+        status: "FALLBACK",
+        sourceName: "FAO FPMA (GIEWS)",
+        sourceAttribution: "Data: FAO FPMA domestic market prices",
+        sourceUrl: "https://fpma.fao.org/giews/fpmat4/api/prices",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "COUNTRY_MULTI",
+        territory: { code: territoryCode, label: territoryLabel },
+        supportedTerritories: [
+          { code: "UA", label: "Ukraine" },
+          { code: "US", label: "United States" },
+          { code: "BR", label: "Brazil" },
+          { code: "AR", label: "Argentina" },
+          { code: "EU", label: "European Union" },
+        ],
+        territorySelector: {
+          paramName: "country",
+          default: "UA",
+          current: territoryCode,
+          persistKey: "monitor_country_FPMA_MARKET_PRICES_MULTI_COUNTRY",
+        },
+        selector: {
+          priceType: {
+            current: selectedPriceType,
+            options: ["WHOLESALE", "RETAIL"],
+          },
+        },
+        rows: [
+          {
+            crop: "WHEAT",
+            label: "Wheat (domestic)",
+            current: 9.42,
+            unit: territoryCode === "UA" ? "UAH/kg" : territoryCode === "BR" ? "BRL/60kg" : "USD/t",
+            currency: territoryCode === "UA" ? "UAH" : territoryCode === "BR" ? "BRL" : "USD",
+            cadence: "monthly",
+            changeAbs: 0.21,
+            changePct: 2.28,
+            series: deriveSeries(9.42, 0.21, points),
+            confidence: "MED",
+            territory: { code: territoryCode, label: territoryLabel },
+          },
+          {
+            crop: "MAIZE",
+            label: "Maize (Corn) (domestic)",
+            current: 7.13,
+            unit: territoryCode === "UA" ? "UAH/kg" : territoryCode === "AR" ? "ARS/t" : "USD/t",
+            currency: territoryCode === "UA" ? "UAH" : territoryCode === "AR" ? "ARS" : "USD",
+            cadence: "monthly",
+            changeAbs: -0.08,
+            changePct: -1.11,
+            series: deriveSeries(7.13, -0.08, points),
+            confidence: "MED",
+            territory: { code: territoryCode, label: territoryLabel },
+          },
+          {
+            crop: "SOY",
+            label: "Soybeans (domestic)",
+            current: 14.87,
+            unit: territoryCode === "UA" ? "UAH/kg" : territoryCode === "BR" ? "BRL/60kg" : "USD/t",
+            currency: territoryCode === "UA" ? "UAH" : territoryCode === "BR" ? "BRL" : "USD",
+            cadence: "monthly",
+            changeAbs: 0.19,
+            changePct: 1.29,
+            series: deriveSeries(14.87, 0.19, points),
+            confidence: "MED",
+            territory: { code: territoryCode, label: territoryLabel },
+          },
+        ],
+        summary: {
+          expectedCount: 5,
+          mappedCount: 3,
+          coverage: "3/5",
+          cadence: "monthly",
+          selectedTerritory: territoryCode,
+          selectedPriceType,
+        },
+        debug: {
+          sourceUrlUsed: "https://fpma.fao.org/giews/fpmat4/api/prices?format=json",
+          countryQueryUsed: territoryCode,
+          commodityIdsUsed: ["WHEAT", "MAIZE", "SOYBEANS"],
+          rowsParsed: 18,
+          warnings: ["mock_fallback_mode"],
+        },
+        notes: ["Mock fallback payload for FPMA multi-country widget", "Native units preserved"],
         fallbackReason: reason,
       };
       return widget;

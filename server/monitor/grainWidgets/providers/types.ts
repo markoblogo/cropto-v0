@@ -6,6 +6,7 @@ export interface GrainWidgetsProviderContext {
   seriesPoints: number;
   eurUsd: number | null;
   country?: string;
+  priceType?: "RETAIL" | "WHOLESALE";
   getCachedWidget?: (kind: GrainWidgetKind) => GrainWidget | undefined;
 }
 
