@@ -114,9 +114,18 @@ type LogisticsIndicator = {
   sourceUrl: string;
   updatedAt?: string;
   timeframe: string;
-  trendLabel: "Rising" | "Cooling" | "Stable" | "Elevated";
+  trendLabel: "Rising" | "Building" | "Stable" | "Cooling" | "Easing" | "Elevated";
+  level?: "Low" | "Moderate" | "Elevated" | "High" | "Severe";
+  explanation?: string;
+  components?: {
+    eventIntensity: number;
+    blackSeaFocus: number;
+    frictionFactors: number;
+    transportContext: number;
+    confidence: number;
+  };
   series: Array<{ ts: string; value: number }>;
-  note?: string;
+  notes?: string[];
   fallbackReason?: string;
 };
 
@@ -322,7 +331,21 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           </a>
           <span>{indicator.updatedAt ? formatRelative(indicator.updatedAt) : indicator.timeframe}</span>
         </div>
-        <p className="text-[10px] text-slate-500 line-clamp-2">{indicator.note || indicator.sourceAttribution}</p>
+        <div className="flex items-center gap-2">
+          {indicator.level ? (
+            <Badge className="border-primary/35 bg-primary/12 text-[10px] text-primary-foreground">{indicator.level}</Badge>
+          ) : null}
+          <span className="text-[10px] text-slate-400">{indicator.trendLabel}</span>
+        </div>
+        {indicator.components ? (
+          <div className="flex flex-wrap gap-1">
+            <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-300">Black Sea {indicator.components.blackSeaFocus}</span>
+            <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-300">Friction {indicator.components.frictionFactors}</span>
+            <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-300">Confidence {indicator.components.confidence}</span>
+          </div>
+        ) : null}
+        {indicator.explanation ? <p className="text-[10px] text-slate-300/90 line-clamp-2">{indicator.explanation}</p> : null}
+        <p className="text-[10px] text-slate-500 line-clamp-2">{indicator.notes?.[0] || indicator.sourceAttribution}</p>
       </CardContent>
     </Card>
   );

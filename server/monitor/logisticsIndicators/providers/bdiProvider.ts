@@ -1,12 +1,12 @@
 import { BDI_FETCH_TIMEOUT_MS, BDI_SOURCE_URL, ENABLE_BDI_WIDGET } from "../config";
-import type { LogisticsIndicatorProvider, LogisticsIndicatorWidgetData } from "../types";
+import type { LogisticsIndicatorProvider, LogisticsIndicatorWidgetData, LogisticsPressureContext } from "../types";
 import { computeDelta, fetchTextWithTimeout, makeMockSeries, parseCsvSeries, toIndicatorSeries, trendLabel } from "./utils";
 
 export class BdiProvider implements LogisticsIndicatorProvider {
   readonly id = "bdi" as const;
   readonly enabled = ENABLE_BDI_WIDGET;
 
-  async load(): Promise<LogisticsIndicatorWidgetData> {
+  async getWidgetData(_context?: LogisticsPressureContext): Promise<LogisticsIndicatorWidgetData> {
     const csv = await fetchTextWithTimeout(BDI_SOURCE_URL, BDI_FETCH_TIMEOUT_MS);
     const seriesRaw = parseCsvSeries(csv);
     if (!seriesRaw.length) throw new Error("bdi_series_empty");
@@ -31,7 +31,7 @@ export class BdiProvider implements LogisticsIndicatorProvider {
       timeframe: "7d",
       unit: "index",
       series,
-      notes: "Demo-grade proxy. Daily cadence, not tick-level market data.",
+      notes: ["Demo-grade proxy. Daily cadence, not tick-level market data."],
     };
   }
 
@@ -59,7 +59,7 @@ export class BdiProvider implements LogisticsIndicatorProvider {
       unit: "index",
       series,
       fallbackReason: reason,
-      notes: "Fallback sample used while source is unavailable.",
+      notes: ["Fallback sample used while source is unavailable."],
     };
   }
 }

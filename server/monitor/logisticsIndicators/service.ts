@@ -13,6 +13,7 @@ import type {
   LogisticsIndicatorsResponse,
   LogisticsProviderDebug,
   LogisticsIndicatorWidgetData,
+  LogisticsPressureContext,
 } from "./types";
 
 type CacheEntry = {
@@ -113,59 +114,90 @@ export class LogisticsIndicatorsService {
     if (this.refreshInFlight) return this.refreshInFlight;
     this.refreshInFlight = (async () => {
       const now = Date.now();
-      await Promise.all(
-        this.providers.map(async (provider) => {
-          if (!provider.enabled) return;
-          const existing = this.cache.get(provider.id);
-          if (!force && existing && now - existing.fetchedAt < LOGISTICS_INDICATORS_REFRESH_MS) return;
-          try {
-            const data = await provider.load();
-            this.cache.set(provider.id, {
-              fetchedAt: now,
-              lastSuccessAt: new Date().toISOString(),
-              data: {
-                ...data,
-                status: data.status === "OFFLINE" ? "REFRESH" : data.status,
-              },
-            });
-          } catch (error: any) {
-            const reason = error?.message || "fetch_failed";
-            if (existing) {
-              this.cache.set(provider.id, {
-                ...existing,
-                data: {
-                  ...existing.data,
-                  status: existing.data.status === "LIVE" ? "DELAYED" : existing.data.status,
-                  fallbackReason: reason,
-                },
-                lastError: reason,
-              });
-              return;
-            }
-            if (ENABLE_LOGISTICS_MOCK_FALLBACK) {
-              this.cache.set(provider.id, {
-                fetchedAt: now,
-                data: provider.mockFallback(reason),
-                lastError: reason,
-              });
-              return;
-            }
-            this.cache.set(provider.id, {
-              fetchedAt: now,
-              data: {
-                ...provider.mockFallback(reason),
-                status: "OFFLINE",
-                series: [],
-                valueCurrent: undefined,
-              },
-              lastError: reason,
-            });
-          }
-        }),
-      );
+      const nonPressure = this.providers.filter((provider) => !(provider instanceof LogisticsPressureProvider));
+      const pressure = this.providers.find((provider) => provider instanceof LogisticsPressureProvider);
+
+      await Promise.all(nonPressure.map((provider) => this.refreshProvider(provider, now, force)));
+
+      if (pressure) {
+        const context = this.resolvePressureContext();
+        await this.refreshProvider(pressure, now, force, context);
+      }
     })().finally(() => {
       this.refreshInFlight = null;
     });
     return this.refreshInFlight;
+  }
+
+  private resolvePressureContext(): LogisticsPressureContext {
+    const bdi = this.cache.get("bdi")?.data;
+    const rail = this.cache.get("rail_tariff")?.data;
+
+    const toDirection = (change?: number): "up" | "down" | "flat" | "unknown" => {
+      if (change == null) return "unknown";
+      if (Math.abs(change) < 0.01) return "flat";
+      return change > 0 ? "up" : "down";
+    };
+
+    return {
+      bdiDirection: toDirection(bdi?.valueChange),
+      bdiChangePct: bdi?.valueChangePct,
+      railDirection: toDirection(rail?.valueChange),
+      railChangePct: rail?.valueChangePct,
+    };
+  }
+
+  private async refreshProvider(
+    provider: LogisticsIndicatorProvider,
+    now: number,
+    force: boolean,
+    context?: LogisticsPressureContext,
+  ): Promise<void> {
+    if (!provider.enabled) return;
+    const existing = this.cache.get(provider.id);
+    if (!force && existing && now - existing.fetchedAt < LOGISTICS_INDICATORS_REFRESH_MS) return;
+    try {
+      const data = await provider.getWidgetData(context);
+      this.cache.set(provider.id, {
+        fetchedAt: now,
+        lastSuccessAt: new Date().toISOString(),
+        data: {
+          ...data,
+          status: data.status === "OFFLINE" ? "REFRESH" : data.status,
+        },
+      });
+    } catch (error: any) {
+      const reason = error?.message || "fetch_failed";
+      if (existing) {
+        this.cache.set(provider.id, {
+          ...existing,
+          data: {
+            ...existing.data,
+            status: existing.data.status === "LIVE" ? "DELAYED" : existing.data.status,
+            fallbackReason: reason,
+          },
+          lastError: reason,
+        });
+        return;
+      }
+      if (ENABLE_LOGISTICS_MOCK_FALLBACK) {
+        this.cache.set(provider.id, {
+          fetchedAt: now,
+          data: provider.mockFallback(reason),
+          lastError: reason,
+        });
+        return;
+      }
+      this.cache.set(provider.id, {
+        fetchedAt: now,
+        data: {
+          ...provider.mockFallback(reason),
+          status: "OFFLINE",
+          series: [],
+          valueCurrent: undefined,
+        },
+        lastError: reason,
+      });
+    }
   }
 }

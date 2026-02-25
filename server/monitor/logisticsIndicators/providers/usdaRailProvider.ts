@@ -1,12 +1,12 @@
 import { ENABLE_USDA_RAIL_WIDGET, USDA_GTR_FETCH_TIMEOUT_MS, USDA_GTR_RAIL_TARIFF_URL } from "../config";
-import type { LogisticsIndicatorProvider, LogisticsIndicatorWidgetData } from "../types";
+import type { LogisticsIndicatorProvider, LogisticsIndicatorWidgetData, LogisticsPressureContext } from "../types";
 import { computeDelta, fetchTextWithTimeout, makeMockSeries, parseCsvSeries, toIndicatorSeries, trendLabel } from "./utils";
 
 export class UsdaRailProvider implements LogisticsIndicatorProvider {
   readonly id = "rail_tariff" as const;
   readonly enabled = ENABLE_USDA_RAIL_WIDGET;
 
-  async load(): Promise<LogisticsIndicatorWidgetData> {
+  async getWidgetData(_context?: LogisticsPressureContext): Promise<LogisticsIndicatorWidgetData> {
     const csv = await fetchTextWithTimeout(USDA_GTR_RAIL_TARIFF_URL, USDA_GTR_FETCH_TIMEOUT_MS);
     const seriesRaw = parseCsvSeries(csv);
     if (!seriesRaw.length) throw new Error("usda_rail_series_empty");
@@ -31,7 +31,7 @@ export class UsdaRailProvider implements LogisticsIndicatorProvider {
       timeframe: "weekly",
       unit: "index",
       series,
-      notes: "Authoritative dataset trend (non-realtime).",
+      notes: ["Authoritative dataset trend (non-realtime)."],
     };
   }
 
@@ -59,7 +59,7 @@ export class UsdaRailProvider implements LogisticsIndicatorProvider {
       unit: "index",
       series,
       fallbackReason: reason,
-      notes: "Fallback sample used while USDA series is unavailable.",
+      notes: ["Fallback sample used while USDA series is unavailable."],
     };
   }
 }
