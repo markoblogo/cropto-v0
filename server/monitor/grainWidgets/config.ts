@@ -13,6 +13,8 @@ export const ENABLE_GRAIN_WIDGETS_EXPANSION = envBool("ENABLE_GRAIN_WIDGETS_EXPA
 export const ENABLE_BARCHART_CASH_WIDGETS = envBool("ENABLE_BARCHART_CASH_WIDGETS", true);
 export const ENABLE_COMMODITIC_WIDGETS = envBool("ENABLE_COMMODITIC_WIDGETS", true);
 export const ENABLE_APIFARMER_WIDGETS = envBool("ENABLE_APIFARMER_WIDGETS", true);
+export const ENABLE_DBNOMICS_WIDGETS = envBool("ENABLE_DBNOMICS_WIDGETS", true);
+export const ENABLE_FAO_FFPI_WIDGETS = envBool("ENABLE_FAO_FFPI_WIDGETS", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -42,6 +44,8 @@ export const COMMODITIC_SOURCE_URL =
   process.env.COMMODITIC_SOURCE_URL ||
   "https://www.commoditic.com/";
 export const COMMODITIC_TIMEOUT_MS = envNum("COMMODITIC_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const DBNOMICS_BASE_URL = process.env.DBNOMICS_BASE_URL || "https://api.db.nomics.world/v22";
+export const DBNOMICS_TIMEOUT_MS = envNum("DBNOMICS_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 
 export const APIFARMER_API_URL = process.env.APIFARMER_API_URL || "";
 export const APIFARMER_API_KEY = process.env.APIFARMER_API_KEY || "";
@@ -49,6 +53,13 @@ export const APIFARMER_SOURCE_URL =
   process.env.APIFARMER_SOURCE_URL ||
   "https://apifarmer.com/";
 export const APIFARMER_TIMEOUT_MS = envNum("APIFARMER_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const FAO_FFPI_URL =
+  process.env.FAO_FFPI_URL ||
+  "https://fenixservices.fao.org/faostat/api/v1/en/FAOSTAT/CP";
+export const FAO_FFPI_TIMEOUT_MS = envNum("FAO_FFPI_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const USDA_FAS_PSD_API_URL = process.env.USDA_FAS_PSD_API_URL || "";
+export const USDA_FAS_PSD_API_KEY = process.env.USDA_FAS_PSD_API_KEY || "";
+export const USDA_MARS_BASE_URL = process.env.USDA_MARS_BASE_URL || "https://usda.library.cornell.edu/api/v3.1";
 
 export const TRADINGCHARTS_CBOT_URL =
   process.env.TRADINGCHARTS_CBOT_URL ||
