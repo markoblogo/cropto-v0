@@ -101,6 +101,16 @@ type DebugResponse = {
     enabled: boolean;
     refreshMs: number;
     cacheTtlMs: number;
+    fxRateUsed?: number;
+    normalization?: {
+      defaults: {
+        price: "USD/t";
+        temperature: "C";
+      };
+      fxRateUsed?: number;
+      normalizedCount: number;
+      nativeFallbackCount: number;
+    };
     providers: Array<{
       providerId: string;
       providerType?: string;
@@ -108,8 +118,8 @@ type DebugResponse = {
       status: string;
       cacheAgeSec?: number;
       lastSuccessAt?: string;
-      fallbackMode: boolean;
-      lastError?: string;
+      fallbackUsed?: boolean;
+      error?: string;
     }>;
   };
 };
@@ -155,7 +165,7 @@ type LogisticsIndicatorsResponse = {
   message?: string;
 };
 
-type GrainWidgetStatus = "LIVE" | "DELAYED" | "INDICATIVE" | "FALLBACK" | "OFFLINE";
+type GrainWidgetStatus = "LIVE" | "REFRESH" | "DELAYED" | "INDICATIVE" | "FALLBACK" | "OFFLINE";
 
 type GrainInstrumentWidget = {
   instrumentKey: string;
@@ -173,6 +183,24 @@ type GrainInstrumentWidget = {
   timeframe: "1d" | "7d";
   currency?: string;
   unit?: string;
+  nativeValueCurrent?: number;
+  nativeValueChange?: number;
+  nativeValueChangePct?: number;
+  nativeCurrency?: string;
+  nativeUnit?: string;
+  normalizedValueCurrent?: number;
+  normalizedValueChange?: number;
+  normalizedValueChangePct?: number;
+  normalizedCurrency?: "USD";
+  normalizedUnit?: "t";
+  normalizationStatus?: "OK" | "PARTIAL" | "FX_MISSING" | "UNAVAILABLE";
+  normalizationMethod?: string;
+  normalizationMeta?: {
+    fxRateUsed?: number;
+    bushelsPerTon?: number;
+    cropFactor?: string;
+    notes?: string[];
+  };
   series: Array<{ ts: string; value: number }>;
   fallbackReason?: string;
 };
@@ -181,11 +209,13 @@ type GrainComparisonWidget = {
   id: string;
   title: string;
   status: GrainWidgetStatus;
-  sourceName: string;
-  sourceAttribution: string;
+  sourceAttribution?: string;
   leftLabel: string;
   rightLabel: string;
   comparisonType: "same-family" | "proxy";
+  spreadAbs?: number;
+  spreadUnit?: string;
+  spreadPct?: number;
   leftChangePct?: number;
   rightChangePct?: number;
   relativeMoveSignal: "US outperforming" | "EU outperforming" | "Mixed" | "Flat" | "Unavailable";
@@ -206,6 +236,13 @@ type GrainMarketsResponse = {
     generatedAt: string;
     cacheAgeSec?: number;
     partialFailure?: boolean;
+    fxRateUsed?: number;
+    normalizationCoverage?: {
+      ok: number;
+      partial: number;
+      fxMissing: number;
+      unavailable: number;
+    };
   };
   debug?: {
     providers: Array<{
@@ -233,6 +270,8 @@ type CompactSignalWidget = {
 
 type SignalType = "Harvest" | "Export" | "Logistics" | "Policy" | "Weather" | "Futures" | "Markets";
 type Impact = "High" | "Medium" | "Low";
+type PriceDisplayMode = "USD_TON" | "NATIVE";
+type TemperatureDisplayMode = "C" | "F";
 
 const CROPS = ["all", "wheat", "corn", "soy", "rapeseed", "sunflower", "barley", "oilseeds"] as const;
 const TOPICS = ["all", "markets", "trade", "logistics", "weather", "policy", "harvest"] as const;
@@ -351,14 +390,60 @@ function indicatorStatusLabel(status: LogisticsIndicator["status"]) {
 
 function grainStatusClass(status: GrainWidgetStatus) {
   if (status === "LIVE") return "border-emerald-400/45 bg-emerald-500/20 text-emerald-100";
+  if (status === "REFRESH") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
   if (status === "DELAYED") return "border-amber-400/45 bg-amber-500/20 text-amber-100";
   if (status === "INDICATIVE") return "border-cyan-400/45 bg-cyan-500/20 text-cyan-100";
   if (status === "FALLBACK") return "border-blue-400/45 bg-blue-500/20 text-blue-100";
   return "border-red-400/45 bg-red-500/20 text-red-100";
 }
 
-function GrainInstrumentCard({ widget }: { widget: GrainInstrumentWidget }) {
-  const positive = (widget.valueChange ?? 0) >= 0;
+function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMode) {
+  if (mode === "NATIVE") {
+    return {
+      value: widget.nativeValueCurrent ?? widget.valueCurrent,
+      change: widget.nativeValueChange ?? widget.valueChange,
+      changePct: widget.nativeValueChangePct ?? widget.valueChangePct,
+      unit: widget.nativeUnit || widget.unit,
+      currency: widget.nativeCurrency || widget.currency,
+      secondary:
+        widget.normalizationStatus === "OK" && widget.normalizedValueCurrent != null
+          ? `${widget.normalizedValueCurrent.toFixed(2)} USD/t`
+          : undefined,
+    };
+  }
+
+  if (widget.normalizationStatus === "OK" && widget.normalizedValueCurrent != null) {
+    return {
+      value: widget.normalizedValueCurrent,
+      change: widget.normalizedValueChange,
+      changePct: widget.normalizedValueChangePct,
+      unit: "t",
+      currency: "USD",
+      secondary:
+        widget.nativeValueCurrent != null
+          ? `${widget.nativeValueCurrent.toFixed(2)} ${widget.nativeUnit || ""}`.trim()
+          : undefined,
+    };
+  }
+
+  return {
+    value: widget.nativeValueCurrent ?? widget.valueCurrent,
+    change: widget.nativeValueChange ?? widget.valueChange,
+    changePct: widget.nativeValueChangePct ?? widget.valueChangePct,
+    unit: widget.nativeUnit || widget.unit,
+    currency: widget.nativeCurrency || widget.currency,
+    secondary: widget.normalizationStatus === "FX_MISSING" ? "USD/t unavailable (FX missing)" : "Native units",
+  };
+}
+
+function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstrumentWidget; priceDisplayMode: PriceDisplayMode }) {
+  const display = formatPrimaryPrice(widget, priceDisplayMode);
+  const positive = (display.change ?? 0) >= 0;
+  const unitLabel = display.unit
+    ? display.unit.includes("/") || display.unit.toLowerCase().includes("usd") || display.unit.toLowerCase().includes("eur")
+      ? display.unit
+      : `${display.currency || ""}/${display.unit}`
+    : display.currency || "";
   return (
     <Card className="border-white/12 bg-slate-950/76 text-slate-100">
       <CardContent className="space-y-2 pt-3">
@@ -372,13 +457,14 @@ function GrainInstrumentCard({ widget }: { widget: GrainInstrumentWidget }) {
 
         <div className="flex items-end justify-between gap-2">
           <p className="text-2xl font-bold text-white">
-            {widget.valueCurrent == null ? "n/a" : widget.valueCurrent.toFixed(2)}
-            <span className="ml-1 text-[10px] font-medium text-slate-400">{widget.currency || ""}{widget.unit ? ` ${widget.unit}` : ""}</span>
+            {display.value == null ? "n/a" : display.value.toFixed(2)}
+            <span className="ml-1 text-[10px] font-medium text-slate-400">{unitLabel}</span>
           </p>
           <p className={`text-xs font-semibold ${positive ? "text-emerald-300" : "text-red-300"}`}>
-            {widget.valueChange == null ? "No delta" : `${positive ? "+" : ""}${widget.valueChange.toFixed(2)}${widget.valueChangePct != null ? ` (${positive ? "+" : ""}${widget.valueChangePct.toFixed(2)}%)` : ""}`}
+            {display.change == null ? "No delta" : `${positive ? "+" : ""}${display.change.toFixed(2)}${display.changePct != null ? ` (${positive ? "+" : ""}${display.changePct.toFixed(2)}%)` : ""}`}
           </p>
         </div>
+        {display.secondary ? <p className="text-[10px] text-slate-500">{display.secondary}</p> : null}
 
         <div className="h-12">
           {widget.series.length ? (
@@ -408,6 +494,7 @@ function GrainInstrumentCard({ widget }: { widget: GrainInstrumentWidget }) {
 }
 
 function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
+  const spreadPositive = (widget.spreadAbs ?? 0) >= 0;
   return (
     <Card className="border-white/10 bg-slate-950/68 text-slate-100">
       <CardContent className="space-y-2 pt-3">
@@ -426,6 +513,11 @@ function GrainComparisonCard({ widget }: { widget: GrainComparisonWidget }) {
           </div>
         </div>
         <p className="text-xs font-semibold text-primary">{widget.relativeMoveSignal}</p>
+        {widget.spreadAbs != null ? (
+          <p className={`text-[11px] font-semibold ${spreadPositive ? "text-emerald-300" : "text-red-300"}`}>
+            Spread: {spreadPositive ? "+" : ""}{widget.spreadAbs.toFixed(2)} {widget.spreadUnit || ""} {widget.spreadPct != null ? `(${spreadPositive ? "+" : ""}${widget.spreadPct.toFixed(2)}%)` : ""}
+          </p>
+        ) : null}
         <p className="text-[10px] text-slate-500 line-clamp-2">{widget.note || (widget.comparisonType === "proxy" ? "Proxy cross-market comparison (not identical contracts)" : "Relative performance comparison.")}</p>
       </CardContent>
     </Card>
@@ -607,6 +699,8 @@ export default function MonitorPage() {
   const [threshold, setThreshold] = useState(3);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const [chartWindow, setChartWindow] = useState<"24h" | "7d">("24h");
+  const [priceDisplayMode, setPriceDisplayMode] = useState<PriceDisplayMode>("USD_TON");
+  const [temperatureDisplayMode, setTemperatureDisplayMode] = useState<TemperatureDisplayMode>("C");
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -923,11 +1017,49 @@ export default function MonitorPage() {
           <LiveVisualsPanel debugEnabled={debugEnabled} compact />
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Grain Markets Core</h2>
-              <span className="text-[11px] text-slate-500">
-                {grainMarketsQuery.data?.meta?.partialFailure ? "CBOT + Euronext (partial/fallback)" : "CBOT + Euronext (core)"}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">Grain Markets Core</h2>
+                <span className="text-[11px] text-slate-500">
+                  {grainMarketsQuery.data?.meta?.partialFailure ? "CBOT + Euronext (partial/fallback)" : "CBOT + Euronext (core)"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                <span className="uppercase tracking-wide">Price</span>
+                <Button
+                  size="sm"
+                  variant={priceDisplayMode === "USD_TON" ? "default" : "outline"}
+                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  onClick={() => setPriceDisplayMode("USD_TON")}
+                >
+                  USD/t
+                </Button>
+                <Button
+                  size="sm"
+                  variant={priceDisplayMode === "NATIVE" ? "default" : "outline"}
+                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  onClick={() => setPriceDisplayMode("NATIVE")}
+                >
+                  Native
+                </Button>
+                <span className="ml-1 uppercase tracking-wide">Temp</span>
+                <Button
+                  size="sm"
+                  variant={temperatureDisplayMode === "C" ? "default" : "outline"}
+                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  onClick={() => setTemperatureDisplayMode("C")}
+                >
+                  °C
+                </Button>
+                <Button
+                  size="sm"
+                  variant={temperatureDisplayMode === "F" ? "default" : "outline"}
+                  className="h-7 px-2 text-[10px] border-white/20 text-slate-200"
+                  onClick={() => setTemperatureDisplayMode("F")}
+                >
+                  °F
+                </Button>
+              </div>
             </div>
             {!grainMarketsQuery.data || (grainMarketsQuery.data.widgets.cbot.length === 0 && grainMarketsQuery.data.widgets.euronext.length === 0) ? (
               <Card className="border-white/12 bg-slate-950/72 text-slate-100">
@@ -939,7 +1071,7 @@ export default function MonitorPage() {
               <div className="grid gap-3 xl:grid-cols-12">
                 <div className="xl:col-span-8 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {[...(grainMarketsQuery.data?.widgets.cbot || []), ...(grainMarketsQuery.data?.widgets.euronext || [])].map((widget) => (
-                    <GrainInstrumentCard key={widget.instrumentKey} widget={widget} />
+                    <GrainInstrumentCard key={widget.instrumentKey} widget={widget} priceDisplayMode={priceDisplayMode} />
                   ))}
                 </div>
                 <div className="xl:col-span-4 grid gap-3">
@@ -1428,11 +1560,19 @@ export default function MonitorPage() {
                     <p>
                       enabled: {String(debugQuery.data.grainMarkets.enabled)} • refresh: {Math.round(debugQuery.data.grainMarkets.refreshMs / 1000)}s • cacheTTL: {Math.round(debugQuery.data.grainMarkets.cacheTtlMs / 1000)}s
                     </p>
+                    <p>
+                      defaults: USD/t & °C • fx EURUSD: {debugQuery.data.grainMarkets.fxRateUsed?.toFixed(4) ?? "n/a"}
+                    </p>
+                    {debugQuery.data.grainMarkets.normalization ? (
+                      <p>
+                        normalized: {debugQuery.data.grainMarkets.normalization.normalizedCount} • native fallback: {debugQuery.data.grainMarkets.normalization.nativeFallbackCount}
+                      </p>
+                    ) : null}
                     <ul className="list-disc pl-5">
                       {debugQuery.data.grainMarkets.providers.map((provider) => (
                         <li key={`gm-${provider.providerId}`}>
-                          {provider.providerId}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackMode)}
-                          {provider.lastError ? ` • err: ${provider.lastError}` : ""}
+                          {provider.providerId}: {provider.status} • cacheAge {provider.cacheAgeSec ?? "-"}s • fallback {String(provider.fallbackUsed)}
+                          {provider.error ? ` • err: ${provider.error}` : ""}
                         </li>
                       ))}
                     </ul>

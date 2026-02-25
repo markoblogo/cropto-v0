@@ -7,6 +7,7 @@ import {
 } from "./config";
 import { buildComparisonWidgets } from "./comparison";
 import { quoteToWidget } from "./mapping";
+import { normalizeGrainPriceToUsdTon } from "./normalization";
 import { CBOT_KEYS, DEFAULT_GRAIN_MARKET_INSTRUMENT_ORDER, EURONEXT_KEYS } from "./symbols";
 import type {
   GrainMarketInstrumentKey,
@@ -17,6 +18,7 @@ import type {
   GrainMarketsResponse,
   GrainMarketsWidgetsPayload,
 } from "./types";
+import { latestFxSnapshot } from "../../ingestion/storage/fxRepository";
 import { CbotBarchartProvider } from "./providers/cbotBarchartProvider";
 import { CbotTradingChartsProvider } from "./providers/cbotTradingChartsProvider";
 import { EuronextWebProvider } from "./providers/euronextWebProvider";
@@ -32,6 +34,71 @@ type CacheEntry = {
   response: GrainMarketsResponse;
   providerDebug: ProviderRuntimeDebug[];
 };
+
+function cropForBushel(key: GrainMarketInstrumentKey): "corn" | "wheat" | "soybeans" | undefined {
+  if (key === "CBOT_CORN") return "corn";
+  if (key === "CBOT_WHEAT") return "wheat";
+  if (key === "CBOT_SOYBEANS") return "soybeans";
+  return undefined;
+}
+
+function nativeUnitTypeForQuote(quote: GrainMarketQuoteNormalized) {
+  const unit = (quote.unit || "").toLowerCase();
+  const currency = (quote.currency || "").toLowerCase();
+  if (unit.includes("c/bu") || unit.includes("cent")) return "CENTS_PER_BUSHEL" as const;
+  if (unit.includes("usd/bu")) return "USD_PER_BUSHEL" as const;
+  if (unit.includes("eur/t") || (currency === "eur" && unit.includes("/t"))) return "EUR_PER_TON" as const;
+  if (unit.includes("usd/t") || (currency === "usd" && unit.includes("/t"))) return "USD_PER_TON" as const;
+  return "UNKNOWN" as const;
+}
+
+function applyPriceNormalization(
+  quote: GrainMarketQuoteNormalized,
+  eurUsd: number | null,
+): GrainMarketQuoteNormalized {
+  const normalization = normalizeGrainPriceToUsdTon({
+    quote: {
+      valueCurrent: quote.valueCurrent,
+      valueChange: quote.valueChange,
+      valueChangePct: quote.valueChangePct,
+      currency: quote.currency,
+      unit: quote.unit,
+      nativeUnitType: nativeUnitTypeForQuote(quote),
+      crop: cropForBushel(quote.key),
+    },
+    fx: { eurUsd: eurUsd ?? undefined },
+  });
+
+  const normalized = normalization.normalized;
+  const useNormalized = normalization.status === "OK" && normalized?.valueCurrent != null;
+
+  return {
+    ...quote,
+    nativeValueCurrent: normalization.native.valueCurrent,
+    nativeValueChange: normalization.native.valueChange,
+    nativeValueChangePct: normalization.native.valueChangePct,
+    nativeCurrency: normalization.native.currency,
+    nativeUnit: normalization.native.unit,
+    normalizedValueCurrent: normalized?.valueCurrent,
+    normalizedValueChange: normalized?.valueChange,
+    normalizedValueChangePct: normalized?.valueChangePct,
+    normalizedCurrency: normalized?.currency,
+    normalizedUnit: normalized?.unit,
+    normalizationStatus: normalization.status,
+    normalizationMethod: normalization.meta.method,
+    normalizationMeta: {
+      fxRateUsed: normalization.meta.fxRateUsed,
+      bushelsPerTon: normalization.meta.bushelsPerTon,
+      cropFactor: normalization.meta.cropFactor,
+      notes: normalization.meta.notes,
+    },
+    valueCurrent: useNormalized ? normalized?.valueCurrent : normalization.native.valueCurrent,
+    valueChange: useNormalized ? normalized?.valueChange : normalization.native.valueChange,
+    valueChangePct: useNormalized ? normalized?.valueChangePct : normalization.native.valueChangePct,
+    currency: useNormalized ? "USD" : normalization.native.currency || quote.currency,
+    unit: useNormalized ? "t" : normalization.native.unit,
+  };
+}
 
 export class GrainMarketsService {
   private readonly cbotPrimary: GrainMarketsProvider = new CbotBarchartProvider();
@@ -100,12 +167,21 @@ export class GrainMarketsService {
     return response;
   }
 
-  debugSummary(): { enabled: boolean; refreshMs: number; cacheTtlMs: number; providers: GrainMarketsProviderDebug[] } {
+  debugSummary(): {
+    enabled: boolean;
+    refreshMs: number;
+    cacheTtlMs: number;
+    providers: GrainMarketsProviderDebug[];
+    fxRateUsed?: number;
+    normalization?: GrainMarketsDebug["normalization"];
+  } {
     return {
       enabled: ENABLE_GRAIN_MARKETS_CORE,
       refreshMs: GRAIN_MARKETS_REFRESH_MS,
       cacheTtlMs: GRAIN_MARKETS_CACHE_TTL_MS,
       providers: this.cache?.providerDebug || [],
+      fxRateUsed: this.cache?.response.meta.fxRateUsed,
+      normalization: this.cache?.response.debug?.normalization,
     };
   }
 
@@ -142,9 +218,13 @@ export class GrainMarketsService {
         sourceErrors,
       );
 
-      const allQuotes = [...cbotQuotes, ...euronextQuotes];
-      const cbotWidgets = cbotQuotes.map((quote) => quoteToWidget(quote));
-      const euronextWidgets = euronextQuotes.map((quote) => quoteToWidget(quote));
+      const eurUsd = await this.loadEurUsd();
+      const cbotNormalized = cbotQuotes.map((quote) => applyPriceNormalization(quote, eurUsd));
+      const euronextNormalized = euronextQuotes.map((quote) => applyPriceNormalization(quote, eurUsd));
+
+      const allQuotes = [...cbotNormalized, ...euronextNormalized];
+      const cbotWidgets = cbotNormalized.map((quote) => quoteToWidget(quote));
+      const euronextWidgets = euronextNormalized.map((quote) => quoteToWidget(quote));
       const comparisons = buildComparisonWidgets(allQuotes, now.toISOString());
 
       const instrumentsReturned = allQuotes
@@ -164,6 +244,13 @@ export class GrainMarketsService {
         timeframe: GRAIN_MARKETS_TIMEFRAME_DEFAULT,
         instrumentsRequested: DEFAULT_GRAIN_MARKET_INSTRUMENT_ORDER,
         instrumentsReturned,
+        fxRateUsed: eurUsd ?? undefined,
+        normalizationCoverage: {
+          ok: allQuotes.filter((quote) => quote.normalizationStatus === "OK").length,
+          partial: allQuotes.filter((quote) => quote.normalizationStatus === "PARTIAL").length,
+          fxMissing: allQuotes.filter((quote) => quote.normalizationStatus === "FX_MISSING").length,
+          unavailable: allQuotes.filter((quote) => quote.normalizationStatus === "UNAVAILABLE" || !quote.normalizationStatus).length,
+        },
         counts: {
           total: allQuotes.length,
           live: allQuotes.filter((quote) => quote.status === "LIVE" || quote.status === "REFRESH").length,
@@ -196,6 +283,27 @@ export class GrainMarketsService {
           unavailableInstruments: DEFAULT_GRAIN_MARKET_INSTRUMENT_ORDER.filter(
             (key) => !instrumentsReturned.includes(key),
           ),
+          normalization: {
+            defaults: {
+              price: "USD/t",
+              temperature: "C",
+            },
+            fxRateUsed: eurUsd ?? undefined,
+            perInstrument: Object.fromEntries(
+              allQuotes.map((quote) => [
+                quote.key,
+                {
+                  normalizationStatus: quote.normalizationStatus || "UNAVAILABLE",
+                  normalizationMethod: quote.normalizationMethod,
+                  fxRateUsed: quote.normalizationMeta?.fxRateUsed,
+                },
+              ]),
+            ),
+            normalizedCount: allQuotes.filter((quote) => quote.normalizationStatus === "OK").length,
+            nativeFallbackCount: allQuotes.filter(
+              (quote) => quote.normalizationStatus === "FX_MISSING" || quote.normalizationStatus === "UNAVAILABLE",
+            ).length,
+          },
         },
       };
 
@@ -302,6 +410,16 @@ export class GrainMarketsService {
     }
 
     return out.sort((a, b) => DEFAULT_GRAIN_MARKET_INSTRUMENT_ORDER.indexOf(a.key) - DEFAULT_GRAIN_MARKET_INSTRUMENT_ORDER.indexOf(b.key));
+  }
+
+  private async loadEurUsd(): Promise<number | null> {
+    try {
+      const fx = await latestFxSnapshot();
+      const eurUsd = fx?.usdPerUnit?.EUR;
+      return typeof eurUsd === "number" && Number.isFinite(eurUsd) && eurUsd > 0 ? eurUsd : null;
+    } catch {
+      return null;
+    }
   }
 
   private offlineFallbackResponse(reason: string): GrainMarketsResponse {

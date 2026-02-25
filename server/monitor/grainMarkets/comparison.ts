@@ -39,6 +39,19 @@ function buildComparison(args: {
   const leftChangePct = args.left?.valueChangePct;
   const rightChangePct = args.right?.valueChangePct;
   const rel = relativeMoveSignal(leftChangePct, rightChangePct);
+  const bothNormalized =
+    args.left?.normalizationStatus === "OK" &&
+    args.right?.normalizationStatus === "OK" &&
+    typeof args.left.normalizedValueCurrent === "number" &&
+    typeof args.right.normalizedValueCurrent === "number";
+  const spreadAbs =
+    bothNormalized
+      ? Number((args.left!.normalizedValueCurrent! - args.right!.normalizedValueCurrent!).toFixed(2))
+      : undefined;
+  const spreadPct =
+    bothNormalized && args.right!.normalizedValueCurrent
+      ? Number(((spreadAbs! / args.right!.normalizedValueCurrent!) * 100).toFixed(2))
+      : undefined;
 
   return {
     id: args.id,
@@ -49,11 +62,18 @@ function buildComparison(args: {
     rightInstrumentKey: args.right?.key ?? "EURONEXT_CORN",
     leftLabel: args.left?.displayName ?? "US market",
     rightLabel: args.right?.displayName ?? "EU market",
+    spreadAbs,
+    spreadUnit: bothNormalized ? "USD/t" : undefined,
+    spreadPct,
     leftChangePct,
     rightChangePct,
     relativeMoveSignal: rel,
     trendLabel: trendLabel(rel),
-    note: args.note,
+    note:
+      args.note ||
+      (bothNormalized
+        ? "Spread computed on normalized USD/t values."
+        : "Units not fully normalized; showing directional % comparison only."),
     sourceAttribution: "Derived from CBOT + Euronext quotes",
     updatedAt: args.updatedAt,
     fallbackReason: !args.left || !args.right ? "missing_instrument_for_comparison" : undefined,

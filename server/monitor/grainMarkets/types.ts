@@ -56,6 +56,24 @@ export interface GrainMarketQuoteNormalized extends GrainMarketInstrumentMeta {
   valuePrevious?: number;
   valueChange?: number;
   valueChangePct?: number;
+  nativeValueCurrent?: number;
+  nativeValueChange?: number;
+  nativeValueChangePct?: number;
+  nativeCurrency?: string;
+  nativeUnit?: string;
+  normalizedValueCurrent?: number;
+  normalizedValueChange?: number;
+  normalizedValueChangePct?: number;
+  normalizedCurrency?: "USD";
+  normalizedUnit?: "t";
+  normalizationStatus?: "OK" | "PARTIAL" | "FX_MISSING" | "UNAVAILABLE";
+  normalizationMethod?: string;
+  normalizationMeta?: {
+    fxRateUsed?: number;
+    bushelsPerTon?: number;
+    cropFactor?: string;
+    notes?: string[];
+  };
   series?: GrainMarketPoint[];
   notes?: string[];
   fallbackReason?: string;
@@ -81,6 +99,24 @@ export interface GrainMarketWidgetItem {
   valueChangePct?: number;
   currency?: string;
   unit?: string;
+  nativeValueCurrent?: number;
+  nativeValueChange?: number;
+  nativeValueChangePct?: number;
+  nativeCurrency?: string;
+  nativeUnit?: string;
+  normalizedValueCurrent?: number;
+  normalizedValueChange?: number;
+  normalizedValueChangePct?: number;
+  normalizedCurrency?: "USD";
+  normalizedUnit?: "t";
+  normalizationStatus?: "OK" | "PARTIAL" | "FX_MISSING" | "UNAVAILABLE";
+  normalizationMethod?: string;
+  normalizationMeta?: {
+    fxRateUsed?: number;
+    bushelsPerTon?: number;
+    cropFactor?: string;
+    notes?: string[];
+  };
   series?: GrainMarketPoint[];
   notes?: string[];
   fallbackReason?: string;
@@ -125,6 +161,13 @@ export interface GrainMarketsMeta {
   timeframe: GrainMarketTimeframe;
   instrumentsRequested: GrainMarketInstrumentKey[];
   instrumentsReturned: GrainMarketInstrumentKey[];
+  fxRateUsed?: number;
+  normalizationCoverage?: {
+    ok: number;
+    partial: number;
+    fxMissing: number;
+    unavailable: number;
+  };
   counts?: {
     total: number;
     live: number;
@@ -160,6 +203,25 @@ export interface GrainMarketsDebug {
   fallbackUsed?: Partial<Record<GrainMarketInstrumentKey, boolean>>;
   symbolMapping?: Partial<Record<GrainMarketInstrumentKey, string>>;
   unavailableInstruments?: GrainMarketInstrumentKey[];
+  normalization?: {
+    defaults: {
+      price: "USD/t";
+      temperature: "C";
+    };
+    fxRateUsed?: number;
+    perInstrument: Partial<
+      Record<
+        GrainMarketInstrumentKey,
+        {
+          normalizationStatus: "OK" | "PARTIAL" | "FX_MISSING" | "UNAVAILABLE";
+          normalizationMethod?: string;
+          fxRateUsed?: number;
+        }
+      >
+    >;
+    normalizedCount: number;
+    nativeFallbackCount: number;
+  };
 }
 
 export interface GrainMarketsResponse {
