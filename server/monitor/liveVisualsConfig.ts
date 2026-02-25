@@ -30,8 +30,6 @@ export const LIVE_VISUAL_SOURCES: LiveVisualSourceConfig[] = [
     sourceName: "Port of Rotterdam",
     url: "https://www.portofrotterdam.com/en/news-and-press-releases/webcams",
     externalUrl: "https://www.portofrotterdam.com/en/news-and-press-releases/webcams",
-    previewImageUrl:
-      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=60",
     enabled: true,
     priority: 90,
     statusHint: "EXTERNAL",
@@ -48,8 +46,6 @@ export const LIVE_VISUAL_SOURCES: LiveVisualSourceConfig[] = [
     sourceName: "Port of Montreal",
     url: "https://www.port-montreal.com/en/the-port-of-montreal/webcams",
     externalUrl: "https://www.port-montreal.com/en/the-port-of-montreal/webcams",
-    previewImageUrl:
-      "https://images.unsplash.com/photo-1578574577315-3fbeb0cecdc2?auto=format&fit=crop&w=1200&q=60",
     enabled: true,
     priority: 80,
     statusHint: "EXTERNAL",
@@ -84,8 +80,6 @@ export const LIVE_VISUAL_SOURCES: LiveVisualSourceConfig[] = [
     sourceName: "Bloomberg TV",
     url: "https://www.youtube.com/@BloombergTV/live",
     externalUrl: "https://www.youtube.com/@BloombergTV/live",
-    previewImageUrl:
-      "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=60",
     enabled: true,
     priority: 60,
     statusHint: "EXTERNAL",

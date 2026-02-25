@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, RefreshCw, Signal } from "lucide-react";
+import { ExternalLink, Globe, RefreshCw, Signal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,6 +51,12 @@ function statusClass(status: LiveVisualTile["status"]) {
   return "border-red-400/45 bg-red-500/20 text-red-100";
 }
 
+function providerLabel(providerType: LiveVisualTile["providerType"]) {
+  if (providerType === "embedded") return "Embed";
+  if (providerType === "image_refresh") return "Snapshot";
+  return "External";
+}
+
 function renderRelative(iso?: string) {
   if (!iso) return "n/a";
   const ts = Date.parse(iso);
@@ -66,6 +72,7 @@ function renderRelative(iso?: string) {
 function TilePreview({ tile, large, autoRefreshEnabled }: { tile: LiveVisualTile; large: boolean; autoRefreshEnabled: boolean }) {
   const [refreshTick, setRefreshTick] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
+  const previewHeight = large ? "h-[210px] lg:h-[230px]" : "h-[124px]";
 
   useEffect(() => {
     if (tile.renderMode !== "image") return;
@@ -77,59 +84,75 @@ function TilePreview({ tile, large, autoRefreshEnabled }: { tile: LiveVisualTile
 
   if (tile.renderMode === "embed" && tile.previewUrl) {
     return (
-      <iframe
-        title={tile.title}
-        src={tile.previewUrl}
-        className={`h-full w-full rounded-md border border-white/10 ${large ? "min-h-[280px]" : "min-h-[130px]"}`}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        sandbox="allow-scripts allow-same-origin allow-popups"
-      />
+      <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-white/12 bg-slate-950/60`}>
+        <iframe
+          title={tile.title}
+          src={tile.previewUrl}
+          className="h-full w-full"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          sandbox="allow-scripts allow-same-origin allow-popups"
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-950/80 to-transparent" />
+      </div>
     );
   }
 
   if (tile.renderMode === "image" && tile.previewUrl && !imageFailed) {
     const src = autoRefreshEnabled ? `${tile.previewUrl}${tile.previewUrl.includes("?") ? "&" : "?"}t=${refreshTick}` : tile.previewUrl;
     return (
-      <img
-        src={src}
-        alt={tile.title}
-        className={`h-full w-full rounded-md border border-white/10 object-cover ${large ? "min-h-[280px]" : "min-h-[130px]"}`}
-        loading="lazy"
-        onError={() => setImageFailed(true)}
-      />
+      <div className={`relative ${previewHeight} w-full overflow-hidden rounded-md border border-white/12 bg-slate-950/60`}>
+        <img
+          src={src}
+          alt={tile.title}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-950/80 to-transparent" />
+      </div>
     );
   }
 
-  if (tile.renderMode === "external" && tile.previewUrl && !imageFailed) {
+  if (tile.renderMode === "external") {
     return (
-      <img
-        src={tile.previewUrl}
-        alt={tile.title}
-        className={`h-full w-full rounded-md border border-white/10 object-cover ${large ? "min-h-[280px]" : "min-h-[130px]"}`}
-        loading="lazy"
-        onError={() => setImageFailed(true)}
-      />
+      <div className={`flex ${previewHeight} w-full flex-col justify-between rounded-md border border-white/12 bg-[linear-gradient(160deg,rgba(148,163,184,0.14),rgba(15,23,42,0.85)_38%,rgba(15,23,42,0.92))] p-3`}>
+        <div className="flex items-center gap-2 text-slate-200">
+          <span className="rounded-full border border-primary/35 bg-primary/12 p-1.5">
+            <Globe className="h-3.5 w-3.5 text-primary-foreground" />
+          </span>
+          <p className="text-xs font-medium">{tile.category} Visual Source</p>
+        </div>
+        <p className="text-xs leading-5 text-slate-300/95 line-clamp-3">
+          {tile.subtitle || "Open source page for live context and operational visuals."}
+        </p>
+        <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">External source preview mode</p>
+      </div>
     );
   }
 
   return (
-    <div className={`flex h-full w-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/80 text-xs text-slate-400 ${large ? "min-h-[280px]" : "min-h-[130px]"}`}>
-      Source preview unavailable
+    <div className={`flex ${previewHeight} w-full items-center justify-center rounded-md border border-dashed border-white/20 bg-slate-900/80 px-3 text-center text-xs text-slate-400`}>
+      Source preview unavailable. Open source for live feed.
     </div>
   );
 }
 
 function LiveVisualTileCard({ tile, large, autoRefreshEnabled }: { tile: LiveVisualTile; large?: boolean; autoRefreshEnabled: boolean }) {
   return (
-    <div className={`rounded-xl border border-white/12 bg-slate-950/78 p-3 ${large ? "h-full" : "h-full"}`}>
+    <div className="flex h-full flex-col rounded-xl border border-white/12 bg-slate-950/78 p-3">
       <div className="mb-2 flex items-center justify-between gap-2">
         <Badge className={`text-[10px] uppercase tracking-wide ${statusClass(tile.status)}`}>{tile.status}</Badge>
-        <span className="text-[10px] text-slate-400">{tile.category}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-slate-400">{tile.category}</span>
+          <span className="rounded-full border border-white/20 bg-white/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-slate-300">
+            {providerLabel(tile.providerType)}
+          </span>
+        </div>
       </div>
 
       <div className="mb-2 space-y-1">
-        <p className="text-sm font-semibold text-slate-100 line-clamp-1">{tile.title}</p>
+        <p className={`font-semibold text-slate-100 line-clamp-1 ${large ? "text-base" : "text-sm"}`}>{tile.title}</p>
         <p className="text-xs text-slate-400 line-clamp-1">{tile.region} • {tile.subtitle}</p>
       </div>
 
@@ -201,10 +224,10 @@ export function LiveVisualsPanel({ debugEnabled = false }: { debugEnabled?: bool
           </div>
         ) : (
           <div className="grid gap-3 xl:grid-cols-12">
-            <div className="xl:col-span-8">
+            <div className="xl:col-span-7">
               <LiveVisualTileCard tile={primary} large autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} />
             </div>
-            <div className="xl:col-span-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="xl:col-span-5 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-2">
               {secondary.map((tile) => (
                 <LiveVisualTileCard key={tile.id} tile={tile} autoRefreshEnabled={!!query.data?.settings.autoRefreshEnabled} />
               ))}

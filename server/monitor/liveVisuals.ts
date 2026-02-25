@@ -66,7 +66,7 @@ function normalizeSource(source: LiveVisualSourceConfig): LiveVisualTileData {
   // external_link default
   return {
     ...fallbackBase,
-    renderMode: source.previewImageUrl ? "external" : "fallback",
+    renderMode: "external",
     status: "EXTERNAL",
     previewUrl: source.previewImageUrl,
     updatedAt: nowIso,
