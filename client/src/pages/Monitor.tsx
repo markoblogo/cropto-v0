@@ -927,6 +927,11 @@ function DynamicMiniTrend({
   forcedMode,
   trustedSeries,
   minPoints,
+  sourceName,
+  providerId,
+  staleAgeSec,
+  cacheTtlSec,
+  debugEnabled = false,
 }: {
   series?: Array<{ ts?: string; label?: string; value: number }>;
   change?: number;
@@ -939,12 +944,23 @@ function DynamicMiniTrend({
   forcedMode?: "sparkline" | "trend_marker" | "neutral";
   trustedSeries?: boolean;
   minPoints?: number;
+  sourceName?: string;
+  providerId?: string;
+  staleAgeSec?: number;
+  cacheTtlSec?: number;
+  debugEnabled?: boolean;
 }) {
   const decision = forcedMode ? { mode: forcedMode, reason: "forced" as const } : getMiniTrendRenderMode({
     series,
     change,
     changePct,
     status,
+    section,
+    cardKind,
+    sourceName,
+    providerId,
+    staleAgeSec,
+    cacheTtlSec,
     preferMarkerForFallback,
     policy: getSectionTrendPolicy(section),
     trustedSeries,
@@ -971,20 +987,32 @@ function DynamicMiniTrend({
 
   if (decision.mode === "sparkline") {
     return (
-      <div className={slotClass}>
+      <div
+        className={slotClass}
+        title={debugEnabled ? `trendMode=${decision.mode}; reason=${decision.reason}` : undefined}
+        data-trend-mode={debugEnabled ? decision.mode : undefined}
+      >
         <MiniSparklineSvg points={(series || []).map((p) => ({ value: p.value }))} className={sparklineTone} />
       </div>
     );
   }
   if (decision.mode === "trend_marker") {
     return (
-      <div className={slotClass}>
+      <div
+        className={slotClass}
+        title={debugEnabled ? `trendMode=${decision.mode}; reason=${decision.reason}` : undefined}
+        data-trend-mode={debugEnabled ? decision.mode : undefined}
+      >
         <MiniTrendMarker change={change} changePct={changePct} className={markerTone} />
       </div>
     );
   }
   return (
-    <div className={slotClass}>
+    <div
+      className={slotClass}
+      title={debugEnabled ? `trendMode=${decision.mode}; reason=${decision.reason}` : undefined}
+      data-trend-mode={debugEnabled ? decision.mode : undefined}
+    >
       <MiniTrendMarker className={neutralTone} />
     </div>
   );
@@ -1029,7 +1057,7 @@ function formatPrimaryPrice(widget: GrainInstrumentWidget, mode: PriceDisplayMod
   };
 }
 
-function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstrumentWidget; priceDisplayMode: PriceDisplayMode }) {
+function GrainInstrumentCard({ widget, priceDisplayMode, debugEnabled = false }: { widget: GrainInstrumentWidget; priceDisplayMode: PriceDisplayMode; debugEnabled?: boolean }) {
   const display = formatPrimaryPrice(widget, priceDisplayMode);
   const positive = (display.change ?? 0) >= 0;
   const trendDecision = getMiniTrendRenderMode({
@@ -1037,7 +1065,15 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
     change: display.change,
     changePct: display.changePct,
     status: widget.status,
+    section: "core",
+    cardKind: "instrument",
+    sourceName: widget.sourceName,
     policy: getSectionTrendPolicy("core"),
+    trustedSeries: isTrustworthySeriesSource({
+      status: widget.status,
+      sourceName: widget.sourceName,
+      fallbackReason: widget.fallbackReason,
+    }),
   });
   const cardVariant: CardSizeVariant = resolveCardSizeVariant({
     section: "core",
@@ -1095,7 +1131,8 @@ function GrainInstrumentCard({ widget, priceDisplayMode }: { widget: GrainInstru
             sourceName: widget.sourceName,
             fallbackReason: widget.fallbackReason,
           })}
-          minPoints={3}
+          sourceName={widget.sourceName}
+          debugEnabled={debugEnabled}
           forcedMode={trendDecision.mode}
         />
 
@@ -1227,6 +1264,9 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
     change: indicator.valueChange,
     changePct: indicator.valueChangePct,
     status: indicator.status,
+    section: "context",
+    cardKind: "index",
+    sourceName: indicator.sourceName,
     policy: getSectionTrendPolicy("context"),
   });
   const icon =
@@ -1278,6 +1318,7 @@ function IndicatorCard({ indicator }: { indicator: LogisticsIndicator }) {
           status={indicator.status}
           section="context"
           cardKind="index"
+          sourceName={indicator.sourceName}
           compact={false}
           forcedMode={trendDecision.mode}
         />
@@ -1415,7 +1456,7 @@ function CompactWidgetCard({ widget }: { widget: CompactSignalWidget }) {
   );
 }
 
-function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDisplayMode: PriceDisplayMode }) {
+function GrainDataRow({ row, priceDisplayMode, debugEnabled = false }: { row: GrainWidgetRow; priceDisplayMode: PriceDisplayMode; debugEnabled?: boolean }) {
   const display = formatWidgetRowPrice(row, priceDisplayMode);
   const positive = (display.change ?? 0) >= 0;
   const trendDecision = getMiniTrendRenderMode({
@@ -1423,13 +1464,15 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
     change: display.change,
     changePct: display.changePct,
     status: row.status,
+    section: "expansion",
+    cardKind: "row",
+    sourceName: row.sourceName,
     policy: getSectionTrendPolicy("expansion"),
     trustedSeries: isTrustworthySeriesSource({
       status: row.status,
       sourceName: row.sourceName,
       fallbackReason: row.notes?.find((note) => note.toLowerCase().includes("coverage")),
     }),
-    minPoints: 3,
   });
   const rowVariant: CardSizeVariant = resolveCardSizeVariant({
     section: "expansion",
@@ -1485,7 +1528,8 @@ function GrainDataRow({ row, priceDisplayMode }: { row: GrainWidgetRow; priceDis
           sourceName: row.sourceName,
           fallbackReason: row.notes?.find((note) => note.toLowerCase().includes("coverage")),
         })}
-        minPoints={3}
+        sourceName={row.sourceName}
+        debugEnabled={debugEnabled}
         forcedMode={trendDecision.mode}
       />
       {display.secondary ? <p className="mt-0.5 text-[10px] text-foreground/68">{display.secondary}</p> : null}
@@ -1966,7 +2010,7 @@ export default function MonitorPage() {
               <div className="grid auto-rows-fr gap-2 xl:grid-cols-12">
                 <div className="xl:col-span-8 grid auto-rows-fr gap-2 md:grid-cols-2 xl:grid-cols-3">
                   {[...(grainMarketsQuery.data?.widgets.cbot || []), ...(grainMarketsQuery.data?.widgets.euronext || [])].map((widget) => (
-                    <GrainInstrumentCard key={widget.instrumentKey} widget={widget} priceDisplayMode={priceDisplayMode} />
+                    <GrainInstrumentCard key={widget.instrumentKey} widget={widget} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                   ))}
                 </div>
                 <div className="xl:col-span-4 grid auto-rows-fr gap-2">
@@ -2043,7 +2087,7 @@ export default function MonitorPage() {
                           </CardHeader>
                           <CardContent className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                             {cashWidget.rows.map((row) => (
-                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                             ))}
                             {!cashWidget.rows.length ? (
                               <p className="text-sm text-foreground/72">No rows available from source.</p>
@@ -2081,7 +2125,7 @@ export default function MonitorPage() {
                           </CardHeader>
                           <CardContent className="grid gap-1.5 sm:grid-cols-2">
                             {spotWidget.rows.map((row) => (
-                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                             ))}
                             {!spotWidget.rows.length ? (
                               <p className="text-sm text-foreground/72">No rows available from source.</p>
@@ -2136,7 +2180,8 @@ export default function MonitorPage() {
                                     sourceName: indexWidget.sourceName,
                                     fallbackReason: indexWidget.fallbackReason,
                                   })}
-                                  minPoints={3}
+                                  sourceName={indexWidget.sourceName}
+                                  debugEnabled={debugEnabled}
                                 />
                               </div>
                             ))}
@@ -2192,7 +2237,7 @@ export default function MonitorPage() {
                           </CardHeader>
                           <CardContent className="grid gap-1.5 md:grid-cols-3">
                             {futuresWidget.rows.map((row) => (
-                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                              <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                             ))}
                             {!futuresWidget.rows.length ? (
                               <p className="text-sm text-foreground/72">No futures rows parsed from source.</p>
@@ -2231,7 +2276,7 @@ export default function MonitorPage() {
                           <CardContent className="space-y-1.5">
                             <div className="grid gap-1.5 sm:grid-cols-2">
                               {livestockWidget.rows.map((row) => (
-                                <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} />
+                                <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
                               ))}
                             </div>
                             {livestockWidget.summary?.derivedCue ? (
@@ -2372,7 +2417,8 @@ export default function MonitorPage() {
                                                 sourceName: item.sourceName || macroWidget.sourceName,
                                                 fallbackReason: macroWidget.fallbackReason,
                                               })}
-                                              minPoints={3}
+                                              sourceName={item.sourceName || macroWidget.sourceName}
+                                              debugEnabled={debugEnabled}
                                             />
                                             {display.secondary ? <p className="text-[10px] text-foreground/68">{display.secondary}</p> : null}
                                           </>
@@ -2407,7 +2453,8 @@ export default function MonitorPage() {
                                             sourceName: item.sourceName || macroWidget.sourceName,
                                             fallbackReason: macroWidget.fallbackReason,
                                           })}
-                                          minPoints={3}
+                                          sourceName={item.sourceName || macroWidget.sourceName}
+                                          debugEnabled={debugEnabled}
                                         />
                                       </>
                                     )}
@@ -2444,7 +2491,8 @@ export default function MonitorPage() {
                                         sourceName: macroWidget.sourceName,
                                         fallbackReason: macroWidget.fallbackReason,
                                       })}
-                                      minPoints={3}
+                                      sourceName={macroWidget.sourceName}
+                                      debugEnabled={debugEnabled}
                                     />
                                   </div>
                                 ))}

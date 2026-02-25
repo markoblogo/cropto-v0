@@ -63,16 +63,21 @@ export function getTrendSlotClass(args: {
   mode: MiniTrendRenderMode;
   compact?: boolean;
 }): string {
-  const base = args.compact ? "mt-0.5" : "mt-1";
+  const base =
+    args.mode === "sparkline"
+      ? (args.compact ? "mt-0.5" : "mt-1")
+      : (args.compact ? "mt-0" : "mt-0.5");
   if (args.mode === "sparkline") {
     if (args.kind === "instrument") return `${base} h-10`;
-    if (args.kind === "row" || args.kind === "signal") return `${base} h-7`;
+    if (args.kind === "row" || args.kind === "signal") return `${base} h-6`;
     return `${base} h-8`;
   }
   if (args.mode === "trend_marker") {
-    if (MONITOR_UI_RULES.preserveRowAlignment[args.section]) return `${base} h-5`;
-    return `${base} h-4`;
+    if (args.kind === "row") return `${base} h-3`;
+    if (MONITOR_UI_RULES.preserveRowAlignment[args.section]) return `${base} h-4`;
+    return `${base} h-3`;
   }
-  if (MONITOR_UI_RULES.preserveRowAlignment[args.section]) return `${base} h-3`;
-  return `${base} h-2`;
+  if (args.kind === "row") return `${base} h-1.5`;
+  if (MONITOR_UI_RULES.preserveRowAlignment[args.section]) return `${base} h-2.5`;
+  return `${base} h-1.5`;
 }
