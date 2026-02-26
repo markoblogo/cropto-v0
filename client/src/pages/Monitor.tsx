@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity, Clock3 } from "lucide-react";
 import { DeckEcosystemStrip } from "@/components/deck/DeckEcosystemStrip";
 import { MonitorFooter } from "@/components/monitor/MonitorFooter";
 import { MonitorHeader } from "@/components/monitor/MonitorHeader";
@@ -25,6 +25,7 @@ import { MiniTrendMarker } from "@/components/monitor/MiniTrendMarker";
 import { MetricChip } from "@/components/monitor/MetricChip";
 import { StatusSourceStrip } from "@/components/monitor/StatusSourceStrip";
 import { IntensityBar } from "@/components/monitor/IntensityBar";
+import { WorldTimeDrawer } from "@/components/monitor/WorldTimeDrawer";
 import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
 import {
   getCardSizeClass,
@@ -2023,6 +2024,10 @@ export default function MonitorPage() {
     const saved = window.localStorage.getItem("monitor_price_type_fpma");
     return saved === "RETAIL" ? "RETAIL" : "WHOLESALE";
   });
+  const [worldTimeOpen, setWorldTimeOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("monitor_world_time_open") === "1";
+  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
 
@@ -2040,6 +2045,11 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("monitor_price_type_fpma", grainPriceType);
   }, [grainPriceType]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("monitor_world_time_open", worldTimeOpen ? "1" : "0");
+  }, [worldTimeOpen]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2473,6 +2483,17 @@ export default function MonitorPage() {
                   onClick={() => setTemperatureDisplayMode("F")}
                 >
                   °F
+                </Button>
+                <Button
+                  size="sm"
+                  variant={worldTimeOpen ? "default" : "outline"}
+                  className="ml-1 h-7 gap-1 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
+                  onClick={() => setWorldTimeOpen((prev) => !prev)}
+                  aria-label="Toggle world time panel"
+                  aria-expanded={worldTimeOpen}
+                >
+                  <Clock3 className="h-3.5 w-3.5" />
+                  Time
                 </Button>
               </div>
             </div>
@@ -4369,6 +4390,7 @@ export default function MonitorPage() {
       <DeckEcosystemStrip />
       </main>
       <MonitorFooter />
+      <WorldTimeDrawer open={worldTimeOpen} onClose={() => setWorldTimeOpen(false)} />
     </div>
   );
 }
