@@ -69,7 +69,7 @@ function AnalogClockFace({ info }: { info: ZonedTimeInfo }) {
   const secondRotation = info.second * 6;
 
   return (
-    <svg viewBox="0 0 100 100" className="h-12 w-12 shrink-0" aria-hidden="true">
+    <svg viewBox="0 0 100 100" className="h-10 w-10 shrink-0" aria-hidden="true">
       <circle
         cx="50"
         cy="50"
@@ -123,21 +123,26 @@ function ZoneCard({ info }: { info: ZonedTimeInfo }) {
       className={cn(
         "rounded-md border p-1.5",
         info.isNight
-          ? "border-white/20 bg-zinc-950/75"
-          : "border-black/25 bg-white/80",
+          ? "border-white/25 bg-zinc-900 text-zinc-100"
+          : "border-black/15 bg-zinc-50 text-zinc-900",
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">{info.label}</p>
-        <span className={cn("text-[10px] uppercase tracking-wide", info.isNight ? "text-white/70" : "text-black/70")}>
+      <div className="flex items-center justify-between gap-1">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.12em]">{info.label}</p>
+        <span
+          className={cn(
+            "rounded-sm px-1 py-[1px] text-[9px] uppercase tracking-wide",
+            info.isNight ? "bg-zinc-800 text-zinc-300" : "bg-zinc-200 text-zinc-700",
+          )}
+        >
           {info.isNight ? "Night" : "Day"}
         </span>
       </div>
       <div className="mt-1.5 flex items-center gap-2">
         <AnalogClockFace info={info} />
         <div className="min-w-0">
-          <p className="text-base font-semibold tabular-nums leading-none">{info.timeLabel}</p>
-          <p className="mt-1 text-[11px] text-foreground/70">{info.dateLabel}</p>
+          <p className="text-[28px] font-semibold tabular-nums leading-none">{info.timeLabel}</p>
+          <p className={cn("mt-0.5 text-[10px]", info.isNight ? "text-zinc-400" : "text-zinc-600")}>{info.dateLabel}</p>
         </div>
       </div>
     </div>
@@ -191,7 +196,7 @@ export function WorldTimeDrawer() {
 
   return (
     <aside
-      className="fixed left-0 top-[38vh] z-[110]"
+      className="fixed left-0 top-1/2 z-[110] -translate-y-1/2"
       aria-label="World time panel"
       aria-expanded={open}
       role="complementary"
@@ -200,11 +205,11 @@ export function WorldTimeDrawer() {
         className="relative flex items-stretch transition-transform duration-300 ease-out"
         style={{ transform: open ? "translateX(0)" : "translateX(calc(-100% + 36px))" }}
       >
-        <div className="w-[310px] rounded-r-lg border border-l-0 border-black/65 bg-background/96 shadow-xl dark:border-white/25">
-          <div className="flex items-center justify-between border-b border-black/15 px-3 py-2 dark:border-white/15">
+        <div className="w-[220px] rounded-r-lg border border-l-0 border-black/45 bg-background shadow-xl dark:border-white/30">
+          <div className="flex items-center justify-between border-b border-black/12 px-3 py-2 dark:border-white/15">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em]">World Time</p>
-              <p className="text-[10px] text-foreground/65">Market sessions at a glance</p>
+              <p className="text-[10px] text-foreground/75">Market sessions</p>
             </div>
             <Button
               type="button"
@@ -222,14 +227,14 @@ export function WorldTimeDrawer() {
               <ZoneCard key={zone.tz} info={zone} />
             ))}
           </div>
-          <div className="border-t border-black/15 px-3 py-1.5 text-[10px] text-foreground/60 dark:border-white/15">
+          <div className="border-t border-black/15 px-3 py-1.5 text-[10px] text-foreground/75 dark:border-white/15">
             tick: 10s
           </div>
         </div>
 
         <button
           type="button"
-          className="pointer-events-auto flex h-[92px] w-9 items-center justify-center rounded-r-md border border-l-0 border-black/65 bg-background/95 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground shadow-md dark:border-white/25"
+          className="pointer-events-auto flex h-[108px] w-9 items-center justify-center rounded-r-md border border-l-0 border-primary/70 bg-primary/20 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground shadow-md dark:bg-primary/25 dark:text-primary-foreground"
           aria-label="Toggle world time panel"
           onClick={() => setOpen((prev) => !prev)}
         >
