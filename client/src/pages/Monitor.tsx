@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity, Clock3 } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity } from "lucide-react";
 import { DeckEcosystemStrip } from "@/components/deck/DeckEcosystemStrip";
 import { MonitorFooter } from "@/components/monitor/MonitorFooter";
 import { MonitorHeader } from "@/components/monitor/MonitorHeader";
@@ -2024,10 +2024,6 @@ export default function MonitorPage() {
     const saved = window.localStorage.getItem("monitor_price_type_fpma");
     return saved === "RETAIL" ? "RETAIL" : "WHOLESALE";
   });
-  const [worldTimeOpen, setWorldTimeOpen] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("monitor_world_time_open") === "1";
-  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
 
@@ -2045,11 +2041,6 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("monitor_price_type_fpma", grainPriceType);
   }, [grainPriceType]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("monitor_world_time_open", worldTimeOpen ? "1" : "0");
-  }, [worldTimeOpen]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -4378,19 +4369,8 @@ export default function MonitorPage() {
       </section>
       <DeckEcosystemStrip />
       </main>
-      <Button
-        size="sm"
-        variant={worldTimeOpen ? "default" : "outline"}
-        className="fixed bottom-6 right-4 z-[110] h-9 gap-1.5 rounded-full border-black/70 bg-background/95 px-3 text-[11px] uppercase tracking-wide text-foreground shadow-lg dark:border-white/30 md:bottom-8 md:right-6"
-        onClick={() => setWorldTimeOpen((prev) => !prev)}
-        aria-label="Toggle world time panel"
-        aria-expanded={worldTimeOpen}
-      >
-        <Clock3 className="h-3.5 w-3.5" />
-        Time
-      </Button>
       <MonitorFooter />
-      <WorldTimeDrawer open={worldTimeOpen} onClose={() => setWorldTimeOpen(false)} />
+      <WorldTimeDrawer />
     </div>
   );
 }
