@@ -2484,17 +2484,6 @@ export default function MonitorPage() {
                 >
                   °F
                 </Button>
-                <Button
-                  size="sm"
-                  variant={worldTimeOpen ? "default" : "outline"}
-                  className="ml-1 h-7 gap-1 px-2 text-[10px] border-black/70 dark:border-white/30 text-foreground dark:text-slate-200"
-                  onClick={() => setWorldTimeOpen((prev) => !prev)}
-                  aria-label="Toggle world time panel"
-                  aria-expanded={worldTimeOpen}
-                >
-                  <Clock3 className="h-3.5 w-3.5" />
-                  Time
-                </Button>
               </div>
             </div>
             {!grainMarketsQuery.data || (grainMarketsQuery.data.widgets.cbot.length === 0 && grainMarketsQuery.data.widgets.euronext.length === 0) ? (
@@ -4389,6 +4378,17 @@ export default function MonitorPage() {
       </section>
       <DeckEcosystemStrip />
       </main>
+      <Button
+        size="sm"
+        variant={worldTimeOpen ? "default" : "outline"}
+        className="fixed bottom-6 right-4 z-[110] h-9 gap-1.5 rounded-full border-black/70 bg-background/95 px-3 text-[11px] uppercase tracking-wide text-foreground shadow-lg dark:border-white/30 md:bottom-8 md:right-6"
+        onClick={() => setWorldTimeOpen((prev) => !prev)}
+        aria-label="Toggle world time panel"
+        aria-expanded={worldTimeOpen}
+      >
+        <Clock3 className="h-3.5 w-3.5" />
+        Time
+      </Button>
       <MonitorFooter />
       <WorldTimeDrawer open={worldTimeOpen} onClose={() => setWorldTimeOpen(false)} />
     </div>
