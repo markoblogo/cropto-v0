@@ -234,7 +234,7 @@ export function WorldTimeDrawer() {
 
         <button
           type="button"
-          className="pointer-events-auto flex h-[108px] w-9 items-center justify-center rounded-r-md border border-l-0 border-primary/70 bg-primary/20 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground shadow-md dark:bg-primary/25 dark:text-primary-foreground"
+          className="pointer-events-auto flex h-[108px] w-9 items-center justify-center rounded-r-md border border-l-0 border-amber-700 bg-amber-500 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-950 shadow-md hover:bg-amber-400"
           aria-label="Toggle world time panel"
           onClick={() => setOpen((prev) => !prev)}
         >
