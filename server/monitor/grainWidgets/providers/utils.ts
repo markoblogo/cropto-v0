@@ -1,23 +1,72 @@
+import { USDA_GTR_USER_AGENT } from "../config";
 import { normalizeGrainPriceToUsdTon } from "../../grainMarkets/normalization";
 import type { GrainWidgetPoint, GrainWidgetStatus, GrainWidgetTableRow } from "../types";
 
-export async function fetchTextWithTimeout(url: string, timeoutMs: number, headers?: HeadersInit): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "user-agent": "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)",
-        accept: "application/json,text/plain,text/html,*/*",
-        ...headers,
-      },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.text();
-  } finally {
-    clearTimeout(timeout);
+export async function fetchWithHeaders(
+  url: string,
+  opts: {
+    timeoutMs: number;
+    headers?: HeadersInit;
+    retryOnStatuses?: number[];
+    retryDelayMs?: number;
+  },
+): Promise<Response> {
+  const retryOnStatuses = opts.retryOnStatuses || [];
+  const retryDelayMs = opts.retryDelayMs ?? 400;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), opts.timeoutMs);
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "user-agent": USDA_GTR_USER_AGENT,
+          accept: "application/json,text/plain,text/html,*/*",
+          "accept-language": "en-US,en;q=0.9",
+          ...opts.headers,
+        },
+      });
+      if (response.ok || attempt > 0 || !retryOnStatuses.includes(response.status)) {
+        return response;
+      }
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  throw new Error("fetch_failed");
+}
+
+export async function fetchTextWithTimeout(url: string, timeoutMs: number, headers?: HeadersInit): Promise<string> {
+  const response = await fetchWithHeaders(url, {
+    timeoutMs,
+    headers,
+    retryOnStatuses: [403, 429],
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return await response.text();
+}
+
+export async function fetchTextResponseWithTimeout(
+  url: string,
+  timeoutMs: number,
+  headers?: HeadersInit,
+): Promise<{ text: string; contentType: string | null; finalUrl: string; status: number }> {
+  const response = await fetchWithHeaders(url, {
+    timeoutMs,
+    headers,
+    retryOnStatuses: [403, 429],
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return {
+    text,
+    contentType: response.headers.get("content-type"),
+    finalUrl: response.url || url,
+    status: response.status,
+  };
 }
 
 export async function fetchBufferWithTimeout(url: string, timeoutMs: number, headers?: HeadersInit): Promise<{
@@ -25,27 +74,18 @@ export async function fetchBufferWithTimeout(url: string, timeoutMs: number, hea
   contentType: string | null;
   finalUrl: string;
 }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "user-agent": "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)",
-        accept: "application/octet-stream,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,*/*",
-        ...headers,
-      },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const arrayBuffer = await response.arrayBuffer();
-    return {
-      buffer: Buffer.from(arrayBuffer),
-      contentType: response.headers.get("content-type"),
-      finalUrl: response.url || url,
-    };
-  } finally {
-    clearTimeout(timeout);
-  }
+  const response = await fetchWithHeaders(url, {
+    timeoutMs,
+    headers,
+    retryOnStatuses: [403, 429],
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const arrayBuffer = await response.arrayBuffer();
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    contentType: response.headers.get("content-type"),
+    finalUrl: response.url || url,
+  };
 }
 
 export function parseNumber(value: unknown): number | undefined {

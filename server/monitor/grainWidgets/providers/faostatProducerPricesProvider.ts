@@ -59,6 +59,25 @@ function baseUrl(): string {
   return FAOSTAT_BASE_URL.replace(/\/+$/, "");
 }
 
+function buildFaostatParams(args: {
+  areaCodes: string[];
+  itemCodes: string[];
+  elementCode: string;
+  yearRange: string;
+  includeDatasource: boolean;
+}): URLSearchParams {
+  const params = new URLSearchParams();
+  if (args.includeDatasource && FAOSTAT_DATASOURCE) {
+    params.set("datasource", FAOSTAT_DATASOURCE);
+  }
+  params.set("area", args.areaCodes.join(","));
+  params.set("item", args.itemCodes.join(","));
+  params.set("element", args.elementCode);
+  params.set("year", args.yearRange);
+  params.set("outputType", "json");
+  return params;
+}
+
 function territoryFromCode(code?: string): { code: string; label: string } {
   const normalized = String(code || "UA").toUpperCase();
   const found = territoryOptions.find((option) => option.code === normalized);
@@ -180,19 +199,33 @@ export class FaostatProducerPricesProvider implements GrainWidgetsProvider {
     const yearMin = currentYear - Math.max(1, FAOSTAT_MAX_YEARS) + 1;
     const yearRange = Array.from({ length: Math.max(1, FAOSTAT_MAX_YEARS) }, (_, idx) => String(yearMin + idx)).join(",");
 
-    const params = new URLSearchParams();
-    params.set("datasource", FAOSTAT_DATASOURCE);
-    params.set("area", area.selectedCodes.join(","));
-    params.set("item", requestedCropEntries.map(([, code]) => code).join(","));
-    params.set("element", element.code);
-    params.set("year", yearRange);
-    params.set("output_type", "json");
-
-    const sourceUrlUsed = `${baseUrl()}/data/PP?${params.toString()}`;
-    const raw = await fetchTextWithTimeout(sourceUrlUsed, FAOSTAT_TIMEOUT_MS, {
-      accept: "application/json,text/plain,*/*",
-    });
-    const parsed = JSON.parse(raw);
+    const itemCodeList = requestedCropEntries.map(([, code]) => code);
+    const requestVariants = [true, false];
+    let parsed: any;
+    let sourceUrlUsed = "";
+    let lastQueryError: unknown;
+    for (const includeDatasource of requestVariants) {
+      try {
+        const params = buildFaostatParams({
+          areaCodes: area.selectedCodes,
+          itemCodes: itemCodeList,
+          elementCode: element.code,
+          yearRange,
+          includeDatasource,
+        });
+        sourceUrlUsed = `${baseUrl()}/data/PP?${params.toString()}`;
+        const raw = await fetchTextWithTimeout(sourceUrlUsed, FAOSTAT_TIMEOUT_MS, {
+          accept: "application/json,text/plain,*/*",
+        });
+        parsed = JSON.parse(raw);
+        break;
+      } catch (error) {
+        lastQueryError = error;
+      }
+    }
+    if (!parsed) {
+      throw lastQueryError instanceof Error ? lastQueryError : new Error("faostat_query_failed");
+    }
     const observations = normalizeObsRows(parsed);
 
     const rows: GrainWidgetFaostatPpRow[] = [];
@@ -305,7 +338,7 @@ export class FaostatProducerPricesProvider implements GrainWidgetsProvider {
         elementLabel: element.label,
         observationsByCrop,
         discoveryCacheHit: discovery.cacheHit,
-        query: params.toString(),
+        query: sourceUrlUsed.includes("?") ? sourceUrlUsed.split("?")[1] : "",
         warnings: warnings.length ? warnings : undefined,
       },
     };

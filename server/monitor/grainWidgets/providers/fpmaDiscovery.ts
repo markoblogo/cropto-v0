@@ -111,7 +111,7 @@ const explicitDiscoveryPaths: Array<{ name: string; path: string }> = [
 ];
 
 const derivedDiscoveryPaths: Array<{ name: string; path: string }> = [
-  { name: "prices", path: "prices?format=json" },
+  { name: "prices", path: "prices?format=json&limit=200" },
   { name: "data", path: "data?format=json" },
   { name: "series", path: "series?format=json" },
   { name: "markets", path: "markets?format=json" },

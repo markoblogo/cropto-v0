@@ -10,6 +10,7 @@ import {
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   USDA_GTR_DATASET_URLS,
   USDA_MARS_BASE_URL,
+  USDA_MARS_PUBLIC_INDEX_URLS,
 } from "../grainWidgets/config";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "../grainWidgets/providers/fpmaDiscovery";
 
@@ -363,10 +364,13 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
 
   const marsWidget = byKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as any;
   const marsProvider = providers.find((item: any) => item.providerId === "usda-mars-daily-txt");
+  const marsIndexUrl =
+    USDA_MARS_PUBLIC_INDEX_URLS[0] ||
+    `${USDA_MARS_BASE_URL.replace(/\/+$/, "")}/listPublishedReports`;
   const marsDownloadUrl =
     marsProvider?.downloadUrlUsed ||
     marsWidget?.debug?.downloadUrlUsed ||
-    `${USDA_MARS_BASE_URL.replace(/\/+$/, "")}/listPublishedReports?format=json`;
+    marsIndexUrl;
 
   const probes = {
     fpma: await probeUrl(`${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`, {
@@ -377,7 +381,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorKind: classifyErrorKind({ message: error?.message }),
       errorMessage: String(error?.message || "probe_failed"),
     })),
-    faostat: await probeUrl(`${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area?datasource=production`, {
+    faostat: await probeUrl(`${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`, {
       configMissing: !process.env.FAOSTAT_BASE_URL,
     }).catch((error: any) => ({
       ok: false,
@@ -395,6 +399,14 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     })),
     usdaMarsDailyTxt: await probeUrl(marsDownloadUrl, {
       configMissing: !process.env.USDA_MARS_BASE_URL && !process.env.USDA_MARS_FILE_URL_TEMPLATES,
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
+    usdaMars: await probeUrl(marsIndexUrl, {
+      configMissing: !process.env.USDA_MARS_BASE_URL && !process.env.USDA_MARS_PUBLIC_INDEX_URLS,
     }).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,

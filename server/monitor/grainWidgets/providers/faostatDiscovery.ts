@@ -71,6 +71,24 @@ async function fetchDefs(path: string): Promise<{ entries: DefEntry[]; sourceUrl
   };
 }
 
+async function fetchDefsVariants(path: string): Promise<{ entries: DefEntry[]; sourceUrlUsed: string }> {
+  const variants = [
+    `${path}`,
+    `${path}?datasource=${encodeURIComponent(FAOSTAT_DATASOURCE)}`,
+  ];
+  let lastError: unknown;
+  for (const variant of variants) {
+    try {
+      const result = await fetchDefs(variant);
+      if (result.entries.length > 0) return result;
+      lastError = new Error(`empty_defs:${variant}`);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(`faostat_defs_failed:${path}`);
+}
+
 export async function fetchFaostatDiscovery(): Promise<{
   areas: DefEntry[];
   items: DefEntry[];
@@ -89,11 +107,10 @@ export async function fetchFaostatDiscovery(): Promise<{
     };
   }
 
-  const datasource = encodeURIComponent(FAOSTAT_DATASOURCE);
   const [areas, items, elements] = await Promise.all([
-    fetchDefs(`/definitions/types/area?datasource=${datasource}`),
-    fetchDefs(`/definitions/types/item?datasource=${datasource}`),
-    fetchDefs(`/definitions/types/element?datasource=${datasource}`),
+    fetchDefsVariants(`/definitions/types/area`),
+    fetchDefsVariants(`/definitions/types/item`),
+    fetchDefsVariants(`/definitions/types/element`),
   ]);
 
   discoveryCache = {

@@ -152,7 +152,13 @@ function splitDataset(dataset: string): { db: string; code: string } | undefined
   const parts = dataset.split("/");
   if (parts.length < 2) return undefined;
   const [db, ...rest] = parts;
-  return { db, code: rest.join("/") };
+  const normalizedDb = String(db || "").trim().toUpperCase();
+  const code = rest.join("/").trim();
+  if (!normalizedDb || !code) return undefined;
+  if (!["FRED", "CHRIS"].includes(normalizedDb)) {
+    return undefined;
+  }
+  return { db: normalizedDb, code };
 }
 
 async function fetchJson(url: string): Promise<any> {
@@ -324,7 +330,7 @@ async function fetchDataset(args: {
       status: http403 ? "forbidden" : "error",
       errorKind,
       sourceUrlUsed,
-      note: http403 ? "premium_access_denied" : message.slice(0, 120),
+      note: http403 ? "premium_access_denied_or_quota_blocked" : message.slice(0, 120),
     };
     const snapshot: DatasetSnapshot = { fetchedAt: now, status };
     datasetCache.set(args.dataset, snapshot);
@@ -335,7 +341,7 @@ async function fetchDataset(args: {
 function uniqueDatasets(): string[] {
   const datasets = [...NASDAQ_DATASETS];
   if (ENABLE_NASDAQ_CHRIS) datasets.push(...NASDAQ_CHRIS_DATASETS);
-  return Array.from(new Set(datasets.map((value) => value.trim().toUpperCase()).filter(Boolean)));
+  return Array.from(new Set(datasets.map((value) => value.trim()).filter(Boolean)));
 }
 
 export class NasdaqDataLinkProvider implements GrainWidgetsProvider {

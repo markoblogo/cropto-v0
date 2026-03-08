@@ -98,6 +98,13 @@ export const FAO_FFPI_PARSER_MODE = (process.env.FAO_FFPI_PARSER_MODE || "auto")
 export const USDA_FAS_PSD_API_URL = process.env.USDA_FAS_PSD_API_URL || "";
 export const USDA_FAS_PSD_API_KEY = process.env.USDA_FAS_PSD_API_KEY || "";
 export const USDA_MARS_BASE_URL = process.env.USDA_MARS_BASE_URL || "https://marsapi.ams.usda.gov/services/v3.1/public";
+export const USDA_MARS_PUBLIC_INDEX_URLS = (
+  process.env.USDA_MARS_PUBLIC_INDEX_URLS ||
+  "https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports/all,https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports"
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
 export const USDA_MARS_PUBLISHED_LIST_PATHS = (
   process.env.USDA_MARS_PUBLISHED_LIST_PATHS ||
   "listPublishedReports?format=json,reports/listPublishedReports?format=json"
@@ -126,6 +133,9 @@ export const USDA_MARS_DAILY_MAX_ROWS = envNum("USDA_MARS_DAILY_MAX_ROWS", 8);
 export const USDA_GTR_BASE_URL =
   process.env.USDA_GTR_BASE_URL ||
   "https://www.ams.usda.gov/sites/default/files/media";
+export const USDA_GTR_USER_AGENT =
+  process.env.USDA_GTR_USER_AGENT ||
+  "CroptoMonitor/1.0 (+https://cropto.abvx.xyz)";
 export const USDA_GTR_DATASET_URLS = (
   process.env.USDA_GTR_DATASET_URLS ||
   `${USDA_GTR_BASE_URL}/GTRTable1.xlsx,${USDA_GTR_BASE_URL}/GTRFigure9.xlsx`
@@ -142,7 +152,7 @@ export const FAOSTAT_BASE_URL =
     "https://fenixservices.fao.org/faostat/api/v1/en",
   );
 export const FAOSTAT_DATASOURCE = process.env.FAOSTAT_DATASOURCE || "production";
-export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", 15_000);
 export const FAOSTAT_CACHE_TTL_MS = envNum("FAOSTAT_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FAOSTAT_DISCOVERY_TTL_MS = envNum("FAOSTAT_DISCOVERY_TTL_MS", 7 * 24 * 60 * 60 * 1000);
 export const FAOSTAT_MAX_YEARS = envNum("FAOSTAT_MAX_YEARS", 5);

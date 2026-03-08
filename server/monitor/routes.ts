@@ -33,6 +33,7 @@ import {
   NASDAQ_BASE_URL,
   NASDAQ_DATASETS,
   USDA_MARS_BASE_URL,
+  USDA_MARS_PUBLIC_INDEX_URLS,
   USDA_MARS_MNREPORTS_BASE_URL,
   USDA_GTR_DATASET_URLS,
 } from "./grainWidgets/config";
@@ -672,16 +673,17 @@ export function registerMonitorRoutes(app: Express): void {
         };
       });
 
+      const marsIndexProbeUrl = USDA_MARS_PUBLIC_INDEX_URLS[0] || `${USDA_MARS_BASE_URL.replace(/\/+$/, "")}/listPublishedReports`;
       const [dbnomicsProbe, faoProbe, marsProbe] = await Promise.all([
         probeUrl(`${DBNOMICS_API_BASE_URL}/series/WB/commodity_prices/FMAIZE.1W?observations=true`),
         probeUrl(FAO_FFPI_URL),
-        probeUrl(`${USDA_MARS_BASE_URL}/listPublishedReports?format=json`),
+        probeUrl(marsIndexProbeUrl),
       ]);
       const marsDailyTxtSource =
         (byKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as any)?.debug?.downloadUrlUsed ||
         providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.downloadUrlUsed ||
         providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.sourceUrlUsed ||
-        `${USDA_MARS_BASE_URL}/listPublishedReports?format=json`;
+        marsIndexProbeUrl;
       const alphaProbeUrl = `${ALPHAVANTAGE_BASE_URL}?function=${encodeURIComponent(ALPHAVANTAGE_FUNCTIONS[0] || "WHEAT")}&interval=monthly${ALPHAVANTAGE_API_KEY ? "&apikey=REDACTED" : ""}`;
       const marsDailyTxtProbe = await probeUrl(marsDailyTxtSource);
       const alphaProbe = await probeUrl(ALPHAVANTAGE_BASE_URL);
@@ -693,9 +695,9 @@ export function registerMonitorRoutes(app: Express): void {
       const nasdaqProbeResult = await probeUrl(nasdaqProbeRawUrl);
       const usdaGtrProbeUrl = USDA_GTR_DATASET_URLS[0] || "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report";
       const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl);
-      const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area?datasource=production`;
+      const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
       const faostatProbe = await probeUrl(faostatProbeUrl);
-      const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?datasource=production&area=231&item=15&year=2022&output_type=json`;
+      const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;
       const faostatSampleProbe = await probeUrl(faostatSampleProbeUrl);
       const fpmaProbeUrl = `${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`;
       const fpmaProbe = await probeUrl(fpmaProbeUrl);

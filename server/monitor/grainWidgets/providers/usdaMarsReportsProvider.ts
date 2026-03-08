@@ -1,38 +1,15 @@
 import {
   ENABLE_USDA_MARS_REPORTS_WIDGET,
-  USDA_MARS_BASE_URL,
   USDA_MARS_EXCLUDE_KEYWORDS,
   USDA_MARS_GRAIN_WIDGET_LIMIT,
   USDA_MARS_INCLUDE_KEYWORDS,
   USDA_MARS_MAX_REPORTS_SCAN,
-  USDA_MARS_PUBLISHED_LIST_PATHS,
   USDA_MARS_REPORTS_LIMIT,
-  USDA_MARS_TIMEOUT_MS,
 } from "../config";
 import type { GrainWidgetUsdaMarsReportItem, GrainWidgetUsdaMarsReports } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-
-type MarsRaw = {
-  id?: string | number;
-  reportId?: string | number;
-  slug?: string;
-  title?: string;
-  reportTitle?: string;
-  report_name?: string;
-  commodity?: string;
-  category?: string;
-  reportType?: string;
-  publishedAt?: string;
-  publishDate?: string;
-  reportDate?: string;
-  releaseDate?: string;
-  fileType?: string;
-  file_type?: string;
-  reportURL?: string;
-  reportUrl?: string;
-  url?: string;
-};
+import { fetchUsdaMarsPublicIndex } from "./usdaMarsPublicIndex";
 
 type RankedReport = {
   id: string;
@@ -84,25 +61,6 @@ const CROP_KEYWORDS = [
   "rapeseed",
   "sunflower",
 ] as const;
-
-function toBase(url: string): string {
-  return url.replace(/\/+$/, "");
-}
-
-function joinUrl(base: string, path: string): string {
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${toBase(base)}/${path.replace(/^\/+/, "")}`;
-}
-
-function flatten(payload: any): MarsRaw[] {
-  if (!payload) return [];
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (Array.isArray(payload.results)) return payload.results;
-  if (Array.isArray(payload.items)) return payload.items;
-  if (Array.isArray(payload.listPublishedReportsResult)) return payload.listPublishedReportsResult;
-  return [];
-}
 
 function parseDate(value?: string): string | undefined {
   if (!value) return undefined;
@@ -188,63 +146,6 @@ function matchesExclude(titleNorm: string): boolean {
   return USDA_MARS_EXCLUDE_KEYWORDS.some((keyword) => titleNorm.includes(keyword));
 }
 
-function classifyFetchError(error: unknown): string {
-  const message = String((error as { message?: string })?.message || "");
-  const upper = message.toUpperCase();
-  if (upper.includes("ENOTFOUND")) return "DNS";
-  if (upper.includes("ETIMEDOUT") || upper.includes("ABORT_ERR") || message.toLowerCase().includes("timed out")) return "TIMEOUT";
-  const http = message.match(/HTTP\s+(\d{3})/i);
-  if (http) {
-    const code = Number.parseInt(http[1], 10);
-    if (code >= 400 && code < 500) return "HTTP_4XX";
-    if (code >= 500) return "HTTP_5XX";
-  }
-  if (message.toLowerCase().includes("parse")) return "PARSE";
-  if (message.toLowerCase().includes("empty")) return "EMPTY";
-  return "UNKNOWN";
-}
-
-async function fetchTextWithStatus(url: string, timeoutMs: number): Promise<{ status: number; text: string }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "user-agent": "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)",
-        accept: "application/json,text/plain,*/*",
-      },
-    });
-    const text = await response.text();
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return { status: response.status, text };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function fetchReports(base: string): Promise<{ rows: MarsRaw[]; sourceUrl: string }> {
-  const urls = USDA_MARS_PUBLISHED_LIST_PATHS.map((path) => joinUrl(base, path));
-  let lastError: Error | null = null;
-
-  for (const sourceUrl of urls) {
-    try {
-      const { text } = await fetchTextWithStatus(sourceUrl, USDA_MARS_TIMEOUT_MS);
-      const payload = JSON.parse(text);
-      const rows = flatten(payload);
-      if (rows.length) {
-        return { rows, sourceUrl };
-      }
-      lastError = new Error(`empty_data:${sourceUrl}`);
-    } catch (error: any) {
-      lastError = error instanceof Error ? error : new Error(String(error || "fetch_failed"));
-    }
-  }
-
-  const errorKind = classifyFetchError(lastError);
-  throw new Error(`usda_mars_reports_unavailable:${errorKind}:${lastError?.message || "fetch_failed"}`);
-}
-
 export class UsdaMarsReportsProvider implements GrainWidgetsProvider {
   id = "usda-mars-public";
   kind = "USDA_MARS_REPORTS" as const;
@@ -252,18 +153,20 @@ export class UsdaMarsReportsProvider implements GrainWidgetsProvider {
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "USDA_MARS_REPORTS" });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetUsdaMarsReports> {
-    const { rows, sourceUrl } = await fetchReports(USDA_MARS_BASE_URL);
+    const { rows, sourceUrlUsed: sourceUrl } = await fetchUsdaMarsPublicIndex();
     const fetchLimit = Math.max(USDA_MARS_REPORTS_LIMIT, USDA_MARS_GRAIN_WIDGET_LIMIT);
     const scanLimit = Math.max(fetchLimit, USDA_MARS_MAX_REPORTS_SCAN);
     const sliced = rows.slice(0, scanLimit);
 
     const ranked: RankedReport[] = sliced
       .map((row, index) => {
-        const title = String(row.title || row.reportTitle || row.report_name || "").trim();
+        const title = String(row.reportTitle || "").trim();
         const titleNorm = normalizeTitle(title);
-        const reportId = String(row.reportId || row.id || row.slug || "").trim() || undefined;
-        const resolvedUrl = String(row.reportURL || row.reportUrl || row.url || "").trim() || sourceUrl;
-        const fileType = normalizeType(row.fileType || row.file_type || row.reportType);
+        const reportId = String(row.id || "").trim() || undefined;
+        const resolvedUrl = row.fileName
+          ? `https://www.ams.usda.gov/mnreports/${encodeURIComponent(row.fileName)}.${encodeURIComponent(row.fileExtension || "txt")}`
+          : sourceUrl;
+        const fileType = normalizeType(row.fileExtension);
         const typeTag = deriveTypeTag(titleNorm);
         const excluded = matchesExclude(titleNorm);
         const score = scoreReport({ titleNorm, fileType });
@@ -273,10 +176,10 @@ export class UsdaMarsReportsProvider implements GrainWidgetsProvider {
           titleNorm,
           reportId,
           sourceUrl: resolvedUrl,
-          publishedAt: parseDate(row.publishedAt || row.publishDate || row.releaseDate),
-          reportDate: parseDate(row.reportDate),
+          publishedAt: parseDate(row.publishedDate),
+          reportDate: parseDate(row.reportEndDate || row.reportBeginDate),
           fileType,
-          category: row.category || categoryFromType(typeTag),
+          category: categoryFromType(typeTag),
           score,
           excluded,
           tags: {
@@ -331,7 +234,7 @@ export class UsdaMarsReportsProvider implements GrainWidgetsProvider {
       title: "USDA MARS Grain Reports",
       subtitle: "US cash/export context (metadata-only, no PDF/TXT parsing)",
       status,
-      sourceName: "USDA AMS MARS API",
+      sourceName: "USDA AMS MARS",
       sourceAttribution: "Data: USDA AMS MARS (public)",
       sourceUrl,
       updatedAt: ctx.now.toISOString(),
