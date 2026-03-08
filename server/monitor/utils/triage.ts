@@ -1,6 +1,8 @@
 import { lookup } from "node:dns/promises";
 import {
   ENABLE_FAOSTAT_PP_WIDGET,
+  ENABLE_NASDAQ_CHRIS,
+  ENABLE_NASDAQ_DATALINK_PROVIDER,
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
@@ -9,6 +11,10 @@ import {
   FPMA_API_BASE_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
+  NASDAQ_API_KEY,
+  NASDAQ_BASE_URL,
+  NASDAQ_CHRIS_DATASETS,
+  NASDAQ_DATASETS,
   USDA_GTR_DATASET_URLS,
   USDA_MARS_BASE_URL,
   USDA_MARS_PUBLIC_INDEX_URLS,
@@ -86,6 +92,40 @@ function normalizeProviderError(error?: string, configMissing = false) {
     message: error || "config_missing",
     errorKind: classifyErrorKind({ message: error, code, httpStatus, configMissing }),
   };
+}
+
+function inferProviderErrorKind(args: {
+  providerId: string;
+  providerErrorKind?: TriageErrorKind;
+  providerError?: string;
+  probe?: ProbeResult;
+  fpmaDiscovery?: ReturnType<typeof getFpmaDiscoveryDebug>;
+}): TriageErrorKind | undefined {
+  if (args.providerErrorKind && args.providerErrorKind !== "UNKNOWN") return args.providerErrorKind;
+  const providerErrorText = String(args.providerError || "").toLowerCase();
+  if (args.providerId === "faostat-pp") {
+    if (args.probe?.errorKind === "TIMEOUT") return "TIMEOUT";
+    if (providerErrorText.includes("aborted") || providerErrorText.includes("timeout")) return "TIMEOUT";
+  }
+  if (args.providerId === "fpma-market-prices") {
+    const endpoints = args.fpmaDiscovery?.endpointsTried || [];
+    const htmlEndpoint = endpoints.find((entry) => (entry.contentType || "").includes("text/html"));
+    if (htmlEndpoint) return "PARSE";
+    if (args.probe?.ok && args.fpmaDiscovery && args.fpmaDiscovery.countriesCount === 0 && args.fpmaDiscovery.commoditiesCount === 0) {
+      return "PARSE";
+    }
+    if (providerErrorText.includes("html_response") || providerErrorText.includes("parse")) return "PARSE";
+    if (providerErrorText.includes("empty")) return "EMPTY";
+  }
+  if (args.providerId === "usda-gtr-logistics") {
+    if (args.probe?.errorKind === "HTTP_4XX") return "HTTP_4XX";
+  }
+  if (args.providerId === "nasdaq-datalink") {
+    if (providerErrorText.includes("red/dgs10")) return "PARSE";
+    if (args.probe?.errorKind === "HTTP_4XX") return "HTTP_4XX";
+    if (providerErrorText.includes("forbidden") || providerErrorText.includes("blocked")) return "HTTP_4XX";
+  }
+  return args.providerErrorKind || args.probe?.errorKind || normalizeProviderError(args.providerError)?.errorKind;
 }
 
 async function probeUrl(url: string | undefined, options?: { configMissing?: boolean; timeoutMs?: number; headers?: HeadersInit }): Promise<ProbeResult> {
@@ -283,6 +323,46 @@ function providerSuggestedFix(args: {
     }
   }
 
+  if (args.providerId === "fpma-market-prices" && args.errorKind === "PARSE") {
+    severity = "WARN";
+    type = "CODE_FIX";
+    why = "The FPMA endpoint is responding, but runtime is likely receiving HTML or a non-data shell instead of JSON rows.";
+    actions.push("Verify FPMA_API_BASE_URL points to a real JSON API endpoint, not an HTML application shell.");
+  }
+
+  if (args.providerId === "faostat-pp" && args.errorKind === "TIMEOUT") {
+    severity = "WARN";
+    type = "CHANGE_CONFIG";
+    why = "FAOSTAT upstream is timing out even on reduced probes.";
+    actions.push("Increase FAOSTAT_TIMEOUT_MS further or switch to a lighter FAOSTAT endpoint/probe for production validation.");
+  }
+
+  if (args.providerId === "usda-gtr-logistics" && args.errorKind === "HTTP_4XX") {
+    severity = "WARN";
+    type = "CODE_FIX";
+    why = "The GTR dataset URL is live, but binary download still receives 4xx from runtime fetch.";
+    actions.push("Inspect GTR provider httpStatus/finalUrl/responseHeaders in activation-report and align binary fetch behavior with the successful probe.");
+  }
+
+  if (args.providerId === "nasdaq-datalink") {
+    if (errorMessage.includes("RED/")) {
+      severity = "WARN";
+      type = "SET_ENV";
+      envKeys = ["NASDAQ_DATASETS"];
+      exampleValues = ["FRED/DGS10,FRED/DGS2,FRED/T10Y2Y,FRED/DFF,FRED/DTWEXBGS"];
+      why = "Production datasets include an invalid RED/... prefix instead of FRED/....";
+      actions.push("Fix NASDAQ_DATASETS on Railway so every FRED dataset keeps the FRED/ prefix.");
+    }
+    if (errorMessage.includes("CHRIS/")) {
+      severity = "WARN";
+      type = "SET_ENV";
+      envKeys = ["ENABLE_NASDAQ_CHRIS", "NASDAQ_CHRIS_DATASETS"];
+      exampleValues = ["false", ""];
+      why = "Premium CHRIS datasets are enabled in production and add avoidable 403 noise.";
+      actions.push("Disable CHRIS on production unless you explicitly want premium-only datasets.");
+    }
+  }
+
   if (!actions.length) {
     actions.push(args.errorKind ? "No safe automatic fix beyond the current fallback chain." : "No action required.");
   }
@@ -294,13 +374,15 @@ type TargetProviderId =
   | "fpma-market-prices"
   | "faostat-pp"
   | "usda-gtr-logistics"
-  | "usda-mars-daily-txt";
+  | "usda-mars-daily-txt"
+  | "nasdaq-datalink";
 
 const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expectedCount: number }> = [
   { providerId: "fpma-market-prices", widgetKind: "FPMA_MARKET_PRICES_MULTI_COUNTRY", expectedCount: 5 },
   { providerId: "faostat-pp", widgetKind: "FAOSTAT_PP_MULTI_COUNTRY", expectedCount: 5 },
   { providerId: "usda-gtr-logistics", widgetKind: "USDA_GTR_LOGISTICS_SNAPSHOT", expectedCount: 2 },
   { providerId: "usda-mars-daily-txt", widgetKind: "USDA_MARS_DAILY_MARKET_RATES_TXT", expectedCount: 3 },
+  { providerId: "nasdaq-datalink", widgetKind: "NASDAQ_DATA_LINK_SNAPSHOT", expectedCount: Math.max(2, NASDAQ_DATASETS.length) },
 ];
 
 export async function buildMonitorTriageReport(grainWidgetsService: {
@@ -344,6 +426,10 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
     USDA_MARS_FILE_URL_TEMPLATES: "present",
     NASDAQ_API_KEY: process.env.NASDAQ_API_KEY ? "present" : "missing",
+    NASDAQ_DATASETS,
+    NASDAQ_DATASET_PREFIXES: Array.from(new Set(NASDAQ_DATASETS.map((value) => String(value).split("/")[0] || ""))).filter(Boolean),
+    ENABLE_NASDAQ_CHRIS,
+    NASDAQ_CHRIS_DATASETS,
     ALPHAVANTAGE_API_KEY: process.env.ALPHAVANTAGE_API_KEY ? "present" : "missing",
     GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
     GRAIN_WIDGETS_CACHE_TTL_MS,
@@ -401,6 +487,17 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorKind: classifyErrorKind({ message: error?.message }),
       errorMessage: String(error?.message || "probe_failed"),
     })),
+    nasdaq: await probeUrl(
+      `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent((NASDAQ_DATASETS[0] || "FRED/DGS10").split("/")[0] || "FRED")}/${encodeURIComponent((NASDAQ_DATASETS[0] || "FRED/DGS10").split("/").slice(1).join("/") || "DGS10")}.json?rows=1${NASDAQ_API_KEY ? `&api_key=${encodeURIComponent(NASDAQ_API_KEY)}` : ""}`,
+      {
+        configMissing: !ENABLE_NASDAQ_DATALINK_PROVIDER || !NASDAQ_BASE_URL || NASDAQ_DATASETS.length === 0,
+      },
+    ).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
   };
 
   const providerRows = TARGETS.map(({ providerId, widgetKind, expectedCount }) => {
@@ -414,11 +511,19 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       providerId === "fpma-market-prices" ? probes.fpma :
       providerId === "faostat-pp" ? probes.faostat :
       providerId === "usda-gtr-logistics" ? probes.usdaGtr :
+      providerId === "nasdaq-datalink" ? probes.nasdaq :
       probes.usdaMarsDailyTxt;
     const lastError = normalizeProviderError(
       provider?.error || (provider?.errorKind ? String(provider.errorKind) : undefined) || (!probeMatch.ok ? probeMatch.errorMessage : undefined),
       configMissing,
     );
+    const refinedErrorKind = inferProviderErrorKind({
+      providerId,
+      providerErrorKind: provider?.errorKind,
+      providerError: provider?.error,
+      probe: probeMatch,
+      fpmaDiscovery,
+    });
     const errorMessageShort = shortMessage(lastError?.message);
     const sourceUrlUsed = redactUrl(provider?.downloadUrlUsed || provider?.sourceUrlUsed || widget?.debug?.downloadUrlUsed || widget?.debug?.sourceUrlUsed || widget?.sourceUrl);
     const coverage = provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCount}`;
@@ -430,14 +535,14 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       enabled: Boolean(provider?.enabled),
       status: String(widget?.status || provider?.status || "OFFLINE"),
       coverage,
-      errorKind: provider?.errorKind || lastError?.errorKind || probeMatch?.errorKind,
+      errorKind: refinedErrorKind,
       errorMessageShort,
       sourceUrlUsed,
       fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
       lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
       suggestedFix: providerSuggestedFix({
         providerId,
-        errorKind: provider?.errorKind || lastError?.errorKind || probeMatch?.errorKind,
+        errorKind: refinedErrorKind,
         errorMessage: lastError?.message || probeMatch?.errorMessage,
         sourceUrlUsed,
         downloadUrlUsed: redactUrl(provider?.downloadUrlUsed || widget?.debug?.downloadUrlUsed),

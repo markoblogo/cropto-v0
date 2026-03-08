@@ -19,7 +19,7 @@ import type {
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, resolveFpmaIds } from "./fpmaDiscovery";
-import { fetchTextWithTimeout, parseNumber } from "./utils";
+import { fetchTextResponseWithTimeout, parseNumber } from "./utils";
 
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type PriceType = "RETAIL" | "WHOLESALE";
@@ -236,6 +236,11 @@ function parsePayloadRows(payload: any): any[] {
     }
   }
   return [];
+}
+
+function looksLikeHtmlDocument(text: string): boolean {
+  const sample = String(text || "").slice(0, 400).toLowerCase();
+  return sample.includes("<!doctype html") || sample.includes("<html") || sample.includes("<body");
 }
 
 function mapCrop(label: string, cropMap: Record<CropKey, CropMapEntry>): CropKey | undefined {
@@ -556,10 +561,14 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
 
     for (const url of allUrls) {
       try {
-        const raw = await fetchTextWithTimeout(url, FPMA_TIMEOUT_MS, {
+        const response = await fetchTextResponseWithTimeout(url, FPMA_TIMEOUT_MS, {
           accept: "application/json,text/plain,*/*",
         });
-        const parsed = JSON.parse(raw);
+        if ((response.contentType || "").includes("text/html") || looksLikeHtmlDocument(response.text)) {
+          warnings.push(`html_response:${url}`);
+          continue;
+        }
+        const parsed = JSON.parse(response.text);
         const rows = parsePayloadRows(parsed);
         if (!rows.length) {
           warnings.push(`empty_payload:${url}`);
@@ -571,7 +580,7 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
           continue;
         }
         parseResults.push(...observations);
-        sourceUrlUsed = sourceUrlUsed || url;
+        sourceUrlUsed = sourceUrlUsed || response.finalUrl || url;
         if (parseResults.length >= 50) break;
       } catch (error: any) {
         warnings.push(`${url}:${String(error?.message || "fetch_failed").slice(0, 90)}`);

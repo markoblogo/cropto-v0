@@ -597,7 +597,7 @@ export function getFpmaDiscoveryDebug(snapshot?: FpmaDiscoverySnapshot): FpmaDis
     countriesCount: snapshot?.countries?.length || 0,
     commoditiesCount: snapshot?.commodities?.length || 0,
     priceTypesCount: snapshot?.priceTypes?.length || 0,
-    endpointsTried: (snapshot?.endpointsTried || []).slice(0, 5),
+    endpointsTried: (snapshot?.endpointsTried || []).slice(0, 8),
     notes: snapshot?.notes,
   };
 }

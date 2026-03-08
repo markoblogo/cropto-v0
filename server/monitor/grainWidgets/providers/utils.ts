@@ -10,6 +10,7 @@ export async function fetchWithHeaders(
     retryOnStatuses?: number[];
     retryDelayMs?: number;
     redirect?: RequestRedirect;
+    cache?: RequestCache;
   },
 ): Promise<Response> {
   const retryOnStatuses = opts.retryOnStatuses || [];
@@ -22,11 +23,14 @@ export async function fetchWithHeaders(
       const response = await fetch(url, {
         signal: controller.signal,
         redirect: opts.redirect || "follow",
+        cache: opts.cache || "no-store",
         headers: {
           "user-agent": USDA_GTR_USER_AGENT,
           accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/json,text/plain,text/html,*/*",
           "accept-language": "en-US,en;q=0.9",
           referer: "https://www.ams.usda.gov/",
+          pragma: "no-cache",
+          "cache-control": "no-cache",
           ...opts.headers,
         },
       });

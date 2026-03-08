@@ -256,11 +256,11 @@ export const NASDAQ_DATASETS = (
   "FRED/DGS10,FRED/DGS2,FRED/DTWEXBGS,FRED/T10Y2Y"
 )
   .split(",")
-  .map((value) => value.trim().toUpperCase())
+  .map((value) => value.trim())
   .filter(Boolean);
 export const NASDAQ_CHRIS_DATASETS = (process.env.NASDAQ_CHRIS_DATASETS || "")
   .split(",")
-  .map((value) => value.trim().toUpperCase())
+  .map((value) => value.trim())
   .filter(Boolean);
 export const NASDAQ_UNIT_MAP = process.env.NASDAQ_UNIT_MAP || "";
 export const NASDAQ_SERIES_COLUMN_MAP = process.env.NASDAQ_SERIES_COLUMN_MAP || "";
