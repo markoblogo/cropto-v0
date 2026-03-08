@@ -34,6 +34,16 @@ type ProbeResult = {
   resolvedIp?: string;
 };
 
+type SuggestedFix = {
+  severity: "BLOCKER" | "WARN" | "INFO";
+  type: "SET_ENV" | "CHANGE_CONFIG" | "CODE_FIX" | "NO_ACTION";
+  actions: string[];
+  envKeys?: string[];
+  exampleValues?: string[];
+  why?: string;
+  verifyUrl?: string;
+};
+
 function redactUrl(url?: string): string | undefined {
   if (!url) return undefined;
   return url
@@ -166,18 +176,26 @@ function providerSuggestedFix(args: {
   downloadUrlUsed?: string;
   notes?: string[];
   configMissing?: boolean;
-}) {
+}): SuggestedFix {
   const actions: string[] = [];
   let severity: "BLOCKER" | "WARN" | "INFO" = "INFO";
   let type: "SET_ENV" | "CHANGE_CONFIG" | "CODE_FIX" | "NO_ACTION" = "NO_ACTION";
+  let envKeys: string[] = [];
+  let exampleValues: string[] = [];
+  let why = "";
   const errorMessage = String(args.errorMessage || "");
   const notes = args.notes || [];
+  const verifyUrl = "/api/monitor/triage-report";
 
   if (args.providerId === "usda-gtr-logistics" && args.configMissing) {
     return {
       severity: "BLOCKER" as const,
       type: "SET_ENV" as const,
       actions: ["Set USDA_GTR_DATASET_URLS to 1-2 public USDA GTR CSV URLs from the datasets page."],
+      envKeys: ["USDA_GTR_DATASET_URLS"],
+      exampleValues: ["https://www.ams.usda.gov/sites/default/files/media/GTRTable1.xlsx,https://www.ams.usda.gov/sites/default/files/media/GTRFigure9.xlsx"],
+      why: "The provider cannot probe or parse anything without at least one official USDA GTR dataset URL.",
+      verifyUrl,
     };
   }
   if (args.providerId === "fpma-market-prices" && args.configMissing) {
@@ -185,6 +203,10 @@ function providerSuggestedFix(args: {
       severity: "BLOCKER" as const,
       type: "SET_ENV" as const,
       actions: ["Set FPMA_API_BASE_URL=https://fpma.fao.org/giews/fpmat4/api/"],
+      envKeys: ["FPMA_API_BASE_URL"],
+      exampleValues: ["https://fpma.fao.org/giews/fpmat4/api/"],
+      why: "FPMA discovery and data queries need the API base URL; without it the provider is configuration-blocked.",
+      verifyUrl,
     };
   }
   if (args.providerId === "faostat-pp" && args.configMissing) {
@@ -192,6 +214,10 @@ function providerSuggestedFix(args: {
       severity: "BLOCKER" as const,
       type: "SET_ENV" as const,
       actions: ["Set FAOSTAT_BASE_URL=https://fenixservices.fao.org/faostat/api/v1/en"],
+      envKeys: ["FAOSTAT_BASE_URL"],
+      exampleValues: ["https://fenixservices.fao.org/faostat/api/v1/en"],
+      why: "FAOSTAT PP queries and definition discovery cannot start without the configured base URL.",
+      verifyUrl,
     };
   }
 
@@ -199,42 +225,50 @@ function providerSuggestedFix(args: {
     case "DNS":
       severity = "BLOCKER";
       type = "CHANGE_CONFIG";
+      why = "Runtime DNS or egress is failing before the provider can reach the upstream host.";
       actions.push("Check Railway egress/DNS, redeploy, try another region, and verify the domain resolves from runtime.");
       break;
     case "TIMEOUT":
       severity = "WARN";
       type = "CHANGE_CONFIG";
+      why = "The upstream is reachable but not responding within the current timeout budget.";
       actions.push("Increase provider timeout or reduce rows/years requested to shrink payload size.");
       break;
     case "HTTP_4XX":
       severity = "WARN";
       type = "CHANGE_CONFIG";
+      why = "The upstream endpoint responded, but the current URL/path/template is not accepted.";
       actions.push("Check base URL/path and verify sourceUrlUsed manually; 4xx usually means wrong path or blocked endpoint.");
       if (errorMessage.includes("403")) actions.push("Endpoint may require auth or premium access; keep open-data fallback active.");
       break;
     case "HTTP_5XX":
       severity = "WARN";
       type = "NO_ACTION";
+      why = "The upstream is currently failing server-side; the safest action is to keep fallback enabled.";
       actions.push("Upstream server error; retry later and keep cache/mock fallback.");
       break;
     case "PARSE":
       severity = "WARN";
       type = "CODE_FIX";
+      why = "Data arrived but the parser assumptions did not match the live payload shape.";
       actions.push("Log a sample payload in debug mode and update parser assumptions for the live shape.");
       break;
     case "EMPTY":
       severity = "WARN";
       type = "CODE_FIX";
+      why = "Requests succeed, but the current mapping/query yields no usable rows.";
       actions.push("Likely mapping mismatch or no data for query; run discovery and adjust crop/item mapping.");
       break;
     case "RATE_LIMIT":
       severity = "WARN";
       type = "CHANGE_CONFIG";
+      why = "The provider is hitting upstream rate limits and should back off more aggressively.";
       actions.push("Increase cache TTL, reduce functions/datasets requested, and add backoff.");
       break;
     case "CONFIG_MISSING":
       severity = "BLOCKER";
       type = "SET_ENV";
+      why = "The provider is blocked by missing required configuration.";
       break;
     default:
       break;
@@ -244,11 +278,17 @@ function providerSuggestedFix(args: {
     if (notes.some((note) => note.includes("daily_report_not_in_list")) || errorMessage.includes("daily_report_not_in_list")) {
       severity = "WARN";
       type = "CHANGE_CONFIG";
+      envKeys = ["USDA_MARS_MAX_REPORTS_SCAN"];
+      exampleValues = ["800"];
+      why = "The target report is not in the scanned subset of the USDA MARS published list.";
       actions.push("Increase USDA_MARS_MAX_REPORTS_SCAN, for example 200 -> 800.");
     }
     if ((args.downloadUrlUsed || args.sourceUrlUsed) && args.errorKind === "HTTP_4XX") {
       severity = "WARN";
       type = "CHANGE_CONFIG";
+      envKeys = ["USDA_MARS_MNREPORTS_BASE_URL", "USDA_MARS_FILE_URL_TEMPLATES"];
+      exampleValues = ["https://www.ams.usda.gov/mnreports", "https://www.ams.usda.gov/mnreports/{fileName}.{ext}"];
+      why = "The TXT metadata path resolved, but the derived report download URL is returning 4xx.";
       actions.push("Adjust USDA_MARS_MNREPORTS_BASE_URL or USDA_MARS_FILE_URL_TEMPLATES and verify extension lowercasing.");
     }
   }
@@ -257,7 +297,7 @@ function providerSuggestedFix(args: {
     actions.push(args.errorKind ? "No safe automatic fix beyond the current fallback chain." : "No action required.");
   }
 
-  return { severity, type, actions };
+  return { severity, type, actions, envKeys, exampleValues, why, verifyUrl };
 }
 
 type TargetProviderId =
@@ -331,16 +371,36 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
   const probes = {
     fpma: await probeUrl(`${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`, {
       configMissing: !process.env.FPMA_API_BASE_URL,
-    }),
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
     faostat: await probeUrl(`${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area?datasource=production`, {
       configMissing: !process.env.FAOSTAT_BASE_URL,
-    }),
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
     usdaGtr: await probeUrl(USDA_GTR_DATASET_URLS[0], {
       configMissing: !process.env.USDA_GTR_DATASET_URLS,
-    }),
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
     usdaMarsDailyTxt: await probeUrl(marsDownloadUrl, {
       configMissing: !process.env.USDA_MARS_BASE_URL && !process.env.USDA_MARS_FILE_URL_TEMPLATES,
-    }),
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
   };
 
   const providerRows = TARGETS.map(({ providerId, widgetKind, expectedCount }) => {
@@ -379,6 +439,21 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     };
   });
 
+  const nextActions = providerRows
+    .map((row) => ({
+      providerId: row.providerId,
+      severity: row.suggestedFix.severity,
+      envKeys: row.suggestedFix.envKeys || [],
+      exampleValues: row.suggestedFix.exampleValues || [],
+      why: row.suggestedFix.why || row.suggestedFix.actions[0] || "No action required.",
+      verifyUrl: row.suggestedFix.verifyUrl || "/api/monitor/triage-report",
+    }))
+    .sort((a, b) => {
+      const rank = { BLOCKER: 0, WARN: 1, INFO: 2 } as const;
+      return rank[a.severity] - rank[b.severity];
+    })
+    .slice(0, 10);
+
   return {
     runtime: {
       timestamp: nowIso,
@@ -393,6 +468,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     },
     networkProbe: probes,
     providers: providerRows,
+    nextActions,
     fpmaDiscovery: fpmaDiscovery
       ? {
           cacheHit: fpmaDiscovery.cacheHit,

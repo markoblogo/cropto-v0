@@ -45,6 +45,34 @@ import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { buildMonitorTriageReport } from "./utils/triage";
 
+function triageReportToMarkdown(report: any): string {
+  const providers = Array.isArray(report?.providers) ? report.providers : [];
+  const nextActions = Array.isArray(report?.nextActions) ? report.nextActions : [];
+  const lines = [
+    "# Monitor Triage Report",
+    "",
+    `Generated: ${report?.runtime?.timestamp || new Date().toISOString()}`,
+    "",
+    "| Provider | Status | Coverage | errorKind | Suggested fix |",
+    "| --- | --- | --- | --- | --- |",
+    ...providers.map((row: any) => {
+      const fix = Array.isArray(row?.suggestedFix?.actions) ? row.suggestedFix.actions[0] : "No action";
+      return `| ${row?.providerId || "unknown"} | ${row?.status || "OFFLINE"} | ${row?.coverage || "0/0"} | ${row?.errorKind || "none"} | ${fix.replace(/\|/g, "\\|")} |`;
+    }),
+  ];
+
+  if (nextActions.length) {
+    lines.push("", "## Next actions", "");
+    for (const action of nextActions.slice(0, 10)) {
+      const envBits = Array.isArray(action?.envKeys) && action.envKeys.length ? ` env: ${action.envKeys.join(",")}.` : "";
+      const exampleBits = Array.isArray(action?.exampleValues) && action.exampleValues.length ? ` example: ${action.exampleValues.join(" | ")}.` : "";
+      lines.push(`- [${action?.severity || "INFO"}] ${action?.providerId || "unknown"}: ${action?.why || "No action."}${envBits}${exampleBits} verify: ${action?.verifyUrl || "/api/monitor/triage-report"}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 const indexProvider = new CroptoUkraineIndexProvider();
 const logisticsIndicatorsService = new LogisticsIndicatorsService();
 const grainMarketsService = new GrainMarketsService();
@@ -753,12 +781,16 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
-  app.get("/api/monitor/triage-report", async (_req, res) => {
+  app.get("/api/monitor/triage-report", async (req, res) => {
     try {
       const report = await buildMonitorTriageReport(grainWidgetsService);
+      if (req.query.format === "md") {
+        res.type("text/markdown").send(triageReportToMarkdown(report));
+        return;
+      }
       res.json(report);
     } catch (error: any) {
-      res.status(200).json({
+      const fallback = {
         runtime: {
           timestamp: new Date().toISOString(),
           appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
@@ -769,9 +801,18 @@ export function registerMonitorRoutes(app: Express): void {
             process.env.COMMIT_SHA ||
             "unknown",
         },
+        providers: [],
+        nextActions: [],
         error: {
           message: error?.message || "triage_report_failed",
         },
+      };
+      if (req.query.format === "md") {
+        res.type("text/markdown").send(triageReportToMarkdown(fallback));
+        return;
+      }
+      res.status(200).json({
+        ...fallback,
       });
     }
   });
