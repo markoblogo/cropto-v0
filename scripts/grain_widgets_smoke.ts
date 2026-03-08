@@ -127,7 +127,7 @@ async function run() {
       }
       if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
         console.log(
-          `  usda_gtr coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} rowsParsed=${widget.debug?.rowsParsed ?? 0}`,
+          `  usda_gtr coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} dataset=${widget.debug?.datasetUrlChosen || "n/a"} rowsParsed=${widget.debug?.rowsParsed ?? 0} seriesPoints=${widget.debug?.seriesPoints ?? 0}`,
         );
       }
       if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {

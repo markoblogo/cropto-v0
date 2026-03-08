@@ -1,3 +1,4 @@
+import { inflateRawSync } from "node:zlib";
 import {
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   USDA_GTR_BASE_URL,
@@ -13,7 +14,7 @@ import type {
 } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-import { fetchTextWithTimeout, parseNumber } from "./utils";
+import { fetchBufferWithTimeout, fetchTextWithTimeout, parseNumber } from "./utils";
 
 type ParsedDataset = {
   metric: GrainWidgetUsdaGtrLogisticsItem["metric"];
@@ -21,12 +22,16 @@ type ParsedDataset = {
   series: GrainWidgetPoint[];
   rowsParsed: number;
   sourceUrlUsed: string;
+  columnsDetected: string[];
+  datasetUrlChosen: string;
 };
 
 type CacheEntry = {
   fetchedAt: number;
   widget: GrainWidgetUsdaGtrLogisticsSnapshot;
 };
+
+type SheetRow = Record<string, string>;
 
 let cacheEntry: CacheEntry | null = null;
 
@@ -59,6 +64,11 @@ function splitCsvRow(line: string): string[] {
 function normalizeTs(raw: string): string | undefined {
   const trimmed = String(raw || "").trim();
   if (!trimmed) return undefined;
+  const numeric = Number(trimmed);
+  if (Number.isFinite(numeric) && numeric > 20_000 && numeric < 80_000) {
+    const excelEpoch = Date.UTC(1899, 11, 30);
+    return new Date(excelEpoch + numeric * 86_400_000).toISOString();
+  }
   const parsed = Date.parse(trimmed);
   if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
   const asMonthYear = Date.parse(`${trimmed}-01`);
@@ -66,14 +76,13 @@ function normalizeTs(raw: string): string | undefined {
   return undefined;
 }
 
-function classifyMetric(args: { url: string; header: string }): GrainWidgetUsdaGtrLogisticsItem["metric"] {
-  const text = `${args.url} ${args.header}`.toLowerCase();
-  if (text.includes("barge")) return "BARGE";
-  if (text.includes("fuel") || text.includes("surcharge")) return "FUEL";
-  if (text.includes("ocean") || text.includes("freight")) return "OCEAN";
-  if (text.includes("rail") || text.includes("tariff")) return "RAIL";
-  if (text.includes("transit")) return "TRANSIT";
-  return "OTHER";
+function inferUnit(metric: GrainWidgetUsdaGtrLogisticsItem["metric"], label: string): string {
+  const text = label.toLowerCase();
+  if (text.includes("surcharge") || text.includes("mile")) return "USD/mile";
+  if (text.includes("ton")) return "USD/t";
+  if (text.includes("index") || metric === "BARGE") return "index";
+  if (metric === "OCEAN") return "USD";
+  return "rate";
 }
 
 function deriveCadence(points: GrainWidgetPoint[]): "daily" | "weekly" | "monthly" | "unknown" {
@@ -97,65 +106,9 @@ function deriveCadence(points: GrainWidgetPoint[]): "daily" | "weekly" | "monthl
   return "unknown";
 }
 
-function inferUnit(metric: GrainWidgetUsdaGtrLogisticsItem["metric"], header: string): string {
-  const text = header.toLowerCase();
-  if (text.includes("percent") || text.includes("%")) return "%";
-  if (text.includes("dollar") || text.includes("usd") || text.includes("$") || metric === "OCEAN") return "USD";
-  if (text.includes("index") || metric === "BARGE") return "index";
-  if (metric === "FUEL") return "index";
-  return "rate";
-}
-
-function parseDataset(csv: string, sourceUrlUsed: string, seriesPoints: number): ParsedDataset | undefined {
-  const lines = csv
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length < 2) return undefined;
-
-  const headers = splitCsvRow(lines[0]).map((value) => value.replace(/^"|"$/g, ""));
-  const dateIdx = headers.findIndex((header) => {
-    const key = header.toLowerCase();
-    return key.includes("date") || key.includes("week") || key.includes("month") || key.includes("period");
-  });
-  if (dateIdx < 0) return undefined;
-
-  const numericCandidates = headers
-    .map((header, idx) => ({ header, idx }))
-    .filter(({ idx, header }) => idx !== dateIdx && /(rate|index|tariff|fuel|surcharge|freight|cost|price)/i.test(header));
-  if (!numericCandidates.length) return undefined;
-
-  const preferred = numericCandidates[0];
-  const points: GrainWidgetPoint[] = [];
-  for (const line of lines.slice(1)) {
-    const cols = splitCsvRow(line);
-    const ts = normalizeTs(cols[dateIdx] || "");
-    const value = parseNumber(cols[preferred.idx]);
-    if (!ts || value == null) continue;
-    points.push({ ts, value: Number(value.toFixed(4)) });
-  }
-
-  if (points.length < 2) return undefined;
-
-  const metric = classifyMetric({
-    url: sourceUrlUsed,
-    header: preferred.header,
-  });
-
-  const sorted = points.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts)).slice(-Math.max(6, seriesPoints));
-  return {
-    metric,
-    label: preferred.header.replace(/\s+/g, " ").trim() || metric,
-    series: sorted,
-    rowsParsed: points.length,
-    sourceUrlUsed,
-  };
-}
-
 function mapItem(parsed: ParsedDataset): GrainWidgetUsdaGtrLogisticsItem | undefined {
-  const series = parsed.series;
-  const latest = series[series.length - 1];
-  const prev = series[series.length - 2];
+  const latest = parsed.series[parsed.series.length - 1];
+  const prev = parsed.series[parsed.series.length - 2];
   if (!latest) return undefined;
   const changeAbs = prev ? Number((latest.value - prev.value).toFixed(4)) : undefined;
   const changePct = prev && prev.value !== 0
@@ -169,9 +122,283 @@ function mapItem(parsed: ParsedDataset): GrainWidgetUsdaGtrLogisticsItem | undef
     unit: inferUnit(parsed.metric, parsed.label),
     changeAbs,
     changePct,
-    series,
-    confidence: series.length >= 6 ? "HIGH" : "MED",
+    series: parsed.series,
+    confidence: parsed.series.length >= 8 ? "HIGH" : "MED",
   };
+}
+
+function findEndOfCentralDirectory(buffer: Buffer): number {
+  for (let offset = buffer.length - 22; offset >= Math.max(0, buffer.length - 66_000); offset -= 1) {
+    if (buffer.readUInt32LE(offset) === 0x06054b50) return offset;
+  }
+  throw new Error("zip_eocd_missing");
+}
+
+function unzipEntries(buffer: Buffer): Map<string, Buffer> {
+  const entries = new Map<string, Buffer>();
+  const eocd = findEndOfCentralDirectory(buffer);
+  const centralDirOffset = buffer.readUInt32LE(eocd + 16);
+  const totalEntries = buffer.readUInt16LE(eocd + 10);
+  let offset = centralDirOffset;
+
+  for (let i = 0; i < totalEntries; i += 1) {
+    if (buffer.readUInt32LE(offset) !== 0x02014b50) break;
+    const compression = buffer.readUInt16LE(offset + 10);
+    const compressedSize = buffer.readUInt32LE(offset + 20);
+    const fileNameLength = buffer.readUInt16LE(offset + 28);
+    const extraLength = buffer.readUInt16LE(offset + 30);
+    const commentLength = buffer.readUInt16LE(offset + 32);
+    const localHeaderOffset = buffer.readUInt32LE(offset + 42);
+    const fileName = buffer.slice(offset + 46, offset + 46 + fileNameLength).toString("utf8");
+
+    if (!fileName.endsWith("/")) {
+      if (buffer.readUInt32LE(localHeaderOffset) !== 0x04034b50) throw new Error("zip_local_header_missing");
+      const localNameLength = buffer.readUInt16LE(localHeaderOffset + 26);
+      const localExtraLength = buffer.readUInt16LE(localHeaderOffset + 28);
+      const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
+      const compressed = buffer.slice(dataStart, dataStart + compressedSize);
+      let content: Buffer;
+      if (compression === 0) content = compressed;
+      else if (compression === 8) content = inflateRawSync(compressed);
+      else throw new Error(`zip_unsupported_compression:${compression}`);
+      entries.set(fileName, content);
+    }
+
+    offset += 46 + fileNameLength + extraLength + commentLength;
+  }
+
+  return entries;
+}
+
+function decodeXml(xml: string): string {
+  return xml
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function parseSharedStrings(xml?: string): string[] {
+  if (!xml) return [];
+  const out: string[] = [];
+  const matches = xml.matchAll(/<si[\s\S]*?>([\s\S]*?)<\/si>/g);
+  for (const match of matches) {
+    const text = Array.from(match[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g))
+      .map((part) => decodeXml(part[1]))
+      .join("");
+    out.push(text);
+  }
+  return out;
+}
+
+function parseWorkbookRelations(xml: string): Map<string, string> {
+  const rels = new Map<string, string>();
+  for (const match of xml.matchAll(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g)) {
+    rels.set(match[1], match[2]);
+  }
+  return rels;
+}
+
+function parseWorkbookSheets(xml: string, rels: Map<string, string>): Map<string, string> {
+  const sheets = new Map<string, string>();
+  for (const match of xml.matchAll(/<sheet[^>]*name="([^"]+)"[^>]*r:id="([^"]+)"/g)) {
+    const target = rels.get(match[2]);
+    if (target) sheets.set(match[1], `xl/${target.replace(/^\/+/, "")}`);
+  }
+  return sheets;
+}
+
+function columnFromRef(ref: string): string {
+  const match = ref.match(/[A-Z]+/i);
+  return (match?.[0] || "").toUpperCase();
+}
+
+function parseSheetRows(xml: string, sharedStrings: string[]): SheetRow[] {
+  const rows: SheetRow[] = [];
+  for (const rowMatch of xml.matchAll(/<row\b[\s\S]*?>([\s\S]*?)<\/row>/g)) {
+    const row: SheetRow = {};
+    for (const cellMatch of rowMatch[1].matchAll(/<c\b([^>]*)>([\s\S]*?)<\/c>/g)) {
+      const attrs = cellMatch[1];
+      const body = cellMatch[2];
+      const refMatch = attrs.match(/\br="([^"]+)"/);
+      const typeMatch = attrs.match(/\bt="([^"]+)"/);
+      const column = refMatch ? columnFromRef(refMatch[1]) : "";
+      if (!column) continue;
+      let value = "";
+      const inlineMatch = body.match(/<is>[\s\S]*?<t[^>]*>([\s\S]*?)<\/t>[\s\S]*?<\/is>/);
+      const rawMatch = body.match(/<v>([\s\S]*?)<\/v>/);
+      if (inlineMatch) value = decodeXml(inlineMatch[1]);
+      else if (rawMatch) {
+        value = decodeXml(rawMatch[1]);
+        if (typeMatch?.[1] === "s") value = sharedStrings[Number.parseInt(value, 10)] || value;
+      }
+      row[column] = value;
+    }
+    if (Object.keys(row).length) rows.push(row);
+  }
+  return rows;
+}
+
+function parseXlsxWorkbook(buffer: Buffer) {
+  const files = unzipEntries(buffer);
+  const sharedStrings = parseSharedStrings(files.get("xl/sharedStrings.xml")?.toString("utf8"));
+  const workbookXml = files.get("xl/workbook.xml")?.toString("utf8");
+  const relsXml = files.get("xl/_rels/workbook.xml.rels")?.toString("utf8");
+  if (!workbookXml || !relsXml) throw new Error("xlsx_workbook_missing");
+  const rels = parseWorkbookRelations(relsXml);
+  const sheets = parseWorkbookSheets(workbookXml, rels);
+  return {
+    getSheetRows(sheetName: string): SheetRow[] {
+      const path = sheets.get(sheetName);
+      const xml = path ? files.get(path)?.toString("utf8") : undefined;
+      if (!xml) return [];
+      return parseSheetRows(xml, sharedStrings);
+    },
+  };
+}
+
+function lastPoints(points: GrainWidgetPoint[], seriesPoints: number): GrainWidgetPoint[] {
+  return points
+    .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+    .slice(-Math.max(6, seriesPoints));
+}
+
+function parseTable1Workbook(buffer: Buffer, sourceUrlUsed: string, seriesPoints: number): ParsedDataset[] {
+  const workbook = parseXlsxWorkbook(buffer);
+  const rows = workbook.getSheetRows("Data");
+  if (rows.length < 8) return [];
+
+  const dataRows = rows.slice(7);
+  const bargePoints: GrainWidgetPoint[] = [];
+  const oceanPoints: GrainWidgetPoint[] = [];
+
+  for (const row of dataRows) {
+    const ts = normalizeTs(row.A);
+    if (!ts) continue;
+    const bargeValue = parseNumber(row.K);
+    const oceanValue = parseNumber(row.L);
+    if (bargeValue != null) bargePoints.push({ ts, value: Number(bargeValue.toFixed(4)) });
+    if (oceanValue != null) oceanPoints.push({ ts, value: Number(oceanValue.toFixed(4)) });
+  }
+
+  const out: ParsedDataset[] = [];
+  if (bargePoints.length >= 2) {
+    out.push({
+      metric: "BARGE",
+      label: "Barge transport cost index",
+      series: lastPoints(bargePoints, seriesPoints),
+      rowsParsed: bargePoints.length,
+      sourceUrlUsed,
+      columnsDetected: ["A:Date", "K:Barge"],
+      datasetUrlChosen: sourceUrlUsed,
+    });
+  }
+  if (oceanPoints.length >= 2) {
+    out.push({
+      metric: "OCEAN",
+      label: "Gulf ocean vessel cost index",
+      series: lastPoints(oceanPoints, seriesPoints),
+      rowsParsed: oceanPoints.length,
+      sourceUrlUsed,
+      columnsDetected: ["A:Date", "L:Gulf ocean vessel"],
+      datasetUrlChosen: sourceUrlUsed,
+    });
+  }
+  return out;
+}
+
+function average(values: number[]): number | undefined {
+  if (!values.length) return undefined;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function parseFigure9Workbook(buffer: Buffer, sourceUrlUsed: string, seriesPoints: number): ParsedDataset[] {
+  const workbook = parseXlsxWorkbook(buffer);
+  const rows = workbook.getSheetRows("data");
+  if (rows.length < 3) return [];
+  const candidateColumns = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+  const points: GrainWidgetPoint[] = [];
+
+  for (const row of rows.slice(1)) {
+    const ts = normalizeTs(row.A);
+    if (!ts) continue;
+    const values = candidateColumns
+      .map((column) => parseNumber(row[column]))
+      .filter((value): value is number => value != null && Number.isFinite(value));
+    const current = average(values);
+    if (current == null) continue;
+    points.push({ ts, value: Number(current.toFixed(4)) });
+  }
+
+  if (points.length < 2) return [];
+  return [
+    {
+      metric: "FUEL",
+      label: "Rail fuel surcharge average",
+      series: lastPoints(points, seriesPoints),
+      rowsParsed: points.length,
+      sourceUrlUsed,
+      columnsDetected: ["A:Date", "C-L:Carrier surcharge columns"],
+      datasetUrlChosen: sourceUrlUsed,
+    },
+  ];
+}
+
+function parseCsvDataset(csv: string, sourceUrlUsed: string, seriesPoints: number): ParsedDataset[] {
+  const lines = csv
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length < 2) return [];
+
+  const headers = splitCsvRow(lines[0]).map((value) => value.replace(/^"|"$/g, ""));
+  const dateIdx = headers.findIndex((header) => {
+    const key = header.toLowerCase();
+    return key.includes("date") || key.includes("week") || key.includes("month") || key.includes("period");
+  });
+  const valueIdx = headers.findIndex((header) => /(rate|index|surcharge|tariff|price)/i.test(header));
+  if (dateIdx < 0 || valueIdx < 0) return [];
+
+  const points: GrainWidgetPoint[] = [];
+  for (const line of lines.slice(1)) {
+    const cols = splitCsvRow(line);
+    const ts = normalizeTs(cols[dateIdx] || "");
+    const value = parseNumber(cols[valueIdx]);
+    if (!ts || value == null) continue;
+    points.push({ ts, value: Number(value.toFixed(4)) });
+  }
+  if (points.length < 2) return [];
+
+  return [
+    {
+      metric: /barge/i.test(headers[valueIdx]) ? "BARGE" : /fuel|surcharge/i.test(headers[valueIdx]) ? "FUEL" : "RAIL",
+      label: headers[valueIdx].replace(/\s+/g, " ").trim(),
+      series: lastPoints(points, seriesPoints),
+      rowsParsed: points.length,
+      sourceUrlUsed,
+      columnsDetected: [headers[dateIdx], headers[valueIdx]],
+      datasetUrlChosen: sourceUrlUsed,
+    },
+  ];
+}
+
+async function parseDatasetFromUrl(url: string, seriesPoints: number): Promise<ParsedDataset[]> {
+  if (/\.xlsx(?:$|\?)/i.test(url)) {
+    const { buffer, finalUrl } = await fetchBufferWithTimeout(url, USDA_GTR_TIMEOUT_MS);
+    if (/GTRTable1\.xlsx/i.test(finalUrl) || /GTRTable1\.xlsx/i.test(url)) {
+      return parseTable1Workbook(buffer, finalUrl, seriesPoints);
+    }
+    if (/GTRFigure9\.xlsx/i.test(finalUrl) || /GTRFigure9\.xlsx/i.test(url)) {
+      return parseFigure9Workbook(buffer, finalUrl, seriesPoints);
+    }
+    return [];
+  }
+
+  const csv = await fetchTextWithTimeout(url, USDA_GTR_TIMEOUT_MS, {
+    accept: "text/csv,text/plain,*/*",
+  });
+  return parseCsvDataset(csv, url, seriesPoints);
 }
 
 export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
@@ -193,28 +420,31 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
     const warnings: string[] = [];
     const parsedSignals: ParsedDataset[] = [];
     let sourceUrlUsed: string | undefined;
+    let datasetUrlChosen: string | undefined;
     let rowsParsed = 0;
+    let columnsDetected: string[] = [];
+    let totalSeriesPoints = 0;
 
     for (const url of USDA_GTR_DATASET_URLS) {
       try {
-        const csv = await fetchTextWithTimeout(url, USDA_GTR_TIMEOUT_MS, {
-          accept: "text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
-        });
-        const parsed = parseDataset(csv, url, ctx.seriesPoints);
-        if (!parsed) {
+        const parsedList = await parseDatasetFromUrl(url, ctx.seriesPoints);
+        if (!parsedList.length) {
           warnings.push(`parse_empty:${url}`);
           continue;
         }
-        if (parsedSignals.some((entry) => entry.metric === parsed.metric)) {
-          warnings.push(`duplicate_metric:${parsed.metric}`);
-          continue;
+        for (const parsed of parsedList) {
+          if (parsedSignals.some((entry) => entry.metric === parsed.metric)) continue;
+          parsedSignals.push(parsed);
+          rowsParsed += parsed.rowsParsed;
+          totalSeriesPoints += parsed.series.length;
+          sourceUrlUsed = sourceUrlUsed || parsed.sourceUrlUsed;
+          datasetUrlChosen = datasetUrlChosen || parsed.datasetUrlChosen;
+          columnsDetected = Array.from(new Set([...columnsDetected, ...parsed.columnsDetected]));
+          if (parsedSignals.length >= Math.max(1, USDA_GTR_MAX_SIGNALS)) break;
         }
-        parsedSignals.push(parsed);
-        rowsParsed += parsed.rowsParsed;
-        sourceUrlUsed = sourceUrlUsed || parsed.sourceUrlUsed;
         if (parsedSignals.length >= Math.max(1, USDA_GTR_MAX_SIGNALS)) break;
       } catch (error: any) {
-        warnings.push(`${url}:${String(error?.message || "fetch_failed").slice(0, 90)}`);
+        warnings.push(`${url}:${String(error?.message || "fetch_failed").slice(0, 120)}`);
       }
     }
 
@@ -227,21 +457,21 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
       throw new Error(warnings[0] || "usda_gtr_no_signals");
     }
 
-    const expectedCount = Math.min(Math.max(2, USDA_GTR_MAX_SIGNALS), 4);
+    const expectedCount = 2;
     const mappedCount = items.length;
     const coverage = `${mappedCount}/${expectedCount}`;
-    const cadence = deriveCadence(items.flatMap((item) => item.series || []).slice(-Math.max(6, ctx.seriesPoints)));
+    const cadence = deriveCadence(items.flatMap((item) => item.series || []));
     const status = mappedCount >= 2 ? "REFRESH" : "INDICATIVE";
 
     const widget: GrainWidgetUsdaGtrLogisticsSnapshot = {
       id: "grain-usda-gtr-logistics-snapshot",
       kind: "USDA_GTR_LOGISTICS_SNAPSHOT",
       title: "US Logistics (USDA GTR)",
-      subtitle: "Barge / Rail / Fuel freight proxies",
+      subtitle: "Barge / Rail fuel / Ocean proxies",
       status,
       sourceName: "USDA AMS (GTR)",
-      sourceAttribution: "Data: USDA Grain Transportation Report",
-      sourceUrl: sourceUrlUsed || USDA_GTR_BASE_URL,
+      sourceAttribution: "Data: USDA Grain Transportation Report datasets",
+      sourceUrl: sourceUrlUsed || datasetUrlChosen || USDA_GTR_BASE_URL,
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       items,
@@ -251,10 +481,17 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
         coverage,
         cadence,
       },
-      notes: ["Open USDA GTR datasets", "weekly cadence"],
+      notes: [
+        "Official USDA AMS GTR datasets",
+        "weekly cadence",
+        "Table 1 + Figure 9 selection",
+      ],
       debug: {
-        sourceUrlUsed: sourceUrlUsed || USDA_GTR_BASE_URL,
+        sourceUrlUsed: sourceUrlUsed || datasetUrlChosen || USDA_GTR_BASE_URL,
+        datasetUrlChosen: datasetUrlChosen || sourceUrlUsed || USDA_GTR_BASE_URL,
         rowsParsed,
+        columnsDetected: columnsDetected.length ? columnsDetected : undefined,
+        seriesPoints: totalSeriesPoints || undefined,
         parseWarnings: warnings.length ? warnings : undefined,
       },
     };

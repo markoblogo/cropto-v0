@@ -20,6 +20,34 @@ export async function fetchTextWithTimeout(url: string, timeoutMs: number, heade
   }
 }
 
+export async function fetchBufferWithTimeout(url: string, timeoutMs: number, headers?: HeadersInit): Promise<{
+  buffer: Buffer;
+  contentType: string | null;
+  finalUrl: string;
+}> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "user-agent": "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)",
+        accept: "application/octet-stream,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,*/*",
+        ...headers,
+      },
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const arrayBuffer = await response.arrayBuffer();
+    return {
+      buffer: Buffer.from(arrayBuffer),
+      contentType: response.headers.get("content-type"),
+      finalUrl: response.url || url,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export function parseNumber(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value !== "string") return undefined;

@@ -499,7 +499,10 @@ export interface GrainWidgetUsdaGtrLogisticsSnapshot extends GrainWidgetBase {
   };
   debug?: {
     sourceUrlUsed?: string;
+    datasetUrlChosen?: string;
     rowsParsed?: number;
+    columnsDetected?: string[];
+    seriesPoints?: number;
     parseWarnings?: string[];
   };
 }
@@ -674,6 +677,8 @@ export interface GrainWidgetsProviderDebug {
   linesFetched?: number;
   linesMatched?: number;
   rowsParsed?: number;
+  columnsDetected?: string[];
+  seriesPoints?: number;
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];
@@ -688,6 +693,7 @@ export interface GrainWidgetsProviderDebug {
   discoveryEndpointsTried?: Array<{ name: string; url: string; ok: boolean; status?: number }>;
   query?: string;
   downloadUrlUsed?: string;
+  datasetUrlChosen?: string;
   parseMode?: "strict";
   topScoreMin?: number;
   topScoreMax?: number;

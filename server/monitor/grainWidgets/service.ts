@@ -68,6 +68,8 @@ type ProviderRuntime = {
   linesFetched?: number;
   linesMatched?: number;
   rowsParsed?: number;
+  columnsDetected?: string[];
+  seriesPoints?: number;
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];
@@ -82,6 +84,7 @@ type ProviderRuntime = {
   discoveryEndpointsTried?: Array<{ name: string; url: string; ok: boolean; status?: number }>;
   query?: string;
   downloadUrlUsed?: string;
+  datasetUrlChosen?: string;
   parseMode?: "strict";
   sourceUrlUsed?: string;
   widgetsReturned?: GrainWidgetKind[];
@@ -602,6 +605,8 @@ export class GrainWidgetsService {
           linesFetched: state?.linesFetched,
           linesMatched: state?.linesMatched,
           rowsParsed: state?.rowsParsed,
+          columnsDetected: state?.columnsDetected,
+          seriesPoints: state?.seriesPoints,
           parseWarnings: state?.parseWarnings,
           areaCodes: state?.areaCodes,
           itemCodes: state?.itemCodes,
@@ -616,6 +621,7 @@ export class GrainWidgetsService {
           discoveryEndpointsTried: state?.discoveryEndpointsTried,
           query: state?.query,
           downloadUrlUsed: state?.downloadUrlUsed,
+          datasetUrlChosen: state?.datasetUrlChosen,
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
@@ -707,6 +713,8 @@ export class GrainWidgetsService {
           linesFetched: state?.linesFetched,
           linesMatched: state?.linesMatched,
           rowsParsed: state?.rowsParsed,
+          columnsDetected: state?.columnsDetected,
+          seriesPoints: state?.seriesPoints,
           parseWarnings: state?.parseWarnings,
           areaCodes: state?.areaCodes,
           itemCodes: state?.itemCodes,
@@ -721,6 +729,7 @@ export class GrainWidgetsService {
           discoveryEndpointsTried: state?.discoveryEndpointsTried,
           query: state?.query,
           downloadUrlUsed: state?.downloadUrlUsed,
+          datasetUrlChosen: state?.datasetUrlChosen,
           parseMode: state?.parseMode,
           topScoreMin: state?.topScoreMin,
           topScoreMax: state?.topScoreMax,
@@ -851,6 +860,8 @@ export class GrainWidgetsService {
             linesFetched: txtDebug?.linesFetched,
             linesMatched: txtDebug?.linesMatched,
             rowsParsed: fpmaDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
+            columnsDetected: gtrDebug?.columnsDetected,
+            seriesPoints: gtrDebug?.seriesPoints,
             parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
             areaCodes: faostatDebug?.areaCodes,
             itemCodes: faostatDebug?.itemCodes,
@@ -865,6 +876,7 @@ export class GrainWidgetsService {
             discoveryEndpointsTried: fpmaDebug?.discoveryEndpointsTried,
             query: fpmaDebug?.query || faostatDebug?.query,
             downloadUrlUsed: txtDebug?.downloadUrlUsed,
+            datasetUrlChosen: gtrDebug?.datasetUrlChosen,
             parseMode: txtDebug?.parseMode,
             topScoreMin: usdaSummary?.topScoreMin,
             topScoreMax: usdaSummary?.topScoreMax,
@@ -907,6 +919,8 @@ export class GrainWidgetsService {
           linesFetched: txtDebug?.linesFetched,
           linesMatched: txtDebug?.linesMatched,
           rowsParsed: fpmaDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
+          columnsDetected: gtrDebug?.columnsDetected,
+          seriesPoints: gtrDebug?.seriesPoints,
           parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
           areaCodes: faostatDebug?.areaCodes,
           itemCodes: faostatDebug?.itemCodes,
@@ -921,6 +935,7 @@ export class GrainWidgetsService {
           discoveryEndpointsTried: fpmaDebug?.discoveryEndpointsTried,
           query: fpmaDebug?.query || faostatDebug?.query,
           downloadUrlUsed: txtDebug?.downloadUrlUsed,
+          datasetUrlChosen: gtrDebug?.datasetUrlChosen,
           parseMode: txtDebug?.parseMode,
           topScoreMin: usdaSummary?.topScoreMin,
           topScoreMax: usdaSummary?.topScoreMax,

@@ -128,7 +128,7 @@ export const USDA_GTR_BASE_URL =
   "https://www.ams.usda.gov/sites/default/files/media";
 export const USDA_GTR_DATASET_URLS = (
   process.env.USDA_GTR_DATASET_URLS ||
-  `${USDA_GTR_BASE_URL}/GTRTable7.csv,${USDA_GTR_BASE_URL}/GTRTable8.csv`
+  `${USDA_GTR_BASE_URL}/GTRTable1.xlsx,${USDA_GTR_BASE_URL}/GTRFigure9.xlsx`
 )
   .split(",")
   .map((value) => value.trim())
