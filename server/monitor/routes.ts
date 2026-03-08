@@ -123,6 +123,8 @@ const indexProvider = new CroptoUkraineIndexProvider();
 const logisticsIndicatorsService = new LogisticsIndicatorsService();
 const grainMarketsService = new GrainMarketsService();
 const grainWidgetsService = new GrainWidgetsService();
+const REPORT_PROBE_TIMEOUT_MS = 3500;
+const REPORT_ROUTE_BUDGET_MS = 5000;
 
 function topEntries(record: Record<string, number>, limit = 5) {
   return Object.entries(record)
@@ -235,6 +237,24 @@ async function probeUrl(url: string, opts?: { timeoutMs?: number; headers?: Head
       errorKind: classifyErrorKind({ message, code }),
       errorMessage: redactSensitiveUrl(message),
     };
+  }
+}
+
+function clampReportProbeTimeout(timeoutMs?: number): number {
+  return Math.min(timeoutMs || 5000, REPORT_PROBE_TIMEOUT_MS);
+}
+
+async function withReportBudget<T>(work: Promise<T>, fallback: () => T): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((resolve) => {
+        timeoutHandle = setTimeout(() => resolve(fallback()), REPORT_ROUTE_BUDGET_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
   }
 }
 
@@ -805,71 +825,86 @@ export function registerMonitorRoutes(app: Express): void {
       });
 
       const marsIndexProbeUrl = USDA_MARS_PUBLIC_INDEX_URLS[0] || `${USDA_MARS_BASE_URL.replace(/\/+$/, "")}/listPublishedReports`;
-      const [dbnomicsProbe, faoProbe, marsProbe] = await Promise.all([
-        probeUrl(`${DBNOMICS_API_BASE_URL}/series/WB/commodity_prices/FMAIZE.1W?observations=true`),
-        probeUrl(FAO_FFPI_URL),
-        probeUrl(marsIndexProbeUrl),
-      ]);
       const marsDailyTxtSource =
         (byKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as any)?.debug?.downloadUrlUsed ||
         providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.downloadUrlUsed ||
         providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.sourceUrlUsed ||
         marsIndexProbeUrl;
       const alphaProbeUrl = `${ALPHAVANTAGE_BASE_URL}?function=${encodeURIComponent(ALPHAVANTAGE_FUNCTIONS[0] || "WHEAT")}&interval=monthly${ALPHAVANTAGE_API_KEY ? "&apikey=REDACTED" : ""}`;
-      const marsDailyTxtProbe = await probeUrl(marsDailyTxtSource);
-      const alphaProbe = await probeUrl(ALPHAVANTAGE_BASE_URL);
       const nasdaqProbeDataset = NASDAQ_DATASETS[0] || "FRED/DGS10";
       const [nasdaqDb, ...nasdaqRest] = nasdaqProbeDataset.split("/");
       const nasdaqDatasetCode = nasdaqRest.join("/") || "DGS10";
       const nasdaqProbeRawUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? `&api_key=${encodeURIComponent(NASDAQ_API_KEY)}` : ""}`;
       const nasdaqProbeUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? "&api_key=REDACTED" : ""}`;
-      const nasdaqProbeResult = await probeUrl(nasdaqProbeRawUrl);
-      const ecCerealsProbe = await probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_CEREALS_API_PATH.replace(/^\/+/, "")}/products`, { timeoutMs: EC_AGRI_TIMEOUT_MS });
-      const ecOilseedsProbe = await probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_OILSEEDS_API_PATH.replace(/^\/+/, "")}/products`, { timeoutMs: EC_AGRI_TIMEOUT_MS });
       const usdaNassProbeRawUrl = `${USDA_NASS_BASE_URL}?commodity_desc=CORN&agg_level_desc=NATIONAL&statisticcat_desc=PRICE%20RECEIVED&format=JSON${USDA_NASS_API_KEY ? `&key=${encodeURIComponent(USDA_NASS_API_KEY)}` : ""}`;
       const usdaNassProbeUrl = `${USDA_NASS_BASE_URL}?commodity_desc=CORN&agg_level_desc=NATIONAL&statisticcat_desc=PRICE%20RECEIVED&format=JSON${USDA_NASS_API_KEY ? "&key=REDACTED" : ""}`;
-      const usdaNassProbeResult = await probeUrl(usdaNassProbeRawUrl, { timeoutMs: USDA_NASS_TIMEOUT_MS });
       const usdaGtrProbeUrl = USDA_GTR_DATASET_URLS[0] || "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report";
-      const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl, {
-        headers: {
-          accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
-        },
-      });
       const canadaRailProbeUrl = `${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`;
-      const canadaRailProbe = await probeUrl(canadaRailProbeUrl, { timeoutMs: CANADA_RAIL_TIMEOUT_MS });
       const wfpProbeRawUrl = `${WFP_DATABRIDGES_BASE_URL}?limit=1`;
       const wfpProbeUrl = redactSensitiveUrl(wfpProbeRawUrl);
-      const wfpProbe = await probeUrl(wfpProbeRawUrl, {
-        timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS,
-        headers: WFP_DATABRIDGES_TOKEN
-          ? {
-              authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
-            }
-          : undefined,
-      });
       const wbProbeUrl = WB_MICRODATA_CSV_URL || `${WB_MICRODATA_BASE_URL.replace(/\/+$/, "")}/data-api`;
-      const wbProbe = await probeUrl(wbProbeUrl, { timeoutMs: WB_MICRODATA_TIMEOUT_MS });
       const eurostatProbeUrl = `${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`;
-      const eurostatProbe = await probeUrl(eurostatProbeUrl, { timeoutMs: EUROSTAT_TIMEOUT_MS });
       const usdaPsdProbeRawUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`;
       const usdaPsdProbeUrl = redactSensitiveUrl(usdaPsdProbeRawUrl);
-      const usdaPsdProbe = await probeUrl(usdaPsdProbeRawUrl, {
-        timeoutMs: USDA_PSD_TIMEOUT_MS,
-        headers: USDA_FAS_API_KEY
-          ? {
-              API_KEY: USDA_FAS_API_KEY,
-            }
-          : undefined,
-      });
-      const amisProbe = await probeUrl(AMIS_MARKET_MONITOR_URL, { timeoutMs: AMIS_TIMEOUT_MS });
-      const imfProbe = await probeUrl(IMF_PCPS_TABLE2_URL, { timeoutMs: IMF_PCPS_TIMEOUT_MS });
-      const oecdProbe = await probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, { timeoutMs: OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS });
       const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
-      const faostatProbe = await probeUrl(faostatProbeUrl, { timeoutMs: FAOSTAT_TIMEOUT_MS });
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;
-      const faostatSampleProbe = await probeUrl(faostatSampleProbeUrl, { timeoutMs: FAOSTAT_TIMEOUT_MS });
       const fpmaProbeUrl = `${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`;
-      const fpmaProbe = await probeUrl(fpmaProbeUrl);
+      const [
+        dbnomicsProbe,
+        faoProbe,
+        marsProbe,
+        marsDailyTxtProbe,
+        alphaProbe,
+        nasdaqProbeResult,
+        ecCerealsProbe,
+        ecOilseedsProbe,
+        usdaNassProbeResult,
+        usdaGtrProbe,
+        canadaRailProbe,
+        wfpProbe,
+        wbProbe,
+        eurostatProbe,
+        usdaPsdProbe,
+        amisProbe,
+        imfProbe,
+        oecdProbe,
+        faostatProbe,
+        faostatSampleProbe,
+        fpmaProbe,
+      ] = await Promise.all([
+        probeUrl(`${DBNOMICS_API_BASE_URL}/series/WB/commodity_prices/FMAIZE.1W?observations=true`, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+        probeUrl(FAO_FFPI_URL, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+        probeUrl(marsIndexProbeUrl, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+        probeUrl(marsDailyTxtSource, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+        probeUrl(ALPHAVANTAGE_BASE_URL, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+        probeUrl(nasdaqProbeRawUrl, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+        probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_CEREALS_API_PATH.replace(/^\/+/, "")}/products`, { timeoutMs: clampReportProbeTimeout(EC_AGRI_TIMEOUT_MS) }),
+        probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_OILSEEDS_API_PATH.replace(/^\/+/, "")}/products`, { timeoutMs: clampReportProbeTimeout(EC_AGRI_TIMEOUT_MS) }),
+        probeUrl(usdaNassProbeRawUrl, { timeoutMs: clampReportProbeTimeout(USDA_NASS_TIMEOUT_MS) }),
+        probeUrl(usdaGtrProbeUrl, {
+          timeoutMs: REPORT_PROBE_TIMEOUT_MS,
+          headers: {
+            accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
+          },
+        }),
+        probeUrl(canadaRailProbeUrl, { timeoutMs: clampReportProbeTimeout(CANADA_RAIL_TIMEOUT_MS) }),
+        probeUrl(wfpProbeRawUrl, {
+          timeoutMs: clampReportProbeTimeout(WFP_DATABRIDGES_TIMEOUT_MS),
+          headers: WFP_DATABRIDGES_TOKEN ? { authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}` } : undefined,
+        }),
+        probeUrl(wbProbeUrl, { timeoutMs: clampReportProbeTimeout(WB_MICRODATA_TIMEOUT_MS) }),
+        probeUrl(eurostatProbeUrl, { timeoutMs: clampReportProbeTimeout(EUROSTAT_TIMEOUT_MS) }),
+        probeUrl(usdaPsdProbeRawUrl, {
+          timeoutMs: clampReportProbeTimeout(USDA_PSD_TIMEOUT_MS),
+          headers: USDA_FAS_API_KEY ? { API_KEY: USDA_FAS_API_KEY } : undefined,
+        }),
+        probeUrl(AMIS_MARKET_MONITOR_URL, { timeoutMs: clampReportProbeTimeout(AMIS_TIMEOUT_MS) }),
+        probeUrl(IMF_PCPS_TABLE2_URL, { timeoutMs: clampReportProbeTimeout(IMF_PCPS_TIMEOUT_MS) }),
+        probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, { timeoutMs: clampReportProbeTimeout(OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS) }),
+        probeUrl(faostatProbeUrl, { timeoutMs: clampReportProbeTimeout(FAOSTAT_TIMEOUT_MS) }),
+        probeUrl(faostatSampleProbeUrl, { timeoutMs: clampReportProbeTimeout(FAOSTAT_TIMEOUT_MS) }),
+        probeUrl(fpmaProbeUrl, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
+      ]);
 
       res.json({
         runtime: {
@@ -1004,7 +1039,26 @@ export function registerMonitorRoutes(app: Express): void {
 
   app.get("/api/monitor/triage-report", async (req, res) => {
     try {
-      const report = await buildMonitorTriageReport(grainWidgetsService);
+      const report = await withReportBudget(
+        buildMonitorTriageReport(grainWidgetsService),
+        () => ({
+          runtime: {
+            timestamp: new Date().toISOString(),
+            appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
+            commit:
+              process.env.RAILWAY_GIT_COMMIT_SHA ||
+              process.env.RAILWAY_GIT_COMMIT ||
+              process.env.VERCEL_GIT_COMMIT_SHA ||
+              process.env.COMMIT_SHA ||
+              "unknown",
+          },
+          providers: [],
+          nextActions: [],
+          error: {
+            message: "triage_report_timeout_budget_hit",
+          },
+        } as any),
+      );
       if (req.query.format === "md") {
         res.type("text/markdown").send(triageReportToMarkdown(report));
         return;

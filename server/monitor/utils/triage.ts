@@ -5,6 +5,7 @@ import {
   CANADA_RAIL_PRODUCT_ID,
   CANADA_RAIL_WDS_BASE_URL,
   EC_AGRI_API_BASE_URL,
+  EC_AGRI_TIMEOUT_MS,
   EC_CEREALS_API_PATH,
   EC_OILSEEDS_API_PATH,
   ENABLE_CANADA_GRAIN_RAIL_WIDGET,
@@ -40,6 +41,7 @@ import {
   NASDAQ_DATASETS,
   USDA_NASS_API_KEY,
   USDA_NASS_BASE_URL,
+  USDA_NASS_TIMEOUT_MS,
   USDA_FAS_API_KEY,
   USDA_FAS_OPENDATA_BASE_URL,
   USDA_PSD_TIMEOUT_MS,
@@ -89,6 +91,8 @@ type SuggestedFix = {
   why?: string;
   verifyUrl?: string;
 };
+
+const REPORT_PROBE_TIMEOUT_MS = 3500;
 
 function redactUrl(url?: string): string | undefined {
   if (!url) return undefined;
@@ -239,6 +243,24 @@ async function probeUrl(url: string | undefined, options?: { configMissing?: boo
       elapsedMs: Date.now() - started,
       errorKind: classifyErrorKind({ message, code }),
       errorMessage: message,
+    };
+  }
+}
+
+function clampReportProbeTimeout(timeoutMs?: number): number {
+  return Math.min(timeoutMs || 5000, REPORT_PROBE_TIMEOUT_MS);
+}
+
+async function safeProbe(url: string | undefined, options?: { configMissing?: boolean; timeoutMs?: number; headers?: HeadersInit }): Promise<ProbeResult> {
+  try {
+    return await probeUrl(url, options);
+  } catch (error: any) {
+    return {
+      url: redactUrl(url),
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
     };
   }
 }
@@ -635,171 +657,121 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     marsWidget?.debug?.downloadUrlUsed ||
     marsIndexUrl;
 
-  const probes = {
-    ecCereals: await probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_CEREALS_API_PATH.replace(/^\/+/, "")}/products`, {
+  const [
+    ecCereals,
+    ecOilseeds,
+    fpma,
+    faostat,
+    usdaGtr,
+    usdaMarsDailyTxt,
+    usdaMars,
+    nasdaq,
+    usdaNass,
+    wfp,
+    worldBank,
+    eurostat,
+    usdaPsd,
+    amis,
+    imf,
+    oecd,
+    canadaRail,
+  ] = await Promise.all([
+    safeProbe(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_CEREALS_API_PATH.replace(/^\/+/, "")}/products`, {
       configMissing: !EC_AGRI_API_BASE_URL,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    ecOilseeds: await probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_OILSEEDS_API_PATH.replace(/^\/+/, "")}/products`, {
+      timeoutMs: clampReportProbeTimeout(EC_AGRI_TIMEOUT_MS),
+    }),
+    safeProbe(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_OILSEEDS_API_PATH.replace(/^\/+/, "")}/products`, {
       configMissing: !EC_AGRI_API_BASE_URL,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    fpma: await probeUrl(`${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`, {
+      timeoutMs: clampReportProbeTimeout(EC_AGRI_TIMEOUT_MS),
+    }),
+    safeProbe(`${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`, {
       configMissing: !FPMA_API_BASE_URL,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    faostat: await probeUrl(`${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`, {
+      timeoutMs: REPORT_PROBE_TIMEOUT_MS,
+    }),
+    safeProbe(`${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`, {
       configMissing: !FAOSTAT_BASE_URL,
-      timeoutMs: FAOSTAT_TIMEOUT_MS,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    usdaGtr: await probeUrl(USDA_GTR_DATASET_URLS[0], {
+      timeoutMs: clampReportProbeTimeout(FAOSTAT_TIMEOUT_MS),
+    }),
+    safeProbe(USDA_GTR_DATASET_URLS[0], {
       configMissing: USDA_GTR_DATASET_URLS.length === 0,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    usdaMarsDailyTxt: await probeUrl(marsDownloadUrl, {
+      timeoutMs: REPORT_PROBE_TIMEOUT_MS,
+    }),
+    safeProbe(marsDownloadUrl, {
       configMissing: !USDA_MARS_BASE_URL && !marsDownloadUrl,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    usdaMars: await probeUrl(marsIndexUrl, {
+      timeoutMs: REPORT_PROBE_TIMEOUT_MS,
+    }),
+    safeProbe(marsIndexUrl, {
       configMissing: !USDA_MARS_BASE_URL && USDA_MARS_PUBLIC_INDEX_URLS.length === 0,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    nasdaq: await probeUrl(
+      timeoutMs: REPORT_PROBE_TIMEOUT_MS,
+    }),
+    safeProbe(
       `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent((NASDAQ_DATASETS[0] || "FRED/DGS10").split("/")[0] || "FRED")}/${encodeURIComponent((NASDAQ_DATASETS[0] || "FRED/DGS10").split("/").slice(1).join("/") || "DGS10")}.json?rows=1${NASDAQ_API_KEY ? `&api_key=${encodeURIComponent(NASDAQ_API_KEY)}` : ""}`,
       {
         configMissing: !ENABLE_NASDAQ_DATALINK_PROVIDER || !NASDAQ_BASE_URL || NASDAQ_DATASETS.length === 0,
+        timeoutMs: REPORT_PROBE_TIMEOUT_MS,
       },
-    ).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    usdaNass: await probeUrl(
+    ),
+    safeProbe(
       `${USDA_NASS_BASE_URL}?commodity_desc=CORN&agg_level_desc=NATIONAL&statisticcat_desc=PRICE%20RECEIVED&format=JSON${USDA_NASS_API_KEY ? `&key=${encodeURIComponent(USDA_NASS_API_KEY)}` : ""}`,
-      { configMissing: !USDA_NASS_BASE_URL || !USDA_NASS_API_KEY },
-    ).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    wfp: await probeUrl(
-      `${WFP_DATABRIDGES_BASE_URL}?limit=1`,
       {
-        configMissing: !WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN,
-        timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS,
-        headers: WFP_DATABRIDGES_TOKEN
-          ? {
-              authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
-            }
-          : undefined,
+        configMissing: !USDA_NASS_BASE_URL || !USDA_NASS_API_KEY,
+        timeoutMs: clampReportProbeTimeout(USDA_NASS_TIMEOUT_MS),
       },
-    ).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    worldBank: await probeUrl(WB_MICRODATA_CSV_URL || `${WB_MICRODATA_BASE_URL.replace(/\/+$/, "")}/data-api`, {
+    ),
+    safeProbe(`${WFP_DATABRIDGES_BASE_URL}?limit=1`, {
+      configMissing: !WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN,
+      timeoutMs: clampReportProbeTimeout(WFP_DATABRIDGES_TIMEOUT_MS),
+      headers: WFP_DATABRIDGES_TOKEN ? { authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}` } : undefined,
+    }),
+    safeProbe(WB_MICRODATA_CSV_URL || `${WB_MICRODATA_BASE_URL.replace(/\/+$/, "")}/data-api`, {
       configMissing: !WB_MICRODATA_BASE_URL,
-      timeoutMs: WB_MICRODATA_TIMEOUT_MS,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    eurostat: await probeUrl(`${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`, {
+      timeoutMs: clampReportProbeTimeout(WB_MICRODATA_TIMEOUT_MS),
+    }),
+    safeProbe(`${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`, {
       configMissing: !EUROSTAT_BASE_URL,
-      timeoutMs: EUROSTAT_TIMEOUT_MS,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    usdaPsd: await probeUrl(
-      `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`,
-      {
-        configMissing: !USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY,
-        timeoutMs: USDA_PSD_TIMEOUT_MS,
-        headers: USDA_FAS_API_KEY
-          ? {
-              API_KEY: USDA_FAS_API_KEY,
-            }
-          : undefined,
-      },
-    ).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    amis: await probeUrl(AMIS_MARKET_MONITOR_URL, {
+      timeoutMs: clampReportProbeTimeout(EUROSTAT_TIMEOUT_MS),
+    }),
+    safeProbe(`${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`, {
+      configMissing: !USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY,
+      timeoutMs: clampReportProbeTimeout(USDA_PSD_TIMEOUT_MS),
+      headers: USDA_FAS_API_KEY ? { API_KEY: USDA_FAS_API_KEY } : undefined,
+    }),
+    safeProbe(AMIS_MARKET_MONITOR_URL, {
       configMissing: !AMIS_MARKET_MONITOR_URL,
-      timeoutMs: AMIS_TIMEOUT_MS,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    imf: await probeUrl(IMF_PCPS_TABLE2_URL, {
+      timeoutMs: clampReportProbeTimeout(AMIS_TIMEOUT_MS),
+    }),
+    safeProbe(IMF_PCPS_TABLE2_URL, {
       configMissing: !IMF_PCPS_TABLE2_URL,
-      timeoutMs: IMF_PCPS_TIMEOUT_MS,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    oecd: await probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, {
+      timeoutMs: clampReportProbeTimeout(IMF_PCPS_TIMEOUT_MS),
+    }),
+    safeProbe(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, {
       configMissing: !OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
-      timeoutMs: OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
-    canadaRail: await probeUrl(`${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`, {
+      timeoutMs: clampReportProbeTimeout(OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS),
+    }),
+    safeProbe(`${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`, {
       configMissing: !CANADA_RAIL_WDS_BASE_URL,
-    }).catch((error: any) => ({
-      ok: false,
-      elapsedMs: 0,
-      errorKind: classifyErrorKind({ message: error?.message }),
-      errorMessage: String(error?.message || "probe_failed"),
-    })),
+      timeoutMs: REPORT_PROBE_TIMEOUT_MS,
+    }),
+  ]);
+
+  const probes = {
+    ecCereals,
+    ecOilseeds,
+    fpma,
+    faostat,
+    usdaGtr,
+    usdaMarsDailyTxt,
+    usdaMars,
+    nasdaq,
+    usdaNass,
+    wfp,
+    worldBank,
+    eurostat,
+    usdaPsd,
+    amis,
+    imf,
+    oecd,
+    canadaRail,
   };
 
   const providerRows = TARGETS.map(({ providerId, widgetKind, expectedCount }) => {
