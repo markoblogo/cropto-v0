@@ -588,7 +588,11 @@ export class FpmaMarketPricesProvider implements GrainWidgetsProvider {
     }
 
     if (!sourceUrlUsed && warnings.length) {
-      throw new Error(warnings[0] || "fpma_fetch_failed");
+      const preferred =
+        warnings.find((entry) => entry.startsWith("html_response:")) ||
+        warnings.find((entry) => entry.startsWith("empty_payload:")) ||
+        warnings[0];
+      throw new Error(preferred || "fpma_fetch_failed");
     }
 
     const grouped = groupObservations(parseResults, Math.min(24, Math.max(6, FPMA_MAX_POINTS, ctx.seriesPoints)));

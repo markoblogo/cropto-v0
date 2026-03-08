@@ -9,6 +9,7 @@ import {
   FAOSTAT_BASE_URL,
   FAOSTAT_TIMEOUT_MS,
   FPMA_API_BASE_URL,
+  FPMA_DATA_PATHS,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
   NASDAQ_API_KEY,
@@ -337,7 +338,7 @@ function providerSuggestedFix(args: {
     actions.push("Increase FAOSTAT_TIMEOUT_MS further or switch to a lighter FAOSTAT endpoint/probe for production validation.");
   }
 
-  if (args.providerId === "usda-gtr-logistics" && args.errorKind === "HTTP_4XX") {
+  if (args.providerId === "usda-gtr-logistics" && (args.errorKind === "HTTP_4XX" || errorMessage.includes("403"))) {
     severity = "WARN";
     type = "CODE_FIX";
     why = "The GTR dataset URL is live, but binary download still receives 4xx from runtime fetch.";
@@ -345,22 +346,26 @@ function providerSuggestedFix(args: {
   }
 
   if (args.providerId === "nasdaq-datalink") {
+    let nasdaqWhy = why;
     if (errorMessage.includes("RED/")) {
       severity = "WARN";
       type = "SET_ENV";
       envKeys = ["NASDAQ_DATASETS"];
       exampleValues = ["FRED/DGS10,FRED/DGS2,FRED/T10Y2Y,FRED/DFF,FRED/DTWEXBGS"];
-      why = "Production datasets include an invalid RED/... prefix instead of FRED/....";
+      nasdaqWhy = "Production datasets include an invalid RED/... prefix instead of FRED/....";
       actions.push("Fix NASDAQ_DATASETS on Railway so every FRED dataset keeps the FRED/ prefix.");
     }
     if (errorMessage.includes("CHRIS/")) {
-      severity = "WARN";
-      type = "SET_ENV";
-      envKeys = ["ENABLE_NASDAQ_CHRIS", "NASDAQ_CHRIS_DATASETS"];
-      exampleValues = ["false", ""];
-      why = "Premium CHRIS datasets are enabled in production and add avoidable 403 noise.";
+      if (!envKeys.length) {
+        severity = "WARN";
+        type = "SET_ENV";
+        envKeys = ["ENABLE_NASDAQ_CHRIS", "NASDAQ_CHRIS_DATASETS"];
+        exampleValues = ["false", ""];
+        nasdaqWhy = "Premium CHRIS datasets are enabled in production and add avoidable 403 noise.";
+      }
       actions.push("Disable CHRIS on production unless you explicitly want premium-only datasets.");
     }
+    if (nasdaqWhy) why = nasdaqWhy;
   }
 
   if (!actions.length) {
@@ -421,6 +426,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     ENABLE_USDA_MARS_DAILY_TXT,
     FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
     FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
+    FPMA_DATA_PATHS,
     USDA_GTR_DATASET_URLS: USDA_GTR_DATASET_URLS.length ? "present" : "missing",
     USDA_GTR_DATASET_URLS_COUNT: USDA_GTR_DATASET_URLS.length,
     USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",

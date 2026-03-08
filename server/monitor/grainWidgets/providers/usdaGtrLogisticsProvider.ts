@@ -1,3 +1,5 @@
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 import { inflateRawSync } from "node:zlib";
 import {
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
@@ -386,14 +388,108 @@ function parseCsvDataset(csv: string, sourceUrlUsed: string, seriesPoints: numbe
   ];
 }
 
+async function downloadBufferViaNode(url: string): Promise<{ buffer: Buffer; finalUrl: string; statusCode?: number; headers: Record<string, string> }> {
+  const visit = (targetUrl: string, redirectsLeft: number): Promise<{ buffer: Buffer; finalUrl: string; statusCode?: number; headers: Record<string, string> }> =>
+    new Promise((resolve, reject) => {
+      const parsed = new URL(targetUrl);
+      const requester = parsed.protocol === "http:" ? httpRequest : httpsRequest;
+      const req = requester(targetUrl, {
+        method: "GET",
+        headers: {
+          "user-agent": "CroptoMonitor/1.0 (+https://cropto.abvx.xyz)",
+          accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
+          "accept-language": "en-US,en;q=0.9",
+          referer: "https://www.ams.usda.gov/",
+          pragma: "no-cache",
+          "cache-control": "no-cache",
+          range: "bytes=0-1048575",
+        },
+      }, (res) => {
+        const statusCode = res.statusCode;
+        const headers = Object.fromEntries(
+          Object.entries(res.headers)
+            .filter(([, value]) => typeof value === "string")
+            .map(([key, value]) => [key, String(value)]),
+        );
+        if (statusCode && statusCode >= 300 && statusCode < 400 && res.headers.location && redirectsLeft > 0) {
+          const nextUrl = new URL(res.headers.location, targetUrl).toString();
+          res.resume();
+          visit(nextUrl, redirectsLeft - 1).then(resolve).catch(reject);
+          return;
+        }
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+        res.on("end", () => {
+          const buffer = Buffer.concat(chunks);
+          if (statusCode && statusCode >= 400) {
+            const error = new Error(`HTTP ${statusCode}`) as Error & {
+              httpStatus?: number;
+              finalUrl?: string;
+              responseHeaders?: Record<string, string>;
+            };
+            error.httpStatus = statusCode;
+            error.finalUrl = targetUrl;
+            error.responseHeaders = headers;
+            reject(error);
+            return;
+          }
+          resolve({
+            buffer,
+            finalUrl: targetUrl,
+            statusCode,
+            headers,
+          });
+        });
+      });
+      req.on("error", reject);
+      req.setTimeout(USDA_GTR_TIMEOUT_MS, () => {
+        req.destroy(new Error("ETIMEDOUT"));
+      });
+      req.end();
+    });
+
+  return visit(url, 4);
+}
+
 async function parseDatasetFromUrl(url: string, seriesPoints: number): Promise<ParsedDataset[]> {
   if (/\.xlsx(?:$|\?)/i.test(url)) {
-    const { buffer, finalUrl } = await fetchBufferWithTimeout(url, USDA_GTR_TIMEOUT_MS);
+    let buffer: Buffer;
+    let finalUrl: string;
+    let responseHeaders: Record<string, string> | undefined;
+    let httpStatus: number | undefined;
+    try {
+      const fetched = await fetchBufferWithTimeout(url, USDA_GTR_TIMEOUT_MS, {
+        accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
+        range: "bytes=0-1048575",
+      });
+      buffer = fetched.buffer;
+      finalUrl = fetched.finalUrl;
+    } catch (error: any) {
+      if (Number(error?.httpStatus) === 403) {
+        const fallback = await downloadBufferViaNode(url);
+        buffer = fallback.buffer;
+        finalUrl = fallback.finalUrl;
+        responseHeaders = fallback.headers;
+        httpStatus = fallback.statusCode;
+      } else {
+        throw error;
+      }
+    }
     if (/GTRTable1\.xlsx/i.test(finalUrl) || /GTRTable1\.xlsx/i.test(url)) {
-      return parseTable1Workbook(buffer, finalUrl, seriesPoints);
+      return parseTable1Workbook(buffer, finalUrl, seriesPoints).map((entry) => ({
+        ...entry,
+        httpStatus,
+        finalUrl,
+        responseHeaders,
+      }));
     }
     if (/GTRFigure9\.xlsx/i.test(finalUrl) || /GTRFigure9\.xlsx/i.test(url)) {
-      return parseFigure9Workbook(buffer, finalUrl, seriesPoints);
+      return parseFigure9Workbook(buffer, finalUrl, seriesPoints).map((entry) => ({
+        ...entry,
+        httpStatus,
+        finalUrl,
+        responseHeaders,
+      }));
     }
     return [];
   }
