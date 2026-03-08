@@ -1,5 +1,7 @@
 import { lookup } from "node:dns/promises";
 import {
+  AMIS_MARKET_MONITOR_URL,
+  AMIS_TIMEOUT_MS,
   CANADA_RAIL_PRODUCT_ID,
   CANADA_RAIL_WDS_BASE_URL,
   EC_AGRI_API_BASE_URL,
@@ -8,13 +10,17 @@ import {
   ENABLE_CANADA_GRAIN_RAIL_WIDGET,
   ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET,
   ENABLE_FAOSTAT_PP_WIDGET,
+  ENABLE_AMIS_GLOBAL_BALANCE_WIDGET,
   ENABLE_EC_CEREALS_WIDGET,
   ENABLE_EC_OILSEEDS_WIDGET,
+  ENABLE_IMF_PCPS_WIDGET,
   ENABLE_NASDAQ_CHRIS,
   ENABLE_NASDAQ_DATALINK_PROVIDER,
+  ENABLE_OECD_AGRICULTURAL_OUTLOOK_WIDGET,
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
   ENABLE_WB_MICRODATA_WIDGET,
   ENABLE_WFP_MARKET_PRICES_WIDGET,
+  ENABLE_USDA_PSD_WIDGET,
   ENABLE_USDA_NASS_WIDGET,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
@@ -26,12 +32,17 @@ import {
   FPMA_DATA_PATHS,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
+  IMF_PCPS_TABLE2_URL,
+  IMF_PCPS_TIMEOUT_MS,
   NASDAQ_API_KEY,
   NASDAQ_BASE_URL,
   NASDAQ_CHRIS_DATASETS,
   NASDAQ_DATASETS,
   USDA_NASS_API_KEY,
   USDA_NASS_BASE_URL,
+  USDA_FAS_API_KEY,
+  USDA_FAS_OPENDATA_BASE_URL,
+  USDA_PSD_TIMEOUT_MS,
   USDA_GTR_DATASET_URLS,
   USDA_MARS_BASE_URL,
   USDA_MARS_PUBLIC_INDEX_URLS,
@@ -41,6 +52,8 @@ import {
   WFP_DATABRIDGES_BASE_URL,
   WFP_DATABRIDGES_TIMEOUT_MS,
   WFP_DATABRIDGES_TOKEN,
+  OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
+  OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
 } from "../grainWidgets/config";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "../grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders } from "../grainWidgets/providers/utils";
@@ -280,6 +293,17 @@ function providerSuggestedFix(args: {
       verifyUrl,
     };
   }
+  if (args.providerId === "usda-psd" && args.configMissing) {
+    return {
+      severity: "BLOCKER" as const,
+      type: "SET_ENV" as const,
+      actions: ["Set USDA_FAS_API_KEY and verify USDA_FAS_OPENDATA_BASE_URL for the PSD/OpenData endpoint."],
+      envKeys: ["USDA_FAS_API_KEY", "USDA_FAS_OPENDATA_BASE_URL"],
+      exampleValues: ["<free-usda-fas-key>", "https://apps.fas.usda.gov/OpenData/api"],
+      why: "USDA PSD/OpenData cannot run live without the configured API key and base URL.",
+      verifyUrl,
+    };
+  }
 
   switch (args.errorKind) {
     case "DNS":
@@ -366,6 +390,27 @@ function providerSuggestedFix(args: {
     actions.length = 0;
     actions.push("Verify FPMA_API_BASE_URL points to the correct FPMA JSON endpoint before enabling live mode.");
   }
+  if (args.providerId === "amis-outlook" && args.errorKind === "PARSE") {
+    severity = "WARN";
+    type = "CODE_FIX";
+    why = "AMIS page responded, but the latest monitor link or release metadata did not match the current HTML shape.";
+    actions.length = 0;
+    actions.push("Verify the current AMIS monitoring page HTML and refresh the link/date selectors.");
+  }
+  if (args.providerId === "imf-pcps" && args.errorKind === "PARSE") {
+    severity = "WARN";
+    type = "CODE_FIX";
+    why = "IMF source responded, but the current public file shape did not yield a parsable benchmark row set.";
+    actions.length = 0;
+    actions.push("Verify IMF table URL/file format and keep fallback enabled if the public file remains opaque.");
+  }
+  if (args.providerId === "oecd-agricultural-outlook" && args.errorKind === "PARSE") {
+    severity = "WARN";
+    type = "CODE_FIX";
+    why = "OECD outlook pages responded, but the current text did not match the expected projection patterns.";
+    actions.length = 0;
+    actions.push("Verify the current OECD Agricultural Outlook chapter URLs and refresh the projection regex patterns.");
+  }
 
   if (args.providerId === "faostat-pp" && args.errorKind === "TIMEOUT") {
     severity = "WARN";
@@ -436,7 +481,11 @@ type TargetProviderId =
   | "wfp-databridges"
   | "worldbank-microdata"
   | "eurostat-agri-indices"
-  | "canada-grain-rail-performance";
+  | "canada-grain-rail-performance"
+  | "usda-psd"
+  | "amis-outlook"
+  | "imf-pcps"
+  | "oecd-agricultural-outlook";
 
 const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expectedCount: number }> = [
   { providerId: "fpma-market-prices", widgetKind: "FPMA_MARKET_PRICES_MULTI_COUNTRY", expectedCount: 5 },
@@ -450,6 +499,10 @@ const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expecte
   { providerId: "wfp-databridges", widgetKind: "WFP_MARKET_PRICES_MULTI_COUNTRY", expectedCount: 3 },
   { providerId: "worldbank-microdata", widgetKind: "WB_MICRODATA_MARKET_PRICES", expectedCount: 3 },
   { providerId: "eurostat-agri-indices", widgetKind: "EUROSTAT_AGRI_PRICE_INDICES", expectedCount: 3 },
+  { providerId: "usda-psd", widgetKind: "USDA_PSD_BALANCES", expectedCount: 8 },
+  { providerId: "amis-outlook", widgetKind: "AMIS_GLOBAL_BALANCE", expectedCount: 4 },
+  { providerId: "imf-pcps", widgetKind: "IMF_COMMODITY_BENCHMARKS", expectedCount: 4 },
+  { providerId: "oecd-agricultural-outlook", widgetKind: "OECD_AGRICULTURAL_OUTLOOK", expectedCount: 5 },
   { providerId: "canada-grain-rail-performance", widgetKind: "CANADA_GRAIN_RAIL_PERFORMANCE", expectedCount: 4 },
 ];
 
@@ -491,6 +544,10 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     ENABLE_WFP_MARKET_PRICES_WIDGET,
     ENABLE_WB_MICRODATA_WIDGET,
     ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET,
+    ENABLE_USDA_PSD_WIDGET,
+    ENABLE_AMIS_GLOBAL_BALANCE_WIDGET,
+    ENABLE_IMF_PCPS_WIDGET,
+    ENABLE_OECD_AGRICULTURAL_OUTLOOK_WIDGET,
     ENABLE_CANADA_GRAIN_RAIL_WIDGET,
     ENABLE_USDA_GTR_LOGISTICS_WIDGET,
     ENABLE_USDA_MARS_DAILY_TXT,
@@ -504,6 +561,11 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     WB_MICRODATA_BASE_URL: WB_MICRODATA_BASE_URL ? "present" : "missing",
     WB_MICRODATA_CSV_URL: WB_MICRODATA_CSV_URL ? "present" : "missing",
     EUROSTAT_BASE_URL: EUROSTAT_BASE_URL ? "present" : "missing",
+    USDA_FAS_OPENDATA_BASE_URL: USDA_FAS_OPENDATA_BASE_URL ? "present" : "missing",
+    USDA_FAS_API_KEY: USDA_FAS_API_KEY ? "present" : "missing",
+    AMIS_MARKET_MONITOR_URL: AMIS_MARKET_MONITOR_URL ? "present" : "missing",
+    IMF_PCPS_TABLE2_URL: IMF_PCPS_TABLE2_URL ? "present" : "missing",
+    OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL: OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL ? "present" : "missing",
     CANADA_RAIL_WDS_BASE_URL: CANADA_RAIL_WDS_BASE_URL ? "present" : "missing",
     FPMA_DATA_PATHS,
     USDA_GTR_DATASET_URLS: USDA_GTR_DATASET_URLS.length ? "present" : "missing",
@@ -635,6 +697,42 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorKind: classifyErrorKind({ message: error?.message }),
       errorMessage: String(error?.message || "probe_failed"),
     })),
+    usdaPsd: await probeUrl(
+      `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances${USDA_FAS_API_KEY ? `?api_key=${encodeURIComponent(USDA_FAS_API_KEY)}` : ""}`,
+      { configMissing: !USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY, timeoutMs: USDA_PSD_TIMEOUT_MS },
+    ).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
+    amis: await probeUrl(AMIS_MARKET_MONITOR_URL, {
+      configMissing: !AMIS_MARKET_MONITOR_URL,
+      timeoutMs: AMIS_TIMEOUT_MS,
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
+    imf: await probeUrl(IMF_PCPS_TABLE2_URL, {
+      configMissing: !IMF_PCPS_TABLE2_URL,
+      timeoutMs: IMF_PCPS_TIMEOUT_MS,
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
+    oecd: await probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, {
+      configMissing: !OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
+      timeoutMs: OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
     canadaRail: await probeUrl(`${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`, {
       configMissing: !CANADA_RAIL_WDS_BASE_URL,
     }).catch((error: any) => ({
@@ -653,6 +751,10 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       (providerId === "faostat-pp" && !FAOSTAT_BASE_URL) ||
       (providerId === "usda-gtr-logistics" && USDA_GTR_DATASET_URLS.length === 0) ||
       (providerId === "usda-nass-quickstats" && (!USDA_NASS_BASE_URL || !USDA_NASS_API_KEY)) ||
+      (providerId === "usda-psd" && (!USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY)) ||
+      (providerId === "amis-outlook" && !AMIS_MARKET_MONITOR_URL) ||
+      (providerId === "imf-pcps" && !IMF_PCPS_TABLE2_URL) ||
+      (providerId === "oecd-agricultural-outlook" && !OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL) ||
       (providerId === "wfp-databridges" && (!WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN)) ||
       (providerId === "worldbank-microdata" && !WB_MICRODATA_BASE_URL) ||
       (providerId === "eurostat-agri-indices" && !EUROSTAT_BASE_URL);
@@ -663,6 +765,10 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       providerId === "faostat-pp" ? probes.faostat :
       providerId === "usda-gtr-logistics" ? probes.usdaGtr :
       providerId === "usda-nass-quickstats" ? probes.usdaNass :
+      providerId === "usda-psd" ? probes.usdaPsd :
+      providerId === "amis-outlook" ? probes.amis :
+      providerId === "imf-pcps" ? probes.imf :
+      providerId === "oecd-agricultural-outlook" ? probes.oecd :
       providerId === "wfp-databridges" ? probes.wfp :
       providerId === "worldbank-microdata" ? probes.worldBank :
       providerId === "eurostat-agri-indices" ? probes.eurostat :

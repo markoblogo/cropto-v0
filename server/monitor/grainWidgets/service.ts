@@ -20,15 +20,19 @@ import { EurostatAgriIndicesProvider } from "./providers/eurostatAgriIndicesProv
 import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "./providers/faostatProducerPricesProvider";
 import { FpmaMarketPricesProvider } from "./providers/fpmaMarketPricesProvider";
+import { ImfPcpsProvider } from "./providers/imfPcpsProvider";
 import { MockGrainWidgetsProvider } from "./providers/mockGrainWidgetsProvider";
 import { NasdaqDataLinkProvider } from "./providers/nasdaqDataLinkProvider";
+import { OecdAgriculturalOutlookProvider } from "./providers/oecdAgriculturalOutlookProvider";
 import { TradingChartsFuturesProvider } from "./providers/tradingChartsFuturesProvider";
 import { TradingEconomicsAgriProvider } from "./providers/tradingEconomicsAgriProvider";
+import { AmisOutlookProvider } from "./providers/amisOutlookProvider";
 import { UsCashExportContextProvider } from "./providers/usCashExportContextProvider";
 import { UsdaMarsDailyMarketRatesTxtProvider } from "./providers/usdaMarsDailyMarketRatesTxtProvider";
 import { UsdaGtrLogisticsProvider } from "./providers/usdaGtrLogisticsProvider";
 import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
 import { UsdaNassQuickStatsProvider } from "./providers/usdaNassQuickStatsProvider";
+import { UsdaPsdProvider } from "./providers/usdaPsdProvider";
 import { WfpDataBridgesProvider } from "./providers/wfpDataBridgesProvider";
 import { WorldBankMicrodataProvider } from "./providers/worldBankMicrodataProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
@@ -125,6 +129,10 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   WFP_MARKET_PRICES_MULTI_COUNTRY: 3,
   WB_MICRODATA_MARKET_PRICES: 3,
   EUROSTAT_AGRI_PRICE_INDICES: 3,
+  USDA_PSD_BALANCES: 8,
+  AMIS_GLOBAL_BALANCE: 4,
+  IMF_COMMODITY_BENCHMARKS: 4,
+  OECD_AGRICULTURAL_OUTLOOK: 5,
   FAOSTAT_PP_MULTI_COUNTRY: 5,
   FPMA_MARKET_PRICES_MULTI_COUNTRY: 5,
 };
@@ -147,6 +155,10 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "WFP_MARKET_PRICES_MULTI_COUNTRY",
   "WB_MICRODATA_MARKET_PRICES",
   "EUROSTAT_AGRI_PRICE_INDICES",
+  "USDA_PSD_BALANCES",
+  "AMIS_GLOBAL_BALANCE",
+  "IMF_COMMODITY_BENCHMARKS",
+  "OECD_AGRICULTURAL_OUTLOOK",
   "USDA_GTR_LOGISTICS_SNAPSHOT",
   "CANADA_GRAIN_RAIL_PERFORMANCE",
   "FAOSTAT_PP_MULTI_COUNTRY",
@@ -417,6 +429,12 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
     return { rows: 0, items: widget.items.length, cards: 0 };
   }
+  if (widget.kind === "USDA_PSD_BALANCES" || widget.kind === "IMF_COMMODITY_BENCHMARKS") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
+  if (widget.kind === "AMIS_GLOBAL_BALANCE" || widget.kind === "OECD_AGRICULTURAL_OUTLOOK") {
+    return { rows: 0, items: widget.items.length, cards: 0 };
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     return { rows: widget.rows.length, items: 0, cards: 0 };
   }
@@ -473,6 +491,18 @@ function mappedCountForWidget(widget: GrainWidget): number {
   }
   if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
     return widget.items.filter((item) => item.current != null).length;
+  }
+  if (widget.kind === "USDA_PSD_BALANCES") {
+    return widget.rows.filter((row) => row.current != null).length;
+  }
+  if (widget.kind === "AMIS_GLOBAL_BALANCE") {
+    return widget.items.length;
+  }
+  if (widget.kind === "IMF_COMMODITY_BENCHMARKS") {
+    return widget.rows.filter((row) => row.current != null).length;
+  }
+  if (widget.kind === "OECD_AGRICULTURAL_OUTLOOK") {
+    return widget.items.filter((item) => item.projectedValue != null).length;
   }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     return widget.rows.filter((row) => row.current != null).length;
@@ -568,6 +598,10 @@ export class GrainWidgetsService {
     WFP_MARKET_PRICES_MULTI_COUNTRY: [new WfpDataBridgesProvider()],
     WB_MICRODATA_MARKET_PRICES: [new WorldBankMicrodataProvider()],
     EUROSTAT_AGRI_PRICE_INDICES: [new EurostatAgriIndicesProvider()],
+    USDA_PSD_BALANCES: [new UsdaPsdProvider()],
+    AMIS_GLOBAL_BALANCE: [new AmisOutlookProvider()],
+    IMF_COMMODITY_BENCHMARKS: [new ImfPcpsProvider()],
+    OECD_AGRICULTURAL_OUTLOOK: [new OecdAgriculturalOutlookProvider()],
     USDA_GTR_LOGISTICS_SNAPSHOT: [new UsdaGtrLogisticsProvider()],
     CANADA_GRAIN_RAIL_PERFORMANCE: [new CanadaRailPerformanceProvider()],
     FAOSTAT_PP_MULTI_COUNTRY: [new FaostatProducerPricesProvider()],
@@ -600,6 +634,10 @@ export class GrainWidgetsService {
     WFP_MARKET_PRICES_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "WFP_MARKET_PRICES_MULTI_COUNTRY" }),
     WB_MICRODATA_MARKET_PRICES: new MockGrainWidgetsProvider({ kind: "WB_MICRODATA_MARKET_PRICES" }),
     EUROSTAT_AGRI_PRICE_INDICES: new MockGrainWidgetsProvider({ kind: "EUROSTAT_AGRI_PRICE_INDICES" }),
+    USDA_PSD_BALANCES: new MockGrainWidgetsProvider({ kind: "USDA_PSD_BALANCES" }),
+    AMIS_GLOBAL_BALANCE: new MockGrainWidgetsProvider({ kind: "AMIS_GLOBAL_BALANCE" }),
+    IMF_COMMODITY_BENCHMARKS: new MockGrainWidgetsProvider({ kind: "IMF_COMMODITY_BENCHMARKS" }),
+    OECD_AGRICULTURAL_OUTLOOK: new MockGrainWidgetsProvider({ kind: "OECD_AGRICULTURAL_OUTLOOK" }),
     USDA_GTR_LOGISTICS_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "USDA_GTR_LOGISTICS_SNAPSHOT" }),
     CANADA_GRAIN_RAIL_PERFORMANCE: new MockGrainWidgetsProvider({ kind: "CANADA_GRAIN_RAIL_PERFORMANCE" }),
     FAOSTAT_PP_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "FAOSTAT_PP_MULTI_COUNTRY" }),

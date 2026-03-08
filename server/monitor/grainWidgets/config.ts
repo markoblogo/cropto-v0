@@ -44,6 +44,10 @@ export const ENABLE_CANADA_GRAIN_RAIL_WIDGET = envBool("ENABLE_CANADA_GRAIN_RAIL
 export const ENABLE_WFP_MARKET_PRICES_WIDGET = envBool("ENABLE_WFP_MARKET_PRICES_WIDGET", true);
 export const ENABLE_WB_MICRODATA_WIDGET = envBool("ENABLE_WB_MICRODATA_WIDGET", true);
 export const ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET = envBool("ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET", true);
+export const ENABLE_USDA_PSD_WIDGET = envBool("ENABLE_USDA_PSD_WIDGET", true);
+export const ENABLE_AMIS_GLOBAL_BALANCE_WIDGET = envBool("ENABLE_AMIS_GLOBAL_BALANCE_WIDGET", true);
+export const ENABLE_IMF_PCPS_WIDGET = envBool("ENABLE_IMF_PCPS_WIDGET", true);
+export const ENABLE_OECD_AGRICULTURAL_OUTLOOK_WIDGET = envBool("ENABLE_OECD_AGRICULTURAL_OUTLOOK_WIDGET", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -238,6 +242,42 @@ export const EUROSTAT_MEMBER_STATES = (process.env.EUROSTAT_MEMBER_STATES || "FR
   .split(",")
   .map((value) => value.trim().toUpperCase())
   .filter(Boolean);
+export const USDA_FAS_API_KEY = process.env.USDA_FAS_API_KEY || "";
+export const USDA_FAS_OPENDATA_BASE_URL = normalizeBaseUrl(
+  process.env.USDA_FAS_OPENDATA_BASE_URL || "",
+  "https://apps.fas.usda.gov/OpenData/api",
+);
+export const USDA_PSD_TIMEOUT_MS = envNum("USDA_PSD_TIMEOUT_MS", 15_000);
+export const USDA_PSD_CACHE_TTL_MS = envNum("USDA_PSD_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const USDA_PSD_MAX_YEARS = envNum("USDA_PSD_MAX_YEARS", 8);
+export const AMIS_BASE_URL = normalizeBaseUrl(
+  process.env.AMIS_BASE_URL || "",
+  "https://legacy.amis-outlook.org/amis-monitoring",
+);
+export const AMIS_MARKET_MONITOR_URL =
+  process.env.AMIS_MARKET_MONITOR_URL ||
+  `${AMIS_BASE_URL}/`;
+export const AMIS_MARKET_MONITOR_CURRENT_PDF_URL =
+  process.env.AMIS_MARKET_MONITOR_CURRENT_PDF_URL ||
+  "https://legacy.amis-outlook.org/fileadmin/user_upload/amis/docs/Market_monitor/AMIS_Market_Monitor_current.pdf";
+export const AMIS_TIMEOUT_MS = envNum("AMIS_TIMEOUT_MS", 12_000);
+export const AMIS_CACHE_TTL_MS = envNum("AMIS_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const IMF_PCPS_PAGE_URL =
+  process.env.IMF_PCPS_PAGE_URL ||
+  "https://www.imf.org/en/Research/commodity-prices";
+export const IMF_PCPS_TABLE2_URL =
+  process.env.IMF_PCPS_TABLE2_URL ||
+  "https://www.imf.org/-/media/Files/Research/CommodityPrices/Monthly/Table2.ashx";
+export const IMF_PCPS_TIMEOUT_MS = envNum("IMF_PCPS_TIMEOUT_MS", 12_000);
+export const IMF_PCPS_CACHE_TTL_MS = envNum("IMF_PCPS_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL =
+  process.env.OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL ||
+  "https://www.oecd.org/en/publications/2025/07/oecd-fao-agricultural-outlook-2025-2034_3eb15914/full-report/cereals_251d1ece.html";
+export const OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL =
+  process.env.OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL ||
+  "https://www.oecd.org/en/publications/oecd-fao-agricultural-outlook-2025-2034_601276cd-en/full-report/oilseeds-and-oilseed-products_42c09daa.html";
+export const OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS = envNum("OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS", 12_000);
+export const OECD_AGRICULTURAL_OUTLOOK_CACHE_TTL_MS = envNum("OECD_AGRICULTURAL_OUTLOOK_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FPMA_DATA_PATHS = (
   process.env.FPMA_DATA_PATHS ||
   "prices,PriceQuotation,v1/prices,v1/PriceQuotation"

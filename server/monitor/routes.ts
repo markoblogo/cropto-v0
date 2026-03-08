@@ -16,6 +16,7 @@ import {
   CANADA_RAIL_TIMEOUT_MS,
   CANADA_RAIL_WDS_BASE_URL,
   DBNOMICS_API_BASE_URL,
+  ENABLE_AMIS_GLOBAL_BALANCE_WIDGET,
   EC_AGRI_API_BASE_URL,
   EC_CEREALS_API_PATH,
   EC_OILSEEDS_API_PATH,
@@ -34,7 +35,10 @@ import {
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
   ENABLE_WB_MICRODATA_WIDGET,
   ENABLE_WFP_MARKET_PRICES_WIDGET,
+  ENABLE_IMF_PCPS_WIDGET,
+  ENABLE_OECD_AGRICULTURAL_OUTLOOK_WIDGET,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
+  ENABLE_USDA_PSD_WIDGET,
   ENABLE_USDA_NASS_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
@@ -52,6 +56,15 @@ import {
   NASDAQ_DATASETS,
   EUROSTAT_BASE_URL,
   EUROSTAT_TIMEOUT_MS,
+  IMF_PCPS_PAGE_URL,
+  IMF_PCPS_TABLE2_URL,
+  IMF_PCPS_TIMEOUT_MS,
+  OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
+  OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL,
+  OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
+  USDA_FAS_API_KEY,
+  USDA_FAS_OPENDATA_BASE_URL,
+  USDA_PSD_TIMEOUT_MS,
   USDA_NASS_API_KEY,
   USDA_NASS_BASE_URL,
   USDA_NASS_TIMEOUT_MS,
@@ -65,6 +78,8 @@ import {
   WFP_DATABRIDGES_BASE_URL,
   WFP_DATABRIDGES_TOKEN,
   WFP_DATABRIDGES_TIMEOUT_MS,
+  AMIS_MARKET_MONITOR_URL,
+  AMIS_TIMEOUT_MS,
 } from "./grainWidgets/config";
 import { CroptoUkraineIndexProvider } from "./indexProvider";
 import { getLiveVisualTiles } from "./liveVisuals";
@@ -520,7 +535,7 @@ export function registerMonitorRoutes(app: Express): void {
         };
       }
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "EC_CEREALS_MULTI_COUNTRY" | "EC_OILSEEDS_MULTI_COUNTRY" | "USDA_NASS_PRODUCER_PRICES" | "WFP_MARKET_PRICES_MULTI_COUNTRY" | "WB_MICRODATA_MARKET_PRICES" | "EUROSTAT_AGRI_PRICE_INDICES" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "CANADA_GRAIN_RAIL_PERFORMANCE" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "EC_CEREALS_MULTI_COUNTRY" | "EC_OILSEEDS_MULTI_COUNTRY" | "USDA_NASS_PRODUCER_PRICES" | "WFP_MARKET_PRICES_MULTI_COUNTRY" | "WB_MICRODATA_MARKET_PRICES" | "EUROSTAT_AGRI_PRICE_INDICES" | "USDA_PSD_BALANCES" | "AMIS_GLOBAL_BALANCE" | "IMF_COMMODITY_BENCHMARKS" | "OECD_AGRICULTURAL_OUTLOOK" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "CANADA_GRAIN_RAIL_PERFORMANCE" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
@@ -534,6 +549,10 @@ export function registerMonitorRoutes(app: Express): void {
         "wfp-databridges": "WFP_MARKET_PRICES_MULTI_COUNTRY",
         "worldbank-microdata": "WB_MICRODATA_MARKET_PRICES",
         "eurostat-agri-indices": "EUROSTAT_AGRI_PRICE_INDICES",
+        "usda-psd": "USDA_PSD_BALANCES",
+        "amis-outlook": "AMIS_GLOBAL_BALANCE",
+        "imf-pcps": "IMF_COMMODITY_BENCHMARKS",
+        "oecd-agricultural-outlook": "OECD_AGRICULTURAL_OUTLOOK",
         "usda-gtr-logistics": "USDA_GTR_LOGISTICS_SNAPSHOT",
         "canada-grain-rail-performance": "CANADA_GRAIN_RAIL_PERFORMANCE",
         "faostat-pp": "FAOSTAT_PP_MULTI_COUNTRY",
@@ -553,6 +572,10 @@ export function registerMonitorRoutes(app: Express): void {
         if (id.includes("wfp")) return source.includes("wfp");
         if (id.includes("worldbank")) return source.includes("world bank");
         if (id.includes("eurostat")) return source.includes("eurostat");
+        if (id.includes("usda-psd")) return source.includes("usda");
+        if (id.includes("amis")) return source.includes("amis");
+        if (id.includes("imf")) return source.includes("imf");
+        if (id.includes("oecd")) return source.includes("oecd");
         if (id.includes("usda-gtr")) return source.includes("usda");
         if (id.includes("canada-grain-rail")) return source.includes("statistics canada") || source.includes("statcan");
         if (id.includes("faostat")) return source.includes("faostat");
@@ -575,13 +598,17 @@ export function registerMonitorRoutes(app: Express): void {
         "wfp-databridges": 3,
         "worldbank-microdata": 3,
         "eurostat-agri-indices": 3,
+        "usda-psd": 8,
+        "amis-outlook": 4,
+        "imf-pcps": 4,
+        "oecd-agricultural-outlook": 5,
         "usda-gtr-logistics": 2,
         "canada-grain-rail-performance": 4,
         "faostat-pp": 5,
         "fpma-market-prices": 5,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "wfp-databridges", "worldbank-microdata", "eurostat-agri-indices", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "wfp-databridges", "worldbank-microdata", "eurostat-agri-indices", "usda-psd", "amis-outlook", "imf-pcps", "oecd-agricultural-outlook", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -692,6 +719,10 @@ export function registerMonitorRoutes(app: Express): void {
         "WFP_MARKET_PRICES_MULTI_COUNTRY",
         "WB_MICRODATA_MARKET_PRICES",
         "EUROSTAT_AGRI_PRICE_INDICES",
+        "USDA_PSD_BALANCES",
+        "AMIS_GLOBAL_BALANCE",
+        "IMF_COMMODITY_BENCHMARKS",
+        "OECD_AGRICULTURAL_OUTLOOK",
         "USDA_GTR_LOGISTICS_SNAPSHOT",
         "CANADA_GRAIN_RAIL_PERFORMANCE",
         "FAOSTAT_PP_MULTI_COUNTRY",
@@ -711,6 +742,10 @@ export function registerMonitorRoutes(app: Express): void {
         const wfpRowsCount = widget?.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const wbRowsCount = widget?.kind === "WB_MICRODATA_MARKET_PRICES" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const eurostatItemsCount = widget?.kind === "EUROSTAT_AGRI_PRICE_INDICES" && Array.isArray(widget?.items) ? widget.items.length : 0;
+        const usdaPsdRowsCount = widget?.kind === "USDA_PSD_BALANCES" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
+        const amisItemsCount = widget?.kind === "AMIS_GLOBAL_BALANCE" && Array.isArray(widget?.items) ? widget.items.length : 0;
+        const imfRowsCount = widget?.kind === "IMF_COMMODITY_BENCHMARKS" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
+        const oecdItemsCount = widget?.kind === "OECD_AGRICULTURAL_OUTLOOK" && Array.isArray(widget?.items) ? widget.items.length : 0;
         const faostatRowsCount = widget?.kind === "FAOSTAT_PP_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const fpmaRowsCount = widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const seriesPointsCount =
@@ -738,6 +773,10 @@ export function registerMonitorRoutes(app: Express): void {
           wfpRowsCount,
           wbRowsCount,
           eurostatItemsCount,
+          usdaPsdRowsCount,
+          amisItemsCount,
+          imfRowsCount,
+          oecdItemsCount,
           logisticsDatasetUrlChosen: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.datasetUrlChosen : undefined,
           logisticsColumnsDetected: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.columnsDetected : undefined,
           logisticsSeriesPoints: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.seriesPoints : undefined,
@@ -800,6 +839,12 @@ export function registerMonitorRoutes(app: Express): void {
       const wbProbe = await probeUrl(wbProbeUrl, { timeoutMs: WB_MICRODATA_TIMEOUT_MS });
       const eurostatProbeUrl = `${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`;
       const eurostatProbe = await probeUrl(eurostatProbeUrl, { timeoutMs: EUROSTAT_TIMEOUT_MS });
+      const usdaPsdProbeRawUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances${USDA_FAS_API_KEY ? `?api_key=${encodeURIComponent(USDA_FAS_API_KEY)}` : ""}`;
+      const usdaPsdProbeUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances${USDA_FAS_API_KEY ? "?api_key=REDACTED" : ""}`;
+      const usdaPsdProbe = await probeUrl(usdaPsdProbeRawUrl, { timeoutMs: USDA_PSD_TIMEOUT_MS });
+      const amisProbe = await probeUrl(AMIS_MARKET_MONITOR_URL, { timeoutMs: AMIS_TIMEOUT_MS });
+      const imfProbe = await probeUrl(IMF_PCPS_TABLE2_URL, { timeoutMs: IMF_PCPS_TIMEOUT_MS });
+      const oecdProbe = await probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, { timeoutMs: OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS });
       const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
       const faostatProbe = await probeUrl(faostatProbeUrl, { timeoutMs: FAOSTAT_TIMEOUT_MS });
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;
@@ -833,6 +878,10 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_WFP_MARKET_PRICES_WIDGET,
             ENABLE_WB_MICRODATA_WIDGET,
             ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET,
+            ENABLE_USDA_PSD_WIDGET,
+            ENABLE_AMIS_GLOBAL_BALANCE_WIDGET,
+            ENABLE_IMF_PCPS_WIDGET,
+            ENABLE_OECD_AGRICULTURAL_OUTLOOK_WIDGET,
             ENABLE_CANADA_GRAIN_RAIL_WIDGET,
             ENABLE_FAOSTAT_PP_WIDGET,
             ENABLE_FPMA_DISCOVERY,
@@ -857,6 +906,11 @@ export function registerMonitorRoutes(app: Express): void {
             WB_MICRODATA_BASE_URL: WB_MICRODATA_BASE_URL ? "present" : "missing",
             WB_MICRODATA_CSV_URL: WB_MICRODATA_CSV_URL ? "present" : "missing",
             EUROSTAT_BASE_URL: EUROSTAT_BASE_URL ? "present" : "missing",
+            USDA_FAS_OPENDATA_BASE_URL: USDA_FAS_OPENDATA_BASE_URL ? "present" : "missing",
+            USDA_FAS_API_KEY: USDA_FAS_API_KEY ? "present" : "missing",
+            AMIS_MARKET_MONITOR_URL: AMIS_MARKET_MONITOR_URL ? "present" : "missing",
+            IMF_PCPS_TABLE2_URL: IMF_PCPS_TABLE2_URL ? "present" : "missing",
+            OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL: OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL ? "present" : "missing",
             CANADA_RAIL_WDS_BASE_URL: CANADA_RAIL_WDS_BASE_URL ? "present" : "missing",
             FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
             FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
@@ -895,6 +949,13 @@ export function registerMonitorRoutes(app: Express): void {
           },
           worldBankMicrodata: wbProbe,
           eurostatAgriIndices: eurostatProbe,
+          usdaPsd: {
+            ...usdaPsdProbe,
+            url: usdaPsdProbeUrl,
+          },
+          amisOutlook: amisProbe,
+          imfPcps: imfProbe,
+          oecdAgriculturalOutlook: oecdProbe,
           usdaGtrLogistics: usdaGtrProbe,
           canadaRailPerformance: canadaRailProbe,
           faostatPp: faostatProbe,

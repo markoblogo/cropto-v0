@@ -327,6 +327,10 @@ type GrainWidgetKind =
   | "WFP_MARKET_PRICES_MULTI_COUNTRY"
   | "WB_MICRODATA_MARKET_PRICES"
   | "EUROSTAT_AGRI_PRICE_INDICES"
+  | "USDA_PSD_BALANCES"
+  | "AMIS_GLOBAL_BALANCE"
+  | "IMF_COMMODITY_BENCHMARKS"
+  | "OECD_AGRICULTURAL_OUTLOOK"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
   | "CANADA_GRAIN_RAIL_PERFORMANCE"
   | "FAOSTAT_PP_MULTI_COUNTRY"
@@ -1000,6 +1004,163 @@ type GrainWidgetCanadaRailPerformance = GrainTerritoryMeta & {
   fallbackReason?: string;
 };
 
+type GrainWidgetUsdaPsdBalances = GrainTerritoryMeta & {
+  id: string;
+  kind: "USDA_PSD_BALANCES";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<{
+    commodity: "WHEAT" | "CORN" | "SOYBEANS" | "RAPESEED";
+    metric: "PRODUCTION" | "CONSUMPTION" | "EXPORTS" | "ENDING_STOCKS";
+    label: string;
+    current: number;
+    unit: string;
+    cadence: "annual" | "marketing-year" | "unknown";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "annual" | "marketing-year" | "unknown";
+    selectedView?: "WORLD";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetAmisGlobalBalance = GrainTerritoryMeta & {
+  id: string;
+  kind: "AMIS_GLOBAL_BALANCE";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  items: Array<{
+    id: string;
+    crop: "WHEAT" | "MAIZE" | "RICE" | "SOYBEANS";
+    label: string;
+    statusLabel?: string;
+    releaseDate?: string;
+    cadence: "release-based";
+    notes?: string[];
+    sourceUrl?: string;
+  }>;
+  summary?: {
+    issueLabel?: string;
+    releaseDate?: string;
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "release-based";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    pdfUrl?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetImfCommodityBenchmarks = GrainTerritoryMeta & {
+  id: string;
+  kind: "IMF_COMMODITY_BENCHMARKS";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<{
+    commodity: "WHEAT" | "MAIZE" | "SOYBEANS" | "SUNFLOWER_OIL" | "RAPESEED_OIL";
+    label: string;
+    current: number;
+    unit: string;
+    cadence: "monthly";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "monthly";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetOecdAgriculturalOutlook = GrainTerritoryMeta & {
+  id: string;
+  kind: "OECD_AGRICULTURAL_OUTLOOK";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  items: Array<{
+    id: string;
+    commodity: "WHEAT" | "MAIZE" | "SOYBEANS" | "RAPESEED" | "SUNFLOWER";
+    label: string;
+    projectedValue: number;
+    unit: string;
+    horizon: string;
+    cadence: "annual";
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "annual";
+    releaseDate?: string;
+    horizon?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidgetFaostatPpMultiCountry = GrainTerritoryMeta & {
   id: string;
   kind: "FAOSTAT_PP_MULTI_COUNTRY";
@@ -1113,6 +1274,10 @@ type GrainWidget =
   | GrainWidgetUsdaNassProducerPrices
   | GrainWidgetCountryMarketPricesMultiCountry
   | GrainWidgetEurostatAgriPriceIndices
+  | GrainWidgetUsdaPsdBalances
+  | GrainWidgetAmisGlobalBalance
+  | GrainWidgetImfCommodityBenchmarks
+  | GrainWidgetOecdAgriculturalOutlook
   | GrainWidgetUsdaGtrLogisticsSnapshot
   | GrainWidgetCanadaRailPerformance
   | GrainWidgetFaostatPpMultiCountry
@@ -2586,6 +2751,11 @@ export default function MonitorPage() {
     return (grainWidgetsQuery.data?.widgets.byKind || {}) as Partial<Record<GrainWidgetKind, GrainWidget>>;
   }, [grainWidgetsQuery.data]);
 
+  const usdaPsdWidget = grainDataByKind["USDA_PSD_BALANCES"] as GrainWidgetUsdaPsdBalances | undefined;
+  const amisWidget = grainDataByKind["AMIS_GLOBAL_BALANCE"] as GrainWidgetAmisGlobalBalance | undefined;
+  const imfWidget = grainDataByKind["IMF_COMMODITY_BENCHMARKS"] as GrainWidgetImfCommodityBenchmarks | undefined;
+  const oecdWidget = grainDataByKind["OECD_AGRICULTURAL_OUTLOOK"] as GrainWidgetOecdAgriculturalOutlook | undefined;
+
   const grainExpansionGroups = useMemo(() => {
     const widgets = Object.values(grainDataByKind).filter(Boolean) as GrainWidget[];
     const grouped = new Map<string, GrainWidget[]>();
@@ -2796,6 +2966,10 @@ export default function MonitorPage() {
                   const wfpWidget = grainDataByKind["WFP_MARKET_PRICES_MULTI_COUNTRY"] as GrainWidgetCountryMarketPricesMultiCountry | undefined;
                   const worldBankWidget = grainDataByKind["WB_MICRODATA_MARKET_PRICES"] as GrainWidgetCountryMarketPricesMultiCountry | undefined;
                   const eurostatWidget = grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined;
+                  const usdaPsdWidget = grainDataByKind["USDA_PSD_BALANCES"] as GrainWidgetUsdaPsdBalances | undefined;
+                  const amisWidget = grainDataByKind["AMIS_GLOBAL_BALANCE"] as GrainWidgetAmisGlobalBalance | undefined;
+                  const imfWidget = grainDataByKind["IMF_COMMODITY_BENCHMARKS"] as GrainWidgetImfCommodityBenchmarks | undefined;
+                  const oecdWidget = grainDataByKind["OECD_AGRICULTURAL_OUTLOOK"] as GrainWidgetOecdAgriculturalOutlook | undefined;
                   const usdaGtrWidget = grainDataByKind["USDA_GTR_LOGISTICS_SNAPSHOT"] as GrainWidgetUsdaGtrLogisticsSnapshot | undefined;
                   const canadaRailWidget = grainDataByKind["CANADA_GRAIN_RAIL_PERFORMANCE"] as GrainWidgetCanadaRailPerformance | undefined;
                   const faostatWidget = grainDataByKind["FAOSTAT_PP_MULTI_COUNTRY"] as GrainWidgetFaostatPpMultiCountry | undefined;
@@ -4417,6 +4591,171 @@ export default function MonitorPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          <div id="fundamentals-outlook" className="scroll-mt-24 mt-3 space-y-2">
+            <div className="rounded-3xl border border-black/15 bg-card/80 p-2.5 shadow-sm dark:border-white/12">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-foreground/55">Fundamentals & Outlook</p>
+                  <h2 className="text-lg font-semibold text-foreground">Balances, outlooks, and structural benchmarks</h2>
+                </div>
+                <div className="flex flex-wrap items-center gap-1">
+                  <MetricChip label="slow cadence" variant="type" tone="muted" />
+                  <MetricChip label="context layer" variant="provider" tone="neutral" />
+                </div>
+              </div>
+              <div className="grid items-start gap-2.5 xl:grid-cols-12">
+                {usdaPsdWidget ? (
+                  <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                    <CardHeader className="pb-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-sm">{usdaPsdWidget.title}</CardTitle>
+                        <Badge className={`text-[10px] ${grainStatusClass(usdaPsdWidget.status)}`}>{usdaPsdWidget.status}</Badge>
+                      </div>
+                      <CardDescription className="text-foreground/68">{usdaPsdWidget.subtitle || "World supply / demand balances"}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-1.5">
+                      <div className="grid gap-1 sm:grid-cols-2">
+                        {usdaPsdWidget.rows.slice(0, 4).map((row, idx) => (
+                          <div key={`${usdaPsdWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                              <div className="flex items-center gap-1">
+                                <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                <MetricChip label={row.cadence} variant="type" tone="muted" />
+                              </div>
+                            </div>
+                            <p className="mt-0.5 text-[12px] font-semibold text-foreground">{formatMetricValue({ kind: "index", value: row.current, unit: row.unit })}</p>
+                            <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                            <DynamicMiniTrend
+                              series={row.series || []}
+                              change={row.changeAbs}
+                              changePct={row.changePct}
+                              status={usdaPsdWidget.status}
+                              section="expansion"
+                              cardKind="row"
+                              sourceName={usdaPsdWidget.sourceName}
+                              trustedSeries={isTrustworthySeriesSource({ status: usdaPsdWidget.status, sourceName: usdaPsdWidget.sourceName, fallbackReason: usdaPsdWidget.fallbackReason })}
+                              debugEnabled={debugEnabled}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {usdaPsdWidget.summary?.coverage ? <MetricChip label={`coverage ${usdaPsdWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                      </div>
+                      <StatusSourceStrip compact status={usdaPsdWidget.status} statusClassName={grainStatusClass(usdaPsdWidget.status)} sourceName={usdaPsdWidget.sourceName} sourceUrl={usdaPsdWidget.sourceUrl} updatedLabel={usdaPsdWidget.updatedAt ? formatRelative(usdaPsdWidget.updatedAt) : usdaPsdWidget.timeframe} fallbackReason={usdaPsdWidget.fallbackReason} />
+                    </CardContent>
+                  </Card>
+                ) : <div className="xl:col-span-6"><GrainExpansionFallbackCard title="USDA PSD Balances" subtitle="World balance sheet / marketing year" /></div>}
+
+                {imfWidget ? (
+                  <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                    <CardHeader className="pb-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-sm">{imfWidget.title}</CardTitle>
+                        <Badge className={`text-[10px] ${grainStatusClass(imfWidget.status)}`}>{imfWidget.status}</Badge>
+                      </div>
+                      <CardDescription className="text-foreground/68">{imfWidget.subtitle || "Monthly structural benchmarks"}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-1.5">
+                      <div className="grid gap-1 sm:grid-cols-2">
+                        {imfWidget.rows.slice(0, 4).map((row, idx) => (
+                          <div key={`${imfWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                              <div className="flex items-center gap-1">
+                                <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                <MetricChip label={row.cadence} variant="type" tone="muted" />
+                              </div>
+                            </div>
+                            <p className="mt-0.5 text-[12px] font-semibold text-foreground">{formatMetricValue({ kind: "index", value: row.current, unit: row.unit })}</p>
+                            <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                            <DynamicMiniTrend
+                              series={row.series || []}
+                              change={row.changeAbs}
+                              changePct={row.changePct}
+                              status={imfWidget.status}
+                              section="expansion"
+                              cardKind="row"
+                              sourceName={imfWidget.sourceName}
+                              trustedSeries={isTrustworthySeriesSource({ status: imfWidget.status, sourceName: imfWidget.sourceName, fallbackReason: imfWidget.fallbackReason })}
+                              debugEnabled={debugEnabled}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <StatusSourceStrip compact status={imfWidget.status} statusClassName={grainStatusClass(imfWidget.status)} sourceName={imfWidget.sourceName} sourceUrl={imfWidget.sourceUrl} updatedLabel={imfWidget.updatedAt ? formatRelative(imfWidget.updatedAt) : imfWidget.timeframe} fallbackReason={imfWidget.fallbackReason} />
+                    </CardContent>
+                  </Card>
+                ) : <div className="xl:col-span-6"><GrainExpansionFallbackCard title="IMF Commodity Benchmarks" subtitle="Monthly structural benchmark layer" /></div>}
+
+                {amisWidget ? (
+                  <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                    <CardHeader className="pb-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-sm">{amisWidget.title}</CardTitle>
+                        <Badge className={`text-[10px] ${grainStatusClass(amisWidget.status)}`}>{amisWidget.status}</Badge>
+                      </div>
+                      <CardDescription className="text-foreground/68">{amisWidget.subtitle || "Release-based global balance context"}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-1.5">
+                      <div className="grid gap-1 sm:grid-cols-2">
+                        {amisWidget.items.slice(0, 4).map((item) => (
+                          <a key={item.id} href={item.sourceUrl || amisWidget.sourceUrl} target="_blank" rel="noreferrer" className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5 transition hover:border-primary/35">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-[11px] text-foreground/85 line-clamp-1">{item.label}</p>
+                              <MetricChip label={item.cadence} variant="type" tone="muted" />
+                            </div>
+                            <p className="mt-0.5 text-[12px] font-semibold text-foreground">{item.statusLabel || "Latest release available"}</p>
+                            <p className="text-[10px] text-foreground/65">{item.releaseDate ? formatRelative(item.releaseDate) : amisWidget.summary?.releaseDate || "release-based"}</p>
+                          </a>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {amisWidget.summary?.releaseDate ? <MetricChip label={`release ${formatRelative(amisWidget.summary.releaseDate)}`} variant="provider" tone="neutral" /> : null}
+                      </div>
+                      <StatusSourceStrip compact status={amisWidget.status} statusClassName={grainStatusClass(amisWidget.status)} sourceName={amisWidget.sourceName} sourceUrl={amisWidget.sourceUrl} updatedLabel={amisWidget.updatedAt ? formatRelative(amisWidget.updatedAt) : amisWidget.timeframe} fallbackReason={amisWidget.fallbackReason} />
+                    </CardContent>
+                  </Card>
+                ) : <div className="xl:col-span-6"><GrainExpansionFallbackCard title="AMIS Global Balance" subtitle="Release-based monitor / outlook layer" /></div>}
+
+                {oecdWidget ? (
+                  <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                    <CardHeader className="pb-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-sm">{oecdWidget.title}</CardTitle>
+                        <Badge className={`text-[10px] ${grainStatusClass(oecdWidget.status)}`}>{oecdWidget.status}</Badge>
+                      </div>
+                      <CardDescription className="text-foreground/68">{oecdWidget.subtitle || "Forecast / annual outlook"}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-1.5">
+                      <div className="grid gap-1 sm:grid-cols-2">
+                        {oecdWidget.items.slice(0, 4).map((item) => (
+                          <div key={item.id} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-[11px] text-foreground/85 line-clamp-1">{item.label}</p>
+                              <div className="flex items-center gap-1">
+                                <MetricChip label={item.unit} variant="unit" tone="neutral" />
+                                <MetricChip label={`to ${item.horizon}`} variant="type" tone="muted" />
+                              </div>
+                            </div>
+                            <p className="mt-0.5 text-[12px] font-semibold text-foreground">{formatMetricValue({ kind: "index", value: item.projectedValue, unit: item.unit })}</p>
+                            <p className="text-[10px] text-foreground/65">{item.confidence} confidence outlook</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {oecdWidget.summary?.horizon ? <MetricChip label={`horizon ${oecdWidget.summary.horizon}`} variant="provider" tone="neutral" /> : null}
+                        <MetricChip label="forecast" variant="type" tone="muted" />
+                      </div>
+                      <StatusSourceStrip compact status={oecdWidget.status} statusClassName={grainStatusClass(oecdWidget.status)} sourceName={oecdWidget.sourceName} sourceUrl={oecdWidget.sourceUrl} updatedLabel={oecdWidget.updatedAt ? formatRelative(oecdWidget.updatedAt) : oecdWidget.timeframe} fallbackReason={oecdWidget.fallbackReason} />
+                    </CardContent>
+                  </Card>
+                ) : <div className="xl:col-span-6"><GrainExpansionFallbackCard title="OECD Agricultural Outlook" subtitle="Forecast / projection layer" /></div>}
+              </div>
+            </div>
           </div>
 
           <div id="top-signals" className="scroll-mt-24 grid items-start gap-2.5 xl:grid-cols-12">

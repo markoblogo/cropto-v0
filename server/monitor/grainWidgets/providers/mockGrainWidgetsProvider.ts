@@ -1,15 +1,19 @@
 import type {
   GrainWidget,
   GrainWidgetAlphaVantageGrainBenchmarks,
+  GrainWidgetAmisGlobalBalance,
   GrainWidgetCropPriceIndex,
   GrainWidgetFaostatPpMultiCountry,
   GrainWidgetFpmaMarketPricesMultiCountry,
   GrainWidgetEcOfficialPricesSnapshot,
+  GrainWidgetImfCommodityBenchmarks,
   GrainWidgetNasdaqDataLinkSnapshot,
   GrainWidgetCanadaRailPerformance,
   GrainWidgetEurostatAgriPriceIndices,
+  GrainWidgetOecdAgriculturalOutlook,
   GrainWidgetUsdaGtrLogisticsSnapshot,
   GrainWidgetKind,
+  GrainWidgetUsdaPsdBalances,
   GrainWidgetWfpMarketPricesMultiCountry,
   GrainWidgetWorldBankMicrodataMarketPrices,
   GrainWidgetUsCashExportContext,
@@ -915,6 +919,111 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           selectedTerritory: territoryCode,
         },
         notes: ["Mock fallback payload for EUROSTAT_AGRI_PRICE_INDICES", "Index points preserved; no USD/t normalization"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "USDA_PSD_BALANCES") {
+      const widget: GrainWidgetUsdaPsdBalances = {
+        id: "grain-usda-psd-balances",
+        kind: "USDA_PSD_BALANCES",
+        title: "USDA PSD Balances",
+        subtitle: "World supply/demand balance sheet",
+        status: "FALLBACK",
+        sourceName: "USDA FAS OpenData",
+        sourceAttribution: "Data: USDA PSD / FAS OpenData",
+        sourceUrl: "https://apps.fas.usda.gov/OpenData/api/",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        rows: [
+          { commodity: "WHEAT", metric: "PRODUCTION", label: "Wheat Production", current: 799.4, unit: "million tonnes", cadence: "marketing-year", changeAbs: 5.2, changePct: 0.65, series: deriveSeries(799.4, 5.2, ctx.seriesPoints), confidence: "MED" },
+          { commodity: "CORN", metric: "ENDING_STOCKS", label: "Corn Ending stocks", current: 312.7, unit: "million tonnes", cadence: "marketing-year", changeAbs: -4.8, changePct: -1.51, series: deriveSeries(312.7, -4.8, ctx.seriesPoints), confidence: "MED" },
+          { commodity: "SOYBEANS", metric: "EXPORTS", label: "Soybean Exports", current: 180.4, unit: "million tonnes", cadence: "marketing-year", changeAbs: 2.3, changePct: 1.29, series: deriveSeries(180.4, 2.3, ctx.seriesPoints), confidence: "MED" },
+        ],
+        summary: { expectedCount: 8, mappedCount: 3, coverage: "3/8", cadence: "marketing-year", selectedView: "WORLD" },
+        notes: ["Mock fallback payload for USDA_PSD_BALANCES"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "AMIS_GLOBAL_BALANCE") {
+      const widget: GrainWidgetAmisGlobalBalance = {
+        id: "grain-amis-global-balance",
+        kind: "AMIS_GLOBAL_BALANCE",
+        title: "AMIS Global Balance",
+        subtitle: "Global outlook / monitor releases",
+        status: "FALLBACK",
+        sourceName: "AMIS",
+        sourceAttribution: "Data: AMIS Market Monitor",
+        sourceUrl: "https://legacy.amis-outlook.org/amis-monitoring/",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        items: [
+          { id: "amis-wheat", crop: "WHEAT", label: "Wheat balance outlook", statusLabel: "Latest monitor available", releaseDate: "2026-02-01", cadence: "release-based", sourceUrl: "https://legacy.amis-outlook.org/amis-monitoring/" },
+          { id: "amis-maize", crop: "MAIZE", label: "Maize balance outlook", statusLabel: "Latest monitor available", releaseDate: "2026-02-01", cadence: "release-based", sourceUrl: "https://legacy.amis-outlook.org/amis-monitoring/" },
+          { id: "amis-rice", crop: "RICE", label: "Rice balance outlook", statusLabel: "Latest monitor available", releaseDate: "2026-02-01", cadence: "release-based", sourceUrl: "https://legacy.amis-outlook.org/amis-monitoring/" },
+          { id: "amis-soy", crop: "SOYBEANS", label: "Soybeans balance outlook", statusLabel: "Latest monitor available", releaseDate: "2026-02-01", cadence: "release-based", sourceUrl: "https://legacy.amis-outlook.org/amis-monitoring/" },
+        ],
+        summary: { expectedCount: 4, mappedCount: 4, coverage: "4/4", cadence: "release-based", issueLabel: "Latest issue", releaseDate: "2026-02-01" },
+        notes: ["Mock fallback payload for AMIS_GLOBAL_BALANCE"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "IMF_COMMODITY_BENCHMARKS") {
+      const widget: GrainWidgetImfCommodityBenchmarks = {
+        id: "grain-imf-commodity-benchmarks",
+        kind: "IMF_COMMODITY_BENCHMARKS",
+        title: "IMF Commodity Benchmarks",
+        subtitle: "Primary commodity price system",
+        status: "FALLBACK",
+        sourceName: "IMF",
+        sourceAttribution: "Data: IMF primary commodity prices",
+        sourceUrl: "https://www.imf.org/en/Research/commodity-prices",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        rows: [
+          { commodity: "WHEAT", label: "Wheat", current: 242.2, unit: "USD/index basis", cadence: "monthly", changeAbs: 2.1, changePct: 0.87, series: deriveSeries(242.2, 2.1, ctx.seriesPoints), confidence: "MED" },
+          { commodity: "MAIZE", label: "Maize", current: 198.6, unit: "USD/index basis", cadence: "monthly", changeAbs: -1.4, changePct: -0.7, series: deriveSeries(198.6, -1.4, ctx.seriesPoints), confidence: "MED" },
+          { commodity: "SOYBEANS", label: "Soybeans", current: 436.9, unit: "USD/index basis", cadence: "monthly", changeAbs: 3.2, changePct: 0.74, series: deriveSeries(436.9, 3.2, ctx.seriesPoints), confidence: "MED" },
+        ],
+        summary: { expectedCount: 4, mappedCount: 3, coverage: "3/4", cadence: "monthly" },
+        notes: ["Mock fallback payload for IMF_COMMODITY_BENCHMARKS"],
+        fallbackReason: reason,
+      };
+      return widget;
+    }
+
+    if (this.kind === "OECD_AGRICULTURAL_OUTLOOK") {
+      const widget: GrainWidgetOecdAgriculturalOutlook = {
+        id: "grain-oecd-agricultural-outlook",
+        kind: "OECD_AGRICULTURAL_OUTLOOK",
+        title: "OECD Agricultural Outlook",
+        subtitle: "Forecast / structural regime layer",
+        status: "FALLBACK",
+        sourceName: "OECD-FAO Outlook",
+        sourceAttribution: "Data: OECD-FAO Agricultural Outlook",
+        sourceUrl: "https://www.oecd.org/en/publications/oecd-fao-agricultural-outlook-2025-2034_601276cd-en.html",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        items: [
+          { id: "oecd-wheat", commodity: "WHEAT", label: "Wheat projected price", projectedValue: 296, unit: "USD/t", horizon: "2034", cadence: "annual", confidence: "MED" },
+          { id: "oecd-maize", commodity: "MAIZE", label: "Maize projected price", projectedValue: 225, unit: "USD/t", horizon: "2034", cadence: "annual", confidence: "MED" },
+          { id: "oecd-soy", commodity: "SOYBEANS", label: "Soybean projected price", projectedValue: 499, unit: "USD/t", horizon: "2034", cadence: "annual", confidence: "MED" },
+        ],
+        summary: { expectedCount: 5, mappedCount: 3, coverage: "3/5", cadence: "annual", releaseDate: "2025-2034", horizon: "2034" },
+        notes: ["Mock fallback payload for OECD_AGRICULTURAL_OUTLOOK", "Forecast/outlook widget; not live market pricing"],
         fallbackReason: reason,
       };
       return widget;

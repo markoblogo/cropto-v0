@@ -10,9 +10,13 @@ import { EurostatAgriIndicesProvider } from "../server/monitor/grainWidgets/prov
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "../server/monitor/grainWidgets/providers/faostatProducerPricesProvider";
 import { FpmaMarketPricesProvider } from "../server/monitor/grainWidgets/providers/fpmaMarketPricesProvider";
+import { ImfPcpsProvider } from "../server/monitor/grainWidgets/providers/imfPcpsProvider";
 import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers/nasdaqDataLinkProvider";
+import { OecdAgriculturalOutlookProvider } from "../server/monitor/grainWidgets/providers/oecdAgriculturalOutlookProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
+import { AmisOutlookProvider } from "../server/monitor/grainWidgets/providers/amisOutlookProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
+import { UsdaPsdProvider } from "../server/monitor/grainWidgets/providers/usdaPsdProvider";
 import { WfpDataBridgesProvider } from "../server/monitor/grainWidgets/providers/wfpDataBridgesProvider";
 import { WorldBankMicrodataProvider } from "../server/monitor/grainWidgets/providers/worldBankMicrodataProvider";
 import { UsdaNassQuickStatsProvider } from "../server/monitor/grainWidgets/providers/usdaNassQuickStatsProvider";
@@ -65,6 +69,13 @@ function widgetCoverage(widget: GrainWidget): string {
     const mapped = widget.items.filter((item) => item.current != null).length;
     return `${mapped}/${widget.items.length || 0}`;
   }
+  if (widget.kind === "USDA_PSD_BALANCES" || widget.kind === "IMF_COMMODITY_BENCHMARKS") {
+    const mapped = widget.rows.filter((row) => row.current != null).length;
+    return `${mapped}/${widget.rows.length || 0}`;
+  }
+  if (widget.kind === "AMIS_GLOBAL_BALANCE" || widget.kind === "OECD_AGRICULTURAL_OUTLOOK") {
+    return `${widget.items.length}/${widget.items.length || 0}`;
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     const mapped = widget.rows.filter((row) => row.current != null).length;
     return `${mapped}/${widget.rows.length || 0}`;
@@ -106,6 +117,10 @@ async function run() {
     new WfpDataBridgesProvider(),
     new WorldBankMicrodataProvider(),
     new EurostatAgriIndicesProvider(),
+    new UsdaPsdProvider(),
+    new AmisOutlookProvider(),
+    new ImfPcpsProvider(),
+    new OecdAgriculturalOutlookProvider(),
     new UsdaGtrLogisticsProvider(),
     new CanadaRailPerformanceProvider(),
     new FaostatProducerPricesProvider(),
@@ -188,6 +203,26 @@ async function run() {
       if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
         console.log(
           `  eurostat territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} items=${widget.items.length} cadence=${widget.summary?.cadence || "unknown"}`,
+        );
+      }
+      if (widget.kind === "USDA_PSD_BALANCES") {
+        console.log(
+          `  usda_psd coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length} cadence=${widget.summary?.cadence || "unknown"}`,
+        );
+      }
+      if (widget.kind === "AMIS_GLOBAL_BALANCE") {
+        console.log(
+          `  amis issue=${widget.summary?.issueLabel || "n/a"} release=${widget.summary?.releaseDate || "n/a"} items=${widget.items.length}`,
+        );
+      }
+      if (widget.kind === "IMF_COMMODITY_BENCHMARKS") {
+        console.log(
+          `  imf coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length} cadence=${widget.summary?.cadence || "unknown"}`,
+        );
+      }
+      if (widget.kind === "OECD_AGRICULTURAL_OUTLOOK") {
+        console.log(
+          `  oecd release=${widget.summary?.releaseDate || "n/a"} horizon=${widget.summary?.horizon || "n/a"} items=${widget.items.length}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

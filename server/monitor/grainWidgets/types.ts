@@ -30,6 +30,10 @@ export type GrainWidgetKind =
   | "WFP_MARKET_PRICES_MULTI_COUNTRY"
   | "WB_MICRODATA_MARKET_PRICES"
   | "EUROSTAT_AGRI_PRICE_INDICES"
+  | "USDA_PSD_BALANCES"
+  | "AMIS_GLOBAL_BALANCE"
+  | "IMF_COMMODITY_BENCHMARKS"
+  | "OECD_AGRICULTURAL_OUTLOOK"
   | "FAOSTAT_PP_MULTI_COUNTRY"
   | "FPMA_MARKET_PRICES_MULTI_COUNTRY";
 
@@ -657,6 +661,127 @@ export interface GrainWidgetEurostatAgriPriceIndices extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetUsdPsdBalanceRow {
+  commodity: "WHEAT" | "CORN" | "SOYBEANS" | "RAPESEED";
+  metric: "PRODUCTION" | "CONSUMPTION" | "EXPORTS" | "ENDING_STOCKS";
+  label: string;
+  current: number;
+  unit: string;
+  cadence: "annual" | "marketing-year" | "unknown";
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+}
+
+export interface GrainWidgetUsdaPsdBalances extends GrainWidgetBase {
+  kind: "USDA_PSD_BALANCES";
+  rows: GrainWidgetUsdPsdBalanceRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "annual" | "marketing-year" | "unknown";
+    selectedView?: "WORLD";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
+export interface GrainWidgetAmisBalanceItem {
+  id: string;
+  crop: "WHEAT" | "MAIZE" | "RICE" | "SOYBEANS";
+  label: string;
+  statusLabel?: string;
+  releaseDate?: string;
+  cadence: "release-based";
+  notes?: string[];
+  sourceUrl?: string;
+}
+
+export interface GrainWidgetAmisGlobalBalance extends GrainWidgetBase {
+  kind: "AMIS_GLOBAL_BALANCE";
+  items: GrainWidgetAmisBalanceItem[];
+  summary?: {
+    issueLabel?: string;
+    releaseDate?: string;
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "release-based";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    pdfUrl?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
+export interface GrainWidgetImfCommodityBenchmarkRow {
+  commodity: "WHEAT" | "MAIZE" | "SOYBEANS" | "SUNFLOWER_OIL" | "RAPESEED_OIL";
+  label: string;
+  current: number;
+  unit: string;
+  cadence: "monthly";
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+}
+
+export interface GrainWidgetImfCommodityBenchmarks extends GrainWidgetBase {
+  kind: "IMF_COMMODITY_BENCHMARKS";
+  rows: GrainWidgetImfCommodityBenchmarkRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "monthly";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
+export interface GrainWidgetOecdAgriculturalOutlookItem {
+  id: string;
+  commodity: "WHEAT" | "MAIZE" | "SOYBEANS" | "RAPESEED" | "SUNFLOWER";
+  label: string;
+  projectedValue: number;
+  unit: string;
+  horizon: string;
+  cadence: "annual";
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+}
+
+export interface GrainWidgetOecdAgriculturalOutlook extends GrainWidgetBase {
+  kind: "OECD_AGRICULTURAL_OUTLOOK";
+  items: GrainWidgetOecdAgriculturalOutlookItem[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "annual";
+    releaseDate?: string;
+    horizon?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
 export interface GrainWidgetFaostatPpRow {
   crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
   label: string;
@@ -764,6 +889,10 @@ export type GrainWidget =
   | GrainWidgetWfpMarketPricesMultiCountry
   | GrainWidgetWorldBankMicrodataMarketPrices
   | GrainWidgetEurostatAgriPriceIndices
+  | GrainWidgetUsdaPsdBalances
+  | GrainWidgetAmisGlobalBalance
+  | GrainWidgetImfCommodityBenchmarks
+  | GrainWidgetOecdAgriculturalOutlook
   | GrainWidgetFaostatPpMultiCountry
   | GrainWidgetFpmaMarketPricesMultiCountry;
 
