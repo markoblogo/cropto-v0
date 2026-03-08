@@ -481,7 +481,7 @@ export interface GrainWidgetNasdaqDataLinkSnapshot extends GrainWidgetBase {
     datasetStatuses?: Array<{
       dataset: string;
       status: "ok" | "error" | "forbidden" | "rate_limited" | "empty" | "parse_error";
-      errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
+      errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "CONFIG_MISSING" | "UNKNOWN";
       sourceUrlUsed?: string;
       note?: string;
     }>;
@@ -954,7 +954,7 @@ export interface GrainWidgetsProviderDebug {
   datasetStatuses?: Array<{
     dataset: string;
     status: "ok" | "error" | "forbidden" | "rate_limited" | "empty" | "parse_error";
-    errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
+    errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "CONFIG_MISSING" | "UNKNOWN";
     sourceUrlUsed?: string;
     note?: string;
   }>;
@@ -987,7 +987,7 @@ export interface GrainWidgetsProviderDebug {
   topScoreMin?: number;
   topScoreMax?: number;
   cadence?: "daily" | "weekly" | "monthly" | "annual" | "unknown";
-  errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "UNKNOWN";
+  errorKind?: "DNS" | "TIMEOUT" | "HTTP_4XX" | "HTTP_5XX" | "PARSE" | "EMPTY" | "BLOCKED" | "RATE_LIMIT" | "CONFIG_MISSING" | "UNKNOWN";
   sourceUrlUsed?: string;
   coverage?: string;
   fallbackChain?: "real->cache->mock";

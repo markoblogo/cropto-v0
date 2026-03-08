@@ -8,7 +8,7 @@ import {
 import type { GrainWidgetEcOfficialPricesSnapshot, GrainWidgetTableRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-import { fetchTextResponseWithTimeout, normalizeRowPrice, parseNumber } from "./utils";
+import { fetchTextResponseWithTimeout, makeProviderError, normalizeRowPrice, parseNumber } from "./utils";
 
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetEcOfficialPricesSnapshot };
 type NassRow = { commodity: "corn" | "wheat" | "soybeans"; label: string; row: GrainWidgetTableRow; cadence: "annual" | "monthly" | "unknown" };
@@ -106,7 +106,11 @@ export class UsdaNassQuickStatsProvider implements GrainWidgetsProvider {
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "USDA_NASS_PRODUCER_PRICES" as any });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetEcOfficialPricesSnapshot> {
-    if (!USDA_NASS_API_KEY) throw new Error("usda_nass_api_key_missing");
+    if (!USDA_NASS_API_KEY) {
+      throw makeProviderError("usda_nass_api_key_missing", {
+        errorKind: "CONFIG_MISSING",
+      });
+    }
     const now = Date.now();
     if (cacheEntry && now - cacheEntry.fetchedAt <= USDA_NASS_CACHE_TTL_MS) {
       return {
@@ -126,7 +130,11 @@ export class UsdaNassQuickStatsProvider implements GrainWidgetsProvider {
       if (Array.isArray(parsed?.data)) allRows.push(...parsed.data);
     }
     const mapped = normalizeNassRows(allRows);
-    if (!mapped.length) throw new Error("usda_nass_rows_empty");
+    if (!mapped.length) {
+      throw makeProviderError("usda_nass_rows_empty", {
+        errorKind: "EMPTY",
+      });
+    }
 
     const widget: GrainWidgetEcOfficialPricesSnapshot = {
       id: "grain-usda-nass-producer-prices",

@@ -2,6 +2,15 @@ import { USDA_GTR_USER_AGENT } from "../config";
 import { normalizeGrainPriceToUsdTon } from "../../grainMarkets/normalization";
 import type { GrainWidgetPoint, GrainWidgetStatus, GrainWidgetTableRow } from "../types";
 
+export function makeProviderError(
+  message: string,
+  extras?: Record<string, unknown>,
+): Error & Record<string, unknown> {
+  const error = new Error(message) as Error & Record<string, unknown>;
+  if (extras) Object.assign(error, extras);
+  return error;
+}
+
 export async function fetchWithHeaders(
   url: string,
   opts: {

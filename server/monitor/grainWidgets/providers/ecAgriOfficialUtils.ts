@@ -61,9 +61,27 @@ function normalizeText(value: unknown): string {
     .trim();
 }
 
-function buildBasePath(mode: EcMode): string {
+function buildBaseCandidates(mode: EcMode): string[] {
   const path = mode === "cereal" ? EC_CEREALS_API_PATH : EC_OILSEEDS_API_PATH;
-  return `${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+  const configuredBase = EC_AGRI_API_BASE_URL.replace(/\/+$/, "");
+  const normalizedPath = path.replace(/^\/+/, "");
+  const origin = (() => {
+    try {
+      return new URL(configuredBase).origin;
+    } catch {
+      return configuredBase;
+    }
+  })();
+
+  return Array.from(
+    new Set(
+      [
+        `${configuredBase}/${normalizedPath}`,
+        `${origin}/${normalizedPath}`,
+        `${origin}/extensions/${normalizedPath}`,
+      ].map((value) => value.replace(/([^:]\/)\/+/g, "$1")),
+    ),
+  );
 }
 
 function dictionaryPath(mode: EcMode, kind: "products" | "stages" | "markets"): string {
@@ -104,6 +122,24 @@ async function fetchJsonCached(url: string): Promise<{ payload: any; finalUrl: s
   return { payload, finalUrl: response.finalUrl || url };
 }
 
+async function fetchJsonResolved(urls: string[]): Promise<{ payload: any; finalUrl: string; attemptedUrls: string[] }> {
+  const attemptedUrls: string[] = [];
+  let lastError: any;
+  for (const url of urls) {
+    attemptedUrls.push(url);
+    try {
+      const result = await fetchJsonCached(url);
+      return { ...result, attemptedUrls };
+    } catch (error: any) {
+      lastError = error;
+    }
+  }
+  if (lastError && attemptedUrls.length) {
+    Object.assign(lastError, { attemptedUrls });
+  }
+  throw lastError || new Error("ec_request_failed");
+}
+
 function asArray(payload: any): any[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
@@ -124,8 +160,8 @@ function toDictionaryEntry(row: any): EcDictionaryEntry | undefined {
 }
 
 export async function fetchEcDictionary(mode: EcMode, kind: "products" | "stages" | "markets"): Promise<{ entries: EcDictionaryEntry[]; sourceUrlUsed: string }> {
-  const url = `${buildBasePath(mode)}/${dictionaryPath(mode, kind)}`;
-  const { payload, finalUrl } = await fetchJsonCached(url);
+  const urls = buildBaseCandidates(mode).map((base) => `${base}/${dictionaryPath(mode, kind)}`);
+  const { payload, finalUrl } = await fetchJsonResolved(urls);
   return {
     entries: asArray(payload).map(toDictionaryEntry).filter((entry): entry is EcDictionaryEntry => Boolean(entry)),
     sourceUrlUsed: finalUrl,
@@ -243,6 +279,7 @@ export async function fetchEcPriceRows(args: {
 }): Promise<{
   rows: GrainWidgetTableRow[];
   sourceUrlUsed: string;
+  attemptedUrls: string[];
   stageCodes: string[];
   productCodes: string[];
   marketCodes: string[];
@@ -279,8 +316,8 @@ export async function fetchEcPriceRows(args: {
     params.set("productCodes", productMatches.map((entry) => entry.code).join(","));
     if (stageCodes.length) params.set("stageCodes", stageCodes.join(","));
   }
-  const url = `${buildBasePath(args.mode)}/prices?${params.toString()}`;
-  const { payload, finalUrl } = await fetchJsonCached(url);
+  const urls = buildBaseCandidates(args.mode).map((base) => `${base}/prices?${params.toString()}`);
+  const { payload, finalUrl, attemptedUrls } = await fetchJsonResolved(urls);
   const rawRows = asArray(payload);
   if (!rawRows.length) throw new Error(`ec_${args.mode}_prices_empty`);
 
@@ -379,6 +416,7 @@ export async function fetchEcPriceRows(args: {
   return {
     rows,
     sourceUrlUsed: finalUrl,
+    attemptedUrls,
     stageCodes,
     productCodes: productMatches.map((entry) => entry.code),
     marketCodes,

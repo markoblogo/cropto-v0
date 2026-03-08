@@ -138,9 +138,12 @@ function inferProviderErrorKind(args: {
   providerError?: string;
   probe?: ProbeResult;
   fpmaDiscovery?: ReturnType<typeof getFpmaDiscoveryDebug>;
+  configMissing?: boolean;
 }): TriageErrorKind | undefined {
+  if (args.configMissing) return "CONFIG_MISSING";
   if (args.providerErrorKind && args.providerErrorKind !== "UNKNOWN") return args.providerErrorKind;
   const providerErrorText = String(args.providerError || "").toLowerCase();
+  if (providerErrorText.includes("api_key_missing") || providerErrorText.includes("token_missing")) return "CONFIG_MISSING";
   if (args.providerId === "faostat-pp") {
     if (args.probe?.errorKind === "TIMEOUT") return "TIMEOUT";
     if (providerErrorText.includes("aborted") || providerErrorText.includes("timeout")) return "TIMEOUT";
@@ -167,6 +170,9 @@ function inferProviderErrorKind(args: {
     if (providerErrorText.includes("red/dgs10")) return "PARSE";
     if (args.probe?.errorKind === "HTTP_4XX") return "HTTP_4XX";
     if (providerErrorText.includes("forbidden") || providerErrorText.includes("blocked")) return "HTTP_4XX";
+  }
+  if (args.providerId === "imf-pcps") {
+    if (args.probe?.ok && (providerErrorText.includes("rows_empty") || providerErrorText.includes("empty"))) return "EMPTY";
   }
   return args.providerErrorKind || args.probe?.errorKind || normalizeProviderError(args.providerError)?.errorKind;
 }
@@ -304,6 +310,28 @@ function providerSuggestedFix(args: {
       verifyUrl,
     };
   }
+  if (args.providerId === "usda-nass-quickstats" && args.configMissing) {
+    return {
+      severity: "BLOCKER",
+      type: "SET_ENV",
+      actions: ["Set USDA_NASS_API_KEY on Railway and keep the QuickStats query on national price-received scope only."],
+      envKeys: ["USDA_NASS_API_KEY"],
+      exampleValues: ["<usda-nass-key>"],
+      why: "USDA NASS QuickStats requires an API key; without it the provider should not attempt live requests.",
+      verifyUrl,
+    };
+  }
+  if (args.providerId === "wfp-databridges" && args.configMissing) {
+    return {
+      severity: "BLOCKER",
+      type: "SET_ENV",
+      actions: ["Set WFP_DATABRIDGES_TOKEN and keep the first HAPI query minimal."],
+      envKeys: ["WFP_DATABRIDGES_TOKEN"],
+      exampleValues: ["<wfp-databridges-token>"],
+      why: "WFP HAPI/DataBridges requires a bearer token; without it the provider should fail fast instead of probing live paths.",
+      verifyUrl,
+    };
+  }
 
   switch (args.errorKind) {
     case "DNS":
@@ -389,6 +417,20 @@ function providerSuggestedFix(args: {
     why = "Current FPMA base/path returns an HTML shell instead of a JSON API payload.";
     actions.length = 0;
     actions.push("Verify FPMA_API_BASE_URL points to the correct FPMA JSON endpoint before enabling live mode.");
+  }
+  if ((args.providerId === "ec-cereals-prices" || args.providerId === "ec-oilseeds-prices") && args.errorKind === "HTTP_4XX") {
+    severity = "WARN";
+    type = "CHANGE_CONFIG";
+    why = "The documented EC Agri-food route family is still returning 404 on the live host.";
+    actions.length = 0;
+    actions.push("Inspect activation-report finalUrl/sourceUrlUsed and verify which documented EC API base path is actually accepted by the live host.");
+  }
+  if (args.providerId === "imf-pcps" && args.errorKind === "EMPTY") {
+    severity = "WARN";
+    type = "CODE_FIX";
+    why = "IMF source responds, but the current extraction path still does not recover benchmark rows from the public file.";
+    actions.length = 0;
+    actions.push("Inspect IMF provider debug for content-type, extraction mode, and discovered links; adjust extraction against the current public table file if rows remain empty.");
   }
   if (args.providerId === "amis-outlook" && args.errorKind === "PARSE") {
     severity = "WARN";
@@ -785,6 +827,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       providerError: provider?.error,
       probe: probeMatch,
       fpmaDiscovery,
+      configMissing,
     });
     const errorMessageShort = shortMessage(lastError?.message);
     const sourceUrlUsed = redactUrl(provider?.downloadUrlUsed || provider?.sourceUrlUsed || widget?.debug?.downloadUrlUsed || widget?.debug?.sourceUrlUsed || widget?.sourceUrl);

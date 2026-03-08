@@ -75,7 +75,12 @@ export class EcCerealsPricesProvider implements GrainWidgetsProvider {
         stageCodes: result.stageCodes,
         marketCodes: result.marketCodes,
         rowsParsed: result.rowsParsed,
-        warnings: result.warnings.length ? result.warnings : undefined,
+        warnings: result.warnings.length || result.attemptedUrls.length
+          ? [
+              ...result.warnings,
+              `attempted_urls:${result.attemptedUrls.join(" | ")}`,
+            ]
+          : undefined,
       },
     };
 

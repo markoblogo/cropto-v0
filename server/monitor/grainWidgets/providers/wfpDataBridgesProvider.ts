@@ -14,7 +14,7 @@ import type {
 } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-import { fetchTextResponseWithTimeout, parseNumber } from "./utils";
+import { fetchTextResponseWithTimeout, makeProviderError, parseNumber } from "./utils";
 
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type CacheEntry = { fetchedAt: number; territory: TerritoryCode; widget: GrainWidgetWfpMarketPricesMultiCountry };
@@ -131,24 +131,28 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "WFP_MARKET_PRICES_MULTI_COUNTRY" as any });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetWfpMarketPricesMultiCountry> {
-    if (!WFP_DATABRIDGES_TOKEN) throw new Error("wfp_databridges_token_missing");
+    if (!WFP_DATABRIDGES_TOKEN) {
+      throw makeProviderError("wfp_databridges_token_missing", {
+        errorKind: "CONFIG_MISSING",
+      });
+    }
     const territory = territoryFromCountry(ctx.country);
-    if (territory.code === "EU") throw new Error("wfp_databridges_eu_not_supported");
+    if (territory.code === "EU") throw makeProviderError("wfp_databridges_eu_not_supported", { errorKind: "EMPTY" });
     const now = Date.now();
     if (cacheEntry && cacheEntry.territory === territory.code && now - cacheEntry.fetchedAt <= WFP_DATABRIDGES_CACHE_TTL_MS) {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
     }
 
     const url = new URL(WFP_DATABRIDGES_BASE_URL);
-    url.searchParams.set("app_identifier", WFP_DATABRIDGES_TOKEN);
     url.searchParams.set("location_code", iso3ByTerritory[territory.code as Exclude<TerritoryCode, "EU">]);
-    url.searchParams.set("limit", String(WFP_DATABRIDGES_MAX_RECORDS));
+    url.searchParams.set("limit", String(Math.min(50, Math.max(1, WFP_DATABRIDGES_MAX_RECORDS))));
     const response = await fetchTextResponseWithTimeout(url.toString(), WFP_DATABRIDGES_TIMEOUT_MS, {
       accept: "application/json,text/plain,*/*",
+      authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
     });
     const parsed = JSON.parse(response.text);
     const rows = mapRows(getArray(parsed), territory);
-    if (!rows.length) throw new Error(`wfp_rows_empty:${territory.code}`);
+    if (!rows.length) throw makeProviderError(`wfp_rows_empty:${territory.code}`, { errorKind: "EMPTY" });
 
     const widget: GrainWidgetWfpMarketPricesMultiCountry = {
       id: "grain-wfp-market-prices",
@@ -158,7 +162,7 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
       status: rows.length >= 2 ? "REFRESH" : "INDICATIVE",
       sourceName: "WFP HAPI",
       sourceAttribution: "Data: WFP DataBridges / HAPI food prices",
-      sourceUrl: url.toString().replace(WFP_DATABRIDGES_TOKEN, "REDACTED"),
+      sourceUrl: url.toString(),
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "COUNTRY_MULTI",
@@ -180,8 +184,8 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
       },
       notes: ["Native units preserved", "Primary market rule used when national aggregate is unavailable"],
       debug: {
-        sourceUrlUsed: url.toString().replace(WFP_DATABRIDGES_TOKEN, "REDACTED"),
-        query: url.searchParams.toString().replace(WFP_DATABRIDGES_TOKEN, "REDACTED"),
+        sourceUrlUsed: url.toString(),
+        query: url.searchParams.toString(),
         rowsParsed: getArray(parsed).length,
         marketRule: "most_frequent_market",
       },
