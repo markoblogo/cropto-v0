@@ -13,6 +13,7 @@ import { fetchTextResponseWithTimeout, makeProviderError, parseNumber, redactSen
 
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetUsdaPsdBalances };
 let cacheEntry: CacheEntry | null = null;
+const LIVE_YEARS_BUDGET = Math.min(2, Math.max(1, USDA_PSD_MAX_YEARS));
 
 const commodityMap = [
   { code: "WHEAT", label: "Wheat" },
@@ -155,7 +156,7 @@ function normalizeRows(payload: any[], attributeIds: Record<string, string>): Gr
         cadence: "marketing-year",
         changeAbs: prev ? Number((latest.value - prev.value).toFixed(4)) : undefined,
         changePct: prev && prev.value !== 0 ? Number((((latest.value - prev.value) / prev.value) * 100).toFixed(2)) : undefined,
-        series: matched.slice(-Math.max(4, USDA_PSD_MAX_YEARS)).map((row) => ({ ts: row.ts, value: row.value })),
+        series: matched.slice(-LIVE_YEARS_BUDGET).map((row) => ({ ts: row.ts, value: row.value })),
         confidence: matched.length >= 5 ? "HIGH" : "MED",
       });
     }
@@ -195,7 +196,7 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
     for (const commodity of commodityMap) {
       const commodityCode = commodityCodes[commodity.code];
       if (!commodityCode) continue;
-      for (let offset = 0; offset < USDA_PSD_MAX_YEARS; offset += 1) {
+      for (let offset = 0; offset < LIVE_YEARS_BUDGET; offset += 1) {
         const marketYear = currentYear - offset;
         const result = await fetchJson(`/api/psd/commodity/${encodeURIComponent(commodityCode)}/world/year/${marketYear}`);
         sourceUrlUsed = result.finalUrl || result.url;
@@ -237,6 +238,7 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
         sourceUrlUsed: redactSensitiveUrl(sourceUrlUsed),
         query: redactSensitiveQuery(sourceUrlUsed.includes("?") ? sourceUrlUsed.split("?")[1] : ""),
         rowsParsed: fetchedRows.length,
+        warnings: [`years_requested:${LIVE_YEARS_BUDGET}`],
       },
     };
     cacheEntry = { fetchedAt: now, widget };
