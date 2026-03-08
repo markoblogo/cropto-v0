@@ -164,6 +164,7 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "FAOSTAT_PP_MULTI_COUNTRY",
   "FPMA_MARKET_PRICES_MULTI_COUNTRY",
 ];
+const LIST_REFRESH_BUDGET_MS = 2500;
 
 type TerritoryMeta = {
   scope: GrainWidgetTerritoryScope;
@@ -684,7 +685,14 @@ export class GrainWidgetsService {
     const force = selectedCountry !== this.lastCountry || selectedPriceType !== this.lastPriceType;
     this.lastCountry = selectedCountry;
     this.lastPriceType = selectedPriceType;
-    await this.refreshAll(force, selectedCountry, selectedPriceType);
+    let refreshTimedOut = false;
+    await Promise.race([
+      this.refreshAll(force, selectedCountry, selectedPriceType),
+      new Promise<void>((resolve) => setTimeout(() => {
+        refreshTimedOut = true;
+        resolve();
+      }, LIST_REFRESH_BUDGET_MS)),
+    ]);
 
     const enabledKinds = WIDGET_ORDER.filter((kind) => (this.providerChains[kind] || []).some((provider) => provider.enabled));
     const widgets: GrainWidget[] = [];
@@ -694,7 +702,21 @@ export class GrainWidgetsService {
 
     for (const kind of enabledKinds) {
       const cached = this.cache.get(kind);
-      if (!cached) continue;
+      if (!cached) {
+        if (ENABLE_GRAIN_WIDGETS_MOCK_FALLBACK) {
+          const fallbackProvider = this.mockProviders[kind];
+          widgets.push(applyTerritoryMeta(fallbackProvider.mockFallback(refreshTimedOut ? "refresh_timeout" : "cache_unavailable", {
+            now: new Date(),
+            timeframe: GRAIN_WIDGETS_TIMEFRAME_DEFAULT,
+            seriesPoints: GRAIN_WIDGETS_SERIES_POINTS,
+            eurUsd: this.lastFxRateUsed,
+            country: selectedCountry,
+            priceType: selectedPriceType,
+            getCachedWidget: (widgetKind) => this.cache.get(widgetKind)?.data,
+          }), selectedCountry));
+        }
+        continue;
+      }
       const age = now - cached.fetchedAt;
       let data = applyTerritoryMeta(cached.data, selectedCountry);
       if (age > GRAIN_WIDGETS_CACHE_TTL_MS && (data.status === "LIVE" || data.status === "REFRESH" || data.status === "INDICATIVE")) {
@@ -725,7 +747,7 @@ export class GrainWidgetsService {
 
     const meta: GrainWidgetsMeta = {
       generatedAt: new Date().toISOString(),
-      partialFailure: widgets.some((widget) => ["DELAYED", "FALLBACK", "OFFLINE"].includes(widget.status)),
+      partialFailure: refreshTimedOut || widgets.some((widget) => ["DELAYED", "FALLBACK", "OFFLINE"].includes(widget.status)),
       cacheAgeSec: widgets.length
         ? Math.floor((now - Math.min(...widgets.map((widget) => this.cache.get(widget.kind)?.fetchedAt || now))) / 1000)
         : undefined,

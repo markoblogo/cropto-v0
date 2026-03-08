@@ -22,6 +22,7 @@ type CacheEntry = {
   lastError?: string;
   data: LogisticsIndicatorWidgetData;
 };
+const LIST_REFRESH_BUDGET_MS = 2500;
 
 export class LogisticsIndicatorsService {
   private readonly providers: LogisticsIndicatorProvider[] = [
@@ -51,7 +52,14 @@ export class LogisticsIndicatorsService {
       };
     }
 
-    await this.refreshAll(false);
+    let refreshTimedOut = false;
+    await Promise.race([
+      this.refreshAll(false),
+      new Promise<void>((resolve) => setTimeout(() => {
+        refreshTimedOut = true;
+        resolve();
+      }, LIST_REFRESH_BUDGET_MS)),
+    ]);
     const now = Date.now();
     const widgets: LogisticsIndicatorWidgetData[] = this.providers
       .filter((provider) => provider.enabled)
@@ -71,7 +79,7 @@ export class LogisticsIndicatorsService {
         return cached.data;
       });
 
-    const partialFailure = widgets.some((widget) => widget.status === "FALLBACK" || widget.status === "OFFLINE");
+    const partialFailure = refreshTimedOut || widgets.some((widget) => widget.status === "FALLBACK" || widget.status === "OFFLINE");
     const cacheAgeSec = widgets.length
       ? Math.floor(
           (now - Math.min(...widgets.map((widget) => this.cache.get(widget.type)?.fetchedAt ?? now))) / 1000,

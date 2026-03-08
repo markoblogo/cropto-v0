@@ -51,6 +51,7 @@ function nativeUnitTypeForQuote(quote: GrainMarketQuoteNormalized) {
   if (unit.includes("usd/t") || (currency === "usd" && unit.includes("/t"))) return "USD_PER_TON" as const;
   return "UNKNOWN" as const;
 }
+const LIST_REFRESH_BUDGET_MS = 2500;
 
 function applyPriceNormalization(
   quote: GrainMarketQuoteNormalized,
@@ -133,13 +134,26 @@ export class GrainMarketsService {
       };
     }
 
-    await this.refresh(false);
+    let refreshTimedOut = false;
+    await Promise.race([
+      this.refresh(false),
+      new Promise<void>((resolve) => setTimeout(() => {
+        refreshTimedOut = true;
+        resolve();
+      }, LIST_REFRESH_BUDGET_MS)),
+    ]);
     if (!this.cache) {
-      await this.refresh(true);
+      await Promise.race([
+        this.refresh(true),
+        new Promise<void>((resolve) => setTimeout(() => {
+          refreshTimedOut = true;
+          resolve();
+        }, LIST_REFRESH_BUDGET_MS)),
+      ]);
     }
 
     if (!this.cache) {
-      return this.offlineFallbackResponse("cache_unavailable");
+      return this.offlineFallbackResponse(refreshTimedOut ? "refresh_timeout" : "cache_unavailable");
     }
 
     const age = Date.now() - this.cache.fetchedAt;
@@ -163,6 +177,7 @@ export class GrainMarketsService {
       }
       response.meta.partialFailure = true;
     }
+    if (refreshTimedOut) response.meta.partialFailure = true;
 
     return response;
   }
