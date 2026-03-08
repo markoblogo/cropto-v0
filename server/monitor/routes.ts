@@ -125,6 +125,7 @@ const grainMarketsService = new GrainMarketsService();
 const grainWidgetsService = new GrainWidgetsService();
 const REPORT_PROBE_TIMEOUT_MS = 3500;
 const REPORT_ROUTE_BUDGET_MS = 5000;
+const REPORT_FPMA_BUDGET_MS = 1200;
 
 function topEntries(record: Record<string, number>, limit = 5) {
   return Object.entries(record)
@@ -251,6 +252,20 @@ async function withReportBudget<T>(work: Promise<T>, fallback: () => T): Promise
       work,
       new Promise<T>((resolve) => {
         timeoutHandle = setTimeout(() => resolve(fallback()), REPORT_ROUTE_BUDGET_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  }
+}
+
+async function withQuickReportBudget<T>(work: Promise<T>, fallback: () => T, timeoutMs = REPORT_FPMA_BUDGET_MS): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((resolve) => {
+        timeoutHandle = setTimeout(() => resolve(fallback()), timeoutMs);
       }),
     ]);
   } finally {
@@ -532,31 +547,42 @@ export function registerMonitorRoutes(app: Express): void {
     });
   });
 
-  app.get("/api/monitor/activation-report", async (_req, res) => {
+  app.get("/api/monitor/activation-report", async (req, res) => {
     try {
       const nowIso = new Date().toISOString();
-      const grainWidgets = await grainWidgetsService.list();
+      const grainWidgets = await withReportBudget(
+        grainWidgetsService.list(),
+        () =>
+          ({
+            widgets: { byKind: {} },
+            meta: {},
+            territories: {},
+          } as any),
+      );
       const grainWidgetsDebug = grainWidgetsService.debugSummary();
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
-      let fpmaDiscovery: ReturnType<typeof getFpmaDiscoveryDebug> | undefined;
-      let fpmaResolutionTest: Awaited<ReturnType<typeof runFpmaDiscoveryResolutionTest>> = [];
-      try {
-        const fpmaSnapshot = await fetchFpmaDiscoverySnapshot();
-        fpmaDiscovery = getFpmaDiscoveryDebug(fpmaSnapshot);
-        fpmaResolutionTest = await runFpmaDiscoveryResolutionTest();
-      } catch (error: any) {
-        fpmaDiscovery = {
-          cacheHit: false,
-          stale: false,
-          fetchedAt: undefined,
-          countriesCount: 0,
-          commoditiesCount: 0,
-          priceTypesCount: 0,
-          endpointsTried: [],
-          notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
-        };
-      }
+      const emptyFpmaDiscovery = {
+        cacheHit: false,
+        stale: false,
+        fetchedAt: undefined,
+        countriesCount: 0,
+        commoditiesCount: 0,
+        priceTypesCount: 0,
+        endpointsTried: [],
+        notes: ["fpma_discovery_skipped_or_timed_out"],
+      };
+      const fpmaDiscovery: ReturnType<typeof getFpmaDiscoveryDebug> = await withQuickReportBudget(
+        fetchFpmaDiscoverySnapshot().then((snapshot) => getFpmaDiscoveryDebug(snapshot)),
+        () => emptyFpmaDiscovery,
+      ).catch((error: any) => ({
+        ...emptyFpmaDiscovery,
+        notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
+      }));
+      const fpmaResolutionTest: Awaited<ReturnType<typeof runFpmaDiscoveryResolutionTest>> =
+        req.query.deep === "1"
+          ? await withQuickReportBudget(runFpmaDiscoveryResolutionTest(), () => [], REPORT_FPMA_BUDGET_MS)
+          : [];
 
       const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "EC_CEREALS_MULTI_COUNTRY" | "EC_OILSEEDS_MULTI_COUNTRY" | "USDA_NASS_PRODUCER_PRICES" | "WFP_MARKET_PRICES_MULTI_COUNTRY" | "WB_MICRODATA_MARKET_PRICES" | "EUROSTAT_AGRI_PRICE_INDICES" | "USDA_PSD_BALANCES" | "AMIS_GLOBAL_BALANCE" | "IMF_COMMODITY_BENCHMARKS" | "OECD_AGRICULTURAL_OUTLOOK" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "CANADA_GRAIN_RAIL_PERFORMANCE" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",

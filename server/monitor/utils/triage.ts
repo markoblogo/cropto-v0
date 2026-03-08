@@ -93,6 +93,7 @@ type SuggestedFix = {
 };
 
 const REPORT_PROBE_TIMEOUT_MS = 3500;
+const REPORT_FPMA_BUDGET_MS = 1200;
 
 function redactUrl(url?: string): string | undefined {
   if (!url) return undefined;
@@ -262,6 +263,20 @@ async function safeProbe(url: string | undefined, options?: { configMissing?: bo
       errorKind: classifyErrorKind({ message: error?.message }),
       errorMessage: String(error?.message || "probe_failed"),
     };
+  }
+}
+
+async function withQuickBudget<T>(work: Promise<T>, fallback: () => T, timeoutMs = REPORT_FPMA_BUDGET_MS): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((resolve) => {
+        timeoutHandle = setTimeout(() => resolve(fallback()), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
   }
 }
 
@@ -581,24 +596,24 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
   const byKind = grainWidgets.widgets.byKind || {};
   const providers = Array.isArray(grainWidgetsDebug.providers) ? grainWidgetsDebug.providers : [];
 
-  let fpmaDiscovery: ReturnType<typeof getFpmaDiscoveryDebug> | undefined;
-  let fpmaResolutionTest: Awaited<ReturnType<typeof runFpmaDiscoveryResolutionTest>> = [];
-  try {
-    const fpmaSnapshot = await fetchFpmaDiscoverySnapshot();
-    fpmaDiscovery = getFpmaDiscoveryDebug(fpmaSnapshot);
-    fpmaResolutionTest = await runFpmaDiscoveryResolutionTest();
-  } catch (error: any) {
-    fpmaDiscovery = {
-      cacheHit: false,
-      stale: false,
-      fetchedAt: undefined,
-      countriesCount: 0,
-      commoditiesCount: 0,
-      priceTypesCount: 0,
-      endpointsTried: [],
-      notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
-    };
-  }
+  const emptyFpmaDiscovery = {
+    cacheHit: false,
+    stale: false,
+    fetchedAt: undefined,
+    countriesCount: 0,
+    commoditiesCount: 0,
+    priceTypesCount: 0,
+    endpointsTried: [],
+    notes: ["fpma_discovery_skipped_or_timed_out"],
+  };
+  const fpmaDiscovery: ReturnType<typeof getFpmaDiscoveryDebug> = await withQuickBudget(
+    fetchFpmaDiscoverySnapshot().then((snapshot) => getFpmaDiscoveryDebug(snapshot)),
+    () => emptyFpmaDiscovery,
+  ).catch((error: any) => ({
+    ...emptyFpmaDiscovery,
+    notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
+  }));
+  const fpmaResolutionTest: Awaited<ReturnType<typeof runFpmaDiscoveryResolutionTest>> = [];
 
   const envPresence = {
     ENABLE_FPMA_MARKET_PRICES_WIDGET,
