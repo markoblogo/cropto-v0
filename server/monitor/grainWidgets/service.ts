@@ -16,6 +16,7 @@ import { CommoditicProvider } from "./providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "./providers/dbNomicsSpotProvider";
 import { EcCerealsPricesProvider } from "./providers/ecCerealsPricesProvider";
 import { EcOilseedsPricesProvider } from "./providers/ecOilseedsPricesProvider";
+import { EurostatAgriIndicesProvider } from "./providers/eurostatAgriIndicesProvider";
 import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "./providers/faostatProducerPricesProvider";
 import { FpmaMarketPricesProvider } from "./providers/fpmaMarketPricesProvider";
@@ -28,6 +29,8 @@ import { UsdaMarsDailyMarketRatesTxtProvider } from "./providers/usdaMarsDailyMa
 import { UsdaGtrLogisticsProvider } from "./providers/usdaGtrLogisticsProvider";
 import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
 import { UsdaNassQuickStatsProvider } from "./providers/usdaNassQuickStatsProvider";
+import { WfpDataBridgesProvider } from "./providers/wfpDataBridgesProvider";
+import { WorldBankMicrodataProvider } from "./providers/worldBankMicrodataProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
   GrainWidget,
@@ -119,6 +122,9 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   USDA_NASS_PRODUCER_PRICES: 3,
   USDA_GTR_LOGISTICS_SNAPSHOT: 2,
   CANADA_GRAIN_RAIL_PERFORMANCE: 4,
+  WFP_MARKET_PRICES_MULTI_COUNTRY: 3,
+  WB_MICRODATA_MARKET_PRICES: 3,
+  EUROSTAT_AGRI_PRICE_INDICES: 3,
   FAOSTAT_PP_MULTI_COUNTRY: 5,
   FPMA_MARKET_PRICES_MULTI_COUNTRY: 5,
 };
@@ -138,6 +144,9 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "EC_CEREALS_MULTI_COUNTRY",
   "EC_OILSEEDS_MULTI_COUNTRY",
   "USDA_NASS_PRODUCER_PRICES",
+  "WFP_MARKET_PRICES_MULTI_COUNTRY",
+  "WB_MICRODATA_MARKET_PRICES",
+  "EUROSTAT_AGRI_PRICE_INDICES",
   "USDA_GTR_LOGISTICS_SNAPSHOT",
   "CANADA_GRAIN_RAIL_PERFORMANCE",
   "FAOSTAT_PP_MULTI_COUNTRY",
@@ -157,7 +166,10 @@ function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): Territ
     kind === "FAOSTAT_PP_MULTI_COUNTRY" ||
     kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ||
     kind === "EC_CEREALS_MULTI_COUNTRY" ||
-    kind === "EC_OILSEEDS_MULTI_COUNTRY"
+    kind === "EC_OILSEEDS_MULTI_COUNTRY" ||
+    kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ||
+    kind === "WB_MICRODATA_MARKET_PRICES" ||
+    kind === "EUROSTAT_AGRI_PRICE_INDICES"
   ) {
     return {
       scope: "COUNTRY_MULTI",
@@ -205,6 +217,15 @@ function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): Territ
                 { code: "PL", label: "Poland" },
                 { code: "ES", label: "Spain" },
               ]
+            : kind === "EUROSTAT_AGRI_PRICE_INDICES"
+              ? [
+                  { code: "FR", label: "France" },
+                  { code: "DE", label: "Germany" },
+                  { code: "PL", label: "Poland" },
+                  { code: "RO", label: "Romania" },
+                  { code: "ES", label: "Spain" },
+                  { code: "EU", label: "European Union" },
+                ]
             : [
                 { code: "UA", label: "Ukraine" },
                 { code: "US", label: "United States" },
@@ -213,7 +234,10 @@ function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): Territ
                 { code: "EU", label: "European Union" },
               ]),
       ],
-      selectorDefault: kind === "EC_CEREALS_MULTI_COUNTRY" || kind === "EC_OILSEEDS_MULTI_COUNTRY" ? "FR" : "UA",
+      selectorDefault:
+        kind === "EC_CEREALS_MULTI_COUNTRY" || kind === "EC_OILSEEDS_MULTI_COUNTRY" || kind === "EUROSTAT_AGRI_PRICE_INDICES"
+          ? "FR"
+          : "UA",
     };
   }
   if (
@@ -303,7 +327,9 @@ function applyTerritoryMeta(widget: GrainWidget, country?: string): GrainWidget 
     next.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ||
     next.kind === "EC_CEREALS_MULTI_COUNTRY" ||
     next.kind === "EC_OILSEEDS_MULTI_COUNTRY" ||
-    next.kind === "USDA_NASS_PRODUCER_PRICES"
+    next.kind === "USDA_NASS_PRODUCER_PRICES" ||
+    next.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ||
+    next.kind === "WB_MICRODATA_MARKET_PRICES"
   ) {
     (next as any).rows = next.rows.map((row) => ({
       ...row,
@@ -385,6 +411,12 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
     return { rows: 0, items: widget.items.length, cards: 0 };
   }
+  if (widget.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" || widget.kind === "WB_MICRODATA_MARKET_PRICES") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
+  if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
+    return { rows: 0, items: widget.items.length, cards: 0 };
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     return { rows: widget.rows.length, items: 0, cards: 0 };
   }
@@ -434,6 +466,12 @@ function mappedCountForWidget(widget: GrainWidget): number {
     return widget.items.filter((item) => item.current != null).length;
   }
   if (widget.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
+    return widget.items.filter((item) => item.current != null).length;
+  }
+  if (widget.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" || widget.kind === "WB_MICRODATA_MARKET_PRICES") {
+    return widget.rows.filter((row) => row.current != null).length;
+  }
+  if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
     return widget.items.filter((item) => item.current != null).length;
   }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
@@ -527,6 +565,9 @@ export class GrainWidgetsService {
     EC_CEREALS_MULTI_COUNTRY: [new EcCerealsPricesProvider()],
     EC_OILSEEDS_MULTI_COUNTRY: [new EcOilseedsPricesProvider()],
     USDA_NASS_PRODUCER_PRICES: [new UsdaNassQuickStatsProvider()],
+    WFP_MARKET_PRICES_MULTI_COUNTRY: [new WfpDataBridgesProvider()],
+    WB_MICRODATA_MARKET_PRICES: [new WorldBankMicrodataProvider()],
+    EUROSTAT_AGRI_PRICE_INDICES: [new EurostatAgriIndicesProvider()],
     USDA_GTR_LOGISTICS_SNAPSHOT: [new UsdaGtrLogisticsProvider()],
     CANADA_GRAIN_RAIL_PERFORMANCE: [new CanadaRailPerformanceProvider()],
     FAOSTAT_PP_MULTI_COUNTRY: [new FaostatProducerPricesProvider()],
@@ -556,6 +597,9 @@ export class GrainWidgetsService {
     EC_CEREALS_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "EC_CEREALS_MULTI_COUNTRY" }),
     EC_OILSEEDS_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "EC_OILSEEDS_MULTI_COUNTRY" }),
     USDA_NASS_PRODUCER_PRICES: new MockGrainWidgetsProvider({ kind: "USDA_NASS_PRODUCER_PRICES" }),
+    WFP_MARKET_PRICES_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "WFP_MARKET_PRICES_MULTI_COUNTRY" }),
+    WB_MICRODATA_MARKET_PRICES: new MockGrainWidgetsProvider({ kind: "WB_MICRODATA_MARKET_PRICES" }),
+    EUROSTAT_AGRI_PRICE_INDICES: new MockGrainWidgetsProvider({ kind: "EUROSTAT_AGRI_PRICE_INDICES" }),
     USDA_GTR_LOGISTICS_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "USDA_GTR_LOGISTICS_SNAPSHOT" }),
     CANADA_GRAIN_RAIL_PERFORMANCE: new MockGrainWidgetsProvider({ kind: "CANADA_GRAIN_RAIL_PERFORMANCE" }),
     FAOSTAT_PP_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "FAOSTAT_PP_MULTI_COUNTRY" }),

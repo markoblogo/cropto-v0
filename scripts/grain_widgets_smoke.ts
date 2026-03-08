@@ -6,12 +6,15 @@ import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/com
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
 import { EcCerealsPricesProvider } from "../server/monitor/grainWidgets/providers/ecCerealsPricesProvider";
 import { EcOilseedsPricesProvider } from "../server/monitor/grainWidgets/providers/ecOilseedsPricesProvider";
+import { EurostatAgriIndicesProvider } from "../server/monitor/grainWidgets/providers/eurostatAgriIndicesProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "../server/monitor/grainWidgets/providers/faostatProducerPricesProvider";
 import { FpmaMarketPricesProvider } from "../server/monitor/grainWidgets/providers/fpmaMarketPricesProvider";
 import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers/nasdaqDataLinkProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
+import { WfpDataBridgesProvider } from "../server/monitor/grainWidgets/providers/wfpDataBridgesProvider";
+import { WorldBankMicrodataProvider } from "../server/monitor/grainWidgets/providers/worldBankMicrodataProvider";
 import { UsdaNassQuickStatsProvider } from "../server/monitor/grainWidgets/providers/usdaNassQuickStatsProvider";
 import { UsdaMarsDailyMarketRatesTxtProvider } from "../server/monitor/grainWidgets/providers/usdaMarsDailyMarketRatesTxtProvider";
 import { UsdaGtrLogisticsProvider } from "../server/monitor/grainWidgets/providers/usdaGtrLogisticsProvider";
@@ -54,6 +57,14 @@ function widgetCoverage(widget: GrainWidget): string {
     const mapped = widget.items.filter((item) => item.current != null).length;
     return `${mapped}/${widget.items.length || 0}`;
   }
+  if (widget.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" || widget.kind === "WB_MICRODATA_MARKET_PRICES") {
+    const mapped = widget.rows.filter((row) => row.current != null).length;
+    return `${mapped}/${widget.rows.length || 0}`;
+  }
+  if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
+    const mapped = widget.items.filter((item) => item.current != null).length;
+    return `${mapped}/${widget.items.length || 0}`;
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     const mapped = widget.rows.filter((row) => row.current != null).length;
     return `${mapped}/${widget.rows.length || 0}`;
@@ -92,6 +103,9 @@ async function run() {
     new EcCerealsPricesProvider(),
     new EcOilseedsPricesProvider(),
     new UsdaNassQuickStatsProvider(),
+    new WfpDataBridgesProvider(),
+    new WorldBankMicrodataProvider(),
+    new EurostatAgriIndicesProvider(),
     new UsdaGtrLogisticsProvider(),
     new CanadaRailPerformanceProvider(),
     new FaostatProducerPricesProvider(),
@@ -164,6 +178,16 @@ async function run() {
       if (widget.kind === "EC_CEREALS_MULTI_COUNTRY" || widget.kind === "EC_OILSEEDS_MULTI_COUNTRY" || widget.kind === "USDA_NASS_PRODUCER_PRICES") {
         console.log(
           `  official_rows territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length} cadence=${widget.summary?.cadence || "unknown"}`,
+        );
+      }
+      if (widget.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" || widget.kind === "WB_MICRODATA_MARKET_PRICES") {
+        console.log(
+          `  multi_country territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length} cadence=${widget.summary?.cadence || "unknown"}`,
+        );
+      }
+      if (widget.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
+        console.log(
+          `  eurostat territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} items=${widget.items.length} cadence=${widget.summary?.cadence || "unknown"}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

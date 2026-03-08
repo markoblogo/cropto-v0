@@ -41,6 +41,9 @@ export const ENABLE_EC_CEREALS_WIDGET = envBool("ENABLE_EC_CEREALS_WIDGET", true
 export const ENABLE_EC_OILSEEDS_WIDGET = envBool("ENABLE_EC_OILSEEDS_WIDGET", true);
 export const ENABLE_USDA_NASS_WIDGET = envBool("ENABLE_USDA_NASS_WIDGET", true);
 export const ENABLE_CANADA_GRAIN_RAIL_WIDGET = envBool("ENABLE_CANADA_GRAIN_RAIL_WIDGET", true);
+export const ENABLE_WFP_MARKET_PRICES_WIDGET = envBool("ENABLE_WFP_MARKET_PRICES_WIDGET", true);
+export const ENABLE_WB_MICRODATA_WIDGET = envBool("ENABLE_WB_MICRODATA_WIDGET", true);
+export const ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET = envBool("ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -195,6 +198,46 @@ export const CANADA_RAIL_WDS_BASE_URL = normalizeBaseUrl(
 export const CANADA_RAIL_PRODUCT_ID = process.env.CANADA_RAIL_PRODUCT_ID || "23100275";
 export const CANADA_RAIL_TIMEOUT_MS = envNum("CANADA_RAIL_TIMEOUT_MS", 10_000);
 export const CANADA_RAIL_CACHE_TTL_MS = envNum("CANADA_RAIL_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const WFP_DATABRIDGES_TOKEN = process.env.WFP_DATABRIDGES_TOKEN || "";
+export const WFP_DATABRIDGES_BASE_URL = normalizeBaseUrl(
+  process.env.WFP_DATABRIDGES_BASE_URL || "",
+  "https://hapi.humdata.org/api/v1/food-security-nutrition/food-prices",
+);
+export const WFP_DATABRIDGES_TIMEOUT_MS = envNum("WFP_DATABRIDGES_TIMEOUT_MS", 10_000);
+export const WFP_DATABRIDGES_CACHE_TTL_MS = envNum("WFP_DATABRIDGES_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const WFP_DATABRIDGES_COUNTRIES = (process.env.WFP_DATABRIDGES_COUNTRIES || "UA,BR,AR")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const WFP_DATABRIDGES_MAX_RECORDS = envNum("WFP_DATABRIDGES_MAX_RECORDS", 200);
+export const WB_MICRODATA_BASE_URL = normalizeBaseUrl(
+  process.env.WB_MICRODATA_BASE_URL || "",
+  "https://microdata.worldbank.org/index.php/catalog/4483",
+);
+export const WB_MICRODATA_TIMEOUT_MS = envNum("WB_MICRODATA_TIMEOUT_MS", 12_000);
+export const WB_MICRODATA_CACHE_TTL_MS = envNum("WB_MICRODATA_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const WB_MICRODATA_COUNTRIES = (process.env.WB_MICRODATA_COUNTRIES || "UA,BR,AR")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const WB_MICRODATA_CSV_URL = process.env.WB_MICRODATA_CSV_URL || "";
+export const EUROSTAT_BASE_URL = normalizeBaseUrl(
+  process.env.EUROSTAT_BASE_URL || "",
+  "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data",
+);
+export const EUROSTAT_AGRI_DATASETS = (
+  process.env.EUROSTAT_AGRI_DATASETS ||
+  "apri_pi20_outq,apri_pi20_outa"
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+export const EUROSTAT_TIMEOUT_MS = envNum("EUROSTAT_TIMEOUT_MS", 10_000);
+export const EUROSTAT_CACHE_TTL_MS = envNum("EUROSTAT_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
+export const EUROSTAT_MEMBER_STATES = (process.env.EUROSTAT_MEMBER_STATES || "FR,DE,PL,RO,ES,EU")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
 export const FPMA_DATA_PATHS = (
   process.env.FPMA_DATA_PATHS ||
   "prices,PriceQuotation,v1/prices,v1/PriceQuotation"

@@ -324,6 +324,9 @@ type GrainWidgetKind =
   | "EC_CEREALS_MULTI_COUNTRY"
   | "EC_OILSEEDS_MULTI_COUNTRY"
   | "USDA_NASS_PRODUCER_PRICES"
+  | "WFP_MARKET_PRICES_MULTI_COUNTRY"
+  | "WB_MICRODATA_MARKET_PRICES"
+  | "EUROSTAT_AGRI_PRICE_INDICES"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
   | "CANADA_GRAIN_RAIL_PERFORMANCE"
   | "FAOSTAT_PP_MULTI_COUNTRY"
@@ -840,6 +843,89 @@ type GrainWidgetUsdaNassProducerPrices = GrainTerritoryMeta & {
   fallbackReason?: string;
 };
 
+type GrainWidgetCountryMarketPricesMultiCountry = GrainTerritoryMeta & {
+  id: string;
+  kind: "WFP_MARKET_PRICES_MULTI_COUNTRY" | "WB_MICRODATA_MARKET_PRICES";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<{
+    crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
+    label: string;
+    current: number;
+    unit: string;
+    currency?: string;
+    cadence: "daily" | "weekly" | "monthly" | "quarterly" | "annual" | "unknown";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+    territory?: { code: string; label: string };
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "quarterly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    marketRule?: string;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetEurostatAgriPriceIndices = GrainTerritoryMeta & {
+  id: string;
+  kind: "EUROSTAT_AGRI_PRICE_INDICES";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  items: Array<{
+    id: string;
+    indexName: string;
+    current: number;
+    unit: string;
+    cadence: "quarterly" | "annual" | "unknown";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "quarterly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidgetUsdaGtrLogisticsSnapshot = GrainTerritoryMeta & {
   id: string;
   kind: "USDA_GTR_LOGISTICS_SNAPSHOT";
@@ -1025,6 +1111,8 @@ type GrainWidget =
   | GrainWidgetNasdaqDataLinkSnapshot
   | GrainWidgetEcOfficialPricesMultiCountry
   | GrainWidgetUsdaNassProducerPrices
+  | GrainWidgetCountryMarketPricesMultiCountry
+  | GrainWidgetEurostatAgriPriceIndices
   | GrainWidgetUsdaGtrLogisticsSnapshot
   | GrainWidgetCanadaRailPerformance
   | GrainWidgetFaostatPpMultiCountry
@@ -2705,6 +2793,9 @@ export default function MonitorPage() {
                   const ecCerealsWidget = grainDataByKind["EC_CEREALS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
                   const ecOilseedsWidget = grainDataByKind["EC_OILSEEDS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
                   const usdaNassWidget = grainDataByKind["USDA_NASS_PRODUCER_PRICES"] as GrainWidgetUsdaNassProducerPrices | undefined;
+                  const wfpWidget = grainDataByKind["WFP_MARKET_PRICES_MULTI_COUNTRY"] as GrainWidgetCountryMarketPricesMultiCountry | undefined;
+                  const worldBankWidget = grainDataByKind["WB_MICRODATA_MARKET_PRICES"] as GrainWidgetCountryMarketPricesMultiCountry | undefined;
+                  const eurostatWidget = grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined;
                   const usdaGtrWidget = grainDataByKind["USDA_GTR_LOGISTICS_SNAPSHOT"] as GrainWidgetUsdaGtrLogisticsSnapshot | undefined;
                   const canadaRailWidget = grainDataByKind["CANADA_GRAIN_RAIL_PERFORMANCE"] as GrainWidgetCanadaRailPerformance | undefined;
                   const faostatWidget = grainDataByKind["FAOSTAT_PP_MULTI_COUNTRY"] as GrainWidgetFaostatPpMultiCountry | undefined;
@@ -2987,6 +3078,189 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("USDA_NASS_PRODUCER_PRICES") ? "US Producer Prices (NASS)" : "US Producer Prices (NASS) (not configured)"}
                             subtitle="US official producer/statistical layer"
+                          />
+                        </div>
+                      )}
+
+                      {wfpWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{wfpWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(wfpWidget.status)}`}>{wfpWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{wfpWidget.subtitle || "WFP multi-country market surveillance"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(wfpWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={wfpWidget} value={grainCountry} onChange={setGrainCountry} />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {wfpWidget.rows.slice(0, 4).map((row, idx) => (
+                                <div key={`${wfpWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={row.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">{formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}</p>
+                                  <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                                  <DynamicMiniTrend
+                                    series={row.series || []}
+                                    change={row.changeAbs}
+                                    changePct={row.changePct}
+                                    status={wfpWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={wfpWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: wfpWidget.status,
+                                      sourceName: wfpWidget.sourceName,
+                                      fallbackReason: wfpWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!wfpWidget.rows.length ? <p className="text-[11px] text-foreground/68">No WFP rows mapped for selected territory.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {wfpWidget.summary?.coverage ? <MetricChip label={`coverage ${wfpWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {wfpWidget.summary?.cadence ? <MetricChip label={`cadence ${wfpWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip compact status={wfpWidget.status} statusClassName={grainStatusClass(wfpWidget.status)} sourceName={wfpWidget.sourceName} sourceUrl={wfpWidget.sourceUrl} updatedLabel={wfpWidget.updatedAt ? formatRelative(wfpWidget.updatedAt) : wfpWidget.timeframe} fallbackReason={wfpWidget.fallbackReason} />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("WFP_MARKET_PRICES_MULTI_COUNTRY") ? "WFP Market Prices" : "WFP Market Prices (not configured)"}
+                            subtitle="WFP HAPI / humanitarian market surveillance"
+                          />
+                        </div>
+                      )}
+
+                      {worldBankWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{worldBankWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(worldBankWidget.status)}`}>{worldBankWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{worldBankWidget.subtitle || "World Bank microdata market price layer"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(worldBankWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={worldBankWidget} value={grainCountry} onChange={setGrainCountry} />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {worldBankWidget.rows.slice(0, 4).map((row, idx) => (
+                                <div key={`${worldBankWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={row.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">{formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}</p>
+                                  <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                                  <DynamicMiniTrend
+                                    series={row.series || []}
+                                    change={row.changeAbs}
+                                    changePct={row.changePct}
+                                    status={worldBankWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={worldBankWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: worldBankWidget.status,
+                                      sourceName: worldBankWidget.sourceName,
+                                      fallbackReason: worldBankWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!worldBankWidget.rows.length ? <p className="text-[11px] text-foreground/68">No World Bank rows mapped for selected territory.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {worldBankWidget.summary?.coverage ? <MetricChip label={`coverage ${worldBankWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {worldBankWidget.summary?.cadence ? <MetricChip label={`cadence ${worldBankWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip compact status={worldBankWidget.status} statusClassName={grainStatusClass(worldBankWidget.status)} sourceName={worldBankWidget.sourceName} sourceUrl={worldBankWidget.sourceUrl} updatedLabel={worldBankWidget.updatedAt ? formatRelative(worldBankWidget.updatedAt) : worldBankWidget.timeframe} fallbackReason={worldBankWidget.fallbackReason} />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("WB_MICRODATA_MARKET_PRICES") ? "World Bank Market Prices" : "World Bank Market Prices (not configured)"}
+                            subtitle="World Bank Microdata / food prices"
+                          />
+                        </div>
+                      )}
+
+                      {eurostatWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{eurostatWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(eurostatWidget.status)}`}>{eurostatWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{eurostatWidget.subtitle || "EU country agricultural price index layer"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(eurostatWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={eurostatWidget} value={grainCountry} onChange={setGrainCountry} />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1 sm:grid-cols-2">
+                              {eurostatWidget.items.slice(0, 4).map((item, idx) => (
+                                <div key={`${eurostatWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{item.indexName}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={item.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={item.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">{formatMetricValue({ kind: "index", value: item.current, unit: item.unit })}</p>
+                                  <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: item.changeAbs, unit: item.unit, pct: item.changePct })}</p>
+                                  <DynamicMiniTrend
+                                    series={item.series || []}
+                                    change={item.changeAbs}
+                                    changePct={item.changePct}
+                                    status={eurostatWidget.status}
+                                    section="expansion"
+                                    cardKind="index"
+                                    sourceName={eurostatWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: eurostatWidget.status,
+                                      sourceName: eurostatWidget.sourceName,
+                                      fallbackReason: eurostatWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!eurostatWidget.items.length ? <p className="text-[11px] text-foreground/68">No Eurostat index items mapped for selected territory.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {eurostatWidget.summary?.coverage ? <MetricChip label={`coverage ${eurostatWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {eurostatWidget.summary?.cadence ? <MetricChip label={`cadence ${eurostatWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip compact status={eurostatWidget.status} statusClassName={grainStatusClass(eurostatWidget.status)} sourceName={eurostatWidget.sourceName} sourceUrl={eurostatWidget.sourceUrl} updatedLabel={eurostatWidget.updatedAt ? formatRelative(eurostatWidget.updatedAt) : eurostatWidget.timeframe} fallbackReason={eurostatWidget.fallbackReason} />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("EUROSTAT_AGRI_PRICE_INDICES") ? "Eurostat Agri Indices" : "Eurostat Agri Indices (not configured)"}
+                            subtitle="EU agricultural price indices"
                           />
                         </div>
                       )}

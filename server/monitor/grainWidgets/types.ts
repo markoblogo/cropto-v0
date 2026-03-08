@@ -27,6 +27,9 @@ export type GrainWidgetKind =
   | "USDA_NASS_PRODUCER_PRICES"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
   | "CANADA_GRAIN_RAIL_PERFORMANCE"
+  | "WFP_MARKET_PRICES_MULTI_COUNTRY"
+  | "WB_MICRODATA_MARKET_PRICES"
+  | "EUROSTAT_AGRI_PRICE_INDICES"
   | "FAOSTAT_PP_MULTI_COUNTRY"
   | "FPMA_MARKET_PRICES_MULTI_COUNTRY";
 
@@ -568,6 +571,92 @@ export interface GrainWidgetCanadaRailPerformance extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetCountryMarketPriceRow {
+  crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
+  label: string;
+  current: number;
+  unit: string;
+  currency?: string;
+  cadence: "daily" | "weekly" | "monthly" | "quarterly" | "annual" | "unknown";
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+  territory?: {
+    code: string;
+    label: string;
+  };
+}
+
+export interface GrainWidgetWfpMarketPricesMultiCountry extends GrainWidgetBase {
+  kind: "WFP_MARKET_PRICES_MULTI_COUNTRY";
+  rows: GrainWidgetCountryMarketPriceRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "quarterly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    marketRule?: string;
+    warnings?: string[];
+  };
+}
+
+export interface GrainWidgetWorldBankMicrodataMarketPrices extends GrainWidgetBase {
+  kind: "WB_MICRODATA_MARKET_PRICES";
+  rows: GrainWidgetCountryMarketPriceRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "quarterly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
+export interface GrainWidgetEurostatAgriPriceIndexItem {
+  id: string;
+  indexName: string;
+  current: number;
+  unit: string;
+  cadence: "quarterly" | "annual" | "unknown";
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+  notes?: string[];
+}
+
+export interface GrainWidgetEurostatAgriPriceIndices extends GrainWidgetBase {
+  kind: "EUROSTAT_AGRI_PRICE_INDICES";
+  items: GrainWidgetEurostatAgriPriceIndexItem[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "quarterly" | "annual" | "unknown";
+    selectedTerritory?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
 export interface GrainWidgetFaostatPpRow {
   crop: "WHEAT" | "MAIZE" | "SOY" | "RAPESEED" | "SUNFLOWER";
   label: string;
@@ -672,6 +761,9 @@ export type GrainWidget =
   | GrainWidgetEcOfficialPricesSnapshot
   | GrainWidgetUsdaGtrLogisticsSnapshot
   | GrainWidgetCanadaRailPerformance
+  | GrainWidgetWfpMarketPricesMultiCountry
+  | GrainWidgetWorldBankMicrodataMarketPrices
+  | GrainWidgetEurostatAgriPriceIndices
   | GrainWidgetFaostatPpMultiCountry
   | GrainWidgetFpmaMarketPricesMultiCountry;
 

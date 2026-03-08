@@ -7,8 +7,11 @@ import type {
   GrainWidgetEcOfficialPricesSnapshot,
   GrainWidgetNasdaqDataLinkSnapshot,
   GrainWidgetCanadaRailPerformance,
+  GrainWidgetEurostatAgriPriceIndices,
   GrainWidgetUsdaGtrLogisticsSnapshot,
   GrainWidgetKind,
+  GrainWidgetWfpMarketPricesMultiCountry,
+  GrainWidgetWorldBankMicrodataMarketPrices,
   GrainWidgetUsCashExportContext,
   GrainWidgetUsdaMarsDailyMarketRatesTxt,
   GrainWidgetUsdaMarsReports,
@@ -781,6 +784,138 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           rowsParsed: 42,
           columnsDetected: ["REF_DATE", "Rail service indicators", "VALUE", "UOM"],
         },
+      };
+      return widget;
+    }
+
+    if (this.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" || this.kind === "WB_MICRODATA_MARKET_PRICES") {
+      const territoryCode = String(ctx.country || "UA").toUpperCase();
+      const territoryLabelMap: Record<string, string> = {
+        UA: "Ukraine",
+        US: "United States",
+        BR: "Brazil",
+        AR: "Argentina",
+      };
+      const territoryLabel = territoryLabelMap[territoryCode] || "Ukraine";
+      const rows = [
+        {
+          crop: "WHEAT" as const,
+          label: "Wheat",
+          current: territoryCode === "BR" ? 82.4 : 9.6,
+          unit: territoryCode === "BR" ? "BRL/60kg" : territoryCode === "AR" ? "ARS/kg" : "UAH/kg",
+          cadence: "monthly" as const,
+          changeAbs: 0.2,
+          changePct: 2.1,
+          series: deriveSeries(territoryCode === "BR" ? 82.4 : 9.6, 0.2, ctx.seriesPoints),
+          confidence: "MED" as const,
+          territory: { code: territoryCode, label: territoryLabel },
+        },
+        {
+          crop: "MAIZE" as const,
+          label: "Maize (Corn)",
+          current: territoryCode === "BR" ? 64.8 : 7.4,
+          unit: territoryCode === "BR" ? "BRL/60kg" : territoryCode === "AR" ? "ARS/kg" : "UAH/kg",
+          cadence: "monthly" as const,
+          changeAbs: -0.1,
+          changePct: -1.3,
+          series: deriveSeries(territoryCode === "BR" ? 64.8 : 7.4, -0.1, ctx.seriesPoints),
+          confidence: "MED" as const,
+          territory: { code: territoryCode, label: territoryLabel },
+        },
+      ];
+      const widget: GrainWidgetWfpMarketPricesMultiCountry | GrainWidgetWorldBankMicrodataMarketPrices = {
+        id: `mock-${this.kind.toLowerCase()}`,
+        kind: this.kind as any,
+        title: this.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ? "WFP Market Prices" : "World Bank Market Prices",
+        subtitle: this.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ? "WFP HAPI / market surveillance layer" : "World Bank Microdata / real-time food prices",
+        status: "FALLBACK",
+        sourceName: this.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ? "WFP HAPI" : "World Bank Microdata",
+        sourceAttribution: this.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ? "Data: WFP DataBridges / HAPI food prices" : "Data: World Bank Microdata Real-Time Food Prices",
+        sourceUrl: this.kind === "WFP_MARKET_PRICES_MULTI_COUNTRY" ? "https://hapi.humdata.org/api/v1/food-security-nutrition/food-prices" : "https://microdata.worldbank.org/index.php/catalog/4483/data-api",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "COUNTRY_MULTI",
+        territory: { code: territoryCode, label: territoryLabel },
+        supportedTerritories: [
+          { code: "UA", label: "Ukraine" },
+          { code: "US", label: "United States" },
+          { code: "BR", label: "Brazil" },
+          { code: "AR", label: "Argentina" },
+        ],
+        territorySelector: {
+          paramName: "country",
+          default: "UA",
+          current: territoryCode,
+          persistKey: `monitor_country_${this.kind}`,
+        },
+        rows,
+        summary: {
+          expectedCount: 3,
+          mappedCount: rows.length,
+          coverage: `${rows.length}/3`,
+          cadence: "monthly",
+          selectedTerritory: territoryCode,
+        },
+        notes: [`Mock fallback payload for ${this.kind}`],
+        fallbackReason: reason,
+        debug: {
+          rowsParsed: rows.length * 6,
+          warnings: ["mock_fallback_mode"],
+        },
+      };
+      return widget as GrainWidget;
+    }
+
+    if (this.kind === "EUROSTAT_AGRI_PRICE_INDICES") {
+      const territoryCode = String(ctx.country || "FR").toUpperCase();
+      const territoryLabelMap: Record<string, string> = {
+        FR: "France",
+        DE: "Germany",
+        PL: "Poland",
+        RO: "Romania",
+        ES: "Spain",
+        EU: "European Union",
+      };
+      const widget: GrainWidgetEurostatAgriPriceIndices = {
+        id: "grain-eurostat-agri-price-indices",
+        kind: "EUROSTAT_AGRI_PRICE_INDICES",
+        title: "Eurostat Agri Price Indices",
+        subtitle: "EU agricultural price index layer",
+        status: "FALLBACK",
+        sourceName: "Eurostat",
+        sourceAttribution: "Data: Eurostat agricultural price indices",
+        sourceUrl: "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/apri_pi20_outq",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "COUNTRY_MULTI",
+        territory: { code: territoryCode, label: territoryLabelMap[territoryCode] || "France" },
+        supportedTerritories: [
+          { code: "FR", label: "France" },
+          { code: "DE", label: "Germany" },
+          { code: "PL", label: "Poland" },
+          { code: "RO", label: "Romania" },
+          { code: "ES", label: "Spain" },
+          { code: "EU", label: "European Union" },
+        ],
+        territorySelector: {
+          paramName: "country",
+          default: "FR",
+          current: territoryCode,
+          persistKey: "monitor_country_EUROSTAT_AGRI_PRICE_INDICES",
+        },
+        items: [
+          { id: "agri-output", indexName: "Agricultural output", current: 112.4, unit: "index pts", cadence: "quarterly", changeAbs: 1.2, changePct: 1.08, series: deriveSeries(112.4, 1.2, ctx.seriesPoints), confidence: "HIGH" },
+          { id: "cereals", indexName: "Cereals", current: 118.7, unit: "index pts", cadence: "quarterly", changeAbs: 0.8, changePct: 0.68, series: deriveSeries(118.7, 0.8, ctx.seriesPoints), confidence: "HIGH" },
+        ],
+        summary: {
+          expectedCount: 3,
+          mappedCount: 2,
+          coverage: "2/3",
+          cadence: "quarterly",
+          selectedTerritory: territoryCode,
+        },
+        notes: ["Mock fallback payload for EUROSTAT_AGRI_PRICE_INDICES", "Index points preserved; no USD/t normalization"],
+        fallbackReason: reason,
       };
       return widget;
     }

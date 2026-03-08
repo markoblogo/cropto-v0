@@ -6,15 +6,20 @@ import {
   EC_CEREALS_API_PATH,
   EC_OILSEEDS_API_PATH,
   ENABLE_CANADA_GRAIN_RAIL_WIDGET,
+  ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET,
   ENABLE_FAOSTAT_PP_WIDGET,
   ENABLE_EC_CEREALS_WIDGET,
   ENABLE_EC_OILSEEDS_WIDGET,
   ENABLE_NASDAQ_CHRIS,
   ENABLE_NASDAQ_DATALINK_PROVIDER,
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
+  ENABLE_WB_MICRODATA_WIDGET,
+  ENABLE_WFP_MARKET_PRICES_WIDGET,
   ENABLE_USDA_NASS_WIDGET,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
+  EUROSTAT_BASE_URL,
+  EUROSTAT_TIMEOUT_MS,
   FAOSTAT_BASE_URL,
   FAOSTAT_TIMEOUT_MS,
   FPMA_API_BASE_URL,
@@ -30,6 +35,12 @@ import {
   USDA_GTR_DATASET_URLS,
   USDA_MARS_BASE_URL,
   USDA_MARS_PUBLIC_INDEX_URLS,
+  WB_MICRODATA_BASE_URL,
+  WB_MICRODATA_CSV_URL,
+  WB_MICRODATA_TIMEOUT_MS,
+  WFP_DATABRIDGES_BASE_URL,
+  WFP_DATABRIDGES_TIMEOUT_MS,
+  WFP_DATABRIDGES_TOKEN,
 } from "../grainWidgets/config";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "../grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders } from "../grainWidgets/providers/utils";
@@ -422,6 +433,9 @@ type TargetProviderId =
   | "ec-cereals-prices"
   | "ec-oilseeds-prices"
   | "usda-nass-quickstats"
+  | "wfp-databridges"
+  | "worldbank-microdata"
+  | "eurostat-agri-indices"
   | "canada-grain-rail-performance";
 
 const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expectedCount: number }> = [
@@ -433,6 +447,9 @@ const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expecte
   { providerId: "ec-cereals-prices", widgetKind: "EC_CEREALS_MULTI_COUNTRY", expectedCount: 5 },
   { providerId: "ec-oilseeds-prices", widgetKind: "EC_OILSEEDS_MULTI_COUNTRY", expectedCount: 3 },
   { providerId: "usda-nass-quickstats", widgetKind: "USDA_NASS_PRODUCER_PRICES", expectedCount: 3 },
+  { providerId: "wfp-databridges", widgetKind: "WFP_MARKET_PRICES_MULTI_COUNTRY", expectedCount: 3 },
+  { providerId: "worldbank-microdata", widgetKind: "WB_MICRODATA_MARKET_PRICES", expectedCount: 3 },
+  { providerId: "eurostat-agri-indices", widgetKind: "EUROSTAT_AGRI_PRICE_INDICES", expectedCount: 3 },
   { providerId: "canada-grain-rail-performance", widgetKind: "CANADA_GRAIN_RAIL_PERFORMANCE", expectedCount: 4 },
 ];
 
@@ -471,6 +488,9 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     ENABLE_EC_CEREALS_WIDGET,
     ENABLE_EC_OILSEEDS_WIDGET,
     ENABLE_USDA_NASS_WIDGET,
+    ENABLE_WFP_MARKET_PRICES_WIDGET,
+    ENABLE_WB_MICRODATA_WIDGET,
+    ENABLE_EUROSTAT_AGRI_PRICE_INDICES_WIDGET,
     ENABLE_CANADA_GRAIN_RAIL_WIDGET,
     ENABLE_USDA_GTR_LOGISTICS_WIDGET,
     ENABLE_USDA_MARS_DAILY_TXT,
@@ -479,6 +499,11 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
     USDA_NASS_BASE_URL: USDA_NASS_BASE_URL ? "present" : "missing",
     USDA_NASS_API_KEY: USDA_NASS_API_KEY ? "present" : "missing",
+    WFP_DATABRIDGES_BASE_URL: WFP_DATABRIDGES_BASE_URL ? "present" : "missing",
+    WFP_DATABRIDGES_TOKEN: WFP_DATABRIDGES_TOKEN ? "present" : "missing",
+    WB_MICRODATA_BASE_URL: WB_MICRODATA_BASE_URL ? "present" : "missing",
+    WB_MICRODATA_CSV_URL: WB_MICRODATA_CSV_URL ? "present" : "missing",
+    EUROSTAT_BASE_URL: EUROSTAT_BASE_URL ? "present" : "missing",
     CANADA_RAIL_WDS_BASE_URL: CANADA_RAIL_WDS_BASE_URL ? "present" : "missing",
     FPMA_DATA_PATHS,
     USDA_GTR_DATASET_URLS: USDA_GTR_DATASET_URLS.length ? "present" : "missing",
@@ -583,6 +608,33 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorKind: classifyErrorKind({ message: error?.message }),
       errorMessage: String(error?.message || "probe_failed"),
     })),
+    wfp: await probeUrl(
+      `${WFP_DATABRIDGES_BASE_URL}?limit=1${WFP_DATABRIDGES_TOKEN ? `&app_identifier=${encodeURIComponent(WFP_DATABRIDGES_TOKEN)}` : ""}`,
+      { configMissing: !WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN, timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS },
+    ).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
+    worldBank: await probeUrl(WB_MICRODATA_CSV_URL || `${WB_MICRODATA_BASE_URL.replace(/\/+$/, "")}/data-api`, {
+      configMissing: !WB_MICRODATA_BASE_URL,
+      timeoutMs: WB_MICRODATA_TIMEOUT_MS,
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
+    eurostat: await probeUrl(`${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`, {
+      configMissing: !EUROSTAT_BASE_URL,
+      timeoutMs: EUROSTAT_TIMEOUT_MS,
+    }).catch((error: any) => ({
+      ok: false,
+      elapsedMs: 0,
+      errorKind: classifyErrorKind({ message: error?.message }),
+      errorMessage: String(error?.message || "probe_failed"),
+    })),
     canadaRail: await probeUrl(`${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`, {
       configMissing: !CANADA_RAIL_WDS_BASE_URL,
     }).catch((error: any) => ({
@@ -600,7 +652,10 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       (providerId === "fpma-market-prices" && !FPMA_API_BASE_URL) ||
       (providerId === "faostat-pp" && !FAOSTAT_BASE_URL) ||
       (providerId === "usda-gtr-logistics" && USDA_GTR_DATASET_URLS.length === 0) ||
-      (providerId === "usda-nass-quickstats" && (!USDA_NASS_BASE_URL || !USDA_NASS_API_KEY));
+      (providerId === "usda-nass-quickstats" && (!USDA_NASS_BASE_URL || !USDA_NASS_API_KEY)) ||
+      (providerId === "wfp-databridges" && (!WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN)) ||
+      (providerId === "worldbank-microdata" && !WB_MICRODATA_BASE_URL) ||
+      (providerId === "eurostat-agri-indices" && !EUROSTAT_BASE_URL);
     const probeMatch =
       providerId === "ec-cereals-prices" ? probes.ecCereals :
       providerId === "ec-oilseeds-prices" ? probes.ecOilseeds :
@@ -608,6 +663,9 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       providerId === "faostat-pp" ? probes.faostat :
       providerId === "usda-gtr-logistics" ? probes.usdaGtr :
       providerId === "usda-nass-quickstats" ? probes.usdaNass :
+      providerId === "wfp-databridges" ? probes.wfp :
+      providerId === "worldbank-microdata" ? probes.worldBank :
+      providerId === "eurostat-agri-indices" ? probes.eurostat :
       providerId === "canada-grain-rail-performance" ? probes.canadaRail :
       providerId === "nasdaq-datalink" ? probes.nasdaq :
       probes.usdaMarsDailyTxt;
