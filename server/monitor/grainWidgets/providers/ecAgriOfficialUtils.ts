@@ -66,6 +66,15 @@ function buildBasePath(mode: EcMode): string {
   return `${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
 
+function dictionaryPath(mode: EcMode, kind: "products" | "stages" | "markets"): string {
+  if (mode === "oilseeds") {
+    if (kind === "stages") return "marketStages";
+    if (kind === "markets") return "markets";
+    return "products";
+  }
+  return kind;
+}
+
 export function resolveEcTerritory(mode: EcMode, requestedCountry?: string): { code: string; label: string; supported: Array<{ code: string; label: string }> } {
   const supportedCodes = mode === "cereal" ? EC_CEREALS_MEMBER_STATES : EC_OILSEEDS_MEMBER_STATES;
   const normalized = String(requestedCountry || supportedCodes[0] || "FR").toUpperCase();
@@ -104,6 +113,10 @@ function asArray(payload: any): any[] {
 }
 
 function toDictionaryEntry(row: any): EcDictionaryEntry | undefined {
+  if (typeof row === "string") {
+    const value = row.trim();
+    return value ? { code: value, label: value } : undefined;
+  }
   const code = String(row?.code ?? row?.productCode ?? row?.stageCode ?? row?.marketCode ?? row?.id ?? "").trim();
   const label = String(row?.label ?? row?.name ?? row?.description ?? row?.productName ?? row?.stageName ?? row?.marketName ?? "").trim();
   if (!code || !label) return undefined;
@@ -111,7 +124,7 @@ function toDictionaryEntry(row: any): EcDictionaryEntry | undefined {
 }
 
 export async function fetchEcDictionary(mode: EcMode, kind: "products" | "stages" | "markets"): Promise<{ entries: EcDictionaryEntry[]; sourceUrlUsed: string }> {
-  const url = `${buildBasePath(mode)}/${kind}`;
+  const url = `${buildBasePath(mode)}/${dictionaryPath(mode, kind)}`;
   const { payload, finalUrl } = await fetchJsonCached(url);
   return {
     entries: asArray(payload).map(toDictionaryEntry).filter((entry): entry is EcDictionaryEntry => Boolean(entry)),
@@ -148,6 +161,7 @@ function resolvePreferredStage(entries: EcDictionaryEntry[]): EcDictionaryEntry 
 function detectDate(row: any): string | undefined {
   return (
     normalizeDate(row?.date) ||
+    normalizeDate(row?.quotedDate) ||
     normalizeDate(row?.quotationDate) ||
     normalizeDate(row?.beginDate) ||
     normalizeDate(row?.endDate) ||
@@ -160,6 +174,7 @@ function detectDate(row: any): string | undefined {
 function detectValue(row: any): number | undefined {
   return (
     parseNumber(row?.price) ??
+    parseNumber(row?.valueAmount) ??
     parseNumber(row?.value) ??
     parseNumber(row?.avgPrice) ??
     parseNumber(row?.averagePrice) ??
@@ -255,9 +270,15 @@ export async function fetchEcPriceRows(args: {
   }
 
   const params = new URLSearchParams();
-  params.set("memberStateCodes", args.countryCode);
-  params.set("productCodes", productMatches.map((entry) => entry.code).join(","));
-  if (stageCodes.length) params.set("stageCodes", stageCodes.join(","));
+  if (args.mode === "oilseeds") {
+    params.set("memberStateCodes", args.countryCode);
+    params.set("products", productMatches.map((entry) => entry.code).join(","));
+    if (stageCodes.length) params.set("marketStages", stageCodes.join(","));
+  } else {
+    params.set("memberStateCodes", args.countryCode);
+    params.set("productCodes", productMatches.map((entry) => entry.code).join(","));
+    if (stageCodes.length) params.set("stageCodes", stageCodes.join(","));
+  }
   const url = `${buildBasePath(args.mode)}/prices?${params.toString()}`;
   const { payload, finalUrl } = await fetchJsonCached(url);
   const rawRows = asArray(payload);
@@ -267,7 +288,7 @@ export async function fetchEcPriceRows(args: {
   for (const row of rawRows) {
     const ts = detectDate(row);
     const value = detectValue(row);
-    const productCode = String(row?.productCode ?? row?.product_code ?? row?.product ?? "").trim();
+    const productCode = String(row?.productCode ?? row?.product_code ?? row?.product ?? row?.productName ?? "").trim();
     const productLabel =
       String(row?.productName ?? row?.productLabel ?? row?.product ?? "").trim() ||
       productMatches.find((entry) => entry.code === productCode)?.label ||
@@ -279,8 +300,8 @@ export async function fetchEcPriceRows(args: {
       countryCode,
       productCode,
       productLabel,
-      stageCode: String(row?.stageCode ?? row?.stage ?? "").trim() || undefined,
-      stageLabel: String(row?.stageName ?? row?.stageLabel ?? "").trim() || undefined,
+      stageCode: String(row?.stageCode ?? row?.stage ?? row?.marketStage ?? "").trim() || undefined,
+      stageLabel: String(row?.stageName ?? row?.stageLabel ?? row?.marketStageLabel ?? row?.marketStage ?? "").trim() || undefined,
       marketCode: String(row?.marketCode ?? row?.market ?? "").trim() || undefined,
       marketLabel: String(row?.marketName ?? row?.marketLabel ?? "").trim() || undefined,
       value,

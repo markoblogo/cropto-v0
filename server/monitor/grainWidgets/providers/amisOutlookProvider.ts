@@ -27,6 +27,22 @@ function resolveLink(href?: string | null): string | undefined {
   return new URL(href, AMIS_MARKET_MONITOR_URL).toString();
 }
 
+function pickLatestAmisPdf($: cheerio.CheerioAPI): string | undefined {
+  const candidates = $("a[href$='.pdf']")
+    .toArray()
+    .map((node) => ({
+      href: $(node).attr("href"),
+      text: $(node).text().trim(),
+    }))
+    .filter((entry) => /market monitor|issue/i.test(entry.text) || /Issue[_ -]?\d+/i.test(entry.href || ""));
+  const ranked = candidates.sort((a, b) => {
+    const ai = Number((a.href || a.text).match(/Issue[_ -]?(\d+)/i)?.[1] || 0);
+    const bi = Number((b.href || b.text).match(/Issue[_ -]?(\d+)/i)?.[1] || 0);
+    return bi - ai;
+  });
+  return ranked[0]?.href;
+}
+
 export class AmisOutlookProvider implements GrainWidgetsProvider {
   id = "amis-outlook";
   kind = "AMIS_GLOBAL_BALANCE" as const;
@@ -44,8 +60,10 @@ export class AmisOutlookProvider implements GrainWidgetsProvider {
     });
     const $ = cheerio.load(response.text);
     const text = $.text().replace(/\s+/g, " ");
-    const pdfHref = $("a[href$='.pdf']").first().attr("href") || AMIS_MARKET_MONITOR_CURRENT_PDF_URL;
-    const issueHref = $("a").filter((_, el) => /electronic edition/i.test($(el).text())).first().attr("href") || pdfHref;
+    const pdfHref = pickLatestAmisPdf($) || $("a[href$='.pdf']").first().attr("href") || AMIS_MARKET_MONITOR_CURRENT_PDF_URL;
+    const issueHref =
+      $("a").filter((_, el) => /electronic edition|market monitor|issue/i.test($(el).text())).first().attr("href") ||
+      pdfHref;
     const releaseDate = text.match(/\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/i)?.[0];
     const items: GrainWidgetAmisBalanceItem[] = crops.map((entry) => ({
       id: `amis-${entry.crop.toLowerCase()}`,
@@ -80,7 +98,7 @@ export class AmisOutlookProvider implements GrainWidgetsProvider {
         coverage: `${items.length}/4`,
         cadence: "release-based",
       },
-      notes: ["Release widget: latest AMIS monitor / outlook context", "No PDF content parsing"],
+      notes: ["Release widget: latest AMIS monitor / outlook context", "Archive/list page used instead of fragile legacy monitor path", "No PDF content parsing"],
       debug: {
         sourceUrlUsed: response.finalUrl || AMIS_MARKET_MONITOR_URL,
         pdfUrl: resolveLink(pdfHref),

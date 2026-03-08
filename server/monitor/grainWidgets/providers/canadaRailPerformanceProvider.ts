@@ -87,6 +87,16 @@ function parseCsv(content: string): CsvRow[] {
   });
 }
 
+function looksLikeZip(buffer: Buffer): boolean {
+  return buffer.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b;
+}
+
+function decodeBufferText(buffer: Buffer): string {
+  const utf8 = buffer.toString("utf8");
+  if (utf8.includes(",") && /\r?\n/.test(utf8)) return utf8;
+  return buffer.toString("latin1");
+}
+
 function normalizeDate(value: string): string | undefined {
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : undefined;
@@ -185,14 +195,25 @@ export class CanadaRailPerformanceProvider implements GrainWidgetsProvider {
     const wdsUrl = `${CANADA_RAIL_WDS_BASE_URL}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`;
     const descriptor = await fetchTextResponseWithTimeout(wdsUrl, CANADA_RAIL_TIMEOUT_MS, { accept: "application/json,text/plain,*/*" });
     const descriptorJson = JSON.parse(descriptor.text);
-    const zipUrl = String(descriptorJson?.object || "").trim();
+    const zipUrl = typeof descriptorJson === "string"
+      ? descriptorJson.trim()
+      : String(descriptorJson?.object || descriptorJson?.url || "").trim();
     if (!zipUrl) throw new Error("canada_rail_zip_url_missing");
 
     const zipped = await fetchBufferWithTimeout(zipUrl, CANADA_RAIL_TIMEOUT_MS, { accept: "application/zip,*/*" });
-    const entries = unzipEntries(zipped.buffer);
-    const csvEntry = Array.from(entries.entries()).find(([name]) => /\.csv$/i.test(name));
-    if (!csvEntry) throw new Error("canada_rail_csv_missing");
-    const rows = parseCsv(csvEntry[1].toString("utf8"));
+    let rows: CsvRow[] = [];
+    let datasetUrlChosen = zipUrl;
+    if (looksLikeZip(zipped.buffer)) {
+      const entries = unzipEntries(zipped.buffer);
+      const csvEntry = Array.from(entries.entries()).find(([name]) => /\.csv$/i.test(name));
+      if (!csvEntry) throw new Error("canada_rail_csv_missing");
+      datasetUrlChosen = `${zipUrl}#${csvEntry[0]}`;
+      rows = parseCsv(csvEntry[1].toString("utf8"));
+    } else {
+      const directText = decodeBufferText(zipped.buffer);
+      rows = parseCsv(directText);
+      if (!rows.length) throw new Error("canada_rail_csv_missing");
+    }
     const parsed = toItems(rows, ctx.seriesPoints);
     if (!parsed.items.length) throw new Error("canada_rail_metrics_empty");
 
@@ -204,7 +225,7 @@ export class CanadaRailPerformanceProvider implements GrainWidgetsProvider {
       status: parsed.items.length >= 2 ? "REFRESH" : "INDICATIVE",
       sourceName: "Statistics Canada",
       sourceAttribution: "Data: Statistics Canada rail service indicators",
-      sourceUrl: zipUrl,
+      sourceUrl: datasetUrlChosen,
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "COUNTRY_FIXED",
@@ -218,8 +239,8 @@ export class CanadaRailPerformanceProvider implements GrainWidgetsProvider {
       },
       notes: ["Official Statistics Canada weekly rail indicators", "No price normalization applied"],
       debug: {
-        sourceUrlUsed: zipUrl,
-        datasetUrlChosen: zipUrl,
+        sourceUrlUsed: zipped.finalUrl || zipUrl,
+        datasetUrlChosen,
         rowsParsed: parsed.rowsParsed,
         columnsDetected: parsed.columnsDetected,
         seriesPoints: parsed.items.reduce((sum, item) => sum + (item.series?.length || 0), 0),

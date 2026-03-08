@@ -174,7 +174,7 @@ export const FPMA_API_BASE_URL =
   );
 export const EC_AGRI_API_BASE_URL = normalizeBaseUrl(
   process.env.EC_AGRI_API_BASE_URL || "",
-  "https://agridata.ec.europa.eu",
+  "https://agridata.ec.europa.eu/extensions/DataPortal",
 );
 export const EC_CEREALS_API_PATH = process.env.EC_CEREALS_API_PATH || "/api/cereal";
 export const EC_OILSEEDS_API_PATH = process.env.EC_OILSEEDS_API_PATH || "/api/oilseeds";
@@ -252,7 +252,7 @@ export const USDA_PSD_CACHE_TTL_MS = envNum("USDA_PSD_CACHE_TTL_MS", 24 * 60 * 6
 export const USDA_PSD_MAX_YEARS = envNum("USDA_PSD_MAX_YEARS", 8);
 export const AMIS_BASE_URL = normalizeBaseUrl(
   process.env.AMIS_BASE_URL || "",
-  "https://legacy.amis-outlook.org/amis-monitoring",
+  "https://www.amis-outlook.org/resources-list/amis-market-monitor-archive/en",
 );
 export const AMIS_MARKET_MONITOR_URL =
   process.env.AMIS_MARKET_MONITOR_URL ||
