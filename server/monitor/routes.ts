@@ -273,6 +273,87 @@ async function withQuickReportBudget<T>(work: Promise<T>, fallback: () => T, tim
   }
 }
 
+function quickProviderReport(providers: any[]) {
+  return providers.map((provider) => ({
+    providerId: provider?.providerId,
+    enabled: Boolean(provider?.enabled),
+    status:
+      provider?.status === "ok"
+        ? "REFRESH"
+        : provider?.status === "partial"
+          ? "FALLBACK"
+          : provider?.status === "disabled"
+            ? "OFFLINE"
+            : "OFFLINE",
+    sourceUrlUsed: redactSensitiveUrl(provider?.sourceUrlUsed),
+    expectedCount: provider?.expectedCount,
+    mappedCount: provider?.mappedCount ?? 0,
+    coverage: provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? 0}`,
+    rowsParsed: provider?.rowsParsed,
+    columnsDetected: provider?.columnsDetected,
+    seriesPoints: provider?.seriesPoints,
+    httpStatus: provider?.httpStatus,
+    finalUrl: redactSensitiveUrl(provider?.finalUrl),
+    responseHeaders: provider?.responseHeaders,
+    transportUsed: provider?.transportUsed,
+    rangeRequestUsed: provider?.rangeRequestUsed,
+    query: redactSensitiveQuery(provider?.query),
+    cadence: provider?.cadence,
+    datasetUrlChosen: redactSensitiveUrl(provider?.datasetUrlChosen),
+    lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
+    cacheHit: Boolean(provider?.cacheHit),
+    fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
+    lastError: normalizeProviderError(provider?.error || (provider?.errorKind ? String(provider.errorKind) : undefined)),
+    notes: provider?.notes || [],
+  }));
+}
+
+function quickTriageReport(providers: any[]) {
+  const rows = quickProviderReport(providers).map((provider) => {
+    const errorKind = provider?.lastError?.errorKind || (provider?.status === "REFRESH" ? undefined : "UNKNOWN");
+    const fix =
+      errorKind === "CONFIG_MISSING"
+        ? "Set required env/config for this provider."
+        : errorKind === "HTTP_4XX"
+          ? "Inspect sourceUrlUsed/finalUrl and verify auth or endpoint path."
+          : errorKind === "HTTP_5XX"
+            ? "Keep fallback enabled; upstream is failing server-side."
+            : errorKind === "BLOCKED"
+              ? "Treat as upstream access restriction unless provider diagnostics prove otherwise."
+              : errorKind === "EMPTY_DATA"
+                ? "Requests succeed but no usable rows were extracted."
+                : errorKind === "PARSE_ERROR"
+                  ? "Source responded but parser did not recover usable data."
+                  : errorKind
+                    ? "No safe automatic fix beyond the current fallback chain."
+                    : "No action required.";
+    return {
+      providerId: provider.providerId,
+      status: provider.status,
+      coverage: provider.coverage,
+      errorKind,
+      suggestedFix: { actions: [fix] },
+    };
+  });
+
+  return {
+    runtime: {
+      timestamp: new Date().toISOString(),
+      appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
+      commit:
+        process.env.RAILWAY_GIT_COMMIT_SHA ||
+        process.env.RAILWAY_GIT_COMMIT ||
+        process.env.VERCEL_GIT_COMMIT_SHA ||
+        process.env.COMMIT_SHA ||
+        "unknown",
+      note: "lightweight_triage_snapshot",
+    },
+    providers: rows,
+    nextActions: [],
+    networkProbe: {},
+  };
+}
+
 export function registerMonitorRoutes(app: Express): void {
   logisticsIndicatorsService.start();
   grainMarketsService.start();
@@ -550,6 +631,38 @@ export function registerMonitorRoutes(app: Express): void {
   app.get("/api/monitor/activation-report", async (req, res) => {
     try {
       const nowIso = new Date().toISOString();
+      const deepReport = req.query.deep === "1";
+      const grainWidgetsDebug = grainWidgetsService.debugSummary();
+      if (!deepReport) {
+        res.json({
+          runtime: {
+            timestamp: nowIso,
+            appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
+            commit:
+              process.env.RAILWAY_GIT_COMMIT_SHA ||
+              process.env.RAILWAY_GIT_COMMIT ||
+              process.env.VERCEL_GIT_COMMIT_SHA ||
+              process.env.COMMIT_SHA ||
+              "unknown",
+            note: "lightweight_activation_snapshot",
+          },
+          providers: quickProviderReport(grainWidgetsDebug.providers || []),
+          fpmaDiscovery: {
+            cacheHit: false,
+            stale: false,
+            fetchedAt: undefined,
+            countriesCount: 0,
+            commoditiesCount: 0,
+            priceTypesCount: 0,
+            endpointsTried: [],
+            notes: ["skipped_in_lightweight_report_use_deep_1"],
+          },
+          fpmaResolutionTest: [],
+          widgets: [],
+          networkProbe: {},
+        });
+        return;
+      }
       const grainWidgets = await withReportBudget(
         grainWidgetsService.list(),
         () =>
@@ -559,7 +672,6 @@ export function registerMonitorRoutes(app: Express): void {
             territories: {},
           } as any),
       );
-      const grainWidgetsDebug = grainWidgetsService.debugSummary();
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
       const emptyFpmaDiscovery = {
@@ -580,7 +692,7 @@ export function registerMonitorRoutes(app: Express): void {
         notes: [`fpma_discovery_error:${String(error?.message || "unknown")}`],
       }));
       const fpmaResolutionTest: Awaited<ReturnType<typeof runFpmaDiscoveryResolutionTest>> =
-        req.query.deep === "1"
+        deepReport
           ? await withQuickReportBudget(runFpmaDiscoveryResolutionTest(), () => [], REPORT_FPMA_BUDGET_MS)
           : [];
 
@@ -1065,6 +1177,15 @@ export function registerMonitorRoutes(app: Express): void {
 
   app.get("/api/monitor/triage-report", async (req, res) => {
     try {
+      if (req.query.deep !== "1") {
+        const report = quickTriageReport(grainWidgetsService.debugSummary().providers || []);
+        if (req.query.format === "md") {
+          res.type("text/markdown").send(triageReportToMarkdown(report));
+          return;
+        }
+        res.json(report);
+        return;
+      }
       const report = await withReportBudget(
         buildMonitorTriageReport(grainWidgetsService),
         () => ({
