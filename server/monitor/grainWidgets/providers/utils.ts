@@ -11,6 +11,20 @@ export function makeProviderError(
   return error;
 }
 
+export function redactSensitiveUrl(url?: string): string | undefined {
+  if (!url) return url;
+  return url
+    .replace(/([?&](?:api_?key|apikey|key|app_identifier)=)[^&]+/gi, "$1REDACTED")
+    .replace(/(API_KEY=)[^&]+/gi, "$1REDACTED");
+}
+
+export function redactSensitiveQuery(query?: string): string | undefined {
+  if (!query) return query;
+  return query
+    .replace(/((?:^|&)(?:api_?key|apikey|key|app_identifier)=)[^&]+/gi, "$1REDACTED")
+    .replace(/(API_KEY=)[^&]+/gi, "$1REDACTED");
+}
+
 export async function fetchWithHeaders(
   url: string,
   opts: {

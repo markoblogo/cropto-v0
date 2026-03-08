@@ -88,7 +88,7 @@ import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
-import { fetchWithHeaders } from "./grainWidgets/providers/utils";
+import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
 
 function triageReportToMarkdown(report: any): string {
@@ -132,6 +132,7 @@ function topEntries(record: Record<string, number>, limit = 5) {
 }
 
 type ActivationErrorKind =
+  | "CONFIG_MISSING"
   | "DNS"
   | "TIMEOUT"
   | "HTTP_4XX"
@@ -146,6 +147,7 @@ function classifyErrorKind(args: { message?: string; code?: string; httpStatus?:
   const message = String(args.message || "").toLowerCase();
   const code = String(args.code || "").toUpperCase();
   const status = args.httpStatus;
+  if (message.includes("config_missing") || message.includes("api_key_missing") || message.includes("token_missing")) return "CONFIG_MISSING";
   if (code === "ENOTFOUND" || message.includes("enotfound") || message.includes("could not resolve host")) return "DNS";
   if (code === "ETIMEDOUT" || code === "ABORT_ERR" || message.includes("timed out") || message.includes("aborted")) return "TIMEOUT";
   if (status != null && status >= 400 && status < 500) return "HTTP_4XX";
@@ -159,6 +161,7 @@ function classifyErrorKind(args: { message?: string; code?: string; httpStatus?:
 
 function normalizeProviderError(error?: string) {
   if (!error) return undefined;
+  const redacted = redactSensitiveUrl(error);
   const statusMatch = error.match(/HTTP\s+(\d{3})/i);
   const httpStatus = statusMatch ? Number.parseInt(statusMatch[1], 10) : undefined;
   const codeMatch = error.match(/\b(ENOTFOUND|ETIMEDOUT|ABORT_ERR)\b/i);
@@ -166,9 +169,9 @@ function normalizeProviderError(error?: string) {
   return {
     name: "ProviderError",
     code,
-    message: error,
+    message: redacted,
     httpStatus,
-    errorKind: classifyErrorKind({ message: error, code, httpStatus }),
+    errorKind: classifyErrorKind({ message: redacted, code, httpStatus }),
   };
 }
 
@@ -213,7 +216,7 @@ async function probeUrl(url: string, opts?: { timeoutMs?: number; headers?: Head
       },
     });
     return {
-      url,
+      url: redactSensitiveUrl(url) || url,
       ok: response.ok,
       httpStatus: response.status,
       resolvedIp,
@@ -225,12 +228,12 @@ async function probeUrl(url: string, opts?: { timeoutMs?: number; headers?: Head
     const code = String(error?.cause?.code || error?.code || "");
     const message = String(error?.message || "probe_failed");
     return {
-      url,
+      url: redactSensitiveUrl(url) || url,
       ok: false,
       resolvedIp,
       elapsedMs: Date.now() - started,
       errorKind: classifyErrorKind({ message, code }),
-      errorMessage: message,
+      errorMessage: redactSensitiveUrl(message),
     };
   }
 }
@@ -612,7 +615,7 @@ export function registerMonitorRoutes(app: Express): void {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
-        const providerError = normalizeProviderError(provider?.error);
+        const providerError = normalizeProviderError(provider?.error || (provider?.errorKind ? String(provider.errorKind) : undefined));
         const status = widget && sourceMatchesProvider(widget.sourceName, providerId)
           ? widget.status
           : provider?.status === "ok"
@@ -625,7 +628,7 @@ export function registerMonitorRoutes(app: Express): void {
           providerId,
           enabled: Boolean(provider?.enabled),
           status,
-          sourceUrlUsed: provider?.sourceUrlUsed || widget?.sourceUrl,
+          sourceUrlUsed: redactSensitiveUrl(provider?.sourceUrlUsed || widget?.sourceUrl),
           expectedCount: provider?.expectedCount ?? expectedCoverage[providerId],
           mappedCount: provider?.mappedCount ?? 0,
           coverage: provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCoverage[providerId]}`,
@@ -637,8 +640,10 @@ export function registerMonitorRoutes(app: Express): void {
           linesFetched: provider?.linesFetched,
           linesMatched: provider?.linesMatched,
           downloadUrlUsed:
-            provider?.downloadUrlUsed ||
-            (widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined),
+            redactSensitiveUrl(
+              provider?.downloadUrlUsed ||
+              (widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined),
+            ),
           parseMode: provider?.parseMode,
           topScoreMin: provider?.topScoreMin,
           topScoreMax: provider?.topScoreMax,
@@ -648,7 +653,7 @@ export function registerMonitorRoutes(app: Express): void {
           columnsDetected: provider?.columnsDetected,
           seriesPoints: provider?.seriesPoints,
           httpStatus: provider?.httpStatus,
-          finalUrl: provider?.finalUrl,
+          finalUrl: redactSensitiveUrl(provider?.finalUrl),
           responseHeaders: provider?.responseHeaders,
           transportUsed: provider?.transportUsed,
           rangeRequestUsed: provider?.rangeRequestUsed,
@@ -664,9 +669,9 @@ export function registerMonitorRoutes(app: Express): void {
           discoveryEndpointsTried: provider?.discoveryEndpointsTried,
           countryQueryUsed: provider?.countryQueryUsed,
           selectedPriceType: provider?.selectedPriceType,
-          query: provider?.query,
+          query: redactSensitiveQuery(provider?.query),
           cadence: provider?.cadence,
-          datasetUrlChosen: provider?.datasetUrlChosen || (widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.datasetUrlChosen : undefined),
+          datasetUrlChosen: redactSensitiveUrl(provider?.datasetUrlChosen || (widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.datasetUrlChosen : undefined)),
           lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
           cacheHit: Boolean(provider?.cacheHit),
           fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
@@ -781,7 +786,7 @@ export function registerMonitorRoutes(app: Express): void {
           logisticsColumnsDetected: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.columnsDetected : undefined,
           logisticsSeriesPoints: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.seriesPoints : undefined,
           logisticsHttpStatus: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.httpStatus : undefined,
-          logisticsFinalUrl: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.finalUrl : undefined,
+          logisticsFinalUrl: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? redactSensitiveUrl(widget?.debug?.finalUrl) : undefined,
           logisticsResponseHeaders: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.responseHeaders : undefined,
           logisticsTransportUsed: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.transportUsed : undefined,
           logisticsRangeRequestUsed: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.rangeRequestUsed : undefined,
@@ -789,7 +794,7 @@ export function registerMonitorRoutes(app: Express): void {
           fpmaRowsCount,
           selectedPriceType: widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ? widget?.summary?.selectedPriceType : undefined,
           dailyMetadataSourceUrl: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.metadataSourceUrl : undefined,
-          dailyDownloadUrlUsed: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.downloadUrlUsed : undefined,
+          dailyDownloadUrlUsed: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? redactSensitiveUrl(widget?.debug?.downloadUrlUsed) : undefined,
           dailyReportFound: widget?.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? widget?.debug?.dailyReportFound : undefined,
           reportsToday: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? widget?.summary?.reportsToday ?? 0 : undefined,
           exportIndications: widget?.kind === "US_CASH_EXPORT_CONTEXT" ? Boolean(widget?.summary?.exportIndications) : undefined,
@@ -832,16 +837,30 @@ export function registerMonitorRoutes(app: Express): void {
       });
       const canadaRailProbeUrl = `${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`;
       const canadaRailProbe = await probeUrl(canadaRailProbeUrl, { timeoutMs: CANADA_RAIL_TIMEOUT_MS });
-      const wfpProbeRawUrl = `${WFP_DATABRIDGES_BASE_URL}?limit=1${WFP_DATABRIDGES_TOKEN ? `&app_identifier=${encodeURIComponent(WFP_DATABRIDGES_TOKEN)}` : ""}`;
-      const wfpProbeUrl = `${WFP_DATABRIDGES_BASE_URL}?limit=1${WFP_DATABRIDGES_TOKEN ? "&app_identifier=REDACTED" : ""}`;
-      const wfpProbe = await probeUrl(wfpProbeRawUrl, { timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS });
+      const wfpProbeRawUrl = `${WFP_DATABRIDGES_BASE_URL}?limit=1`;
+      const wfpProbeUrl = redactSensitiveUrl(wfpProbeRawUrl);
+      const wfpProbe = await probeUrl(wfpProbeRawUrl, {
+        timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS,
+        headers: WFP_DATABRIDGES_TOKEN
+          ? {
+              authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
+            }
+          : undefined,
+      });
       const wbProbeUrl = WB_MICRODATA_CSV_URL || `${WB_MICRODATA_BASE_URL.replace(/\/+$/, "")}/data-api`;
       const wbProbe = await probeUrl(wbProbeUrl, { timeoutMs: WB_MICRODATA_TIMEOUT_MS });
       const eurostatProbeUrl = `${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`;
       const eurostatProbe = await probeUrl(eurostatProbeUrl, { timeoutMs: EUROSTAT_TIMEOUT_MS });
-      const usdaPsdProbeRawUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances${USDA_FAS_API_KEY ? `?api_key=${encodeURIComponent(USDA_FAS_API_KEY)}` : ""}`;
-      const usdaPsdProbeUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances${USDA_FAS_API_KEY ? "?api_key=REDACTED" : ""}`;
-      const usdaPsdProbe = await probeUrl(usdaPsdProbeRawUrl, { timeoutMs: USDA_PSD_TIMEOUT_MS });
+      const usdaPsdProbeRawUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`;
+      const usdaPsdProbeUrl = redactSensitiveUrl(usdaPsdProbeRawUrl);
+      const usdaPsdProbe = await probeUrl(usdaPsdProbeRawUrl, {
+        timeoutMs: USDA_PSD_TIMEOUT_MS,
+        headers: USDA_FAS_API_KEY
+          ? {
+              API_KEY: USDA_FAS_API_KEY,
+            }
+          : undefined,
+      });
       const amisProbe = await probeUrl(AMIS_MARKET_MONITOR_URL, { timeoutMs: AMIS_TIMEOUT_MS });
       const imfProbe = await probeUrl(IMF_PCPS_TABLE2_URL, { timeoutMs: IMF_PCPS_TIMEOUT_MS });
       const oecdProbe = await probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, { timeoutMs: OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS });

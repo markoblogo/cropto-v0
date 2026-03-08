@@ -8,7 +8,7 @@ import {
 import type { GrainWidgetEcOfficialPricesSnapshot, GrainWidgetTableRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-import { fetchTextResponseWithTimeout, makeProviderError, normalizeRowPrice, parseNumber } from "./utils";
+import { fetchTextResponseWithTimeout, makeProviderError, normalizeRowPrice, parseNumber, redactSensitiveQuery, redactSensitiveUrl } from "./utils";
 
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetEcOfficialPricesSnapshot };
 type NassRow = { commodity: "corn" | "wheat" | "soybeans"; label: string; row: GrainWidgetTableRow; cadence: "annual" | "monthly" | "unknown" };
@@ -144,7 +144,7 @@ export class UsdaNassQuickStatsProvider implements GrainWidgetsProvider {
       status: mapped.length >= 3 ? "REFRESH" : "INDICATIVE",
       sourceName: "USDA NASS QuickStats",
       sourceAttribution: "Data: USDA NASS QuickStats API",
-      sourceUrl: urls[0],
+      sourceUrl: redactSensitiveUrl(urls[0]),
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "COUNTRY_FIXED",
@@ -159,8 +159,8 @@ export class UsdaNassQuickStatsProvider implements GrainWidgetsProvider {
       },
       notes: ["Official USDA NASS producer prices", "Annual cadence; sparkline remains conservative"],
       debug: {
-        sourceUrlUsed: urls[0],
-        query: urls[0].split("?")[1] || "",
+        sourceUrlUsed: redactSensitiveUrl(urls[0]),
+        query: redactSensitiveQuery(urls[0].split("?")[1] || ""),
         rowsParsed: allRows.length,
       },
     };

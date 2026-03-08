@@ -9,7 +9,7 @@ import {
 import type { GrainWidgetUsdaPsdBalances, GrainWidgetUsdPsdBalanceRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-import { fetchTextResponseWithTimeout, parseNumber } from "./utils";
+import { fetchTextResponseWithTimeout, makeProviderError, parseNumber, redactSensitiveQuery, redactSensitiveUrl } from "./utils";
 
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetUsdaPsdBalances };
 let cacheEntry: CacheEntry | null = null;
@@ -22,17 +22,57 @@ const commodityMap = [
 ] as const;
 
 const metricMap = [
-  { code: "PRODUCTION", label: "Production" },
-  { code: "CONSUMPTION", label: "Consumption" },
-  { code: "EXPORTS", label: "Exports" },
-  { code: "ENDING_STOCKS", label: "Ending stocks" },
+  { code: "PRODUCTION", label: "Production", patterns: ["production"] },
+  { code: "CONSUMPTION", label: "Consumption", patterns: ["domestic consumption", "consumption"] },
+  { code: "EXPORTS", label: "Exports", patterns: ["exports", "export"] },
+  { code: "ENDING_STOCKS", label: "Ending stocks", patterns: ["ending stocks", "ending stock"] },
 ] as const;
 
-function buildUrl(): string {
-  const url = new URL(`${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances`);
+function normalizeToken(value: unknown): string {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[_\s/-]+/g, " ")
+    .trim();
+}
+
+function buildEndpoint(path: string): string {
+  return `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function buildEndpointWithQuery(path: string): string {
+  const url = new URL(buildEndpoint(path));
   if (USDA_FAS_API_KEY) url.searchParams.set("api_key", USDA_FAS_API_KEY);
-  url.searchParams.set("years", String(USDA_PSD_MAX_YEARS));
   return url.toString();
+}
+
+function authHeaders(): HeadersInit {
+  return {
+    accept: "application/json,text/plain,*/*",
+    API_KEY: USDA_FAS_API_KEY,
+  };
+}
+
+async function fetchJson(path: string) {
+  const url = buildEndpoint(path);
+  try {
+    const response = await fetchTextResponseWithTimeout(url, USDA_PSD_TIMEOUT_MS, authHeaders());
+    return {
+      url,
+      finalUrl: response.finalUrl || url,
+      payload: JSON.parse(response.text),
+    };
+  } catch (error: any) {
+    if (Number(error?.httpStatus) !== 403) throw error;
+    const fallbackUrl = buildEndpointWithQuery(path);
+    const response = await fetchTextResponseWithTimeout(fallbackUrl, USDA_PSD_TIMEOUT_MS, {
+      accept: "application/json,text/plain,*/*",
+    });
+    return {
+      url: fallbackUrl,
+      finalUrl: response.finalUrl || fallbackUrl,
+      payload: JSON.parse(response.text),
+    };
+  }
 }
 
 function getArray(payload: any): any[] {
@@ -42,15 +82,54 @@ function getArray(payload: any): any[] {
   return [];
 }
 
-function normalizeRows(payload: any[]): GrainWidgetUsdPsdBalanceRow[] {
+function matchCommodityCode(entries: any[], token: string): string | undefined {
+  const found = entries.find((row) => {
+    const values = [
+      row?.commodityCode,
+      row?.commodity_code,
+      row?.code,
+      row?.commodityName,
+      row?.commodity_name,
+      row?.name,
+      row?.description,
+    ].map(normalizeToken);
+    return values.some((value) => value.includes(normalizeToken(token)));
+  });
+  return String(found?.commodityCode ?? found?.commodity_code ?? found?.code ?? "").trim() || undefined;
+}
+
+function matchAttributeIds(entries: any[]): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const metric of metricMap) {
+    const patterns = [...metric.patterns];
+    const found = entries.find((row) => {
+      const label = normalizeToken(row?.attributeName ?? row?.attribute_name ?? row?.name ?? row?.description ?? "");
+      return patterns.some((pattern: string) => label.includes(pattern));
+    });
+    const id = String(found?.attributeId ?? found?.attribute_id ?? found?.id ?? "").trim();
+    if (id) result[metric.code] = id;
+  }
+  return result;
+}
+
+function normalizeRows(payload: any[], attributeIds: Record<string, string>): GrainWidgetUsdPsdBalanceRow[] {
   const out: GrainWidgetUsdPsdBalanceRow[] = [];
   for (const commodity of commodityMap) {
     for (const metric of metricMap) {
+      const patterns = [...metric.patterns];
       const matched = payload
         .filter((row) => {
-          const commodityLabel = String(row?.commodity || row?.commodity_name || row?.commodityCode || row?.commodity_code || "").toUpperCase();
-          const metricLabel = String(row?.attribute || row?.attribute_name || row?.metric || row?.element || "").toUpperCase().replace(/\s+/g, "_");
-          return commodityLabel.includes(commodity.code) && metricLabel.includes(metric.code);
+          const commodityLabel = normalizeToken(row?.commodity ?? row?.commodity_name ?? row?.commodityCode ?? row?.commodity_code ?? "");
+          const metricLabel = normalizeToken(row?.attribute ?? row?.attribute_name ?? row?.metric ?? row?.element ?? row?.attributeName ?? "");
+          const metricId = String(row?.attributeId ?? row?.attribute_id ?? row?.attributeCode ?? "").trim();
+          return (
+            commodityLabel.includes(normalizeToken(commodity.code)) &&
+            (
+              metricLabel.includes(normalizeToken(metric.code)) ||
+              patterns.some((pattern: string) => metricLabel.includes(pattern)) ||
+              (attributeIds[metric.code] && metricId === attributeIds[metric.code])
+            )
+          );
         })
         .map((row) => {
           const year = Number.parseInt(String(row?.marketYear || row?.year || row?.marketing_year || ""), 10);
@@ -91,16 +170,46 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "USDA_PSD_BALANCES" as any });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetUsdaPsdBalances> {
-    if (!USDA_FAS_API_KEY) throw new Error("usda_fas_api_key_missing");
+    if (!USDA_FAS_API_KEY) {
+      throw makeProviderError("usda_fas_api_key_missing", {
+        errorKind: "CONFIG_MISSING",
+      });
+    }
     const now = Date.now();
     if (cacheEntry && now - cacheEntry.fetchedAt <= USDA_PSD_CACHE_TTL_MS) {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
     }
 
-    const url = buildUrl();
-    const response = await fetchTextResponseWithTimeout(url, USDA_PSD_TIMEOUT_MS, { accept: "application/json,text/plain,*/*" });
-    const rows = normalizeRows(getArray(JSON.parse(response.text)));
-    if (!rows.length) throw new Error("usda_psd_rows_empty");
+    const commodityMeta = await fetchJson("/api/psd/commodities");
+    const attributeMeta = await fetchJson("/api/psd/commodityAttributes");
+    const commodityCodes = Object.fromEntries(
+      commodityMap
+        .map((entry) => [entry.code, matchCommodityCode(getArray(commodityMeta.payload), entry.code === "CORN" ? "corn" : entry.code)])
+        .filter((entry): entry is [string, string] => Boolean(entry[1])),
+    );
+    const attributeIds = matchAttributeIds(getArray(attributeMeta.payload));
+    const currentYear = new Date().getUTCFullYear();
+    const fetchedRows: any[] = [];
+    let sourceUrlUsed = commodityMeta.finalUrl;
+
+    for (const commodity of commodityMap) {
+      const commodityCode = commodityCodes[commodity.code];
+      if (!commodityCode) continue;
+      for (let offset = 0; offset < USDA_PSD_MAX_YEARS; offset += 1) {
+        const marketYear = currentYear - offset;
+        const result = await fetchJson(`/api/psd/commodity/${encodeURIComponent(commodityCode)}/world/year/${marketYear}`);
+        sourceUrlUsed = result.finalUrl || result.url;
+        fetchedRows.push(...getArray(result.payload));
+      }
+    }
+
+    const rows = normalizeRows(fetchedRows, attributeIds);
+    if (!rows.length) {
+      throw makeProviderError("usda_psd_rows_empty", {
+        errorKind: "EMPTY",
+        finalUrl: sourceUrlUsed,
+      });
+    }
 
     const widget: GrainWidgetUsdaPsdBalances = {
       id: "grain-usda-psd-balances",
@@ -110,7 +219,7 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
       status: rows.length >= 6 ? "REFRESH" : "INDICATIVE",
       sourceName: "USDA FAS OpenData",
       sourceAttribution: "Data: USDA PSD / FAS OpenData",
-      sourceUrl: url.replace(USDA_FAS_API_KEY, "REDACTED"),
+      sourceUrl: redactSensitiveUrl(sourceUrlUsed),
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "GLOBAL",
@@ -125,9 +234,9 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
       },
       notes: ["Global balance sheet / marketing-year cadence", "Sparse series keep trend rendering conservative"],
       debug: {
-        sourceUrlUsed: url.replace(USDA_FAS_API_KEY, "REDACTED"),
-        query: url.includes("?") ? url.split("?")[1].replace(USDA_FAS_API_KEY, "REDACTED") : "",
-        rowsParsed: rows.length,
+        sourceUrlUsed: redactSensitiveUrl(sourceUrlUsed),
+        query: redactSensitiveQuery(sourceUrlUsed.includes("?") ? sourceUrlUsed.split("?")[1] : ""),
+        rowsParsed: fetchedRows.length,
       },
     };
     cacheEntry = { fetchedAt: now, widget };

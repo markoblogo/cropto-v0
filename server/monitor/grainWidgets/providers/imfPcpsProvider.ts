@@ -1,8 +1,5 @@
 import * as cheerio from "cheerio";
-import { execFileSync } from "node:child_process";
-import { existsSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { inflateSync } from "node:zlib";
 import {
   ENABLE_IMF_PCPS_WIDGET,
   IMF_PCPS_CACHE_TTL_MS,
@@ -13,7 +10,7 @@ import {
 import type { GrainWidgetImfCommodityBenchmarks, GrainWidgetImfCommodityBenchmarkRow } from "../types";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
-import { deriveSeries, fetchBufferWithTimeout, fetchTextResponseWithTimeout, makeProviderError, parseNumber } from "./utils";
+import { deriveSeries, fetchBufferWithTimeout, fetchTextResponseWithTimeout, makeProviderError, parseNumber, redactSensitiveUrl } from "./utils";
 
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetImfCommodityBenchmarks };
 let cacheEntry: CacheEntry | null = null;
@@ -99,20 +96,42 @@ function extractPdfReadableText(buffer: Buffer): string {
   return textParts.join("\n");
 }
 
-function extractPdfWithPdftotext(buffer: Buffer): string | undefined {
-  const tmpPath = join(tmpdir(), `cropto-imf-${Date.now()}.pdf`);
-  try {
-    writeFileSync(tmpPath, buffer);
-    return execFileSync("pdftotext", [tmpPath, "-"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-      maxBuffer: 4 * 1024 * 1024,
-    });
-  } catch {
-    return undefined;
-  } finally {
-    if (existsSync(tmpPath)) rmSync(tmpPath, { force: true });
+function extractPdfTextFromFlateStreams(buffer: Buffer): string {
+  const source = buffer.toString("latin1");
+  const streams = [...source.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)];
+  const parts: string[] = [];
+  for (const match of streams) {
+    const raw = match[1];
+    if (!raw) continue;
+    try {
+      const inflated = inflateSync(Buffer.from(raw, "latin1")).toString("latin1");
+      const textParts = (inflated.match(/\((?:\\.|[^()]){1,400}\)/g) || [])
+        .map((chunk) =>
+          chunk
+            .slice(1, -1)
+            .replace(/\\\)/g, ")")
+            .replace(/\\\(/g, "(")
+            .replace(/\\n/g, " ")
+            .replace(/\\r/g, " ")
+            .replace(/\\t/g, " "),
+        )
+        .filter((chunk) => /wheat|maize|corn|soybean|sunflower|rapeseed|\d{2,4}(?:\.\d+)?/i.test(chunk));
+      if (textParts.length) parts.push(textParts.join("\n"));
+    } catch {
+      continue;
+    }
   }
+  return parts.join("\n");
+}
+
+function extractAsciiRuns(buffer: Buffer): string {
+  const matches = buffer
+    .toString("latin1")
+    .match(/[A-Za-z0-9$%.,:/()'"\- ]{3,}/g) || [];
+  return matches
+    .map((chunk) => chunk.trim())
+    .filter((chunk) => chunk.length >= 3)
+    .join("\n");
 }
 
 function resolveImfTableUrl($: cheerio.CheerioAPI): string {
@@ -146,11 +165,27 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
       .map((href) => new URL(href, IMF_PCPS_PAGE_URL).toString());
     const tableUrl = resolveImfTableUrl($);
     const tableBinary = await fetchBufferWithTimeout(tableUrl, IMF_PCPS_TIMEOUT_MS, { accept: "application/pdf,text/plain,*/*" });
-    const pdftotextOutput = extractPdfWithPdftotext(tableBinary.buffer);
-    const extractedText = pdftotextOutput || extractPdfReadableText(tableBinary.buffer);
-    const rows = parseRowsFromStructuredText(extractedText, pdftotextOutput ? "pdftotext" : "pdf_literal")
-      .concat(parseRowsFromLooseText(extractedText, pdftotextOutput ? "pdftotext" : "pdf_literal"))
+    const extractedText = [
+      extractPdfTextFromFlateStreams(tableBinary.buffer),
+      extractPdfReadableText(tableBinary.buffer),
+    ].filter(Boolean).join("\n");
+    let extractionMode = "pdf_flate_stream";
+    let rows = parseRowsFromStructuredText(extractedText, extractionMode)
+      .concat(parseRowsFromLooseText(extractedText, extractionMode))
       .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+    if (!rows.length) {
+      const workbookUrl = discoveredLinks.find((href) => /external-data\.xls/i.test(href));
+      if (workbookUrl) {
+        const workbookBinary = await fetchBufferWithTimeout(workbookUrl, IMF_PCPS_TIMEOUT_MS, {
+          accept: "application/vnd.ms-excel,application/octet-stream,*/*",
+        });
+        const workbookText = extractAsciiRuns(workbookBinary.buffer);
+        extractionMode = "xls_ascii";
+        rows = parseRowsFromStructuredText(workbookText, extractionMode)
+          .concat(parseRowsFromLooseText(workbookText, extractionMode))
+          .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+      }
+    }
     if (!rows.length) {
       throw makeProviderError("imf_pcps_rows_empty", {
         errorKind: "EMPTY",
@@ -167,7 +202,7 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
       status: rows.length >= 3 ? "REFRESH" : "INDICATIVE",
       sourceName: "IMF",
       sourceAttribution: "Data: IMF primary commodity prices",
-      sourceUrl: tableUrl,
+      sourceUrl: redactSensitiveUrl(tableUrl),
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "GLOBAL",
@@ -185,11 +220,11 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
         "Benchmark layer; units kept explicit and conservative",
       ],
       debug: {
-        sourceUrlUsed: tableBinary.finalUrl || tableUrl,
+        sourceUrlUsed: redactSensitiveUrl(tableBinary.finalUrl || tableUrl),
         rowsParsed: rows.length,
         warnings: [
           `content_type:${tableBinary.contentType || "unknown"}`,
-          `extraction_mode:${pdftotextOutput ? "pdftotext" : "pdf_literal"}`,
+          `extraction_mode:${extractionMode}`,
           ...(discoveredLinks.length ? [`discovered_links:${discoveredLinks.join(" | ")}`] : []),
           ...(rows.some((row) => row.confidence !== "HIGH") ? ["some_rows_not_high_confidence"] : []),
         ],

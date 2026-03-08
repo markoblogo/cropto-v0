@@ -93,7 +93,8 @@ type SuggestedFix = {
 function redactUrl(url?: string): string | undefined {
   if (!url) return undefined;
   return url
-    .replace(/([?&](?:api_?key|apikey)=)[^&]+/gi, "$1REDACTED")
+    .replace(/([?&](?:api_?key|apikey|key|app_identifier)=)[^&]+/gi, "$1REDACTED")
+    .replace(/(API_KEY=)[^&]+/gi, "$1REDACTED")
     .replace(/(\/datasets\/[^?]+\?rows=\d+&api_key=)[^&]+/gi, "$1REDACTED");
 }
 
@@ -713,8 +714,16 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorMessage: String(error?.message || "probe_failed"),
     })),
     wfp: await probeUrl(
-      `${WFP_DATABRIDGES_BASE_URL}?limit=1${WFP_DATABRIDGES_TOKEN ? `&app_identifier=${encodeURIComponent(WFP_DATABRIDGES_TOKEN)}` : ""}`,
-      { configMissing: !WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN, timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS },
+      `${WFP_DATABRIDGES_BASE_URL}?limit=1`,
+      {
+        configMissing: !WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN,
+        timeoutMs: WFP_DATABRIDGES_TIMEOUT_MS,
+        headers: WFP_DATABRIDGES_TOKEN
+          ? {
+              authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
+            }
+          : undefined,
+      },
     ).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
@@ -740,8 +749,16 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorMessage: String(error?.message || "probe_failed"),
     })),
     usdaPsd: await probeUrl(
-      `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/world-commodity-balances${USDA_FAS_API_KEY ? `?api_key=${encodeURIComponent(USDA_FAS_API_KEY)}` : ""}`,
-      { configMissing: !USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY, timeoutMs: USDA_PSD_TIMEOUT_MS },
+      `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`,
+      {
+        configMissing: !USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY,
+        timeoutMs: USDA_PSD_TIMEOUT_MS,
+        headers: USDA_FAS_API_KEY
+          ? {
+              API_KEY: USDA_FAS_API_KEY,
+            }
+          : undefined,
+      },
     ).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
