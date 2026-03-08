@@ -26,6 +26,7 @@ import {
   ENABLE_USDA_MARS_REPORTS_WIDGET,
   FAO_FFPI_URL,
   FAOSTAT_BASE_URL,
+  FAOSTAT_TIMEOUT_MS,
   FPMA_API_BASE_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
@@ -44,6 +45,7 @@ import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
+import { fetchWithHeaders } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
 
 function triageReportToMarkdown(report: any): string {
@@ -127,7 +129,7 @@ function normalizeProviderError(error?: string) {
   };
 }
 
-async function probeUrl(url: string): Promise<{
+async function probeUrl(url: string, opts?: { timeoutMs?: number; headers?: HeadersInit }): Promise<{
   url: string;
   ok: boolean;
   httpStatus?: number;
@@ -137,7 +139,18 @@ async function probeUrl(url: string): Promise<{
   errorMessage?: string;
 }> {
   const started = Date.now();
-  const parsed = new URL(url);
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch (error: any) {
+    return {
+      url,
+      ok: false,
+      elapsedMs: Date.now() - started,
+      errorKind: classifyErrorKind({ message: String(error?.message || "invalid_url") }),
+      errorMessage: "invalid_url",
+    };
+  }
   let resolvedIp: string | undefined;
   try {
     const dns = await lookup(parsed.hostname);
@@ -146,28 +159,16 @@ async function probeUrl(url: string): Promise<{
     resolvedIp = undefined;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    let response = await fetch(url, {
-      method: "HEAD",
-      signal: controller.signal,
+    const response = await fetchWithHeaders(url, {
+      timeoutMs: opts?.timeoutMs || 5000,
+      retryOnStatuses: [403, 429],
       headers: {
-        accept: "application/json,text/csv,text/plain,*/*",
+        accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,text/csv,text/plain,*/*",
         "user-agent": "CroptoMonitor/activation-report",
+        ...opts?.headers,
       },
     });
-    if (response.status === 405 || response.status === 501) {
-      response = await fetch(url, {
-        method: "GET",
-        signal: controller.signal,
-        headers: {
-          accept: "application/json,text/csv,text/plain,*/*",
-          "user-agent": "CroptoMonitor/activation-report",
-        },
-      });
-    }
-    clearTimeout(timeout);
     return {
       url,
       ok: response.ok,
@@ -178,7 +179,6 @@ async function probeUrl(url: string): Promise<{
       errorMessage: response.ok ? undefined : `HTTP ${response.status}`,
     };
   } catch (error: any) {
-    clearTimeout(timeout);
     const code = String(error?.cause?.code || error?.code || "");
     const message = String(error?.message || "probe_failed");
     return {
@@ -572,6 +572,9 @@ export function registerMonitorRoutes(app: Express): void {
           rowsParsed: provider?.rowsParsed,
           columnsDetected: provider?.columnsDetected,
           seriesPoints: provider?.seriesPoints,
+          httpStatus: provider?.httpStatus,
+          finalUrl: provider?.finalUrl,
+          responseHeaders: provider?.responseHeaders,
           parseWarnings: provider?.parseWarnings,
           areaCodes: provider?.areaCodes,
           itemCodes: provider?.itemCodes,
@@ -659,6 +662,9 @@ export function registerMonitorRoutes(app: Express): void {
           logisticsDatasetUrlChosen: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.datasetUrlChosen : undefined,
           logisticsColumnsDetected: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.columnsDetected : undefined,
           logisticsSeriesPoints: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.seriesPoints : undefined,
+          logisticsHttpStatus: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.httpStatus : undefined,
+          logisticsFinalUrl: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.finalUrl : undefined,
+          logisticsResponseHeaders: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.responseHeaders : undefined,
           faostatRowsCount,
           fpmaRowsCount,
           selectedPriceType: widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ? widget?.summary?.selectedPriceType : undefined,
@@ -694,11 +700,15 @@ export function registerMonitorRoutes(app: Express): void {
       const nasdaqProbeUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? "&api_key=REDACTED" : ""}`;
       const nasdaqProbeResult = await probeUrl(nasdaqProbeRawUrl);
       const usdaGtrProbeUrl = USDA_GTR_DATASET_URLS[0] || "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report";
-      const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl);
+      const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl, {
+        headers: {
+          accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
+        },
+      });
       const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
-      const faostatProbe = await probeUrl(faostatProbeUrl);
+      const faostatProbe = await probeUrl(faostatProbeUrl, { timeoutMs: FAOSTAT_TIMEOUT_MS });
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;
-      const faostatSampleProbe = await probeUrl(faostatSampleProbeUrl);
+      const faostatSampleProbe = await probeUrl(faostatSampleProbeUrl, { timeoutMs: FAOSTAT_TIMEOUT_MS });
       const fpmaProbeUrl = `${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`;
       const fpmaProbe = await probeUrl(fpmaProbeUrl);
 

@@ -24,6 +24,9 @@ type ParsedDataset = {
   sourceUrlUsed: string;
   columnsDetected: string[];
   datasetUrlChosen: string;
+  httpStatus?: number;
+  finalUrl?: string;
+  responseHeaders?: Record<string, string>;
 };
 
 type CacheEntry = {
@@ -424,6 +427,9 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
     let rowsParsed = 0;
     let columnsDetected: string[] = [];
     let totalSeriesPoints = 0;
+    let httpStatus: number | undefined;
+    let finalUrl: string | undefined;
+    let responseHeaders: Record<string, string> | undefined;
 
     for (const url of USDA_GTR_DATASET_URLS) {
       try {
@@ -444,6 +450,11 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
         }
         if (parsedSignals.length >= Math.max(1, USDA_GTR_MAX_SIGNALS)) break;
       } catch (error: any) {
+        if (typeof error?.httpStatus === "number") httpStatus = error.httpStatus;
+        if (typeof error?.finalUrl === "string") finalUrl = error.finalUrl;
+        if (error?.responseHeaders && typeof error.responseHeaders === "object") {
+          responseHeaders = error.responseHeaders;
+        }
         warnings.push(`${url}:${String(error?.message || "fetch_failed").slice(0, 120)}`);
       }
     }
@@ -492,6 +503,9 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
         rowsParsed,
         columnsDetected: columnsDetected.length ? columnsDetected : undefined,
         seriesPoints: totalSeriesPoints || undefined,
+        httpStatus,
+        finalUrl,
+        responseHeaders,
         parseWarnings: warnings.length ? warnings : undefined,
       },
     };

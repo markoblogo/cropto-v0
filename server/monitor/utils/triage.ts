@@ -5,6 +5,7 @@ import {
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
   FAOSTAT_BASE_URL,
+  FAOSTAT_TIMEOUT_MS,
   FPMA_API_BASE_URL,
   GRAIN_WIDGETS_CACHE_TTL_MS,
   GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
@@ -13,6 +14,7 @@ import {
   USDA_MARS_PUBLIC_INDEX_URLS,
 } from "../grainWidgets/config";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "../grainWidgets/providers/fpmaDiscovery";
+import { fetchWithHeaders } from "../grainWidgets/providers/utils";
 
 type TriageErrorKind =
   | "CONFIG_MISSING"
@@ -86,7 +88,7 @@ function normalizeProviderError(error?: string, configMissing = false) {
   };
 }
 
-async function probeUrl(url: string | undefined, options?: { configMissing?: boolean }): Promise<ProbeResult> {
+async function probeUrl(url: string | undefined, options?: { configMissing?: boolean; timeoutMs?: number; headers?: HeadersInit }): Promise<ProbeResult> {
   if (!url || options?.configMissing) {
     return {
       url: redactUrl(url),
@@ -106,7 +108,7 @@ async function probeUrl(url: string | undefined, options?: { configMissing?: boo
       url: redactUrl(url),
       ok: false,
       elapsedMs: Date.now() - started,
-      errorKind: "CONFIG_MISSING",
+      errorKind: "UNKNOWN",
       errorMessage: "invalid_url",
     };
   }
@@ -118,28 +120,16 @@ async function probeUrl(url: string | undefined, options?: { configMissing?: boo
     resolvedIp = undefined;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    let response = await fetch(url, {
-      method: "HEAD",
-      signal: controller.signal,
+    const response = await fetchWithHeaders(url, {
+      timeoutMs: options?.timeoutMs || 5000,
+      retryOnStatuses: [403, 429],
       headers: {
-        accept: "application/json,text/csv,text/plain,*/*",
+        accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,text/csv,text/plain,*/*",
         "user-agent": "CroptoMonitor/triage-report",
+        ...options?.headers,
       },
     });
-    if (response.status === 405 || response.status === 501) {
-      response = await fetch(url, {
-        method: "GET",
-        signal: controller.signal,
-        headers: {
-          accept: "application/json,text/csv,text/plain,*/*",
-          "user-agent": "CroptoMonitor/triage-report",
-        },
-      });
-    }
-    clearTimeout(timeout);
     return {
       url: redactUrl(url),
       ok: response.ok,
@@ -150,7 +140,6 @@ async function probeUrl(url: string | undefined, options?: { configMissing?: boo
       errorMessage: response.ok ? undefined : `HTTP ${response.status}`,
     };
   } catch (error: any) {
-    clearTimeout(timeout);
     const code = String(error?.cause?.code || error?.code || "");
     const message = String(error?.message || "probe_failed");
     return {
@@ -348,14 +337,12 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     ENABLE_FAOSTAT_PP_WIDGET,
     ENABLE_USDA_GTR_LOGISTICS_WIDGET,
     ENABLE_USDA_MARS_DAILY_TXT,
-    FPMA_API_BASE_URL: process.env.FPMA_API_BASE_URL ? "present" : "missing",
-    FAOSTAT_BASE_URL: process.env.FAOSTAT_BASE_URL ? "present" : "missing",
-    USDA_GTR_DATASET_URLS: process.env.USDA_GTR_DATASET_URLS ? "present" : "missing",
-    USDA_GTR_DATASET_URLS_COUNT: process.env.USDA_GTR_DATASET_URLS
-      ? process.env.USDA_GTR_DATASET_URLS.split(",").map((value) => value.trim()).filter(Boolean).length
-      : 0,
-    USDA_MARS_BASE_URL: process.env.USDA_MARS_BASE_URL ? "present" : "missing",
-    USDA_MARS_FILE_URL_TEMPLATES: process.env.USDA_MARS_FILE_URL_TEMPLATES ? "present" : "missing",
+    FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
+    FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
+    USDA_GTR_DATASET_URLS: USDA_GTR_DATASET_URLS.length ? "present" : "missing",
+    USDA_GTR_DATASET_URLS_COUNT: USDA_GTR_DATASET_URLS.length,
+    USDA_MARS_BASE_URL: USDA_MARS_BASE_URL ? "present" : "missing",
+    USDA_MARS_FILE_URL_TEMPLATES: "present",
     NASDAQ_API_KEY: process.env.NASDAQ_API_KEY ? "present" : "missing",
     ALPHAVANTAGE_API_KEY: process.env.ALPHAVANTAGE_API_KEY ? "present" : "missing",
     GRAIN_WIDGETS_FETCH_TIMEOUT_MS,
@@ -374,7 +361,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
 
   const probes = {
     fpma: await probeUrl(`${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`, {
-      configMissing: !process.env.FPMA_API_BASE_URL,
+      configMissing: !FPMA_API_BASE_URL,
     }).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
@@ -382,7 +369,8 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorMessage: String(error?.message || "probe_failed"),
     })),
     faostat: await probeUrl(`${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`, {
-      configMissing: !process.env.FAOSTAT_BASE_URL,
+      configMissing: !FAOSTAT_BASE_URL,
+      timeoutMs: FAOSTAT_TIMEOUT_MS,
     }).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
@@ -390,7 +378,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorMessage: String(error?.message || "probe_failed"),
     })),
     usdaGtr: await probeUrl(USDA_GTR_DATASET_URLS[0], {
-      configMissing: !process.env.USDA_GTR_DATASET_URLS,
+      configMissing: USDA_GTR_DATASET_URLS.length === 0,
     }).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
@@ -398,7 +386,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorMessage: String(error?.message || "probe_failed"),
     })),
     usdaMarsDailyTxt: await probeUrl(marsDownloadUrl, {
-      configMissing: !process.env.USDA_MARS_BASE_URL && !process.env.USDA_MARS_FILE_URL_TEMPLATES,
+      configMissing: !USDA_MARS_BASE_URL && !marsDownloadUrl,
     }).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
@@ -406,7 +394,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorMessage: String(error?.message || "probe_failed"),
     })),
     usdaMars: await probeUrl(marsIndexUrl, {
-      configMissing: !process.env.USDA_MARS_BASE_URL && !process.env.USDA_MARS_PUBLIC_INDEX_URLS,
+      configMissing: !USDA_MARS_BASE_URL && USDA_MARS_PUBLIC_INDEX_URLS.length === 0,
     }).catch((error: any) => ({
       ok: false,
       elapsedMs: 0,
@@ -419,10 +407,18 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     const provider = providers.find((item: any) => item.providerId === providerId);
     const widget = byKind[widgetKind] as any;
     const configMissing =
-      (providerId === "fpma-market-prices" && !process.env.FPMA_API_BASE_URL) ||
-      (providerId === "faostat-pp" && !process.env.FAOSTAT_BASE_URL) ||
-      (providerId === "usda-gtr-logistics" && !process.env.USDA_GTR_DATASET_URLS);
-    const lastError = normalizeProviderError(provider?.error, configMissing);
+      (providerId === "fpma-market-prices" && !FPMA_API_BASE_URL) ||
+      (providerId === "faostat-pp" && !FAOSTAT_BASE_URL) ||
+      (providerId === "usda-gtr-logistics" && USDA_GTR_DATASET_URLS.length === 0);
+    const probeMatch =
+      providerId === "fpma-market-prices" ? probes.fpma :
+      providerId === "faostat-pp" ? probes.faostat :
+      providerId === "usda-gtr-logistics" ? probes.usdaGtr :
+      probes.usdaMarsDailyTxt;
+    const lastError = normalizeProviderError(
+      provider?.error || (provider?.errorKind ? String(provider.errorKind) : undefined) || (!probeMatch.ok ? probeMatch.errorMessage : undefined),
+      configMissing,
+    );
     const errorMessageShort = shortMessage(lastError?.message);
     const sourceUrlUsed = redactUrl(provider?.downloadUrlUsed || provider?.sourceUrlUsed || widget?.debug?.downloadUrlUsed || widget?.debug?.sourceUrlUsed || widget?.sourceUrl);
     const coverage = provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCount}`;
@@ -434,15 +430,15 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       enabled: Boolean(provider?.enabled),
       status: String(widget?.status || provider?.status || "OFFLINE"),
       coverage,
-      errorKind: lastError?.errorKind,
+      errorKind: provider?.errorKind || lastError?.errorKind || probeMatch?.errorKind,
       errorMessageShort,
       sourceUrlUsed,
       fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
       lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
       suggestedFix: providerSuggestedFix({
         providerId,
-        errorKind: lastError?.errorKind,
-        errorMessage: lastError?.message,
+        errorKind: provider?.errorKind || lastError?.errorKind || probeMatch?.errorKind,
+        errorMessage: lastError?.message || probeMatch?.errorMessage,
         sourceUrlUsed,
         downloadUrlUsed: redactUrl(provider?.downloadUrlUsed || widget?.debug?.downloadUrlUsed),
         notes,

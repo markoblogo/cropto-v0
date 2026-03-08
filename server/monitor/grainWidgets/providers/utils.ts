@@ -9,6 +9,7 @@ export async function fetchWithHeaders(
     headers?: HeadersInit;
     retryOnStatuses?: number[];
     retryDelayMs?: number;
+    redirect?: RequestRedirect;
   },
 ): Promise<Response> {
   const retryOnStatuses = opts.retryOnStatuses || [];
@@ -20,10 +21,12 @@ export async function fetchWithHeaders(
     try {
       const response = await fetch(url, {
         signal: controller.signal,
+        redirect: opts.redirect || "follow",
         headers: {
           "user-agent": USDA_GTR_USER_AGENT,
-          accept: "application/json,text/plain,text/html,*/*",
+          accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/json,text/plain,text/html,*/*",
           "accept-language": "en-US,en;q=0.9",
+          referer: "https://www.ams.usda.gov/",
           ...opts.headers,
         },
       });
@@ -39,13 +42,27 @@ export async function fetchWithHeaders(
   throw new Error("fetch_failed");
 }
 
+function attachHttpDebug(error: Error, response: Response): Error {
+  const pickedHeaders: Record<string, string> = {};
+  for (const key of ["server", "via", "cf-ray", "content-type", "location"]) {
+    const value = response.headers.get(key);
+    if (value) pickedHeaders[key] = value;
+  }
+  Object.assign(error, {
+    httpStatus: response.status,
+    finalUrl: response.url,
+    responseHeaders: pickedHeaders,
+  });
+  return error;
+}
+
 export async function fetchTextWithTimeout(url: string, timeoutMs: number, headers?: HeadersInit): Promise<string> {
   const response = await fetchWithHeaders(url, {
     timeoutMs,
     headers,
     retryOnStatuses: [403, 429],
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.ok) throw attachHttpDebug(new Error(`HTTP ${response.status}`), response);
   return await response.text();
 }
 
@@ -60,7 +77,7 @@ export async function fetchTextResponseWithTimeout(
     retryOnStatuses: [403, 429],
   });
   const text = await response.text();
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.ok) throw attachHttpDebug(new Error(`HTTP ${response.status}`), response);
   return {
     text,
     contentType: response.headers.get("content-type"),
@@ -79,7 +96,7 @@ export async function fetchBufferWithTimeout(url: string, timeoutMs: number, hea
     headers,
     retryOnStatuses: [403, 429],
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.ok) throw attachHttpDebug(new Error(`HTTP ${response.status}`), response);
   const arrayBuffer = await response.arrayBuffer();
   return {
     buffer: Buffer.from(arrayBuffer),

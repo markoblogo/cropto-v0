@@ -70,6 +70,9 @@ type ProviderRuntime = {
   rowsParsed?: number;
   columnsDetected?: string[];
   seriesPoints?: number;
+  httpStatus?: number;
+  finalUrl?: string;
+  responseHeaders?: Record<string, string>;
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];
@@ -607,6 +610,9 @@ export class GrainWidgetsService {
           rowsParsed: state?.rowsParsed,
           columnsDetected: state?.columnsDetected,
           seriesPoints: state?.seriesPoints,
+          httpStatus: state?.httpStatus,
+          finalUrl: state?.finalUrl,
+          responseHeaders: state?.responseHeaders,
           parseWarnings: state?.parseWarnings,
           areaCodes: state?.areaCodes,
           itemCodes: state?.itemCodes,
@@ -715,6 +721,9 @@ export class GrainWidgetsService {
           rowsParsed: state?.rowsParsed,
           columnsDetected: state?.columnsDetected,
           seriesPoints: state?.seriesPoints,
+          httpStatus: state?.httpStatus,
+          finalUrl: state?.finalUrl,
+          responseHeaders: state?.responseHeaders,
           parseWarnings: state?.parseWarnings,
           areaCodes: state?.areaCodes,
           itemCodes: state?.itemCodes,
@@ -862,6 +871,9 @@ export class GrainWidgetsService {
             rowsParsed: fpmaDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
             columnsDetected: gtrDebug?.columnsDetected,
             seriesPoints: gtrDebug?.seriesPoints,
+            httpStatus: gtrDebug?.httpStatus,
+            finalUrl: gtrDebug?.finalUrl,
+            responseHeaders: gtrDebug?.responseHeaders,
             parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
             areaCodes: faostatDebug?.areaCodes,
             itemCodes: faostatDebug?.itemCodes,
@@ -921,6 +933,9 @@ export class GrainWidgetsService {
           rowsParsed: fpmaDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
           columnsDetected: gtrDebug?.columnsDetected,
           seriesPoints: gtrDebug?.seriesPoints,
+          httpStatus: gtrDebug?.httpStatus,
+          finalUrl: gtrDebug?.finalUrl,
+          responseHeaders: gtrDebug?.responseHeaders,
           parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
           areaCodes: faostatDebug?.areaCodes,
           itemCodes: faostatDebug?.itemCodes,

@@ -503,6 +503,9 @@ export interface GrainWidgetUsdaGtrLogisticsSnapshot extends GrainWidgetBase {
     rowsParsed?: number;
     columnsDetected?: string[];
     seriesPoints?: number;
+    httpStatus?: number;
+    finalUrl?: string;
+    responseHeaders?: Record<string, string>;
     parseWarnings?: string[];
   };
 }
@@ -679,6 +682,9 @@ export interface GrainWidgetsProviderDebug {
   rowsParsed?: number;
   columnsDetected?: string[];
   seriesPoints?: number;
+  httpStatus?: number;
+  finalUrl?: string;
+  responseHeaders?: Record<string, string>;
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];

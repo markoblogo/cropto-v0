@@ -18,6 +18,10 @@ type EndpointProbe = {
   status?: number;
   elapsedMs?: number;
   error?: string;
+  contentType?: string;
+  topLevelKeys?: string[];
+  arrayLocation?: string;
+  sampleRowKeys?: string[];
 };
 
 type CountryEntry = {
@@ -182,18 +186,41 @@ function parseCropMap(): Record<CropKey, CropMapEntry> {
   }
 }
 
-function toArrayPayload(payload: any): any[] {
-  if (Array.isArray(payload)) return payload;
-  if (!payload || typeof payload !== "object") return [];
-  const keys = ["data", "results", "items", "records", "response", "series", "value"];
+function detectArrayPayload(payload: any): { rows: any[]; location?: string; topLevelKeys?: string[]; sampleRowKeys?: string[] } {
+  if (Array.isArray(payload)) {
+    return {
+      rows: payload,
+      location: "root",
+      topLevelKeys: undefined,
+      sampleRowKeys: payload[0] && typeof payload[0] === "object" ? Object.keys(payload[0]).slice(0, 12) : undefined,
+    };
+  }
+  if (!payload || typeof payload !== "object") return { rows: [] };
+  const topLevelKeys = Object.keys(payload).slice(0, 20);
+  const keys = ["data", "results", "prices", "items", "records", "response", "series", "value"];
   for (const key of keys) {
-    if (Array.isArray(payload[key])) return payload[key];
+    if (Array.isArray(payload[key])) {
+      const rows = payload[key];
+      return {
+        rows,
+        location: key,
+        topLevelKeys,
+        sampleRowKeys: rows[0] && typeof rows[0] === "object" ? Object.keys(rows[0]).slice(0, 12) : undefined,
+      };
+    }
     if (payload[key] && typeof payload[key] === "object") {
-      const nested = toArrayPayload(payload[key]);
-      if (nested.length) return nested;
+      const nested = detectArrayPayload(payload[key]);
+      if (nested.rows.length) {
+        return {
+          rows: nested.rows,
+          location: nested.location ? `${key}.${nested.location}` : key,
+          topLevelKeys,
+          sampleRowKeys: nested.sampleRowKeys,
+        };
+      }
     }
   }
-  return [];
+  return { rows: [], topLevelKeys };
 }
 
 function pickFirst(obj: any, keys: string[]): unknown {
@@ -316,7 +343,7 @@ function deriveFromRecords(rows: any[]): {
   return { countries, commodities, priceTypes };
 }
 
-async function fetchJsonProbe(url: string): Promise<{ ok: boolean; status?: number; elapsedMs: number; data?: any; error?: string }> {
+async function fetchJsonProbe(url: string): Promise<{ ok: boolean; status?: number; elapsedMs: number; data?: any; error?: string; contentType?: string; topLevelKeys?: string[]; arrayLocation?: string; sampleRowKeys?: string[] }> {
   const started = Date.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FPMA_TIMEOUT_MS);
@@ -329,6 +356,7 @@ async function fetchJsonProbe(url: string): Promise<{ ok: boolean; status?: numb
       },
     });
     const text = await response.text();
+    const contentType = response.headers.get("content-type") || undefined;
     let data: any;
     try {
       data = text ? JSON.parse(text) : undefined;
@@ -336,12 +364,13 @@ async function fetchJsonProbe(url: string): Promise<{ ok: boolean; status?: numb
       data = undefined;
     }
     if (!response.ok) {
-      return { ok: false, status: response.status, elapsedMs: Date.now() - started, error: `HTTP ${response.status}` };
+      return { ok: false, status: response.status, elapsedMs: Date.now() - started, error: `HTTP ${response.status}`, contentType };
     }
     if (data == null) {
-      return { ok: false, status: response.status, elapsedMs: Date.now() - started, error: "PARSE_EMPTY" };
+      return { ok: false, status: response.status, elapsedMs: Date.now() - started, error: "PARSE_EMPTY", contentType };
     }
-    return { ok: true, status: response.status, elapsedMs: Date.now() - started, data };
+    const payloadInfo = detectArrayPayload(data);
+    return { ok: true, status: response.status, elapsedMs: Date.now() - started, data, contentType, topLevelKeys: payloadInfo.topLevelKeys, arrayLocation: payloadInfo.location, sampleRowKeys: payloadInfo.sampleRowKeys };
   } catch (error: any) {
     return { ok: false, elapsedMs: Date.now() - started, error: String(error?.message || "fetch_failed") };
   } finally {
@@ -383,9 +412,9 @@ export async function fetchFpmaDiscoverySnapshot(_ctx?: { force?: boolean }): Pr
   for (const endpoint of explicitDiscoveryPaths) {
     const url = buildUrl(endpoint.path);
     const probe = await fetchJsonProbe(url);
-    endpointsTried.push({ name: endpoint.name, url, ok: probe.ok, status: probe.status, elapsedMs: probe.elapsedMs, error: probe.error });
+    endpointsTried.push({ name: endpoint.name, url, ok: probe.ok, status: probe.status, elapsedMs: probe.elapsedMs, error: probe.error, contentType: probe.contentType, topLevelKeys: probe.topLevelKeys, arrayLocation: probe.arrayLocation, sampleRowKeys: probe.sampleRowKeys });
     if (!probe.ok || probe.data == null) continue;
-    const rows = toArrayPayload(probe.data);
+    const rows = detectArrayPayload(probe.data).rows;
     if (!rows.length) continue;
 
     if (endpoint.name === "countries" || endpoint.name === "metadata" || endpoint.name === "lookup" || endpoint.name === "list") {
@@ -416,9 +445,9 @@ export async function fetchFpmaDiscoverySnapshot(_ctx?: { force?: boolean }): Pr
     for (const endpoint of derivedDiscoveryPaths) {
       const url = buildUrl(endpoint.path);
       const probe = await fetchJsonProbe(url);
-      endpointsTried.push({ name: `derived:${endpoint.name}`, url, ok: probe.ok, status: probe.status, elapsedMs: probe.elapsedMs, error: probe.error });
+      endpointsTried.push({ name: `derived:${endpoint.name}`, url, ok: probe.ok, status: probe.status, elapsedMs: probe.elapsedMs, error: probe.error, contentType: probe.contentType, topLevelKeys: probe.topLevelKeys, arrayLocation: probe.arrayLocation, sampleRowKeys: probe.sampleRowKeys });
       if (!probe.ok || probe.data == null) continue;
-      const rows = toArrayPayload(probe.data);
+      const rows = detectArrayPayload(probe.data).rows;
       if (!rows.length) continue;
       const derived = deriveFromRecords(rows);
       countries.push(...derived.countries);
