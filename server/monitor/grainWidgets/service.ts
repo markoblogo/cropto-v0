@@ -10,9 +10,12 @@ import {
 import { ApiFarmerProvider } from "./providers/apiFarmerProvider";
 import { AlphaVantageCommoditiesProvider } from "./providers/alphaVantageCommoditiesProvider";
 import { BarchartCashProvider } from "./providers/barchartCashProvider";
+import { CanadaRailPerformanceProvider } from "./providers/canadaRailPerformanceProvider";
 import { CommoditicLivestockProvider } from "./providers/commoditicLivestockProvider";
 import { CommoditicProvider } from "./providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "./providers/dbNomicsSpotProvider";
+import { EcCerealsPricesProvider } from "./providers/ecCerealsPricesProvider";
+import { EcOilseedsPricesProvider } from "./providers/ecOilseedsPricesProvider";
 import { FaoFfpiProvider } from "./providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "./providers/faostatProducerPricesProvider";
 import { FpmaMarketPricesProvider } from "./providers/fpmaMarketPricesProvider";
@@ -24,6 +27,7 @@ import { UsCashExportContextProvider } from "./providers/usCashExportContextProv
 import { UsdaMarsDailyMarketRatesTxtProvider } from "./providers/usdaMarsDailyMarketRatesTxtProvider";
 import { UsdaGtrLogisticsProvider } from "./providers/usdaGtrLogisticsProvider";
 import { UsdaMarsReportsProvider } from "./providers/usdaMarsReportsProvider";
+import { UsdaNassQuickStatsProvider } from "./providers/usdaNassQuickStatsProvider";
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./providers/types";
 import type {
   GrainWidget,
@@ -110,7 +114,11 @@ const EXPECTED_COVERAGE: Partial<Record<GrainWidgetKind, number>> = {
   USDA_MARS_DAILY_MARKET_RATES_TXT: 3,
   ALPHAVANTAGE_GRAIN_BENCHMARKS: 2,
   NASDAQ_DATA_LINK_SNAPSHOT: 4,
+  EC_CEREALS_MULTI_COUNTRY: 5,
+  EC_OILSEEDS_MULTI_COUNTRY: 3,
+  USDA_NASS_PRODUCER_PRICES: 3,
   USDA_GTR_LOGISTICS_SNAPSHOT: 2,
+  CANADA_GRAIN_RAIL_PERFORMANCE: 4,
   FAOSTAT_PP_MULTI_COUNTRY: 5,
   FPMA_MARKET_PRICES_MULTI_COUNTRY: 5,
 };
@@ -127,7 +135,11 @@ const WIDGET_ORDER: GrainWidgetKind[] = [
   "USDA_MARS_DAILY_MARKET_RATES_TXT",
   "ALPHAVANTAGE_GRAIN_BENCHMARKS",
   "NASDAQ_DATA_LINK_SNAPSHOT",
+  "EC_CEREALS_MULTI_COUNTRY",
+  "EC_OILSEEDS_MULTI_COUNTRY",
+  "USDA_NASS_PRODUCER_PRICES",
   "USDA_GTR_LOGISTICS_SNAPSHOT",
+  "CANADA_GRAIN_RAIL_PERFORMANCE",
   "FAOSTAT_PP_MULTI_COUNTRY",
   "FPMA_MARKET_PRICES_MULTI_COUNTRY",
 ];
@@ -141,12 +153,30 @@ type TerritoryMeta = {
 
 function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): TerritoryMeta {
   const selected = String(country || "UA").toUpperCase();
-  if (kind === "FAOSTAT_PP_MULTI_COUNTRY" || kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
+  if (
+    kind === "FAOSTAT_PP_MULTI_COUNTRY" ||
+    kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ||
+    kind === "EC_CEREALS_MULTI_COUNTRY" ||
+    kind === "EC_OILSEEDS_MULTI_COUNTRY"
+  ) {
     return {
       scope: "COUNTRY_MULTI",
       territory: {
         code: selected,
         label:
+          selected === "FR"
+            ? "France"
+            : selected === "DE"
+              ? "Germany"
+              : selected === "PL"
+                ? "Poland"
+                : selected === "RO"
+                  ? "Romania"
+                  : selected === "ES"
+                    ? "Spain"
+                    : selected === "BG"
+                      ? "Bulgaria"
+                      :
           selected === "US"
             ? "United States"
             : selected === "BR"
@@ -158,13 +188,32 @@ function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): Territ
                   : "Ukraine",
       },
       supportedTerritories: [
-        { code: "UA", label: "Ukraine" },
-        { code: "US", label: "United States" },
-        { code: "BR", label: "Brazil" },
-        { code: "AR", label: "Argentina" },
-        { code: "EU", label: "European Union" },
+        ...(kind === "EC_CEREALS_MULTI_COUNTRY"
+          ? [
+              { code: "FR", label: "France" },
+              { code: "DE", label: "Germany" },
+              { code: "PL", label: "Poland" },
+              { code: "RO", label: "Romania" },
+              { code: "ES", label: "Spain" },
+            ]
+          : kind === "EC_OILSEEDS_MULTI_COUNTRY"
+            ? [
+                { code: "FR", label: "France" },
+                { code: "DE", label: "Germany" },
+                { code: "RO", label: "Romania" },
+                { code: "BG", label: "Bulgaria" },
+                { code: "PL", label: "Poland" },
+                { code: "ES", label: "Spain" },
+              ]
+            : [
+                { code: "UA", label: "Ukraine" },
+                { code: "US", label: "United States" },
+                { code: "BR", label: "Brazil" },
+                { code: "AR", label: "Argentina" },
+                { code: "EU", label: "European Union" },
+              ]),
       ],
-      selectorDefault: "UA",
+      selectorDefault: kind === "EC_CEREALS_MULTI_COUNTRY" || kind === "EC_OILSEEDS_MULTI_COUNTRY" ? "FR" : "UA",
     };
   }
   if (
@@ -185,10 +234,14 @@ function territoryMetaForWidget(kind: GrainWidgetKind, country?: string): Territ
     kind === "US_CASH_BIDS" ||
     kind === "CBOT_FUTURES_SNAPSHOT" ||
     kind === "USDA_GTR_LOGISTICS_SNAPSHOT"
+    || kind === "USDA_NASS_PRODUCER_PRICES"
+    || kind === "CANADA_GRAIN_RAIL_PERFORMANCE"
   ) {
     return {
       scope: "COUNTRY_FIXED",
-      territory: { code: "US", label: "United States" },
+      territory: kind === "CANADA_GRAIN_RAIL_PERFORMANCE"
+        ? { code: "CA", label: "Canada" }
+        : { code: "US", label: "United States" },
     };
   }
   if (kind === "MACRO_AGRI_INDICES") {
@@ -245,8 +298,14 @@ function applyTerritoryMeta(widget: GrainWidget, country?: string): GrainWidget 
       next.rows = mappedRows as typeof next.rows;
     }
   }
-  if (next.kind === "FAOSTAT_PP_MULTI_COUNTRY" || next.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
-    next.rows = next.rows.map((row) => ({
+  if (
+    next.kind === "FAOSTAT_PP_MULTI_COUNTRY" ||
+    next.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ||
+    next.kind === "EC_CEREALS_MULTI_COUNTRY" ||
+    next.kind === "EC_OILSEEDS_MULTI_COUNTRY" ||
+    next.kind === "USDA_NASS_PRODUCER_PRICES"
+  ) {
+    (next as any).rows = next.rows.map((row) => ({
       ...row,
       territory: row.territory || next.territory,
     }));
@@ -323,10 +382,16 @@ function widgetMetricCounts(widget: GrainWidget): { rows: number; items: number;
   if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
     return { rows: 0, items: widget.items.length, cards: 0 };
   }
+  if (widget.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
+    return { rows: 0, items: widget.items.length, cards: 0 };
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     return { rows: widget.rows.length, items: 0, cards: 0 };
   }
   if (widget.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
+    return { rows: widget.rows.length, items: 0, cards: 0 };
+  }
+  if (widget.kind === "EC_CEREALS_MULTI_COUNTRY" || widget.kind === "EC_OILSEEDS_MULTI_COUNTRY" || widget.kind === "USDA_NASS_PRODUCER_PRICES") {
     return { rows: widget.rows.length, items: 0, cards: 0 };
   }
   return { rows: 0, items: 0, cards: 0 };
@@ -368,11 +433,17 @@ function mappedCountForWidget(widget: GrainWidget): number {
   if (widget.kind === "USDA_GTR_LOGISTICS_SNAPSHOT") {
     return widget.items.filter((item) => item.current != null).length;
   }
+  if (widget.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
+    return widget.items.filter((item) => item.current != null).length;
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     return widget.rows.filter((row) => row.current != null).length;
   }
   if (widget.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
     return widget.rows.filter((row) => row.current != null).length;
+  }
+  if (widget.kind === "EC_CEREALS_MULTI_COUNTRY" || widget.kind === "EC_OILSEEDS_MULTI_COUNTRY" || widget.kind === "USDA_NASS_PRODUCER_PRICES") {
+    return widget.rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
   }
   return 0;
 }
@@ -453,7 +524,11 @@ export class GrainWidgetsService {
     USDA_MARS_DAILY_MARKET_RATES_TXT: [new UsdaMarsDailyMarketRatesTxtProvider()],
     ALPHAVANTAGE_GRAIN_BENCHMARKS: [new AlphaVantageCommoditiesProvider()],
     NASDAQ_DATA_LINK_SNAPSHOT: [new NasdaqDataLinkProvider()],
+    EC_CEREALS_MULTI_COUNTRY: [new EcCerealsPricesProvider()],
+    EC_OILSEEDS_MULTI_COUNTRY: [new EcOilseedsPricesProvider()],
+    USDA_NASS_PRODUCER_PRICES: [new UsdaNassQuickStatsProvider()],
     USDA_GTR_LOGISTICS_SNAPSHOT: [new UsdaGtrLogisticsProvider()],
+    CANADA_GRAIN_RAIL_PERFORMANCE: [new CanadaRailPerformanceProvider()],
     FAOSTAT_PP_MULTI_COUNTRY: [new FaostatProducerPricesProvider()],
     FPMA_MARKET_PRICES_MULTI_COUNTRY: [new FpmaMarketPricesProvider()],
   };
@@ -478,7 +553,11 @@ export class GrainWidgetsService {
     USDA_MARS_DAILY_MARKET_RATES_TXT: new MockGrainWidgetsProvider({ kind: "USDA_MARS_DAILY_MARKET_RATES_TXT" }),
     ALPHAVANTAGE_GRAIN_BENCHMARKS: new MockGrainWidgetsProvider({ kind: "ALPHAVANTAGE_GRAIN_BENCHMARKS" }),
     NASDAQ_DATA_LINK_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "NASDAQ_DATA_LINK_SNAPSHOT" }),
+    EC_CEREALS_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "EC_CEREALS_MULTI_COUNTRY" }),
+    EC_OILSEEDS_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "EC_OILSEEDS_MULTI_COUNTRY" }),
+    USDA_NASS_PRODUCER_PRICES: new MockGrainWidgetsProvider({ kind: "USDA_NASS_PRODUCER_PRICES" }),
     USDA_GTR_LOGISTICS_SNAPSHOT: new MockGrainWidgetsProvider({ kind: "USDA_GTR_LOGISTICS_SNAPSHOT" }),
+    CANADA_GRAIN_RAIL_PERFORMANCE: new MockGrainWidgetsProvider({ kind: "CANADA_GRAIN_RAIL_PERFORMANCE" }),
     FAOSTAT_PP_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "FAOSTAT_PP_MULTI_COUNTRY" }),
     FPMA_MARKET_PRICES_MULTI_COUNTRY: new MockGrainWidgetsProvider({ kind: "FPMA_MARKET_PRICES_MULTI_COUNTRY" }),
   };
@@ -854,7 +933,21 @@ export class GrainWidgetsService {
         const txtDebug = data.kind === "USDA_MARS_DAILY_MARKET_RATES_TXT" ? data.debug : undefined;
         const alphaSummary = data.kind === "ALPHAVANTAGE_GRAIN_BENCHMARKS" ? data.summary : undefined;
         const nasdaqSummary = data.kind === "NASDAQ_DATA_LINK_SNAPSHOT" ? data.summary : undefined;
+        const ecSummary =
+          data.kind === "EC_CEREALS_MULTI_COUNTRY" ||
+          data.kind === "EC_OILSEEDS_MULTI_COUNTRY" ||
+          data.kind === "USDA_NASS_PRODUCER_PRICES"
+            ? data.summary
+            : undefined;
+        const ecDebug =
+          data.kind === "EC_CEREALS_MULTI_COUNTRY" ||
+          data.kind === "EC_OILSEEDS_MULTI_COUNTRY" ||
+          data.kind === "USDA_NASS_PRODUCER_PRICES"
+            ? data.debug
+            : undefined;
         const gtrDebug = data.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? data.debug : undefined;
+        const canadaSummary = data.kind === "CANADA_GRAIN_RAIL_PERFORMANCE" ? data.summary : undefined;
+        const canadaDebug = data.kind === "CANADA_GRAIN_RAIL_PERFORMANCE" ? data.debug : undefined;
         const faostatSummary = data.kind === "FAOSTAT_PP_MULTI_COUNTRY" ? data.summary : undefined;
         const faostatDebug = data.kind === "FAOSTAT_PP_MULTI_COUNTRY" ? data.debug : undefined;
         const fpmaSummary = data.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ? data.summary : undefined;
@@ -870,7 +963,7 @@ export class GrainWidgetsService {
             errorKind: classifyProviderErrorKind(reason),
             sourceUrlUsed: data.sourceUrl,
             mappedCount,
-            expectedCount: fpmaSummary?.expectedCount ?? faostatSummary?.expectedCount ?? alphaSummary?.expectedCount ?? nasdaqSummary?.expectedCount,
+            expectedCount: fpmaSummary?.expectedCount ?? faostatSummary?.expectedCount ?? canadaSummary?.expectedCount ?? ecSummary?.expectedCount ?? alphaSummary?.expectedCount ?? nasdaqSummary?.expectedCount,
             reportsFetched: usdaSummary?.fetchedCount,
             reportsScanned: usdaSummary?.scannedCount,
             reportsMatchedInclude: usdaSummary?.matchedCount,
@@ -881,15 +974,15 @@ export class GrainWidgetsService {
             cardsReturned: metrics.cards,
             linesFetched: txtDebug?.linesFetched,
             linesMatched: txtDebug?.linesMatched,
-            rowsParsed: fpmaDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
-            columnsDetected: gtrDebug?.columnsDetected,
-            seriesPoints: gtrDebug?.seriesPoints,
+            rowsParsed: fpmaDebug?.rowsParsed ?? canadaDebug?.rowsParsed ?? ecDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
+            columnsDetected: canadaDebug?.columnsDetected ?? gtrDebug?.columnsDetected,
+            seriesPoints: canadaDebug?.seriesPoints ?? gtrDebug?.seriesPoints,
             httpStatus: gtrDebug?.httpStatus,
             finalUrl: gtrDebug?.finalUrl,
             responseHeaders: gtrDebug?.responseHeaders,
             transportUsed: gtrDebug?.transportUsed,
             rangeRequestUsed: gtrDebug?.rangeRequestUsed,
-            parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
+            parseWarnings: fpmaDebug?.warnings ?? ecDebug?.warnings ?? canadaDebug?.warnings ?? gtrDebug?.parseWarnings,
             areaCodes: faostatDebug?.areaCodes,
             itemCodes: faostatDebug?.itemCodes,
             commodityIdsUsed: fpmaDebug?.commodityIdsUsed,
@@ -901,9 +994,9 @@ export class GrainWidgetsService {
             discoveryFetchedAt: fpmaDebug?.discoveryFetchedAt,
             discoveryCacheHit: fpmaDebug?.discoveryCacheHit ?? faostatDebug?.discoveryCacheHit,
             discoveryEndpointsTried: fpmaDebug?.discoveryEndpointsTried,
-            query: fpmaDebug?.query || faostatDebug?.query,
+            query: ecDebug?.query || fpmaDebug?.query || faostatDebug?.query,
             downloadUrlUsed: txtDebug?.downloadUrlUsed,
-            datasetUrlChosen: gtrDebug?.datasetUrlChosen,
+            datasetUrlChosen: canadaDebug?.datasetUrlChosen ?? gtrDebug?.datasetUrlChosen,
             parseMode: txtDebug?.parseMode,
             topScoreMin: usdaSummary?.topScoreMin,
             topScoreMax: usdaSummary?.topScoreMax,
@@ -912,7 +1005,7 @@ export class GrainWidgetsService {
               unitConfidence: entry.unitConfidence,
               allowNormalization: entry.allowNormalization,
             })),
-            cadence: fpmaSummary?.cadence || faostatSummary?.cadence || alphaSummary?.cadence,
+            cadence: fpmaSummary?.cadence || faostatSummary?.cadence || canadaSummary?.cadence || ecSummary?.cadence || alphaSummary?.cadence,
             datasetStatuses: nasdaqSummary?.datasetStatuses,
             fallbackUsed: true,
           });
@@ -934,7 +1027,7 @@ export class GrainWidgetsService {
           errorKind: undefined,
           sourceUrlUsed: data.sourceUrl,
           mappedCount,
-          expectedCount: fpmaSummary?.expectedCount ?? faostatSummary?.expectedCount ?? alphaSummary?.expectedCount ?? nasdaqSummary?.expectedCount,
+          expectedCount: fpmaSummary?.expectedCount ?? faostatSummary?.expectedCount ?? canadaSummary?.expectedCount ?? ecSummary?.expectedCount ?? alphaSummary?.expectedCount ?? nasdaqSummary?.expectedCount,
           reportsFetched: usdaSummary?.fetchedCount,
           reportsScanned: usdaSummary?.scannedCount,
           reportsMatchedInclude: usdaSummary?.matchedCount,
@@ -945,15 +1038,15 @@ export class GrainWidgetsService {
           cardsReturned: metrics.cards,
           linesFetched: txtDebug?.linesFetched,
           linesMatched: txtDebug?.linesMatched,
-          rowsParsed: fpmaDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
-          columnsDetected: gtrDebug?.columnsDetected,
-          seriesPoints: gtrDebug?.seriesPoints,
+          rowsParsed: fpmaDebug?.rowsParsed ?? canadaDebug?.rowsParsed ?? ecDebug?.rowsParsed ?? gtrDebug?.rowsParsed,
+          columnsDetected: canadaDebug?.columnsDetected ?? gtrDebug?.columnsDetected,
+          seriesPoints: canadaDebug?.seriesPoints ?? gtrDebug?.seriesPoints,
           httpStatus: gtrDebug?.httpStatus,
           finalUrl: gtrDebug?.finalUrl,
           responseHeaders: gtrDebug?.responseHeaders,
           transportUsed: gtrDebug?.transportUsed,
           rangeRequestUsed: gtrDebug?.rangeRequestUsed,
-          parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
+          parseWarnings: fpmaDebug?.warnings ?? ecDebug?.warnings ?? canadaDebug?.warnings ?? gtrDebug?.parseWarnings,
           areaCodes: faostatDebug?.areaCodes,
           itemCodes: faostatDebug?.itemCodes,
           commodityIdsUsed: fpmaDebug?.commodityIdsUsed,
@@ -965,9 +1058,9 @@ export class GrainWidgetsService {
           discoveryFetchedAt: fpmaDebug?.discoveryFetchedAt,
           discoveryCacheHit: fpmaDebug?.discoveryCacheHit ?? faostatDebug?.discoveryCacheHit,
           discoveryEndpointsTried: fpmaDebug?.discoveryEndpointsTried,
-          query: fpmaDebug?.query || faostatDebug?.query,
+          query: ecDebug?.query || fpmaDebug?.query || faostatDebug?.query,
           downloadUrlUsed: txtDebug?.downloadUrlUsed,
-          datasetUrlChosen: gtrDebug?.datasetUrlChosen,
+          datasetUrlChosen: canadaDebug?.datasetUrlChosen ?? gtrDebug?.datasetUrlChosen,
           parseMode: txtDebug?.parseMode,
           topScoreMin: usdaSummary?.topScoreMin,
           topScoreMax: usdaSummary?.topScoreMax,
@@ -976,7 +1069,7 @@ export class GrainWidgetsService {
             unitConfidence: entry.unitConfidence,
             allowNormalization: entry.allowNormalization,
           })),
-          cadence: fpmaSummary?.cadence || faostatSummary?.cadence || alphaSummary?.cadence,
+          cadence: fpmaSummary?.cadence || faostatSummary?.cadence || canadaSummary?.cadence || ecSummary?.cadence || alphaSummary?.cadence,
           datasetStatuses: nasdaqSummary?.datasetStatuses,
           widgetsReturned: [kind],
           fallbackUsed: ["DELAYED", "FALLBACK", "OFFLINE"].includes(data.status),

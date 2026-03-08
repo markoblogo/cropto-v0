@@ -12,9 +12,19 @@ import {
   ALPHAVANTAGE_API_KEY,
   ALPHAVANTAGE_BASE_URL,
   ALPHAVANTAGE_FUNCTIONS,
+  CANADA_RAIL_PRODUCT_ID,
+  CANADA_RAIL_TIMEOUT_MS,
+  CANADA_RAIL_WDS_BASE_URL,
   DBNOMICS_API_BASE_URL,
+  EC_AGRI_API_BASE_URL,
+  EC_CEREALS_API_PATH,
+  EC_OILSEEDS_API_PATH,
+  EC_AGRI_TIMEOUT_MS,
+  ENABLE_CANADA_GRAIN_RAIL_WIDGET,
   ENABLE_ALPHAVANTAGE_PROVIDER,
   ENABLE_DBNOMICS_SPOT_PROVIDER,
+  ENABLE_EC_CEREALS_WIDGET,
+  ENABLE_EC_OILSEEDS_WIDGET,
   ENABLE_FAO_FFPI_PROVIDER,
   ENABLE_NASDAQ_CHRIS,
   ENABLE_NASDAQ_DATALINK_PROVIDER,
@@ -22,6 +32,7 @@ import {
   ENABLE_FPMA_DISCOVERY,
   ENABLE_FPMA_MARKET_PRICES_WIDGET,
   ENABLE_US_CASH_EXPORT_CONTEXT_WIDGET,
+  ENABLE_USDA_NASS_WIDGET,
   ENABLE_USDA_MARS_DAILY_TXT,
   ENABLE_USDA_GTR_LOGISTICS_WIDGET,
   ENABLE_USDA_MARS_REPORTS_WIDGET,
@@ -36,6 +47,9 @@ import {
   NASDAQ_BASE_URL,
   NASDAQ_CHRIS_DATASETS,
   NASDAQ_DATASETS,
+  USDA_NASS_API_KEY,
+  USDA_NASS_BASE_URL,
+  USDA_NASS_TIMEOUT_MS,
   USDA_MARS_BASE_URL,
   USDA_MARS_PUBLIC_INDEX_URLS,
   USDA_MARS_MNREPORTS_BASE_URL,
@@ -495,7 +509,7 @@ export function registerMonitorRoutes(app: Express): void {
         };
       }
 
-      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
+      const providerToKind: Record<string, "GLOBAL_SPOT_TABLE" | "CROP_PRICE_INDEX" | "USDA_MARS_REPORTS" | "US_CASH_EXPORT_CONTEXT" | "USDA_MARS_DAILY_MARKET_RATES_TXT" | "ALPHAVANTAGE_GRAIN_BENCHMARKS" | "NASDAQ_DATA_LINK_SNAPSHOT" | "EC_CEREALS_MULTI_COUNTRY" | "EC_OILSEEDS_MULTI_COUNTRY" | "USDA_NASS_PRODUCER_PRICES" | "USDA_GTR_LOGISTICS_SNAPSHOT" | "CANADA_GRAIN_RAIL_PERFORMANCE" | "FAOSTAT_PP_MULTI_COUNTRY" | "FPMA_MARKET_PRICES_MULTI_COUNTRY"> = {
         "dbnomics-worldbank": "GLOBAL_SPOT_TABLE",
         "fao-ffpi": "CROP_PRICE_INDEX",
         "usda-mars-public": "USDA_MARS_REPORTS",
@@ -503,7 +517,11 @@ export function registerMonitorRoutes(app: Express): void {
         "usda-mars-daily-txt": "USDA_MARS_DAILY_MARKET_RATES_TXT",
         "alpha-vantage-commodities": "ALPHAVANTAGE_GRAIN_BENCHMARKS",
         "nasdaq-datalink": "NASDAQ_DATA_LINK_SNAPSHOT",
+        "ec-cereals-prices": "EC_CEREALS_MULTI_COUNTRY",
+        "ec-oilseeds-prices": "EC_OILSEEDS_MULTI_COUNTRY",
+        "usda-nass-quickstats": "USDA_NASS_PRODUCER_PRICES",
         "usda-gtr-logistics": "USDA_GTR_LOGISTICS_SNAPSHOT",
+        "canada-grain-rail-performance": "CANADA_GRAIN_RAIL_PERFORMANCE",
         "faostat-pp": "FAOSTAT_PP_MULTI_COUNTRY",
         "fpma-market-prices": "FPMA_MARKET_PRICES_MULTI_COUNTRY",
       };
@@ -516,7 +534,10 @@ export function registerMonitorRoutes(app: Express): void {
         if (id.includes("usda")) return source.includes("usda");
         if (id.includes("alpha-vantage")) return source.includes("alpha vantage");
         if (id.includes("nasdaq")) return source.includes("nasdaq");
+        if (id.includes("ec-cereals") || id.includes("ec-oilseeds")) return source.includes("ec agri") || source.includes("european commission");
+        if (id.includes("usda-nass")) return source.includes("nass");
         if (id.includes("usda-gtr")) return source.includes("usda");
+        if (id.includes("canada-grain-rail")) return source.includes("statistics canada") || source.includes("statcan");
         if (id.includes("faostat")) return source.includes("faostat");
         if (id.includes("fpma")) return source.includes("fpma");
         if (id.includes("us-cash-export-context")) return source.includes("usda") || source.includes("open data");
@@ -531,12 +552,16 @@ export function registerMonitorRoutes(app: Express): void {
         "usda-mars-daily-txt": 3,
         "alpha-vantage-commodities": Math.max(2, ALPHAVANTAGE_FUNCTIONS.length),
         "nasdaq-datalink": Math.max(2, NASDAQ_DATASETS.length),
+        "ec-cereals-prices": 5,
+        "ec-oilseeds-prices": 3,
+        "usda-nass-quickstats": 3,
         "usda-gtr-logistics": 2,
+        "canada-grain-rail-performance": 4,
         "faostat-pp": 5,
         "fpma-market-prices": 5,
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "usda-gtr-logistics", "faostat-pp", "fpma-market-prices"].map((providerId) => {
+      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
         const provider = providers.find((item) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -641,7 +666,11 @@ export function registerMonitorRoutes(app: Express): void {
         "USDA_MARS_DAILY_MARKET_RATES_TXT",
         "ALPHAVANTAGE_GRAIN_BENCHMARKS",
         "NASDAQ_DATA_LINK_SNAPSHOT",
+        "EC_CEREALS_MULTI_COUNTRY",
+        "EC_OILSEEDS_MULTI_COUNTRY",
+        "USDA_NASS_PRODUCER_PRICES",
         "USDA_GTR_LOGISTICS_SNAPSHOT",
+        "CANADA_GRAIN_RAIL_PERFORMANCE",
         "FAOSTAT_PP_MULTI_COUNTRY",
         "FPMA_MARKET_PRICES_MULTI_COUNTRY",
       ] as const).map((widgetKind) => {
@@ -655,6 +684,7 @@ export function registerMonitorRoutes(app: Express): void {
         const alphaFunctionsCount = Array.isArray(widget?.summary?.byFunction) ? widget.summary.byFunction.length : 0;
         const datasetStatusesCount = Array.isArray(widget?.summary?.datasetStatuses) ? widget.summary.datasetStatuses.length : 0;
         const logisticsItemsCount = widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" && Array.isArray(widget?.items) ? widget.items.length : 0;
+        const canadaItemsCount = widget?.kind === "CANADA_GRAIN_RAIL_PERFORMANCE" && Array.isArray(widget?.items) ? widget.items.length : 0;
         const faostatRowsCount = widget?.kind === "FAOSTAT_PP_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const fpmaRowsCount = widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" && Array.isArray(widget?.rows) ? widget.rows.length : 0;
         const seriesPointsCount =
@@ -678,6 +708,7 @@ export function registerMonitorRoutes(app: Express): void {
           alphaFunctionsCount,
           datasetStatusesCount,
           logisticsItemsCount,
+          canadaItemsCount,
           logisticsDatasetUrlChosen: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.datasetUrlChosen : undefined,
           logisticsColumnsDetected: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.columnsDetected : undefined,
           logisticsSeriesPoints: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.seriesPoints : undefined,
@@ -720,12 +751,19 @@ export function registerMonitorRoutes(app: Express): void {
       const nasdaqProbeRawUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? `&api_key=${encodeURIComponent(NASDAQ_API_KEY)}` : ""}`;
       const nasdaqProbeUrl = `${NASDAQ_BASE_URL.replace(/\/+$/, "")}/datasets/${encodeURIComponent(nasdaqDb || "FRED")}/${encodeURIComponent(nasdaqDatasetCode)}.json?rows=1${NASDAQ_API_KEY ? "&api_key=REDACTED" : ""}`;
       const nasdaqProbeResult = await probeUrl(nasdaqProbeRawUrl);
+      const ecCerealsProbe = await probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_CEREALS_API_PATH.replace(/^\/+/, "")}/products`, { timeoutMs: EC_AGRI_TIMEOUT_MS });
+      const ecOilseedsProbe = await probeUrl(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_OILSEEDS_API_PATH.replace(/^\/+/, "")}/products`, { timeoutMs: EC_AGRI_TIMEOUT_MS });
+      const usdaNassProbeRawUrl = `${USDA_NASS_BASE_URL}?commodity_desc=CORN&agg_level_desc=NATIONAL&statisticcat_desc=PRICE%20RECEIVED&format=JSON${USDA_NASS_API_KEY ? `&key=${encodeURIComponent(USDA_NASS_API_KEY)}` : ""}`;
+      const usdaNassProbeUrl = `${USDA_NASS_BASE_URL}?commodity_desc=CORN&agg_level_desc=NATIONAL&statisticcat_desc=PRICE%20RECEIVED&format=JSON${USDA_NASS_API_KEY ? "&key=REDACTED" : ""}`;
+      const usdaNassProbeResult = await probeUrl(usdaNassProbeRawUrl, { timeoutMs: USDA_NASS_TIMEOUT_MS });
       const usdaGtrProbeUrl = USDA_GTR_DATASET_URLS[0] || "https://www.ams.usda.gov/services/transportation-analysis/grain-transportation-report";
       const usdaGtrProbe = await probeUrl(usdaGtrProbeUrl, {
         headers: {
           accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
         },
       });
+      const canadaRailProbeUrl = `${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`;
+      const canadaRailProbe = await probeUrl(canadaRailProbeUrl, { timeoutMs: CANADA_RAIL_TIMEOUT_MS });
       const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
       const faostatProbe = await probeUrl(faostatProbeUrl, { timeoutMs: FAOSTAT_TIMEOUT_MS });
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;
@@ -753,6 +791,10 @@ export function registerMonitorRoutes(app: Express): void {
             ENABLE_USDA_GTR_LOGISTICS_WIDGET,
             ENABLE_ALPHAVANTAGE_PROVIDER,
             ENABLE_NASDAQ_DATALINK_PROVIDER,
+            ENABLE_EC_CEREALS_WIDGET,
+            ENABLE_EC_OILSEEDS_WIDGET,
+            ENABLE_USDA_NASS_WIDGET,
+            ENABLE_CANADA_GRAIN_RAIL_WIDGET,
             ENABLE_FAOSTAT_PP_WIDGET,
             ENABLE_FPMA_DISCOVERY,
             ENABLE_FPMA_MARKET_PRICES_WIDGET,
@@ -768,6 +810,10 @@ export function registerMonitorRoutes(app: Express): void {
             NASDAQ_DATASET_PREFIXES: Array.from(new Set(NASDAQ_DATASETS.map((value) => String(value).split("/")[0] || ""))).filter(Boolean),
             ENABLE_NASDAQ_CHRIS,
             NASDAQ_CHRIS_DATASETS,
+            EC_AGRI_API_BASE_URL: EC_AGRI_API_BASE_URL ? "present" : "missing",
+            USDA_NASS_BASE_URL: USDA_NASS_BASE_URL ? "present" : "missing",
+            USDA_NASS_API_KEY: USDA_NASS_API_KEY ? "present" : "missing",
+            CANADA_RAIL_WDS_BASE_URL: CANADA_RAIL_WDS_BASE_URL ? "present" : "missing",
             FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
             FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
             FPMA_DATA_PATHS,
@@ -793,7 +839,14 @@ export function registerMonitorRoutes(app: Express): void {
             ...nasdaqProbeResult,
             url: nasdaqProbeUrl,
           },
+          ecCereals: ecCerealsProbe,
+          ecOilseeds: ecOilseedsProbe,
+          usdaNass: {
+            ...usdaNassProbeResult,
+            url: usdaNassProbeUrl,
+          },
           usdaGtrLogistics: usdaGtrProbe,
+          canadaRailPerformance: canadaRailProbe,
           faostatPp: faostatProbe,
           faostatPpSample: faostatSampleProbe,
           fpmaMarketPrices: fpmaProbe,

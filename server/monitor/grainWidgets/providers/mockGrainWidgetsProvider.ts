@@ -4,7 +4,9 @@ import type {
   GrainWidgetCropPriceIndex,
   GrainWidgetFaostatPpMultiCountry,
   GrainWidgetFpmaMarketPricesMultiCountry,
+  GrainWidgetEcOfficialPricesSnapshot,
   GrainWidgetNasdaqDataLinkSnapshot,
+  GrainWidgetCanadaRailPerformance,
   GrainWidgetUsdaGtrLogisticsSnapshot,
   GrainWidgetKind,
   GrainWidgetUsCashExportContext,
@@ -743,6 +745,275 @@ export class MockGrainWidgetsProvider implements GrainWidgetsProvider {
           rowsParsed: 24,
           parseWarnings: ["mock_fallback_mode"],
         },
+      };
+      return widget;
+    }
+
+    if (this.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
+      const points = Math.max(7, ctx.seriesPoints);
+      const widget: GrainWidgetCanadaRailPerformance = {
+        id: "grain-canada-rail-performance",
+        kind: "CANADA_GRAIN_RAIL_PERFORMANCE",
+        title: "Canada Grain Rail Performance",
+        subtitle: "Official weekly rail performance indicators",
+        status: "FALLBACK",
+        sourceName: "Statistics Canada",
+        sourceAttribution: "Data: Statistics Canada rail service indicators",
+        sourceUrl: "https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/23100275/en",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "COUNTRY_FIXED",
+        territory: { code: "CA", label: "Canada" },
+        items: [
+          { metric: "LOADED_CARS", label: "Cars loaded", current: 5712, unit: "cars", changeAbs: 84, changePct: 1.49, confidence: "HIGH", series: deriveSeries(5712, 84, points) },
+          { metric: "FULFILLMENT", label: "Order fulfillment", current: 91.6, unit: "%", changeAbs: 0.7, changePct: 0.77, confidence: "MED", series: deriveSeries(91.6, 0.7, points) },
+        ],
+        summary: {
+          expectedCount: 4,
+          mappedCount: 2,
+          coverage: "2/4",
+          cadence: "weekly",
+        },
+        notes: ["Mock fallback payload for Canada grain rail performance"],
+        fallbackReason: reason,
+        debug: {
+          sourceUrlUsed: "https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/23100275/en",
+          rowsParsed: 42,
+          columnsDetected: ["REF_DATE", "Rail service indicators", "VALUE", "UOM"],
+        },
+      };
+      return widget;
+    }
+
+    if (this.kind === "EC_CEREALS_MULTI_COUNTRY" || this.kind === "EC_OILSEEDS_MULTI_COUNTRY" || this.kind === "USDA_NASS_PRODUCER_PRICES") {
+      const isCereals = this.kind === "EC_CEREALS_MULTI_COUNTRY";
+      const isOilseeds = this.kind === "EC_OILSEEDS_MULTI_COUNTRY";
+      const territoryCode = isCereals || isOilseeds ? String(ctx.country || "FR").toUpperCase() : "US";
+      const territoryLabelMap: Record<string, string> = {
+        FR: "France",
+        DE: "Germany",
+        PL: "Poland",
+        RO: "Romania",
+        ES: "Spain",
+        BG: "Bulgaria",
+        US: "United States",
+      };
+      const supportedTerritories = isCereals
+        ? ["FR", "DE", "PL", "RO", "ES"]
+        : isOilseeds
+          ? ["FR", "DE", "RO", "BG", "PL", "ES"]
+          : ["US"];
+      const currentTerritory = supportedTerritories.includes(territoryCode) ? territoryCode : supportedTerritories[0];
+      const label = territoryLabelMap[currentTerritory] || currentTerritory;
+      const rows: GrainWidgetTableRow[] = isCereals
+        ? [
+            {
+              id: `ec-cereal-softwheat-${currentTerritory}`,
+              label: "Soft Wheat",
+              region: label,
+              commodityGroup: "Grains",
+              status: "FALLBACK",
+              sourceName: "EC Agri-food Data Portal",
+              updatedAt: ctx.now.toISOString(),
+              price: {
+                nativeValueCurrent: 228.4,
+                nativeCurrency: "EUR",
+                nativeUnit: "EUR/t",
+                normalizedValueCurrent: 246.7,
+                normalizedCurrency: "USD",
+                normalizedUnit: "t",
+                nativeValueChangePct: 1.14,
+                normalizedValueChangePct: 1.14,
+                normalizationStatus: "OK",
+                normalizationMethod: "eur_t_to_usd_t",
+                series: deriveSeries(246.7, 2.8, ctx.seriesPoints),
+              },
+            },
+            {
+              id: `ec-cereal-maize-${currentTerritory}`,
+              label: "Maize (Corn)",
+              region: label,
+              commodityGroup: "Grains",
+              status: "FALLBACK",
+              sourceName: "EC Agri-food Data Portal",
+              updatedAt: ctx.now.toISOString(),
+              price: {
+                nativeValueCurrent: 214.1,
+                nativeCurrency: "EUR",
+                nativeUnit: "EUR/t",
+                normalizedValueCurrent: 231.2,
+                normalizedCurrency: "USD",
+                normalizedUnit: "t",
+                nativeValueChangePct: -0.61,
+                normalizedValueChangePct: -0.61,
+                normalizationStatus: "OK",
+                normalizationMethod: "eur_t_to_usd_t",
+                series: deriveSeries(231.2, -1.4, ctx.seriesPoints),
+              },
+            },
+            {
+              id: `ec-cereal-barley-${currentTerritory}`,
+              label: "Barley",
+              region: label,
+              commodityGroup: "Grains",
+              status: "FALLBACK",
+              sourceName: "EC Agri-food Data Portal",
+              updatedAt: ctx.now.toISOString(),
+              price: {
+                nativeValueCurrent: 205.3,
+                nativeCurrency: "EUR",
+                nativeUnit: "EUR/t",
+                normalizedValueCurrent: 221.7,
+                normalizedCurrency: "USD",
+                normalizedUnit: "t",
+                nativeValueChangePct: 0.24,
+                normalizedValueChangePct: 0.24,
+                normalizationStatus: "OK",
+                normalizationMethod: "eur_t_to_usd_t",
+                series: deriveSeries(221.7, 0.5, ctx.seriesPoints),
+              },
+            },
+          ]
+        : isOilseeds
+          ? [
+              {
+                id: `ec-oil-rapeseed-${currentTerritory}`,
+                label: "Rapeseed (Canola)",
+                region: label,
+                commodityGroup: "Oilseeds",
+                status: "FALLBACK",
+                sourceName: "EC Agri-food Data Portal",
+                updatedAt: ctx.now.toISOString(),
+                price: {
+                  nativeValueCurrent: 486.2,
+                  nativeCurrency: "EUR",
+                  nativeUnit: "EUR/t",
+                  normalizedValueCurrent: 525.1,
+                  normalizedCurrency: "USD",
+                  normalizedUnit: "t",
+                  nativeValueChangePct: 0.92,
+                  normalizedValueChangePct: 0.92,
+                  normalizationStatus: "OK",
+                  normalizationMethod: "eur_t_to_usd_t",
+                  series: deriveSeries(525.1, 4.8, ctx.seriesPoints),
+                },
+              },
+              {
+                id: `ec-oil-sunflower-${currentTerritory}`,
+                label: "Sunflower seed",
+                region: label,
+                commodityGroup: "Oilseeds",
+                status: "FALLBACK",
+                sourceName: "EC Agri-food Data Portal",
+                updatedAt: ctx.now.toISOString(),
+                price: {
+                  nativeValueCurrent: 438.6,
+                  nativeCurrency: "EUR",
+                  nativeUnit: "EUR/t",
+                  normalizedValueCurrent: 473.7,
+                  normalizedCurrency: "USD",
+                  normalizedUnit: "t",
+                  nativeValueChangePct: -0.34,
+                  normalizedValueChangePct: -0.34,
+                  normalizationStatus: "OK",
+                  normalizationMethod: "eur_t_to_usd_t",
+                  series: deriveSeries(473.7, -1.6, ctx.seriesPoints),
+                },
+              },
+            ]
+          : [
+              {
+                id: "usda-nass-corn",
+                label: "Corn",
+                region: "United States",
+                commodityGroup: "Grains",
+                status: "FALLBACK",
+                sourceName: "USDA NASS QuickStats",
+                updatedAt: ctx.now.toISOString(),
+                price: {
+                  nativeValueCurrent: 4.82,
+                  nativeCurrency: "USD",
+                  nativeUnit: "USD/bu",
+                  normalizedValueCurrent: 189.8,
+                  normalizedCurrency: "USD",
+                  normalizedUnit: "t",
+                  normalizationStatus: "OK",
+                  normalizationMethod: "usd_bu_to_usd_t",
+                  series: deriveSeries(189.8, 2.4, ctx.seriesPoints),
+                },
+              },
+              {
+                id: "usda-nass-wheat",
+                label: "Wheat",
+                region: "United States",
+                commodityGroup: "Grains",
+                status: "FALLBACK",
+                sourceName: "USDA NASS QuickStats",
+                updatedAt: ctx.now.toISOString(),
+                price: {
+                  nativeValueCurrent: 6.13,
+                  nativeCurrency: "USD",
+                  nativeUnit: "USD/bu",
+                  normalizedValueCurrent: 225.3,
+                  normalizedCurrency: "USD",
+                  normalizedUnit: "t",
+                  normalizationStatus: "OK",
+                  normalizationMethod: "usd_bu_to_usd_t",
+                  series: deriveSeries(225.3, -1.8, ctx.seriesPoints),
+                },
+              },
+              {
+                id: "usda-nass-soy",
+                label: "Soybeans",
+                region: "United States",
+                commodityGroup: "Oilseeds",
+                status: "FALLBACK",
+                sourceName: "USDA NASS QuickStats",
+                updatedAt: ctx.now.toISOString(),
+                price: {
+                  nativeValueCurrent: 11.44,
+                  nativeCurrency: "USD",
+                  nativeUnit: "USD/bu",
+                  normalizedValueCurrent: 420.4,
+                  normalizedCurrency: "USD",
+                  normalizedUnit: "t",
+                  normalizationStatus: "OK",
+                  normalizationMethod: "usd_bu_to_usd_t",
+                  series: deriveSeries(420.4, 3.9, ctx.seriesPoints),
+                },
+              },
+            ];
+      const widget: GrainWidgetEcOfficialPricesSnapshot = {
+        id: `mock-${this.kind.toLowerCase()}`,
+        kind: this.kind as any,
+        title: isCereals ? "EC Cereals Prices" : isOilseeds ? "EC Oilseeds Prices" : "USDA NASS Producer Prices",
+        subtitle: isCereals ? "Official EU cereals market layer" : isOilseeds ? "Official EU oilseeds market layer" : "Official US producer/statistical layer",
+        status: "FALLBACK",
+        sourceName: isCereals || isOilseeds ? "EC Agri-food Data Portal" : "USDA NASS QuickStats",
+        sourceAttribution: isCereals ? "Data: European Commission Agri-food Data Portal (Cereals)" : isOilseeds ? "Data: European Commission Agri-food Data Portal (Oilseeds)" : "Data: USDA NASS QuickStats API",
+        sourceUrl: isCereals ? "https://agridata.ec.europa.eu/extensions/API_Documentation/cereals.html" : isOilseeds ? "https://agridata.ec.europa.eu/extensions/API_Documentation/oilseeds.html" : "https://quickstats.nass.usda.gov/api",
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: isCereals || isOilseeds ? "COUNTRY_MULTI" : "COUNTRY_FIXED",
+        territory: { code: currentTerritory, label },
+        supportedTerritories: (isCereals || isOilseeds) ? supportedTerritories.map((code) => ({ code, label: territoryLabelMap[code] || code })) : undefined,
+        territorySelector: (isCereals || isOilseeds)
+          ? { paramName: "country", default: supportedTerritories[0], current: currentTerritory, persistKey: `monitor_country_${this.kind}` }
+          : undefined,
+        rows,
+        summary: {
+          expectedCount: isCereals ? 5 : isOilseeds ? 3 : 3,
+          mappedCount: rows.length,
+          coverage: `${rows.length}/${isCereals ? 5 : isOilseeds ? 3 : 3}`,
+          cadence: isCereals || isOilseeds ? "weekly" : "annual",
+          selectedTerritory: currentTerritory,
+        },
+        debug: {
+          rowsParsed: rows.length * 8,
+          warnings: ["mock_fallback_mode"],
+        },
+        notes: [`Mock fallback payload for ${this.kind}`],
+        fallbackReason: reason,
       };
       return widget;
     }

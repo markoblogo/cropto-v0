@@ -22,7 +22,11 @@ export type GrainWidgetKind =
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
   | "NASDAQ_DATA_LINK_SNAPSHOT"
+  | "EC_CEREALS_MULTI_COUNTRY"
+  | "EC_OILSEEDS_MULTI_COUNTRY"
+  | "USDA_NASS_PRODUCER_PRICES"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
+  | "CANADA_GRAIN_RAIL_PERFORMANCE"
   | "FAOSTAT_PP_MULTI_COUNTRY"
   | "FPMA_MARKET_PRICES_MULTI_COUNTRY";
 
@@ -477,6 +481,28 @@ export interface GrainWidgetNasdaqDataLinkSnapshot extends GrainWidgetBase {
   };
 }
 
+export interface GrainWidgetEcOfficialPricesSnapshot extends GrainWidgetBase {
+  kind: "EC_CEREALS_MULTI_COUNTRY" | "EC_OILSEEDS_MULTI_COUNTRY" | "USDA_NASS_PRODUCER_PRICES";
+  rows: GrainWidgetTableRow[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "annual" | "unknown";
+    selectedTerritory?: string;
+    stageLabel?: string;
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    productCodes?: string[];
+    stageCodes?: string[];
+    marketCodes?: string[];
+    rowsParsed?: number;
+    warnings?: string[];
+  };
+}
+
 export interface GrainWidgetUsdaGtrLogisticsItem {
   metric: "BARGE" | "RAIL" | "OCEAN" | "FUEL" | "TRANSIT" | "OTHER";
   label: string;
@@ -509,6 +535,36 @@ export interface GrainWidgetUsdaGtrLogisticsSnapshot extends GrainWidgetBase {
     transportUsed?: "fetch" | "node_https_fallback";
     rangeRequestUsed?: boolean;
     parseWarnings?: string[];
+  };
+}
+
+export interface GrainWidgetCanadaRailPerformanceItem {
+  metric: "LOADED_CARS" | "FULFILLMENT" | "DELAY" | "MOVEMENT" | "OTHER";
+  label: string;
+  current: number;
+  unit: string;
+  changeAbs?: number;
+  changePct?: number;
+  series?: GrainWidgetPoint[];
+  confidence: "HIGH" | "MED" | "LOW";
+}
+
+export interface GrainWidgetCanadaRailPerformance extends GrainWidgetBase {
+  kind: "CANADA_GRAIN_RAIL_PERFORMANCE";
+  items: GrainWidgetCanadaRailPerformanceItem[];
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "weekly" | "monthly" | "unknown";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    datasetUrlChosen?: string;
+    rowsParsed?: number;
+    columnsDetected?: string[];
+    seriesPoints?: number;
+    warnings?: string[];
   };
 }
 
@@ -613,7 +669,9 @@ export type GrainWidget =
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
   | GrainWidgetAlphaVantageGrainBenchmarks
   | GrainWidgetNasdaqDataLinkSnapshot
+  | GrainWidgetEcOfficialPricesSnapshot
   | GrainWidgetUsdaGtrLogisticsSnapshot
+  | GrainWidgetCanadaRailPerformance
   | GrainWidgetFaostatPpMultiCountry
   | GrainWidgetFpmaMarketPricesMultiCountry;
 

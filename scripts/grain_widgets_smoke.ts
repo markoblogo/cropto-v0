@@ -1,14 +1,18 @@
 import { ApiFarmerProvider } from "../server/monitor/grainWidgets/providers/apiFarmerProvider";
 import { AlphaVantageCommoditiesProvider } from "../server/monitor/grainWidgets/providers/alphaVantageCommoditiesProvider";
 import { BarchartCashProvider } from "../server/monitor/grainWidgets/providers/barchartCashProvider";
+import { CanadaRailPerformanceProvider } from "../server/monitor/grainWidgets/providers/canadaRailPerformanceProvider";
 import { CommoditicProvider } from "../server/monitor/grainWidgets/providers/commoditicProvider";
 import { DbNomicsSpotProvider } from "../server/monitor/grainWidgets/providers/dbNomicsSpotProvider";
+import { EcCerealsPricesProvider } from "../server/monitor/grainWidgets/providers/ecCerealsPricesProvider";
+import { EcOilseedsPricesProvider } from "../server/monitor/grainWidgets/providers/ecOilseedsPricesProvider";
 import { FaoFfpiProvider } from "../server/monitor/grainWidgets/providers/faoFfpiProvider";
 import { FaostatProducerPricesProvider } from "../server/monitor/grainWidgets/providers/faostatProducerPricesProvider";
 import { FpmaMarketPricesProvider } from "../server/monitor/grainWidgets/providers/fpmaMarketPricesProvider";
 import { NasdaqDataLinkProvider } from "../server/monitor/grainWidgets/providers/nasdaqDataLinkProvider";
 import { TradingChartsFuturesProvider } from "../server/monitor/grainWidgets/providers/tradingChartsFuturesProvider";
 import { UsCashExportContextProvider } from "../server/monitor/grainWidgets/providers/usCashExportContextProvider";
+import { UsdaNassQuickStatsProvider } from "../server/monitor/grainWidgets/providers/usdaNassQuickStatsProvider";
 import { UsdaMarsDailyMarketRatesTxtProvider } from "../server/monitor/grainWidgets/providers/usdaMarsDailyMarketRatesTxtProvider";
 import { UsdaGtrLogisticsProvider } from "../server/monitor/grainWidgets/providers/usdaGtrLogisticsProvider";
 import { UsdaMarsReportsProvider } from "../server/monitor/grainWidgets/providers/usdaMarsReportsProvider";
@@ -46,12 +50,20 @@ function widgetCoverage(widget: GrainWidget): string {
     const mapped = widget.items.filter((item) => item.current != null).length;
     return `${mapped}/${widget.items.length || 0}`;
   }
+  if (widget.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
+    const mapped = widget.items.filter((item) => item.current != null).length;
+    return `${mapped}/${widget.items.length || 0}`;
+  }
   if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
     const mapped = widget.rows.filter((row) => row.current != null).length;
     return `${mapped}/${widget.rows.length || 0}`;
   }
   if (widget.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
     const mapped = widget.rows.filter((row) => row.current != null).length;
+    return `${mapped}/${widget.rows.length || 0}`;
+  }
+  if (widget.kind === "EC_CEREALS_MULTI_COUNTRY" || widget.kind === "EC_OILSEEDS_MULTI_COUNTRY" || widget.kind === "USDA_NASS_PRODUCER_PRICES") {
+    const mapped = widget.rows.filter((row) => row.price?.nativeValueCurrent != null || row.price?.normalizedValueCurrent != null).length;
     return `${mapped}/${widget.rows.length || 0}`;
   }
   return "n/a";
@@ -77,7 +89,11 @@ async function run() {
     new UsdaMarsDailyMarketRatesTxtProvider(),
     new UsCashExportContextProvider(),
     new NasdaqDataLinkProvider(),
+    new EcCerealsPricesProvider(),
+    new EcOilseedsPricesProvider(),
+    new UsdaNassQuickStatsProvider(),
     new UsdaGtrLogisticsProvider(),
+    new CanadaRailPerformanceProvider(),
     new FaostatProducerPricesProvider(),
     new FpmaMarketPricesProvider(),
   ];
@@ -130,6 +146,11 @@ async function run() {
           `  usda_gtr coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} dataset=${widget.debug?.datasetUrlChosen || "n/a"} rowsParsed=${widget.debug?.rowsParsed ?? 0} seriesPoints=${widget.debug?.seriesPoints ?? 0}`,
         );
       }
+      if (widget.kind === "CANADA_GRAIN_RAIL_PERFORMANCE") {
+        console.log(
+          `  canada_rail coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} cadence=${widget.summary?.cadence || "unknown"} dataset=${widget.debug?.datasetUrlChosen || "n/a"} rowsParsed=${widget.debug?.rowsParsed ?? 0}`,
+        );
+      }
       if (widget.kind === "FAOSTAT_PP_MULTI_COUNTRY") {
         console.log(
           `  faostat territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} element=${widget.debug?.elementCode || "n/a"} rows=${widget.rows.length}`,
@@ -138,6 +159,11 @@ async function run() {
       if (widget.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY") {
         console.log(
           `  fpma territory=${widget.territory?.code || "n/a"} priceType=${widget.summary?.selectedPriceType || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length}`,
+        );
+      }
+      if (widget.kind === "EC_CEREALS_MULTI_COUNTRY" || widget.kind === "EC_OILSEEDS_MULTI_COUNTRY" || widget.kind === "USDA_NASS_PRODUCER_PRICES") {
+        console.log(
+          `  official_rows territory=${widget.territory?.code || "n/a"} coverage=${widget.summary?.coverage || `${widget.summary?.mappedCount ?? 0}/${widget.summary?.expectedCount ?? 0}`} rows=${widget.rows.length} cadence=${widget.summary?.cadence || "unknown"}`,
         );
       }
       if (widget.notes?.length) console.log(`  notes=${widget.notes.join(" | ")}`);

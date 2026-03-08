@@ -37,6 +37,10 @@ export const ENABLE_COUNTRY_MULTI_WIDGET_MOCK = envBool(
 export const ENABLE_ALPHAVANTAGE_PROVIDER = envBool("ENABLE_ALPHAVANTAGE_PROVIDER", true);
 export const ENABLE_NASDAQ_DATALINK_PROVIDER = envBool("ENABLE_NASDAQ_DATALINK_PROVIDER", true);
 export const ENABLE_NASDAQ_CHRIS = envBool("ENABLE_NASDAQ_CHRIS", false);
+export const ENABLE_EC_CEREALS_WIDGET = envBool("ENABLE_EC_CEREALS_WIDGET", true);
+export const ENABLE_EC_OILSEEDS_WIDGET = envBool("ENABLE_EC_OILSEEDS_WIDGET", true);
+export const ENABLE_USDA_NASS_WIDGET = envBool("ENABLE_USDA_NASS_WIDGET", true);
+export const ENABLE_CANADA_GRAIN_RAIL_WIDGET = envBool("ENABLE_CANADA_GRAIN_RAIL_WIDGET", true);
 export const ENABLE_TRADINGCHARTS_FUTURES_WIDGETS = envBool("ENABLE_TRADINGCHARTS_FUTURES_WIDGETS", true);
 export const ENABLE_LIVESTOCK_FEED_WIDGETS = envBool("ENABLE_LIVESTOCK_FEED_WIDGETS", true);
 export const ENABLE_MACRO_AGRI_INDICES_WIDGETS = envBool("ENABLE_MACRO_AGRI_INDICES_WIDGETS", true);
@@ -161,6 +165,36 @@ export const FPMA_API_BASE_URL =
     process.env.FPMA_API_BASE_URL || "",
     "https://fpma.fao.org/giews/fpmat4/api",
   );
+export const EC_AGRI_API_BASE_URL = normalizeBaseUrl(
+  process.env.EC_AGRI_API_BASE_URL || "",
+  "https://agridata.ec.europa.eu",
+);
+export const EC_CEREALS_API_PATH = process.env.EC_CEREALS_API_PATH || "/api/cereal";
+export const EC_OILSEEDS_API_PATH = process.env.EC_OILSEEDS_API_PATH || "/api/oilseeds";
+export const EC_AGRI_TIMEOUT_MS = envNum("EC_AGRI_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
+export const EC_AGRI_CACHE_TTL_MS = envNum("EC_AGRI_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const EC_CEREALS_MEMBER_STATES = (process.env.EC_CEREALS_MEMBER_STATES || "FR,DE,PL,RO,ES")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const EC_OILSEEDS_MEMBER_STATES = (process.env.EC_OILSEEDS_MEMBER_STATES || "FR,DE,RO,BG,PL,ES")
+  .split(",")
+  .map((value) => value.trim().toUpperCase())
+  .filter(Boolean);
+export const USDA_NASS_API_KEY = process.env.USDA_NASS_API_KEY || "";
+export const USDA_NASS_BASE_URL = normalizeBaseUrl(
+  process.env.USDA_NASS_BASE_URL || "",
+  "https://quickstats.nass.usda.gov/api/api_GET",
+);
+export const USDA_NASS_TIMEOUT_MS = envNum("USDA_NASS_TIMEOUT_MS", 10_000);
+export const USDA_NASS_CACHE_TTL_MS = envNum("USDA_NASS_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
+export const CANADA_RAIL_WDS_BASE_URL = normalizeBaseUrl(
+  process.env.CANADA_RAIL_WDS_BASE_URL || "",
+  "https://www150.statcan.gc.ca/t1/wds/rest",
+);
+export const CANADA_RAIL_PRODUCT_ID = process.env.CANADA_RAIL_PRODUCT_ID || "23100275";
+export const CANADA_RAIL_TIMEOUT_MS = envNum("CANADA_RAIL_TIMEOUT_MS", 10_000);
+export const CANADA_RAIL_CACHE_TTL_MS = envNum("CANADA_RAIL_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FPMA_DATA_PATHS = (
   process.env.FPMA_DATA_PATHS ||
   "prices,PriceQuotation,v1/prices,v1/PriceQuotation"

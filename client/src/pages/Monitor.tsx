@@ -321,7 +321,11 @@ type GrainWidgetKind =
   | "USDA_MARS_DAILY_MARKET_RATES_TXT"
   | "ALPHAVANTAGE_GRAIN_BENCHMARKS"
   | "NASDAQ_DATA_LINK_SNAPSHOT"
+  | "EC_CEREALS_MULTI_COUNTRY"
+  | "EC_OILSEEDS_MULTI_COUNTRY"
+  | "USDA_NASS_PRODUCER_PRICES"
   | "USDA_GTR_LOGISTICS_SNAPSHOT"
+  | "CANADA_GRAIN_RAIL_PERFORMANCE"
   | "FAOSTAT_PP_MULTI_COUNTRY"
   | "FPMA_MARKET_PRICES_MULTI_COUNTRY";
 
@@ -761,6 +765,81 @@ type GrainWidgetNasdaqDataLinkSnapshot = GrainTerritoryMeta & {
   fallbackReason?: string;
 };
 
+type GrainWidgetEcOfficialPricesMultiCountry = GrainTerritoryMeta & {
+  id: string;
+  kind: "EC_CEREALS_MULTI_COUNTRY" | "EC_OILSEEDS_MULTI_COUNTRY";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<{
+    crop:
+      | "SOFT_WHEAT"
+      | "DURUM_WHEAT"
+      | "MAIZE"
+      | "BARLEY"
+      | "RYE"
+      | "RAPESEED"
+      | "SUNFLOWER"
+      | "SOYBEANS";
+    label: string;
+    current: number;
+    unit: string;
+    cadence: "daily" | "weekly" | "monthly" | "annual" | "unknown";
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    notes?: string[];
+    territory?: { code: string; label: string };
+    secondaryValueText?: string;
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "daily" | "weekly" | "monthly" | "annual" | "unknown";
+    selectedTerritory?: string;
+    stageLabels?: string[];
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    query?: string;
+    warnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetUsdaNassProducerPrices = GrainTerritoryMeta & {
+  id: string;
+  kind: "USDA_NASS_PRODUCER_PRICES";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  rows: Array<GrainWidgetRow & {
+    crop?: "WHEAT" | "CORN" | "SOYBEANS";
+    cadence?: "annual" | "monthly" | "unknown";
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "annual" | "monthly" | "unknown";
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
 type GrainWidgetUsdaGtrLogisticsSnapshot = GrainTerritoryMeta & {
   id: string;
   kind: "USDA_GTR_LOGISTICS_SNAPSHOT";
@@ -792,6 +871,44 @@ type GrainWidgetUsdaGtrLogisticsSnapshot = GrainTerritoryMeta & {
     sourceUrlUsed?: string;
     rowsParsed?: number;
     parseWarnings?: string[];
+  };
+  notes?: string[];
+  fallbackReason?: string;
+};
+
+type GrainWidgetCanadaRailPerformance = GrainTerritoryMeta & {
+  id: string;
+  kind: "CANADA_GRAIN_RAIL_PERFORMANCE";
+  title: string;
+  subtitle?: string;
+  status: GrainWidgetStatus;
+  sourceName: string;
+  sourceAttribution?: string;
+  sourceUrl?: string;
+  updatedAt: string;
+  timeframe?: "1d" | "7d";
+  items: Array<{
+    metric: "LOADED_CARS" | "FULFILLMENT" | "DELAY" | "MOVEMENT" | "OTHER";
+    label: string;
+    current: number;
+    unit: string;
+    changeAbs?: number;
+    changePct?: number;
+    series?: Array<{ ts: string; value: number }>;
+    confidence: "HIGH" | "MED" | "LOW";
+    cadence?: "weekly" | "monthly" | "unknown";
+  }>;
+  summary?: {
+    expectedCount: number;
+    mappedCount: number;
+    coverage?: string;
+    cadence?: "weekly" | "monthly" | "unknown";
+  };
+  debug?: {
+    sourceUrlUsed?: string;
+    rowsParsed?: number;
+    query?: string;
+    warnings?: string[];
   };
   notes?: string[];
   fallbackReason?: string;
@@ -906,7 +1023,10 @@ type GrainWidget =
   | GrainWidgetUsdaMarsDailyMarketRatesTxt
   | GrainWidgetAlphaVantageBenchmarks
   | GrainWidgetNasdaqDataLinkSnapshot
+  | GrainWidgetEcOfficialPricesMultiCountry
+  | GrainWidgetUsdaNassProducerPrices
   | GrainWidgetUsdaGtrLogisticsSnapshot
+  | GrainWidgetCanadaRailPerformance
   | GrainWidgetFaostatPpMultiCountry
   | GrainWidgetFpmaMarketPricesMultiCountry;
 
@@ -2582,7 +2702,11 @@ export default function MonitorPage() {
                   const marsDailyTxtWidget = grainDataByKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as GrainWidgetUsdaMarsDailyMarketRatesTxt | undefined;
                   const alphaWidget = grainDataByKind["ALPHAVANTAGE_GRAIN_BENCHMARKS"] as GrainWidgetAlphaVantageBenchmarks | undefined;
                   const nasdaqWidget = grainDataByKind["NASDAQ_DATA_LINK_SNAPSHOT"] as GrainWidgetNasdaqDataLinkSnapshot | undefined;
+                  const ecCerealsWidget = grainDataByKind["EC_CEREALS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
+                  const ecOilseedsWidget = grainDataByKind["EC_OILSEEDS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
+                  const usdaNassWidget = grainDataByKind["USDA_NASS_PRODUCER_PRICES"] as GrainWidgetUsdaNassProducerPrices | undefined;
                   const usdaGtrWidget = grainDataByKind["USDA_GTR_LOGISTICS_SNAPSHOT"] as GrainWidgetUsdaGtrLogisticsSnapshot | undefined;
+                  const canadaRailWidget = grainDataByKind["CANADA_GRAIN_RAIL_PERFORMANCE"] as GrainWidgetCanadaRailPerformance | undefined;
                   const faostatWidget = grainDataByKind["FAOSTAT_PP_MULTI_COUNTRY"] as GrainWidgetFaostatPpMultiCountry | undefined;
                   const fpmaWidget = grainDataByKind["FPMA_MARKET_PRICES_MULTI_COUNTRY"] as GrainWidgetFpmaMarketPricesMultiCountry | undefined;
                   const macroEmbedRenderable =
@@ -2676,6 +2800,193 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("GLOBAL_SPOT_TABLE") ? "Spot (Global)" : "Spot (Global) (not configured)"}
                             subtitle="Wheat / Corn / Soy / Rapeseed"
+                          />
+                        </div>
+                      )}
+
+                      {ecCerealsWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{ecCerealsWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(ecCerealsWidget.status)}`}>{ecCerealsWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{ecCerealsWidget.subtitle || "EC official cereals prices by member state"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(ecCerealsWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={ecCerealsWidget} value={grainCountry} onChange={setGrainCountry} />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {ecCerealsWidget.rows.slice(0, 5).map((row, idx) => (
+                                <div key={`${ecCerealsWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={row.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                                  {row.secondaryValueText ? <p className="text-[10px] text-foreground/55">{row.secondaryValueText}</p> : null}
+                                  <DynamicMiniTrend
+                                    series={row.series || []}
+                                    change={row.changeAbs}
+                                    changePct={row.changePct}
+                                    status={ecCerealsWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={ecCerealsWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: ecCerealsWidget.status,
+                                      sourceName: ecCerealsWidget.sourceName,
+                                      fallbackReason: ecCerealsWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!ecCerealsWidget.rows.length ? <p className="text-[11px] text-foreground/68">No cereals rows mapped for selected member state.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {ecCerealsWidget.summary?.coverage ? <MetricChip label={`coverage ${ecCerealsWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {ecCerealsWidget.summary?.cadence ? <MetricChip label={`cadence ${ecCerealsWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={ecCerealsWidget.status}
+                              statusClassName={grainStatusClass(ecCerealsWidget.status)}
+                              sourceName={ecCerealsWidget.sourceName}
+                              sourceUrl={ecCerealsWidget.sourceUrl}
+                              updatedLabel={ecCerealsWidget.updatedAt ? formatRelative(ecCerealsWidget.updatedAt) : ecCerealsWidget.timeframe}
+                              fallbackReason={ecCerealsWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("EC_CEREALS_MULTI_COUNTRY") ? "EU Official Cereals" : "EU Official Cereals (not configured)"}
+                            subtitle="EC agri-food cereals prices"
+                          />
+                        </div>
+                      )}
+
+                      {ecOilseedsWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{ecOilseedsWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(ecOilseedsWidget.status)}`}>{ecOilseedsWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{ecOilseedsWidget.subtitle || "EC official oilseeds prices by member state"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(ecOilseedsWidget)} variant="unit" tone="neutral" />
+                              <TerritorySelector widget={ecOilseedsWidget} value={grainCountry} onChange={setGrainCountry} />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {ecOilseedsWidget.rows.slice(0, 4).map((row, idx) => (
+                                <div key={`${ecOilseedsWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{row.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                                      <MetricChip label={row.cadence} variant="type" tone="muted" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                                  {row.secondaryValueText ? <p className="text-[10px] text-foreground/55">{row.secondaryValueText}</p> : null}
+                                  <DynamicMiniTrend
+                                    series={row.series || []}
+                                    change={row.changeAbs}
+                                    changePct={row.changePct}
+                                    status={ecOilseedsWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={ecOilseedsWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: ecOilseedsWidget.status,
+                                      sourceName: ecOilseedsWidget.sourceName,
+                                      fallbackReason: ecOilseedsWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!ecOilseedsWidget.rows.length ? <p className="text-[11px] text-foreground/68">No oilseeds rows mapped for selected member state.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {ecOilseedsWidget.summary?.coverage ? <MetricChip label={`coverage ${ecOilseedsWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {ecOilseedsWidget.summary?.cadence ? <MetricChip label={`cadence ${ecOilseedsWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={ecOilseedsWidget.status}
+                              statusClassName={grainStatusClass(ecOilseedsWidget.status)}
+                              sourceName={ecOilseedsWidget.sourceName}
+                              sourceUrl={ecOilseedsWidget.sourceUrl}
+                              updatedLabel={ecOilseedsWidget.updatedAt ? formatRelative(ecOilseedsWidget.updatedAt) : ecOilseedsWidget.timeframe}
+                              fallbackReason={ecOilseedsWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("EC_OILSEEDS_MULTI_COUNTRY") ? "EU Official Oilseeds" : "EU Official Oilseeds (not configured)"}
+                            subtitle="EC agri-food oilseeds prices"
+                          />
+                        </div>
+                      )}
+
+                      {usdaNassWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/75 dark:border-white/40 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{usdaNassWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(usdaNassWidget.status)}`}>{usdaNassWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/70">{usdaNassWidget.subtitle || "US official producer price statistics"}</CardDescription>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <MetricChip label={territoryChipLabel(usdaNassWidget)} variant="unit" tone="neutral" />
+                              {usdaNassWidget.summary?.cadence ? <MetricChip label={`cadence ${usdaNassWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {usdaNassWidget.rows.slice(0, 3).map((row) => (
+                                <GrainDataRow key={row.id} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
+                              ))}
+                              {!usdaNassWidget.rows.length ? <p className="text-[11px] text-foreground/68">No NASS crop rows available in current cycle.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {usdaNassWidget.summary?.coverage ? <MetricChip label={`coverage ${usdaNassWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={usdaNassWidget.status}
+                              statusClassName={grainStatusClass(usdaNassWidget.status)}
+                              sourceName={usdaNassWidget.sourceName}
+                              sourceUrl={usdaNassWidget.sourceUrl}
+                              updatedLabel={usdaNassWidget.updatedAt ? formatRelative(usdaNassWidget.updatedAt) : usdaNassWidget.timeframe}
+                              fallbackReason={usdaNassWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("USDA_NASS_PRODUCER_PRICES") ? "US Producer Prices (NASS)" : "US Producer Prices (NASS) (not configured)"}
+                            subtitle="US official producer/statistical layer"
                           />
                         </div>
                       )}
@@ -3753,6 +4064,76 @@ export default function MonitorPage() {
                           <GrainExpansionFallbackCard
                             title={grainDataOrder.includes("USDA_GTR_LOGISTICS_SNAPSHOT") ? "US Logistics (USDA GTR)" : "US Logistics (USDA GTR) (not configured)"}
                             subtitle="Open logistics proxies: barge / rail / fuel"
+                          />
+                        </div>
+                      )}
+
+                      {canadaRailWidget ? (
+                        <Card className="xl:col-span-6 h-auto self-start border-black/70 dark:border-white/35 bg-gradient-to-b from-card to-muted/20 text-foreground shadow-sm">
+                          <CardHeader className="pb-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle className="text-sm">{canadaRailWidget.title}</CardTitle>
+                              <Badge className={`text-[10px] ${grainStatusClass(canadaRailWidget.status)}`}>{canadaRailWidget.status}</Badge>
+                            </div>
+                            <CardDescription className="text-foreground/68">{canadaRailWidget.subtitle || "Canada weekly grain rail performance"}</CardDescription>
+                            <div className="flex items-center gap-1">
+                              <MetricChip label={territoryChipLabel(canadaRailWidget)} variant="unit" tone="neutral" />
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-1.5">
+                            <div className="grid gap-1 sm:grid-cols-2">
+                              {canadaRailWidget.items.slice(0, 4).map((item, idx) => (
+                                <div key={`${canadaRailWidget.id}-${idx}`} className="rounded border border-black/50 dark:border-white/20 bg-background/45 p-1.5">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="text-[11px] text-foreground/85 line-clamp-1">{item.label}</p>
+                                    <div className="flex items-center gap-1">
+                                      <MetricChip label={item.metric} variant="type" tone="muted" />
+                                      <MetricChip label={item.unit} variant="unit" tone="neutral" />
+                                    </div>
+                                  </div>
+                                  <p className="mt-0.5 text-[12px] font-semibold text-foreground">
+                                    {formatMetricValue({ kind: "index", value: item.current, unit: item.unit })}
+                                  </p>
+                                  <p className="text-[10px] text-foreground/65">{formatChangeWithUnit({ change: item.changeAbs, unit: item.unit, pct: item.changePct })}</p>
+                                  <DynamicMiniTrend
+                                    series={item.series || []}
+                                    change={item.changeAbs}
+                                    changePct={item.changePct}
+                                    status={canadaRailWidget.status}
+                                    section="expansion"
+                                    cardKind="row"
+                                    sourceName={canadaRailWidget.sourceName}
+                                    trustedSeries={isTrustworthySeriesSource({
+                                      status: canadaRailWidget.status,
+                                      sourceName: canadaRailWidget.sourceName,
+                                      fallbackReason: canadaRailWidget.fallbackReason,
+                                    })}
+                                    debugEnabled={debugEnabled}
+                                  />
+                                </div>
+                              ))}
+                              {!canadaRailWidget.items.length ? <p className="text-[11px] text-foreground/68">No Canada rail metrics mapped in current cycle.</p> : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {canadaRailWidget.summary?.coverage ? <MetricChip label={`coverage ${canadaRailWidget.summary.coverage}`} variant="provider" tone="neutral" /> : null}
+                              {canadaRailWidget.summary?.cadence ? <MetricChip label={`cadence ${canadaRailWidget.summary.cadence}`} variant="type" tone="muted" /> : null}
+                            </div>
+                            <StatusSourceStrip
+                              compact
+                              status={canadaRailWidget.status}
+                              statusClassName={grainStatusClass(canadaRailWidget.status)}
+                              sourceName={canadaRailWidget.sourceName}
+                              sourceUrl={canadaRailWidget.sourceUrl}
+                              updatedLabel={canadaRailWidget.updatedAt ? formatRelative(canadaRailWidget.updatedAt) : canadaRailWidget.timeframe}
+                              fallbackReason={canadaRailWidget.fallbackReason}
+                            />
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <div className="xl:col-span-6">
+                          <GrainExpansionFallbackCard
+                            title={grainDataOrder.includes("CANADA_GRAIN_RAIL_PERFORMANCE") ? "Canada Grain Rail" : "Canada Grain Rail (not configured)"}
+                            subtitle="Official weekly rail performance indicators"
                           />
                         </div>
                       )}
