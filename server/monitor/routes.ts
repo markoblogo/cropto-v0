@@ -43,6 +43,7 @@ import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
+import { buildMonitorTriageReport } from "./utils/triage";
 
 const indexProvider = new CroptoUkraineIndexProvider();
 const logisticsIndicatorsService = new LogisticsIndicatorsService();
@@ -741,6 +742,29 @@ export function registerMonitorRoutes(app: Express): void {
         error: {
           message: error?.message || "activation_report_failed",
           errorKind: classifyErrorKind({ message: error?.message }),
+        },
+      });
+    }
+  });
+
+  app.get("/api/monitor/triage-report", async (_req, res) => {
+    try {
+      const report = await buildMonitorTriageReport(grainWidgetsService);
+      res.json(report);
+    } catch (error: any) {
+      res.status(200).json({
+        runtime: {
+          timestamp: new Date().toISOString(),
+          appVersion: process.env.APP_VERSION || process.env.npm_package_version || "unknown",
+          commit:
+            process.env.RAILWAY_GIT_COMMIT_SHA ||
+            process.env.RAILWAY_GIT_COMMIT ||
+            process.env.VERCEL_GIT_COMMIT_SHA ||
+            process.env.COMMIT_SHA ||
+            "unknown",
+        },
+        error: {
+          message: error?.message || "triage_report_failed",
         },
       });
     }

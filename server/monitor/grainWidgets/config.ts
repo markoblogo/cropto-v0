@@ -9,6 +9,12 @@ function envNum(name: string, fallback: number): number {
   return Number.isFinite(raw) ? raw : fallback;
 }
 
+function normalizeBaseUrl(value: string, fallback: string): string {
+  const raw = (value || fallback || "").trim();
+  if (!raw) return fallback;
+  return raw.replace(/\/+$/, "");
+}
+
 export const ENABLE_GRAIN_WIDGETS_EXPANSION = envBool("ENABLE_GRAIN_WIDGETS_EXPANSION", true);
 export const ENABLE_BARCHART_CASH_WIDGETS = envBool("ENABLE_BARCHART_CASH_WIDGETS", true);
 export const ENABLE_COMMODITIC_WIDGETS = envBool("ENABLE_COMMODITIC_WIDGETS", true);
@@ -131,16 +137,20 @@ export const USDA_GTR_TIMEOUT_MS = envNum("USDA_GTR_TIMEOUT_MS", GRAIN_WIDGETS_F
 export const USDA_GTR_CACHE_TTL_MS = envNum("USDA_GTR_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const USDA_GTR_MAX_SIGNALS = envNum("USDA_GTR_MAX_SIGNALS", 4);
 export const FAOSTAT_BASE_URL =
-  process.env.FAOSTAT_BASE_URL ||
-  "https://fenixservices.fao.org/faostat/api/v1/en";
+  normalizeBaseUrl(
+    process.env.FAOSTAT_BASE_URL || "",
+    "https://fenixservices.fao.org/faostat/api/v1/en",
+  );
 export const FAOSTAT_DATASOURCE = process.env.FAOSTAT_DATASOURCE || "production";
 export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 export const FAOSTAT_CACHE_TTL_MS = envNum("FAOSTAT_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FAOSTAT_DISCOVERY_TTL_MS = envNum("FAOSTAT_DISCOVERY_TTL_MS", 7 * 24 * 60 * 60 * 1000);
 export const FAOSTAT_MAX_YEARS = envNum("FAOSTAT_MAX_YEARS", 5);
 export const FPMA_API_BASE_URL =
-  process.env.FPMA_API_BASE_URL ||
-  "https://fpma.fao.org/giews/fpmat4/api";
+  normalizeBaseUrl(
+    process.env.FPMA_API_BASE_URL || "",
+    "https://fpma.fao.org/giews/fpmat4/api",
+  );
 export const FPMA_DATA_PATHS = (
   process.env.FPMA_DATA_PATHS ||
   "prices,PriceQuotation,v1/prices,v1/PriceQuotation"
