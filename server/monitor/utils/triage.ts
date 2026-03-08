@@ -27,6 +27,7 @@ type TriageErrorKind =
   | "CONFIG_MISSING"
   | "DNS"
   | "TIMEOUT"
+  | "BLOCKED"
   | "HTTP_4XX"
   | "HTTP_5XX"
   | "PARSE"
@@ -74,6 +75,7 @@ function classifyErrorKind(args: {
   if (code === "ENOTFOUND" || message.includes("enotfound") || message.includes("could not resolve host")) return "DNS";
   if (code === "ETIMEDOUT" || code === "ABORT_ERR" || message.includes("timed out") || message.includes("aborted")) return "TIMEOUT";
   if (message.includes("rate_limit") || message.includes("rate limit")) return "RATE_LIMIT";
+  if (status === 403 || message.includes("forbidden") || message.includes("blocked")) return "BLOCKED";
   if (status != null && status >= 400 && status < 500) return "HTTP_4XX";
   if (status != null && status >= 500) return "HTTP_5XX";
   if (message.includes("parse")) return "PARSE";
@@ -119,9 +121,14 @@ function inferProviderErrorKind(args: {
     if (providerErrorText.includes("empty")) return "EMPTY";
   }
   if (args.providerId === "usda-gtr-logistics") {
+    if (providerErrorText.includes("403") || providerErrorText.includes("blocked")) return "BLOCKED";
     if (args.probe?.errorKind === "HTTP_4XX") return "HTTP_4XX";
   }
   if (args.providerId === "nasdaq-datalink") {
+    const datasetsAreCleanFRED = NASDAQ_DATASETS.length > 0 && NASDAQ_DATASETS.every((value) => String(value).startsWith("FRED/"));
+    if (datasetsAreCleanFRED && !ENABLE_NASDAQ_CHRIS && (args.probe?.httpStatus === 403 || providerErrorText.includes("forbidden") || providerErrorText.includes("blocked"))) {
+      return "BLOCKED";
+    }
     if (providerErrorText.includes("red/dgs10")) return "PARSE";
     if (args.probe?.errorKind === "HTTP_4XX") return "HTTP_4XX";
     if (providerErrorText.includes("forbidden") || providerErrorText.includes("blocked")) return "HTTP_4XX";
@@ -272,6 +279,12 @@ function providerSuggestedFix(args: {
       actions.push("Check base URL/path and verify sourceUrlUsed manually; 4xx usually means wrong path or blocked endpoint.");
       if (errorMessage.includes("403")) actions.push("Endpoint may require auth or premium access; keep open-data fallback active.");
       break;
+    case "BLOCKED":
+      severity = "WARN";
+      type = "CHANGE_CONFIG";
+      why = "The upstream is reachable, but runtime access is explicitly blocked.";
+      actions.push("Treat this as an access restriction unless provider-specific diagnostics prove otherwise.");
+      break;
     case "HTTP_5XX":
       severity = "WARN";
       type = "NO_ACTION";
@@ -281,8 +294,8 @@ function providerSuggestedFix(args: {
     case "PARSE":
       severity = "WARN";
       type = "CODE_FIX";
-      why = "Data arrived but the parser assumptions did not match the live payload shape.";
-      actions.push("Log a sample payload in debug mode and update parser assumptions for the live shape.");
+      why = "Data arrived, but the runtime did not receive the expected machine-readable payload.";
+      actions.push("Inspect the live payload/content-type and verify the endpoint is serving machine-readable data.");
       break;
     case "EMPTY":
       severity = "WARN";
@@ -326,28 +339,32 @@ function providerSuggestedFix(args: {
 
   if (args.providerId === "fpma-market-prices" && args.errorKind === "PARSE") {
     severity = "WARN";
-    type = "CODE_FIX";
-    why = "The FPMA endpoint is responding, but runtime is likely receiving HTML or a non-data shell instead of JSON rows.";
-    actions.push("Verify FPMA_API_BASE_URL points to a real JSON API endpoint, not an HTML application shell.");
+    type = "CHANGE_CONFIG";
+    why = "Current FPMA base/path returns an HTML shell instead of a JSON API payload.";
+    actions.length = 0;
+    actions.push("Verify FPMA_API_BASE_URL points to the correct FPMA JSON endpoint before enabling live mode.");
   }
 
   if (args.providerId === "faostat-pp" && args.errorKind === "TIMEOUT") {
     severity = "WARN";
     type = "CHANGE_CONFIG";
-    why = "FAOSTAT upstream is timing out even on reduced probes.";
-    actions.push("Increase FAOSTAT_TIMEOUT_MS further or switch to a lighter FAOSTAT endpoint/probe for production validation.");
+    why = "FAOSTAT upstream is slow or unresponsive from the current runtime even on reduced probes.";
+    actions.length = 0;
+    actions.push("Keep fallback enabled for demo or reduce live reliance unless a longer timeout budget is acceptable.");
   }
 
-  if (args.providerId === "usda-gtr-logistics" && (args.errorKind === "HTTP_4XX" || errorMessage.includes("403"))) {
+  if (args.providerId === "usda-gtr-logistics" && (args.errorKind === "BLOCKED" || args.errorKind === "HTTP_4XX" || errorMessage.includes("403"))) {
     severity = "WARN";
     type = "CODE_FIX";
-    why = "The GTR dataset URL is live, but binary download still receives 4xx from runtime fetch.";
-    actions.push("Inspect GTR provider httpStatus/finalUrl/responseHeaders in activation-report and align binary fetch behavior with the successful probe.");
+    why = "The GTR probe succeeds, but runtime binary retrieval is blocked during provider download.";
+    actions.length = 0;
+    actions.push("Inspect GTR provider httpStatus/finalUrl/responseHeaders/transportUsed in activation-report and compare the blocked runtime request against the successful probe.");
   }
 
   if (args.providerId === "nasdaq-datalink") {
     let nasdaqWhy = why;
-    if (errorMessage.includes("RED/")) {
+    const datasetsAreCleanFRED = NASDAQ_DATASETS.length > 0 && NASDAQ_DATASETS.every((value) => String(value).startsWith("FRED/"));
+    if (!datasetsAreCleanFRED && errorMessage.includes("RED/")) {
       severity = "WARN";
       type = "SET_ENV";
       envKeys = ["NASDAQ_DATASETS"];
@@ -355,7 +372,7 @@ function providerSuggestedFix(args: {
       nasdaqWhy = "Production datasets include an invalid RED/... prefix instead of FRED/....";
       actions.push("Fix NASDAQ_DATASETS on Railway so every FRED dataset keeps the FRED/ prefix.");
     }
-    if (errorMessage.includes("CHRIS/")) {
+    if (ENABLE_NASDAQ_CHRIS && errorMessage.includes("CHRIS/")) {
       if (!envKeys.length) {
         severity = "WARN";
         type = "SET_ENV";
@@ -364,6 +381,16 @@ function providerSuggestedFix(args: {
         nasdaqWhy = "Premium CHRIS datasets are enabled in production and add avoidable 403 noise.";
       }
       actions.push("Disable CHRIS on production unless you explicitly want premium-only datasets.");
+    }
+    if (datasetsAreCleanFRED && !ENABLE_NASDAQ_CHRIS && (args.errorKind === "BLOCKED" || args.errorKind === "HTTP_4XX" || errorMessage.includes("forbidden") || errorMessage.includes("blocked"))) {
+      severity = "WARN";
+      type = "SET_ENV";
+      envKeys = ["NASDAQ_API_KEY"];
+      exampleValues = ["<valid-nasdaq-key>"];
+      nasdaqWhy = "FRED datasets are correctly configured, but Nasdaq Data Link is returning 403 for the current key/access level.";
+      actions.length = 0;
+      actions.push("Verify NASDAQ_API_KEY is valid on Railway and that the key has access to FRED datasets on Nasdaq Data Link.");
+      actions.push("If access remains blocked, keep provider fallback-enabled for demo.");
     }
     if (nasdaqWhy) why = nasdaqWhy;
   }

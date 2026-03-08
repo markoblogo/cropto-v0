@@ -29,6 +29,8 @@ type ParsedDataset = {
   httpStatus?: number;
   finalUrl?: string;
   responseHeaders?: Record<string, string>;
+  transportUsed?: "fetch" | "node_https_fallback";
+  rangeRequestUsed?: boolean;
 };
 
 type CacheEntry = {
@@ -457,6 +459,8 @@ async function parseDatasetFromUrl(url: string, seriesPoints: number): Promise<P
     let finalUrl: string;
     let responseHeaders: Record<string, string> | undefined;
     let httpStatus: number | undefined;
+    let transportUsed: "fetch" | "node_https_fallback" = "fetch";
+    const rangeRequestUsed = true;
     try {
       const fetched = await fetchBufferWithTimeout(url, USDA_GTR_TIMEOUT_MS, {
         accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
@@ -465,12 +469,25 @@ async function parseDatasetFromUrl(url: string, seriesPoints: number): Promise<P
       buffer = fetched.buffer;
       finalUrl = fetched.finalUrl;
     } catch (error: any) {
+      Object.assign(error, {
+        transportUsed: "fetch",
+        rangeRequestUsed,
+      });
       if (Number(error?.httpStatus) === 403) {
-        const fallback = await downloadBufferViaNode(url);
-        buffer = fallback.buffer;
-        finalUrl = fallback.finalUrl;
-        responseHeaders = fallback.headers;
-        httpStatus = fallback.statusCode;
+        try {
+          const fallback = await downloadBufferViaNode(url);
+          buffer = fallback.buffer;
+          finalUrl = fallback.finalUrl;
+          responseHeaders = fallback.headers;
+          httpStatus = fallback.statusCode;
+          transportUsed = "node_https_fallback";
+        } catch (fallbackError: any) {
+          Object.assign(fallbackError, {
+            transportUsed: "node_https_fallback",
+            rangeRequestUsed,
+          });
+          throw fallbackError;
+        }
       } else {
         throw error;
       }
@@ -481,6 +498,8 @@ async function parseDatasetFromUrl(url: string, seriesPoints: number): Promise<P
         httpStatus,
         finalUrl,
         responseHeaders,
+        transportUsed,
+        rangeRequestUsed,
       }));
     }
     if (/GTRFigure9\.xlsx/i.test(finalUrl) || /GTRFigure9\.xlsx/i.test(url)) {
@@ -489,6 +508,8 @@ async function parseDatasetFromUrl(url: string, seriesPoints: number): Promise<P
         httpStatus,
         finalUrl,
         responseHeaders,
+        transportUsed,
+        rangeRequestUsed,
       }));
     }
     return [];
@@ -526,6 +547,8 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
     let httpStatus: number | undefined;
     let finalUrl: string | undefined;
     let responseHeaders: Record<string, string> | undefined;
+    let transportUsed: "fetch" | "node_https_fallback" | undefined;
+    let rangeRequestUsed: boolean | undefined;
 
     for (const url of USDA_GTR_DATASET_URLS) {
       try {
@@ -542,6 +565,8 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
           sourceUrlUsed = sourceUrlUsed || parsed.sourceUrlUsed;
           datasetUrlChosen = datasetUrlChosen || parsed.datasetUrlChosen;
           columnsDetected = Array.from(new Set([...columnsDetected, ...parsed.columnsDetected]));
+          transportUsed = transportUsed || parsed.transportUsed;
+          rangeRequestUsed = rangeRequestUsed ?? parsed.rangeRequestUsed;
           if (parsedSignals.length >= Math.max(1, USDA_GTR_MAX_SIGNALS)) break;
         }
         if (parsedSignals.length >= Math.max(1, USDA_GTR_MAX_SIGNALS)) break;
@@ -550,6 +575,12 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
         if (typeof error?.finalUrl === "string") finalUrl = error.finalUrl;
         if (error?.responseHeaders && typeof error.responseHeaders === "object") {
           responseHeaders = error.responseHeaders;
+        }
+        if (error?.transportUsed === "fetch" || error?.transportUsed === "node_https_fallback") {
+          transportUsed = error.transportUsed;
+        }
+        if (typeof error?.rangeRequestUsed === "boolean") {
+          rangeRequestUsed = error.rangeRequestUsed;
         }
         warnings.push(`${url}:${String(error?.message || "fetch_failed").slice(0, 120)}`);
       }
@@ -561,7 +592,19 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
       .slice(0, Math.max(1, USDA_GTR_MAX_SIGNALS));
 
     if (!items.length) {
-      throw new Error(warnings[0] || "usda_gtr_no_signals");
+      const error = new Error(warnings[0] || "usda_gtr_no_signals") as Error & {
+        httpStatus?: number;
+        finalUrl?: string;
+        responseHeaders?: Record<string, string>;
+        transportUsed?: "fetch" | "node_https_fallback";
+        rangeRequestUsed?: boolean;
+      };
+      error.httpStatus = httpStatus;
+      error.finalUrl = finalUrl;
+      error.responseHeaders = responseHeaders;
+      error.transportUsed = transportUsed;
+      error.rangeRequestUsed = rangeRequestUsed;
+      throw error;
     }
 
     const expectedCount = 2;
@@ -602,6 +645,8 @@ export class UsdaGtrLogisticsProvider implements GrainWidgetsProvider {
         httpStatus,
         finalUrl,
         responseHeaders,
+        transportUsed,
+        rangeRequestUsed,
         parseWarnings: warnings.length ? warnings : undefined,
       },
     };

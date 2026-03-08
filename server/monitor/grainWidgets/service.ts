@@ -73,6 +73,8 @@ type ProviderRuntime = {
   httpStatus?: number;
   finalUrl?: string;
   responseHeaders?: Record<string, string>;
+  transportUsed?: "fetch" | "node_https_fallback";
+  rangeRequestUsed?: boolean;
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];
@@ -613,6 +615,8 @@ export class GrainWidgetsService {
           httpStatus: state?.httpStatus,
           finalUrl: state?.finalUrl,
           responseHeaders: state?.responseHeaders,
+          transportUsed: state?.transportUsed,
+          rangeRequestUsed: state?.rangeRequestUsed,
           parseWarnings: state?.parseWarnings,
           areaCodes: state?.areaCodes,
           itemCodes: state?.itemCodes,
@@ -724,6 +728,8 @@ export class GrainWidgetsService {
           httpStatus: state?.httpStatus,
           finalUrl: state?.finalUrl,
           responseHeaders: state?.responseHeaders,
+          transportUsed: state?.transportUsed,
+          rangeRequestUsed: state?.rangeRequestUsed,
           parseWarnings: state?.parseWarnings,
           areaCodes: state?.areaCodes,
           itemCodes: state?.itemCodes,
@@ -810,6 +816,13 @@ export class GrainWidgetsService {
         linesFetched: undefined,
         linesMatched: undefined,
         rowsParsed: undefined,
+        columnsDetected: undefined,
+        seriesPoints: undefined,
+        httpStatus: undefined,
+        finalUrl: undefined,
+        responseHeaders: undefined,
+        transportUsed: undefined,
+        rangeRequestUsed: undefined,
         parseWarnings: undefined,
         areaCodes: undefined,
         itemCodes: undefined,
@@ -874,6 +887,8 @@ export class GrainWidgetsService {
             httpStatus: gtrDebug?.httpStatus,
             finalUrl: gtrDebug?.finalUrl,
             responseHeaders: gtrDebug?.responseHeaders,
+            transportUsed: gtrDebug?.transportUsed,
+            rangeRequestUsed: gtrDebug?.rangeRequestUsed,
             parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
             areaCodes: faostatDebug?.areaCodes,
             itemCodes: faostatDebug?.itemCodes,
@@ -936,6 +951,8 @@ export class GrainWidgetsService {
           httpStatus: gtrDebug?.httpStatus,
           finalUrl: gtrDebug?.finalUrl,
           responseHeaders: gtrDebug?.responseHeaders,
+          transportUsed: gtrDebug?.transportUsed,
+          rangeRequestUsed: gtrDebug?.rangeRequestUsed,
           parseWarnings: fpmaDebug?.warnings ?? gtrDebug?.parseWarnings,
           areaCodes: faostatDebug?.areaCodes,
           itemCodes: faostatDebug?.itemCodes,
@@ -975,6 +992,11 @@ export class GrainWidgetsService {
           error: reason,
           errorKind: classifyProviderErrorKind(reason),
           mappedCount: 0,
+          httpStatus: typeof error?.httpStatus === "number" ? error.httpStatus : undefined,
+          finalUrl: typeof error?.finalUrl === "string" ? error.finalUrl : undefined,
+          responseHeaders: error?.responseHeaders && typeof error.responseHeaders === "object" ? error.responseHeaders : undefined,
+          transportUsed: error?.transportUsed === "fetch" || error?.transportUsed === "node_https_fallback" ? error.transportUsed : undefined,
+          rangeRequestUsed: typeof error?.rangeRequestUsed === "boolean" ? error.rangeRequestUsed : undefined,
           widgetsReturned: [],
           fallbackUsed: true,
         });

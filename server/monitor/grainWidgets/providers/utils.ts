@@ -48,7 +48,7 @@ export async function fetchWithHeaders(
 
 function attachHttpDebug(error: Error, response: Response): Error {
   const pickedHeaders: Record<string, string> = {};
-  for (const key of ["server", "via", "cf-ray", "content-type", "location"]) {
+  for (const key of ["server", "via", "cf-ray", "content-type", "location", "x-cache", "x-served-by"]) {
     const value = response.headers.get(key);
     if (value) pickedHeaders[key] = value;
   }

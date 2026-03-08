@@ -578,6 +578,8 @@ export function registerMonitorRoutes(app: Express): void {
           httpStatus: provider?.httpStatus,
           finalUrl: provider?.finalUrl,
           responseHeaders: provider?.responseHeaders,
+          transportUsed: provider?.transportUsed,
+          rangeRequestUsed: provider?.rangeRequestUsed,
           parseWarnings: provider?.parseWarnings,
           areaCodes: provider?.areaCodes,
           itemCodes: provider?.itemCodes,
@@ -597,7 +599,21 @@ export function registerMonitorRoutes(app: Express): void {
           cacheHit: Boolean(provider?.cacheHit),
           fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
           lastError: providerError,
-          notes: provider?.notes,
+          notes: [
+            ...(provider?.notes || []),
+            ...(providerId === "nasdaq-datalink" && status !== "REFRESH" && NASDAQ_DATASETS.every((dataset) => String(dataset).startsWith("FRED/")) && providerError?.errorKind === "BLOCKED"
+              ? ["FRED datasets requested; upstream returned 403", "likely access/quota/premium restriction"]
+              : []),
+            ...(providerId === "fpma-market-prices" && String(provider?.error || "").includes("html_response:")
+              ? ["Current FPMA base/path returned an HTML shell instead of JSON API data", "verify the correct FPMA JSON endpoint before enabling live mode"]
+              : []),
+            ...(providerId === "faostat-pp" && providerError?.errorKind === "TIMEOUT"
+              ? ["FAOSTAT upstream is slow or unresponsive from the current runtime", "keep fallback enabled unless a longer live timeout is acceptable"]
+              : []),
+            ...(providerId === "usda-gtr-logistics" && providerError?.httpStatus === 403
+              ? ["Probe succeeds but runtime binary retrieval is blocked", "inspect provider finalUrl/headers/transportUsed for AMS behavior differences"]
+              : []),
+          ],
         };
       });
 
@@ -668,6 +684,8 @@ export function registerMonitorRoutes(app: Express): void {
           logisticsHttpStatus: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.httpStatus : undefined,
           logisticsFinalUrl: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.finalUrl : undefined,
           logisticsResponseHeaders: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.responseHeaders : undefined,
+          logisticsTransportUsed: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.transportUsed : undefined,
+          logisticsRangeRequestUsed: widget?.kind === "USDA_GTR_LOGISTICS_SNAPSHOT" ? widget?.debug?.rangeRequestUsed : undefined,
           faostatRowsCount,
           fpmaRowsCount,
           selectedPriceType: widget?.kind === "FPMA_MARKET_PRICES_MULTI_COUNTRY" ? widget?.summary?.selectedPriceType : undefined,

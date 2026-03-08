@@ -506,6 +506,8 @@ export interface GrainWidgetUsdaGtrLogisticsSnapshot extends GrainWidgetBase {
     httpStatus?: number;
     finalUrl?: string;
     responseHeaders?: Record<string, string>;
+    transportUsed?: "fetch" | "node_https_fallback";
+    rangeRequestUsed?: boolean;
     parseWarnings?: string[];
   };
 }
@@ -685,6 +687,8 @@ export interface GrainWidgetsProviderDebug {
   httpStatus?: number;
   finalUrl?: string;
   responseHeaders?: Record<string, string>;
+  transportUsed?: "fetch" | "node_https_fallback";
+  rangeRequestUsed?: boolean;
   parseWarnings?: string[];
   areaCodes?: string[];
   itemCodes?: string[];

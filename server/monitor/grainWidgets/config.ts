@@ -152,7 +152,7 @@ export const FAOSTAT_BASE_URL =
     "https://fenixservices.fao.org/faostat/api/v1/en",
   );
 export const FAOSTAT_DATASOURCE = process.env.FAOSTAT_DATASOURCE || "production";
-export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", 15_000);
+export const FAOSTAT_TIMEOUT_MS = envNum("FAOSTAT_TIMEOUT_MS", 30_000);
 export const FAOSTAT_CACHE_TTL_MS = envNum("FAOSTAT_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FAOSTAT_DISCOVERY_TTL_MS = envNum("FAOSTAT_DISCOVERY_TTL_MS", 7 * 24 * 60 * 60 * 1000);
 export const FAOSTAT_MAX_YEARS = envNum("FAOSTAT_MAX_YEARS", 5);
