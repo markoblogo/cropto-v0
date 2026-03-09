@@ -27,6 +27,15 @@ function isExpectedAutoSettleSkip(error: unknown): boolean {
   );
 }
 
+function isTerminalExpiredOptionFailure(error: unknown): boolean {
+  const message = String((error as { message?: string })?.message || "");
+  return (
+    message.includes("missing ownership records") ||
+    message.includes("missing buyerId/issuerId") ||
+    message.includes("missing seller information")
+  );
+}
+
 export async function processDeadlines() {
   console.log('🕐 Starting deadline processing...');
   
@@ -168,7 +177,16 @@ export async function processDeadlines() {
         results.processedCount++;
         console.log(`  ✅ Auto-settled option ${option.id}: ${finalStatus}, payout=${parseFloat(settlement.payout).toFixed(2)}`);
       } catch (error: any) {
-        if (isExpectedAutoSettleSkip(error)) {
+        if (isTerminalExpiredOptionFailure(error)) {
+          await storage.updateOption(option.id, {
+            status: "DEFAULTED",
+            lastUpdated: new Date(),
+          });
+          results.skippedOptions++;
+          console.warn(
+            `  ⚠️ Marked expired option ${option.id} as DEFAULTED after terminal auto-settle failure: ${error?.message || "unknown error"}`,
+          );
+        } else if (isExpectedAutoSettleSkip(error)) {
           results.skippedOptions++;
           console.warn(`  ⚠️ Skipped auto-settle for option ${option.id}: ${error?.message || "business rule"}`);
         } else {
