@@ -11,6 +11,7 @@ import type { GrainWidgetImfCommodityBenchmarks, GrainWidgetImfCommodityBenchmar
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
 import { deriveSeries, fetchBufferWithTimeout, fetchTextResponseWithTimeout, makeProviderError, parseNumber, redactSensitiveUrl } from "./utils";
+import { discoverOfficialPage, pickDiscoveredLinks } from "./lightweightDiscovery";
 
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetImfCommodityBenchmarks };
 let cacheEntry: CacheEntry | null = null;
@@ -143,6 +144,12 @@ function resolveImfTableUrl($: cheerio.CheerioAPI): string {
   return new URL(pdfHref, IMF_PCPS_PAGE_URL).toString();
 }
 
+function parseRowsFromHtmlTables($: cheerio.CheerioAPI): GrainWidgetImfCommodityBenchmarkRow[] {
+  const tableText = $("table").text();
+  if (!tableText.trim()) return [];
+  return parseRowsFromLooseText(tableText, "html_table");
+}
+
 export class ImfPcpsProvider implements GrainWidgetsProvider {
   id = "imf-pcps";
   kind = "IMF_COMMODITY_BENCHMARKS" as const;
@@ -155,32 +162,51 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
     }
 
-    const page = await fetchTextResponseWithTimeout(IMF_PCPS_PAGE_URL, IMF_PCPS_TIMEOUT_MS, { accept: "text/html,application/xhtml+xml,*/*" });
-    const $ = cheerio.load(page.text);
+    const page = await discoverOfficialPage(IMF_PCPS_PAGE_URL, IMF_PCPS_TIMEOUT_MS);
+    const $ = cheerio.load(page.html);
     const updatedText = $.text().match(/Updated\s*:?\s*[A-Za-z]+\s+\d{1,2},\s*\d{4}|Updated:\s*[A-Za-z]+\s+\d{4}/i)?.[0];
-    const discoveredLinks = $("a[href]")
-      .map((_, el) => String($(el).attr("href") || "").trim())
-      .get()
-      .filter((href) => /table2\.pdf|table3\.pdf|external-data\.xls/i.test(href))
-      .map((href) => new URL(href, IMF_PCPS_PAGE_URL).toString());
-    const tableUrl = resolveImfTableUrl($);
-    const tableBinary = await fetchBufferWithTimeout(tableUrl, IMF_PCPS_TIMEOUT_MS, { accept: "application/pdf,text/plain,*/*" });
-    const extractedText = [
-      extractPdfTextFromFlateStreams(tableBinary.buffer),
-      extractPdfReadableText(tableBinary.buffer),
-    ].filter(Boolean).join("\n");
-    let extractionMode = "pdf_flate_stream";
-    let rows = parseRowsFromStructuredText(extractedText, extractionMode)
-      .concat(parseRowsFromLooseText(extractedText, extractionMode))
-      .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+    const discoveredLinks = pickDiscoveredLinks(page, {
+      includePatterns: [/table2\.(pdf|xls|xlsx|csv)/i, /external-data\.(xls|xlsx|csv)/i, /\.csv(?:[?#].*)?$/i],
+      limit: 6,
+    });
+    const htmlRows = parseRowsFromHtmlTables($);
+    let extractionMode = "html_table";
+    let rows = htmlRows.filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+    let tableUrl = resolveImfTableUrl($);
     if (!rows.length) {
-      const workbookUrl = discoveredLinks.find((href) => /external-data\.xls/i.test(href));
+      tableUrl =
+        discoveredLinks.find((href) => /external-data\.(xls|xlsx|csv)/i.test(href))
+        || discoveredLinks.find((href) => /table2\.(xls|xlsx|csv)/i.test(href))
+        || discoveredLinks.find((href) => /table2\.pdf/i.test(href))
+        || resolveImfTableUrl($);
+    }
+    let binaryFinalUrl = tableUrl;
+    let binaryContentType: string | null = null;
+    if (!rows.length) {
+      const acceptHeader = /\.pdf(?:[?#].*)?$/i.test(tableUrl)
+        ? "application/pdf,text/plain,*/*"
+        : "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/octet-stream,*/*";
+      const tableBinary = await fetchBufferWithTimeout(tableUrl, IMF_PCPS_TIMEOUT_MS, { accept: acceptHeader });
+      binaryFinalUrl = tableBinary.finalUrl || tableUrl;
+      binaryContentType = tableBinary.contentType;
+      const extractedText = /\.pdf(?:[?#].*)?$/i.test(tableUrl)
+        ? [extractPdfTextFromFlateStreams(tableBinary.buffer), extractPdfReadableText(tableBinary.buffer)].filter(Boolean).join("\n")
+        : extractAsciiRuns(tableBinary.buffer);
+      extractionMode = /\.pdf(?:[?#].*)?$/i.test(tableUrl) ? "pdf_flate_stream" : "structured_binary_ascii";
+      rows = parseRowsFromStructuredText(extractedText, extractionMode)
+        .concat(parseRowsFromLooseText(extractedText, extractionMode))
+        .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+    }
+    if (!rows.length) {
+      const workbookUrl = discoveredLinks.find((href) => /external-data\.(xls|xlsx|csv)/i.test(href));
       if (workbookUrl) {
         const workbookBinary = await fetchBufferWithTimeout(workbookUrl, IMF_PCPS_TIMEOUT_MS, {
-          accept: "application/vnd.ms-excel,application/octet-stream,*/*",
+          accept: "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/octet-stream,*/*",
         });
         const workbookText = extractAsciiRuns(workbookBinary.buffer);
         extractionMode = "xls_ascii";
+        binaryFinalUrl = workbookBinary.finalUrl || workbookUrl;
+        binaryContentType = workbookBinary.contentType;
         rows = parseRowsFromStructuredText(workbookText, extractionMode)
           .concat(parseRowsFromLooseText(workbookText, extractionMode))
           .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
@@ -189,8 +215,8 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
     if (!rows.length) {
       throw makeProviderError("imf_pcps_rows_empty", {
         errorKind: "EMPTY",
-        finalUrl: tableBinary.finalUrl,
-        contentType: tableBinary.contentType,
+        finalUrl: binaryFinalUrl,
+        contentType: binaryContentType,
       });
     }
 
@@ -220,11 +246,12 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
         "Benchmark layer; units kept explicit and conservative",
       ],
       debug: {
-        sourceUrlUsed: redactSensitiveUrl(tableBinary.finalUrl || tableUrl),
+        sourceUrlUsed: redactSensitiveUrl(binaryFinalUrl || tableUrl),
         rowsParsed: rows.length,
         warnings: [
-          `content_type:${tableBinary.contentType || "unknown"}`,
+          `content_type:${binaryContentType || "unknown"}`,
           `extraction_mode:${extractionMode}`,
+          `page_final_url:${page.finalUrl}`,
           ...(discoveredLinks.length ? [`discovered_links:${discoveredLinks.join(" | ")}`] : []),
           ...(rows.some((row) => row.confidence !== "HIGH") ? ["some_rows_not_high_confidence"] : []),
         ],

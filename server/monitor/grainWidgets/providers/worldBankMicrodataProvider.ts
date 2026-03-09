@@ -14,6 +14,7 @@ import type {
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
 import { fetchTextResponseWithTimeout, parseNumber } from "./utils";
+import { discoverOfficialPage, pickDiscoveredLinks } from "./lightweightDiscovery";
 
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type CacheEntry = { fetchedAt: number; territory: TerritoryCode; widget: GrainWidgetWorldBankMicrodataMarketPrices };
@@ -159,11 +160,19 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
     }
 
     const dataApiUrl = `${WB_MICRODATA_BASE_URL}/data-api`;
+    const discoveryPage = await discoverOfficialPage(dataApiUrl, WB_MICRODATA_TIMEOUT_MS);
+    const discoveredCsvLinks = pickDiscoveredLinks(discoveryPage, {
+      includePatterns: [/microdata\.worldbank\.org\/index\.php\/catalog\/\d+\/data-api\/.*\.csv/i, /\.csv(?:[?#].*)?$/i],
+      excludePatterns: [/\.pdf(?:[?#].*)?$/i],
+      limit: 3,
+    });
     const csvUrl = WB_MICRODATA_CSV_URL
-      || detectCsvUrl((await fetchTextResponseWithTimeout(dataApiUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "text/html,application/xhtml+xml,*/*" })).text);
+      || discoveredCsvLinks[0]
+      || detectCsvUrl(discoveryPage.html);
     if (!csvUrl) throw new Error("wb_microdata_csv_url_unresolved");
     const csvResponse = await fetchTextResponseWithTimeout(csvUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "text/csv,text/plain,*/*" });
-    const rows = mapRows(parseCsv(csvResponse.text), territory);
+    const parsedRows = parseCsv(csvResponse.text);
+    const rows = mapRows(parsedRows, territory);
     if (!rows.length) throw new Error(`wb_microdata_rows_empty:${territory.code}`);
 
     const widget: GrainWidgetWorldBankMicrodataMarketPrices = {
@@ -198,7 +207,12 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
       debug: {
         sourceUrlUsed: csvUrl,
         query: csvUrl,
-        rowsParsed: parseCsv(csvResponse.text).length,
+        rowsParsed: parsedRows.length,
+        warnings: [
+          `catalog_final_url:${discoveryPage.finalUrl}`,
+          `catalog_content_type:${discoveryPage.contentType || "unknown"}`,
+          ...(discoveredCsvLinks.length ? [`discovered_csv_links:${discoveredCsvLinks.join(" | ")}`] : ["discovered_csv_links:none"]),
+        ],
       },
     };
     cacheEntry = { fetchedAt: now, territory: territory.code, widget };

@@ -15,6 +15,7 @@ import type {
 import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
 import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
 import { fetchTextResponseWithTimeout, makeProviderError, parseNumber } from "./utils";
+import { discoverOfficialPage, pickDiscoveredLinks } from "./lightweightDiscovery";
 
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type CacheEntry = { fetchedAt: number; territory: TerritoryCode; widget: GrainWidgetWfpMarketPricesMultiCountry };
@@ -42,6 +43,8 @@ const cropPatterns = [
   { crop: "MAIZE" as const, label: "Maize (Corn)", patterns: [/maize/i, /\bcorn\b/i] },
   { crop: "SOY" as const, label: "Soybeans", patterns: [/soy/i, /soybean/i] },
 ];
+
+const WFP_PUBLIC_DATAVIZ_URL = "https://dataviz.vam.wfp.org";
 
 function territoryFromCountry(raw?: string): { code: TerritoryCode; label: string } {
   const code = String(raw || "UA").toUpperCase() as TerritoryCode;
@@ -124,6 +127,73 @@ function mapRows(rows: WfpRow[], territory: { code: TerritoryCode; label: string
   }).filter((row) => row.current !== 0);
 }
 
+function getArrayFromCandidate(payload: any): WfpRow[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
+}
+
+async function fetchPublicDatavizRows(territory: { code: TerritoryCode; label: string }): Promise<{
+  rows: GrainWidgetCountryMarketPriceRow[];
+  sourceUrl: string;
+  warnings: string[];
+}> {
+  const page = await discoverOfficialPage(WFP_PUBLIC_DATAVIZ_URL, WFP_DATABRIDGES_TIMEOUT_MS);
+  const countryNeedle = territory.label.toLowerCase();
+  for (const candidate of page.scriptJsonCandidates) {
+    const payloadRows = getArrayFromCandidate(candidate);
+    if (!payloadRows.length) continue;
+    const mapped = mapRows(
+      payloadRows.filter((row) => {
+        const joined = JSON.stringify(row).toLowerCase();
+        return joined.includes(countryNeedle) || (territory.code !== "EU" && joined.includes(iso3ByTerritory[territory.code as Exclude<TerritoryCode, "EU">].toLowerCase()));
+      }),
+      territory,
+    );
+    if (mapped.length) {
+      return {
+        rows: mapped,
+        sourceUrl: page.finalUrl,
+        warnings: ["public_dataviz_script_json"],
+      };
+    }
+  }
+
+  const dataLinks = pickDiscoveredLinks(page, {
+    includePatterns: [/\.json(?:[?#].*)?$/i, /\.csv(?:[?#].*)?$/i, /api/i],
+    excludePatterns: [/\.js(?:[?#].*)?$/i, /\.css(?:[?#].*)?$/i],
+    limit: 3,
+  });
+  for (const link of dataLinks) {
+    try {
+      const response = await fetchTextResponseWithTimeout(link, WFP_DATABRIDGES_TIMEOUT_MS, {
+        accept: "application/json,text/csv,text/plain,*/*",
+      });
+      const content = response.text;
+      if ((response.contentType || "").includes("json")) {
+        const payload = JSON.parse(content);
+        const mapped = mapRows(getArrayFromCandidate(payload), territory);
+        if (mapped.length) {
+          return {
+            rows: mapped,
+            sourceUrl: response.finalUrl || link,
+            warnings: [`public_dataviz_link:${link}`],
+          };
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  throw makeProviderError(`wfp_public_rows_empty:${territory.code}`, {
+    errorKind: "EMPTY",
+    finalUrl: page.finalUrl,
+  });
+}
+
 export class WfpDataBridgesProvider implements GrainWidgetsProvider {
   id = "wfp-databridges";
   kind = "WFP_MARKET_PRICES_MULTI_COUNTRY" as const;
@@ -131,11 +201,6 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
   private readonly fallback = new MockGrainWidgetsProvider({ kind: "WFP_MARKET_PRICES_MULTI_COUNTRY" as any });
 
   async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetWfpMarketPricesMultiCountry> {
-    if (!WFP_DATABRIDGES_TOKEN) {
-      throw makeProviderError("wfp_databridges_token_missing", {
-        errorKind: "CONFIG_MISSING",
-      });
-    }
     const territory = territoryFromCountry(ctx.country);
     if (territory.code === "EU") throw makeProviderError("wfp_databridges_eu_not_supported", { errorKind: "EMPTY" });
     const now = Date.now();
@@ -143,16 +208,39 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
     }
 
-    const url = new URL(WFP_DATABRIDGES_BASE_URL);
-    url.searchParams.set("location_code", iso3ByTerritory[territory.code as Exclude<TerritoryCode, "EU">]);
-    url.searchParams.set("limit", String(Math.min(50, Math.max(1, WFP_DATABRIDGES_MAX_RECORDS))));
-    const response = await fetchTextResponseWithTimeout(url.toString(), WFP_DATABRIDGES_TIMEOUT_MS, {
-      accept: "application/json,text/plain,*/*",
-      authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
-    });
-    const parsed = JSON.parse(response.text);
-    const rows = mapRows(getArray(parsed), territory);
-    if (!rows.length) throw makeProviderError(`wfp_rows_empty:${territory.code}`, { errorKind: "EMPTY" });
+    let rows: GrainWidgetCountryMarketPriceRow[] = [];
+    let sourceUrlUsed = WFP_PUBLIC_DATAVIZ_URL;
+    let queryUsed = "";
+    let rowsParsed = 0;
+    const warnings: string[] = [];
+
+    if (WFP_DATABRIDGES_TOKEN) {
+      const url = new URL(WFP_DATABRIDGES_BASE_URL);
+      url.searchParams.set("location_code", iso3ByTerritory[territory.code as Exclude<TerritoryCode, "EU">]);
+      url.searchParams.set("limit", String(Math.min(50, Math.max(1, WFP_DATABRIDGES_MAX_RECORDS))));
+      const response = await fetchTextResponseWithTimeout(url.toString(), WFP_DATABRIDGES_TIMEOUT_MS, {
+        accept: "application/json,text/plain,*/*",
+        authorization: `Bearer ${WFP_DATABRIDGES_TOKEN}`,
+      });
+      const parsed = JSON.parse(response.text);
+      const payloadRows = getArray(parsed);
+      rows = mapRows(payloadRows, territory);
+      sourceUrlUsed = url.toString();
+      queryUsed = url.searchParams.toString();
+      rowsParsed = payloadRows.length;
+    } else {
+      const publicResult = await fetchPublicDatavizRows(territory);
+      rows = publicResult.rows;
+      sourceUrlUsed = publicResult.sourceUrl;
+      warnings.push(...publicResult.warnings, "public_dataviz_no_token_fallback");
+      rowsParsed = rows.length;
+    }
+
+    if (!rows.length) {
+      throw makeProviderError(`wfp_rows_empty:${territory.code}`, {
+        errorKind: WFP_DATABRIDGES_TOKEN ? "EMPTY" : "CONFIG_MISSING",
+      });
+    }
 
     const widget: GrainWidgetWfpMarketPricesMultiCountry = {
       id: "grain-wfp-market-prices",
@@ -162,7 +250,7 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
       status: rows.length >= 2 ? "REFRESH" : "INDICATIVE",
       sourceName: "WFP HAPI",
       sourceAttribution: "Data: WFP DataBridges / HAPI food prices",
-      sourceUrl: url.toString(),
+      sourceUrl: sourceUrlUsed,
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "COUNTRY_MULTI",
@@ -182,12 +270,17 @@ export class WfpDataBridgesProvider implements GrainWidgetsProvider {
         cadence: rows[0]?.cadence || "unknown",
         selectedTerritory: territory.code,
       },
-      notes: ["Native units preserved", "Primary market rule used when national aggregate is unavailable"],
+      notes: [
+        "Native units preserved",
+        "Primary market rule used when national aggregate is unavailable",
+        ...(WFP_DATABRIDGES_TOKEN ? [] : ["Public dataviz fallback used instead of token-gated HAPI"]),
+      ],
       debug: {
-        sourceUrlUsed: url.toString(),
-        query: url.searchParams.toString(),
-        rowsParsed: getArray(parsed).length,
+        sourceUrlUsed: sourceUrlUsed,
+        query: queryUsed,
+        rowsParsed,
         marketRule: "most_frequent_market",
+        warnings,
       },
     };
     cacheEntry = { fetchedAt: now, territory: territory.code, widget };

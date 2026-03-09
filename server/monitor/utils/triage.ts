@@ -801,7 +801,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       (providerId === "amis-outlook" && !AMIS_MARKET_MONITOR_URL) ||
       (providerId === "imf-pcps" && !IMF_PCPS_TABLE2_URL) ||
       (providerId === "oecd-agricultural-outlook" && !OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL) ||
-      (providerId === "wfp-databridges" && (!WFP_DATABRIDGES_BASE_URL || !WFP_DATABRIDGES_TOKEN)) ||
+      (providerId === "wfp-databridges" && !WFP_DATABRIDGES_BASE_URL) ||
       (providerId === "worldbank-microdata" && !WB_MICRODATA_BASE_URL) ||
       (providerId === "eurostat-agri-indices" && !EUROSTAT_BASE_URL);
     const probeMatch =
