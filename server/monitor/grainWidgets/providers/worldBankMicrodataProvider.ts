@@ -19,6 +19,7 @@ import { discoverOfficialPage, pickDiscoveredLinks } from "./lightweightDiscover
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type CacheEntry = { fetchedAt: number; territory: TerritoryCode; widget: GrainWidgetWorldBankMicrodataMarketPrices };
 type CsvRow = Record<string, string>;
+type WideApiRow = Record<string, string | number | null>;
 type WorldBankApiConfig = {
   apiBaseUrl: string;
   dbId: string;
@@ -44,10 +45,22 @@ const countryPatterns = [
   { code: "AR" as const, match: /argentina|^ar$/i },
 ];
 
+const territoryIso3: Record<Exclude<TerritoryCode, "EU">, string> = {
+  UA: "UKR",
+  US: "USA",
+  BR: "BRA",
+  AR: "ARG",
+};
+
 const cropPatterns = [
   { crop: "WHEAT" as const, label: "Wheat", match: /wheat/i },
   { crop: "MAIZE" as const, label: "Maize (Corn)", match: /maize|corn/i },
   { crop: "SOY" as const, label: "Soybeans", match: /soy|soybean/i },
+];
+
+const wideCropColumns = [
+  { crop: "WHEAT" as const, label: "Wheat", columns: ["wheat", "wheat_fao"] },
+  { crop: "MAIZE" as const, label: "Maize (Corn)", columns: ["maize", "maize_fao"] },
 ];
 
 function territoryFromCountry(raw?: string): { code: TerritoryCode; label: string } {
@@ -144,6 +157,98 @@ function cadenceFromSeries(series: GrainWidgetPoint[]): GrainWidgetCountryMarket
   return "annual";
 }
 
+function parseJsonRows(payload: any): WideApiRow[] {
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.result?.data)) return payload.result.data;
+  return [];
+}
+
+function toIsoTs(value: unknown): string | undefined {
+  const raw = String(value || "").trim();
+  if (!raw) return undefined;
+  const parsed = Date.parse(raw);
+  if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
+  if (/^\d{4}-\d{2}$/.test(raw)) return `${raw}-01T00:00:00.000Z`;
+  return undefined;
+}
+
+function parseUnitFromComponents(components: string, columns: string[], currency: string): string {
+  const normalized = String(components || "");
+  for (const column of columns) {
+    const match = normalized.match(new RegExp(`${column.replace(/_/g, "[ _]")}\\s*\\(([^)]+)\\)`, "i"));
+    if (match?.[1]) {
+      const inner = match[1];
+      const unitMatch = inner.match(/\b(\d+\s*)?(kg|g|l|day|unit|piece|dozen)\b/i);
+      if (unitMatch?.[2]) return `${currency || "native"}/${unitMatch[2].toLowerCase()}`;
+      return `${currency || "native"}/${inner.trim()}`;
+    }
+  }
+  return currency ? `${currency}/native` : "native";
+}
+
+function pickPrimaryMarket(rows: WideApiRow[], columns: string[]): string | undefined {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const hasValue = columns.some((column) => parseNumber(row[column]) != null);
+    if (!hasValue) continue;
+    const market = String(row.mkt_name || row.adm1_name || row.country || "").trim();
+    if (!market) continue;
+    counts.set(market, (counts.get(market) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+}
+
+function mapWideRows(rows: WideApiRow[], territory: { code: TerritoryCode; label: string }): GrainWidgetCountryMarketPriceRow[] {
+  const territoryRows = rows.filter((row) => {
+    const iso3 = String(row.ISO3 || "").trim().toUpperCase();
+    const country = String(row.country || "").trim();
+    const expectedIso3 = territory.code === "EU" ? "" : territoryIso3[territory.code];
+    return iso3 === expectedIso3 || countryPatterns.find((entry) => entry.code === territory.code)?.match.test(country || iso3);
+  });
+  if (!territoryRows.length) return [];
+
+  const out: GrainWidgetCountryMarketPriceRow[] = [];
+  for (const cropMeta of wideCropColumns) {
+      const primaryMarket = pickPrimaryMarket(territoryRows, cropMeta.columns);
+      const relevantRows = territoryRows.filter((row) => {
+        const market = String(row.mkt_name || row.adm1_name || row.country || "").trim();
+        return !primaryMarket || market === primaryMarket;
+      });
+      const series = relevantRows
+        .map((row) => {
+          const ts = toIsoTs(row.DATES);
+          if (!ts) return undefined;
+          const columnValue = cropMeta.columns.map((column) => parseNumber(row[column])).find((value) => value != null);
+          if (columnValue == null) return undefined;
+          return {
+            ts,
+            value: Number(columnValue.toFixed(4)),
+            unit: parseUnitFromComponents(String(row.components || ""), cropMeta.columns, String(row.currency || "").trim()),
+          };
+        })
+        .filter((row): row is { ts: string; value: number; unit: string } => Boolean(row))
+        .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+        .slice(-18);
+      if (!series.length) continue;
+      const latest = series[series.length - 1];
+      const previous = series[series.length - 2];
+      out.push({
+        crop: cropMeta.crop,
+        label: cropMeta.label,
+        current: latest.value,
+        unit: latest.unit,
+        cadence: cadenceFromSeries(series),
+        changeAbs: previous ? Number((latest.value - previous.value).toFixed(4)) : undefined,
+        changePct: previous && previous.value !== 0 ? Number((((latest.value - previous.value) / previous.value) * 100).toFixed(2)) : undefined,
+        series: series.map((point) => ({ ts: point.ts, value: point.value })),
+        confidence: series.length >= 8 ? "HIGH" : series.length >= 4 ? "MED" : "LOW",
+        territory: { code: territory.code, label: territory.label },
+        notes: primaryMarket ? [`market:${primaryMarket}`] : undefined,
+      } satisfies GrainWidgetCountryMarketPriceRow);
+  }
+  return out;
+}
+
 function mapRows(rows: CsvRow[], territory: { code: TerritoryCode; label: string }): GrainWidgetCountryMarketPriceRow[] {
   const filtered = rows.filter((row) => {
     const country = `${row.country || ""} ${row.adm0_name || ""} ${row.location || ""}`;
@@ -208,6 +313,9 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
       limit: 3,
     });
     let csvUrl = WB_MICRODATA_CSV_URL || discoveredCsvLinks[0] || detectCsvUrl(discoveryPage.html);
+    const jsonApiUrl = apiConfig
+      ? `${apiConfig.apiBaseUrl.replace(/\/+$/, "")}/data/${apiConfig.dbId}/${apiConfig.tableId}?format=json&limit=240&ISO3=${encodeURIComponent(territoryIso3[territory.code as Exclude<TerritoryCode, "EU">] || territory.code)}`
+      : undefined;
     if (!csvUrl && apiConfig) {
       csvUrl = `${apiConfig.apiBaseUrl.replace(/\/+$/, "")}/data/${apiConfig.dbId}/${apiConfig.tableId}?format=csv&limit=5000`;
     }
@@ -221,10 +329,31 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
         csvUrl = undefined;
       }
     }
-    if (!csvUrl) throw new Error("wb_microdata_csv_url_unresolved");
-    const csvResponse = await fetchTextResponseWithTimeout(csvUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "text/csv,text/plain,*/*" });
-    const parsedRows = parseCsv(csvResponse.text);
-    const rows = mapRows(parsedRows, territory);
+    let rows: GrainWidgetCountryMarketPriceRow[] = [];
+    let rowsParsed = 0;
+    let sourceUrlUsed = jsonApiUrl || csvUrl;
+
+    if (jsonApiUrl) {
+      try {
+        const jsonResponse = await fetchTextResponseWithTimeout(jsonApiUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "application/json,text/plain,*/*" });
+        const parsedJsonRows = parseJsonRows(JSON.parse(jsonResponse.text));
+        rowsParsed = parsedJsonRows.length;
+        rows = mapWideRows(parsedJsonRows, territory);
+        sourceUrlUsed = jsonResponse.finalUrl || jsonApiUrl;
+      } catch {
+        rows = [];
+      }
+    }
+
+    if (!rows.length) {
+      if (!csvUrl) throw new Error("wb_microdata_csv_url_unresolved");
+      const csvResponse = await fetchTextResponseWithTimeout(csvUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "text/csv,text/plain,*/*" });
+      const normalizedText = csvResponse.text.includes("\u0000") ? csvResponse.text.replace(/\u0000/g, "") : csvResponse.text;
+      const parsedRows = parseCsv(normalizedText);
+      rowsParsed = parsedRows.length;
+      rows = mapRows(parsedRows, territory);
+      sourceUrlUsed = csvResponse.finalUrl || csvUrl;
+    }
     if (!rows.length) throw new Error(`wb_microdata_rows_empty:${territory.code}`);
 
     const widget: GrainWidgetWorldBankMicrodataMarketPrices = {
@@ -235,7 +364,7 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
       status: rows.length >= 2 ? "REFRESH" : "INDICATIVE",
       sourceName: "World Bank Microdata",
       sourceAttribution: "Data: World Bank Microdata Real-Time Food Prices",
-      sourceUrl: csvUrl,
+      sourceUrl: sourceUrlUsed,
       updatedAt: ctx.now.toISOString(),
       timeframe: ctx.timeframe,
       territoryScope: "COUNTRY_MULTI",
@@ -255,15 +384,16 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
         cadence: rows[0]?.cadence || "unknown",
         selectedTerritory: territory.code,
       },
-      notes: ["CSV discovered from official World Bank data-api page", "Native units preserved"],
+      notes: ["Official World Bank table API / data-api page", "Native units preserved"],
       debug: {
-        sourceUrlUsed: csvUrl,
-        query: csvUrl,
-        rowsParsed: parsedRows.length,
+        sourceUrlUsed: sourceUrlUsed,
+        query: sourceUrlUsed,
+        rowsParsed,
         warnings: [
           `catalog_final_url:${discoveryPage.finalUrl}`,
           `catalog_content_type:${discoveryPage.contentType || "unknown"}`,
           ...(apiConfig ? [`api_table:${apiConfig.dbId}/${apiConfig.tableId}`] : ["api_table:unresolved"]),
+          ...(jsonApiUrl ? [`json_api_url:${jsonApiUrl}`] : ["json_api_url:unresolved"]),
           ...(apiConfig?.bulkDownloadsUrl ? [`bulk_downloads_url:${apiConfig.bulkDownloadsUrl}`] : ["bulk_downloads_url:unresolved"]),
           ...(discoveredCsvLinks.length ? [`discovered_csv_links:${discoveredCsvLinks.join(" | ")}`] : ["discovered_csv_links:none"]),
         ],

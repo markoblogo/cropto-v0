@@ -51,27 +51,43 @@ function authHeaders(): HeadersInit {
 }
 
 async function fetchJson(path: string) {
-  const url = buildEndpoint(path);
-  try {
-    const response = await fetchTextResponseWithTimeout(url, USDA_PSD_TIMEOUT_MS, authHeaders());
-    return {
-      url,
-      finalUrl: response.finalUrl || url,
-      payload: JSON.parse(response.text),
-    };
-  } catch (error: any) {
-    if (Number(error?.httpStatus) !== 403) throw error;
-    const fallbackUrl = new URL(buildEndpoint(path));
-    if (USDA_FAS_API_KEY) fallbackUrl.searchParams.set("api_key", USDA_FAS_API_KEY);
-    const response = await fetchTextResponseWithTimeout(fallbackUrl.toString(), USDA_PSD_TIMEOUT_MS, {
-      accept: "application/json,text/plain,*/*",
-    });
-    return {
-      url: fallbackUrl.toString(),
-      finalUrl: response.finalUrl || fallbackUrl.toString(),
-      payload: JSON.parse(response.text),
-    };
+  const primaryPath = String(path || "").replace(/^\/+/, "");
+  const variants = primaryPath.startsWith("psd/")
+    ? [primaryPath, primaryPath.replace(/^psd\//, "")]
+    : [primaryPath, `psd/${primaryPath}`];
+
+  let lastError: any;
+  for (const variant of variants) {
+    const url = buildEndpoint(variant);
+    try {
+      const response = await fetchTextResponseWithTimeout(url, USDA_PSD_TIMEOUT_MS, authHeaders());
+      return {
+        url,
+        finalUrl: response.finalUrl || url,
+        payload: JSON.parse(response.text),
+      };
+    } catch (error: any) {
+      lastError = error;
+      if (Number(error?.httpStatus) !== 403 && Number(error?.httpStatus) !== 404 && Number(error?.httpStatus) < 500) {
+        throw error;
+      }
+      const fallbackUrl = new URL(url);
+      if (USDA_FAS_API_KEY) fallbackUrl.searchParams.set("api_key", USDA_FAS_API_KEY);
+      try {
+        const response = await fetchTextResponseWithTimeout(fallbackUrl.toString(), USDA_PSD_TIMEOUT_MS, {
+          accept: "application/json,text/plain,*/*",
+        });
+        return {
+          url: fallbackUrl.toString(),
+          finalUrl: response.finalUrl || fallbackUrl.toString(),
+          payload: JSON.parse(response.text),
+        };
+      } catch (queryError: any) {
+        lastError = queryError;
+      }
+    }
   }
+  throw lastError;
 }
 
 function getArray(payload: any): any[] {
