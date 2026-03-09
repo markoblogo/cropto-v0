@@ -1372,6 +1372,7 @@ const COMMAND_PROFILES = [
 ] as const;
 
 const SECTION_STORAGE_KEY = "monitor_hidden_sections_v1";
+const PROFILE_STORAGE_KEY = "monitor_command_profile_v1";
 
 const SECTION_LABELS = {
   "grain-markets-core": "Grain Markets Core",
@@ -1385,9 +1386,59 @@ const SECTION_LABELS = {
 } as const;
 
 type CommandProfile = (typeof COMMAND_PROFILES)[number]["id"];
+type RoleProfile = Exclude<CommandProfile, "all">;
 type SectionId = keyof typeof SECTION_LABELS;
 
 type HeroCrop = (typeof HERO_CROPS)[number];
+
+const PROFILE_SIGNAL_RULES: Record<RoleProfile, SignalType[]> = {
+  farmer: ["Harvest", "Weather", "Export", "Markets"],
+  trader: ["Harvest", "Weather", "Export", "Logistics", "Policy", "Futures", "Markets"],
+  broker: ["Export", "Logistics", "Policy", "Futures", "Markets"],
+};
+
+const SECTION_PROFILE_RULES: Partial<Record<SectionId, { profiles?: RoleProfile[] }>> = {
+  "signal-charts": { profiles: ["trader", "broker"] },
+  "terminal-panels": { profiles: ["trader", "broker"] },
+};
+
+const PANEL_PROFILE_RULES: Record<string, RoleProfile[]> = {
+  markets: ["farmer", "trader", "broker"],
+  logistics: ["farmer", "trader", "broker"],
+  policy: ["trader", "broker"],
+  weather: ["farmer", "trader"],
+  blackSea: ["trader", "broker"],
+  oilseedsBiofuels: ["farmer", "trader", "broker"],
+};
+
+const COUNTRY_SIGNAL_CONTEXT: Record<string, string[]> = {
+  US: ["us", "united states", "north america", "gulf", "pnw"],
+  UA: ["ukraine", "black sea", "eu", "europe", "romania", "bulgaria", "poland"],
+  BR: ["brazil", "latam", "south america", "santos", "paranagua"],
+  AR: ["argentina", "latam", "south america", "rosario"],
+};
+
+function matchesProfileRule(profile: CommandProfile, allowed?: RoleProfile[]): boolean {
+  if (profile === "all" || !allowed?.length) return true;
+  return allowed.includes(profile);
+}
+
+function itemMatchesCommandProfile(item: MonitorItem, profile: CommandProfile): boolean {
+  if (profile === "all") return true;
+  const signalType = classifySignalType(item);
+  const allowed = PROFILE_SIGNAL_RULES[profile];
+  if (allowed.includes(signalType)) return true;
+  if (profile === "broker" && classifyImpact(item) === "High") return true;
+  return false;
+}
+
+function itemMatchesCountryContext(item: MonitorItem, country: string): boolean {
+  const tokens = COUNTRY_SIGNAL_CONTEXT[country] || [String(country || "").toLowerCase()];
+  if (!tokens.length) return true;
+  if (!item.region_tags.length) return true;
+  const haystack = `${item.region_tags.join(" ")} ${item.title} ${item.summary || ""}`.toLowerCase();
+  return tokens.some((token) => haystack.includes(token));
+}
 
 function asLabel(value: string): string {
   if (value === "black sea") return "Black Sea";
@@ -2440,7 +2491,11 @@ function TerritorySelector({
 }
 
 export default function MonitorPage() {
-  const [commandProfile, setCommandProfile] = useState<CommandProfile>("all");
+  const [commandProfile, setCommandProfile] = useState<CommandProfile>(() => {
+    if (typeof window === "undefined") return "all";
+    const saved = window.sessionStorage.getItem(PROFILE_STORAGE_KEY);
+    return saved === "farmer" || saved === "trader" || saved === "broker" ? saved : "all";
+  });
   const [crop, setCrop] = useState("all");
   const [topic, setTopic] = useState("all");
   const [region, setRegion] = useState("all");
@@ -2497,6 +2552,11 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.sessionStorage.setItem(SECTION_STORAGE_KEY, JSON.stringify(hiddenSectionIds));
   }, [hiddenSectionIds]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(PROFILE_STORAGE_KEY, commandProfile);
+  }, [commandProfile]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2584,8 +2644,16 @@ export default function MonitorPage() {
     refetchInterval: 2 * 60 * 1000,
   });
 
-  const feed = monitorQuery.data?.feed || [];
-  const topSignals = monitorQuery.data?.topSignals || [];
+  const rawFeed = monitorQuery.data?.feed || [];
+  const rawTopSignals = monitorQuery.data?.topSignals || [];
+  const feed = useMemo(() => {
+    return rawFeed.filter((item) => itemMatchesCommandProfile(item, commandProfile) && itemMatchesCountryContext(item, grainCountry));
+  }, [rawFeed, commandProfile, grainCountry]);
+  const topSignals = useMemo(() => {
+    const filteredTop = rawTopSignals.filter((item) => itemMatchesCommandProfile(item, commandProfile) && itemMatchesCountryContext(item, grainCountry));
+    if (filteredTop.length) return filteredTop;
+    return [...feed].sort((a, b) => b.relevance_score - a.relevance_score || Date.parse(b.published_at) - Date.parse(a.published_at)).slice(0, 8);
+  }, [rawTopSignals, commandProfile, grainCountry, feed]);
   const prioritySignals = topSignals.slice(0, 3);
   const chartFeed = useMemo(() => {
     if (chartWindow === "24h") return feed.filter((item) => inLastHours(item, 24));
@@ -2806,6 +2874,12 @@ export default function MonitorPage() {
     { id: "oilseedsBiofuels", title: "Oilseeds / Biofuels", items: panelItems.oilseedsBiofuels },
   ] as const;
 
+  const visiblePanels = useMemo(() => {
+    return panels
+      .filter((panel) => matchesProfileRule(commandProfile, PANEL_PROFILE_RULES[panel.id]))
+      .filter((panel) => panel.items.length > 0);
+  }, [panels, commandProfile]);
+
   const grainDataOrder = useMemo(() => {
     const defaultOrder: GrainWidgetKind[] = [
       "US_CASH_BIDS",
@@ -2878,6 +2952,22 @@ export default function MonitorPage() {
   );
 
   const isSectionHidden = (id: SectionId) => hiddenSectionIds.includes(id);
+  const isSectionAllowedByProfile = (id: SectionId) => matchesProfileRule(commandProfile, SECTION_PROFILE_RULES[id]?.profiles);
+  const hasSectionContent = (id: SectionId) => {
+    switch (id) {
+      case "top-signals":
+        return prioritySignals.length > 0 || blackSeaRisks.length > 0;
+      case "signal-charts":
+        return chartFeed.length > 0;
+      case "terminal-panels":
+        return visiblePanels.length > 0;
+      case "fundamentals-outlook":
+        return Boolean(usdaPsdWidget || amisWidget || imfWidget || oecdWidget);
+      default:
+        return true;
+    }
+  };
+  const canRenderSection = (id: SectionId) => !isSectionHidden(id) && isSectionAllowedByProfile(id) && hasSectionContent(id);
 
   const toggleSectionHidden = (id: SectionId) => {
     setHiddenSectionIds((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
@@ -2906,7 +2996,7 @@ export default function MonitorPage() {
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
-                  <Badge variant="outline" className="text-[10px] uppercase tracking-[0.16em]">Sprint 1 layout</Badge>
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-[0.16em]">Sprint 2 filters</Badge>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
                 <p className="max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
@@ -2937,7 +3027,7 @@ export default function MonitorPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Command Strip</p>
-                    <p className="text-sm text-foreground/74">Role and territory controls anchor the page structure now. Role-specific filtering lands in Sprint 2.</p>
+                    <p className="text-sm text-foreground/74">Role and territory controls now drive section visibility and signal relevance across the monitor.</p>
                   </div>
                   <div className="text-xs text-foreground/70 dark:text-slate-400">
                     Updated: {monitorQuery.data?.generatedAt ? new Date(monitorQuery.data.generatedAt).toLocaleString() : "loading"}
@@ -2985,7 +3075,7 @@ export default function MonitorPage() {
                     disabled={!hiddenSectionIds.length}
                   >
                     <Eye className="mr-2 h-4 w-4" />
-                    Show hidden{hiddenSectionIds.length ? ` (${hiddenSectionIds.length})` : ""}
+                    Show hidden modules{hiddenSectionIds.length ? ` (${hiddenSectionIds.length})` : ""}
                   </Button>
                 </div>
 
@@ -3123,7 +3213,7 @@ export default function MonitorPage() {
             </div>
           </div>
 
-          {!isSectionHidden("grain-markets-core") ? (
+          {canRenderSection("grain-markets-core") ? (
           <div id="grain-markets-core" className="scroll-mt-24 space-y-1.5 rounded-lg border border-primary/35 bg-primary/[0.06] p-2.5 shadow-[inset_0_0_0_1px_rgba(154,163,58,0.12)]">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -3193,7 +3283,7 @@ export default function MonitorPage() {
           </div>
           ) : null}
 
-          {!isSectionHidden("grain-data-expansion") ? (
+          {canRenderSection("grain-data-expansion") ? (
           <div id="grain-data-expansion" className="scroll-mt-24 space-y-1 rounded-lg border border-black/50 dark:border-white/20 bg-background/30 p-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -4912,7 +5002,7 @@ export default function MonitorPage() {
           </div>
           ) : null}
 
-          {!isSectionHidden("fundamentals-outlook") ? (
+          {canRenderSection("fundamentals-outlook") ? (
           <div id="fundamentals-outlook" className="scroll-mt-24 mt-3 space-y-2">
             <div className="rounded-3xl border border-black/15 bg-card/80 p-2.5 shadow-sm dark:border-white/12">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -5080,7 +5170,7 @@ export default function MonitorPage() {
           </div>
           ) : null}
 
-          {!isSectionHidden("top-signals") ? (
+          {canRenderSection("top-signals") ? (
           <div id="top-signals" className="scroll-mt-24 grid items-start gap-2.5 xl:grid-cols-12">
             <div className="xl:col-span-12 flex justify-end">
               <SectionHideButton onClick={() => toggleSectionHidden("top-signals")} />
@@ -5336,7 +5426,7 @@ export default function MonitorPage() {
             </Card>
           </div>
 
-          {!isSectionHidden("logistics-indicators") ? (
+          {canRenderSection("logistics-indicators") ? (
           <div id="logistics-indicators" className="scroll-mt-24 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/82 dark:text-slate-300">Freight & Logistics Indicators</h2>
@@ -5363,7 +5453,7 @@ export default function MonitorPage() {
           </div>
           ) : null}
 
-          {!isSectionHidden("signal-charts") ? (
+          {canRenderSection("signal-charts") ? (
           <div className="space-y-2">
             <div className="flex justify-end">
               <SectionHideButton onClick={() => toggleSectionHidden("signal-charts")} />
@@ -5462,7 +5552,7 @@ export default function MonitorPage() {
             </Button>
           </div>
 
-          {!isSectionHidden("signal-filters") ? (
+          {canRenderSection("signal-filters") ? (
           <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
             <CardHeader>
               <div className="flex items-center justify-between gap-2">
@@ -5546,7 +5636,7 @@ export default function MonitorPage() {
             </div>
           </div>
 
-          {!isSectionHidden("terminal-panels") ? (
+          {canRenderSection("terminal-panels") ? (
           <div className="space-y-2">
             <div className="flex justify-end">
               <SectionHideButton onClick={() => toggleSectionHidden("terminal-panels")} />
