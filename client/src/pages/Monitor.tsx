@@ -15,6 +15,10 @@ import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves
 import { DeckEcosystemStrip } from "@/components/deck/DeckEcosystemStrip";
 import { MonitorFooter } from "@/components/monitor/MonitorFooter";
 import { MonitorHeader } from "@/components/monitor/MonitorHeader";
+import { MonitorGridWorkspace } from "@/components/monitor/grid/MonitorGridWorkspace";
+import { MONITOR_GRID_WIDGET_REGISTRY } from "@/components/monitor/grid/widgetRegistry";
+import { filterVisibleGridWidgets } from "@/components/monitor/grid/widgetVisibility";
+import type { MonitorGridWidgetDescriptor } from "@/components/monitor/grid/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1373,6 +1377,7 @@ const COMMAND_PROFILES = [
 
 const SECTION_STORAGE_KEY = "monitor_hidden_sections_v1";
 const PROFILE_STORAGE_KEY = "monitor_command_profile_v1";
+const GRID_WIDGET_STORAGE_KEY = "monitor_hidden_grid_widgets_v1";
 
 const SECTION_LABELS = {
   "grain-markets-core": "Grain Markets Core",
@@ -2546,6 +2551,15 @@ export default function MonitorPage() {
       return [];
     }
   });
+  const [hiddenGridWidgetIds, setHiddenGridWidgetIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(GRID_WIDGET_STORAGE_KEY) || "[]");
+      return Array.isArray(saved) ? saved.filter((value): value is string => typeof value === "string") : [];
+    } catch {
+      return [];
+    }
+  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
 
@@ -2568,6 +2582,11 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.sessionStorage.setItem(SECTION_STORAGE_KEY, JSON.stringify(hiddenSectionIds));
   }, [hiddenSectionIds]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(GRID_WIDGET_STORAGE_KEY, JSON.stringify(hiddenGridWidgetIds));
+  }, [hiddenGridWidgetIds]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2924,6 +2943,8 @@ export default function MonitorPage() {
     return (grainWidgetsQuery.data?.widgets.byKind || {}) as Partial<Record<GrainWidgetKind, GrainWidget>>;
   }, [grainWidgetsQuery.data]);
 
+  const indexWidget = grainDataByKind["CROP_PRICE_INDEX"] as GrainWidgetCropIndex | undefined;
+  const usdaNassWidget = grainDataByKind["USDA_NASS_PRODUCER_PRICES"] as GrainWidgetUsdaNassProducerPrices | undefined;
   const usdaPsdWidget = grainDataByKind["USDA_PSD_BALANCES"] as GrainWidgetUsdaPsdBalances | undefined;
   const amisWidget = grainDataByKind["AMIS_GLOBAL_BALANCE"] as GrainWidgetAmisGlobalBalance | undefined;
   const imfWidget = grainDataByKind["IMF_COMMODITY_BENCHMARKS"] as GrainWidgetImfCommodityBenchmarks | undefined;
@@ -3000,6 +3021,290 @@ export default function MonitorPage() {
     const preferred = blackSeaRisks.length ? blackSeaRisks : prioritySignals.length ? prioritySignals : topSignals;
     return preferred.slice(0, 4);
   }, [blackSeaRisks, prioritySignals, topSignals]);
+
+  const hideGridWidget = (id: string) => {
+    setHiddenGridWidgetIds((current) => (current.includes(id) ? current : [...current, id]));
+  };
+
+  const restoreGridWidget = (id: string) => {
+    setHiddenGridWidgetIds((current) => current.filter((value) => value !== id));
+  };
+
+  const restoreAllGridWidgets = () => {
+    setHiddenGridWidgetIds([]);
+  };
+
+  const gridWidgetDescriptors = useMemo<MonitorGridWidgetDescriptor[]>(() => {
+    const descriptors: MonitorGridWidgetDescriptor[] = [];
+
+    if (prioritySignals.length > 0) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["top-signals-priority"];
+      descriptors.push({
+        ...meta,
+        subtitle: "Top three decision-relevant signals for the current role and country context.",
+        badgeLabel: `${prioritySignals.length} live`,
+        badgeClassName: "border-red-500/35 bg-red-500/10 text-red-900 dark:text-red-100",
+        body: (
+          <div className="grid gap-2">
+            {prioritySignals.slice(0, 3).map((item, index) => (
+              <SignalCard key={`grid-priority-${item.id}`} item={item} rank={index} />
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (heroWatchItems.length > 0) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["signal-watchlist"];
+      descriptors.push({
+        ...meta,
+        subtitle: "Compact watchlist for corridor, logistics, and market stress.",
+        badgeLabel: `${heroWatchItems.length} live`,
+        badgeClassName: "border-black/30 bg-background/70 text-foreground/75 dark:border-white/20",
+        body: (
+          <div className="grid gap-2">
+            {heroWatchItems.map((item) => (
+              <a
+                key={`grid-watch-${item.id}`}
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-xl border border-black/60 bg-background/60 p-3 transition-colors hover:border-primary/35 hover:bg-muted/60 dark:border-white/20"
+              >
+                <p className="line-clamp-2 text-sm font-medium text-foreground">{item.title}</p>
+                <p className="mt-1 text-[11px] text-foreground/65">{classifySignalType(item)} • {formatRelative(item.published_at)}</p>
+              </a>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (indexWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["fao-ffpi"];
+      descriptors.push({
+        ...meta,
+        subtitle: indexWidget.subtitle || "Global crop and oils price index layer.",
+        badgeLabel: indexWidget.status,
+        badgeClassName: grainStatusClass(indexWidget.status),
+        sourceName: indexWidget.sourceName,
+        updatedLabel: indexWidget.updatedAt ? formatRelative(indexWidget.updatedAt) : indexWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {indexWidget.cards.map((card) => (
+              <div key={`grid-index-${card.id}`} className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground">{card.label}</p>
+                  <MetricChip label="INDEX" variant="type" tone="muted" />
+                </div>
+                <p className="mt-2 text-2xl font-semibold text-foreground">
+                  {card.value == null ? card.valueText || "n/a" : formatIndexPoints(card.value)}
+                </p>
+                <p className="text-[11px] text-foreground/65">
+                  {card.deltaPct == null ? "n/a" : `${card.deltaPct >= 0 ? "+" : ""}${card.deltaPct.toFixed(2)}%`}
+                </p>
+                <DynamicMiniTrend
+                  series={card.series || []}
+                  change={card.delta}
+                  changePct={card.deltaPct}
+                  status={card.status || indexWidget.status}
+                  section="expansion"
+                  cardKind="index"
+                  trustedSeries={isTrustworthySeriesSource({
+                    status: card.status || indexWidget.status,
+                    sourceName: indexWidget.sourceName,
+                    fallbackReason: indexWidget.fallbackReason,
+                  })}
+                  sourceName={indexWidget.sourceName}
+                  debugEnabled={debugEnabled}
+                />
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (usdaNassWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["usda-nass"];
+      descriptors.push({
+        ...meta,
+        subtitle: usdaNassWidget.subtitle || "Official US producer/statistical layer.",
+        badgeLabel: usdaNassWidget.status,
+        badgeClassName: grainStatusClass(usdaNassWidget.status),
+        sourceName: usdaNassWidget.sourceName,
+        updatedLabel: usdaNassWidget.updatedAt ? formatRelative(usdaNassWidget.updatedAt) : usdaNassWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {usdaNassWidget.rows.slice(0, 3).map((row) => (
+              <GrainDataRow key={`grid-nass-${row.id}`} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    const eurostatWidget = grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined;
+    if (eurostatWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["eurostat-agri"];
+      descriptors.push({
+        ...meta,
+        subtitle: eurostatWidget.subtitle || "EU agricultural price index layer.",
+        badgeLabel: eurostatWidget.status,
+        badgeClassName: grainStatusClass(eurostatWidget.status),
+        sourceName: eurostatWidget.sourceName,
+        updatedLabel: eurostatWidget.updatedAt ? formatRelative(eurostatWidget.updatedAt) : eurostatWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {eurostatWidget.items.slice(0, 3).map((item) => (
+              <div key={`grid-eurostat-${item.id}`} className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground">{item.indexName}</p>
+                  <MetricChip label={item.cadence.toUpperCase()} variant="type" tone="muted" />
+                </div>
+                <p className="mt-2 text-2xl font-semibold text-foreground">
+                  {formatMetricValue({ kind: "index", value: item.current, unit: item.unit })}
+                </p>
+                <p className="text-[11px] text-foreground/65">{formatChangeWithUnit({ change: item.changeAbs, unit: item.unit, pct: item.changePct })}</p>
+                <DynamicMiniTrend
+                  series={item.series || []}
+                  change={item.changeAbs}
+                  changePct={item.changePct}
+                  status={eurostatWidget.status}
+                  section="expansion"
+                  cardKind="index"
+                  trustedSeries={isTrustworthySeriesSource({
+                    status: eurostatWidget.status,
+                    sourceName: eurostatWidget.sourceName,
+                    fallbackReason: eurostatWidget.fallbackReason,
+                  })}
+                  sourceName={eurostatWidget.sourceName}
+                  debugEnabled={debugEnabled}
+                />
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (imfWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["imf-benchmarks"];
+      descriptors.push({
+        ...meta,
+        subtitle: imfWidget.subtitle || "Monthly benchmark layer for grain and oilseed references.",
+        badgeLabel: imfWidget.status,
+        badgeClassName: grainStatusClass(imfWidget.status),
+        sourceName: imfWidget.sourceName,
+        updatedLabel: imfWidget.updatedAt ? formatRelative(imfWidget.updatedAt) : imfWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {imfWidget.rows.slice(0, 4).map((row, idx) => (
+              <div key={`grid-imf-${idx}`} className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground">{row.label}</p>
+                  <MetricChip label={row.cadence.toUpperCase()} variant="type" tone="muted" />
+                </div>
+                <p className="mt-2 text-2xl font-semibold text-foreground">{formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}</p>
+                <p className="text-[11px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (amisWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["amis-balance"];
+      descriptors.push({
+        ...meta,
+        subtitle: amisWidget.subtitle || "Release-based global balance and monitor context.",
+        badgeLabel: amisWidget.status,
+        badgeClassName: grainStatusClass(amisWidget.status),
+        sourceName: amisWidget.sourceName,
+        updatedLabel: amisWidget.updatedAt ? formatRelative(amisWidget.updatedAt) : amisWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {amisWidget.items.slice(0, 4).map((item) => (
+              <div key={`grid-amis-${item.id}`} className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground">{item.label}</p>
+                  <MetricChip label="RELEASE" variant="type" tone="muted" />
+                </div>
+                <p className="mt-2 text-sm text-foreground/75">{item.statusLabel || "Monitor update"}</p>
+                <p className="text-[11px] text-foreground/60">{item.releaseDate ? formatRelative(item.releaseDate) : "release-based cadence"}</p>
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    const logisticsPressureWidget = compactWidgets.find((widget) => widget.id === "logistics-pressure");
+    if (logisticsPressureWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["logistics-pressure-grid"];
+      descriptors.push({
+        ...meta,
+        subtitle: "Compact freight and corridor pressure composite from active signals.",
+        badgeLabel: logisticsPressureWidget.status,
+        badgeClassName:
+          logisticsPressureWidget.status === "Elevated"
+            ? "border-red-500/45 bg-red-500/18 text-red-900 dark:text-red-100"
+            : logisticsPressureWidget.status === "Rising"
+              ? "border-amber-500/45 bg-amber-500/18 text-amber-900 dark:text-amber-100"
+              : "border-blue-500/45 bg-blue-500/18 text-blue-900 dark:text-blue-100",
+        body: (
+          <div className="space-y-3">
+            <div className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-foreground">{logisticsPressureWidget.title}</p>
+                <MetricChip label="SIGNAL" variant="type" tone="muted" />
+              </div>
+              <p className="mt-2 text-3xl font-semibold text-foreground">{logisticsPressureWidget.primary}</p>
+              <p className="text-[11px] text-foreground/65">{logisticsPressureWidget.secondary}</p>
+              <IntensityBar
+                compact
+                className="mt-2"
+                value={Math.min(100, Math.max(15, Number.parseInt(logisticsPressureWidget.primary, 10) * 15 || 15))}
+                direction={logisticsPressureWidget.status === "Stable" ? "flat" : "up"}
+              />
+              <DynamicMiniTrend
+                series={logisticsPressureWidget.series}
+                change={undefined}
+                changePct={undefined}
+                status="REFRESH"
+                section="context"
+                cardKind="signal"
+              />
+            </div>
+          </div>
+        ),
+      });
+    }
+
+    return descriptors;
+  }, [
+    amisWidget,
+    compactWidgets,
+    debugEnabled,
+    grainDataByKind,
+    heroWatchItems,
+    imfWidget,
+    indexWidget,
+    priceDisplayMode,
+    prioritySignals,
+    usdaNassWidget,
+  ]);
+
+  const visibleGridWidgets = useMemo(
+    () => filterVisibleGridWidgets(gridWidgetDescriptors, commandProfile, grainCountry, hiddenGridWidgetIds),
+    [commandProfile, grainCountry, gridWidgetDescriptors, hiddenGridWidgetIds],
+  );
+
+  const hiddenGridWidgets = useMemo(
+    () => gridWidgetDescriptors.filter((widget) => hiddenGridWidgetIds.includes(widget.id)),
+    [gridWidgetDescriptors, hiddenGridWidgetIds],
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -3236,6 +3541,14 @@ export default function MonitorPage() {
               </div>
             </div>
           </div>
+
+          <MonitorGridWorkspace
+            widgets={visibleGridWidgets}
+            hiddenWidgets={hiddenGridWidgets}
+            onHide={hideGridWidget}
+            onRestore={restoreGridWidget}
+            onRestoreAll={restoreAllGridWidgets}
+          />
 
           {canRenderSection("grain-markets-core") ? (
           <div id="grain-markets-core" className="scroll-mt-24 space-y-1.5 rounded-lg border border-primary/35 bg-primary/[0.06] p-2.5 shadow-[inset_0_0_0_1px_rgba(154,163,58,0.12)]">
