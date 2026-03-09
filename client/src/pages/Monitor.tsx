@@ -2890,6 +2890,11 @@ export default function MonitorPage() {
     return { allSignals24h, highImpact24h, logistics24h };
   }, [feed]);
 
+  const heroWatchItems = useMemo(() => {
+    const preferred = blackSeaRisks.length ? blackSeaRisks : prioritySignals.length ? prioritySignals : topSignals;
+    return preferred.slice(0, 4);
+  }, [blackSeaRisks, prioritySignals, topSignals]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
@@ -2984,39 +2989,111 @@ export default function MonitorPage() {
                   </Button>
                 </div>
 
-                <div className="grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="grid gap-3 xl:grid-cols-[1.18fr_0.82fr]">
                   <div className="rounded-2xl border border-black/55 bg-background/80 p-3 dark:border-white/15">
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Hero Narrative</p>
-                        <p className="text-base font-semibold">Market operating picture</p>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Market Pulse Canvas</p>
+                        <p className="text-base font-semibold">Cross-market pressure map</p>
                       </div>
                       <MetricChip label={marketNarrative.status} variant="provider" tone={marketNarrative.status === "Elevated" ? "accent" : "neutral"} />
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-foreground/82">{marketNarrative.line}</p>
-                    <div className="mt-3 grid gap-2">
-                      {prioritySignals.slice(0, 2).map((item) => (
-                        <a key={`hero-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-xl border border-black/55 bg-card/85 p-2.5 transition hover:border-primary/45 dark:border-white/12">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="line-clamp-2 text-sm font-medium text-foreground">{item.title}</p>
-                            <ImpactBadge impact={classifyImpact(item)} />
+                    <p className="mt-1 text-xs leading-5 text-foreground/72">{marketNarrative.line}</p>
+                    <div className="mt-3 grid gap-2 lg:grid-cols-2">
+                      {pulseByCrop.map((entry) => (
+                        <div key={`hero-pulse-${entry.crop}`} className="rounded-xl border border-black/55 bg-card/85 p-2.5 dark:border-white/12">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/82">{asLabel(entry.crop)}</p>
+                              <MetricChip label="pulse" variant="type" tone="muted" />
+                            </div>
+                            {entry.direction === "up" ? (
+                              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : entry.direction === "down" ? (
+                              <TrendingDown className="h-3.5 w-3.5 text-red-500" />
+                            ) : (
+                              <ArrowRight className="h-3.5 w-3.5 text-foreground/55" />
+                            )}
                           </div>
-                          <p className="mt-1 text-[11px] text-foreground/64">{classifySignalType(item)} • {item.source_name} • {formatRelative(item.published_at)}</p>
-                        </a>
+                          <div className="mt-2 flex items-end justify-between gap-3">
+                            <div>
+                              <p className="text-2xl font-semibold text-foreground">{entry.now24h}</p>
+                              <p className="text-[11px] text-foreground/62">signals now</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-foreground">{entry.total}</p>
+                              <p className="text-[11px] text-foreground/62">total mentions</p>
+                            </div>
+                          </div>
+                          <IntensityBar
+                            compact
+                            className="mt-2"
+                            value={Math.min(100, Math.max(10, entry.now24h * 8))}
+                            direction={entry.direction === "up" ? "up" : entry.direction === "down" ? "down" : "flat"}
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {compactWidgets.map((widget) => (
-                      <CompactWidgetCard key={`hero-compact-${widget.id}`} widget={widget} />
-                    ))}
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+                    <div className="rounded-2xl border border-black/55 bg-background/80 p-3 dark:border-white/15">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Hero Narrative</p>
+                          <p className="text-base font-semibold">Operating picture</p>
+                        </div>
+                        <MetricChip label="summary" variant="type" tone="muted" />
+                      </div>
+                      <div className="mt-2 grid gap-2">
+                        {prioritySignals.slice(0, 2).map((item) => (
+                          <a key={`hero-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-xl border border-black/55 bg-card/85 p-2.5 transition hover:border-primary/45 dark:border-white/12">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="line-clamp-2 text-sm font-medium text-foreground">{item.title}</p>
+                              <ImpactBadge impact={classifyImpact(item)} />
+                            </div>
+                            <p className="mt-1 text-[11px] text-foreground/64">{classifySignalType(item)} • {item.source_name} • {formatRelative(item.published_at)}</p>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-2">
+                      {compactWidgets.map((widget) => (
+                        <CompactWidgetCard key={`hero-compact-${widget.id}`} widget={widget} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                {showLiveVisualsHero ? <LiveVisualsPanel debugEnabled={debugEnabled} compact /> : null}
+                {showLiveVisualsHero ? (
+                  <LiveVisualsPanel debugEnabled={debugEnabled} compact />
+                ) : (
+                  <Card className="border-black/65 bg-gradient-to-br from-card to-muted/30 shadow-sm dark:border-white/15">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Tv className="h-4 w-4 text-primary" />
+                          <CardTitle className="text-base">Media Rail</CardTitle>
+                        </div>
+                        <MetricChip label="placeholder" variant="provider" tone="muted" />
+                      </div>
+                      <CardDescription>Reserved for video streams, market TV, and port logistics cameras.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-xl border border-dashed border-black/40 bg-background/70 p-3 dark:border-white/15">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/72">Video slot</p>
+                        <p className="mt-2 text-sm text-foreground/72">Market TV / commentary embed placeholder.</p>
+                      </div>
+                      <div className="rounded-xl border border-dashed border-black/40 bg-background/70 p-3 dark:border-white/15">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/72">Camera slot</p>
+                        <p className="mt-2 text-sm text-foreground/72">Port / terminal / logistics camera placeholder.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 <Card className="border-black/65 bg-gradient-to-br from-card to-muted/30 shadow-sm dark:border-white/15">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
@@ -3024,17 +3101,22 @@ export default function MonitorPage() {
                         <Tv className="h-4 w-4 text-primary" />
                         <CardTitle className="text-base">Signal Watchlist</CardTitle>
                       </div>
-                      <MetricChip label={`${blackSeaRisks.length} live`} variant="provider" tone="neutral" />
+                      <MetricChip label={`${heroWatchItems.length} live`} variant="provider" tone="neutral" />
                     </div>
-                    <CardDescription>Compact hero watchlist for corridor and market stress.</CardDescription>
+                    <CardDescription>Compact hero watchlist for corridor, logistics, and market stress.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-2">
-                    {blackSeaRisks.slice(0, 3).map((item) => (
+                    {heroWatchItems.map((item) => (
                       <a key={`watch-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-black/55 bg-background/70 p-2 transition hover:border-primary/35 dark:border-white/12">
                         <p className="line-clamp-2 text-xs font-medium">{item.title}</p>
-                        <p className="mt-1 text-[10px] text-foreground/62">{asLabel(item.region_tags[0] || "black sea")} • {formatRelative(item.published_at)}</p>
+                        <p className="mt-1 text-[10px] text-foreground/62">{asLabel(item.region_tags[0] || item.topic_tags[0] || "market")} • {formatRelative(item.published_at)}</p>
                       </a>
                     ))}
+                    {!heroWatchItems.length ? (
+                      <div className="rounded-lg border border-dashed border-black/40 bg-background/65 p-3 text-xs text-foreground/68 dark:border-white/12">
+                        Hero watchlist will populate from live signals, feeds, and video-linked alerts as more sources are connected.
+                      </div>
+                    ) : null}
                   </CardContent>
                 </Card>
               </div>
