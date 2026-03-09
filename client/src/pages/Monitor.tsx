@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldAlert, TrendingDown, TrendingUp, Waves, TrainFront, Activity, Eye, EyeOff, LayoutGrid, Tv, X, Filter } from "lucide-react";
 import { DeckEcosystemStrip } from "@/components/deck/DeckEcosystemStrip";
 import { MonitorFooter } from "@/components/monitor/MonitorFooter";
 import { MonitorHeader } from "@/components/monitor/MonitorHeader";
@@ -1364,6 +1364,29 @@ const MONITOR_NAV_ITEMS = [
   { href: "#logistics-indicators", label: "Logistics" },
 ] as const;
 
+const COMMAND_PROFILES = [
+  { id: "all", label: "Show All" },
+  { id: "farmer", label: "Farmer" },
+  { id: "trader", label: "Trader" },
+  { id: "broker", label: "Broker" },
+] as const;
+
+const SECTION_STORAGE_KEY = "monitor_hidden_sections_v1";
+
+const SECTION_LABELS = {
+  "grain-markets-core": "Grain Markets Core",
+  "grain-data-expansion": "Grain Data Expansion",
+  "fundamentals-outlook": "Fundamentals & Outlook",
+  "top-signals": "Top Signals",
+  "logistics-indicators": "Freight & Logistics",
+  "signal-charts": "Signal Charts",
+  "signal-filters": "Signal Filters",
+  "terminal-panels": "Terminal Panels",
+} as const;
+
+type CommandProfile = (typeof COMMAND_PROFILES)[number]["id"];
+type SectionId = keyof typeof SECTION_LABELS;
+
 type HeroCrop = (typeof HERO_CROPS)[number];
 
 function asLabel(value: string): string {
@@ -1460,6 +1483,51 @@ function ImpactBadge({ impact }: { impact: Impact }) {
         ? "border-amber-500/55 bg-amber-500/18 text-amber-900 dark:text-amber-100"
         : "border-emerald-500/55 bg-emerald-500/18 text-emerald-900 dark:text-emerald-100";
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${styles}`}>{impact}</span>;
+}
+
+function CommandChip({
+  active,
+  label,
+  onClick,
+}: {
+  active?: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-10 rounded-full border px-4 text-sm font-semibold transition-colors ${
+        active
+          ? "border-primary/70 bg-primary text-primary-foreground shadow-sm"
+          : "border-black/60 bg-background/80 text-foreground hover:border-primary/45 hover:bg-muted/70 dark:border-white/25 dark:bg-slate-950/70"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function SectionHideButton({
+  hidden,
+  onClick,
+}: {
+  hidden?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="ghost"
+      onClick={onClick}
+      className="h-7 px-2 text-[10px] uppercase tracking-[0.12em] text-foreground/68 hover:text-foreground"
+    >
+      {hidden ? <Eye className="mr-1.5 h-3.5 w-3.5" /> : <EyeOff className="mr-1.5 h-3.5 w-3.5" />}
+      {hidden ? "Show" : "Hide"}
+    </Button>
+  );
 }
 
 function indicatorStatusClass(status: LogisticsIndicator["status"]) {
@@ -2372,6 +2440,7 @@ function TerritorySelector({
 }
 
 export default function MonitorPage() {
+  const [commandProfile, setCommandProfile] = useState<CommandProfile>("all");
   const [crop, setCrop] = useState("all");
   const [topic, setTopic] = useState("all");
   const [region, setRegion] = useState("all");
@@ -2397,6 +2466,15 @@ export default function MonitorPage() {
     const saved = window.localStorage.getItem("monitor_price_type_fpma");
     return saved === "RETAIL" ? "RETAIL" : "WHOLESALE";
   });
+  const [hiddenSectionIds, setHiddenSectionIds] = useState<SectionId[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(SECTION_STORAGE_KEY) || "[]");
+      return Array.isArray(saved) ? (saved.filter((value): value is SectionId => value in SECTION_LABELS)) : [];
+    } catch {
+      return [];
+    }
+  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
 
@@ -2414,6 +2492,11 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("monitor_price_type_fpma", grainPriceType);
   }, [grainPriceType]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(SECTION_STORAGE_KEY, JSON.stringify(hiddenSectionIds));
+  }, [hiddenSectionIds]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2789,27 +2872,176 @@ export default function MonitorPage() {
     return sortedGroups;
   }, [grainDataByKind, grainGroupBy]);
 
+  const hiddenSections = useMemo(
+    () => hiddenSectionIds.map((id) => ({ id, label: SECTION_LABELS[id] })),
+    [hiddenSectionIds],
+  );
+
+  const isSectionHidden = (id: SectionId) => hiddenSectionIds.includes(id);
+
+  const toggleSectionHidden = (id: SectionId) => {
+    setHiddenSectionIds((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
+  };
+
+  const heroCounts = useMemo(() => {
+    const allSignals24h = feed.filter((item) => inLastHours(item, 24)).length;
+    const highImpact24h = feed.filter((item) => inLastHours(item, 24) && classifyImpact(item) === "High").length;
+    const logistics24h = feed.filter((item) => item.topic_tags.includes("logistics") && inLastHours(item, 24)).length;
+    return { allSignals24h, highImpact24h, logistics24h };
+  }, [feed]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <MonitorHeader navItems={[...MONITOR_NAV_ITEMS]} />
       <main>
       <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-5">
         <div className="space-y-3">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="space-y-2">
-              <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
-              <p className="max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
-                Operational signal view for grains and oilseeds across markets, logistics, policy, and Black Sea risk corridors.
-              </p>
+          <div className="rounded-2xl border border-black/60 bg-background/70 p-3 shadow-sm backdrop-blur dark:border-white/15 dark:bg-slate-950/70">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-[0.16em]">Sprint 1 layout</Badge>
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
+                <p className="max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
+                  Hero-first market monitor for grains, oilseeds, logistics, outlooks, and signal flow. This sprint establishes command controls, section architecture, and hidden-module handling.
+                </p>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[360px]">
+                <div className="rounded-xl border border-black/60 bg-card/90 p-2.5 dark:border-white/15">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/62">24h signals</p>
+                  <p className="mt-1 text-2xl font-semibold">{heroCounts.allSignals24h}</p>
+                  <p className="text-[11px] text-foreground/62">decision-relevant headlines and alerts</p>
+                </div>
+                <div className="rounded-xl border border-black/60 bg-card/90 p-2.5 dark:border-white/15">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/62">High impact</p>
+                  <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-300">{heroCounts.highImpact24h}</p>
+                  <p className="text-[11px] text-foreground/62">priority signals in current cycle</p>
+                </div>
+                <div className="rounded-xl border border-black/60 bg-card/90 p-2.5 dark:border-white/15">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/62">Logistics watch</p>
+                  <p className="mt-1 text-2xl font-semibold">{heroCounts.logistics24h}</p>
+                  <p className="text-[11px] text-foreground/62">freight and corridor mentions</p>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-foreground/70 dark:text-slate-400">
-              Updated: {monitorQuery.data?.generatedAt ? new Date(monitorQuery.data.generatedAt).toLocaleString() : "loading"}
+
+            <div className="mt-3 grid gap-3 xl:grid-cols-[1.35fr_0.65fr]">
+              <div className="space-y-3 rounded-2xl border border-black/55 bg-card/85 p-3 dark:border-white/15 dark:bg-slate-950/72">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Command Strip</p>
+                    <p className="text-sm text-foreground/74">Role and territory controls anchor the page structure now. Role-specific filtering lands in Sprint 2.</p>
+                  </div>
+                  <div className="text-xs text-foreground/70 dark:text-slate-400">
+                    Updated: {monitorQuery.data?.generatedAt ? new Date(monitorQuery.data.generatedAt).toLocaleString() : "loading"}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {COMMAND_PROFILES.map((profile) => (
+                    <CommandChip
+                      key={profile.id}
+                      label={profile.label}
+                      active={commandProfile === profile.id}
+                      onClick={() => setCommandProfile(profile.id)}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2 rounded-full border border-black/60 bg-background/80 px-3 py-2 text-sm dark:border-white/20">
+                    <LayoutGrid className="h-4 w-4 text-primary" />
+                    <span className="text-foreground/80">Country</span>
+                    <select
+                      value={grainCountry}
+                      onChange={(event) => setGrainCountry(event.target.value)}
+                      className="bg-transparent text-sm font-semibold outline-none"
+                      aria-label="Primary monitor country"
+                    >
+                      <option value="US">United States</option>
+                      <option value="UA">Ukraine</option>
+                      <option value="BR">Brazil</option>
+                      <option value="AR">Argentina</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-full border border-black/60 bg-background/80 px-3 py-2 text-sm dark:border-white/20">
+                    <Filter className="h-4 w-4 text-primary" />
+                    <span className="text-foreground/80">Signal range</span>
+                    <span className="font-semibold">{chartWindow}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-10 rounded-full border-black/60 px-4 dark:border-white/20"
+                    onClick={() => setHiddenSectionIds([])}
+                    disabled={!hiddenSectionIds.length}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    Show hidden{hiddenSectionIds.length ? ` (${hiddenSectionIds.length})` : ""}
+                  </Button>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-2xl border border-black/55 bg-background/80 p-3 dark:border-white/15">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Hero Narrative</p>
+                        <p className="text-base font-semibold">Market operating picture</p>
+                      </div>
+                      <MetricChip label={marketNarrative.status} variant="provider" tone={marketNarrative.status === "Elevated" ? "accent" : "neutral"} />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-foreground/82">{marketNarrative.line}</p>
+                    <div className="mt-3 grid gap-2">
+                      {prioritySignals.slice(0, 2).map((item) => (
+                        <a key={`hero-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="block rounded-xl border border-black/55 bg-card/85 p-2.5 transition hover:border-primary/45 dark:border-white/12">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="line-clamp-2 text-sm font-medium text-foreground">{item.title}</p>
+                            <ImpactBadge impact={classifyImpact(item)} />
+                          </div>
+                          <p className="mt-1 text-[11px] text-foreground/64">{classifySignalType(item)} • {item.source_name} • {formatRelative(item.published_at)}</p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {compactWidgets.map((widget) => (
+                      <CompactWidgetCard key={`hero-compact-${widget.id}`} widget={widget} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {showLiveVisualsHero ? <LiveVisualsPanel debugEnabled={debugEnabled} compact /> : null}
+                <Card className="border-black/65 bg-gradient-to-br from-card to-muted/30 shadow-sm dark:border-white/15">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Tv className="h-4 w-4 text-primary" />
+                        <CardTitle className="text-base">Signal Watchlist</CardTitle>
+                      </div>
+                      <MetricChip label={`${blackSeaRisks.length} live`} variant="provider" tone="neutral" />
+                    </div>
+                    <CardDescription>Compact hero watchlist for corridor and market stress.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-2">
+                    {blackSeaRisks.slice(0, 3).map((item) => (
+                      <a key={`watch-${item.id}`} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-black/55 bg-background/70 p-2 transition hover:border-primary/35 dark:border-white/12">
+                        <p className="line-clamp-2 text-xs font-medium">{item.title}</p>
+                        <p className="mt-1 text-[10px] text-foreground/62">{asLabel(item.region_tags[0] || "black sea")} • {formatRelative(item.published_at)}</p>
+                      </a>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
 
-          {showLiveVisualsHero ? <LiveVisualsPanel debugEnabled={debugEnabled} compact /> : null}
-
+          {!isSectionHidden("grain-markets-core") ? (
           <div id="grain-markets-core" className="scroll-mt-24 space-y-1.5 rounded-lg border border-primary/35 bg-primary/[0.06] p-2.5 shadow-[inset_0_0_0_1px_rgba(154,163,58,0.12)]">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -2853,6 +3085,7 @@ export default function MonitorPage() {
                 >
                   °F
                 </Button>
+                <SectionHideButton onClick={() => toggleSectionHidden("grain-markets-core")} />
               </div>
             </div>
             {!grainMarketsQuery.data || (grainMarketsQuery.data.widgets.cbot.length === 0 && grainMarketsQuery.data.widgets.euronext.length === 0) ? (
@@ -2876,7 +3109,9 @@ export default function MonitorPage() {
               </div>
             )}
           </div>
+          ) : null}
 
+          {!isSectionHidden("grain-data-expansion") ? (
           <div id="grain-data-expansion" className="scroll-mt-24 space-y-1 rounded-lg border border-black/50 dark:border-white/20 bg-background/30 p-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -2926,6 +3161,7 @@ export default function MonitorPage() {
                 >
                   {grainExpansionCollapsed ? "Expand" : "Collapse"}
                 </Button>
+                <SectionHideButton onClick={() => toggleSectionHidden("grain-data-expansion")} />
               </div>
             </div>
 
@@ -4592,7 +4828,9 @@ export default function MonitorPage() {
               </div>
             )}
           </div>
+          ) : null}
 
+          {!isSectionHidden("fundamentals-outlook") ? (
           <div id="fundamentals-outlook" className="scroll-mt-24 mt-3 space-y-2">
             <div className="rounded-3xl border border-black/15 bg-card/80 p-2.5 shadow-sm dark:border-white/12">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -4603,6 +4841,7 @@ export default function MonitorPage() {
                 <div className="flex flex-wrap items-center gap-1">
                   <MetricChip label="slow cadence" variant="type" tone="muted" />
                   <MetricChip label="context layer" variant="provider" tone="neutral" />
+                  <SectionHideButton onClick={() => toggleSectionHidden("fundamentals-outlook")} />
                 </div>
               </div>
               <div className="grid items-start gap-2.5 xl:grid-cols-12">
@@ -4757,8 +4996,13 @@ export default function MonitorPage() {
               </div>
             </div>
           </div>
+          ) : null}
 
+          {!isSectionHidden("top-signals") ? (
           <div id="top-signals" className="scroll-mt-24 grid items-start gap-2.5 xl:grid-cols-12">
+            <div className="xl:col-span-12 flex justify-end">
+              <SectionHideButton onClick={() => toggleSectionHidden("top-signals")} />
+            </div>
             <Card className="xl:col-span-5 border-black/65 dark:border-white/35 bg-gradient-to-br from-red-100/55 via-card to-muted/25 dark:from-red-900/18 dark:via-card dark:to-muted/25 text-foreground dark:text-slate-100 shadow-sm transition-all duration-300 hover:border-red-400/45 hover:shadow-md">
               <CardHeader className="pb-1">
                 <div className="flex items-center gap-2">
@@ -4806,6 +5050,7 @@ export default function MonitorPage() {
               ))}
             </div>
           </div>
+          ) : null}
 
           <div className="grid items-start gap-2.5 xl:grid-cols-12">
             <Card className="xl:col-span-6 border-black/65 dark:border-white/35 bg-gradient-to-b from-card to-muted/25 text-foreground dark:text-slate-100 shadow-sm transition-all duration-300 hover:border-primary/35 hover:shadow-md">
@@ -5009,12 +5254,16 @@ export default function MonitorPage() {
             </Card>
           </div>
 
+          {!isSectionHidden("logistics-indicators") ? (
           <div id="logistics-indicators" className="scroll-mt-24 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/82 dark:text-slate-300">Freight & Logistics Indicators</h2>
-              <span className="text-[11px] text-foreground/65 dark:text-slate-500">
-                {logisticsIndicatorsQuery.data?.enabled ? "Demo-grade, fallback-first" : "Disabled"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-foreground/65 dark:text-slate-500">
+                  {logisticsIndicatorsQuery.data?.enabled ? "Demo-grade, fallback-first" : "Disabled"}
+                </span>
+                <SectionHideButton onClick={() => toggleSectionHidden("logistics-indicators")} />
+              </div>
             </div>
             {!logisticsIndicatorsQuery.data?.enabled ? (
               <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100">
@@ -5030,7 +5279,13 @@ export default function MonitorPage() {
               </div>
             )}
           </div>
+          ) : null}
 
+          {!isSectionHidden("signal-charts") ? (
+          <div className="space-y-2">
+            <div className="flex justify-end">
+              <SectionHideButton onClick={() => toggleSectionHidden("signal-charts")} />
+            </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
               <CardHeader className="pb-1">
@@ -5113,6 +5368,8 @@ export default function MonitorPage() {
               <div className="px-4 pb-3 text-[10px] text-foreground/65 dark:text-slate-400">Legend: total relevant mentions over recent days.</div>
             </Card>
           </div>
+          </div>
+          ) : null}
           <div className="flex items-center gap-1.5">
             <p className="text-xs uppercase tracking-wide text-foreground/70 dark:text-slate-400">Micro-widget range</p>
             <Button size="sm" variant={chartWindow === "24h" ? "default" : "outline"} className="h-7 px-2.5 text-xs border-black/70 dark:border-white/30 text-foreground dark:text-slate-200" onClick={() => setChartWindow("24h")}>
@@ -5123,9 +5380,13 @@ export default function MonitorPage() {
             </Button>
           </div>
 
+          {!isSectionHidden("signal-filters") ? (
           <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 text-foreground dark:text-slate-100 shadow-md">
             <CardHeader>
-              <CardTitle className="text-lg">Filters</CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-lg">Filters</CardTitle>
+                <SectionHideButton onClick={() => toggleSectionHidden("signal-filters")} />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 lg:grid-cols-5">
@@ -5189,6 +5450,7 @@ export default function MonitorPage() {
               ) : null}
             </CardContent>
           </Card>
+          ) : null}
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -5202,6 +5464,11 @@ export default function MonitorPage() {
             </div>
           </div>
 
+          {!isSectionHidden("terminal-panels") ? (
+          <div className="space-y-2">
+            <div className="flex justify-end">
+              <SectionHideButton onClick={() => toggleSectionHidden("terminal-panels")} />
+            </div>
           <div id="terminal-panels" className="scroll-mt-24 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
             {panels.map((panel) => {
               const expanded = expandedPanel === panel.id;
@@ -5260,6 +5527,40 @@ export default function MonitorPage() {
               );
             })}
           </div>
+          </div>
+          ) : null}
+
+          {hiddenSections.length ? (
+            <Card id="hidden-tray" className="border-black/75 dark:border-white/20 bg-muted/45 shadow-sm">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base">Hidden Modules</CardTitle>
+                    <CardDescription>Session-only hidden sections. Restore any module without touching source wiring.</CardDescription>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" className="h-8 border-black/60 dark:border-white/20" onClick={() => setHiddenSectionIds([])}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Restore all
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {hiddenSections.map((section) => (
+                  <Button
+                    key={`hidden-${section.id}`}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 border-black/60 bg-background/80 dark:border-white/20"
+                    onClick={() => toggleSectionHidden(section.id)}
+                  >
+                    <X className="mr-2 h-3.5 w-3.5" />
+                    {section.label}
+                  </Button>
+                ))}
+              </CardContent>
+            </Card>
+          ) : null}
 
           {debugEnabled ? (
             <Card className="border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-slate-100">
@@ -5363,7 +5664,7 @@ export default function MonitorPage() {
       </section>
       <DeckEcosystemStrip />
       </main>
-      <MonitorFooter />
+      <MonitorFooter hiddenCount={hiddenSections.length} />
       <WorldTimeDrawer />
     </div>
   );

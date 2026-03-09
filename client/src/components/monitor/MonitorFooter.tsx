@@ -1,6 +1,10 @@
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
-export function MonitorFooter() {
+interface MonitorFooterProps {
+  hiddenCount?: number;
+}
+
+export function MonitorFooter({ hiddenCount = 0 }: MonitorFooterProps) {
   return (
     <footer className="border-t border-border/60 bg-muted/55">
       <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
@@ -26,6 +30,14 @@ export function MonitorFooter() {
               <a className="transition-colors hover:text-foreground" href="#grain-markets-core">
                 Grain markets core
               </a>
+              {hiddenCount > 0 ? (
+                <>
+                  <span className="text-foreground/55" aria-hidden="true">,</span>
+                  <a className="transition-colors hover:text-foreground" href="#hidden-tray">
+                    Hidden modules ({hiddenCount})
+                  </a>
+                </>
+              ) : null}
             </div>
           </div>
         </div>
