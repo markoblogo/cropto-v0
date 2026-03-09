@@ -126,12 +126,21 @@ const grainWidgetsService = new GrainWidgetsService();
 const REPORT_PROBE_TIMEOUT_MS = 3500;
 const REPORT_ROUTE_BUDGET_MS = 5000;
 const REPORT_FPMA_BUDGET_MS = 1200;
+const REPORT_WARMUP_BUDGET_MS = 2200;
 
 function topEntries(record: Record<string, number>, limit = 5) {
   return Object.entries(record)
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([sourceId, count]) => ({ sourceId, count }));
+}
+
+async function warmGrainWidgetsSnapshot() {
+  await withQuickReportBudget(
+    grainWidgetsService.list(),
+    () => null,
+    REPORT_WARMUP_BUDGET_MS,
+  ).catch(() => null);
 }
 
 type ActivationErrorKind =
@@ -632,8 +641,9 @@ export function registerMonitorRoutes(app: Express): void {
     try {
       const nowIso = new Date().toISOString();
       const deepReport = req.query.deep === "1";
-      const grainWidgetsDebug = grainWidgetsService.debugSummary();
       if (!deepReport) {
+        await warmGrainWidgetsSnapshot();
+        const grainWidgetsDebug = grainWidgetsService.debugSummary();
         res.json({
           runtime: {
             timestamp: nowIso,
@@ -672,6 +682,7 @@ export function registerMonitorRoutes(app: Express): void {
             territories: {},
           } as any),
       );
+      const grainWidgetsDebug = grainWidgetsService.debugSummary();
       const byKind = grainWidgets.widgets.byKind || {};
       const providers = grainWidgetsDebug.providers || [];
       const emptyFpmaDiscovery = {
@@ -770,7 +781,7 @@ export function registerMonitorRoutes(app: Express): void {
       };
 
       const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "wfp-databridges", "worldbank-microdata", "eurostat-agri-indices", "usda-psd", "amis-outlook", "imf-pcps", "oecd-agricultural-outlook", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
-        const provider = providers.find((item) => item.providerId === providerId);
+        const provider = providers.find((item: any) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
         const providerError = normalizeProviderError(provider?.error || (provider?.errorKind ? String(provider.errorKind) : undefined));
@@ -965,8 +976,8 @@ export function registerMonitorRoutes(app: Express): void {
       const marsIndexProbeUrl = USDA_MARS_PUBLIC_INDEX_URLS[0] || `${USDA_MARS_BASE_URL.replace(/\/+$/, "")}/listPublishedReports`;
       const marsDailyTxtSource =
         (byKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as any)?.debug?.downloadUrlUsed ||
-        providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.downloadUrlUsed ||
-        providers.find((provider) => provider.providerId === "usda-mars-daily-txt")?.sourceUrlUsed ||
+        providers.find((provider: any) => provider.providerId === "usda-mars-daily-txt")?.downloadUrlUsed ||
+        providers.find((provider: any) => provider.providerId === "usda-mars-daily-txt")?.sourceUrlUsed ||
         marsIndexProbeUrl;
       const alphaProbeUrl = `${ALPHAVANTAGE_BASE_URL}?function=${encodeURIComponent(ALPHAVANTAGE_FUNCTIONS[0] || "WHEAT")}&interval=monthly${ALPHAVANTAGE_API_KEY ? "&apikey=REDACTED" : ""}`;
       const nasdaqProbeDataset = NASDAQ_DATASETS[0] || "FRED/DGS10";
@@ -1178,6 +1189,7 @@ export function registerMonitorRoutes(app: Express): void {
   app.get("/api/monitor/triage-report", async (req, res) => {
     try {
       if (req.query.deep !== "1") {
+        await warmGrainWidgetsSnapshot();
         const report = quickTriageReport(grainWidgetsService.debugSummary().providers || []);
         if (req.query.format === "md") {
           res.type("text/markdown").send(triageReportToMarkdown(report));
