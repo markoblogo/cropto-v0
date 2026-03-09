@@ -982,7 +982,7 @@ export function registerMonitorRoutes(app: Express): void {
       const wfpProbeUrl = redactSensitiveUrl(wfpProbeRawUrl);
       const wbProbeUrl = WB_MICRODATA_CSV_URL || `${WB_MICRODATA_BASE_URL.replace(/\/+$/, "")}/data-api`;
       const eurostatProbeUrl = `${EUROSTAT_BASE_URL.replace(/\/+$/, "")}/apri_pi20_outq?geo=FR&lang=en&format=JSON`;
-      const usdaPsdProbeRawUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`;
+      const usdaPsdProbeRawUrl = `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/commodities`;
       const usdaPsdProbeUrl = redactSensitiveUrl(usdaPsdProbeRawUrl);
       const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;

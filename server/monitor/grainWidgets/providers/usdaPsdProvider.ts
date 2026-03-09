@@ -37,13 +37,10 @@ function normalizeToken(value: unknown): string {
 }
 
 function buildEndpoint(path: string): string {
-  return `${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function buildEndpointWithQuery(path: string): string {
-  const url = new URL(buildEndpoint(path));
-  if (USDA_FAS_API_KEY) url.searchParams.set("api_key", USDA_FAS_API_KEY);
-  return url.toString();
+  const base = USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "");
+  const normalizedPath = `/${String(path || "").replace(/^\/+/, "")}`;
+  const dedupedPath = normalizedPath.replace(/^\/api\//i, "/");
+  return `${base}${dedupedPath}`;
 }
 
 function authHeaders(): HeadersInit {
@@ -64,13 +61,14 @@ async function fetchJson(path: string) {
     };
   } catch (error: any) {
     if (Number(error?.httpStatus) !== 403) throw error;
-    const fallbackUrl = buildEndpointWithQuery(path);
-    const response = await fetchTextResponseWithTimeout(fallbackUrl, USDA_PSD_TIMEOUT_MS, {
+    const fallbackUrl = new URL(buildEndpoint(path));
+    if (USDA_FAS_API_KEY) fallbackUrl.searchParams.set("api_key", USDA_FAS_API_KEY);
+    const response = await fetchTextResponseWithTimeout(fallbackUrl.toString(), USDA_PSD_TIMEOUT_MS, {
       accept: "application/json,text/plain,*/*",
     });
     return {
-      url: fallbackUrl,
-      finalUrl: response.finalUrl || fallbackUrl,
+      url: fallbackUrl.toString(),
+      finalUrl: response.finalUrl || fallbackUrl.toString(),
       payload: JSON.parse(response.text),
     };
   }
@@ -181,8 +179,8 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
     }
 
-    const commodityMeta = await fetchJson("/api/psd/commodities");
-    const attributeMeta = await fetchJson("/api/psd/commodityAttributes");
+    const commodityMeta = await fetchJson("/psd/commodities");
+    const attributeMeta = await fetchJson("/psd/commodityAttributes");
     const commodityCodes = Object.fromEntries(
       commodityMap
         .map((entry) => [entry.code, matchCommodityCode(getArray(commodityMeta.payload), entry.code === "CORN" ? "corn" : entry.code)])
@@ -198,7 +196,7 @@ export class UsdaPsdProvider implements GrainWidgetsProvider {
       if (!commodityCode) continue;
       for (let offset = 0; offset < LIVE_YEARS_BUDGET; offset += 1) {
         const marketYear = currentYear - offset;
-        const result = await fetchJson(`/api/psd/commodity/${encodeURIComponent(commodityCode)}/world/year/${marketYear}`);
+        const result = await fetchJson(`/psd/commodity/${encodeURIComponent(commodityCode)}/world/year/${marketYear}`);
         sourceUrlUsed = result.finalUrl || result.url;
         fetchedRows.push(...getArray(result.payload));
       }

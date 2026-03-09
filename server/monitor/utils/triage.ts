@@ -746,7 +746,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       configMissing: !EUROSTAT_BASE_URL,
       timeoutMs: clampReportProbeTimeout(EUROSTAT_TIMEOUT_MS),
     }),
-    safeProbe(`${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/api/psd/commodities`, {
+    safeProbe(`${USDA_FAS_OPENDATA_BASE_URL.replace(/\/+$/, "")}/psd/commodities`, {
       configMissing: !USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY,
       timeoutMs: clampReportProbeTimeout(USDA_PSD_TIMEOUT_MS),
       headers: USDA_FAS_API_KEY ? { API_KEY: USDA_FAS_API_KEY } : undefined,

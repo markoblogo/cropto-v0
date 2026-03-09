@@ -19,6 +19,13 @@ import { discoverOfficialPage, pickDiscoveredLinks } from "./lightweightDiscover
 type TerritoryCode = "UA" | "US" | "BR" | "AR" | "EU";
 type CacheEntry = { fetchedAt: number; territory: TerritoryCode; widget: GrainWidgetWorldBankMicrodataMarketPrices };
 type CsvRow = Record<string, string>;
+type WorldBankApiConfig = {
+  apiBaseUrl: string;
+  dbId: string;
+  tableId: string;
+  studyIdno?: string;
+  bulkDownloadsUrl?: string;
+};
 
 let cacheEntry: CacheEntry | null = null;
 
@@ -94,6 +101,39 @@ function detectCsvUrl(html: string): string | undefined {
   return relative?.[0] ? `https://microdata.worldbank.org${relative[0]}` : undefined;
 }
 
+function detectJsonVar(html: string, variableName: string): string | undefined {
+  const match = html.match(new RegExp(`\\b${variableName}\\s*=\\s*["']([^"']+)["']`, "i"));
+  return match?.[1];
+}
+
+function detectWorldBankApiConfig(html: string): WorldBankApiConfig | undefined {
+  const apiBaseUrl = detectJsonVar(html, "api_base_url");
+  const dbId = detectJsonVar(html, "db_id");
+  const tableId = detectJsonVar(html, "table_id");
+  const studyIdno = detectJsonVar(html, "study_idno");
+  const siteUrl = detectJsonVar(html, "site_url") || "https://microdata.worldbank.org/";
+  if (!apiBaseUrl || !dbId || !tableId) return undefined;
+  return {
+    apiBaseUrl,
+    dbId,
+    tableId,
+    studyIdno,
+    bulkDownloadsUrl: studyIdno ? new URL(`/api/downloads/${studyIdno}/files?type=data`, siteUrl).toString() : undefined,
+  };
+}
+
+function parseBulkDownloadUrl(payload: any): string | undefined {
+  const files = Array.isArray(payload?.files) ? payload.files : Array.isArray(payload?.result?.files) ? payload.result.files : [];
+  for (const file of files) {
+    const downloadUrl = file?.links?.download || file?.download || file?.url;
+    const filename = String(file?.filename || file?.name || "").toLowerCase();
+    if (typeof downloadUrl === "string" && (filename.includes(".csv") || filename.includes(".zip") || /format=csv/i.test(downloadUrl))) {
+      return downloadUrl;
+    }
+  }
+  return undefined;
+}
+
 function cadenceFromSeries(series: GrainWidgetPoint[]): GrainWidgetCountryMarketPriceRow["cadence"] {
   if (series.length < 3) return "unknown";
   const points = series.map((point) => Date.parse(point.ts)).filter(Number.isFinite).sort((a, b) => a - b);
@@ -161,14 +201,26 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
 
     const dataApiUrl = `${WB_MICRODATA_BASE_URL}/data-api`;
     const discoveryPage = await discoverOfficialPage(dataApiUrl, WB_MICRODATA_TIMEOUT_MS);
+    const apiConfig = detectWorldBankApiConfig(discoveryPage.html);
     const discoveredCsvLinks = pickDiscoveredLinks(discoveryPage, {
       includePatterns: [/microdata\.worldbank\.org\/index\.php\/catalog\/\d+\/data-api\/.*\.csv/i, /\.csv(?:[?#].*)?$/i],
       excludePatterns: [/\.pdf(?:[?#].*)?$/i],
       limit: 3,
     });
-    const csvUrl = WB_MICRODATA_CSV_URL
-      || discoveredCsvLinks[0]
-      || detectCsvUrl(discoveryPage.html);
+    let csvUrl = WB_MICRODATA_CSV_URL || discoveredCsvLinks[0] || detectCsvUrl(discoveryPage.html);
+    if (!csvUrl && apiConfig) {
+      csvUrl = `${apiConfig.apiBaseUrl.replace(/\/+$/, "")}/data/${apiConfig.dbId}/${apiConfig.tableId}?format=csv&limit=5000`;
+    }
+    if (!csvUrl && apiConfig?.bulkDownloadsUrl) {
+      try {
+        const bulkResponse = await fetchTextResponseWithTimeout(apiConfig.bulkDownloadsUrl, WB_MICRODATA_TIMEOUT_MS, {
+          accept: "application/json,text/plain,*/*",
+        });
+        csvUrl = parseBulkDownloadUrl(JSON.parse(bulkResponse.text));
+      } catch {
+        csvUrl = undefined;
+      }
+    }
     if (!csvUrl) throw new Error("wb_microdata_csv_url_unresolved");
     const csvResponse = await fetchTextResponseWithTimeout(csvUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "text/csv,text/plain,*/*" });
     const parsedRows = parseCsv(csvResponse.text);
@@ -211,6 +263,8 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
         warnings: [
           `catalog_final_url:${discoveryPage.finalUrl}`,
           `catalog_content_type:${discoveryPage.contentType || "unknown"}`,
+          ...(apiConfig ? [`api_table:${apiConfig.dbId}/${apiConfig.tableId}`] : ["api_table:unresolved"]),
+          ...(apiConfig?.bulkDownloadsUrl ? [`bulk_downloads_url:${apiConfig.bulkDownloadsUrl}`] : ["bulk_downloads_url:unresolved"]),
           ...(discoveredCsvLinks.length ? [`discovered_csv_links:${discoveredCsvLinks.join(" | ")}`] : ["discovered_csv_links:none"]),
         ],
       },
