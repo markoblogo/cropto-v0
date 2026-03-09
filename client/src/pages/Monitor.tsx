@@ -3007,15 +3007,15 @@ export default function MonitorPage() {
       <main>
       <section id="overview" className="rounded-none border-b border-black/70 dark:border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.12),rgba(246,247,241,0.98)_52%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(154,163,58,0.18),rgba(10,14,26,0.95)_45%)] p-4 text-foreground dark:text-slate-100 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.35)] sm:p-5">
         <div className="space-y-3">
-          <div className="rounded-2xl border border-black/60 bg-background/70 p-3 shadow-sm backdrop-blur dark:border-white/15 dark:bg-slate-950/70">
+          <div className="relative isolate rounded-2xl border border-black/60 bg-background/70 p-3 shadow-sm backdrop-blur dark:border-white/15 dark:bg-slate-950/70">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="pointer-events-none flex flex-wrap items-center gap-2">
                   <Badge className="border-primary/40 bg-primary/12 text-[10px] uppercase tracking-[0.18em] text-foreground dark:text-primary-foreground">Cropto Monitor</Badge>
                   <Badge variant="outline" className="text-[10px] uppercase tracking-[0.16em]">Sprint 2 filters</Badge>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
-                <p className="max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
+                <h1 className="pointer-events-none text-3xl font-bold tracking-tight text-foreground dark:text-white sm:text-4xl">Commodity Signals Terminal</h1>
+                <p className="pointer-events-none max-w-3xl text-sm text-foreground/82 dark:text-slate-300 sm:text-base">
                   Hero-first market monitor for grains, oilseeds, logistics, outlooks, and signal flow. This sprint establishes command controls, section architecture, and hidden-module handling.
                 </p>
               </div>
@@ -3041,16 +3041,16 @@ export default function MonitorPage() {
             <div className="mt-3 grid gap-3 xl:grid-cols-[1.35fr_0.65fr]">
               <div className="space-y-3 rounded-2xl border border-black/55 bg-card/85 p-3 dark:border-white/15 dark:bg-slate-950/72">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
+                  <div className="pointer-events-none">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-foreground/58">Command Strip</p>
                     <p className="text-sm text-foreground/74">Role and territory controls now drive section visibility and signal relevance across the monitor.</p>
                   </div>
-                  <div className="text-xs text-foreground/70 dark:text-slate-400">
+                  <div className="pointer-events-none text-xs text-foreground/70 dark:text-slate-400">
                     Updated: {monitorQuery.data?.generatedAt ? new Date(monitorQuery.data.generatedAt).toLocaleString() : "loading"}
                   </div>
                 </div>
 
-                <div className="relative z-10 flex flex-wrap gap-2">
+                <div className="relative z-30 flex flex-wrap gap-2">
                   {COMMAND_PROFILES.map((profile) => (
                     <CommandChip
                       key={profile.id}
@@ -3061,12 +3061,12 @@ export default function MonitorPage() {
                   ))}
                 </div>
 
-                <div className="rounded-xl border border-black/45 bg-background/70 p-2 dark:border-white/15">
+                <div className="pointer-events-none rounded-xl border border-black/45 bg-background/70 p-2 dark:border-white/15">
                   <p className="mb-2 text-[10px] uppercase tracking-[0.16em] text-foreground/58">View Bias</p>
                   <p className="text-sm text-foreground/76">{PROFILE_COPY[commandProfile]}</p>
                 </div>
 
-                <div className="relative z-10 flex flex-wrap items-center gap-2">
+                <div className="relative z-30 flex flex-wrap items-center gap-2">
                   <div className="flex flex-wrap items-center gap-2 rounded-full border border-black/60 bg-background/80 px-3 py-2 text-sm dark:border-white/20">
                     <LayoutGrid className="h-4 w-4 text-primary" />
                     <span className="text-foreground/80">Country</span>
