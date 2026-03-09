@@ -1398,6 +1398,8 @@ const PROFILE_SIGNAL_RULES: Record<RoleProfile, SignalType[]> = {
 };
 
 const SECTION_PROFILE_RULES: Partial<Record<SectionId, { profiles?: RoleProfile[] }>> = {
+  "fundamentals-outlook": { profiles: ["farmer", "trader"] },
+  "logistics-indicators": { profiles: ["farmer", "trader", "broker"] },
   "signal-charts": { profiles: ["trader", "broker"] },
   "terminal-panels": { profiles: ["trader", "broker"] },
 };
@@ -1416,6 +1418,20 @@ const COUNTRY_SIGNAL_CONTEXT: Record<string, string[]> = {
   UA: ["ukraine", "black sea", "eu", "europe", "romania", "bulgaria", "poland"],
   BR: ["brazil", "latam", "south america", "santos", "paranagua"],
   AR: ["argentina", "latam", "south america", "rosario"],
+};
+
+const COUNTRY_OPTIONS = [
+  { code: "US", label: "United States", short: "US" },
+  { code: "UA", label: "Ukraine", short: "UA" },
+  { code: "BR", label: "Brazil", short: "BR" },
+  { code: "AR", label: "Argentina", short: "AR" },
+] as const;
+
+const PROFILE_COPY: Record<CommandProfile, string> = {
+  all: "Full monitor view across pricing, logistics, outlooks, and signals.",
+  farmer: "Operational view with harvest, weather, export, and farm-relevant market context.",
+  trader: "Trading view with broader market depth, logistics, policy, and signal pressure.",
+  broker: "Flow and execution view focused on policy, logistics, corridor risk, and high-impact signals.",
 };
 
 function matchesProfileRule(profile: CommandProfile, allowed?: RoleProfile[]): boolean {
@@ -1549,7 +1565,7 @@ function CommandChip({
     <button
       type="button"
       onClick={onClick}
-      className={`h-10 rounded-full border px-4 text-sm font-semibold transition-colors ${
+      className={`pointer-events-auto h-10 rounded-full border px-4 text-sm font-semibold transition-colors ${
         active
           ? "border-primary/70 bg-primary text-primary-foreground shadow-sm"
           : "border-black/60 bg-background/80 text-foreground hover:border-primary/45 hover:bg-muted/70 dark:border-white/25 dark:bg-slate-950/70"
@@ -3034,7 +3050,7 @@ export default function MonitorPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="relative z-10 flex flex-wrap gap-2">
                   {COMMAND_PROFILES.map((profile) => (
                     <CommandChip
                       key={profile.id}
@@ -3045,21 +3061,29 @@ export default function MonitorPage() {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2 rounded-full border border-black/60 bg-background/80 px-3 py-2 text-sm dark:border-white/20">
+                <div className="rounded-xl border border-black/45 bg-background/70 p-2 dark:border-white/15">
+                  <p className="mb-2 text-[10px] uppercase tracking-[0.16em] text-foreground/58">View Bias</p>
+                  <p className="text-sm text-foreground/76">{PROFILE_COPY[commandProfile]}</p>
+                </div>
+
+                <div className="relative z-10 flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 rounded-full border border-black/60 bg-background/80 px-3 py-2 text-sm dark:border-white/20">
                     <LayoutGrid className="h-4 w-4 text-primary" />
                     <span className="text-foreground/80">Country</span>
-                    <select
-                      value={grainCountry}
-                      onChange={(event) => setGrainCountry(event.target.value)}
-                      className="bg-transparent text-sm font-semibold outline-none"
-                      aria-label="Primary monitor country"
-                    >
-                      <option value="US">United States</option>
-                      <option value="UA">Ukraine</option>
-                      <option value="BR">Brazil</option>
-                      <option value="AR">Argentina</option>
-                    </select>
+                    <div className="flex flex-wrap gap-1">
+                      {COUNTRY_OPTIONS.map((option) => (
+                        <Button
+                          key={`hero-country-${option.code}`}
+                          type="button"
+                          size="sm"
+                          variant={grainCountry === option.code ? "default" : "outline"}
+                          className="h-7 rounded-full border-black/60 px-2.5 text-[11px] font-semibold dark:border-white/25"
+                          onClick={() => setGrainCountry(option.code)}
+                        >
+                          {option.short}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 rounded-full border border-black/60 bg-background/80 px-3 py-2 text-sm dark:border-white/20">
                     <Filter className="h-4 w-4 text-primary" />

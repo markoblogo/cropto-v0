@@ -196,7 +196,7 @@ export function WorldTimeDrawer() {
 
   return (
     <aside
-      className="fixed left-0 top-1/2 z-[110] -translate-y-1/2"
+      className={cn("fixed left-0 top-[42%] -translate-y-1/2", open ? "z-[110]" : "z-[20]")}
       aria-label="World time panel"
       aria-expanded={open}
       role="complementary"
