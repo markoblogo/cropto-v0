@@ -30,6 +30,11 @@ import { MetricChip } from "@/components/monitor/MetricChip";
 import { StatusSourceStrip } from "@/components/monitor/StatusSourceStrip";
 import { IntensityBar } from "@/components/monitor/IntensityBar";
 import { WorldTimeDrawer } from "@/components/monitor/WorldTimeDrawer";
+import {
+  MONITOR_COUNTRY_OPTIONS,
+  MONITOR_NORMALIZATION_STANDARD,
+  MONITOR_ROLE_OPTIONS,
+} from "@/components/monitor/v2";
 import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
 import {
   getCardSizeClass,
@@ -1368,12 +1373,7 @@ const MONITOR_NAV_ITEMS = [
   { href: "#logistics-indicators", label: "Logistics" },
 ] as const;
 
-const COMMAND_PROFILES = [
-  { id: "all", label: "Show All" },
-  { id: "farmer", label: "Farmer" },
-  { id: "trader", label: "Trader" },
-  { id: "broker", label: "Broker" },
-] as const;
+const COMMAND_PROFILES = MONITOR_ROLE_OPTIONS;
 
 const SECTION_STORAGE_KEY = "monitor_hidden_sections_v1";
 const PROFILE_STORAGE_KEY = "monitor_command_profile_v1";
@@ -1428,25 +1428,17 @@ const PANEL_PROFILE_RULES: Record<string, RoleProfile[]> = {
   oilseedsBiofuels: ["farmer", "trader", "broker"],
 };
 
-const COUNTRY_SIGNAL_CONTEXT: Record<string, string[]> = {
-  US: ["us", "united states", "north america", "gulf", "pnw"],
-  UA: ["ukraine", "black sea", "eu", "europe", "romania", "bulgaria", "poland"],
-  BR: ["brazil", "latam", "south america", "santos", "paranagua"],
-  AR: ["argentina", "latam", "south america", "rosario"],
-};
+const COUNTRY_SIGNAL_CONTEXT: Record<string, string[]> = Object.fromEntries(
+  MONITOR_COUNTRY_OPTIONS.map((option) => [option.code, option.signalContext]),
+);
 
-const COUNTRY_OPTIONS = [
-  { code: "US", label: "United States", short: "US" },
-  { code: "UA", label: "Ukraine", short: "UA" },
-  { code: "BR", label: "Brazil", short: "BR" },
-  { code: "AR", label: "Argentina", short: "AR" },
-] as const;
+const COUNTRY_OPTIONS = MONITOR_COUNTRY_OPTIONS;
 
 const PROFILE_COPY: Record<CommandProfile, string> = {
-  all: "Full monitor view across pricing, logistics, outlooks, and signals.",
-  farmer: "Operational view with harvest, weather, export, and farm-relevant market context.",
-  trader: "Trading view with broader market depth, logistics, policy, and signal pressure.",
-  broker: "Flow and execution view focused on policy, logistics, corridor risk, and high-impact signals.",
+  all: MONITOR_ROLE_OPTIONS.find((option) => option.id === "all")!.description,
+  farmer: MONITOR_ROLE_OPTIONS.find((option) => option.id === "farmer")!.description,
+  trader: MONITOR_ROLE_OPTIONS.find((option) => option.id === "trader")!.description,
+  broker: MONITOR_ROLE_OPTIONS.find((option) => option.id === "broker")!.description,
 };
 
 function matchesProfileRule(profile: CommandProfile, allowed?: RoleProfile[]): boolean {
