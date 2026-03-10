@@ -1396,6 +1396,16 @@ type SectionId = keyof typeof SECTION_LABELS;
 
 type HeroCrop = (typeof HERO_CROPS)[number];
 
+const GRID_MIGRATED_GRAIN_KINDS = new Set<GrainWidgetKind>([
+  "GLOBAL_SPOT_TABLE",
+  "CROP_PRICE_INDEX",
+  "CBOT_FUTURES_SNAPSHOT",
+  "EC_CEREALS_MULTI_COUNTRY",
+  "EC_OILSEEDS_MULTI_COUNTRY",
+  "USDA_NASS_PRODUCER_PRICES",
+  "EUROSTAT_AGRI_PRICE_INDICES",
+]);
+
 const PROFILE_SIGNAL_RULES: Record<RoleProfile, SignalType[]> = {
   farmer: ["Harvest", "Weather", "Export", "Markets"],
   trader: ["Harvest", "Weather", "Export", "Logistics", "Policy", "Futures", "Markets"],
@@ -2943,8 +2953,13 @@ export default function MonitorPage() {
     return (grainWidgetsQuery.data?.widgets.byKind || {}) as Partial<Record<GrainWidgetKind, GrainWidget>>;
   }, [grainWidgetsQuery.data]);
 
+  const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
   const indexWidget = grainDataByKind["CROP_PRICE_INDEX"] as GrainWidgetCropIndex | undefined;
+  const futuresWidget = grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined;
+  const ecCerealsWidget = grainDataByKind["EC_CEREALS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
+  const ecOilseedsWidget = grainDataByKind["EC_OILSEEDS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
   const usdaNassWidget = grainDataByKind["USDA_NASS_PRODUCER_PRICES"] as GrainWidgetUsdaNassProducerPrices | undefined;
+  const eurostatWidget = grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined;
   const usdaPsdWidget = grainDataByKind["USDA_PSD_BALANCES"] as GrainWidgetUsdaPsdBalances | undefined;
   const amisWidget = grainDataByKind["AMIS_GLOBAL_BALANCE"] as GrainWidgetAmisGlobalBalance | undefined;
   const imfWidget = grainDataByKind["IMF_COMMODITY_BENCHMARKS"] as GrainWidgetImfCommodityBenchmarks | undefined;
@@ -3144,7 +3159,6 @@ export default function MonitorPage() {
       });
     }
 
-    const eurostatWidget = grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined;
     if (eurostatWidget) {
       const meta = MONITOR_GRID_WIDGET_REGISTRY["eurostat-agri"];
       descriptors.push({
@@ -3179,6 +3193,136 @@ export default function MonitorPage() {
                     fallbackReason: eurostatWidget.fallbackReason,
                   })}
                   sourceName={eurostatWidget.sourceName}
+                  debugEnabled={debugEnabled}
+                />
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (spotWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["global-spot"];
+      descriptors.push({
+        ...meta,
+        subtitle: spotWidget.subtitle || "Global benchmark crop rows in a unified shell.",
+        badgeLabel: spotWidget.status,
+        badgeClassName: grainStatusClass(spotWidget.status),
+        sourceName: spotWidget.sourceName,
+        updatedLabel: spotWidget.updatedAt ? formatRelative(spotWidget.updatedAt) : spotWidget.timeframe,
+        body: (
+          <div className="grid gap-2 md:grid-cols-2">
+            {sortRowsForView(spotWidget.rows, grainGroupBy).slice(0, 4).map((row) => (
+              <GrainDataRow key={`grid-spot-${row.id}`} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (futuresWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["cbot-futures"];
+      descriptors.push({
+        ...meta,
+        subtitle: futuresWidget.subtitle || "Intraday CBOT snapshot in unified grid form.",
+        badgeLabel: futuresWidget.status,
+        badgeClassName: grainStatusClass(futuresWidget.status),
+        sourceName: futuresWidget.sourceName,
+        updatedLabel: futuresWidget.updatedAt ? formatRelative(futuresWidget.updatedAt) : futuresWidget.timeframe,
+        body: (
+          <div className="grid gap-2 md:grid-cols-3">
+            {sortRowsForView(futuresWidget.rows, grainGroupBy).slice(0, 3).map((row) => (
+              <GrainDataRow key={`grid-futures-${row.id}`} row={row} priceDisplayMode={priceDisplayMode} debugEnabled={debugEnabled} />
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (ecCerealsWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["ec-cereals"];
+      descriptors.push({
+        ...meta,
+        subtitle: ecCerealsWidget.subtitle || "Official EU cereals market layer.",
+        badgeLabel: ecCerealsWidget.status,
+        badgeClassName: grainStatusClass(ecCerealsWidget.status),
+        sourceName: ecCerealsWidget.sourceName,
+        updatedLabel: ecCerealsWidget.updatedAt ? formatRelative(ecCerealsWidget.updatedAt) : ecCerealsWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {ecCerealsWidget.rows.slice(0, 4).map((row, idx) => (
+              <div key={`grid-ec-cereals-${idx}`} className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground">{row.label}</p>
+                  <div className="flex items-center gap-1">
+                    <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                    <MetricChip label={row.cadence} variant="type" tone="muted" />
+                  </div>
+                </div>
+                <p className="mt-2 text-2xl font-semibold text-foreground">
+                  {formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}
+                </p>
+                <p className="text-[11px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                <DynamicMiniTrend
+                  series={row.series || []}
+                  change={row.changeAbs}
+                  changePct={row.changePct}
+                  status={ecCerealsWidget.status}
+                  section="expansion"
+                  cardKind="row"
+                  sourceName={ecCerealsWidget.sourceName}
+                  trustedSeries={isTrustworthySeriesSource({
+                    status: ecCerealsWidget.status,
+                    sourceName: ecCerealsWidget.sourceName,
+                    fallbackReason: ecCerealsWidget.fallbackReason,
+                  })}
+                  debugEnabled={debugEnabled}
+                />
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (ecOilseedsWidget) {
+      const meta = MONITOR_GRID_WIDGET_REGISTRY["ec-oilseeds"];
+      descriptors.push({
+        ...meta,
+        subtitle: ecOilseedsWidget.subtitle || "Official EU oilseeds market layer.",
+        badgeLabel: ecOilseedsWidget.status,
+        badgeClassName: grainStatusClass(ecOilseedsWidget.status),
+        sourceName: ecOilseedsWidget.sourceName,
+        updatedLabel: ecOilseedsWidget.updatedAt ? formatRelative(ecOilseedsWidget.updatedAt) : ecOilseedsWidget.timeframe,
+        body: (
+          <div className="grid gap-2">
+            {ecOilseedsWidget.rows.slice(0, 4).map((row, idx) => (
+              <div key={`grid-ec-oilseeds-${idx}`} className="rounded-xl border border-black/60 bg-background/55 p-3 dark:border-white/20">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground">{row.label}</p>
+                  <div className="flex items-center gap-1">
+                    <MetricChip label={row.unit} variant="unit" tone="neutral" />
+                    <MetricChip label={row.cadence} variant="type" tone="muted" />
+                  </div>
+                </div>
+                <p className="mt-2 text-2xl font-semibold text-foreground">
+                  {formatMetricValue({ kind: "price", value: row.current, unit: row.unit })}
+                </p>
+                <p className="text-[11px] text-foreground/65">{formatChangeWithUnit({ change: row.changeAbs, unit: row.unit, pct: row.changePct })}</p>
+                <DynamicMiniTrend
+                  series={row.series || []}
+                  change={row.changeAbs}
+                  changePct={row.changePct}
+                  status={ecOilseedsWidget.status}
+                  section="expansion"
+                  cardKind="row"
+                  sourceName={ecOilseedsWidget.sourceName}
+                  trustedSeries={isTrustworthySeriesSource({
+                    status: ecOilseedsWidget.status,
+                    sourceName: ecOilseedsWidget.sourceName,
+                    fallbackReason: ecOilseedsWidget.fallbackReason,
+                  })}
                   debugEnabled={debugEnabled}
                 />
               </div>
@@ -3287,12 +3431,18 @@ export default function MonitorPage() {
     amisWidget,
     compactWidgets,
     debugEnabled,
+    ecCerealsWidget,
+    ecOilseedsWidget,
+    eurostatWidget,
+    futuresWidget,
     grainDataByKind,
+    grainGroupBy,
     heroWatchItems,
     imfWidget,
     indexWidget,
     priceDisplayMode,
     prioritySignals,
+    spotWidget,
     usdaNassWidget,
   ]);
 
@@ -3695,9 +3845,15 @@ export default function MonitorPage() {
                 <div className="grid auto-rows-[minmax(0,1fr)] items-start gap-1.5 xl:grid-cols-12">
                 {(() => {
                   const cashWidget = grainDataByKind["US_CASH_BIDS"] as GrainWidgetCashBids | undefined;
-                  const spotWidget = grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined;
-                  const indexWidget = grainDataByKind["CROP_PRICE_INDEX"] as GrainWidgetCropIndex | undefined;
-                  const futuresWidget = grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined;
+                  const spotWidget = GRID_MIGRATED_GRAIN_KINDS.has("GLOBAL_SPOT_TABLE")
+                    ? undefined
+                    : (grainDataByKind["GLOBAL_SPOT_TABLE"] as GrainWidgetGlobalSpot | undefined);
+                  const indexWidget = GRID_MIGRATED_GRAIN_KINDS.has("CROP_PRICE_INDEX")
+                    ? undefined
+                    : (grainDataByKind["CROP_PRICE_INDEX"] as GrainWidgetCropIndex | undefined);
+                  const futuresWidget = GRID_MIGRATED_GRAIN_KINDS.has("CBOT_FUTURES_SNAPSHOT")
+                    ? undefined
+                    : (grainDataByKind["CBOT_FUTURES_SNAPSHOT"] as GrainWidgetFuturesSnapshot | undefined);
                   const livestockWidget = grainDataByKind["LIVESTOCK_FEED_TIEIN"] as GrainWidgetLivestockFeedTieIn | undefined;
                   const macroWidget = grainDataByKind["MACRO_AGRI_INDICES"] as GrainWidgetMacroAgriIndices | undefined;
                   const marsWidget = grainDataByKind["USDA_MARS_REPORTS"] as GrainWidgetUsdaMarsReports | undefined;
@@ -3705,12 +3861,20 @@ export default function MonitorPage() {
                   const marsDailyTxtWidget = grainDataByKind["USDA_MARS_DAILY_MARKET_RATES_TXT"] as GrainWidgetUsdaMarsDailyMarketRatesTxt | undefined;
                   const alphaWidget = grainDataByKind["ALPHAVANTAGE_GRAIN_BENCHMARKS"] as GrainWidgetAlphaVantageBenchmarks | undefined;
                   const nasdaqWidget = grainDataByKind["NASDAQ_DATA_LINK_SNAPSHOT"] as GrainWidgetNasdaqDataLinkSnapshot | undefined;
-                  const ecCerealsWidget = grainDataByKind["EC_CEREALS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
-                  const ecOilseedsWidget = grainDataByKind["EC_OILSEEDS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined;
-                  const usdaNassWidget = grainDataByKind["USDA_NASS_PRODUCER_PRICES"] as GrainWidgetUsdaNassProducerPrices | undefined;
+                  const ecCerealsWidget = GRID_MIGRATED_GRAIN_KINDS.has("EC_CEREALS_MULTI_COUNTRY")
+                    ? undefined
+                    : (grainDataByKind["EC_CEREALS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined);
+                  const ecOilseedsWidget = GRID_MIGRATED_GRAIN_KINDS.has("EC_OILSEEDS_MULTI_COUNTRY")
+                    ? undefined
+                    : (grainDataByKind["EC_OILSEEDS_MULTI_COUNTRY"] as GrainWidgetEcOfficialPricesMultiCountry | undefined);
+                  const usdaNassWidget = GRID_MIGRATED_GRAIN_KINDS.has("USDA_NASS_PRODUCER_PRICES")
+                    ? undefined
+                    : (grainDataByKind["USDA_NASS_PRODUCER_PRICES"] as GrainWidgetUsdaNassProducerPrices | undefined);
                   const wfpWidget = grainDataByKind["WFP_MARKET_PRICES_MULTI_COUNTRY"] as GrainWidgetCountryMarketPricesMultiCountry | undefined;
                   const worldBankWidget = grainDataByKind["WB_MICRODATA_MARKET_PRICES"] as GrainWidgetCountryMarketPricesMultiCountry | undefined;
-                  const eurostatWidget = grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined;
+                  const eurostatWidget = GRID_MIGRATED_GRAIN_KINDS.has("EUROSTAT_AGRI_PRICE_INDICES")
+                    ? undefined
+                    : (grainDataByKind["EUROSTAT_AGRI_PRICE_INDICES"] as GrainWidgetEurostatAgriPriceIndices | undefined);
                   const usdaPsdWidget = grainDataByKind["USDA_PSD_BALANCES"] as GrainWidgetUsdaPsdBalances | undefined;
                   const amisWidget = grainDataByKind["AMIS_GLOBAL_BALANCE"] as GrainWidgetAmisGlobalBalance | undefined;
                   const imfWidget = grainDataByKind["IMF_COMMODITY_BENCHMARKS"] as GrainWidgetImfCommodityBenchmarks | undefined;
