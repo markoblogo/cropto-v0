@@ -33,7 +33,7 @@ export function MonitorWidgetShell({
   return (
     <section
       className={cn(
-        "flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-black/70 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm dark:border-white/35",
+        "flex min-h-[230px] flex-col overflow-hidden rounded-2xl border border-black/70 bg-gradient-to-b from-card to-muted/25 text-foreground shadow-sm dark:border-white/35",
         spanClass,
       )}
       data-widget-id={widget.id}

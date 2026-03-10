@@ -22,12 +22,12 @@ export function defaultLayoutForSize(size: MonitorGridSize): MonitorGridLayout {
     case "s":
       return { width: 1, height: 1 };
     case "l":
-      return { width: 2, height: 2 };
+      return { width: 2, height: 1 };
     case "xl":
       return { width: 3, height: 2 };
     case "m":
     default:
-      return { width: 2, height: 1 };
+      return { width: 1, height: 1 };
   }
 }
 
