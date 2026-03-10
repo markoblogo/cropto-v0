@@ -25,6 +25,14 @@ export type MonitorWidgetType =
   | "outlook";
 export type MonitorWidgetMaturity = "live" | "fallback" | "experimental" | "failed";
 export type MonitorGridSize = "s" | "m" | "l" | "xl";
+export type MonitorGridGrouping = "manual" | "topic" | "source";
+export type MonitorGridWidthUnits = 1 | 2 | 3 | 4;
+export type MonitorGridHeightUnits = 1 | 2 | 3;
+
+export type MonitorGridLayout = {
+  width: MonitorGridWidthUnits;
+  height: MonitorGridHeightUnits;
+};
 export type HeroSlotId =
   | "command-bar"
   | "kpi-strip"

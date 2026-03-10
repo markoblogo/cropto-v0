@@ -45,6 +45,7 @@ import {
   matchesRoleRule,
   useMonitorV2HeroState,
   useMonitorV2FilterState,
+  useMonitorV2GridState,
 } from "@/components/monitor/v2";
 import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
 import {
@@ -1387,7 +1388,6 @@ const MONITOR_NAV_ITEMS = [
 const COMMAND_PROFILES = MONITOR_ROLE_OPTIONS;
 
 const SECTION_STORAGE_KEY = "monitor_hidden_sections_v1";
-const GRID_WIDGET_STORAGE_KEY = "monitor_hidden_grid_widgets_v1";
 
 const SECTION_LABELS = {
   "grain-markets-core": "Grain Markets Core",
@@ -2532,15 +2532,6 @@ export default function MonitorPage() {
       return [];
     }
   });
-  const [hiddenGridWidgetIds, setHiddenGridWidgetIds] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const saved = JSON.parse(window.sessionStorage.getItem(GRID_WIDGET_STORAGE_KEY) || "[]");
-      return Array.isArray(saved) ? saved.filter((value): value is string => typeof value === "string") : [];
-    } catch {
-      return [];
-    }
-  });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
   const heroState = useMonitorV2HeroState({
@@ -2557,11 +2548,6 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.sessionStorage.setItem(SECTION_STORAGE_KEY, JSON.stringify(hiddenSectionIds));
   }, [hiddenSectionIds]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(GRID_WIDGET_STORAGE_KEY, JSON.stringify(hiddenGridWidgetIds));
-  }, [hiddenGridWidgetIds]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2997,18 +2983,6 @@ export default function MonitorPage() {
     return preferred.slice(0, 4);
   }, [blackSeaRisks, prioritySignals, topSignals]);
 
-  const hideGridWidget = (id: string) => {
-    setHiddenGridWidgetIds((current) => (current.includes(id) ? current : [...current, id]));
-  };
-
-  const restoreGridWidget = (id: string) => {
-    setHiddenGridWidgetIds((current) => current.filter((value) => value !== id));
-  };
-
-  const restoreAllGridWidgets = () => {
-    setHiddenGridWidgetIds([]);
-  };
-
   const gridWidgetDescriptors = useMemo<MonitorGridWidgetDescriptor[]>(() => {
     const descriptors: MonitorGridWidgetDescriptor[] = [];
 
@@ -3406,20 +3380,48 @@ export default function MonitorPage() {
     usdaNassWidget,
   ]);
 
-  const visibleGridWidgets = useMemo(
-    () => {
-      const promotedIds = new Set(getHeroPromotedWidgetIds(heroState.occupancy));
-      return filterVisibleGridWidgets(gridWidgetDescriptors, commandProfile, grainCountry, hiddenGridWidgetIds).filter(
-        (widget) => !promotedIds.has(widget.id),
-      );
-    },
-    [commandProfile, grainCountry, gridWidgetDescriptors, hiddenGridWidgetIds, heroState.occupancy],
+  const gridSourceNames = useMemo(
+    () =>
+      Object.fromEntries(
+        gridWidgetDescriptors.map((widget) => [widget.id, widget.sourceName || undefined]),
+      ) as Record<string, string | undefined>,
+    [gridWidgetDescriptors],
   );
 
-  const hiddenGridWidgets = useMemo(
-    () => gridWidgetDescriptors.filter((widget) => hiddenGridWidgetIds.includes(widget.id)),
-    [gridWidgetDescriptors, hiddenGridWidgetIds],
-  );
+  const gridState = useMonitorV2GridState({
+    availableWidgetIds: gridWidgetDescriptors.map((widget) => widget.id),
+    sourceNames: gridSourceNames,
+  });
+
+  const visibleGridWidgets = useMemo(() => {
+    const promotedIds = new Set(getHeroPromotedWidgetIds(heroState.occupancy));
+    const visible = filterVisibleGridWidgets(
+      gridWidgetDescriptors,
+      commandProfile,
+      grainCountry,
+      gridState.hiddenWidgetIds,
+    ).filter((widget) => !promotedIds.has(widget.id));
+
+    const orderIndex = new Map(gridState.orderedWidgetIds.map((id, index) => [id, index]));
+    return visible
+      .sort((left, right) => (orderIndex.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (orderIndex.get(right.id) ?? Number.MAX_SAFE_INTEGER))
+      .map((widget) => {
+        const layout = gridState.getLayout(widget.id);
+        return {
+          ...widget,
+          gridWidthUnits: layout.width,
+          gridHeightUnits: layout.height,
+        };
+      });
+  }, [commandProfile, grainCountry, gridWidgetDescriptors, gridState, heroState.occupancy]);
+
+  const hiddenGridWidgets = useMemo(() => {
+    const hiddenSet = new Set(gridState.hiddenWidgetIds);
+    const orderIndex = new Map(gridState.orderedWidgetIds.map((id, index) => [id, index]));
+    return gridWidgetDescriptors
+      .filter((widget) => hiddenSet.has(widget.id))
+      .sort((left, right) => (orderIndex.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (orderIndex.get(right.id) ?? Number.MAX_SAFE_INTEGER));
+  }, [gridWidgetDescriptors, gridState.hiddenWidgetIds, gridState.orderedWidgetIds]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -3660,9 +3662,16 @@ export default function MonitorPage() {
           <MonitorGridWorkspace
             widgets={visibleGridWidgets}
             hiddenWidgets={hiddenGridWidgets}
-            onHide={hideGridWidget}
-            onRestore={restoreGridWidget}
-            onRestoreAll={restoreAllGridWidgets}
+            grouping={gridState.grouping}
+            onGroupingChange={gridState.setGrouping}
+            onHide={gridState.hideWidget}
+            onRestore={gridState.restoreWidget}
+            onRestoreAll={gridState.restoreAllWidgets}
+            onGrowRight={gridState.growRight}
+            onGrowDown={gridState.growDown}
+            onResetSize={gridState.resetSize}
+            onMoveEarlier={gridState.moveEarlier}
+            onMoveLater={gridState.moveLater}
           />
 
           {canRenderSection("grain-markets-core") ? (

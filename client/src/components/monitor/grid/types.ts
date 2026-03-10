@@ -16,6 +16,8 @@ export type MonitorGridWidgetMeta = {
 };
 
 export type MonitorGridWidgetDescriptor = MonitorGridWidgetMeta & {
+  gridWidthUnits?: 1 | 2 | 3 | 4;
+  gridHeightUnits?: 1 | 2 | 3;
   subtitle?: string;
   badgeLabel?: string;
   badgeClassName?: string;

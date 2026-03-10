@@ -1,5 +1,7 @@
 export * from "@/components/monitor/v2/config";
 export * from "@/components/monitor/v2/filters";
+export * from "@/components/monitor/v2/grid";
+export * from "@/components/monitor/v2/gridState";
 export * from "@/components/monitor/v2/hero";
 export * from "@/components/monitor/v2/heroState";
 export * from "@/components/monitor/v2/normalization";
