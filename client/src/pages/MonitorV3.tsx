@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Maximize2, Minimize2, Moon, Plus, Sun, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
 type MonitorRole = "all" | "farmer" | "trader" | "broker";
 type MonitorTopic = "all" | "markets" | "logistics" | "policy" | "weather";
 type Country = "US" | "UA" | "BR" | "AR" | "FR" | "DE" | "RO";
+type GridGrouping = "manual" | "topic" | "source";
 
 type NewsItem = {
   id: string;
@@ -15,23 +16,19 @@ type NewsItem = {
   source_name: string;
   published_at: string;
   topic_tags?: string[];
-  crop_tags?: string[];
-  region_tags?: string[];
   url?: string;
 };
 
 type NewsResponse = {
-  generatedAt?: string;
   topSignals?: NewsItem[];
   feed?: NewsItem[];
   sidePanels?: { logistics?: NewsItem[]; policy?: NewsItem[] };
 };
 
 type GrainWidgetRecord = {
-  kind?: string;
   status?: string;
   sourceName?: string;
-  updatedAt?: string;
+  sourceUrl?: string;
   territory?: { code?: string; label?: string };
   notes?: string[];
   rows?: Array<{ label?: string; price?: { valueCurrent?: number; unit?: string; changePct?: number } }>;
@@ -40,11 +37,58 @@ type GrainWidgetRecord = {
 };
 
 type GrainWidgetsResponse = {
-  enabled?: boolean;
   widgets?: {
     byKind?: Record<string, GrainWidgetRecord>;
     order?: string[];
   };
+};
+
+type GrainMarketWidgetItem = {
+  instrumentKey: string;
+  title: string;
+  subtitle?: string;
+  status: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  valueCurrent?: number;
+  valueChangePct?: number;
+  currency?: string;
+  unit?: string;
+};
+
+type GrainMarketsResponse = {
+  widgets?: {
+    cbot?: GrainMarketWidgetItem[];
+    euronext?: GrainMarketWidgetItem[];
+  };
+};
+
+type LogisticsIndicator = {
+  id: string;
+  title: string;
+  subtitle: string;
+  status: string;
+  sourceName: string;
+  sourceUrl?: string;
+  valueCurrent?: number;
+  valueChangePct?: number;
+  unit: string;
+};
+
+type LogisticsIndicatorsResponse = {
+  widgets?: LogisticsIndicator[];
+};
+
+type MonitorIndex = {
+  slug: string;
+  name: string;
+  source: string;
+  value: number;
+  change?: number;
+};
+
+type IndicesResponse = {
+  items?: MonitorIndex[];
 };
 
 type GridWidget = {
@@ -56,15 +100,27 @@ type GridWidget = {
   topic: Exclude<MonitorTopic, "all">;
   roles: Array<Exclude<MonitorRole, "all">>;
   territory: string;
-  metrics: Array<{ label: string; value: string; delta?: number }>;
+  metrics: Array<{ label: string; value: string; delta?: number; href?: string }>;
 };
 
-type GridLayout = { w: 1 | 2; h: 1 | 2 };
+type GridLayout = { w: 1 | 2 | 3; h: 1 | 2 };
 type CustomWidgetDraft = {
   title: string;
   subtitle: string;
   source: string;
   topic: Exclude<MonitorTopic, "all">;
+};
+
+const STORAGE_PREFIX = "monitor_v3_";
+const STORAGE_KEYS = {
+  role: `${STORAGE_PREFIX}role`,
+  topic: `${STORAGE_PREFIX}topic`,
+  country: `${STORAGE_PREFIX}country`,
+  grouping: `${STORAGE_PREFIX}grouping`,
+  order: `${STORAGE_PREFIX}order`,
+  hidden: `${STORAGE_PREFIX}hidden`,
+  layout: `${STORAGE_PREFIX}layout`,
+  custom: `${STORAGE_PREFIX}custom`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -124,7 +180,23 @@ const KIND_TO_ROLES: Record<string, Array<Exclude<MonitorRole, "all">>> = {
   USDA_NASS_PRODUCER_PRICES: ["farmer", "trader"],
 };
 
-const CUSTOM_WIDGETS_STORAGE_KEY = "monitor_v3_custom_widgets";
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // noop
+  }
+}
 
 function labelFromKind(kind: string) {
   return kind
@@ -133,37 +205,33 @@ function labelFromKind(kind: string) {
     .replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
+function formatMetric(current?: number, unit?: string) {
+  if (typeof current !== "number") return "n/a";
+  return `${current.toFixed(2)} ${unit || ""}`.trim();
+}
+
 function pickMetrics(widget?: GrainWidgetRecord): Array<{ label: string; value: string; delta?: number }> {
   const metrics: Array<{ label: string; value: string; delta?: number }> = [];
-  (widget?.rows || []).slice(0, 2).forEach((row) => {
+  (widget?.rows || []).slice(0, 3).forEach((row) => {
     const current = row.price?.valueCurrent;
-    const unit = row.price?.unit || "";
     if (typeof current === "number") {
       metrics.push({
         label: row.label || "Value",
-        value: `${current.toFixed(2)} ${unit}`.trim(),
+        value: formatMetric(current, row.price?.unit),
         delta: row.price?.changePct,
       });
     }
   });
-  if (metrics.length > 0) return metrics;
-  (widget?.items || []).slice(0, 2).forEach((row) => {
+  if (metrics.length) return metrics;
+  (widget?.items || []).slice(0, 3).forEach((row) => {
     if (typeof row.value === "number") {
-      metrics.push({
-        label: row.label || "Value",
-        value: `${row.value.toFixed(2)} ${row.unit || ""}`.trim(),
-        delta: row.changePct,
-      });
+      metrics.push({ label: row.label || "Value", value: formatMetric(row.value, row.unit), delta: row.changePct });
     }
   });
-  if (metrics.length > 0) return metrics;
-  (widget?.cards || []).slice(0, 2).forEach((row) => {
+  if (metrics.length) return metrics;
+  (widget?.cards || []).slice(0, 3).forEach((row) => {
     if (typeof row.value === "number") {
-      metrics.push({
-        label: row.title || "Value",
-        value: `${row.value.toFixed(2)} ${row.unit || ""}`.trim(),
-        delta: row.deltaPct,
-      });
+      metrics.push({ label: row.title || "Value", value: formatMetric(row.value, row.unit), delta: row.deltaPct });
     }
   });
   return metrics;
@@ -171,28 +239,40 @@ function pickMetrics(widget?: GrainWidgetRecord): Array<{ label: string; value: 
 
 function getStatusTone(status: string) {
   const key = status.toUpperCase();
-  if (key === "REFRESH" || key === "LIVE") return "border-emerald-500/50 text-emerald-300";
-  if (key === "INDICATIVE") return "border-cyan-500/50 text-cyan-300";
-  if (key === "FALLBACK") return "border-blue-500/50 text-blue-300";
-  return "border-red-500/50 text-red-300";
+  if (key === "REFRESH" || key === "LIVE") return "border-emerald-500/60 text-emerald-300";
+  if (key === "INDICATIVE") return "border-cyan-500/60 text-cyan-300";
+  if (key === "FALLBACK") return "border-blue-500/60 text-blue-300";
+  if (key === "CUSTOM") return "border-violet-500/60 text-violet-300";
+  return "border-red-500/60 text-red-300";
 }
 
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
-  const [role, setRole] = useState<MonitorRole>("all");
-  const [topic, setTopic] = useState<MonitorTopic>("all");
-  const [country, setCountry] = useState<Country>("US");
+
+  const [role, setRole] = useState<MonitorRole>(() => readJson<MonitorRole>(STORAGE_KEYS.role, "all"));
+  const [topic, setTopic] = useState<MonitorTopic>(() => readJson<MonitorTopic>(STORAGE_KEYS.topic, "all"));
+  const [country, setCountry] = useState<Country>(() => readJson<Country>(STORAGE_KEYS.country, "US"));
+  const [grouping, setGrouping] = useState<GridGrouping>(() => readJson<GridGrouping>(STORAGE_KEYS.grouping, "manual"));
   const [showHidden, setShowHidden] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
-  const [customWidgets, setCustomWidgets] = useState<GridWidget[]>([]);
-  const [draft, setDraft] = useState<CustomWidgetDraft>({
-    title: "",
-    subtitle: "",
-    source: "",
-    topic: "markets",
-  });
+
+  const [order, setOrder] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.order, []));
+  const [layoutById, setLayoutById] = useState<Record<string, GridLayout>>(() => readJson<Record<string, GridLayout>>(STORAGE_KEYS.layout, {}));
+  const [hiddenIds, setHiddenIds] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.hidden, []));
+  const [customWidgets, setCustomWidgets] = useState<GridWidget[]>(() => readJson<GridWidget[]>(STORAGE_KEYS.custom, []));
+
+  const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
+
+  useEffect(() => writeJson(STORAGE_KEYS.role, role), [role]);
+  useEffect(() => writeJson(STORAGE_KEYS.topic, topic), [topic]);
+  useEffect(() => writeJson(STORAGE_KEYS.country, country), [country]);
+  useEffect(() => writeJson(STORAGE_KEYS.grouping, grouping), [grouping]);
+  useEffect(() => writeJson(STORAGE_KEYS.order, order), [order]);
+  useEffect(() => writeJson(STORAGE_KEYS.layout, layoutById), [layoutById]);
+  useEffect(() => writeJson(STORAGE_KEYS.hidden, hiddenIds), [hiddenIds]);
+  useEffect(() => writeJson(STORAGE_KEYS.custom, customWidgets), [customWidgets]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -214,25 +294,35 @@ export default function MonitorV3Page() {
     },
   });
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(CUSTOM_WIDGETS_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as GridWidget[];
-      if (!Array.isArray(parsed)) return;
-      setCustomWidgets(parsed);
-    } catch {
-      // noop
-    }
-  }, []);
+  const grainMarketsQuery = useQuery<GrainMarketsResponse>({
+    queryKey: ["monitor-v3-grain-markets"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/grain-markets");
+      if (!response.ok) throw new Error("Failed to load grain markets");
+      return response.json();
+    },
+  });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(CUSTOM_WIDGETS_STORAGE_KEY, JSON.stringify(customWidgets));
-    } catch {
-      // noop
-    }
-  }, [customWidgets]);
+  const logisticsQuery = useQuery<LogisticsIndicatorsResponse>({
+    queryKey: ["monitor-v3-logistics-indicators"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/logistics-indicators");
+      if (!response.ok) throw new Error("Failed to load logistics indicators");
+      return response.json();
+    },
+  });
+
+  const indicesQuery = useQuery<IndicesResponse>({
+    queryKey: ["monitor-v3-indices"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/indices");
+      if (!response.ok) throw new Error("Failed to load monitor indices");
+      return response.json();
+    },
+  });
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -242,44 +332,87 @@ export default function MonitorV3Page() {
 
   const coreWidgets = useMemo<GridWidget[]>(() => {
     const byKind = grainWidgetsQuery.data?.widgets?.byKind || {};
-    const order = grainWidgetsQuery.data?.widgets?.order || Object.keys(byKind);
-    return order
+    const orderFromResponse = grainWidgetsQuery.data?.widgets?.order || Object.keys(byKind);
+
+    const widgetsFromExpansion: GridWidget[] = orderFromResponse
       .map((kind) => {
         const widget = byKind[kind];
         if (!widget) return null;
         return {
-          id: kind,
+          id: `GW_${kind}`,
           title: labelFromKind(kind),
-          subtitle: widget.notes?.[0] || "Monitor widget",
+          subtitle: widget.notes?.[0] || "Expansion widget",
           status: widget.status || "OFFLINE",
-          source: widget.sourceName || "Unknown source",
+          source: widget.sourceName || "Unknown",
           topic: KIND_TO_TOPIC[kind] || "markets",
           roles: KIND_TO_ROLES[kind] || ["farmer", "trader", "broker"],
           territory: widget.territory?.code || "GLOBAL",
-          metrics: pickMetrics(widget),
-        } satisfies GridWidget;
+          metrics: pickMetrics(widget).map((m) => ({ ...m, href: widget.sourceUrl })),
+        } as GridWidget;
       })
       .filter((item): item is GridWidget => Boolean(item));
-  }, [grainWidgetsQuery.data]);
 
-  const widgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
+    const marketRows = [...(grainMarketsQuery.data?.widgets?.cbot || []), ...(grainMarketsQuery.data?.widgets?.euronext || [])];
+    const widgetsFromMarkets: GridWidget[] = marketRows.map((row) => ({
+      id: `GM_${row.instrumentKey}`,
+      title: row.title,
+      subtitle: row.subtitle || "Core market instrument",
+      status: row.status || "OFFLINE",
+      source: row.sourceName || "Unknown",
+      topic: "markets",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: [{ label: "Price", value: formatMetric(row.valueCurrent, `${row.currency || ""}/${row.unit || ""}`), delta: row.valueChangePct, href: row.sourceUrl }],
+    }));
 
-  const [order, setOrder] = useState<string[]>([]);
-  const [layoutById, setLayoutById] = useState<Record<string, GridLayout>>({});
-  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
+    const widgetsFromLogistics: GridWidget[] = (logisticsQuery.data?.widgets || []).map((row) => ({
+      id: `LG_${row.id}`,
+      title: row.title,
+      subtitle: row.subtitle,
+      status: row.status || "OFFLINE",
+      source: row.sourceName,
+      topic: "logistics",
+      roles: ["trader", "broker", "farmer"],
+      territory: "GLOBAL",
+      metrics: [{ label: "Current", value: formatMetric(row.valueCurrent, row.unit), delta: row.valueChangePct, href: row.sourceUrl }],
+    }));
 
-  const normalizedOrder = useMemo(() => {
-    const current = widgets.map((widget) => widget.id);
-    const known = order.filter((id) => current.includes(id));
-    const appended = current.filter((id) => !known.includes(id));
-    return [...known, ...appended];
-  }, [order, widgets]);
+    const widgetsFromIndices: GridWidget[] = (indicesQuery.data?.items || []).slice(0, 6).map((row) => ({
+      id: `IDX_${row.slug}`,
+      title: row.name,
+      subtitle: "Composite index",
+      status: "REFRESH",
+      source: row.source || "Index source",
+      topic: "markets",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: [{ label: "Index", value: formatMetric(row.value, "pts"), delta: row.change }],
+    }));
 
-  const widgetsById = useMemo(() => Object.fromEntries(widgets.map((widget) => [widget.id, widget])), [widgets]);
+    return [...widgetsFromExpansion, ...widgetsFromMarkets, ...widgetsFromLogistics, ...widgetsFromIndices];
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data]);
+
+  const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
+  const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
+
+  const groupedOrder = useMemo(() => {
+    const allIds = allWidgets.map((w) => w.id);
+    if (grouping === "manual") {
+      const known = order.filter((id) => allIds.includes(id));
+      const appended = allIds.filter((id) => !known.includes(id));
+      return [...known, ...appended];
+    }
+    if (grouping === "topic") {
+      const byTopic = [...allWidgets].sort((a, b) => a.topic.localeCompare(b.topic) || a.title.localeCompare(b.title));
+      return byTopic.map((w) => w.id);
+    }
+    const bySource = [...allWidgets].sort((a, b) => a.source.localeCompare(b.source) || a.title.localeCompare(b.title));
+    return bySource.map((w) => w.id);
+  }, [allWidgets, order, grouping]);
 
   const visibleWidgets = useMemo(() => {
-    return normalizedOrder
-      .map((id) => widgetsById[id])
+    return groupedOrder
+      .map((id) => widgetMap[id])
       .filter((widget): widget is GridWidget => Boolean(widget))
       .filter((widget) => {
         if (hiddenIds.includes(widget.id) && !showHidden) return false;
@@ -288,24 +421,24 @@ export default function MonitorV3Page() {
         if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
         return true;
       });
-  }, [normalizedOrder, widgetsById, hiddenIds, showHidden, role, topic, country]);
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country]);
 
-  const hiddenCount = hiddenIds.length;
-  const feed = newsQuery.data?.feed || [];
   const topSignals = newsQuery.data?.topSignals || [];
-  const filteredSignals = topSignals.filter((item) => {
-    if (topic !== "all") {
+  const feed = newsQuery.data?.feed || [];
+
+  const filteredSignals = useMemo(() => {
+    return topSignals.filter((item) => {
+      if (topic === "all") return true;
       const tags = (item.topic_tags || []).map((tag) => tag.toLowerCase());
-      if (!tags.includes(topic)) return false;
-    }
-    return true;
-  });
+      return tags.includes(topic);
+    });
+  }, [topSignals, topic]);
 
   const resizeWidget = (id: string, axis: "w" | "h", delta: 1 | -1) => {
     setLayoutById((current) => {
-      const prev = current[id] || { w: 1 as const, h: 1 as const };
+      const prev = current[id] || ({ w: 1, h: 1 } as GridLayout);
       if (axis === "w") {
-        const nextW = Math.max(1, Math.min(2, prev.w + delta)) as 1 | 2;
+        const nextW = Math.max(1, Math.min(3, prev.w + delta)) as 1 | 2 | 3;
         return { ...current, [id]: { ...prev, w: nextW } };
       }
       const nextH = Math.max(1, Math.min(2, prev.h + delta)) as 1 | 2;
@@ -339,163 +472,176 @@ export default function MonitorV3Page() {
     setOrder((current) => [...current, id]);
     setDraft({ title: "", subtitle: "", source: "", topic: draft.topic });
     setIsAddWidgetOpen(false);
+    setGrouping("manual");
   };
 
+  const hiddenCount = hiddenIds.length;
+
   return (
-    <div className="min-h-screen bg-[#05070d] text-[#e5ecff]">
-      <header className="sticky top-0 z-40 border-b border-[#1b2438] bg-[#05070d]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1700px] items-center justify-between px-4 py-3">
-          <div className="text-lg font-semibold tracking-wide">Cropto Monitor</div>
-          <div className="hidden items-center gap-3 text-sm lg:flex">
-            <span className="rounded border border-[#2a354f] px-3 py-1 text-[#9fb3de]">Global</span>
-            <span className="rounded border border-[#2a354f] px-3 py-1 text-[#9fb3de]">Live</span>
-            <span className="rounded border border-[#2a354f] px-3 py-1 text-[#9fb3de]">Commodity</span>
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between px-3 py-2">
+          <div className="flex items-center gap-3">
+            <div className="text-base font-semibold tracking-wide">Cropto Monitor</div>
+            <span className="rounded border border-border px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">v3 sprint</span>
+          </div>
+
+          <div className="hidden items-center gap-2 lg:flex">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded border border-[#2a354f] px-3 py-1 text-[#9fb3de] hover:border-[#4c6ba0]"
+              className="rounded border border-border px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
               title="Toggle theme"
             >
               {theme === "dark" ? <Sun size={14} className="inline" /> : <Moon size={14} className="inline" />}
             </button>
             <button
               onClick={toggleFullscreen}
-              className="rounded border border-[#2a354f] px-3 py-1 text-[#9fb3de] hover:border-[#4c6ba0]"
+              className="rounded border border-border px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
               title="Toggle fullscreen"
             >
               {isFullscreen ? <Minimize2 size={14} className="inline" /> : <Maximize2 size={14} className="inline" />}
             </button>
             <button
               onClick={() => setIsAddWidgetOpen(true)}
-              className="rounded border border-[#7ca52f] bg-[#7ca52f]/20 px-3 py-1 text-[#d3ef9f] hover:bg-[#7ca52f]/30"
+              className="rounded border border-primary/60 bg-primary/15 px-2 py-1 text-sm text-primary"
             >
-              <Plus size={14} className="mr-1 inline" />
+              <Plus size={13} className="mr-1 inline" />
               Add widget
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-[1700px] flex-col gap-4 px-4 py-4">
-        <section className="grid gap-3 xl:grid-cols-[2fr_1fr_1fr]">
-          <div className="rounded border border-[#223150] bg-gradient-to-b from-[#0b1220] to-[#070b14] p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.2em] text-[#7f93bf]">Global Situation</div>
-            <div className="h-[280px] rounded border border-[#24314a] bg-[radial-gradient(circle_at_30%_20%,rgba(38,66,112,0.25),transparent_45%),radial-gradient(circle_at_75%_60%,rgba(134,40,40,0.2),transparent_40%),#05070d]" />
-          </div>
-          <div className="rounded border border-[#223150] bg-[#0a111d] p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.2em] text-[#7f93bf]">Live Feed</div>
-            <div className="space-y-2">
-              {feed.slice(0, 4).map((item) => (
-                <div key={item.id} className="rounded border border-[#24314a] p-2 text-sm">
-                  <div className="line-clamp-2">{item.title}</div>
-                  <div className="mt-1 text-xs text-[#8c9fc7]">{item.source_name}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded border border-[#223150] bg-[#0a111d] p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.2em] text-[#7f93bf]">Video Rail</div>
-            <div className="grid grid-cols-2 gap-2">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="aspect-video rounded border border-dashed border-[#2d3e61] bg-[#07101c] p-2 text-xs text-[#7f93bf]">
-                  Stream slot {idx + 1}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+      <section className="sticky top-[44px] z-30 border-b border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[1800px] flex-wrap items-center gap-2 px-3 py-2">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Control</div>
+          <div className="h-4 w-px bg-border" />
 
-        <section className="rounded border border-[#223150] bg-[#0a111d] p-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="text-xs uppercase tracking-[0.2em] text-[#7f93bf]">Control Strip</div>
-            <div className="h-4 w-px bg-[#2b3a56]" />
-            <div className="flex flex-wrap gap-2">
-              {ROLE_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setRole(option.id)}
-                  className={cn(
-                    "rounded border px-3 py-1 text-sm",
-                    role === option.id
-                      ? "border-[#7ca52f] bg-[#7ca52f]/20 text-[#d3ef9f]"
-                      : "border-[#334769] text-[#b4c5ea]",
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            <div className="h-4 w-px bg-[#2b3a56]" />
-            <div className="flex flex-wrap gap-2">
-              {TOPIC_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setTopic(option.id)}
-                  className={cn(
-                    "rounded border px-3 py-1 text-xs uppercase tracking-[0.12em]",
-                    topic === option.id
-                      ? "border-[#58a6ff] bg-[#58a6ff]/15 text-[#a6ceff]"
-                      : "border-[#334769] text-[#9bb1dd]",
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            <div className="h-4 w-px bg-[#2b3a56]" />
-            <select
-              value={country}
-              onChange={(event) => setCountry(event.target.value as Country)}
-              className="rounded border border-[#334769] bg-[#07101c] px-3 py-1 text-sm text-[#dbe7ff]"
-            >
-              {COUNTRY_OPTIONS.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          {ROLE_OPTIONS.map((option) => (
             <button
-              onClick={() => setShowHidden((current) => !current)}
+              key={option.id}
+              onClick={() => setRole(option.id)}
               className={cn(
-                "rounded border px-3 py-1 text-sm",
-                showHidden ? "border-[#d7b04b] bg-[#d7b04b]/15 text-[#f1d99f]" : "border-[#334769] text-[#9bb1dd]",
+                "rounded border px-2.5 py-1 text-xs",
+                role === option.id ? "border-primary/70 bg-primary/15 text-primary" : "border-border text-muted-foreground",
               )}
             >
-              Hidden {hiddenCount}
+              {option.label}
             </button>
+          ))}
+
+          <div className="h-4 w-px bg-border" />
+
+          {TOPIC_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => setTopic(option.id)}
+              className={cn(
+                "rounded border px-2 py-1 text-[11px] uppercase tracking-[0.12em]",
+                topic === option.id ? "border-cyan-400/60 bg-cyan-400/10 text-cyan-300" : "border-border text-muted-foreground",
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+
+          <div className="h-4 w-px bg-border" />
+
+          <select
+            value={country}
+            onChange={(event) => setCountry(event.target.value as Country)}
+            className="rounded border border-border bg-card px-2 py-1 text-xs"
+          >
+            {COUNTRY_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={grouping}
+            onChange={(event) => setGrouping(event.target.value as GridGrouping)}
+            className="rounded border border-border bg-card px-2 py-1 text-xs uppercase tracking-[0.12em]"
+          >
+            <option value="manual">Manual</option>
+            <option value="topic">Topic</option>
+            <option value="source">Source</option>
+          </select>
+
+          <button
+            onClick={() => setShowHidden((current) => !current)}
+            className={cn(
+              "rounded border px-2 py-1 text-xs",
+              showHidden ? "border-amber-500/60 bg-amber-500/10 text-amber-300" : "border-border text-muted-foreground",
+            )}
+          >
+            Hidden {hiddenCount}
+          </button>
+        </div>
+      </section>
+
+      <main className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 px-3 py-3">
+        <section className="grid gap-2 xl:grid-cols-[2fr_1fr_1fr]">
+          <div className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Global Situation</div>
+            <div className="h-[230px] rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black" />
+          </div>
+          <div className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Live Feed</div>
+            <div className="space-y-1.5">
+              {feed.slice(0, 5).map((item) => (
+                <div key={item.id} className="rounded border border-border p-1.5 text-xs">
+                  <div className="line-clamp-2 font-medium">{item.title}</div>
+                  <div className="mt-1 text-[10px] text-muted-foreground">{item.source_name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Video Rail</div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div key={idx} className="aspect-video rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
+                  Stream {idx + 1}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         <section className="grid gap-2 md:grid-cols-3">
           {filteredSignals.slice(0, 3).map((item, idx) => (
-            <article key={item.id} className="rounded border border-[#2d3d5b] bg-[#0a111d] p-3">
-              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.15em] text-[#8aa2d1]">
-                <span>Priority Signal #{idx + 1}</span>
+            <article key={item.id} className="rounded border border-border bg-card p-2">
+              <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span>Priority #{idx + 1}</span>
                 <span>{item.source_name}</span>
               </div>
-              <h3 className="text-base font-semibold">{item.title}</h3>
-              <p className="mt-1 line-clamp-2 text-sm text-[#a8b9dd]">{item.summary || "Signal summary unavailable."}</p>
+              <h3 className="line-clamp-2 text-sm font-semibold">{item.title}</h3>
+              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.summary || "Signal summary unavailable."}</p>
             </article>
           ))}
         </section>
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm uppercase tracking-[0.2em] text-[#7f93bf]">Main Widget Grid</h2>
-            <div className="text-xs text-[#8aa2d1]">{visibleWidgets.length} active widgets</div>
+            <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
+            <div className="text-xs text-muted-foreground">{visibleWidgets.length} active widgets</div>
           </div>
-          <div className="grid auto-rows-[230px] grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
+
+          <div className="grid auto-rows-[168px] grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
             {visibleWidgets.map((widget) => {
-              const layout = layoutById[widget.id] || { w: 1 as const, h: 1 as const };
+              const layout = layoutById[widget.id] || ({ w: 1, h: 1 } as GridLayout);
               return (
                 <article
                   key={widget.id}
-                  draggable
+                  draggable={grouping === "manual"}
                   onDragStart={() => setDraggedId(widget.id)}
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={() => {
-                    if (!draggedId || draggedId === widget.id) return;
+                    if (!draggedId || draggedId === widget.id || grouping !== "manual") return;
                     setOrder((current) => {
-                      const base = current.length > 0 ? current : normalizedOrder;
+                      const base = current.length > 0 ? current : groupedOrder;
                       const next = base.filter((id) => id !== draggedId);
                       const targetIndex = next.indexOf(widget.id);
                       next.splice(targetIndex < 0 ? next.length : targetIndex, 0, draggedId);
@@ -503,17 +649,17 @@ export default function MonitorV3Page() {
                     });
                     setDraggedId(null);
                   }}
-                  className="group relative overflow-hidden rounded border border-[#2c3d5f] bg-gradient-to-b from-[#0d1422] to-[#090e17] p-3"
+                  className="group relative overflow-hidden rounded border border-border bg-card p-2"
                   style={{
                     gridColumn: `span ${layout.w} / span ${layout.w}`,
                     gridRow: `span ${layout.h} / span ${layout.h}`,
-                    cursor: "grab",
+                    cursor: grouping === "manual" ? "grab" : "default",
                   }}
                 >
-                  <div className="mb-2 flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="line-clamp-2 text-xl font-semibold leading-tight">{widget.title}</h3>
-                      <p className="mt-1 line-clamp-2 text-sm text-[#9ab0dc]">{widget.subtitle}</p>
+                  <div className="mb-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="line-clamp-2 text-base font-semibold leading-tight">{widget.title}</h3>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{widget.subtitle}</p>
                     </div>
                     <button
                       onClick={() => {
@@ -522,41 +668,58 @@ export default function MonitorV3Page() {
                           setCustomWidgets((current) => current.filter((item) => item.id !== widget.id));
                         }
                       }}
-                      className="rounded border border-[#364a72] px-2 py-1 text-[#a8bddf] hover:border-red-400 hover:text-red-300"
+                      className="rounded border border-border px-1.5 py-0.5 text-muted-foreground hover:border-red-400 hover:text-red-300"
                       aria-label="Hide widget"
                     >
-                      <X size={14} />
+                      <X size={12} />
                     </button>
                   </div>
 
-                  <div className="mb-2 flex items-center gap-2 text-xs">
-                    <span className={cn("rounded border px-2 py-0.5 uppercase tracking-[0.14em]", getStatusTone(widget.status))}>{widget.status}</span>
-                    <span className="rounded border border-[#364a72] px-2 py-0.5 text-[#9db1d8]">{widget.source}</span>
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px]">
+                    <span className={cn("rounded border px-1.5 py-0 uppercase tracking-[0.12em]", getStatusTone(widget.status))}>{widget.status}</span>
+                    <span className="max-w-[48%] truncate rounded border border-border px-1.5 py-0 text-muted-foreground">{widget.source}</span>
                   </div>
 
-                  <div className="space-y-2">
-                    {widget.metrics.slice(0, layout.h === 2 ? 4 : 2).map((metric) => (
-                      <div key={`${widget.id}-${metric.label}`} className="rounded border border-[#2f405f] bg-[#0a111d] p-2">
-                        <div className="text-xs uppercase tracking-[0.15em] text-[#8ba0cb]">{metric.label}</div>
-                        <div className="mt-1 text-lg font-semibold">{metric.value}</div>
-                        {typeof metric.delta === "number" ? (
-                          <div className={cn("text-xs", metric.delta >= 0 ? "text-emerald-300" : "text-red-300")}>
-                            {metric.delta >= 0 ? "+" : ""}
-                            {metric.delta.toFixed(2)}%
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
+                  <div className="space-y-1">
+                    {widget.metrics.slice(0, layout.h === 2 ? 4 : 2).map((metric) => {
+                      const metricNode = (
+                        <>
+                          <div className="truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</div>
+                          <div className="text-sm font-semibold">{metric.value}</div>
+                          {typeof metric.delta === "number" ? (
+                            <div className={cn("text-[11px]", metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
+                              {metric.delta >= 0 ? "+" : ""}
+                              {metric.delta.toFixed(2)}%
+                            </div>
+                          ) : null}
+                        </>
+                      );
+                      return metric.href ? (
+                        <a
+                          key={`${widget.id}-${metric.label}`}
+                          href={metric.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded border border-border bg-muted/10 p-1.5 hover:border-primary/50"
+                        >
+                          {metricNode}
+                        </a>
+                      ) : (
+                        <div key={`${widget.id}-${metric.label}`} className="rounded border border-border bg-muted/10 p-1.5">
+                          {metricNode}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <button
-                    className="absolute right-0 top-0 h-full w-2 cursor-ew-resize opacity-0 group-hover:opacity-100"
+                    className="absolute right-0 top-0 h-full w-2 cursor-ew-resize opacity-0 transition-opacity group-hover:opacity-100"
                     onMouseDown={(event) => {
                       event.preventDefault();
                       const startX = event.clientX;
                       const onMove = (moveEvent: MouseEvent) => {
                         const delta = moveEvent.clientX - startX;
-                        if (Math.abs(delta) < 48) return;
+                        if (Math.abs(delta) < 42) return;
                         resizeWidget(widget.id, "w", delta > 0 ? 1 : -1);
                         cleanup();
                       };
@@ -569,13 +732,13 @@ export default function MonitorV3Page() {
                     }}
                   />
                   <button
-                    className="absolute bottom-0 left-0 h-2 w-full cursor-ns-resize opacity-0 group-hover:opacity-100"
+                    className="absolute bottom-0 left-0 h-2 w-full cursor-ns-resize opacity-0 transition-opacity group-hover:opacity-100"
                     onMouseDown={(event) => {
                       event.preventDefault();
                       const startY = event.clientY;
                       const onMove = (moveEvent: MouseEvent) => {
                         const delta = moveEvent.clientY - startY;
-                        if (Math.abs(delta) < 48) return;
+                        if (Math.abs(delta) < 42) return;
                         resizeWidget(widget.id, "h", delta > 0 ? 1 : -1);
                         cleanup();
                       };
@@ -591,56 +754,74 @@ export default function MonitorV3Page() {
               );
             })}
           </div>
+
+          {showHidden && hiddenIds.length > 0 ? (
+            <div className="mt-2 rounded border border-border bg-card p-2">
+              <div className="mb-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Hidden widgets</div>
+              <div className="flex flex-wrap gap-1.5">
+                {hiddenIds.map((id) => (
+                  <button
+                    key={id}
+                    onClick={() => setHiddenIds((current) => current.filter((item) => item !== id))}
+                    className="rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Restore {widgetMap[id]?.title || id}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </section>
       </main>
 
       {isAddWidgetOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
-          <div className="w-full max-w-xl rounded border border-[#2c3d5f] bg-[#0a111d] p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Add custom widget</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-xl rounded border border-border bg-card p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold">Add custom widget</h3>
               <button
                 onClick={() => setIsAddWidgetOpen(false)}
-                className="rounded border border-[#364a72] px-2 py-1 text-[#a8bddf] hover:border-red-400 hover:text-red-300"
+                className="rounded border border-border px-1.5 py-1 text-muted-foreground hover:text-foreground"
               >
-                <X size={14} />
+                <X size={12} />
               </button>
             </div>
-            <div className="space-y-3">
+
+            <div className="space-y-2">
               <div>
-                <label className="mb-1 block text-xs uppercase tracking-[0.15em] text-[#88a0ce]">Title</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Title</label>
                 <input
                   value={draft.title}
                   onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
-                  className="w-full rounded border border-[#334769] bg-[#07101c] px-3 py-2 text-sm text-[#dbe7ff]"
+                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
                   placeholder="Widget title"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs uppercase tracking-[0.15em] text-[#88a0ce]">Subtitle</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Subtitle</label>
                 <input
                   value={draft.subtitle}
                   onChange={(event) => setDraft((current) => ({ ...current, subtitle: event.target.value }))}
-                  className="w-full rounded border border-[#334769] bg-[#07101c] px-3 py-2 text-sm text-[#dbe7ff]"
+                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
                   placeholder="What this widget tracks"
                 />
               </div>
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-2 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs uppercase tracking-[0.15em] text-[#88a0ce]">Source</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Source</label>
                   <input
                     value={draft.source}
                     onChange={(event) => setDraft((current) => ({ ...current, source: event.target.value }))}
-                    className="w-full rounded border border-[#334769] bg-[#07101c] px-3 py-2 text-sm text-[#dbe7ff]"
+                    className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
                     placeholder="API / RSS / Manual"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs uppercase tracking-[0.15em] text-[#88a0ce]">Topic</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Topic</label>
                   <select
                     value={draft.topic}
                     onChange={(event) => setDraft((current) => ({ ...current, topic: event.target.value as CustomWidgetDraft["topic"] }))}
-                    className="w-full rounded border border-[#334769] bg-[#07101c] px-3 py-2 text-sm text-[#dbe7ff]"
+                    className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
                   >
                     <option value="markets">Markets</option>
                     <option value="logistics">Logistics</option>
@@ -650,17 +831,12 @@ export default function MonitorV3Page() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setIsAddWidgetOpen(false)}
-                className="rounded border border-[#334769] px-3 py-1.5 text-sm text-[#b4c5ea]"
-              >
+
+            <div className="mt-3 flex justify-end gap-2">
+              <button onClick={() => setIsAddWidgetOpen(false)} className="rounded border border-border px-3 py-1 text-sm text-muted-foreground">
                 Cancel
               </button>
-              <button
-                onClick={addCustomWidget}
-                className="rounded border border-[#7ca52f] bg-[#7ca52f]/20 px-3 py-1.5 text-sm text-[#d3ef9f]"
-              >
+              <button onClick={addCustomWidget} className="rounded border border-primary/60 bg-primary/15 px-3 py-1 text-sm text-primary">
                 Add widget
               </button>
             </div>
