@@ -21,7 +21,7 @@ export function MonitorGridWorkspace({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/58">Grid Workspace</p>
-          <p className="text-sm text-foreground/74">Unified widget grid below hero. Phase 1 migrates core monitor widgets into a common shell.</p>
+          <p className="text-sm text-foreground/74">Unified widget grid below hero. Phase 1 scaffolds a common shell for core monitor widgets.</p>
         </div>
         {hiddenWidgets.length ? (
           <Button type="button" size="sm" variant="outline" className="rounded-full border-black/60 px-4 dark:border-white/20" onClick={onRestoreAll}>
