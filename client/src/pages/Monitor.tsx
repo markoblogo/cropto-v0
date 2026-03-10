@@ -34,6 +34,15 @@ import {
   MONITOR_COUNTRY_OPTIONS,
   MONITOR_NORMALIZATION_STANDARD,
   MONITOR_ROLE_OPTIONS,
+  MONITOR_PROFILE_COPY,
+  MONITOR_PROFILE_SIGNAL_RULES,
+  MONITOR_REGION_OPTIONS,
+  MONITOR_TOPIC_OPTIONS,
+  MONITOR_CROP_OPTIONS,
+  itemMatchesCountryText,
+  itemMatchesRole,
+  matchesRoleRule,
+  useMonitorV2FilterState,
 } from "@/components/monitor/v2";
 import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
 import {
@@ -1360,9 +1369,9 @@ type Impact = "High" | "Medium" | "Low";
 type PriceDisplayMode = "USD_TON" | "NATIVE";
 type TemperatureDisplayMode = "C" | "F";
 
-const CROPS = ["all", "wheat", "corn", "soy", "rapeseed", "sunflower", "barley", "oilseeds"] as const;
-const TOPICS = ["all", "markets", "trade", "logistics", "weather", "policy", "harvest"] as const;
-const REGIONS = ["all", "black sea", "eu", "us", "latam", "asia"] as const;
+const CROPS = MONITOR_CROP_OPTIONS;
+const TOPICS = MONITOR_TOPIC_OPTIONS;
+const REGIONS = MONITOR_REGION_OPTIONS;
 const HERO_CROPS = ["wheat", "corn", "soy", "rapeseed", "sunflower"] as const;
 const MONITOR_NAV_ITEMS = [
   { href: "#overview", label: "Overview" },
@@ -1376,7 +1385,6 @@ const MONITOR_NAV_ITEMS = [
 const COMMAND_PROFILES = MONITOR_ROLE_OPTIONS;
 
 const SECTION_STORAGE_KEY = "monitor_hidden_sections_v1";
-const PROFILE_STORAGE_KEY = "monitor_command_profile_v1";
 const GRID_WIDGET_STORAGE_KEY = "monitor_hidden_grid_widgets_v1";
 
 const SECTION_LABELS = {
@@ -1406,12 +1414,6 @@ const GRID_MIGRATED_GRAIN_KINDS = new Set<GrainWidgetKind>([
   "EUROSTAT_AGRI_PRICE_INDICES",
 ]);
 
-const PROFILE_SIGNAL_RULES: Record<RoleProfile, SignalType[]> = {
-  farmer: ["Harvest", "Weather", "Export", "Markets"],
-  trader: ["Harvest", "Weather", "Export", "Logistics", "Policy", "Futures", "Markets"],
-  broker: ["Export", "Logistics", "Policy", "Futures", "Markets"],
-};
-
 const SECTION_PROFILE_RULES: Partial<Record<SectionId, { profiles?: RoleProfile[] }>> = {
   "fundamentals-outlook": { profiles: ["farmer", "trader"] },
   "logistics-indicators": { profiles: ["farmer", "trader", "broker"] },
@@ -1428,39 +1430,21 @@ const PANEL_PROFILE_RULES: Record<string, RoleProfile[]> = {
   oilseedsBiofuels: ["farmer", "trader", "broker"],
 };
 
-const COUNTRY_SIGNAL_CONTEXT: Record<string, string[]> = Object.fromEntries(
-  MONITOR_COUNTRY_OPTIONS.map((option) => [option.code, option.signalContext]),
-);
-
 const COUNTRY_OPTIONS = MONITOR_COUNTRY_OPTIONS;
 
-const PROFILE_COPY: Record<CommandProfile, string> = {
-  all: MONITOR_ROLE_OPTIONS.find((option) => option.id === "all")!.description,
-  farmer: MONITOR_ROLE_OPTIONS.find((option) => option.id === "farmer")!.description,
-  trader: MONITOR_ROLE_OPTIONS.find((option) => option.id === "trader")!.description,
-  broker: MONITOR_ROLE_OPTIONS.find((option) => option.id === "broker")!.description,
-};
-
 function matchesProfileRule(profile: CommandProfile, allowed?: RoleProfile[]): boolean {
-  if (profile === "all" || !allowed?.length) return true;
-  return allowed.includes(profile);
+  return matchesRoleRule(profile, allowed);
 }
 
 function itemMatchesCommandProfile(item: MonitorItem, profile: CommandProfile): boolean {
-  if (profile === "all") return true;
   const signalType = classifySignalType(item);
-  const allowed = PROFILE_SIGNAL_RULES[profile];
-  if (allowed.includes(signalType)) return true;
-  if (profile === "broker" && classifyImpact(item) === "High") return true;
-  return false;
+  return itemMatchesRole(signalType, classifyImpact(item), profile);
 }
 
 function itemMatchesCountryContext(item: MonitorItem, country: string): boolean {
-  const tokens = COUNTRY_SIGNAL_CONTEXT[country] || [String(country || "").toLowerCase()];
-  if (!tokens.length) return true;
   if (!item.region_tags.length) return true;
   const haystack = `${item.region_tags.join(" ")} ${item.title} ${item.summary || ""}`.toLowerCase();
-  return tokens.some((token) => haystack.includes(token));
+  return itemMatchesCountryText(haystack, country);
 }
 
 function asLabel(value: string): string {
@@ -2514,11 +2498,9 @@ function TerritorySelector({
 }
 
 export default function MonitorPage() {
-  const [commandProfile, setCommandProfile] = useState<CommandProfile>(() => {
-    if (typeof window === "undefined") return "all";
-    const saved = window.sessionStorage.getItem(PROFILE_STORAGE_KEY);
-    return saved === "farmer" || saved === "trader" || saved === "broker" ? saved : "all";
-  });
+  const v2Filters = useMonitorV2FilterState();
+  const commandProfile = v2Filters.role;
+  const setCommandProfile = v2Filters.setRole;
   const [crop, setCrop] = useState("all");
   const [topic, setTopic] = useState("all");
   const [region, setRegion] = useState("all");
@@ -2530,15 +2512,10 @@ export default function MonitorPage() {
   const [priceDisplayMode, setPriceDisplayMode] = useState<PriceDisplayMode>("USD_TON");
   const [temperatureDisplayMode, setTemperatureDisplayMode] = useState<TemperatureDisplayMode>("C");
   const [grainExpansionCollapsed, setGrainExpansionCollapsed] = useState(false);
-  const [grainGroupBy, setGrainGroupBy] = useState<"territory" | "source">(() => {
-    if (typeof window === "undefined") return "territory";
-    const saved = window.localStorage.getItem("monitor_grain_group_by");
-    return saved === "source" ? "source" : "territory";
-  });
-  const [grainCountry, setGrainCountry] = useState<string>(() => {
-    if (typeof window === "undefined") return "US";
-    return window.localStorage.getItem("monitor_country_global") || "US";
-  });
+  const grainGroupBy = v2Filters.grainGroupBy;
+  const setGrainGroupBy = v2Filters.setGrainGroupBy;
+  const grainCountry = v2Filters.country;
+  const setGrainCountry = v2Filters.setCountry;
   const [grainPriceType, setGrainPriceType] = useState<"RETAIL" | "WHOLESALE">(() => {
     if (typeof window === "undefined") return "WHOLESALE";
     const saved = window.localStorage.getItem("monitor_price_type_fpma");
@@ -2567,16 +2544,6 @@ export default function MonitorPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("monitor_grain_group_by", grainGroupBy);
-  }, [grainGroupBy]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("monitor_country_global", grainCountry);
-  }, [grainCountry]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
     window.localStorage.setItem("monitor_price_type_fpma", grainPriceType);
   }, [grainPriceType]);
 
@@ -2589,11 +2556,6 @@ export default function MonitorPage() {
     if (typeof window === "undefined") return;
     window.sessionStorage.setItem(GRID_WIDGET_STORAGE_KEY, JSON.stringify(hiddenGridWidgetIds));
   }, [hiddenGridWidgetIds]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(PROFILE_STORAGE_KEY, commandProfile);
-  }, [commandProfile]);
 
   const debugEnabled = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -3510,7 +3472,7 @@ export default function MonitorPage() {
 
                 <div className="pointer-events-none rounded-xl border border-black/45 bg-background/70 p-2 dark:border-white/15">
                   <p className="mb-2 text-[10px] uppercase tracking-[0.16em] text-foreground/58">View Bias</p>
-                  <p className="text-sm text-foreground/76">{PROFILE_COPY[commandProfile]}</p>
+                  <p className="text-sm text-foreground/76">{MONITOR_PROFILE_COPY[commandProfile]}</p>
                 </div>
 
                 <div className="relative z-30 flex flex-wrap items-center gap-2">
