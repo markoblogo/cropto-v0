@@ -39,9 +39,11 @@ import {
   MONITOR_REGION_OPTIONS,
   MONITOR_TOPIC_OPTIONS,
   MONITOR_CROP_OPTIONS,
+  getHeroPromotedWidgetIds,
   itemMatchesCountryText,
   itemMatchesRole,
   matchesRoleRule,
+  useMonitorV2HeroState,
   useMonitorV2FilterState,
 } from "@/components/monitor/v2";
 import { getMiniTrendRenderMode } from "@/components/monitor/miniTrendRelevance";
@@ -2541,6 +2543,10 @@ export default function MonitorPage() {
   });
   const showLiveVisualsHero = import.meta.env.VITE_MONITOR_SHOW_LIVE_VISUALS_HERO === "true";
   const allowMacroEmbedFrames = import.meta.env.VITE_MONITOR_ENABLE_MACRO_EMBEDS === "true";
+  const heroState = useMonitorV2HeroState({
+    role: commandProfile,
+    country: grainCountry,
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -3401,8 +3407,13 @@ export default function MonitorPage() {
   ]);
 
   const visibleGridWidgets = useMemo(
-    () => filterVisibleGridWidgets(gridWidgetDescriptors, commandProfile, grainCountry, hiddenGridWidgetIds),
-    [commandProfile, grainCountry, gridWidgetDescriptors, hiddenGridWidgetIds],
+    () => {
+      const promotedIds = new Set(getHeroPromotedWidgetIds(heroState.occupancy));
+      return filterVisibleGridWidgets(gridWidgetDescriptors, commandProfile, grainCountry, hiddenGridWidgetIds).filter(
+        (widget) => !promotedIds.has(widget.id),
+      );
+    },
+    [commandProfile, grainCountry, gridWidgetDescriptors, hiddenGridWidgetIds, heroState.occupancy],
   );
 
   const hiddenGridWidgets = useMemo(
