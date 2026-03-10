@@ -483,7 +483,7 @@ export default function MonitorV3Page() {
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between px-3 py-2">
           <div className="flex items-center gap-3">
             <div className="text-base font-semibold tracking-wide">Cropto Monitor</div>
-            <span className="rounded border border-border px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">v3 sprint</span>
+            <span className="rounded border border-border px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">v3 sprint ping</span>
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
