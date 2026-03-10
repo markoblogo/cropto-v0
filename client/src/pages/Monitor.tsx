@@ -3668,10 +3668,11 @@ export default function MonitorPage() {
             onRestore={gridState.restoreWidget}
             onRestoreAll={gridState.restoreAllWidgets}
             onGrowRight={gridState.growRight}
+            onShrinkRight={gridState.shrinkRight}
             onGrowDown={gridState.growDown}
+            onShrinkDown={gridState.shrinkDown}
             onResetSize={gridState.resetSize}
-            onMoveEarlier={gridState.moveEarlier}
-            onMoveLater={gridState.moveLater}
+            onMoveBefore={gridState.moveBefore}
           />
 
           {canRenderSection("grain-markets-core") ? (

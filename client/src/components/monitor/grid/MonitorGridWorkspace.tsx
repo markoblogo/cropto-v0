@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MonitorWidgetShell } from "@/components/monitor/grid/MonitorWidgetShell";
@@ -12,10 +13,11 @@ export function MonitorGridWorkspace({
   onRestore,
   onRestoreAll,
   onGrowRight,
+  onShrinkRight,
   onGrowDown,
+  onShrinkDown,
   onResetSize,
-  onMoveEarlier,
-  onMoveLater,
+  onMoveBefore,
 }: {
   widgets: MonitorGridWidgetDescriptor[];
   hiddenWidgets: MonitorGridWidgetDescriptor[];
@@ -25,11 +27,14 @@ export function MonitorGridWorkspace({
   onRestore: (id: string) => void;
   onRestoreAll: () => void;
   onGrowRight: (id: string) => void;
+  onShrinkRight: (id: string) => void;
   onGrowDown: (id: string) => void;
+  onShrinkDown: (id: string) => void;
   onResetSize: (id: string) => void;
-  onMoveEarlier: (id: string) => void;
-  onMoveLater: (id: string) => void;
+  onMoveBefore: (sourceId: string, targetId: string) => void;
 }) {
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -63,16 +68,34 @@ export function MonitorGridWorkspace({
 
       <div className="grid gap-3 md:grid-cols-12 auto-rows-min items-start">
         {widgets.map((widget) => (
-          <MonitorWidgetShell
+          <div
             key={widget.id}
-            widget={widget}
-            onHide={onHide}
-            onGrowRight={onGrowRight}
-            onGrowDown={onGrowDown}
-            onResetSize={onResetSize}
-            onMoveEarlier={onMoveEarlier}
-            onMoveLater={onMoveLater}
-          />
+            draggable
+            onDragStart={() => {
+              setDraggedId(widget.id);
+              if (grouping !== "manual") onGroupingChange("manual");
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              if (draggedId && draggedId !== widget.id) onMoveBefore(draggedId, widget.id);
+              setDraggedId(null);
+            }}
+            onDragEnd={() => setDraggedId(null)}
+            className={draggedId === widget.id ? "opacity-80" : ""}
+          >
+            <MonitorWidgetShell
+              widget={widget}
+              onHide={onHide}
+              onGrowRight={onGrowRight}
+              onShrinkRight={onShrinkRight}
+              onGrowDown={onGrowDown}
+              onShrinkDown={onShrinkDown}
+              onResetSize={onResetSize}
+            />
+          </div>
         ))}
       </div>
 

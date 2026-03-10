@@ -102,10 +102,20 @@ export function useMonitorV2GridState({
         const next = getLayout(widgetId);
         return { ...current, [widgetId]: clampGridLayout(widgetId, { ...next, width: (next.width + 1) as MonitorGridLayout["width"] }) };
       }),
+    shrinkRight: (widgetId: string) =>
+      setLayoutByWidgetId((current) => {
+        const next = getLayout(widgetId);
+        return { ...current, [widgetId]: clampGridLayout(widgetId, { ...next, width: Math.max(1, next.width - 1) as MonitorGridLayout["width"] }) };
+      }),
     growDown: (widgetId: string) =>
       setLayoutByWidgetId((current) => {
         const next = getLayout(widgetId);
         return { ...current, [widgetId]: clampGridLayout(widgetId, { ...next, height: (next.height + 1) as MonitorGridLayout["height"] }) };
+      }),
+    shrinkDown: (widgetId: string) =>
+      setLayoutByWidgetId((current) => {
+        const next = getLayout(widgetId);
+        return { ...current, [widgetId]: clampGridLayout(widgetId, { ...next, height: Math.max(1, next.height - 1) as MonitorGridLayout["height"] }) };
       }),
     resetSize: (widgetId: string) => setLayoutByWidgetId((current) => ({ ...current, [widgetId]: defaultLayoutForWidget(widgetId) })),
     moveEarlier: (widgetId: string) =>
@@ -124,6 +134,18 @@ export function useMonitorV2GridState({
         if (index === -1 || index >= order.length - 1) return order;
         const next = order.slice();
         [next[index], next[index + 1]] = [next[index + 1], next[index]];
+        return next;
+      }),
+    moveBefore: (sourceWidgetId: string, targetWidgetId: string) =>
+      setManualOrder((current) => {
+        const order = sanitizeOrder(current, availableWidgetIds);
+        const sourceIndex = order.indexOf(sourceWidgetId);
+        const targetIndex = order.indexOf(targetWidgetId);
+        if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) return order;
+        const next = order.slice();
+        next.splice(sourceIndex, 1);
+        const recalculatedTarget = next.indexOf(targetWidgetId);
+        next.splice(recalculatedTarget, 0, sourceWidgetId);
         return next;
       }),
   };
