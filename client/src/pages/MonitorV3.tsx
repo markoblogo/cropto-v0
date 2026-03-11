@@ -123,6 +123,7 @@ type CustomWidgetDraft = {
 };
 type RenderMode = "metric" | "spark" | "bar" | "list";
 type RenderModeOverride = "auto" | RenderMode;
+type RenderPreset = "mixed" | "data_dense" | "headlines";
 
 const STORAGE_PREFIX = "monitor_v3_";
 const STORAGE_KEYS = {
@@ -405,6 +406,20 @@ function nextRenderMode(current: RenderModeOverride): RenderModeOverride {
   return order[(idx + 1) % order.length];
 }
 
+function modeForPreset(widget: GridWidget, preset: RenderPreset): RenderModeOverride {
+  if (preset === "mixed") return "auto";
+  if (preset === "headlines") {
+    if (widget.topic === "policy" || widget.topic === "weather") return "list";
+    if (widget.topic === "logistics") return "list";
+    return "metric";
+  }
+  if (widget.topic === "logistics") return "bar";
+  if (widget.topic === "policy") return "list";
+  if (widget.topic === "weather") return "bar";
+  const hasDelta = widget.metrics.some((metric) => typeof metric.delta === "number");
+  return hasDelta ? "spark" : "metric";
+}
+
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
 
@@ -420,6 +435,7 @@ export default function MonitorV3Page() {
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === "undefined" ? 1536 : window.innerWidth,
   );
+  const [renderPreset, setRenderPreset] = useState<RenderPreset>("mixed");
 
   const [order, setOrder] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.order, []));
   const [layoutById, setLayoutById] = useState<Record<string, GridLayout>>(() => readJson<Record<string, GridLayout>>(STORAGE_KEYS.layout, {}));
@@ -733,6 +749,17 @@ export default function MonitorV3Page() {
     });
   }, [topSignals, topic]);
 
+  const applyRenderPreset = (preset: RenderPreset) => {
+    setRenderPreset(preset);
+    setRenderModeById((current) => {
+      const next = { ...current };
+      visibleWidgets.forEach((widget) => {
+        next[widget.id] = modeForPreset(widget, preset);
+      });
+      return next;
+    });
+  };
+
   const resizeWidget = (id: string, axis: "w" | "h", delta: 1 | -1) => {
     setLayoutById((current) => {
       const prev = current[id] || ({ w: 1, h: 1 } as GridLayout);
@@ -948,6 +975,15 @@ export default function MonitorV3Page() {
                 <option value="freshness">Sort: Freshness</option>
                 <option value="source">Sort: Source</option>
               </select>
+              <select
+                value={renderPreset}
+                onChange={(event) => applyRenderPreset(event.target.value as RenderPreset)}
+                className="rounded border border-border bg-card px-2 py-1 text-xs uppercase tracking-[0.12em]"
+              >
+                <option value="mixed">Render: Mixed</option>
+                <option value="data_dense">Render: Data Dense</option>
+                <option value="headlines">Render: Headlines</option>
+              </select>
               <button
                 onClick={() => {
                   setOrder([]);
@@ -955,6 +991,7 @@ export default function MonitorV3Page() {
                   setHiddenIds([]);
                   setGrouping("manual");
                   setSortMode("default");
+                  setRenderPreset("mixed");
                   setRenderModeById({});
                 }}
                 className="rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
