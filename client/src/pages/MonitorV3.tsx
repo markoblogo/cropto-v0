@@ -8,6 +8,7 @@ type MonitorRole = "all" | "farmer" | "trader" | "broker";
 type MonitorTopic = "all" | "markets" | "logistics" | "policy" | "weather";
 type Country = "US" | "UA" | "BR" | "AR" | "FR" | "DE" | "RO";
 type GridGrouping = "manual" | "topic" | "source";
+type GridSort = "default" | "impact" | "freshness" | "source";
 
 type NewsItem = {
   id: string;
@@ -29,6 +30,7 @@ type GrainWidgetRecord = {
   status?: string;
   sourceName?: string;
   sourceUrl?: string;
+  updatedAt?: string;
   territory?: { code?: string; label?: string };
   notes?: string[];
   rows?: Array<{ label?: string; price?: { valueCurrent?: number; unit?: string; changePct?: number } }>;
@@ -97,6 +99,7 @@ type GridWidget = {
   subtitle: string;
   status: string;
   source: string;
+  updatedAt?: string;
   topic: Exclude<MonitorTopic, "all">;
   roles: Array<Exclude<MonitorRole, "all">>;
   territory: string;
@@ -117,6 +120,7 @@ const STORAGE_KEYS = {
   topic: `${STORAGE_PREFIX}topic`,
   country: `${STORAGE_PREFIX}country`,
   grouping: `${STORAGE_PREFIX}grouping`,
+  sort: `${STORAGE_PREFIX}sort`,
   order: `${STORAGE_PREFIX}order`,
   hidden: `${STORAGE_PREFIX}hidden`,
   layout: `${STORAGE_PREFIX}layout`,
@@ -246,6 +250,21 @@ function getStatusTone(status: string) {
   return "border-red-500/60 text-red-300";
 }
 
+function getStatusRank(status: string) {
+  const key = status.toUpperCase();
+  if (key === "LIVE") return 5;
+  if (key === "REFRESH") return 4;
+  if (key === "INDICATIVE") return 3;
+  if (key === "FALLBACK") return 2;
+  if (key === "CUSTOM") return 2;
+  return 1;
+}
+
+function isDegradedStatus(status: string) {
+  const key = status.toUpperCase();
+  return key === "FALLBACK" || key === "OFFLINE";
+}
+
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
 
@@ -253,6 +272,7 @@ export default function MonitorV3Page() {
   const [topic, setTopic] = useState<MonitorTopic>(() => readJson<MonitorTopic>(STORAGE_KEYS.topic, "all"));
   const [country, setCountry] = useState<Country>(() => readJson<Country>(STORAGE_KEYS.country, "US"));
   const [grouping, setGrouping] = useState<GridGrouping>(() => readJson<GridGrouping>(STORAGE_KEYS.grouping, "manual"));
+  const [sortMode, setSortMode] = useState<GridSort>(() => readJson<GridSort>(STORAGE_KEYS.sort, "default"));
   const [showHidden, setShowHidden] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -264,11 +284,21 @@ export default function MonitorV3Page() {
   const [customWidgets, setCustomWidgets] = useState<GridWidget[]>(() => readJson<GridWidget[]>(STORAGE_KEYS.custom, []));
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
+  const [selectedMetric, setSelectedMetric] = useState<{
+    widgetTitle: string;
+    widgetSource: string;
+    widgetStatus: string;
+    metricLabel: string;
+    metricValue: string;
+    metricDelta?: number;
+    href?: string;
+  } | null>(null);
 
   useEffect(() => writeJson(STORAGE_KEYS.role, role), [role]);
   useEffect(() => writeJson(STORAGE_KEYS.topic, topic), [topic]);
   useEffect(() => writeJson(STORAGE_KEYS.country, country), [country]);
   useEffect(() => writeJson(STORAGE_KEYS.grouping, grouping), [grouping]);
+  useEffect(() => writeJson(STORAGE_KEYS.sort, sortMode), [sortMode]);
   useEffect(() => writeJson(STORAGE_KEYS.order, order), [order]);
   useEffect(() => writeJson(STORAGE_KEYS.layout, layoutById), [layoutById]);
   useEffect(() => writeJson(STORAGE_KEYS.hidden, hiddenIds), [hiddenIds]);
@@ -344,6 +374,7 @@ export default function MonitorV3Page() {
           subtitle: widget.notes?.[0] || "Expansion widget",
           status: widget.status || "OFFLINE",
           source: widget.sourceName || "Unknown",
+          updatedAt: widget.updatedAt,
           topic: KIND_TO_TOPIC[kind] || "markets",
           roles: KIND_TO_ROLES[kind] || ["farmer", "trader", "broker"],
           territory: widget.territory?.code || "GLOBAL",
@@ -359,6 +390,7 @@ export default function MonitorV3Page() {
       subtitle: row.subtitle || "Core market instrument",
       status: row.status || "OFFLINE",
       source: row.sourceName || "Unknown",
+      updatedAt: undefined,
       topic: "markets",
       roles: ["farmer", "trader", "broker"],
       territory: "GLOBAL",
@@ -371,6 +403,7 @@ export default function MonitorV3Page() {
       subtitle: row.subtitle,
       status: row.status || "OFFLINE",
       source: row.sourceName,
+      updatedAt: undefined,
       topic: "logistics",
       roles: ["trader", "broker", "farmer"],
       territory: "GLOBAL",
@@ -383,6 +416,7 @@ export default function MonitorV3Page() {
       subtitle: "Composite index",
       status: "REFRESH",
       source: row.source || "Index source",
+      updatedAt: undefined,
       topic: "markets",
       roles: ["farmer", "trader", "broker"],
       territory: "GLOBAL",
@@ -411,7 +445,7 @@ export default function MonitorV3Page() {
   }, [allWidgets, order, grouping]);
 
   const visibleWidgets = useMemo(() => {
-    return groupedOrder
+    const filtered = groupedOrder
       .map((id) => widgetMap[id])
       .filter((widget): widget is GridWidget => Boolean(widget))
       .filter((widget) => {
@@ -421,7 +455,28 @@ export default function MonitorV3Page() {
         if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
         return true;
       });
-  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country]);
+
+    if (sortMode === "default") return filtered;
+    if (sortMode === "source") {
+      return [...filtered].sort((a, b) => a.source.localeCompare(b.source) || a.title.localeCompare(b.title));
+    }
+    if (sortMode === "freshness") {
+      return [...filtered].sort((a, b) => {
+        const aRank = getStatusRank(a.status);
+        const bRank = getStatusRank(b.status);
+        if (aRank !== bRank) return bRank - aRank;
+        const aTime = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+        const bTime = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+        return bTime - aTime;
+      });
+    }
+    return [...filtered].sort((a, b) => {
+      const aDelta = Math.max(...a.metrics.map((m) => Math.abs(m.delta || 0)), 0);
+      const bDelta = Math.max(...b.metrics.map((m) => Math.abs(m.delta || 0)), 0);
+      if (aDelta !== bDelta) return bDelta - aDelta;
+      return getStatusRank(b.status) - getStatusRank(a.status);
+    });
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode]);
 
   const topSignals = newsQuery.data?.topSignals || [];
   const feed = newsQuery.data?.feed || [];
@@ -466,6 +521,7 @@ export default function MonitorV3Page() {
       topic: draft.topic,
       roles: ["farmer", "trader", "broker"],
       territory: country,
+      updatedAt: new Date().toISOString(),
       metrics: [],
     };
     setCustomWidgets((current) => [...current, widget]);
@@ -483,7 +539,7 @@ export default function MonitorV3Page() {
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between px-3 py-2">
           <div className="flex items-center gap-3">
             <div className="text-base font-semibold tracking-wide">Cropto Monitor</div>
-            <span className="rounded border border-border px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">v3 sprint ping 2</span>
+            <span className="rounded border border-emerald-500/50 bg-emerald-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-emerald-300">v3 beta</span>
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
@@ -626,7 +682,31 @@ export default function MonitorV3Page() {
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
-            <div className="text-xs text-muted-foreground">{visibleWidgets.length} active widgets</div>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortMode}
+                onChange={(event) => setSortMode(event.target.value as GridSort)}
+                className="rounded border border-border bg-card px-2 py-1 text-xs uppercase tracking-[0.12em]"
+              >
+                <option value="default">Sort: Default</option>
+                <option value="impact">Sort: Impact</option>
+                <option value="freshness">Sort: Freshness</option>
+                <option value="source">Sort: Source</option>
+              </select>
+              <button
+                onClick={() => {
+                  setOrder([]);
+                  setLayoutById({});
+                  setHiddenIds([]);
+                  setGrouping("manual");
+                  setSortMode("default");
+                }}
+                className="rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Reset layout
+              </button>
+              <div className="text-xs text-muted-foreground">{visibleWidgets.length} active widgets</div>
+            </div>
           </div>
 
           <div className="grid auto-rows-[168px] grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
@@ -649,7 +729,12 @@ export default function MonitorV3Page() {
                     });
                     setDraggedId(null);
                   }}
-                  className="group relative overflow-hidden rounded border border-border bg-card p-2"
+                  className={cn(
+                    "group relative overflow-hidden rounded border bg-card p-2",
+                    isDegradedStatus(widget.status)
+                      ? "border-dashed border-amber-500/40 bg-amber-500/5"
+                      : "border-border",
+                  )}
                   style={{
                     gridColumn: `span ${layout.w} / span ${layout.w}`,
                     gridRow: `span ${layout.h} / span ${layout.h}`,
@@ -694,20 +779,24 @@ export default function MonitorV3Page() {
                           ) : null}
                         </>
                       );
-                      return metric.href ? (
-                        <a
+                      return (
+                        <button
                           key={`${widget.id}-${metric.label}`}
-                          href={metric.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block rounded border border-border bg-muted/10 p-1.5 hover:border-primary/50"
+                          onClick={() =>
+                            setSelectedMetric({
+                              widgetTitle: widget.title,
+                              widgetSource: widget.source,
+                              widgetStatus: widget.status,
+                              metricLabel: metric.label,
+                              metricValue: metric.value,
+                              metricDelta: metric.delta,
+                              href: metric.href,
+                            })
+                          }
+                          className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                         >
                           {metricNode}
-                        </a>
-                      ) : (
-                        <div key={`${widget.id}-${metric.label}`} className="rounded border border-border bg-muted/10 p-1.5">
-                          {metricNode}
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -839,6 +928,55 @@ export default function MonitorV3Page() {
               <button onClick={addCustomWidget} className="rounded border border-primary/60 bg-primary/15 px-3 py-1 text-sm text-primary">
                 Add widget
               </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {selectedMetric ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg rounded border border-border bg-card p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold">{selectedMetric.widgetTitle}</h3>
+              <button
+                onClick={() => setSelectedMetric(null)}
+                className="rounded border border-border px-1.5 py-1 text-muted-foreground hover:text-foreground"
+              >
+                <X size={12} />
+              </button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="rounded border border-border bg-muted/10 p-2">
+                <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Metric</div>
+                <div className="mt-1 font-semibold">{selectedMetric.metricLabel}</div>
+                <div className="text-lg">{selectedMetric.metricValue}</div>
+                {typeof selectedMetric.metricDelta === "number" ? (
+                  <div className={cn("text-xs", selectedMetric.metricDelta >= 0 ? "text-emerald-400" : "text-red-400")}>
+                    {selectedMetric.metricDelta >= 0 ? "+" : ""}
+                    {selectedMetric.metricDelta.toFixed(2)}%
+                  </div>
+                ) : null}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded border border-border bg-muted/10 p-2">
+                  <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Source</div>
+                  <div className="mt-1 text-sm">{selectedMetric.widgetSource}</div>
+                </div>
+                <div className="rounded border border-border bg-muted/10 p-2">
+                  <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Status</div>
+                  <div className="mt-1 text-sm">{selectedMetric.widgetStatus}</div>
+                </div>
+              </div>
+              {selectedMetric.href ? (
+                <a
+                  href={selectedMetric.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex rounded border border-primary/60 bg-primary/15 px-3 py-1 text-xs text-primary"
+                >
+                  Open source
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
