@@ -119,6 +119,7 @@ type CardType = "quote" | "table" | "news" | "health";
 type ProviderDebug = {
   providerId: string;
   status?: string;
+  mappedCount?: number;
   sourceUrlUsed?: string;
   finalUrl?: string;
   httpStatus?: number;
@@ -377,6 +378,7 @@ function getStatusTone(status: string) {
   const key = status.toUpperCase();
   if (key === "REFRESH" || key === "LIVE") return "border-emerald-500/60 text-emerald-300";
   if (key === "INDICATIVE") return "border-cyan-500/60 text-cyan-300";
+  if (key === "CONSTRAINED") return "border-amber-500/60 text-amber-300";
   if (key === "FALLBACK") return "border-blue-500/60 text-blue-300";
   if (key === "CUSTOM") return "border-violet-500/60 text-violet-300";
   return "border-red-500/60 text-red-300";
@@ -387,6 +389,7 @@ function getStatusRank(status: string) {
   if (key === "LIVE") return 5;
   if (key === "REFRESH") return 4;
   if (key === "INDICATIVE") return 3;
+  if (key === "CONSTRAINED") return 2;
   if (key === "FALLBACK") return 2;
   if (key === "CUSTOM") return 2;
   return 1;
@@ -394,7 +397,7 @@ function getStatusRank(status: string) {
 
 function isDegradedStatus(status: string) {
   const key = status.toUpperCase();
-  return key === "FALLBACK" || key === "OFFLINE";
+  return key === "FALLBACK" || key === "OFFLINE" || key === "CONSTRAINED";
 }
 
 function metricLooksUsable(metric: { value: string }) {
@@ -505,11 +508,16 @@ function buildDataFirstFallbackRows(
   const errorKind = debug?.lastError?.errorKind || "unknown";
   const http = debug?.httpStatus ?? debug?.lastError?.httpStatus;
   const sourceHost = hostFromUrl(debug?.finalUrl || debug?.sourceUrlUsed);
+  const modeHint = widget.status.toUpperCase() === "INDICATIVE" ? "indicative baseline" : "constrained upstream";
+  const finalHost = hostFromUrl(debug?.finalUrl);
+  const sourceHostUsed = hostFromUrl(debug?.sourceUrlUsed);
   return [
-    { label: "State", value: state === "degraded" ? "Fallback / constrained upstream" : "No usable data rows" },
+    { label: "State", value: state === "degraded" ? modeHint : "no usable rows in latest fetch" },
     { label: "Error kind", value: String(errorKind).toLowerCase() },
     { label: "HTTP", value: http != null ? String(http) : "n/a" },
     { label: "Source host", value: sourceHost || widget.source },
+    { label: "Final URL host", value: finalHost || "n/a" },
+    { label: "Probe host", value: sourceHostUsed || "n/a" },
     { label: "Freshness", value: freshness === "n/a" ? "timestamp unavailable" : `updated ${freshness} ago` },
     { label: "Coverage", value: `${usableCount}/${totalCount} usable rows` },
     { label: "Provider", value: `${widget.status} via ${widget.source}` },
@@ -517,6 +525,8 @@ function buildDataFirstFallbackRows(
 }
 
 function inferRenderMode(widget: GridWidget): RenderMode {
+  const state = widgetDataState(widget);
+  if (state === "empty" || state === "degraded") return "list";
   const cardType = inferCardType(widget);
   if (cardType === "news") return "list";
   if (cardType === "health") return "bar";
@@ -840,6 +850,10 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const providerById = useMemo(
+    () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
+    [activationQuery.data],
+  );
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -854,6 +868,22 @@ export default function MonitorV3Page() {
   }, []);
 
   const coreWidgets = useMemo<GridWidget[]>(() => {
+    const targetedConstrainedProviders = new Set([
+      "oecd-agricultural-outlook",
+      "wfp-databridges",
+      "faostat-pp",
+      "fpma-market-prices",
+      "usda-psd",
+    ]);
+    const deriveStatus = (currentStatus: string | undefined, providerId?: string): string => {
+      const status = (currentStatus || "OFFLINE").toUpperCase();
+      if (!providerId || !targetedConstrainedProviders.has(providerId)) return status;
+      const provider = providerById[providerId];
+      if (!provider) return status;
+      if (status === "REFRESH" || status === "LIVE") return status;
+      const mapped = typeof provider.mappedCount === "number" ? provider.mappedCount : 0;
+      return mapped > 0 ? "INDICATIVE" : "CONSTRAINED";
+    };
     const byKind = grainWidgetsQuery.data?.widgets?.byKind || {};
     const orderFromResponse = grainWidgetsQuery.data?.widgets?.order || Object.keys(byKind);
     const feedItems = newsQuery.data?.feed || [];
@@ -863,13 +893,15 @@ export default function MonitorV3Page() {
       .map((kind) => {
         const widget = byKind[kind];
         if (!widget) return null;
+        const providerId = WIDGET_KIND_TO_PROVIDER[kind];
+        const effectiveStatus = deriveStatus(widget.status, providerId);
         const numericMetrics = pickMetrics(widget);
         const metrics = numericMetrics.length > 0 ? numericMetrics : pickFallbackMetrics(widget);
         return {
           id: `GW_${kind}`,
           title: labelFromKind(kind),
           subtitle: widget.notes?.[0] || "Expansion widget",
-          status: widget.status || "OFFLINE",
+          status: effectiveStatus,
           source: widget.sourceName || "Unknown",
           updatedAt: widget.updatedAt,
           topic: KIND_TO_TOPIC[kind] || "markets",
@@ -1052,7 +1084,7 @@ export default function MonitorV3Page() {
                 value: formatMetric(item.valueCurrent, `${item.currency || ""}/${item.unit || ""}`),
                 delta: item.valueChangePct,
               }))
-            : [{ label: "Sentiment feed", value: "No BTC/Gold/Oil series" }],
+            : [{ label: "Sentiment feed", value: "No live BTC/Gold/Oil series (constrained)" }],
       },
       {
         id: "SYS_MACRO_PULSE",
@@ -1083,14 +1115,10 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
-  const providerById = useMemo(
-    () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
-    [activationQuery.data],
-  );
   const providerDebugByWidgetId = useMemo(() => {
     const pairs: Array<[string, ProviderDebug]> = [];
     allWidgets.forEach((widget) => {
@@ -1643,7 +1671,7 @@ export default function MonitorV3Page() {
                     {(() => {
                       const modeOverride = renderModeById[widget.id] || "auto";
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
-                      const maxRows = layout.h === 2 ? 7 : 4;
+                      const maxRows = dataState === "live" ? (layout.h === 2 ? 7 : 4) : (layout.h === 2 ? 9 : 6);
                       const rawItems = prioritizeMetricsForCard(widget.metrics, cardType).slice(0, maxRows + 2);
                       const fallbackRows = buildDataFirstFallbackRows(widget, dataState, providerDebug);
                       const baseItems =
