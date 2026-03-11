@@ -62,6 +62,31 @@ const wideCropColumns = [
   { crop: "WHEAT" as const, label: "Wheat", columns: ["wheat", "wheat_fao"] },
   { crop: "MAIZE" as const, label: "Maize (Corn)", columns: ["maize", "maize_fao"] },
 ];
+const WORLD_BANK_V2_INDICATORS: Array<{
+  crop: "WHEAT" | "MAIZE" | "SOY";
+  label: string;
+  indicator: string;
+  unit: string;
+}> = [
+  {
+    crop: "WHEAT",
+    label: "Agri value added (% GDP)",
+    indicator: "NV.AGR.TOTL.ZS",
+    unit: "% of GDP",
+  },
+  {
+    crop: "MAIZE",
+    label: "Agricultural land share",
+    indicator: "AG.LND.AGRI.ZS",
+    unit: "% of land area",
+  },
+  {
+    crop: "SOY",
+    label: "Exports of goods & services",
+    indicator: "NE.EXP.GNFS.ZS",
+    unit: "% of GDP",
+  },
+];
 
 function territoryFromCountry(raw?: string): { code: TerritoryCode; label: string } {
   const code = String(raw || "UA").toUpperCase() as TerritoryCode;
@@ -290,6 +315,55 @@ function mapRows(rows: CsvRow[], territory: { code: TerritoryCode; label: string
   }).filter((row) => row.current !== 0);
 }
 
+async function fetchWorldBankV2Rows(
+  territory: { code: TerritoryCode; label: string },
+): Promise<GrainWidgetCountryMarketPriceRow[]> {
+  if (territory.code === "EU") return [];
+  const iso3 = territoryIso3[territory.code as Exclude<TerritoryCode, "EU">];
+  if (!iso3) return [];
+  const rows: GrainWidgetCountryMarketPriceRow[] = [];
+  for (const cfg of WORLD_BANK_V2_INDICATORS) {
+    const url = `https://api.worldbank.org/v2/country/${iso3}/indicator/${cfg.indicator}?format=json&mrv=24`;
+    try {
+      const response = await fetchTextResponseWithTimeout(url, WB_MICRODATA_TIMEOUT_MS, { accept: "application/json,*/*" });
+      const payload = JSON.parse(response.text) as any[];
+      const data = Array.isArray(payload?.[1]) ? payload[1] : [];
+      const series = data
+        .map((entry: any) => {
+          const value = parseNumber(entry?.value);
+          const year = String(entry?.date || "").trim();
+          if (value == null || !/^\d{4}$/.test(year)) return null;
+          return {
+            ts: `${year}-01-01T00:00:00.000Z`,
+            value: Number(value.toFixed(4)),
+          };
+        })
+        .filter((entry: { ts: string; value: number } | null): entry is { ts: string; value: number } => Boolean(entry))
+        .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+        .slice(-12);
+      if (!series.length) continue;
+      const latest = series[series.length - 1];
+      const previous = series[series.length - 2];
+      rows.push({
+        crop: cfg.crop,
+        label: cfg.label,
+        current: latest.value,
+        unit: cfg.unit,
+        cadence: "annual",
+        changeAbs: previous ? Number((latest.value - previous.value).toFixed(4)) : undefined,
+        changePct: previous && previous.value !== 0 ? Number((((latest.value - previous.value) / previous.value) * 100).toFixed(2)) : undefined,
+        series,
+        confidence: series.length >= 6 ? "HIGH" : "MED",
+        territory: { code: territory.code, label: territory.label },
+        notes: [`worldbank_v2_indicator:${cfg.indicator}`],
+      });
+    } catch {
+      continue;
+    }
+  }
+  return rows;
+}
+
 export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
   id = "worldbank-microdata";
   kind = "WB_MICRODATA_MARKET_PRICES" as const;
@@ -354,13 +428,22 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
       rows = mapRows(parsedRows, territory);
       sourceUrlUsed = csvResponse.finalUrl || csvUrl;
     }
+    if (!rows.length) {
+      const v2Rows = await fetchWorldBankV2Rows(territory);
+      if (v2Rows.length) {
+        rows = v2Rows;
+        sourceUrlUsed = `https://api.worldbank.org/v2/country/${territoryIso3[territory.code as Exclude<TerritoryCode, "EU">]}/indicator/...`;
+      }
+    }
     if (!rows.length) throw new Error(`wb_microdata_rows_empty:${territory.code}`);
 
     const widget: GrainWidgetWorldBankMicrodataMarketPrices = {
       id: "grain-worldbank-microdata-market-prices",
       kind: "WB_MICRODATA_MARKET_PRICES",
       title: "World Bank Market Prices",
-      subtitle: "World Bank Microdata / real-time food prices layer",
+      subtitle: rows.some((row) => (row.notes || []).some((note) => note.startsWith("worldbank_v2_indicator:")))
+        ? "World Bank indicator fallback layer"
+        : "World Bank Microdata / real-time food prices layer",
       status: rows.length >= 2 ? "REFRESH" : "INDICATIVE",
       sourceName: "World Bank Microdata",
       sourceAttribution: "Data: World Bank Microdata Real-Time Food Prices",
@@ -384,7 +467,9 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
         cadence: rows[0]?.cadence || "unknown",
         selectedTerritory: territory.code,
       },
-      notes: ["Official World Bank table API / data-api page", "Native units preserved"],
+      notes: rows.some((row) => (row.notes || []).some((note) => note.startsWith("worldbank_v2_indicator:")))
+        ? ["World Bank v2 indicators fallback", "Macro proxy layer when microdata rows are unavailable"]
+        : ["Official World Bank table API / data-api page", "Native units preserved"],
       debug: {
         sourceUrlUsed: sourceUrlUsed,
         query: sourceUrlUsed,

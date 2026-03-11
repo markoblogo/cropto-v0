@@ -272,10 +272,10 @@ export const IMF_PCPS_TIMEOUT_MS = envNum("IMF_PCPS_TIMEOUT_MS", 12_000);
 export const IMF_PCPS_CACHE_TTL_MS = envNum("IMF_PCPS_CACHE_TTL_MS", 12 * 60 * 60 * 1000);
 export const OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL =
   process.env.OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL ||
-  "https://www.oecd.org/en/publications/2025/07/oecd-fao-agricultural-outlook-2025-2034_3eb15914/full-report/cereals_251d1ece.html";
+  "https://www.oecd.org/en/publications/oecd-fao-agricultural-outlook-2025-2034_601276cd-en.html";
 export const OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL =
   process.env.OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL ||
-  "https://www.oecd.org/en/publications/oecd-fao-agricultural-outlook-2025-2034_601276cd-en/full-report/oilseeds-and-oilseed-products_42c09daa.html";
+  "https://www.oecd.org/en/publications/oecd-fao-agricultural-outlook-2025-2034_601276cd-en.html";
 export const OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS = envNum("OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS", 12_000);
 export const OECD_AGRICULTURAL_OUTLOOK_CACHE_TTL_MS = envNum("OECD_AGRICULTURAL_OUTLOOK_CACHE_TTL_MS", 24 * 60 * 60 * 1000);
 export const FPMA_DATA_PATHS = (

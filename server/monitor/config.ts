@@ -97,6 +97,22 @@ export const MONITOR_SOURCES: MonitorSource[] = [
     enabled: true,
   },
   {
+    id: "graincentral-news-stream",
+    name: "Grain Central News",
+    url: "https://www.graincentral.com/news/feed",
+    category: "grain-oilseeds",
+    strategy: "rss",
+    enabled: true,
+  },
+  {
+    id: "graincentral-markets",
+    name: "Grain Central Markets",
+    url: "https://www.graincentral.com/markets/feed",
+    category: "grain-oilseeds",
+    strategy: "rss",
+    enabled: true,
+  },
+  {
     id: "farmdoc-daily",
     name: "farmdoc daily",
     url: "https://farmdocdaily.illinois.edu/feed",
