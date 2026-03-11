@@ -113,6 +113,24 @@ function triageReportToMarkdown(report: any): string {
     }),
   ];
 
+  const summary = providers.reduce(
+    (acc: Record<string, number>, row: any) => {
+      const key = String(row?.status || "OFFLINE").toUpperCase();
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
+  lines.push(
+    "",
+    "## Status Summary",
+    "",
+    `- REFRESH: ${summary.REFRESH || 0}`,
+    `- INDICATIVE: ${summary.INDICATIVE || 0}`,
+    `- CONSTRAINED: ${summary.CONSTRAINED || 0}`,
+    `- OFFLINE: ${summary.OFFLINE || 0}`,
+  );
+
   if (nextActions.length) {
     lines.push("", "## Next actions", "");
     for (const action of nextActions.slice(0, 10)) {

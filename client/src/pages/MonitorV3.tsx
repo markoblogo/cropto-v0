@@ -145,6 +145,7 @@ type CustomWidgetDraft = {
 type RenderMode = "metric" | "spark" | "bar" | "list";
 type RenderModeOverride = "auto" | RenderMode;
 type RenderPreset = "mixed" | "data_dense" | "headlines";
+type HealthFilter = "all" | "live" | "degraded" | "empty";
 
 const STORAGE_PREFIX = "monitor_v3_";
 const STORAGE_KEYS = {
@@ -162,6 +163,8 @@ const STORAGE_KEYS = {
   renderModes: `${STORAGE_PREFIX}render_modes`,
   heroPins: `${STORAGE_PREFIX}hero_pins`,
   liveOnly: `${STORAGE_PREFIX}live_only`,
+  healthFilter: `${STORAGE_PREFIX}health_filter`,
+  pinDenseTop: `${STORAGE_PREFIX}pin_dense_top`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -760,6 +763,8 @@ export default function MonitorV3Page() {
   );
   const [heroPins, setHeroPins] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.heroPins, []));
   const [showOnlyLive, setShowOnlyLive] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.liveOnly, false));
+  const [healthFilter, setHealthFilter] = useState<HealthFilter>(() => readJson<HealthFilter>(STORAGE_KEYS.healthFilter, "all"));
+  const [pinDenseTop, setPinDenseTop] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.pinDenseTop, true));
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -788,6 +793,8 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.renderModes, renderModeById), [renderModeById]);
   useEffect(() => writeJson(STORAGE_KEYS.heroPins, heroPins), [heroPins]);
   useEffect(() => writeJson(STORAGE_KEYS.liveOnly, showOnlyLive), [showOnlyLive]);
+  useEffect(() => writeJson(STORAGE_KEYS.healthFilter, healthFilter), [healthFilter]);
+  useEffect(() => writeJson(STORAGE_KEYS.pinDenseTop, pinDenseTop), [pinDenseTop]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -1163,6 +1170,7 @@ export default function MonitorV3Page() {
         if (hiddenIds.includes(widget.id) && !showHidden) return false;
         if (heroPins.includes(widget.id)) return false;
         if (showOnlyLive && widgetDataState(widget) !== "live") return false;
+        if (healthFilter !== "all" && widgetDataState(widget) !== healthFilter) return false;
         if (role !== "all" && !widget.roles.includes(role)) return false;
         if (topic !== "all" && widget.topic !== topic) return false;
         if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
@@ -1170,6 +1178,7 @@ export default function MonitorV3Page() {
       });
 
     if (sortMode === "default") {
+      if (!pinDenseTop) return filtered;
       return [...filtered].sort((a, b) => {
         const typeRank = cardPlacementPriority(b) - cardPlacementPriority(a);
         if (typeRank !== 0) return typeRank;
@@ -1197,7 +1206,7 @@ export default function MonitorV3Page() {
       if (aDelta !== bDelta) return bDelta - aDelta;
       return getStatusRank(b.status) - getStatusRank(a.status);
     });
-  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode, heroPins, showOnlyLive]);
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode, heroPins, showOnlyLive, healthFilter, pinDenseTop]);
 
   const heroPinnedWidgets = useMemo(
     () => heroPins.map((id) => widgetMap[id]).filter((widget): widget is GridWidget => Boolean(widget)).slice(0, 4),
@@ -1458,20 +1467,58 @@ export default function MonitorV3Page() {
           >
             {isRefreshingData ? "Refreshing..." : "Refresh data"}
           </button>
-          <div className="ml-1 flex items-center gap-1 rounded border border-border/70 bg-card/70 px-1.5 py-1 text-[10px] uppercase tracking-[0.12em]">
-            <span className="text-muted-foreground">Health</span>
-            <span className="rounded border border-emerald-500/60 bg-emerald-500/10 px-1 py-0 text-emerald-300">{healthCounts.live}</span>
-            <span className="rounded border border-amber-500/60 bg-amber-500/10 px-1 py-0 text-amber-300">{healthCounts.degraded}</span>
-            <span className="rounded border border-red-500/60 bg-red-500/10 px-1 py-0 text-red-300">{healthCounts.empty}</span>
-            <span className="rounded border border-cyan-500/60 bg-cyan-500/10 px-1 py-0 text-cyan-300">live {livePercent}%</span>
-            <span className={cn("rounded border px-1 py-0", (healthTrend?.liveDelta || 0) >= 0 ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-red-500/60 bg-red-500/10 text-red-300")}>
-              Δ {healthTrend ? `${healthTrend.liveDelta >= 0 ? "+" : ""}${healthTrend.liveDelta} (${healthTrend.livePctDelta >= 0 ? "+" : ""}${healthTrend.livePctDelta}%)` : "n/a"}
-            </span>
-          </div>
         </div>
       </section>
 
       <main className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 px-3 py-3">
+        <section className="rounded border border-border bg-card px-2 py-1.5">
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.12em]">
+            <span className="text-muted-foreground">Provider health</span>
+            <button
+              onClick={() => setHealthFilter("all")}
+              className={cn(
+                "rounded border px-1.5 py-0.5",
+                healthFilter === "all" ? "border-primary/70 bg-primary/15 text-primary" : "border-border text-muted-foreground",
+              )}
+            >
+              all {liveTotalCount}
+            </button>
+            <button
+              onClick={() => setHealthFilter("live")}
+              className={cn(
+                "rounded border px-1.5 py-0.5",
+                healthFilter === "live" ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-emerald-500/40 text-emerald-300/80",
+              )}
+            >
+              live {healthCounts.live}
+            </button>
+            <button
+              onClick={() => setHealthFilter("degraded")}
+              className={cn(
+                "rounded border px-1.5 py-0.5",
+                healthFilter === "degraded" ? "border-amber-500/60 bg-amber-500/10 text-amber-300" : "border-amber-500/40 text-amber-300/80",
+              )}
+            >
+              degraded {healthCounts.degraded}
+            </button>
+            <button
+              onClick={() => setHealthFilter("empty")}
+              className={cn(
+                "rounded border px-1.5 py-0.5",
+                healthFilter === "empty" ? "border-red-500/60 bg-red-500/10 text-red-300" : "border-red-500/40 text-red-300/80",
+              )}
+            >
+              empty {healthCounts.empty}
+            </button>
+            <span className="ml-auto rounded border border-cyan-500/60 bg-cyan-500/10 px-1.5 py-0.5 text-cyan-300">
+              live {livePercent}%
+            </span>
+            <span className={cn("rounded border px-1.5 py-0.5", (healthTrend?.liveDelta || 0) >= 0 ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-red-500/60 bg-red-500/10 text-red-300")}>
+              Δ {healthTrend ? `${healthTrend.liveDelta >= 0 ? "+" : ""}${healthTrend.liveDelta} (${healthTrend.livePctDelta >= 0 ? "+" : ""}${healthTrend.livePctDelta}%)` : "n/a"}
+            </span>
+          </div>
+        </section>
+
         <section className="grid gap-2 xl:grid-cols-[2fr_1fr_1fr]">
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Global Situation</div>
@@ -1590,6 +1637,15 @@ export default function MonitorV3Page() {
                 <option value="headlines">Render: Headlines</option>
               </select>
               <button
+                onClick={() => setPinDenseTop((current) => !current)}
+                className={cn(
+                  "rounded border px-2 py-1 text-xs",
+                  pinDenseTop ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300" : "border-border text-muted-foreground",
+                )}
+              >
+                Pin news/table {pinDenseTop ? "on" : "off"}
+              </button>
+              <button
                 onClick={() => {
                   setOrder([]);
                   setLayoutById({});
@@ -1597,6 +1653,8 @@ export default function MonitorV3Page() {
                   setHeroPins([]);
                   setGrouping("manual");
                   setSortMode("default");
+                  setHealthFilter("all");
+                  setPinDenseTop(true);
                   setRenderPreset("mixed");
                   setRenderModeById({});
                 }}
