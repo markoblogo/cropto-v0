@@ -359,6 +359,17 @@ type YieldFoodSecurityResponse = {
 
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
+type GeoLayerId = "markets" | "logistics" | "weather" | "risk";
+type GeoPoint = {
+  id: string;
+  layer: GeoLayerId;
+  country: Country;
+  x: number;
+  y: number;
+  intensity: number;
+  label: string;
+  value: string;
+};
 
 type GridWidget = {
   id: string;
@@ -469,6 +480,21 @@ const COUNTRY_NEWS_HINTS: Record<Country, string[]> = {
   FR: ["france", "french", "paris"],
   DE: ["germany", "german", "berlin", "hamburg"],
   RO: ["romania", "romanian", "bucharest", "constanta"],
+};
+const COUNTRY_GEO_ANCHORS: Record<Country, { x: number; y: number; label: string }> = {
+  US: { x: 195, y: 180, label: "US" },
+  UA: { x: 538, y: 127, label: "UA" },
+  BR: { x: 295, y: 285, label: "BR" },
+  AR: { x: 286, y: 355, label: "AR" },
+  FR: { x: 495, y: 135, label: "FR" },
+  DE: { x: 515, y: 120, label: "DE" },
+  RO: { x: 546, y: 137, label: "RO" },
+};
+const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: string }> = {
+  markets: { label: "Markets", tone: "text-cyan-300", stroke: "#22d3ee" },
+  logistics: { label: "Logistics", tone: "text-amber-300", stroke: "#f59e0b" },
+  weather: { label: "Weather", tone: "text-emerald-300", stroke: "#34d399" },
+  risk: { label: "Risk", tone: "text-rose-300", stroke: "#fb7185" },
 };
 const KIND_TO_TOPIC: Record<string, Exclude<MonitorTopic, "all">> = {
   GLOBAL_SPOT_TABLE: "markets",
@@ -736,6 +762,18 @@ function formatAgeShort(updatedAt?: string) {
   if (totalHours < 48) return `${totalHours}h`;
   const totalDays = Math.floor(totalHours / 24);
   return `${totalDays}d`;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function inferNewsCountry(item: NewsItem): Country | null {
+  const text = `${item.title || ""} ${item.summary || ""}`.toLowerCase();
+  for (const [countryCode, hints] of Object.entries(COUNTRY_NEWS_HINTS) as Array<[Country, string[]]>) {
+    if (hints.some((hint) => text.includes(hint))) return countryCode;
+  }
+  return null;
 }
 
 function computeDataCompletenessScore(widget: GridWidget) {
@@ -1079,6 +1117,17 @@ export default function MonitorV3Page() {
   );
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
+  const [geoLayers, setGeoLayers] = useState<Record<GeoLayerId, boolean>>({
+    markets: true,
+    logistics: true,
+    weather: true,
+    risk: true,
+  });
+  const [geoZoom, setGeoZoom] = useState(1);
+  const [geoPan, setGeoPan] = useState({ x: 0, y: 0 });
+  const [geoDragging, setGeoDragging] = useState(false);
+  const [geoHoverPointId, setGeoHoverPointId] = useState<string | null>(null);
+  const geoDragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -2142,7 +2191,118 @@ export default function MonitorV3Page() {
     return applyCountryFallbackFilter(roleTopic, country);
   }, [feed, topic, role, country]);
 
-  const yieldGeoglamRows = yieldFoodSecurityQuery.data?.geoglam?.datasets || [];
+  const geoPoints = useMemo<GeoPoint[]>(() => {
+    const points: GeoPoint[] = [];
+    const bucket: Record<Country, { logistics: number; weather: number; policy: number }> = {
+      US: { logistics: 0, weather: 0, policy: 0 },
+      UA: { logistics: 0, weather: 0, policy: 0 },
+      BR: { logistics: 0, weather: 0, policy: 0 },
+      AR: { logistics: 0, weather: 0, policy: 0 },
+      FR: { logistics: 0, weather: 0, policy: 0 },
+      DE: { logistics: 0, weather: 0, policy: 0 },
+      RO: { logistics: 0, weather: 0, policy: 0 },
+    };
+    const sourceNews = [...filteredFeed, ...filteredSignals].slice(0, 60);
+    sourceNews.forEach((item) => {
+      const matchCountry = inferNewsCountry(item) || country;
+      const tags = (item.topic_tags || []).map((tag) => String(tag).toLowerCase());
+      const text = `${item.title || ""} ${item.summary || ""}`.toLowerCase();
+      const isLogistics = tags.includes("logistics") || text.includes("shipping") || text.includes("port");
+      const isWeather = tags.includes("weather") || text.includes("weather") || text.includes("drought") || text.includes("rain");
+      const isPolicy = tags.includes("policy") || text.includes("tariff") || text.includes("sanction");
+      if (isLogistics) bucket[matchCountry].logistics += 1;
+      if (isWeather) bucket[matchCountry].weather += 1;
+      if (isPolicy) bucket[matchCountry].policy += 1;
+    });
+
+    (Object.keys(COUNTRY_GEO_ANCHORS) as Country[]).forEach((countryCode) => {
+      const anchor = COUNTRY_GEO_ANCHORS[countryCode];
+      const regionCount = bucket[countryCode].logistics;
+      if (regionCount > 0) {
+        points.push({
+          id: `logistics-${countryCode}`,
+          layer: "logistics",
+          country: countryCode,
+          x: anchor.x,
+          y: anchor.y,
+          intensity: clamp(regionCount / 8, 0.15, 1),
+          label: `${anchor.label} logistics`,
+          value: `${regionCount} mentions`,
+        });
+      }
+      const weatherCount = bucket[countryCode].weather;
+      if (weatherCount > 0) {
+        points.push({
+          id: `weather-${countryCode}`,
+          layer: "weather",
+          country: countryCode,
+          x: anchor.x + 12,
+          y: anchor.y - 10,
+          intensity: clamp(weatherCount / 6, 0.15, 1),
+          label: `${anchor.label} weather`,
+          value: `${weatherCount} signals`,
+        });
+      }
+    });
+
+    const marketRows = globalIndicesQuery.data?.rows || [];
+    const regionToCountry: Record<string, Country> = { US: "US", EU: "DE", BR: "BR", AR: "AR", EM: "UA" };
+    marketRows.forEach((row) => {
+      const target = regionToCountry[row.region] || country;
+      const anchor = COUNTRY_GEO_ANCHORS[target];
+      if (!anchor) return;
+      const absDelta = Math.abs(Number(row.dayChangePct || 0));
+      if (!Number.isFinite(absDelta)) return;
+      points.push({
+        id: `markets-${row.symbol}`,
+        layer: "markets",
+        country: target,
+        x: anchor.x - 10,
+        y: anchor.y + 10,
+        intensity: clamp(absDelta / 2.5, 0.1, 1),
+        label: `${row.symbol} market`,
+        value: `${row.dayChangePct != null ? `${row.dayChangePct >= 0 ? "+" : ""}${row.dayChangePct.toFixed(2)}%` : "n/a"}`,
+      });
+    });
+
+    const riskIndices = predictionMarketsQuery.data?.indices || [];
+    const geoRisk = riskIndices.find((row) => row.key === "geopolitics_risk")?.value;
+    const grainRisk = riskIndices.find((row) => row.key === "grain_risk")?.value;
+    if (typeof geoRisk === "number") {
+      const ua = COUNTRY_GEO_ANCHORS.UA;
+      points.push({
+        id: "risk-ua",
+        layer: "risk",
+        country: "UA",
+        x: ua.x + 20,
+        y: ua.y - 12,
+        intensity: clamp(geoRisk, 0.2, 1),
+        label: "Geopolitics risk",
+        value: `${(geoRisk * 100).toFixed(1)}%`,
+      });
+    }
+    if (typeof grainRisk === "number") {
+      const br = COUNTRY_GEO_ANCHORS.BR;
+      points.push({
+        id: "risk-br",
+        layer: "risk",
+        country: "BR",
+        x: br.x + 26,
+        y: br.y + 8,
+        intensity: clamp(grainRisk, 0.2, 1),
+        label: "Grain prediction risk",
+        value: `${(grainRisk * 100).toFixed(1)}%`,
+      });
+    }
+
+    return points;
+  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices]);
+
+  const activeGeoPoints = useMemo(
+    () => geoPoints.filter((point) => geoLayers[point.layer]),
+    [geoPoints, geoLayers],
+  );
+
   const yieldFaoRows = yieldFoodSecurityQuery.data?.foodPrices?.faoRows || [];
   const yieldStressRows = yieldFoodSecurityQuery.data?.foodSecurity?.marketRows || [];
   const yieldSectionStatus = (
@@ -2450,20 +2610,159 @@ export default function MonitorV3Page() {
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Global Situation</span>
-              <span className="rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-amber-300">
-                custom map layers in progress
-              </span>
-            </div>
-            <div className="relative h-[360px] overflow-hidden rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.12),transparent_45%),radial-gradient(circle_at_80%_35%,rgba(6,182,212,0.10),transparent_42%),radial-gradient(circle_at_50%_80%,rgba(251,191,36,0.08),transparent_45%)]" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="max-w-[75%] rounded border border-border bg-black/45 px-3 py-2 text-center">
-                  <div className="text-sm font-semibold">Internal Geo Layer Pipeline</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    GEOGLAM public previews are paused from hero. Next step: custom map with switchable internal layers (logistics, yields, weather, risk).
-                  </div>
-                </div>
+              <div className="flex items-center gap-1">
+                {(Object.keys(GEO_LAYER_META) as GeoLayerId[]).map((layerId) => (
+                  <button
+                    key={`geo-layer-${layerId}`}
+                    onClick={() => setGeoLayers((current) => ({ ...current, [layerId]: !current[layerId] }))}
+                    className={cn(
+                      "rounded border px-1.5 py-0.5 text-[10px]",
+                      geoLayers[layerId]
+                        ? "border-primary/70 bg-primary/15 text-primary"
+                        : "border-border text-muted-foreground",
+                    )}
+                  >
+                    {GEO_LAYER_META[layerId].label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => {
+                    setGeoZoom(1);
+                    setGeoPan({ x: 0, y: 0 });
+                  }}
+                  className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                >
+                  reset
+                </button>
               </div>
+            </div>
+            <div
+              className={cn(
+                "relative h-[360px] overflow-hidden rounded border border-border bg-[#06090f]",
+                geoDragging ? "cursor-grabbing" : "cursor-grab",
+              )}
+              onWheel={(event) => {
+                event.preventDefault();
+                const delta = event.deltaY < 0 ? 0.1 : -0.1;
+                setGeoZoom((current) => clamp(Number((current + delta).toFixed(2)), 0.8, 2.4));
+              }}
+              onMouseDown={(event) => {
+                setGeoDragging(true);
+                geoDragStartRef.current = { x: event.clientX, y: event.clientY, panX: geoPan.x, panY: geoPan.y };
+              }}
+              onMouseMove={(event) => {
+                const start = geoDragStartRef.current;
+                if (!geoDragging || !start) return;
+                const dx = event.clientX - start.x;
+                const dy = event.clientY - start.y;
+                setGeoPan({
+                  x: clamp(start.panX + dx, -220, 220),
+                  y: clamp(start.panY + dy, -140, 140),
+                });
+              }}
+              onMouseUp={() => {
+                setGeoDragging(false);
+                geoDragStartRef.current = null;
+              }}
+              onMouseLeave={() => {
+                setGeoDragging(false);
+                geoDragStartRef.current = null;
+                setGeoHoverPointId(null);
+              }}
+            >
+              <svg viewBox="0 0 1000 460" className="h-full w-full select-none">
+                <defs>
+                  <radialGradient id="oceanGlow" cx="50%" cy="45%">
+                    <stop offset="0%" stopColor="#0f172a" />
+                    <stop offset="100%" stopColor="#020617" />
+                  </radialGradient>
+                  <filter id="mapBlur">
+                    <feGaussianBlur stdDeviation="0.5" />
+                  </filter>
+                </defs>
+                <rect x="0" y="0" width="1000" height="460" fill="url(#oceanGlow)" />
+                <g transform={`translate(${geoPan.x} ${geoPan.y}) scale(${geoZoom}) translate(${(1 - geoZoom) * 500} ${(1 - geoZoom) * 230})`}>
+                  <g fill="#0f172a" stroke="#1f2937" strokeWidth="2">
+                    <path d="M75 95 L315 90 L380 135 L352 205 L278 212 L238 268 L167 290 L102 260 L88 206 Z" />
+                    <path d="M228 268 L292 290 L326 362 L286 418 L231 400 L216 335 Z" />
+                    <path d="M420 95 L612 82 L652 112 L646 158 L592 178 L514 170 L470 188 L432 175 Z" />
+                    <path d="M560 178 L622 188 L661 236 L632 282 L566 267 L543 219 Z" />
+                    <path d="M674 118 L836 118 L914 158 L887 225 L822 248 L796 302 L726 287 L678 236 Z" />
+                    <path d="M806 298 L892 312 L923 364 L878 402 L806 392 Z" />
+                  </g>
+                  <g stroke="#0b1220" strokeWidth="1" opacity="0.55">
+                    {Array.from({ length: 9 }).map((_, idx) => (
+                      <line key={`lat-${idx}`} x1="0" y1={idx * 58} x2="1000" y2={idx * 58} />
+                    ))}
+                    {Array.from({ length: 11 }).map((_, idx) => (
+                      <line key={`lon-${idx}`} x1={idx * 100} y1="0" x2={idx * 100} y2="460" />
+                    ))}
+                  </g>
+                  {activeGeoPoints.map((point) => {
+                    const meta = GEO_LAYER_META[point.layer];
+                    const isHover = geoHoverPointId === point.id;
+                    const radius = 4 + point.intensity * 14;
+                    return (
+                      <g
+                        key={point.id}
+                        onMouseEnter={() => setGeoHoverPointId(point.id)}
+                        onMouseLeave={() => setGeoHoverPointId(null)}
+                      >
+                        <circle cx={point.x} cy={point.y} r={radius + (isHover ? 4 : 0)} fill={meta.stroke} opacity={0.15 + point.intensity * 0.28} />
+                        <circle cx={point.x} cy={point.y} r={2.6 + point.intensity * 3.2} fill={meta.stroke} filter="url(#mapBlur)" />
+                        {isHover ? (
+                          <>
+                            <rect x={point.x + 10} y={point.y - 30} rx="4" ry="4" width="150" height="30" fill="#020617" stroke={meta.stroke} />
+                            <text x={point.x + 16} y={point.y - 18} fill="#e2e8f0" fontSize="10">{point.label}</text>
+                            <text x={point.x + 16} y={point.y - 8} fill={meta.stroke} fontSize="10">{point.value}</text>
+                          </>
+                        ) : null}
+                      </g>
+                    );
+                  })}
+                </g>
+              </svg>
+              <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
+                  zoom {geoZoom.toFixed(1)}x
+                </span>
+                <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
+                  points {activeGeoPoints.length}
+                </span>
+              </div>
+              <div className="absolute right-2 top-2 flex gap-1">
+                <button
+                  onClick={() => setGeoZoom((current) => clamp(Number((current - 0.1).toFixed(2)), 0.8, 2.4))}
+                  className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  -
+                </button>
+                <button
+                  onClick={() => setGeoZoom((current) => clamp(Number((current + 0.1).toFixed(2)), 0.8, 2.4))}
+                  className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  +
+                </button>
+              </div>
+              <div className="absolute left-2 top-2 flex flex-wrap gap-1">
+                {(Object.keys(GEO_LAYER_META) as GeoLayerId[]).map((layerId) => (
+                  <span
+                    key={`geo-legend-${layerId}`}
+                    className={cn(
+                      "rounded border border-border bg-black/35 px-1.5 py-0.5 text-[10px]",
+                      GEO_LAYER_META[layerId].tone,
+                    )}
+                  >
+                    {GEO_LAYER_META[layerId].label}
+                  </span>
+                ))}
+              </div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t border-border bg-black/45 px-2 py-1 text-[10px] text-muted-foreground">
+                Internal geo layers engine: canvas/svg foundation active. GEOGLAM remains paused in hero until fresher layer sources are connected.
+              </div>
+            </div>
+            <div className="mt-1 text-[10px] text-muted-foreground">
+              Drag to pan, mouse wheel to zoom. Layer points are synthesized from live feed, prediction risk, and market deltas.
             </div>
           </div>
           <div className="rounded border border-border bg-card p-2">
