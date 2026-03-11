@@ -958,6 +958,7 @@ export default function MonitorV3Page() {
               const dataState = widgetDataState(widget);
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
+              const headerMaxHeight = compactCard ? 54 : 98;
               return (
                 <article
                   key={widget.id}
@@ -989,7 +990,7 @@ export default function MonitorV3Page() {
                     cursor: grouping === "manual" ? "grab" : "default",
                   }}
                 >
-                  <div className={cn("mb-1", compactCard ? "space-y-0.5" : "space-y-1")}>
+                  <div className={cn("mb-1 overflow-hidden", compactCard ? "space-y-0.5" : "space-y-1")} style={{ maxHeight: headerMaxHeight }}>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className={cn("line-clamp-1 font-semibold leading-tight", compactCard ? "text-sm" : "text-base")}>{widget.title}</h3>
@@ -1020,7 +1021,7 @@ export default function MonitorV3Page() {
                   <div className="monitor-widget-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
                     {(() => {
                       const mode = inferRenderMode(widget);
-                      const rawItems = widget.metrics.slice(0, layout.h === 2 ? 4 : 2);
+                      const rawItems = widget.metrics.slice(0, layout.h === 2 ? 5 : 3);
                       const items =
                         rawItems.length > 0
                           ? rawItems
