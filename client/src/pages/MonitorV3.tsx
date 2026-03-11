@@ -952,7 +952,7 @@ export default function MonitorV3Page() {
                     <span className="max-w-[48%] truncate rounded border border-border px-1.5 py-0 text-muted-foreground">{widget.source}</span>
                   </div>
 
-                  <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+                  <div className="monitor-widget-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
                     {(() => {
                       const mode = inferRenderMode(widget);
                       const rawItems = widget.metrics.slice(0, layout.h === 2 ? 4 : 2);
@@ -1085,6 +1085,7 @@ export default function MonitorV3Page() {
                       ));
                     })()}
                   </div>
+                  <div className="pointer-events-none absolute bottom-2 left-2 right-2 h-5 bg-gradient-to-t from-card via-card/80 to-transparent" />
 
                   <button
                     className="absolute right-0 top-0 h-full w-2 cursor-ew-resize opacity-0 transition-opacity group-hover:opacity-100"
