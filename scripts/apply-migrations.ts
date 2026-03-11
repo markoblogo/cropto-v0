@@ -90,6 +90,7 @@ async function main() {
       '014_prediction_markets.sql',
       '015_prediction_markets_quality.sql',
       '016_agro_expectations.sql',
+      '017_binance_market_snapshot.sql',
     ];
 
     let successCount = 0;

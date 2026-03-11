@@ -91,6 +91,8 @@ import { getPredictionMarketsSnapshot } from "./predictionMarketsService";
 import { getPredictionRiskTrends, startPredictionMarketsScheduler } from "./predictionMarketsPersistence";
 import { getAgroExpectationsSnapshot } from "./agroExpectationsService";
 import { getAgroCompositeTrends, getCgoWeightsSnapshot, startAgroExpectationsScheduler } from "./agroExpectationsPersistence";
+import { getBinanceMarketSnapshot } from "./binanceMarketService";
+import { getBinanceRiskTrends, startBinanceMarketScheduler } from "./binanceMarketPersistence";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -415,6 +417,7 @@ export function registerMonitorRoutes(app: Express): void {
   grainWidgetsService.start();
   startPredictionMarketsScheduler();
   startAgroExpectationsScheduler();
+  startBinanceMarketScheduler();
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
@@ -638,6 +641,43 @@ export function registerMonitorRoutes(app: Express): void {
         region: "GLOBAL",
         rows: [],
         message: error?.message || "Failed to load CGO weights",
+      });
+    }
+  });
+
+  app.get("/api/monitor/binance-snapshot", async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === "1";
+      const payload = await getBinanceMarketSnapshot(forceRefresh);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        cacheHit: false,
+        status: "CONSTRAINED",
+        rows: [],
+        macroRisk: {
+          score: null,
+          btcVolProxy: null,
+          ethVolProxy: null,
+          note: error?.message || "Binance snapshot unavailable",
+        },
+      });
+    }
+  });
+
+  app.get("/api/monitor/binance-risk-trends", async (req, res) => {
+    try {
+      const hoursRaw = typeof req.query.hours === "string" ? Number.parseInt(req.query.hours, 10) : 168;
+      const payload = await getBinanceRiskTrends(Number.isFinite(hoursRaw) ? hoursRaw : 168);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        hours: 168,
+        bySymbol: {},
+        macroRisk: { score: null, avgIv: null, avgAbsMove: null },
+        message: error?.message || "Binance risk trends unavailable",
       });
     }
   });

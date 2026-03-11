@@ -221,6 +221,24 @@ export const agroCompositeTimeseries = pgTable("agro_composite_timeseries", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const binanceMarketSnapshot = pgTable("binance_market_snapshot", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  venue: text("venue").notNull().default("binance"),
+  symbol: text("symbol").notNull(),
+  assetType: text("asset_type").notNull(),
+  underlying: text("underlying"),
+  price: decimal("price", { precision: 20, scale: 8 }),
+  priceChange24hPct: decimal("price_change_24h_pct", { precision: 12, scale: 6 }),
+  volume24h: decimal("volume_24h", { precision: 24, scale: 8 }),
+  openInterest: decimal("open_interest", { precision: 24, scale: 8 }),
+  impliedVolatility: decimal("implied_volatility", { precision: 12, scale: 6 }),
+  source: text("source").notNull(),
+  status: text("status").notNull().default("INDICATIVE"),
+  extra: text("extra"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const indexPrices = pgTable("index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   commodity: text("commodity").notNull(),

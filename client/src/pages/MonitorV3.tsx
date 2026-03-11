@@ -207,6 +207,50 @@ type CgoWeightsResponse = {
   rows?: Array<{ commodity: string; weight: number; source?: string; updatedAt?: string }>;
 };
 
+type BinanceSnapshotResponse = {
+  generatedAt?: string;
+  cacheHit?: boolean;
+  status?: string;
+  rows?: Array<{
+    symbol: string;
+    assetType: "crypto_spot" | "token_commodity" | "options_agg";
+    underlying: string;
+    price: number | null;
+    priceChange24hPct: number | null;
+    volume24h: number | null;
+    openInterest: number | null;
+    impliedVolatility: number | null;
+    source: string;
+    status: string;
+    series?: number[];
+  }>;
+  macroRisk?: {
+    score: number | null;
+    btcVolProxy: number | null;
+    ethVolProxy: number | null;
+    note?: string;
+  };
+};
+
+type BinanceRiskTrendsResponse = {
+  generatedAt?: string;
+  hours?: number;
+  bySymbol?: Record<
+    string,
+    {
+      latest: number | null;
+      delta24h: number | null;
+      delta7d: number | null;
+      points: Array<{ ts: string; value: number }>;
+    }
+  >;
+  macroRisk?: {
+    score: number | null;
+    avgIv: number | null;
+    avgAbsMove: number | null;
+  };
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
@@ -1028,6 +1072,24 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const binanceSnapshotQuery = useQuery<BinanceSnapshotResponse>({
+    queryKey: ["monitor-v3-binance-snapshot"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/binance-snapshot");
+      if (!response.ok) throw new Error("Failed to load binance snapshot");
+      return response.json();
+    },
+  });
+  const binanceRiskTrendsQuery = useQuery<BinanceRiskTrendsResponse>({
+    queryKey: ["monitor-v3-binance-risk-trends"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/binance-risk-trends?hours=168");
+      if (!response.ok) throw new Error("Failed to load binance risk trends");
+      return response.json();
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1225,6 +1287,11 @@ export default function MonitorV3Page() {
         if (directPredictionSort === "quality") return (b.qualityScore || 0) - (a.qualityScore || 0);
         return (b.liquidityScore || 0) - (a.liquidityScore || 0);
       });
+    const binanceRows = binanceSnapshotQuery.data?.rows || [];
+    const binanceCommodityRows = binanceRows.filter((row) => row.assetType === "token_commodity");
+    const binanceMajorRows = binanceRows.filter((row) => ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT"].includes(row.symbol));
+    const btcRiskTrend = binanceRiskTrendsQuery.data?.bySymbol?.BTCUSDT;
+    const ethRiskTrend = binanceRiskTrendsQuery.data?.bySymbol?.ETHUSDT;
 
     const widgetsFromGlobalContext: GridWidget[] = [
       {
@@ -1255,7 +1322,7 @@ export default function MonitorV3Page() {
       {
         id: "SYS_MARKET_SENTIMENT",
         title: "Market Sentiment",
-        subtitle: "Prediction markets macro risk layer",
+        subtitle: "Prediction + Binance macro risk layer",
         status: (predictionMarketsQuery.data?.indices?.length || 0) > 0 ? "REFRESH" : (sentimentItems.length ? "INDICATIVE" : "OFFLINE"),
         source: "Kalshi + Polymarket",
         topic: "markets",
@@ -1276,6 +1343,97 @@ export default function MonitorV3Page() {
                 delta: item.valueChangePct,
               }))
             : [{ label: "Sentiment feed", value: "No live BTC/Gold/Oil series (constrained)" }],
+      },
+      {
+        id: "SYS_BINANCE_COMMODITY_PROXY",
+        title: "Binance Commodities Proxy",
+        subtitle: "Tokenized commodity layer (PAXG and peers)",
+        status: (binanceSnapshotQuery.data?.status || "CONSTRAINED").toUpperCase(),
+        source: "Binance spot",
+        updatedAt: binanceSnapshotQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: binanceCommodityRows.length > 0
+          ? binanceCommodityRows.slice(0, 4).map((row) => ({
+              label: row.symbol,
+              value:
+                typeof row.price === "number"
+                  ? `${row.price.toFixed(2)} USDT | vol ${typeof row.volume24h === "number" ? Math.round(row.volume24h).toLocaleString("en-US") : "n/a"}`
+                  : "n/a",
+              delta: typeof row.priceChange24hPct === "number" ? row.priceChange24hPct : undefined,
+              series: Array.isArray(row.series) && row.series.length >= 2 ? row.series : undefined,
+            }))
+          : [{ label: "Status", value: "No commodity token rows from Binance snapshot" }],
+      },
+      {
+        id: "SYS_BINANCE_CRYPTO_MAJORS",
+        title: "Binance Crypto Majors",
+        subtitle: "BTC/ETH/BNB/SOL spot risk map",
+        status: (binanceSnapshotQuery.data?.status || "CONSTRAINED").toUpperCase(),
+        source: "Binance spot",
+        updatedAt: binanceSnapshotQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: binanceMajorRows.length > 0
+          ? binanceMajorRows.slice(0, 4).map((row) => ({
+              label: row.symbol,
+              value: typeof row.price === "number" ? `${row.price.toFixed(2)} USDT` : "n/a",
+              delta: typeof row.priceChange24hPct === "number" ? row.priceChange24hPct : undefined,
+              series: Array.isArray(row.series) && row.series.length >= 2 ? row.series : undefined,
+            }))
+          : [{ label: "Status", value: "No major crypto rows from Binance snapshot" }],
+      },
+      {
+        id: "SYS_BINANCE_DERIV_RISK",
+        title: "Binance Derivatives Risk",
+        subtitle: "Options-vol proxy and macro stress breakdown",
+        status: (binanceSnapshotQuery.data?.status || "CONSTRAINED").toUpperCase(),
+        source: "Binance options proxy",
+        updatedAt: binanceRiskTrendsQuery.data?.generatedAt || binanceSnapshotQuery.data?.generatedAt,
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: [
+          {
+            label: "Macro Risk Score",
+            value:
+              typeof binanceRiskTrendsQuery.data?.macroRisk?.score === "number"
+                ? `${binanceRiskTrendsQuery.data?.macroRisk?.score.toFixed(2)} / 100`
+                : typeof binanceSnapshotQuery.data?.macroRisk?.score === "number"
+                  ? `${binanceSnapshotQuery.data?.macroRisk?.score.toFixed(2)} / 100`
+                  : "n/a",
+            series:
+              Array.isArray(btcRiskTrend?.points) &&
+              Array.isArray(ethRiskTrend?.points) &&
+              btcRiskTrend.points.length >= 2 &&
+              ethRiskTrend.points.length >= 2
+                ? btcRiskTrend.points
+                    .slice(-Math.min(btcRiskTrend.points.length, ethRiskTrend.points.length))
+                    .map((point, idx) => {
+                      const ethPoint = ethRiskTrend.points[ethRiskTrend.points.length - Math.min(btcRiskTrend.points.length, ethRiskTrend.points.length) + idx];
+                      const b = typeof point?.value === "number" ? point.value : 0;
+                      const e = typeof ethPoint?.value === "number" ? ethPoint.value : 0;
+                      return Number((((b + e) / 2) * 100).toFixed(4));
+                    })
+                : undefined,
+          },
+          {
+            label: "BTC Vol Proxy",
+            value:
+              typeof binanceSnapshotQuery.data?.macroRisk?.btcVolProxy === "number"
+                ? `${(binanceSnapshotQuery.data?.macroRisk?.btcVolProxy * 100).toFixed(1)}%`
+                : "n/a",
+          },
+          {
+            label: "ETH Vol Proxy",
+            value:
+              typeof binanceSnapshotQuery.data?.macroRisk?.ethVolProxy === "number"
+                ? `${(binanceSnapshotQuery.data?.macroRisk?.ethVolProxy * 100).toFixed(1)}%`
+                : "n/a",
+          },
+        ],
       },
       {
         id: "SYS_MACRO_PULSE",
@@ -1511,7 +1669,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1627,6 +1785,8 @@ export default function MonitorV3Page() {
     agroExpectationsQuery.dataUpdatedAt,
     agroCompositeTrendsQuery.dataUpdatedAt,
     cgoWeightsQuery.dataUpdatedAt,
+    binanceSnapshotQuery.dataUpdatedAt,
+    binanceRiskTrendsQuery.dataUpdatedAt,
   ].join(":");
   const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
   const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
@@ -1694,6 +1854,8 @@ export default function MonitorV3Page() {
         agroExpectationsQuery.refetch(),
         agroCompositeTrendsQuery.refetch(),
         cgoWeightsQuery.refetch(),
+        binanceSnapshotQuery.refetch(),
+        binanceRiskTrendsQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);
