@@ -43,6 +43,12 @@ const LOGISTICS = [
   "logistics",
   "river",
   "draft",
+  "container",
+  "chokepoint",
+  "panama canal",
+  "suez",
+  "bunker",
+  "demurrage",
 ] as const;
 
 const WEATHER = [
@@ -55,6 +61,11 @@ const WEATHER = [
   "weather",
   "el nino",
   "la nina",
+  "storm",
+  "flood",
+  "dryness",
+  "temperature",
+  "cold snap",
 ] as const;
 
 const POLICY = [
@@ -64,6 +75,12 @@ const POLICY = [
   "export ban",
   "export duty",
   "regulation",
+  "duties",
+  "subsidy",
+  "mandate",
+  "restriction",
+  "trade agreement",
+  "compliance",
 ] as const;
 
 const REGIONS = [

@@ -961,6 +961,9 @@ export default function MonitorV3Page() {
       return key.includes("btc") || key.includes("bitcoin") || key.includes("gold") || key.includes("oil") || key.includes("brent") || key.includes("wti");
     });
     const sentimentItems = sentimentCandidates.slice(0, 3);
+    const marketSentimentFallback = marketRows
+      .filter((row) => /corn|wheat|soy|rapeseed/i.test(`${row.title} ${row.subtitle || ""}`))
+      .slice(0, 3);
 
     const widgetsFromGlobalContext: GridWidget[] = [
       {
@@ -999,7 +1002,13 @@ export default function MonitorV3Page() {
         territory: "GLOBAL",
         metrics: sentimentItems.length
           ? sentimentItems.map((item) => ({ label: item.name, value: formatMetric(item.value, "pts"), delta: item.change }))
-          : [{ label: "Sentiment feed", value: "No BTC/Gold/Oil series" }],
+          : marketSentimentFallback.length
+            ? marketSentimentFallback.map((item) => ({
+                label: item.title,
+                value: formatMetric(item.valueCurrent, `${item.currency || ""}/${item.unit || ""}`),
+                delta: item.valueChangePct,
+              }))
+            : [{ label: "Sentiment feed", value: "No BTC/Gold/Oil series" }],
       },
       {
         id: "SYS_MACRO_PULSE",

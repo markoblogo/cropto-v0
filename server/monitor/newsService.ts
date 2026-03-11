@@ -161,6 +161,10 @@ function toNewsItem(source: MonitorSource, item: ParsedFeedItem): MonitorNewsIte
 
   const normalizedTitle = normalizeTitle(item.title);
   const id = createHash("sha1").update(`${source.id}|${normalizedTitle}|${item.link}`).digest("hex").slice(0, 20);
+  const topicTags = new Set(scoring.topicTags);
+  if (source.category === "policy-macro") topicTags.add("policy");
+  if (source.category === "logistics-shipping") topicTags.add("logistics");
+  if (source.category === "grain-oilseeds" || source.category === "agro-general") topicTags.add("markets");
 
   return {
     id,
@@ -171,7 +175,7 @@ function toNewsItem(source: MonitorSource, item: ParsedFeedItem): MonitorNewsIte
     source_type: source.strategy === "rss" || source.strategy === "atom" ? "rss" : "html",
     published_at: published,
     lang: "en",
-    topic_tags: scoring.topicTags,
+    topic_tags: [...topicTags],
     crop_tags: scoring.cropTags,
     region_tags: scoring.regionTags,
     relevance_score: scoring.relevanceScore + sourceBias,
