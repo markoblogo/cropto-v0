@@ -414,6 +414,13 @@ type ProviderHealthRow = {
   rationale: string;
 };
 
+type TopicHealthRow = {
+  topic: Exclude<MonitorTopic, "all">;
+  live: number;
+  total: number;
+  livePercent: number;
+};
+
 type GridLayout = { w: 1 | 2 | 3; h: 1 | 2 };
 type CustomWidgetDraft = {
   title: string;
@@ -1034,11 +1041,16 @@ function newsMatchesTopic(item: NewsItem, topic: MonitorTopic) {
 function buildTopicNewsMetrics(items: NewsItem[], topic: MonitorTopic, fallbackLabel: string) {
   const scoped = items.filter((item) => inferNewsTopic(item) === topic || newsTopics(item).includes(topic)).slice(0, 7);
   if (scoped.length === 0) return [{ label: fallbackLabel, value: "No headlines in current window" }];
-  return scoped.map((item) => ({
-    label: item.source_name || "Source",
-    value: item.title,
-    href: item.url,
-  }));
+  return scoped.map((item) => {
+    const age = formatAgeShort(item.published_at);
+    const summary = String(item.summary || "").replace(/\s+/g, " ").trim();
+    const rationale = summary || `${item.source_name || "Source"} • ${age}`;
+    return {
+      label: item.title || fallbackLabel,
+      value: rationale,
+      href: item.url,
+    };
+  });
 }
 
 function getGridColumnCount(width: number) {
@@ -1145,6 +1157,7 @@ export default function MonitorV3Page() {
   );
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
+  const [debugProviderId, setDebugProviderId] = useState<string | null>(null);
   const [geoLayers, setGeoLayers] = useState<Record<GeoLayerId, boolean>>({
     markets: true,
     logistics: true,
@@ -1464,8 +1477,8 @@ export default function MonitorV3Page() {
       metrics:
         topSignalItems.length > 0
           ? topSignalItems.slice(0, 5).map((item) => ({
-              label: item.source_name || "Source",
-              value: item.title,
+              label: item.title || "Signal headline",
+              value: String(item.summary || "").replace(/\s+/g, " ").trim() || `${item.source_name || "Source"} • ${formatAgeShort(item.published_at)}`,
               href: item.url,
             }))
           : [{ label: "Signals", value: "No signal headlines yet" }],
@@ -1485,8 +1498,8 @@ export default function MonitorV3Page() {
         const logisticsItems = feedItems.filter((item) => newsTopics(item).includes("logistics")).slice(0, 5);
         if (logisticsItems.length === 0) return [{ label: "Feed", value: "No logistics headlines for current window" }];
         return logisticsItems.map((item) => ({
-          label: item.source_name || "Source",
-          value: item.title,
+          label: item.title || "Logistics headline",
+          value: String(item.summary || "").replace(/\s+/g, " ").trim() || `${item.source_name || "Source"} • ${formatAgeShort(item.published_at)}`,
           href: item.url,
         }));
       })(),
@@ -2077,6 +2090,15 @@ export default function MonitorV3Page() {
     });
     return Object.fromEntries(pairs);
   }, [allWidgets, providerById]);
+  const widgetIdByProviderId = useMemo(() => {
+    const pairs: Array<[string, string]> = [];
+    Object.entries(providerDebugByWidgetId).forEach(([widgetId, provider]) => {
+      if (!pairs.some(([providerId]) => providerId === provider.providerId)) {
+        pairs.push([provider.providerId, widgetId]);
+      }
+    });
+    return Object.fromEntries(pairs) as Record<string, string>;
+  }, [providerDebugByWidgetId]);
 
   const groupedOrder = useMemo(() => {
     const allIds = allWidgets.map((w) => w.id);
@@ -2154,6 +2176,30 @@ export default function MonitorV3Page() {
       { live: 0, degraded: 0, empty: 0 },
     );
   }, [visibleWidgets]);
+  const topicHealthRows = useMemo<TopicHealthRow[]>(() => {
+    const topics: Array<Exclude<MonitorTopic, "all">> = ["markets", "logistics", "policy", "weather"];
+    const inScope = groupedOrder
+      .map((id) => widgetMap[id])
+      .filter((widget): widget is GridWidget => Boolean(widget))
+      .filter((widget) => {
+        if (hiddenIds.includes(widget.id) && !showHidden) return false;
+        if (heroPins.includes(widget.id)) return false;
+        if (role !== "all" && !widget.roles.includes(role)) return false;
+        if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
+        return true;
+      });
+    return topics.map((topicKey) => {
+      const scoped = inScope.filter((widget) => widget.topic === topicKey);
+      const live = scoped.filter((widget) => widgetDataState(widget) === "live").length;
+      const total = scoped.length;
+      return {
+        topic: topicKey,
+        live,
+        total,
+        livePercent: total > 0 ? Math.round((live / total) * 100) : 0,
+      };
+    });
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, heroPins, role, country]);
   const providerHealthRows = useMemo<ProviderHealthRow[]>(() => {
     return (activationQuery.data?.providers || [])
       .map((provider) => {
@@ -2176,6 +2222,10 @@ export default function MonitorV3Page() {
         return a.providerId.localeCompare(b.providerId);
       });
   }, [activationQuery.data]);
+  const openProviderDebug = (providerId: string) => {
+    setDebugProviderId(providerId);
+    setDebugWidgetId(widgetIdByProviderId[providerId] || null);
+  };
   const liveTotalCount = healthCounts.live + healthCounts.degraded + healthCounts.empty;
   const livePercent = liveTotalCount > 0 ? Math.round((healthCounts.live / liveTotalCount) * 100) : 0;
   const predictionHealth = useMemo(() => {
@@ -2638,6 +2688,11 @@ export default function MonitorV3Page() {
             <span className="ml-auto rounded border border-cyan-500/60 bg-cyan-500/10 px-1.5 py-0.5 text-cyan-300">
               live {livePercent}%
             </span>
+            {topicHealthRows.map((row) => (
+              <span key={`topic-live-${row.topic}`} className="rounded border border-border px-1.5 py-0.5 text-muted-foreground">
+                {row.topic} {row.livePercent}% ({row.live}/{row.total})
+              </span>
+            ))}
             <span className={cn("rounded border px-1.5 py-0.5", (healthTrend?.liveDelta || 0) >= 0 ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-red-500/60 bg-red-500/10 text-red-300")}>
               Δ {healthTrend ? `${healthTrend.liveDelta >= 0 ? "+" : ""}${healthTrend.liveDelta} (${healthTrend.livePctDelta >= 0 ? "+" : ""}${healthTrend.livePctDelta}%)` : "n/a"}
             </span>
@@ -2678,9 +2733,10 @@ export default function MonitorV3Page() {
                   ? providerHealthRows
                   : providerHealthRows.filter((row) => row.state === healthFilter)
                 ).map((row) => (
-                  <div
+                  <button
                     key={`provider-health-${row.providerId}`}
-                    className="grid grid-cols-[minmax(0,1.3fr)_auto_auto_auto_auto_minmax(0,1.8fr)] items-center gap-2 rounded border border-border px-1.5 py-1 text-[10px]"
+                    onClick={() => openProviderDebug(row.providerId)}
+                    className="grid w-full grid-cols-[minmax(0,1.3fr)_auto_auto_auto_auto_minmax(0,1.8fr)] items-center gap-2 rounded border border-border px-1.5 py-1 text-left text-[10px] hover:border-cyan-500/60 hover:bg-cyan-500/5"
                   >
                     <span className="truncate font-medium">{row.providerId}</span>
                     <span
@@ -2699,7 +2755,7 @@ export default function MonitorV3Page() {
                     <span className="truncate">{row.errorKind}{row.httpStatus ? `:${row.httpStatus}` : ""}</span>
                     <span>{formatAgeShort(row.lastFetchAt)}</span>
                     <span className="truncate text-muted-foreground">{row.rationale}</span>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -3232,7 +3288,10 @@ export default function MonitorV3Page() {
                           <Pin size={11} />
                         </button>
                         <button
-                          onClick={() => setDebugWidgetId(widget.id)}
+                          onClick={() => {
+                            setDebugProviderId(null);
+                            setDebugWidgetId(widget.id);
+                          }}
                           className="rounded border border-border px-1 py-0 text-[9px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
                           title="Provider debug"
                         >
@@ -3324,17 +3383,26 @@ export default function MonitorV3Page() {
                             }
                             className={cn("block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50", rowMinHeight)}
                           >
-                            <div className="flex items-start justify-between gap-2 text-xs">
-                              <span className="line-clamp-1">{metric.label}</span>
-                              <span className={cn(typeof metric.delta === "number" && metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
-                                {typeof metric.delta === "number"
-                                  ? metric.deltaFormat === "abs"
-                                    ? `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}`
-                                    : `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}%`
-                                  : "n/a"}
-                              </span>
-                            </div>
-                            <div className={cn("text-xs text-muted-foreground", isDenseCard ? "mt-0.5 line-clamp-1" : "mt-1")}>{metric.value}</div>
+                            {cardType === "news" ? (
+                              <>
+                                <div className="line-clamp-2 text-xs leading-tight">{metric.label}</div>
+                                <div className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{metric.value}</div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-start justify-between gap-2 text-xs">
+                                  <span className="line-clamp-1">{metric.label}</span>
+                                  <span className={cn(typeof metric.delta === "number" && metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
+                                    {typeof metric.delta === "number"
+                                      ? metric.deltaFormat === "abs"
+                                        ? `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}`
+                                        : `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}%`
+                                      : "n/a"}
+                                  </span>
+                                </div>
+                                <div className={cn("text-xs text-muted-foreground", isDenseCard ? "mt-0.5 line-clamp-1" : "mt-1")}>{metric.value}</div>
+                              </>
+                            )}
                           </button>
                         ));
                       }
@@ -3641,32 +3709,37 @@ export default function MonitorV3Page() {
         </div>
       ) : null}
 
-      {debugWidgetId ? (
+      {debugWidgetId || debugProviderId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 p-0">
           <aside className="h-full w-full max-w-xl overflow-y-auto border-l border-border bg-card p-3">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-base font-semibold">Provider Debug</h3>
               <button
-                onClick={() => setDebugWidgetId(null)}
+                onClick={() => {
+                  setDebugWidgetId(null);
+                  setDebugProviderId(null);
+                }}
                 className="rounded border border-border px-1.5 py-1 text-muted-foreground hover:text-foreground"
               >
                 <X size={12} />
               </button>
             </div>
             {(() => {
-              const widget = widgetMap[debugWidgetId];
-              const debug = providerDebugByWidgetId[debugWidgetId];
-              if (!widget) return <div className="text-sm text-muted-foreground">Widget not found.</div>;
+              const widget = debugWidgetId ? widgetMap[debugWidgetId] : null;
+              const debug = (debugWidgetId ? providerDebugByWidgetId[debugWidgetId] : null) || (debugProviderId ? providerById[debugProviderId] : null);
+              const providerId = debug?.providerId || debugProviderId || (widget ? WIDGET_KIND_TO_PROVIDER[widget.id.replace(/^GW_/, "")] : null);
               return (
                 <div className="space-y-2 text-sm">
-                  <div className="rounded border border-border bg-muted/10 p-2">
-                    <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Widget</div>
-                    <div className="mt-1 font-semibold">{widget.title}</div>
-                    <div className="text-xs text-muted-foreground">{widget.id}</div>
-                  </div>
+                  {widget ? (
+                    <div className="rounded border border-border bg-muted/10 p-2">
+                      <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Widget</div>
+                      <div className="mt-1 font-semibold">{widget.title}</div>
+                      <div className="text-xs text-muted-foreground">{widget.id}</div>
+                    </div>
+                  ) : null}
                   {!debug ? (
                     <div className="rounded border border-border bg-muted/10 p-2 text-muted-foreground">
-                      No provider debug mapping for this widget type yet.
+                      No provider debug payload found for {providerId || "selected target"}.
                     </div>
                   ) : (
                     <>
