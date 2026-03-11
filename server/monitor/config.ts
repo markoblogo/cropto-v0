@@ -86,7 +86,7 @@ export const MONITOR_SOURCES: MonitorSource[] = [
     url: "https://www.fwi.co.uk/markets/feed",
     category: "agro-general",
     strategy: "rss",
-    enabled: false,
+    enabled: true,
   },
   {
     id: "agweb-markets",
@@ -174,7 +174,15 @@ export const MONITOR_SOURCES: MonitorSource[] = [
     url: "https://biofuels-news.com/rss",
     category: "grain-oilseeds",
     strategy: "rss",
-    enabled: false,
+    enabled: true,
+  },
+  {
+    id: "farms-markets",
+    name: "Farms.com Markets",
+    url: "https://m.farms.com/farmspages/generate_rss_portal/tabid/2854/default.aspx",
+    category: "agro-general",
+    strategy: "rss",
+    enabled: true,
   },
   {
     id: "sovecon",
@@ -316,6 +324,7 @@ export const MONITOR_SOURCE_SCORE_BIAS: Record<string, number> = {
   "ec-agri": +1,
   "wto-news": +1,
   "oecd-agri": +1,
+  "farms-markets": +1,
 };
 
 // Source-level noise suppression (simple title/summary substring patterns).
@@ -328,4 +337,5 @@ export const MONITOR_SOURCE_NOISE_PATTERNS: Record<string, string[]> = {
   agdaily: ["podcast", "listen now"],
   "world-grain-news": ["video", "webinar"],
   "farmdoc-daily": ["farmdoc daily article", "farmdoc webinar"],
+  "farms-markets": ["podcast", "webinar", "listen now"],
 };

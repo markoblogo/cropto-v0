@@ -403,6 +403,17 @@ type ActivationReportResponse = {
   providers?: ProviderDebug[];
 };
 
+type ProviderHealthRow = {
+  providerId: string;
+  state: "live" | "degraded" | "empty";
+  status: string;
+  mapped: number;
+  errorKind: string;
+  httpStatus?: number;
+  lastFetchAt?: string;
+  rationale: string;
+};
+
 type GridLayout = { w: 1 | 2 | 3; h: 1 | 2 };
 type CustomWidgetDraft = {
   title: string;
@@ -835,6 +846,22 @@ function buildDataFirstFallbackRows(
   ];
 }
 
+function providerHealthState(debug: ProviderDebug): "live" | "degraded" | "empty" {
+  const status = (debug.status || "").toUpperCase();
+  if (status === "LIVE" || status === "REFRESH") return "live";
+  if (status === "INDICATIVE" || status === "CONSTRAINED" || status === "FALLBACK") return "degraded";
+  return "empty";
+}
+
+function providerRationale(debug: ProviderDebug): string {
+  const mapped = typeof debug.mappedCount === "number" ? debug.mappedCount : 0;
+  const err = debug.lastError?.errorKind || "none";
+  if (mapped > 0 && (debug.status || "").toUpperCase() === "REFRESH") return "live mapped rows";
+  if (mapped > 0) return `mapped rows with ${String(debug.status || "degraded").toLowerCase()} mode`;
+  if (err !== "none") return `no rows: ${String(err).toLowerCase()}`;
+  return "no mapped rows in latest fetch";
+}
+
 function inferRenderMode(widget: GridWidget): RenderMode {
   const state = widgetDataState(widget);
   if (state === "empty" || state === "degraded") return "list";
@@ -1109,6 +1136,7 @@ export default function MonitorV3Page() {
   const [showOnlyLive, setShowOnlyLive] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.liveOnly, false));
   const [healthFilter, setHealthFilter] = useState<HealthFilter>(() => readJson<HealthFilter>(STORAGE_KEYS.healthFilter, "all"));
   const [pinDenseTop, setPinDenseTop] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.pinDenseTop, true));
+  const [showHealthDetails, setShowHealthDetails] = useState<boolean>(false);
   const [directPredictionSort, setDirectPredictionSort] = useState<DirectPredictionSort>(() =>
     readJson<DirectPredictionSort>(STORAGE_KEYS.directPredictionSort, "liquidity"),
   );
@@ -2126,6 +2154,28 @@ export default function MonitorV3Page() {
       { live: 0, degraded: 0, empty: 0 },
     );
   }, [visibleWidgets]);
+  const providerHealthRows = useMemo<ProviderHealthRow[]>(() => {
+    return (activationQuery.data?.providers || [])
+      .map((provider) => {
+        const mapped = typeof provider.mappedCount === "number" ? provider.mappedCount : 0;
+        return {
+          providerId: provider.providerId,
+          state: providerHealthState(provider),
+          status: provider.status || "OFFLINE",
+          mapped,
+          errorKind: provider.lastError?.errorKind || "none",
+          httpStatus: provider.httpStatus ?? provider.lastError?.httpStatus,
+          lastFetchAt: provider.lastFetchAt,
+          rationale: providerRationale(provider),
+        } as ProviderHealthRow;
+      })
+      .sort((a, b) => {
+        const rank = { live: 3, degraded: 2, empty: 1 } as const;
+        if (rank[a.state] !== rank[b.state]) return rank[b.state] - rank[a.state];
+        if (a.mapped !== b.mapped) return b.mapped - a.mapped;
+        return a.providerId.localeCompare(b.providerId);
+      });
+  }, [activationQuery.data]);
   const liveTotalCount = healthCounts.live + healthCounts.degraded + healthCounts.empty;
   const livePercent = liveTotalCount > 0 ? Math.round((healthCounts.live / liveTotalCount) * 100) : 0;
   const predictionHealth = useMemo(() => {
@@ -2603,7 +2653,57 @@ export default function MonitorV3Page() {
             >
               prediction {predictionHealth}
             </span>
+            <button
+              onClick={() => setShowHealthDetails((current) => !current)}
+              className={cn(
+                "rounded border px-1.5 py-0.5",
+                showHealthDetails ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300" : "border-border text-muted-foreground",
+              )}
+            >
+              details {showHealthDetails ? "on" : "off"}
+            </button>
           </div>
+          {showHealthDetails ? (
+            <div className="mt-1.5 monitor-widget-scroll max-h-44 overflow-y-auto rounded border border-border bg-muted/10 p-1.5">
+              <div className="mb-1 grid grid-cols-[minmax(0,1.3fr)_auto_auto_auto_auto_minmax(0,1.8fr)] gap-2 px-1 text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
+                <span>provider</span>
+                <span>state</span>
+                <span>mapped</span>
+                <span>error</span>
+                <span>fresh</span>
+                <span>rationale</span>
+              </div>
+              <div className="space-y-1">
+                {(healthFilter === "all"
+                  ? providerHealthRows
+                  : providerHealthRows.filter((row) => row.state === healthFilter)
+                ).map((row) => (
+                  <div
+                    key={`provider-health-${row.providerId}`}
+                    className="grid grid-cols-[minmax(0,1.3fr)_auto_auto_auto_auto_minmax(0,1.8fr)] items-center gap-2 rounded border border-border px-1.5 py-1 text-[10px]"
+                  >
+                    <span className="truncate font-medium">{row.providerId}</span>
+                    <span
+                      className={cn(
+                        "rounded border px-1 py-0 uppercase tracking-[0.1em]",
+                        row.state === "live"
+                          ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300"
+                          : row.state === "degraded"
+                            ? "border-amber-500/60 bg-amber-500/10 text-amber-300"
+                            : "border-red-500/60 bg-red-500/10 text-red-300",
+                      )}
+                    >
+                      {row.state}
+                    </span>
+                    <span>{row.mapped}</span>
+                    <span className="truncate">{row.errorKind}{row.httpStatus ? `:${row.httpStatus}` : ""}</span>
+                    <span>{formatAgeShort(row.lastFetchAt)}</span>
+                    <span className="truncate text-muted-foreground">{row.rationale}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </section>
 
         <section className="grid gap-2 xl:grid-cols-[2fr_1fr_1fr]">
@@ -3080,7 +3180,7 @@ export default function MonitorV3Page() {
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
               const isDenseCard = cardType === "news" || cardType === "table";
-              const headerMaxHeight = compactCard ? (isDenseCard ? 34 : 46) : (isDenseCard ? 58 : 78);
+              const headerMaxHeight = compactCard ? (isDenseCard ? 28 : 42) : (isDenseCard ? 48 : 72);
               return (
                 <article
                   key={widget.id}
@@ -3189,8 +3289,8 @@ export default function MonitorV3Page() {
                       const modeOverride = renderModeById[widget.id] || "auto";
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
                       const maxRows = dataState === "live"
-                        ? (layout.h === 2 ? (isDenseCard ? 8 : 7) : (isDenseCard ? 5 : 4))
-                        : (layout.h === 2 ? 9 : 6);
+                        ? (layout.h === 2 ? (isDenseCard ? 10 : 7) : (isDenseCard ? 6 : 4))
+                        : (layout.h === 2 ? 10 : 7);
                       const rawItems = prioritizeMetricsForCard(widget.metrics, cardType).slice(0, maxRows + 2);
                       const fallbackRows = buildDataFirstFallbackRows(widget, dataState, providerDebug);
                       const baseItems =
@@ -3206,7 +3306,7 @@ export default function MonitorV3Page() {
                           : baseItems
                       ).slice(0, maxRows);
                       if (mode === "list") {
-                        const rowMinHeight = isDenseCard ? "min-h-[40px]" : "min-h-[48px]";
+                        const rowMinHeight = isDenseCard ? "min-h-[34px]" : "min-h-[46px]";
                         return items.map((metric) => (
                           <button
                             key={`${widget.id}-${metric.label}`}
@@ -3234,7 +3334,7 @@ export default function MonitorV3Page() {
                                   : "n/a"}
                               </span>
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground">{metric.value}</div>
+                            <div className={cn("text-xs text-muted-foreground", isDenseCard ? "mt-0.5 line-clamp-1" : "mt-1")}>{metric.value}</div>
                           </button>
                         ));
                       }
@@ -3264,7 +3364,10 @@ export default function MonitorV3Page() {
                                   href: metric.href,
                                 })
                               }
-                              className="block min-h-[48px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                              className={cn(
+                                "block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50",
+                                isDenseCard ? "min-h-[40px]" : "min-h-[48px]",
+                              )}
                             >
                               <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                                 <span>{metric.label}</span>
@@ -3301,7 +3404,10 @@ export default function MonitorV3Page() {
                                 href: widget.metrics[0]?.href,
                               })
                             }
-                            className="block min-h-[88px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            className={cn(
+                              "block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50",
+                              isDenseCard ? "min-h-[72px]" : "min-h-[88px]",
+                            )}
                           >
                             <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Trend</div>
                             <svg viewBox="0 0 100 100" className="h-12 w-full">
@@ -3333,7 +3439,10 @@ export default function MonitorV3Page() {
                               href: metric.href,
                             })
                           }
-                          className="block min-h-[48px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                          className={cn(
+                            "block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50",
+                            isDenseCard ? "min-h-[40px]" : "min-h-[48px]",
+                          )}
                         >
                           <div className="truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</div>
                           <div className="text-sm font-semibold">{metric.value}</div>

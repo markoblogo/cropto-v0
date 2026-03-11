@@ -457,16 +457,16 @@ export function registerMonitorRoutes(app: Express): void {
         search: typeof req.query.search === "string" ? req.query.search : undefined,
       });
 
-      const feed = capBySource(filtered, 4, 200);
+      const feed = capBySource(filtered, 3, 200);
       const top = topSignals(feed, 10);
       const logistics = capBySource(
         feed.filter((item) => item.category === "logistics-shipping" || item.topic_tags.includes("logistics")),
-        3,
+        2,
         8,
       );
       const policy = capBySource(
         feed.filter((item) => item.category === "policy-macro" || item.topic_tags.includes("policy") || item.topic_tags.includes("trade")),
-        3,
+        2,
         8,
       );
 
