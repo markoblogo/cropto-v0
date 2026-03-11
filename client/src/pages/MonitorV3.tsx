@@ -312,6 +312,23 @@ function isDegradedStatus(status: string) {
   return key === "FALLBACK" || key === "OFFLINE";
 }
 
+function metricLooksUsable(metric: { value: string }) {
+  const value = (metric.value || "").toLowerCase().trim();
+  if (!value) return false;
+  if (value === "n/a") return false;
+  if (value.includes("no payload")) return false;
+  if (value.includes("no numeric")) return false;
+  if (value.includes("without numeric")) return false;
+  return true;
+}
+
+function widgetDataState(widget: GridWidget): "live" | "degraded" | "empty" {
+  const hasUsable = widget.metrics.some(metricLooksUsable);
+  if (!hasUsable) return "empty";
+  if (isDegradedStatus(widget.status)) return "degraded";
+  return "live";
+}
+
 function inferRenderMode(widget: GridWidget): RenderMode {
   const deltaCount = widget.metrics.filter((metric) => typeof metric.delta === "number").length;
   if (widget.topic === "logistics") return "bar";
@@ -665,6 +682,17 @@ export default function MonitorV3Page() {
     });
   }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode]);
 
+  const healthCounts = useMemo(() => {
+    return visibleWidgets.reduce(
+      (acc, widget) => {
+        const state = widgetDataState(widget);
+        acc[state] += 1;
+        return acc;
+      },
+      { live: 0, degraded: 0, empty: 0 },
+    );
+  }, [visibleWidgets]);
+
   const topSignals = newsQuery.data?.topSignals || [];
   const feed = newsQuery.data?.feed || [];
 
@@ -870,6 +898,17 @@ export default function MonitorV3Page() {
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
             <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-1.5 md:flex">
+                <span className="rounded border border-emerald-500/60 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-emerald-300">
+                  live {healthCounts.live}
+                </span>
+                <span className="rounded border border-amber-500/60 bg-amber-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-amber-300">
+                  degraded {healthCounts.degraded}
+                </span>
+                <span className="rounded border border-red-500/60 bg-red-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-red-300">
+                  empty {healthCounts.empty}
+                </span>
+              </div>
               <select
                 value={sortMode}
                 onChange={(event) => setSortMode(event.target.value as GridSort)}
@@ -899,6 +938,7 @@ export default function MonitorV3Page() {
           <div className="grid auto-rows-[168px] grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
             {visibleWidgets.map((widget) => {
               const layout = layoutById[widget.id] || ({ w: 1, h: 1 } as GridLayout);
+              const dataState = widgetDataState(widget);
               return (
                 <article
                   key={widget.id}
@@ -918,9 +958,11 @@ export default function MonitorV3Page() {
                   }}
                   className={cn(
                     "group relative flex flex-col overflow-hidden rounded border bg-card p-2",
-                    isDegradedStatus(widget.status)
-                      ? "border-dashed border-amber-500/40 bg-amber-500/5"
-                      : "border-border",
+                    dataState === "empty"
+                      ? "border-dashed border-red-500/45 bg-red-500/5"
+                      : dataState === "degraded"
+                        ? "border-dashed border-amber-500/40 bg-amber-500/5"
+                        : "border-border",
                   )}
                   style={{
                     gridColumn: `span ${layout.w} / span ${layout.w}`,
@@ -949,6 +991,9 @@ export default function MonitorV3Page() {
 
                   <div className="mb-1 flex items-center gap-1.5 text-[10px]">
                     <span className={cn("rounded border px-1.5 py-0 uppercase tracking-[0.12em]", getStatusTone(widget.status))}>{widget.status}</span>
+                    {dataState === "empty" ? (
+                      <span className="rounded border border-red-500/60 bg-red-500/10 px-1.5 py-0 uppercase tracking-[0.12em] text-red-300">data gap</span>
+                    ) : null}
                     <span className="max-w-[48%] truncate rounded border border-border px-1.5 py-0 text-muted-foreground">{widget.source}</span>
                   </div>
 
