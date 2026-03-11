@@ -2682,14 +2682,16 @@ export default function MonitorV3Page() {
                 </defs>
                 <rect x="0" y="0" width="1000" height="460" fill="url(#oceanGlow)" />
                 <g transform={`translate(${geoPan.x} ${geoPan.y}) scale(${geoZoom}) translate(${(1 - geoZoom) * 500} ${(1 - geoZoom) * 230})`}>
-                  <g fill="#0f172a" stroke="#1f2937" strokeWidth="2">
-                    <path d="M75 95 L315 90 L380 135 L352 205 L278 212 L238 268 L167 290 L102 260 L88 206 Z" />
-                    <path d="M228 268 L292 290 L326 362 L286 418 L231 400 L216 335 Z" />
-                    <path d="M420 95 L612 82 L652 112 L646 158 L592 178 L514 170 L470 188 L432 175 Z" />
-                    <path d="M560 178 L622 188 L661 236 L632 282 L566 267 L543 219 Z" />
-                    <path d="M674 118 L836 118 L914 158 L887 225 L822 248 L796 302 L726 287 L678 236 Z" />
-                    <path d="M806 298 L892 312 L923 364 L878 402 L806 392 Z" />
-                  </g>
+                  <image
+                    href="/maps/monitor-map.svg"
+                    x="0"
+                    y="0"
+                    width="1000"
+                    height="460"
+                    preserveAspectRatio="xMidYMid slice"
+                    opacity="0.95"
+                  />
+                  <rect x="0" y="0" width="1000" height="460" fill="#020617" opacity="0.22" />
                   <g stroke="#0b1220" strokeWidth="1" opacity="0.55">
                     {Array.from({ length: 9 }).map((_, idx) => (
                       <line key={`lat-${idx}`} x1="0" y1={idx * 58} x2="1000" y2={idx * 58} />
