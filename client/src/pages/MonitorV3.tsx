@@ -21,6 +21,7 @@ type NewsItem = {
 };
 
 type NewsResponse = {
+  generatedAt?: string;
   topSignals?: NewsItem[];
   feed?: NewsItem[];
   sidePanels?: { logistics?: NewsItem[]; policy?: NewsItem[] };
@@ -112,7 +113,7 @@ type GridWidget = {
   topic: Exclude<MonitorTopic, "all">;
   roles: Array<Exclude<MonitorRole, "all">>;
   territory: string;
-  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string }>;
+  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }>;
 };
 
 type GridLayout = { w: 1 | 2 | 3; h: 1 | 2 };
@@ -237,15 +238,43 @@ function formatMetric(current?: number, unit?: string) {
   return `${current.toFixed(2)} ${unit || ""}`.trim();
 }
 
-function pickMetrics(widget?: GrainWidgetRecord): Array<{ label: string; value: string; delta?: number }> {
-  const metrics: Array<{ label: string; value: string; delta?: number }> = [];
+function pickMetrics(widget?: GrainWidgetRecord): Array<{ label: string; value: string; delta?: number; series?: number[] }> {
+  const metrics: Array<{ label: string; value: string; delta?: number; series?: number[] }> = [];
   (widget?.rows || []).slice(0, 3).forEach((row) => {
-    const current = row.price?.valueCurrent;
+    const price = row.price as
+      | {
+          valueCurrent?: number;
+          changePct?: number;
+          unit?: string;
+          normalizedValueCurrent?: number;
+          normalizedValueChangePct?: number;
+          normalizedUnit?: string;
+          normalizedCurrency?: string;
+          nativeValueCurrent?: number;
+          nativeValueChangePct?: number;
+          nativeUnit?: string;
+          series?: Array<{ value?: number }>;
+        }
+      | undefined;
+    const current =
+      price?.normalizedValueCurrent ??
+      price?.valueCurrent ??
+      price?.nativeValueCurrent;
+    const delta =
+      price?.normalizedValueChangePct ??
+      price?.changePct ??
+      price?.nativeValueChangePct;
+    const unit = price?.normalizedUnit || price?.unit || price?.nativeUnit;
+    const currency = price?.normalizedCurrency || "";
+    const series = (price?.series || [])
+      .map((point) => (typeof point.value === "number" ? point.value : null))
+      .filter((point): point is number => point !== null);
     if (typeof current === "number") {
       metrics.push({
         label: row.label || "Value",
-        value: formatMetric(current, row.price?.unit),
-        delta: row.price?.changePct,
+        value: formatMetric(current, [currency, unit].filter(Boolean).join("/")),
+        delta,
+        series: series.length >= 2 ? series : undefined,
       });
     }
   });
@@ -378,6 +407,8 @@ function formatStaleAge(widget: GridWidget) {
 }
 
 function inferRenderMode(widget: GridWidget): RenderMode {
+  const hasSeries = widget.metrics.some((metric) => Array.isArray(metric.series) && metric.series.length >= 2);
+  if (hasSeries) return "spark";
   const deltaCount = widget.metrics.filter((metric) => typeof metric.delta === "number").length;
   if (widget.topic === "logistics") return "bar";
   if (widget.topic === "policy") return "list";
@@ -393,6 +424,8 @@ function parseMetricNumber(value: string): number | null {
 }
 
 function miniSparkValues(widget: GridWidget): number[] {
+  const fromSeries = widget.metrics.find((metric) => Array.isArray(metric.series) && metric.series.length >= 2)?.series;
+  if (fromSeries && fromSeries.length >= 2) return fromSeries.slice(-16);
   const fromDelta = widget.metrics
     .map((metric) => (typeof metric.delta === "number" ? metric.delta : null))
     .filter((value): value is number => value !== null);
@@ -635,6 +668,8 @@ export default function MonitorV3Page() {
   const coreWidgets = useMemo<GridWidget[]>(() => {
     const byKind = grainWidgetsQuery.data?.widgets?.byKind || {};
     const orderFromResponse = grainWidgetsQuery.data?.widgets?.order || Object.keys(byKind);
+    const feedItems = newsQuery.data?.feed || [];
+    const topSignalItems = newsQuery.data?.topSignals || [];
 
     const widgetsFromExpansion: GridWidget[] = orderFromResponse
       .map((kind) => {
@@ -697,13 +732,52 @@ export default function MonitorV3Page() {
       metrics: [{ label: "Index", value: formatMetric(row.value, "pts"), delta: row.change, deltaFormat: "abs" }],
     }));
 
+    const topSignalsWidget: GridWidget = {
+      id: "TXT_TOP_SIGNALS",
+      title: "Signal Headlines",
+      subtitle: "Top decision-relevant RSS signals",
+      status: "REFRESH",
+      source: "Monitor news",
+      updatedAt: newsQuery.data?.generatedAt,
+      topic: "policy",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics:
+        topSignalItems.length > 0
+          ? topSignalItems.slice(0, 5).map((item) => ({
+              label: item.source_name || "Source",
+              value: item.title,
+              href: item.url,
+            }))
+          : [{ label: "Signals", value: "No signal headlines yet" }],
+    };
+
+    const logisticsFeedWidget: GridWidget = {
+      id: "TXT_LOGISTICS_FEED",
+      title: "Logistics Feed",
+      subtitle: "Port, freight and corridor headlines",
+      status: "REFRESH",
+      source: "Monitor news",
+      updatedAt: newsQuery.data?.generatedAt,
+      topic: "logistics",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: (() => {
+        const logisticsItems = feedItems.filter((item) => newsTopics(item).includes("logistics")).slice(0, 5);
+        if (logisticsItems.length === 0) return [{ label: "Feed", value: "No logistics headlines for current window" }];
+        return logisticsItems.map((item) => ({
+          label: item.source_name || "Source",
+          value: item.title,
+          href: item.url,
+        }));
+      })(),
+    };
+
     const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
       const key = `${row.slug} ${row.name}`.toLowerCase();
       return key.includes("btc") || key.includes("bitcoin") || key.includes("gold") || key.includes("oil") || key.includes("brent") || key.includes("wti");
     });
     const sentimentItems = sentimentCandidates.slice(0, 3);
-    const feedItems = newsQuery.data?.feed || [];
-    const topSignalItems = newsQuery.data?.topSignals || [];
 
     const widgetsFromGlobalContext: GridWidget[] = [
       {
@@ -761,7 +835,15 @@ export default function MonitorV3Page() {
       },
     ];
 
-    return [...widgetsFromGlobalContext, ...widgetsFromExpansion, ...widgetsFromMarkets, ...widgetsFromLogistics, ...widgetsFromIndices];
+    return [
+      ...widgetsFromGlobalContext,
+      topSignalsWidget,
+      logisticsFeedWidget,
+      ...widgetsFromExpansion,
+      ...widgetsFromMarkets,
+      ...widgetsFromLogistics,
+      ...widgetsFromIndices,
+    ];
   }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
