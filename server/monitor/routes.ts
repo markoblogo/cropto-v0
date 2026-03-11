@@ -95,6 +95,7 @@ import { getBinanceMarketSnapshot } from "./binanceMarketService";
 import { getBinanceRiskTrends, startBinanceMarketScheduler } from "./binanceMarketPersistence";
 import { getGlobalIndicesSnapshot } from "./globalIndicesService";
 import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndicesPersistence";
+import { getYieldFoodSecuritySnapshot } from "./yieldFoodSecurityService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -727,6 +728,54 @@ export function registerMonitorRoutes(app: Express): void {
         status: "CONSTRAINED",
         provider: "unknown",
         message: error?.message || "Global index trends unavailable",
+      });
+    }
+  });
+
+  app.get("/api/monitor/yield-food-security", async (req, res) => {
+    try {
+      const country = typeof req.query.country === "string" ? req.query.country.toUpperCase() : "UA";
+      const crop = typeof req.query.crop === "string" ? req.query.crop.toUpperCase() : "ALL";
+      const forceRefresh = req.query.refresh === "1";
+      const grainWidgets = await grainWidgetsService.list({ country, forceRefresh });
+      const byKind = grainWidgets?.widgets?.byKind || {};
+      const payload = await getYieldFoodSecuritySnapshot({
+        country,
+        crop,
+        forceRefresh,
+        byKind,
+      });
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        cacheHit: false,
+        country: "UA",
+        crop: "ALL",
+        geoglam: {
+          status: "CONSTRAINED",
+          source: "GEOGLAM Crop Monitor",
+          archiveUrl: "https://www.cropmonitor.org/data-archive/",
+          selectedCount: 0,
+          note: error?.message || "yield_food_security_unavailable",
+          datasets: [],
+        },
+        foodPrices: {
+          status: "CONSTRAINED",
+          source: "FAO FFPI",
+          faoRows: [],
+        },
+        foodSecurity: {
+          status: "CONSTRAINED",
+          source: "WFP + World Bank + FAO",
+          score: null,
+          localDeviation: null,
+          globalDeviation: null,
+          localScore: null,
+          globalScore: null,
+          marketRows: [],
+          note: "Yield/Food Security endpoint unavailable",
+        },
       });
     }
   });

@@ -3,6 +3,7 @@ import { getBinanceMarketSnapshot } from "./binanceMarketService";
 
 const TWELVEDATA_BASE_URL = process.env.TWELVEDATA_BASE_URL || "https://api.twelvedata.com";
 const TWELVEDATA_API_KEY = process.env.TWELVEDATA_API_KEY || "";
+const YAHOO_CHART_BASE_URL = process.env.MONITOR_YAHOO_CHART_BASE_URL || "https://query1.finance.yahoo.com/v8/finance/chart";
 const FETCH_TIMEOUT_MS = Number.parseInt(process.env.MONITOR_GLOBAL_INDICES_FETCH_TIMEOUT_MS || "7000", 10);
 const CACHE_TTL_MS = Number.parseInt(process.env.MONITOR_GLOBAL_INDICES_CACHE_TTL_MS || String(10 * 60 * 1000), 10);
 
@@ -98,6 +99,28 @@ async function loadTwelveDataSeries(symbol: string) {
     series: ordered.slice(-24).map((v) => Number(v.toFixed(4))),
     source: "eod" as const,
   };
+}
+
+async function loadYahooDailyChange(symbolCandidates: string[]): Promise<{ symbol: string; dayChangePct: number | null; latest: number | null } | null> {
+  for (const symbol of symbolCandidates) {
+    try {
+      const url = `${YAHOO_CHART_BASE_URL}/${encodeURIComponent(symbol)}?interval=1d&range=7d`;
+      const payload = await fetchJson<any>(url);
+      const result = Array.isArray(payload?.chart?.result) ? payload.chart.result[0] : null;
+      const closes = Array.isArray(result?.indicators?.quote?.[0]?.close) ? result.indicators.quote[0].close : [];
+      const values = closes
+        .map((value: unknown) => parseFloatSafe(value))
+        .filter((value: number | null): value is number => value != null);
+      if (values.length < 2) continue;
+      const latest = values[values.length - 1];
+      const prev = values[values.length - 2];
+      const dayChangePct = prev && prev !== 0 ? Number((((latest - prev) / prev) * 100).toFixed(4)) : null;
+      return { symbol, dayChangePct, latest };
+    } catch {
+      // fall through to next candidate
+    }
+  }
+  return null;
 }
 
 function fallbackRows(): GlobalIndexRow[] {
@@ -235,16 +258,20 @@ export async function getGlobalIndicesSnapshot(forceRefresh = false): Promise<Gl
   }
 
   const binance = await getBinanceMarketSnapshot(false).catch(() => null);
+  const [oilSnapshot, dxySnapshot] = await Promise.all([
+    loadYahooDailyChange(["CL=F", "BZ=F"]),
+    loadYahooDailyChange(["DX-Y.NYB", "DXY", "DX=F"]),
+  ]);
   const btc = binance?.rows.find((row) => row.symbol === "BTCUSDT")?.priceChange24hPct ?? null;
   const gold = binance?.rows.find((row) => row.symbol === "PAXGUSDT")?.priceChange24hPct ?? null;
-  const oil = null;
-  const dxy = null;
+  const oil = oilSnapshot?.dayChangePct ?? null;
+  const dxy = dxySnapshot?.dayChangePct ?? null;
   const crossAsset = {
     btc,
     gold,
     oil,
     dxy,
-    note: "BTC/Gold from Binance; Oil/DXY pending direct provider wiring",
+    note: `BTC/Gold from Binance; Oil ${oilSnapshot?.symbol || "n/a"} and DXY ${dxySnapshot?.symbol || "n/a"} from Yahoo chart`,
   };
 
   const riskOnOff = buildRiskOnOff(rows, crossAsset);

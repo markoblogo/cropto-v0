@@ -299,6 +299,60 @@ type GlobalIndicesTrendsResponse = {
   >;
 };
 
+type YieldCropFilter = "ALL" | "WHEAT" | "MAIZE" | "RICE" | "SOYBEAN" | "SORGHUM" | "MILLET" | "SYNTHESIS";
+
+type YieldFoodSecurityResponse = {
+  generatedAt?: string;
+  cacheHit?: boolean;
+  country?: string;
+  crop?: YieldCropFilter;
+  geoglam?: {
+    status?: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+    source?: string;
+    archiveUrl?: string;
+    selectedCount?: number;
+    latestUpdate?: string;
+    note?: string;
+    datasets?: Array<{
+      id: string;
+      title: string;
+      crop: YieldCropFilter;
+      sourceUrl: string;
+      updatedAt?: string;
+      countryRelevant?: boolean;
+      tags?: string[];
+      snippet?: string;
+    }>;
+  };
+  foodPrices?: {
+    status?: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+    source?: string;
+    faoRows?: Array<{
+      label: string;
+      value: string;
+      deltaPct?: number;
+      series?: number[];
+    }>;
+  };
+  foodSecurity?: {
+    status?: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+    source?: string;
+    score?: number | null;
+    localDeviation?: number | null;
+    globalDeviation?: number | null;
+    localScore?: number | null;
+    globalScore?: number | null;
+    marketRows?: Array<{
+      source: "WFP" | "WB";
+      crop: string;
+      label: string;
+      value: string;
+      changePct?: number;
+    }>;
+    note?: string;
+  };
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
@@ -366,6 +420,7 @@ const STORAGE_KEYS = {
   pinDenseTop: `${STORAGE_PREFIX}pin_dense_top`,
   directPredictionSort: `${STORAGE_PREFIX}direct_prediction_sort`,
   directPredictionRegion: `${STORAGE_PREFIX}direct_prediction_region`,
+  yieldCrop: `${STORAGE_PREFIX}yield_crop`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -391,6 +446,16 @@ const COUNTRY_OPTIONS: Array<{ id: Country; label: string }> = [
   { id: "FR", label: "France" },
   { id: "DE", label: "Germany" },
   { id: "RO", label: "Romania" },
+];
+const YIELD_CROP_OPTIONS: Array<{ id: YieldCropFilter; label: string }> = [
+  { id: "ALL", label: "All crops" },
+  { id: "WHEAT", label: "Wheat" },
+  { id: "MAIZE", label: "Maize" },
+  { id: "RICE", label: "Rice" },
+  { id: "SOYBEAN", label: "Soybean" },
+  { id: "SORGHUM", label: "Sorghum" },
+  { id: "MILLET", label: "Millet" },
+  { id: "SYNTHESIS", label: "Synthesis" },
 ];
 const COUNTRY_NEWS_HINTS: Record<Country, string[]> = {
   US: ["united states", "u.s.", "usa", "us "],
@@ -972,6 +1037,7 @@ export default function MonitorV3Page() {
   const [directPredictionRegion, setDirectPredictionRegion] = useState<DirectPredictionRegion>(() =>
     readJson<DirectPredictionRegion>(STORAGE_KEYS.directPredictionRegion, "ALL"),
   );
+  const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -1004,6 +1070,7 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.pinDenseTop, pinDenseTop), [pinDenseTop]);
   useEffect(() => writeJson(STORAGE_KEYS.directPredictionSort, directPredictionSort), [directPredictionSort]);
   useEffect(() => writeJson(STORAGE_KEYS.directPredictionRegion, directPredictionRegion), [directPredictionRegion]);
+  useEffect(() => writeJson(STORAGE_KEYS.yieldCrop, yieldCrop), [yieldCrop]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -1153,6 +1220,15 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/global-indices-trends?hours=168");
       if (!response.ok) throw new Error("Failed to load global indices trends");
+      return response.json();
+    },
+  });
+  const yieldFoodSecurityQuery = useQuery<YieldFoodSecurityResponse>({
+    queryKey: ["monitor-v3-yield-food-security", country, yieldCrop],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch(`/api/monitor/yield-food-security?country=${encodeURIComponent(country)}&crop=${encodeURIComponent(yieldCrop)}`);
+      if (!response.ok) throw new Error("Failed to load yield & food security");
       return response.json();
     },
   });
@@ -1363,23 +1439,6 @@ export default function MonitorV3Page() {
     const globalIndicesRows = globalIndicesQuery.data?.rows || [];
     const globalIndicesStatus = (globalIndicesQuery.data?.status || "CONSTRAINED").toUpperCase();
     const riskOnOff = globalIndicesQuery.data?.riskOnOff;
-    const ffpiWidget = byKind.CROP_PRICE_INDEX;
-    const wfpWidget = byKind.WFP_MARKET_PRICES_MULTI_COUNTRY;
-    const wbWidget = byKind.WB_MICRODATA_MARKET_PRICES;
-    const faostatWidget = byKind.FAOSTAT_PP_MULTI_COUNTRY;
-    const oecdWidget = byKind.OECD_AGRICULTURAL_OUTLOOK;
-    const ffpiMetrics = pickMetrics(ffpiWidget);
-    const wfpMetrics = pickMetrics(wfpWidget);
-    const wbMetrics = pickMetrics(wbWidget);
-    const faoDeltas = ffpiMetrics.map((m) => (typeof m.delta === "number" ? Math.abs(m.delta) : null)).filter((v): v is number => v !== null);
-    const wfpDeltas = wfpMetrics.map((m) => (typeof m.delta === "number" ? Math.abs(m.delta) : null)).filter((v): v is number => v !== null);
-    const wbDeltas = wbMetrics.map((m) => (typeof m.delta === "number" ? Math.abs(m.delta) : null)).filter((v): v is number => v !== null);
-    const avgValue = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
-    const foodStressRaw =
-      (avgValue(faoDeltas) ?? 0) * 0.3 +
-      (avgValue(wfpDeltas) ?? 0) * 0.5 +
-      (avgValue(wbDeltas) ?? 0) * 0.2;
-    const foodStressScore = Number.isFinite(foodStressRaw) ? Math.max(0, Math.min(1, foodStressRaw / 15)) : null;
     const eurUsd = formatFxPair("EUR/USD", fxQuery.data?.rates);
     const usdBrl = formatFxPair("USD/BRL", fxQuery.data?.rates);
     const globalTrendSpx = globalIndicesTrendsQuery.data?.bySymbol?.SPX?.points?.map((point) => point.value) || [];
@@ -1511,13 +1570,40 @@ export default function MonitorV3Page() {
           {
             label: "US/EU/EM",
             value: riskOnOff?.matrix
-              ? `${(riskOnOff.matrix.find((item) => item.label === "US Equities")?.value ?? 0).toFixed(2)}% / ${(riskOnOff.matrix.find((item) => item.label === "EU Equities")?.value ?? 0).toFixed(2)}% / ${(riskOnOff.matrix.find((item) => item.label === "EM Equities")?.value ?? 0).toFixed(2)}%`
+              ? `${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "US Equities")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()} / ${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "EU Equities")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()} / ${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "EM Equities")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()}`
               : "n/a",
           },
           {
             label: "BTC/Gold",
             value: riskOnOff?.matrix
-              ? `${(riskOnOff.matrix.find((item) => item.label === "BTC")?.value ?? 0).toFixed(2)}% / ${(riskOnOff.matrix.find((item) => item.label === "Gold")?.value ?? 0).toFixed(2)}%`
+              ? `${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "BTC")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()} / ${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "Gold")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()}`
+              : "n/a",
+          },
+          {
+            label: "Oil/DXY",
+            value: riskOnOff?.matrix
+              ? `${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "Oil")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()} / ${(() => {
+                  const v = riskOnOff.matrix?.find((item) => item.label === "DXY")?.value;
+                  return v == null ? "n/a" : `${v.toFixed(2)}%`;
+                })()}`
               : "n/a",
           },
           {
@@ -1794,83 +1880,6 @@ export default function MonitorV3Page() {
         ],
       },
       {
-        id: "SYS_YIELD_CONDITIONS",
-        title: "Yield Conditions",
-        subtitle: "GEOGLAM + outlook proxy (public layer)",
-        status: oecdWidget?.status?.toUpperCase() === "REFRESH" ? "INDICATIVE" : "CONSTRAINED",
-        source: "GEOGLAM / OECD proxy",
-        updatedAt: globalIndicesQuery.data?.generatedAt,
-        topic: "weather",
-        roles: ["farmer", "trader", "broker"],
-        territory: country,
-        metrics: [
-          {
-            label: "Crop monitor",
-            value: "GEOGLAM direct layer in progress (public ArcGIS)",
-          },
-          {
-            label: "Outlook proxy",
-            value: (oecdWidget?.items || []).length
-              ? `${(oecdWidget.items || []).slice(0, 1).map((item: any) => item?.title || item?.label || "OECD row").join(" | ")}`
-              : "No OECD outlook rows",
-          },
-          {
-            label: "Country focus",
-            value: country,
-          },
-        ],
-      },
-      {
-        id: "SYS_FAO_FOOD_PRICES",
-        title: "FAO Food Price Pressure",
-        subtitle: "Global cereals + vegetable oils pressure",
-        status: (ffpiWidget?.status || "CONSTRAINED").toUpperCase(),
-        source: ffpiWidget?.sourceName || "FAO FFPI",
-        updatedAt: ffpiWidget?.updatedAt || globalIndicesQuery.data?.generatedAt,
-        topic: "markets",
-        roles: ["farmer", "trader", "broker"],
-        territory: "GLOBAL",
-        metrics: ffpiMetrics.length
-          ? ffpiMetrics.slice(0, 3).map((metric) => ({
-              label: metric.label,
-              value: metric.value,
-              delta: metric.delta,
-              series: metric.series,
-            }))
-          : [{ label: "State", value: "No FAO rows" }],
-      },
-      {
-        id: "SYS_FOOD_SECURITY_STRESS",
-        title: "Food Security Stress",
-        subtitle: "WFP + WB + FAO blended stress score",
-        status: (wfpWidget?.status || wbWidget?.status || "CONSTRAINED").toUpperCase(),
-        source: "WFP + World Bank + FAO",
-        updatedAt: wfpWidget?.updatedAt || wbWidget?.updatedAt || ffpiWidget?.updatedAt,
-        topic: "policy",
-        roles: ["farmer", "trader", "broker"],
-        territory: country,
-        metrics: [
-          {
-            label: "Stress score",
-            value: foodStressScore != null ? `${(foodStressScore * 100).toFixed(1)} / 100` : "n/a",
-            delta: foodStressScore != null ? foodStressScore * 100 : undefined,
-            deltaFormat: "abs",
-          },
-          {
-            label: "WFP market layer",
-            value: wfpMetrics.length ? `${wfpMetrics.length} usable rows` : "No WFP rows",
-          },
-          {
-            label: "WB microdata",
-            value: wbMetrics.length ? `${wbMetrics.length} usable rows` : "No WB rows",
-          },
-          {
-            label: "FAOSTAT",
-            value: (faostatWidget?.rows || []).length ? `${(faostatWidget.rows || []).length} rows` : "No FAOSTAT rows",
-          },
-        ],
-      },
-      {
         id: "SYS_DIRECT_GRAIN_PREDICTION",
         title: "Direct Grain Prediction Markets",
         subtitle: "Open grain/oilseed contracts from Kalshi & Polymarket",
@@ -2093,6 +2102,16 @@ export default function MonitorV3Page() {
     return applyCountryFallbackFilter(roleTopic, country);
   }, [feed, topic, role, country]);
 
+  const yieldGeoglamRows = yieldFoodSecurityQuery.data?.geoglam?.datasets || [];
+  const yieldFaoRows = yieldFoodSecurityQuery.data?.foodPrices?.faoRows || [];
+  const yieldStressRows = yieldFoodSecurityQuery.data?.foodSecurity?.marketRows || [];
+  const yieldSectionStatus = (
+    yieldFoodSecurityQuery.data?.geoglam?.status ||
+    yieldFoodSecurityQuery.data?.foodPrices?.status ||
+    yieldFoodSecurityQuery.data?.foodSecurity?.status ||
+    "CONSTRAINED"
+  ).toUpperCase();
+
   const applyRenderPreset = (preset: RenderPreset) => {
     setRenderPreset(preset);
     setRenderModeById((current) => {
@@ -2124,6 +2143,7 @@ export default function MonitorV3Page() {
         binanceRiskTrendsQuery.refetch(),
         globalIndicesQuery.refetch(),
         globalIndicesTrendsQuery.refetch(),
+        yieldFoodSecurityQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);
@@ -2469,6 +2489,126 @@ export default function MonitorV3Page() {
           })}
         </section>
 
+        <section className="rounded border border-border bg-card p-2">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Yield & Food Security</h2>
+            <span className={cn("rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em]", getStatusTone(yieldSectionStatus))}>
+              {yieldSectionStatus}
+            </span>
+            <div className="ml-auto flex items-center gap-2">
+              <select
+                value={country}
+                onChange={(event) => setCountry(event.target.value as Country)}
+                className="rounded border border-border bg-card px-2 py-1 text-xs"
+                title="Yield/Food country filter"
+              >
+                {COUNTRY_OPTIONS.map((option) => (
+                  <option key={`yield-country-${option.id}`} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={yieldCrop}
+                onChange={(event) => setYieldCrop(event.target.value as YieldCropFilter)}
+                className="rounded border border-border bg-card px-2 py-1 text-xs uppercase tracking-[0.12em]"
+                title="Yield/Food crop filter"
+              >
+                {YIELD_CROP_OPTIONS.map((option) => (
+                  <option key={`yield-crop-${option.id}`} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid gap-2 md:grid-cols-3">
+            <article className="rounded border border-border bg-muted/10 p-2">
+              <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span>GEOGLAM Crop Monitor</span>
+                <span>{yieldFoodSecurityQuery.data?.geoglam?.selectedCount ?? 0} rows</span>
+              </div>
+              <div className="monitor-widget-scroll max-h-[180px] space-y-1 overflow-y-auto pr-1">
+                {yieldGeoglamRows.length > 0 ? (
+                  yieldGeoglamRows.slice(0, 8).map((row) => (
+                    <a
+                      key={`geoglam-${row.id}`}
+                      href={row.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded border border-border px-1.5 py-1 hover:border-primary/60"
+                    >
+                      <div className="line-clamp-1 text-xs font-medium">{row.title}</div>
+                      <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <span>{row.crop}</span>
+                        <span>•</span>
+                        <span>{row.countryRelevant ? "country hit" : "global"}</span>
+                      </div>
+                    </a>
+                  ))
+                ) : (
+                  <div className="rounded border border-dashed border-border p-2 text-xs text-muted-foreground">
+                    {yieldFoodSecurityQuery.data?.geoglam?.note || "No GEOGLAM datasets for current filter."}
+                  </div>
+                )}
+              </div>
+            </article>
+
+            <article className="rounded border border-border bg-muted/10 p-2">
+              <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span>FAO Food Prices</span>
+                <span>{yieldFoodSecurityQuery.data?.foodPrices?.source || "FAO FFPI"}</span>
+              </div>
+              <div className="monitor-widget-scroll max-h-[180px] space-y-1 overflow-y-auto pr-1">
+                {yieldFaoRows.length > 0 ? (
+                  yieldFaoRows.slice(0, 6).map((row, idx) => (
+                    <div key={`yield-fao-${idx}`} className="rounded border border-border px-1.5 py-1">
+                      <div className="text-xs">{row.label}</div>
+                      <div className="mt-0.5 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{row.value}</span>
+                        <span className={cn(typeof row.deltaPct === "number" && row.deltaPct >= 0 ? "text-emerald-400" : "text-red-400")}>
+                          {typeof row.deltaPct === "number" ? `${row.deltaPct >= 0 ? "+" : ""}${row.deltaPct.toFixed(2)}%` : "n/a"}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded border border-dashed border-border p-2 text-xs text-muted-foreground">No FAO rows in current snapshot.</div>
+                )}
+              </div>
+            </article>
+
+            <article className="rounded border border-border bg-muted/10 p-2">
+              <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span>Food Security Stress</span>
+                <span>
+                  {typeof yieldFoodSecurityQuery.data?.foodSecurity?.score === "number"
+                    ? `${(yieldFoodSecurityQuery.data.foodSecurity.score * 100).toFixed(1)} / 100`
+                    : "n/a"}
+                </span>
+              </div>
+              <div className="monitor-widget-scroll max-h-[180px] space-y-1 overflow-y-auto pr-1">
+                {yieldStressRows.length > 0 ? (
+                  yieldStressRows.slice(0, 8).map((row, idx) => (
+                    <div key={`yield-stress-${idx}`} className="rounded border border-border px-1.5 py-1">
+                      <div className="line-clamp-1 text-xs">{row.label}</div>
+                      <div className="mt-0.5 flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span>{row.source} • {row.crop}</span>
+                        <span>{row.value}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded border border-dashed border-border p-2 text-xs text-muted-foreground">
+                    {yieldFoodSecurityQuery.data?.foodSecurity?.note || "No WFP/WB rows for current country/crop."}
+                  </div>
+                )}
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
@@ -2524,6 +2664,7 @@ export default function MonitorV3Page() {
                   setPinDenseTop(true);
                   setDirectPredictionRegion("ALL");
                   setDirectPredictionSort("liquidity");
+                  setYieldCrop("ALL");
                   setRenderPreset("mixed");
                   setRenderModeById({});
                 }}
