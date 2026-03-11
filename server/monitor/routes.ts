@@ -283,10 +283,27 @@ async function withQuickReportBudget<T>(work: Promise<T>, fallback: () => T, tim
 }
 
 function quickProviderReport(providers: any[]) {
+  const indicativeProviders = new Set([
+    "oecd-agricultural-outlook",
+    "wfp-databridges",
+    "faostat-pp",
+    "fpma-market-prices",
+    "usda-psd",
+  ]);
+  const normalizeStatus = (providerId: string, rawStatus: string, mappedCount: number) => {
+    const status = String(rawStatus || "OFFLINE").toUpperCase();
+    if (!indicativeProviders.has(providerId)) return status;
+    if (status === "REFRESH" || status === "LIVE") return status;
+    return mappedCount > 0 ? "INDICATIVE" : "CONSTRAINED";
+  };
   return providers.map((provider) => ({
     providerId: provider?.providerId,
     enabled: Boolean(provider?.enabled),
-    status:
+    mappedCount: provider?.mappedCount ?? 0,
+    expectedCount: provider?.expectedCount,
+    coverage: provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? 0}`,
+    status: normalizeStatus(
+      provider?.providerId,
       provider?.status === "ok"
         ? "REFRESH"
         : provider?.status === "partial"
@@ -294,10 +311,9 @@ function quickProviderReport(providers: any[]) {
           : provider?.status === "disabled"
             ? "OFFLINE"
             : "OFFLINE",
+      provider?.mappedCount ?? 0,
+    ),
     sourceUrlUsed: redactSensitiveUrl(provider?.sourceUrlUsed),
-    expectedCount: provider?.expectedCount,
-    mappedCount: provider?.mappedCount ?? 0,
-    coverage: provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? 0}`,
     rowsParsed: provider?.rowsParsed,
     columnsDetected: provider?.columnsDetected,
     seriesPoints: provider?.seriesPoints,
@@ -319,7 +335,9 @@ function quickProviderReport(providers: any[]) {
 
 function quickTriageReport(providers: any[]) {
   const rows = quickProviderReport(providers).map((provider) => {
-    const errorKind = provider?.lastError?.errorKind || (provider?.status === "REFRESH" ? undefined : "UNKNOWN");
+    const errorKind =
+      provider?.lastError?.errorKind ||
+      (provider?.status === "REFRESH" || provider?.status === "INDICATIVE" ? undefined : "UNKNOWN");
     const fix =
       errorKind === "CONFIG_MISSING"
         ? "Set required env/config for this provider."
@@ -785,6 +803,19 @@ export function registerMonitorRoutes(app: Express): void {
         "faostat-pp": 5,
         "fpma-market-prices": 5,
       };
+      const indicativeProviders = new Set([
+        "oecd-agricultural-outlook",
+        "wfp-databridges",
+        "faostat-pp",
+        "fpma-market-prices",
+        "usda-psd",
+      ]);
+      const normalizeStatus = (providerId: string, rawStatus: string, mappedCount: number) => {
+        const status = String(rawStatus || "OFFLINE").toUpperCase();
+        if (!indicativeProviders.has(providerId)) return status;
+        if (status === "REFRESH" || status === "LIVE") return status;
+        return mappedCount > 0 ? "INDICATIVE" : "CONSTRAINED";
+      };
 
       const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "wfp-databridges", "worldbank-microdata", "eurostat-agri-indices", "usda-psd", "amis-outlook", "imf-pcps", "oecd-agricultural-outlook", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
         const provider = providers.find((item: any) => item.providerId === providerId);
@@ -798,15 +829,17 @@ export function registerMonitorRoutes(app: Express): void {
             : provider?.status === "partial"
               ? "FALLBACK"
               : "OFFLINE";
+        const mappedCount = provider?.mappedCount ?? 0;
+        const normalizedStatus = normalizeStatus(providerId, status, mappedCount);
 
         return {
           providerId,
           enabled: Boolean(provider?.enabled),
-          status,
+          status: normalizedStatus,
           sourceUrlUsed: redactSensitiveUrl(provider?.sourceUrlUsed || widget?.sourceUrl),
           expectedCount: provider?.expectedCount ?? expectedCoverage[providerId],
-          mappedCount: provider?.mappedCount ?? 0,
-          coverage: provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCoverage[providerId]}`,
+          mappedCount,
+          coverage: provider?.coverage || `${mappedCount}/${provider?.expectedCount ?? expectedCoverage[providerId]}`,
           reportsFetched: provider?.reportsFetched,
           reportsScanned: provider?.reportsScanned,
           reportsMatchedInclude: provider?.reportsMatchedInclude,
@@ -853,7 +886,7 @@ export function registerMonitorRoutes(app: Express): void {
           lastError: providerError,
           notes: [
             ...(provider?.notes || []),
-            ...(providerId === "nasdaq-datalink" && status !== "REFRESH" && NASDAQ_DATASETS.every((dataset) => String(dataset).startsWith("FRED/")) && providerError?.errorKind === "BLOCKED"
+            ...(providerId === "nasdaq-datalink" && normalizedStatus !== "REFRESH" && NASDAQ_DATASETS.every((dataset) => String(dataset).startsWith("FRED/")) && providerError?.errorKind === "BLOCKED"
               ? ["FRED datasets requested; upstream returned 403", "likely access/quota/premium restriction"]
               : []),
             ...(providerId === "fpma-market-prices" && String(provider?.error || "").includes("html_response:")

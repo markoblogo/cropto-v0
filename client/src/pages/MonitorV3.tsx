@@ -1415,6 +1415,12 @@ export default function MonitorV3Page() {
           >
             {isRefreshingData ? "Refreshing..." : "Refresh data"}
           </button>
+          <div className="ml-1 flex items-center gap-1 rounded border border-border/70 bg-card/70 px-1.5 py-1 text-[10px] uppercase tracking-[0.12em]">
+            <span className="text-muted-foreground">Health</span>
+            <span className="rounded border border-emerald-500/60 bg-emerald-500/10 px-1 py-0 text-emerald-300">{healthCounts.live}</span>
+            <span className="rounded border border-amber-500/60 bg-amber-500/10 px-1 py-0 text-amber-300">{healthCounts.degraded}</span>
+            <span className="rounded border border-red-500/60 bg-red-500/10 px-1 py-0 text-red-300">{healthCounts.empty}</span>
+          </div>
         </div>
       </section>
 
@@ -1565,7 +1571,8 @@ export default function MonitorV3Page() {
               const staleBadge = isIndexCardStale(widget) ? formatStaleAge(widget) : null;
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
-              const headerMaxHeight = compactCard ? 46 : 78;
+              const isDenseCard = cardType === "news" || cardType === "table";
+              const headerMaxHeight = compactCard ? (isDenseCard ? 34 : 46) : (isDenseCard ? 58 : 78);
               return (
                 <article
                   key={widget.id}
@@ -1601,7 +1608,7 @@ export default function MonitorV3Page() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className={cn("line-clamp-1 font-semibold leading-tight", compactCard ? "text-sm" : "text-base")}>{widget.title}</h3>
-                        {!compactCard ? <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{widget.subtitle}</p> : null}
+                        {!compactCard && !isDenseCard ? <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{widget.subtitle}</p> : null}
                       </div>
                       <div className="flex items-center gap-1">
                         <button
@@ -1650,7 +1657,7 @@ export default function MonitorV3Page() {
                       </div>
                     </div>
                     <div className={cn("flex items-center gap-1 text-[9px]", compactCard ? "mb-0.5" : "mb-1")}>
-                      <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", cardTypeTone(cardType))}>{cardType}</span>
+                      {!isDenseCard ? <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", cardTypeTone(cardType))}>{cardType}</span> : null}
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", getStatusTone(widget.status))}>{widget.status}</span>
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", completenessTone(completenessScore))}>
                         data {completenessScore}
@@ -1663,7 +1670,9 @@ export default function MonitorV3Page() {
                       {dataState === "empty" ? (
                         <span className="rounded border border-red-500/60 bg-red-500/10 px-1 py-0 uppercase tracking-[0.1em] text-red-300">gap</span>
                       ) : null}
-                      <span className="max-w-[42%] truncate rounded border border-border px-1 py-0 text-muted-foreground">{widget.source}</span>
+                      {!compactCard || !isDenseCard ? (
+                        <span className="max-w-[42%] truncate rounded border border-border px-1 py-0 text-muted-foreground">{widget.source}</span>
+                      ) : null}
                     </div>
                   </div>
 
@@ -1671,7 +1680,9 @@ export default function MonitorV3Page() {
                     {(() => {
                       const modeOverride = renderModeById[widget.id] || "auto";
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
-                      const maxRows = dataState === "live" ? (layout.h === 2 ? 7 : 4) : (layout.h === 2 ? 9 : 6);
+                      const maxRows = dataState === "live"
+                        ? (layout.h === 2 ? (isDenseCard ? 8 : 7) : (isDenseCard ? 5 : 4))
+                        : (layout.h === 2 ? 9 : 6);
                       const rawItems = prioritizeMetricsForCard(widget.metrics, cardType).slice(0, maxRows + 2);
                       const fallbackRows = buildDataFirstFallbackRows(widget, dataState, providerDebug);
                       const baseItems =
@@ -1687,6 +1698,7 @@ export default function MonitorV3Page() {
                           : baseItems
                       ).slice(0, maxRows);
                       if (mode === "list") {
+                        const rowMinHeight = isDenseCard ? "min-h-[40px]" : "min-h-[48px]";
                         return items.map((metric) => (
                           <button
                             key={`${widget.id}-${metric.label}`}
@@ -1702,7 +1714,7 @@ export default function MonitorV3Page() {
                                 href: metric.href,
                               })
                             }
-                            className="block min-h-[48px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            className={cn("block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50", rowMinHeight)}
                           >
                             <div className="flex items-start justify-between gap-2 text-xs">
                               <span className="line-clamp-1">{metric.label}</span>

@@ -586,6 +586,21 @@ const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expecte
   { providerId: "canada-grain-rail-performance", widgetKind: "CANADA_GRAIN_RAIL_PERFORMANCE", expectedCount: 4 },
 ];
 
+const TRIAGE_INDICATIVE_PROVIDERS = new Set<TargetProviderId>([
+  "oecd-agricultural-outlook",
+  "wfp-databridges",
+  "faostat-pp",
+  "fpma-market-prices",
+  "usda-psd",
+]);
+
+function normalizeTriageStatus(providerId: TargetProviderId, rawStatus: string, mappedCount: number) {
+  const status = String(rawStatus || "OFFLINE").toUpperCase();
+  if (!TRIAGE_INDICATIVE_PROVIDERS.has(providerId)) return status;
+  if (status === "REFRESH" || status === "LIVE") return status;
+  return mappedCount > 0 ? "INDICATIVE" : "CONSTRAINED";
+}
+
 export async function buildMonitorTriageReport(grainWidgetsService: {
   list: () => Promise<any>;
   debugSummary: () => any;
@@ -838,11 +853,18 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     const coverage = provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCount}`;
     const notes = Array.isArray(provider?.notes) ? provider.notes : Array.isArray(widget?.notes) ? widget.notes : [];
 
+    const mappedCount = provider?.mappedCount ?? 0;
+    const normalizedStatus = normalizeTriageStatus(
+      providerId,
+      String(widget?.status || provider?.status || "OFFLINE"),
+      mappedCount,
+    );
+
     return {
       providerId,
       widgetKind,
       enabled: Boolean(provider?.enabled),
-      status: String(widget?.status || provider?.status || "OFFLINE"),
+      status: normalizedStatus,
       coverage,
       errorKind: refinedErrorKind,
       errorMessageShort,
