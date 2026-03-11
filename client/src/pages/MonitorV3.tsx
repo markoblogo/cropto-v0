@@ -111,7 +111,7 @@ type GridWidget = {
   topic: Exclude<MonitorTopic, "all">;
   roles: Array<Exclude<MonitorRole, "all">>;
   territory: string;
-  metrics: Array<{ label: string; value: string; delta?: number; href?: string }>;
+  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string }>;
 };
 
 type GridLayout = { w: 1 | 2 | 3; h: 1 | 2 };
@@ -421,6 +421,12 @@ function newsMatchesCountry(item: NewsItem, country: Country) {
   return hints.some((hint) => haystack.includes(hint));
 }
 
+function applyCountryFallbackFilter(items: NewsItem[], country: Country): NewsItem[] {
+  const strict = items.filter((item) => newsMatchesCountry(item, country));
+  if (strict.length > 0) return strict;
+  return items;
+}
+
 function newsMatchesRole(item: NewsItem, role: MonitorRole) {
   if (role === "all") return true;
   const topic = inferNewsTopic(item);
@@ -500,6 +506,7 @@ export default function MonitorV3Page() {
     metricLabel: string;
     metricValue: string;
     metricDelta?: number;
+    metricDeltaFormat?: "pct" | "abs";
     href?: string;
   } | null>(null);
 
@@ -651,7 +658,7 @@ export default function MonitorV3Page() {
       topic: "markets",
       roles: ["farmer", "trader", "broker"],
       territory: "GLOBAL",
-      metrics: [{ label: "Index", value: formatMetric(row.value, "pts"), delta: row.change }],
+      metrics: [{ label: "Index", value: formatMetric(row.value, "pts"), delta: row.change, deltaFormat: "abs" }],
     }));
 
     const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
@@ -789,19 +796,21 @@ export default function MonitorV3Page() {
   const gridColumnCount = getGridColumnCount(viewportWidth);
 
   const filteredSignals = useMemo(() => {
-    return topSignals.filter((item) => {
+    const roleTopic = topSignals.filter((item) => {
       if (!newsMatchesRole(item, role)) return false;
       if (!newsMatchesTopic(item, topic)) return false;
-      return newsMatchesCountry(item, country);
+      return true;
     });
+    return applyCountryFallbackFilter(roleTopic, country);
   }, [topSignals, topic, role, country]);
 
   const filteredFeed = useMemo(() => {
-    return feed.filter((item) => {
+    const roleTopic = feed.filter((item) => {
       if (!newsMatchesRole(item, role)) return false;
       if (!newsMatchesTopic(item, topic)) return false;
-      return newsMatchesCountry(item, country);
+      return true;
     });
+    return applyCountryFallbackFilter(roleTopic, country);
   }, [feed, topic, role, country]);
 
   const applyRenderPreset = (preset: RenderPreset) => {
@@ -1191,6 +1200,7 @@ export default function MonitorV3Page() {
                                 metricLabel: metric.label,
                                 metricValue: metric.value,
                                 metricDelta: metric.delta,
+                                metricDeltaFormat: metric.deltaFormat,
                                 href: metric.href,
                               })
                             }
@@ -1199,7 +1209,11 @@ export default function MonitorV3Page() {
                             <div className="flex items-start justify-between gap-2 text-xs">
                               <span className="line-clamp-1">{metric.label}</span>
                               <span className={cn(typeof metric.delta === "number" && metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
-                                {typeof metric.delta === "number" ? `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}%` : "n/a"}
+                                {typeof metric.delta === "number"
+                                  ? metric.deltaFormat === "abs"
+                                    ? `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}`
+                                    : `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}%`
+                                  : "n/a"}
                               </span>
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground">{metric.value}</div>
@@ -1220,6 +1234,7 @@ export default function MonitorV3Page() {
                                   metricLabel: metric.label,
                                   metricValue: metric.value,
                                   metricDelta: metric.delta,
+                                  metricDeltaFormat: metric.deltaFormat,
                                   href: metric.href,
                                 })
                               }
@@ -1256,6 +1271,7 @@ export default function MonitorV3Page() {
                                 metricLabel: widget.metrics[0]?.label || "Metric",
                                 metricValue: widget.metrics[0]?.value || "n/a",
                                 metricDelta: widget.metrics[0]?.delta,
+                                metricDeltaFormat: widget.metrics[0]?.deltaFormat,
                                 href: widget.metrics[0]?.href,
                               })
                             }
@@ -1287,6 +1303,7 @@ export default function MonitorV3Page() {
                               metricLabel: metric.label,
                               metricValue: metric.value,
                               metricDelta: metric.delta,
+                              metricDeltaFormat: metric.deltaFormat,
                               href: metric.href,
                             })
                           }
@@ -1297,7 +1314,8 @@ export default function MonitorV3Page() {
                           {typeof metric.delta === "number" ? (
                             <div className={cn("text-[11px]", metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
                               {metric.delta >= 0 ? "+" : ""}
-                              {metric.delta.toFixed(2)}%
+                              {metric.delta.toFixed(2)}
+                              {metric.deltaFormat === "abs" ? "" : "%"}
                             </div>
                           ) : null}
                         </button>
@@ -1458,7 +1476,8 @@ export default function MonitorV3Page() {
                 {typeof selectedMetric.metricDelta === "number" ? (
                   <div className={cn("text-xs", selectedMetric.metricDelta >= 0 ? "text-emerald-400" : "text-red-400")}>
                     {selectedMetric.metricDelta >= 0 ? "+" : ""}
-                    {selectedMetric.metricDelta.toFixed(2)}%
+                    {selectedMetric.metricDelta.toFixed(2)}
+                    {selectedMetric.metricDeltaFormat === "abs" ? "" : "%"}
                   </div>
                 ) : null}
               </div>
