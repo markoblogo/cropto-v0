@@ -1041,7 +1041,7 @@ export default function MonitorV3Page() {
                                 href: metric.href,
                               })
                             }
-                            className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            className="block min-h-[58px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                           >
                             <div className="flex items-start justify-between gap-2 text-xs">
                               <span className="line-clamp-1">{metric.label}</span>
@@ -1070,7 +1070,7 @@ export default function MonitorV3Page() {
                                   href: metric.href,
                                 })
                               }
-                              className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                              className="block min-h-[58px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                             >
                               <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                                 <span>{metric.label}</span>
@@ -1106,7 +1106,7 @@ export default function MonitorV3Page() {
                                 href: widget.metrics[0]?.href,
                               })
                             }
-                            className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            className="block min-h-[96px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                           >
                             <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Trend</div>
                             <svg viewBox="0 0 100 100" className="h-12 w-full">
@@ -1114,7 +1114,7 @@ export default function MonitorV3Page() {
                             </svg>
                             <div className="mt-1 grid grid-cols-2 gap-1 text-[11px]">
                               {items.slice(0, 2).map((metric) => (
-                                <div key={`${widget.id}-${metric.label}`} className="rounded border border-border px-1 py-0.5">
+                                <div key={`${widget.id}-${metric.label}`} className="min-h-[38px] rounded border border-border px-1 py-0.5">
                                   <div className="truncate text-[10px] text-muted-foreground">{metric.label}</div>
                                   <div className="font-semibold">{metric.value}</div>
                                 </div>
@@ -1137,7 +1137,7 @@ export default function MonitorV3Page() {
                               href: metric.href,
                             })
                           }
-                          className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                          className="block min-h-[58px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                         >
                           <div className="truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</div>
                           <div className="text-sm font-semibold">{metric.value}</div>
