@@ -409,10 +409,15 @@ function formatStaleAge(widget: GridWidget) {
 function inferRenderMode(widget: GridWidget): RenderMode {
   const hasSeries = widget.metrics.some((metric) => Array.isArray(metric.series) && metric.series.length >= 2);
   if (hasSeries) return "spark";
+  const numericValueCount = widget.metrics
+    .map((metric) => parseMetricNumber(metric.value))
+    .filter((value): value is number => value !== null).length;
   const deltaCount = widget.metrics.filter((metric) => typeof metric.delta === "number").length;
   if (widget.topic === "logistics") return "bar";
   if (widget.topic === "policy") return "list";
+  if (deltaCount >= 1 && numericValueCount >= 2) return "bar";
   if (deltaCount >= 2) return "spark";
+  if (numericValueCount >= 3) return "bar";
   return "metric";
 }
 
@@ -509,6 +514,16 @@ function newsMatchesTopic(item: NewsItem, topic: MonitorTopic) {
   const tags = newsTopics(item);
   if (tags.includes(topic)) return true;
   return inferNewsTopic(item) === topic;
+}
+
+function buildTopicNewsMetrics(items: NewsItem[], topic: MonitorTopic, fallbackLabel: string) {
+  const scoped = items.filter((item) => inferNewsTopic(item) === topic || newsTopics(item).includes(topic)).slice(0, 7);
+  if (scoped.length === 0) return [{ label: fallbackLabel, value: "No headlines in current window" }];
+  return scoped.map((item) => ({
+    label: item.source_name || "Source",
+    value: item.title,
+    href: item.url,
+  }));
 }
 
 function getGridColumnCount(width: number) {
@@ -773,6 +788,45 @@ export default function MonitorV3Page() {
       })(),
     };
 
+    const marketsFeedWidget: GridWidget = {
+      id: "TXT_MARKETS_FEED",
+      title: "Markets Headlines",
+      subtitle: "Commodity and basis-related flow",
+      status: "REFRESH",
+      source: "Monitor news",
+      updatedAt: newsQuery.data?.generatedAt,
+      topic: "markets",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: buildTopicNewsMetrics(feedItems, "markets", "Markets feed"),
+    };
+
+    const policyFeedWidget: GridWidget = {
+      id: "TXT_POLICY_FEED",
+      title: "Policy Headlines",
+      subtitle: "Regulation and trade policy flow",
+      status: "REFRESH",
+      source: "Monitor news",
+      updatedAt: newsQuery.data?.generatedAt,
+      topic: "policy",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: buildTopicNewsMetrics(feedItems, "policy", "Policy feed"),
+    };
+
+    const weatherFeedWidget: GridWidget = {
+      id: "TXT_WEATHER_FEED",
+      title: "Weather Headlines",
+      subtitle: "Weather risk and crop-condition flow",
+      status: "REFRESH",
+      source: "Monitor news",
+      updatedAt: newsQuery.data?.generatedAt,
+      topic: "weather",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: buildTopicNewsMetrics(feedItems, "weather", "Weather feed"),
+    };
+
     const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
       const key = `${row.slug} ${row.name}`.toLowerCase();
       return key.includes("btc") || key.includes("bitcoin") || key.includes("gold") || key.includes("oil") || key.includes("brent") || key.includes("wti");
@@ -839,6 +893,9 @@ export default function MonitorV3Page() {
       ...widgetsFromGlobalContext,
       topSignalsWidget,
       logisticsFeedWidget,
+      marketsFeedWidget,
+      policyFeedWidget,
+      weatherFeedWidget,
       ...widgetsFromExpansion,
       ...widgetsFromMarkets,
       ...widgetsFromLogistics,
@@ -1224,7 +1281,7 @@ export default function MonitorV3Page() {
               const staleBadge = isIndexCardStale(widget) ? formatStaleAge(widget) : null;
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
-              const headerMaxHeight = compactCard ? 54 : 98;
+              const headerMaxHeight = compactCard ? 46 : 78;
               return (
                 <article
                   key={widget.id}
@@ -1307,7 +1364,7 @@ export default function MonitorV3Page() {
                     {(() => {
                       const modeOverride = renderModeById[widget.id] || "auto";
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
-                      const rawItems = widget.metrics.slice(0, layout.h === 2 ? 5 : 3);
+                      const rawItems = widget.metrics.slice(0, layout.h === 2 ? 7 : 4);
                       const items =
                         rawItems.length > 0
                           ? rawItems
@@ -1328,7 +1385,7 @@ export default function MonitorV3Page() {
                                 href: metric.href,
                               })
                             }
-                            className="block min-h-[58px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            className="block min-h-[48px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                           >
                             <div className="flex items-start justify-between gap-2 text-xs">
                               <span className="line-clamp-1">{metric.label}</span>
@@ -1345,8 +1402,16 @@ export default function MonitorV3Page() {
                         ));
                       }
                       if (mode === "bar") {
+                        const valueSamples = items
+                          .map((metric) => parseMetricNumber(metric.value))
+                          .filter((value): value is number => value !== null);
+                        const maxValue = valueSamples.length ? Math.max(...valueSamples) : 0;
                         return items.map((metric) => {
-                          const width = Math.min(100, Math.max(6, Math.abs(metric.delta || 0) * 8));
+                          const parsedValue = parseMetricNumber(metric.value);
+                          const fromDelta = typeof metric.delta === "number" ? Math.min(100, Math.max(6, Math.abs(metric.delta) * 8)) : null;
+                          const fromValue =
+                            parsedValue !== null && maxValue > 0 ? Math.min(100, Math.max(8, (parsedValue / maxValue) * 100)) : null;
+                          const width = fromDelta ?? fromValue ?? 8;
                           return (
                             <button
                               key={`${widget.id}-${metric.label}`}
@@ -1362,7 +1427,7 @@ export default function MonitorV3Page() {
                                   href: metric.href,
                                 })
                               }
-                              className="block min-h-[58px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                              className="block min-h-[48px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                             >
                               <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                                 <span>{metric.label}</span>
@@ -1399,7 +1464,7 @@ export default function MonitorV3Page() {
                                 href: widget.metrics[0]?.href,
                               })
                             }
-                            className="block min-h-[96px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            className="block min-h-[88px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                           >
                             <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Trend</div>
                             <svg viewBox="0 0 100 100" className="h-12 w-full">
@@ -1431,7 +1496,7 @@ export default function MonitorV3Page() {
                               href: metric.href,
                             })
                           }
-                          className="block min-h-[58px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                          className="block min-h-[48px] w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                         >
                           <div className="truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</div>
                           <div className="text-sm font-semibold">{metric.value}</div>
