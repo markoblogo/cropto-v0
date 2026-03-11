@@ -86,7 +86,7 @@ import { getLiveVisualTiles } from "./liveVisuals";
 import { GrainMarketsService } from "./grainMarkets";
 import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
-import { filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
+import { capBySource, filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -402,13 +402,18 @@ export function registerMonitorRoutes(app: Express): void {
         search: typeof req.query.search === "string" ? req.query.search : undefined,
       });
 
-      const top = topSignals(filtered, 10);
-      const logistics = filtered
-        .filter((item) => item.category === "logistics-shipping" || item.topic_tags.includes("logistics"))
-        .slice(0, 8);
-      const policy = filtered
-        .filter((item) => item.category === "policy-macro" || item.topic_tags.includes("policy") || item.topic_tags.includes("trade"))
-        .slice(0, 8);
+      const feed = capBySource(filtered, 4, 200);
+      const top = topSignals(feed, 10);
+      const logistics = capBySource(
+        feed.filter((item) => item.category === "logistics-shipping" || item.topic_tags.includes("logistics")),
+        3,
+        8,
+      );
+      const policy = capBySource(
+        feed.filter((item) => item.category === "policy-macro" || item.topic_tags.includes("policy") || item.topic_tags.includes("trade")),
+        3,
+        8,
+      );
 
       res.json({
         generatedAt: stats.generatedAt,
@@ -421,7 +426,7 @@ export function registerMonitorRoutes(app: Express): void {
         },
         stats,
         topSignals: top,
-        feed: filtered,
+        feed,
         sidePanels: {
           logistics,
           policy,

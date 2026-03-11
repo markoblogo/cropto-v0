@@ -354,8 +354,38 @@ export function filterMonitorNews(
 }
 
 export function topSignals(items: MonitorNewsItem[], count = 10): MonitorNewsItem[] {
-  return [...items]
-    .sort((a, b) => b.relevance_score - a.relevance_score || Date.parse(b.published_at) - Date.parse(a.published_at))
-    .slice(0, count)
-    .map((item) => ({ ...item, is_top_signal: true }));
+  const ranked = [...items].sort(
+    (a, b) => b.relevance_score - a.relevance_score || Date.parse(b.published_at) - Date.parse(a.published_at),
+  );
+  return capBySource(ranked, Math.max(1, Math.floor(count / 3)), count).map((item) => ({
+    ...item,
+    is_top_signal: true,
+  }));
+}
+
+export function capBySource(items: MonitorNewsItem[], perSourceLimit: number, totalLimit = items.length): MonitorNewsItem[] {
+  if (perSourceLimit <= 0) return items.slice(0, totalLimit);
+
+  const counts = new Map<string, number>();
+  const selected: MonitorNewsItem[] = [];
+  const overflow: MonitorNewsItem[] = [];
+
+  for (const item of items) {
+    const key = item.source_name || "unknown";
+    const used = counts.get(key) || 0;
+    if (used < perSourceLimit) {
+      counts.set(key, used + 1);
+      selected.push(item);
+      if (selected.length >= totalLimit) return selected;
+    } else {
+      overflow.push(item);
+    }
+  }
+
+  for (const item of overflow) {
+    selected.push(item);
+    if (selected.length >= totalLimit) break;
+  }
+
+  return selected;
 }

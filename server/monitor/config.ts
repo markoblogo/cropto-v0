@@ -137,6 +137,14 @@ export const MONITOR_SOURCES: MonitorSource[] = [
     enabled: true,
   },
   {
+    id: "graincentral-production",
+    name: "Grain Central Production",
+    url: "https://www.graincentral.com/production/feed",
+    category: "grain-oilseeds",
+    strategy: "rss",
+    enabled: true,
+  },
+  {
     id: "farmdoc-daily",
     name: "farmdoc daily",
     url: "https://farmdocdaily.illinois.edu/feed",
@@ -217,6 +225,22 @@ export const MONITOR_SOURCES: MonitorSource[] = [
     enabled: true,
   },
   {
+    id: "marine-insight",
+    name: "Marine Insight",
+    url: "https://www.marineinsight.com/feed/",
+    category: "logistics-shipping",
+    strategy: "rss",
+    enabled: true,
+  },
+  {
+    id: "freightwaves",
+    name: "FreightWaves",
+    url: "https://www.freightwaves.com/news/feed",
+    category: "logistics-shipping",
+    strategy: "rss",
+    enabled: true,
+  },
+  {
     id: "ein-shipping",
     name: "EIN Shipping & Logistics",
     url: "https://shipping.einnews.com/rss",
@@ -261,6 +285,8 @@ export const MONITOR_SOURCES: MonitorSource[] = [
 // Lower values are stricter (effectively requiring slightly higher quality per source).
 export const MONITOR_SOURCE_SCORE_BIAS: Record<string, number> = {
   "ein-shipping": -1,
+  freightwaves: +1,
+  "marine-insight": +1,
   "ec-agri": +1,
   "wto-news": +1,
   "oecd-agri": +1,
@@ -271,6 +297,7 @@ export const MONITOR_SOURCE_NOISE_PATTERNS: Record<string, string[]> = {
   "ein-shipping": ["sponsored", "advertorial", "press release", "promo"],
   "agweb-markets": ["podcast", "episode", "listen now"],
   splash247: ["opinion", "commentary"],
+  freightwaves: ["podcast", "listen now", "sponsored"],
   "world-grain-news": ["video", "webinar"],
   "farmdoc-daily": ["farmdoc daily article", "farmdoc webinar"],
 };
