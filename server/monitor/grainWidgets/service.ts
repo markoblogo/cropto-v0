@@ -564,7 +564,14 @@ function runtimeStatusFromWidget(widget: GrainWidget): GrainWidgetsProviderDebug
 function classifyProviderErrorKind(error?: string): GrainWidgetsProviderDebug["errorKind"] {
   if (!error) return undefined;
   const upper = error.toUpperCase();
-  if (upper.includes("API_KEY_MISSING") || upper.includes("TOKEN_MISSING") || upper.includes("CONFIG_MISSING")) return "CONFIG_MISSING";
+  if (
+    upper.includes("API_KEY_MISSING") ||
+    upper.includes("TOKEN_MISSING") ||
+    upper.includes("CONFIG_MISSING") ||
+    upper.endsWith("_MISSING") ||
+    upper.includes("_URL_MISSING") ||
+    upper.includes("CSV_URL_UNRESOLVED")
+  ) return "CONFIG_MISSING";
   if (upper.includes("ENOTFOUND")) return "DNS";
   if (upper.includes("ETIMEDOUT") || upper.includes("ABORT_ERR") || upper.includes("TIMEOUT")) return "TIMEOUT";
   const httpCode = error.match(/HTTP\s+(\d{3})/i);
