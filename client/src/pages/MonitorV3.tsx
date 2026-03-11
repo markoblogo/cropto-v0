@@ -406,7 +406,59 @@ function formatStaleAge(widget: GridWidget) {
   return `${totalDays}d`;
 }
 
+function formatAgeShort(updatedAt?: string) {
+  const ts = parseTimestamp(updatedAt);
+  if (ts === null) return "n/a";
+  const ageMs = Date.now() - ts;
+  if (!Number.isFinite(ageMs) || ageMs < 0) return "n/a";
+  const totalMinutes = Math.floor(ageMs / 60000);
+  if (totalMinutes < 60) return `${totalMinutes}m`;
+  const totalHours = Math.floor(totalMinutes / 60);
+  if (totalHours < 48) return `${totalHours}h`;
+  const totalDays = Math.floor(totalHours / 24);
+  return `${totalDays}d`;
+}
+
+function computeDataCompletenessScore(widget: GridWidget) {
+  const statusRank = getStatusRank(widget.status);
+  const usableCount = widget.metrics.filter(metricLooksUsable).length;
+  const totalCount = widget.metrics.length || 1;
+  const numericCount = widget.metrics
+    .map((metric) => parseMetricNumber(metric.value))
+    .filter((value): value is number => value !== null).length;
+  let score = statusRank * 16;
+  score += Math.round((usableCount / totalCount) * 24);
+  score += Math.min(18, numericCount * 6);
+  if (isDegradedStatus(widget.status)) score -= 14;
+  if (widgetDataState(widget) === "empty") score -= 20;
+  if (isIndexCardStale(widget)) score -= 18;
+  return Math.max(0, Math.min(100, score));
+}
+
+function completenessTone(score: number) {
+  if (score >= 75) return "border-emerald-500/70 bg-emerald-500/10 text-emerald-300";
+  if (score >= 45) return "border-amber-500/70 bg-amber-500/10 text-amber-300";
+  return "border-red-500/70 bg-red-500/10 text-red-300";
+}
+
+function buildDataFirstFallbackRows(
+  widget: GridWidget,
+  state: "live" | "degraded" | "empty",
+): Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }> {
+  if (state === "live") return [];
+  const usableCount = widget.metrics.filter(metricLooksUsable).length;
+  const totalCount = widget.metrics.length;
+  const freshness = formatAgeShort(widget.updatedAt);
+  return [
+    { label: "State", value: state === "degraded" ? "Fallback / constrained upstream" : "No usable data rows" },
+    { label: "Freshness", value: freshness === "n/a" ? "timestamp unavailable" : `updated ${freshness} ago` },
+    { label: "Coverage", value: `${usableCount}/${totalCount} usable rows` },
+    { label: "Provider", value: `${widget.status} via ${widget.source}` },
+  ];
+}
+
 function inferRenderMode(widget: GridWidget): RenderMode {
+  if (widget.id.startsWith("TXT_")) return "list";
   const hasSeries = widget.metrics.some((metric) => Array.isArray(metric.series) && metric.series.length >= 2);
   if (hasSeries) return "spark";
   const numericValueCount = widget.metrics
@@ -1278,6 +1330,7 @@ export default function MonitorV3Page() {
             {visibleWidgets.map((widget) => {
               const layout = layoutById[widget.id] || ({ w: 1, h: 1 } as GridLayout);
               const dataState = widgetDataState(widget);
+              const completenessScore = computeDataCompletenessScore(widget);
               const staleBadge = isIndexCardStale(widget) ? formatStaleAge(widget) : null;
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
@@ -1348,6 +1401,9 @@ export default function MonitorV3Page() {
                     </div>
                     <div className={cn("flex items-center gap-1 text-[9px]", compactCard ? "mb-0.5" : "mb-1")}>
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", getStatusTone(widget.status))}>{widget.status}</span>
+                      <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", completenessTone(completenessScore))}>
+                        data {completenessScore}
+                      </span>
                       {staleBadge ? (
                         <span className="rounded border border-amber-500/70 bg-amber-500/10 px-1 py-0 uppercase tracking-[0.1em] text-amber-300">
                           stale {staleBadge}
@@ -1364,11 +1420,14 @@ export default function MonitorV3Page() {
                     {(() => {
                       const modeOverride = renderModeById[widget.id] || "auto";
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
-                      const rawItems = widget.metrics.slice(0, layout.h === 2 ? 7 : 4);
-                      const items =
+                      const maxRows = layout.h === 2 ? 7 : 4;
+                      const rawItems = widget.metrics.slice(0, maxRows);
+                      const fallbackRows = buildDataFirstFallbackRows(widget, dataState);
+                      const baseItems =
                         rawItems.length > 0
                           ? rawItems
                           : [{ label: "Status", value: isDegradedStatus(widget.status) ? "No live numeric metrics" : "No numeric metrics yet" }];
+                      const items = (fallbackRows.length > 0 ? [...fallbackRows, ...baseItems] : baseItems).slice(0, maxRows);
                       if (mode === "list") {
                         return items.map((metric) => (
                           <button
