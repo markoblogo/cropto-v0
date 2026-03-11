@@ -58,6 +58,9 @@ export type CanonicalMarket = {
   volume24h: number;
   openInterest: number;
   liquidityScore: number;
+  orderbookSpreadBps?: number;
+  qualityScore: number;
+  rawOutcomes?: Array<{ name: string; price: number; bid?: number; ask?: number }>;
   status: "open" | "closed" | "resolved";
   closeTime?: string;
   scrapedAt: string;
@@ -88,6 +91,8 @@ export type PredictionMarketsPayload = {
     impliedProbability: number;
     volume24h: number;
     liquidityScore: number;
+    orderbookSpreadBps?: number;
+    qualityScore: number;
     closeTime?: string;
     region: string;
     tags: string[];
@@ -119,6 +124,25 @@ function clampProbability(value: number): number {
   if (!Number.isFinite(value)) return 0;
   if (value > 1) return Math.max(0, Math.min(1, value / 100));
   return Math.max(0, Math.min(1, value));
+}
+
+function computeSpreadBps(bid?: number, ask?: number): number | undefined {
+  if (bid == null || ask == null) return undefined;
+  if (!Number.isFinite(bid) || !Number.isFinite(ask)) return undefined;
+  if (ask <= 0 || bid < 0 || ask < bid) return undefined;
+  const mid = (bid + ask) / 2;
+  if (mid <= 0) return undefined;
+  return Number((((ask - bid) / mid) * 10_000).toFixed(2));
+}
+
+function computeQualityScore(args: { liquidityScore: number; spreadBps?: number; volume24h: number; openInterest: number }): number {
+  const liquidityPart = Math.max(0, Math.min(1, args.liquidityScore));
+  const depthPart = Math.max(0, Math.min(1, (Math.log10(1 + Math.max(args.volume24h, 0) + Math.max(args.openInterest, 0))) / 6));
+  const spreadPenalty = args.spreadBps == null
+    ? 0.12
+    : Math.max(0, Math.min(0.45, args.spreadBps / 10_000));
+  const score = Math.max(0, Math.min(1, liquidityPart * 0.5 + depthPart * 0.5 - spreadPenalty));
+  return Number(score.toFixed(4));
 }
 
 function normalizeText(value: string): string {
@@ -180,8 +204,12 @@ function normalizeKalshi(raw: unknown, nowIso: string): CanonicalMarket[] {
     const description = String(item.rules_primary || item.rules || "").trim() || undefined;
     const textBlob = `${question} ${description || ""}`;
     const { category, tags } = inferCategoryAndTags(textBlob);
-    const yesPrice = clampProbability(toNumber(item.yes_bid) || toNumber(item.yes_ask) || toNumber(item.yes_price));
-    const noPrice = clampProbability(toNumber(item.no_bid) || toNumber(item.no_ask) || toNumber(item.no_price));
+    const yesBid = clampProbability(toNumber(item.yes_bid));
+    const yesAsk = clampProbability(toNumber(item.yes_ask));
+    const yesPrice = clampProbability(yesBid || yesAsk || toNumber(item.yes_price));
+    const noBid = clampProbability(toNumber(item.no_bid));
+    const noAsk = clampProbability(toNumber(item.no_ask));
+    const noPrice = clampProbability(noBid || noAsk || toNumber(item.no_price));
     const impliedProbability = yesPrice > 0 ? yesPrice : (1 - noPrice > 0 ? 1 - noPrice : 0);
     const volume24h = toNumber(item.volume_24h) || toNumber(item.volume);
     const openInterest = toNumber(item.open_interest);
@@ -189,6 +217,8 @@ function normalizeKalshi(raw: unknown, nowIso: string): CanonicalMarket[] {
       0,
       Math.min(1, (Math.log10(1 + Math.max(volume24h, 0)) / 5) + (Math.log10(1 + Math.max(openInterest, 0)) / 6)),
     );
+    const spreadBps = computeSpreadBps(yesBid || undefined, yesAsk || undefined);
+    const qualityScore = computeQualityScore({ liquidityScore, spreadBps, volume24h, openInterest });
     const statusRaw = String(item.status || "open").toLowerCase();
     const status: CanonicalMarket["status"] =
       statusRaw.includes("open") ? "open" : statusRaw.includes("resolved") ? "resolved" : "closed";
@@ -206,6 +236,12 @@ function normalizeKalshi(raw: unknown, nowIso: string): CanonicalMarket[] {
       volume24h,
       openInterest,
       liquidityScore,
+      orderbookSpreadBps: spreadBps,
+      qualityScore,
+      rawOutcomes: [
+        { name: "yes", price: yesPrice, bid: yesBid || undefined, ask: yesAsk || undefined },
+        { name: "no", price: noPrice, bid: noBid || undefined, ask: noAsk || undefined },
+      ],
       status,
       closeTime: typeof item.close_time === "string" ? item.close_time : undefined,
       scrapedAt: nowIso,
@@ -237,6 +273,7 @@ function normalizePolymarket(raw: unknown, nowIso: string): CanonicalMarket[] {
             : inferred.category;
 
     const outcomesRaw = Array.isArray(item.outcomes) ? item.outcomes : [];
+    const normalizedOutcomes: Array<{ name: string; price: number; bid?: number; ask?: number }> = [];
     let yesPrice = 0;
     let noPrice = 0;
     if (outcomesRaw.length > 0) {
@@ -244,6 +281,9 @@ function normalizePolymarket(raw: unknown, nowIso: string): CanonicalMarket[] {
         const o = out as Record<string, unknown>;
         const name = String(o.name || "").toLowerCase();
         const price = clampProbability(toNumber(o.price));
+        const bid = clampProbability(toNumber(o.bestBid || o.bid));
+        const ask = clampProbability(toNumber(o.bestAsk || o.ask));
+        normalizedOutcomes.push({ name: name || "outcome", price, bid: bid || undefined, ask: ask || undefined });
         if (name === "yes") yesPrice = price;
         if (name === "no") noPrice = price;
       }
@@ -263,6 +303,9 @@ function normalizePolymarket(raw: unknown, nowIso: string): CanonicalMarket[] {
       0,
       Math.min(1, (Math.log10(1 + Math.max(volume24h, 0)) / 5) + (Math.log10(1 + Math.max(openInterest, 0)) / 6)),
     );
+    const bestYes = normalizedOutcomes.find((outcome) => outcome.name === "yes");
+    const spreadBps = computeSpreadBps(bestYes?.bid, bestYes?.ask);
+    const qualityScore = computeQualityScore({ liquidityScore, spreadBps, volume24h, openInterest });
     const active = item.active === true || String(item.active).toLowerCase() === "true";
     const closed = item.closed === true || String(item.closed).toLowerCase() === "true";
     const status: CanonicalMarket["status"] = active && !closed ? "open" : closed ? "closed" : "open";
@@ -281,6 +324,9 @@ function normalizePolymarket(raw: unknown, nowIso: string): CanonicalMarket[] {
       volume24h,
       openInterest,
       liquidityScore,
+      orderbookSpreadBps: spreadBps,
+      qualityScore,
+      rawOutcomes: normalizedOutcomes,
       status,
       closeTime: typeof item.endDate === "string" ? item.endDate : typeof item.end_date_iso === "string" ? item.end_date_iso : undefined,
       scrapedAt: nowIso,
@@ -366,6 +412,8 @@ export async function getPredictionMarketsDetailedSnapshot(forceRefresh = false)
       impliedProbability: Number((market.impliedProbability * 100).toFixed(1)),
       volume24h: Number((market.volume24h || 0).toFixed(2)),
       liquidityScore: Number(market.liquidityScore.toFixed(2)),
+      orderbookSpreadBps: market.orderbookSpreadBps,
+      qualityScore: Number(market.qualityScore.toFixed(2)),
       closeTime: market.closeTime,
       region: market.region,
       tags: market.tags,

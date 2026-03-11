@@ -61,6 +61,9 @@ async function ensurePredictionTables() {
   await db.execute(sql`create index if not exists macro_prediction_markets_region_idx on macro_prediction_markets (region);`);
   await db.execute(sql`create index if not exists macro_prediction_markets_status_idx on macro_prediction_markets (status);`);
   await db.execute(sql`create index if not exists macro_prediction_markets_updated_idx on macro_prediction_markets (updated_at desc);`);
+  await db.execute(sql`alter table macro_prediction_markets add column if not exists orderbook_spread_bps numeric(10,2);`);
+  await db.execute(sql`alter table macro_prediction_markets add column if not exists quality_score numeric(10,6);`);
+  await db.execute(sql`alter table macro_prediction_markets add column if not exists raw_outcomes text;`);
   await db.execute(sql`
     create table if not exists macro_risk_timeseries (
       id uuid primary key default gen_random_uuid(),
@@ -107,6 +110,9 @@ export async function persistPredictionMarketsSnapshot(snapshot: { payload: Pred
           volume24h: toDecimalString(market.volume24h),
           openInterest: toDecimalString(market.openInterest),
           liquidityScore: toDecimalString(market.liquidityScore),
+          orderbookSpreadBps: toDecimalString(market.orderbookSpreadBps),
+          qualityScore: toDecimalString(market.qualityScore),
+          rawOutcomes: safeJson(market.rawOutcomes || []),
           status: market.status,
           closeTime: toDate(market.closeTime),
           resolveTime: null,
@@ -131,6 +137,9 @@ export async function persistPredictionMarketsSnapshot(snapshot: { payload: Pred
           volume24h: sql`excluded.volume_24h`,
           openInterest: sql`excluded.open_interest`,
           liquidityScore: sql`excluded.liquidity_score`,
+          orderbookSpreadBps: sql`excluded.orderbook_spread_bps`,
+          qualityScore: sql`excluded.quality_score`,
+          rawOutcomes: sql`excluded.raw_outcomes`,
           status: sql`excluded.status`,
           closeTime: sql`excluded.close_time`,
           resolveTime: sql`excluded.resolve_time`,

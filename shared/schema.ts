@@ -177,6 +177,9 @@ export const macroPredictionMarkets = pgTable("macro_prediction_markets", {
   volume24h: decimal("volume_24h", { precision: 20, scale: 4 }),
   openInterest: decimal("open_interest", { precision: 20, scale: 4 }),
   liquidityScore: decimal("liquidity_score", { precision: 10, scale: 6 }),
+  orderbookSpreadBps: decimal("orderbook_spread_bps", { precision: 10, scale: 2 }),
+  qualityScore: decimal("quality_score", { precision: 10, scale: 6 }),
+  rawOutcomes: text("raw_outcomes"), // JSON outcomes snapshot
   status: text("status").notNull().default("open"),
   closeTime: timestamp("close_time"),
   resolveTime: timestamp("resolve_time"),

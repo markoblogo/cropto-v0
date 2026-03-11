@@ -118,6 +118,8 @@ type PredictionMarketRow = {
   impliedProbability: number;
   volume24h: number;
   liquidityScore: number;
+  orderbookSpreadBps?: number;
+  qualityScore?: number;
   closeTime?: string;
   region: string;
   tags: string[];
@@ -148,6 +150,9 @@ type PredictionRiskTrendsResponse = {
     }
   >;
 };
+
+type DirectPredictionSort = "liquidity" | "volume" | "quality";
+type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
 type GridWidget = {
   id: string;
@@ -211,6 +216,8 @@ const STORAGE_KEYS = {
   liveOnly: `${STORAGE_PREFIX}live_only`,
   healthFilter: `${STORAGE_PREFIX}health_filter`,
   pinDenseTop: `${STORAGE_PREFIX}pin_dense_top`,
+  directPredictionSort: `${STORAGE_PREFIX}direct_prediction_sort`,
+  directPredictionRegion: `${STORAGE_PREFIX}direct_prediction_region`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -811,6 +818,12 @@ export default function MonitorV3Page() {
   const [showOnlyLive, setShowOnlyLive] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.liveOnly, false));
   const [healthFilter, setHealthFilter] = useState<HealthFilter>(() => readJson<HealthFilter>(STORAGE_KEYS.healthFilter, "all"));
   const [pinDenseTop, setPinDenseTop] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.pinDenseTop, true));
+  const [directPredictionSort, setDirectPredictionSort] = useState<DirectPredictionSort>(() =>
+    readJson<DirectPredictionSort>(STORAGE_KEYS.directPredictionSort, "liquidity"),
+  );
+  const [directPredictionRegion, setDirectPredictionRegion] = useState<DirectPredictionRegion>(() =>
+    readJson<DirectPredictionRegion>(STORAGE_KEYS.directPredictionRegion, "ALL"),
+  );
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -841,6 +854,8 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.liveOnly, showOnlyLive), [showOnlyLive]);
   useEffect(() => writeJson(STORAGE_KEYS.healthFilter, healthFilter), [healthFilter]);
   useEffect(() => writeJson(STORAGE_KEYS.pinDenseTop, pinDenseTop), [pinDenseTop]);
+  useEffect(() => writeJson(STORAGE_KEYS.directPredictionSort, directPredictionSort), [directPredictionSort]);
+  useEffect(() => writeJson(STORAGE_KEYS.directPredictionRegion, directPredictionRegion), [directPredictionRegion]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -1119,6 +1134,13 @@ export default function MonitorV3Page() {
     const marketSentimentFallback = marketRows
       .filter((row) => /corn|wheat|soy|rapeseed/i.test(`${row.title} ${row.subtitle || ""}`))
       .slice(0, 3);
+    const directPredictionRows = (predictionMarketsQuery.data?.directGrainMarkets || [])
+      .filter((row) => directPredictionRegion === "ALL" || row.region === directPredictionRegion)
+      .sort((a, b) => {
+        if (directPredictionSort === "volume") return (b.volume24h || 0) - (a.volume24h || 0);
+        if (directPredictionSort === "quality") return (b.qualityScore || 0) - (a.qualityScore || 0);
+        return (b.liquidityScore || 0) - (a.liquidityScore || 0);
+      });
 
     const widgetsFromGlobalContext: GridWidget[] = [
       {
@@ -1194,17 +1216,17 @@ export default function MonitorV3Page() {
         id: "SYS_DIRECT_GRAIN_PREDICTION",
         title: "Direct Grain Prediction Markets",
         subtitle: "Open grain/oilseed contracts from Kalshi & Polymarket",
-        status: (predictionMarketsQuery.data?.directGrainMarkets?.length || 0) > 0 ? "INDICATIVE" : "OFFLINE",
+        status: directPredictionRows.length > 0 ? "INDICATIVE" : "OFFLINE",
         source: "Kalshi + Polymarket",
         topic: "markets",
         roles: ["farmer", "trader", "broker"],
         territory: "GLOBAL",
-        metrics: (predictionMarketsQuery.data?.directGrainMarkets || []).length > 0
-          ? (predictionMarketsQuery.data?.directGrainMarkets || []).slice(0, 8).map((row) => ({
-              label: `${row.source.toUpperCase()} ${row.region}`,
-              value: `${row.question} • ${row.impliedProbability.toFixed(1)}% • vol ${Math.round(row.volume24h)}`,
+        metrics: directPredictionRows.length > 0
+          ? directPredictionRows.slice(0, 10).map((row) => ({
+              label: `${row.source.toUpperCase()} ${row.region} • q${((row.qualityScore || 0) * 100).toFixed(0)}`,
+              value: `${row.question} • ${row.impliedProbability.toFixed(1)}% • vol ${Math.round(row.volume24h)} • liq ${(row.liquidityScore || 0).toFixed(2)}${row.orderbookSpreadBps != null ? ` • spread ${row.orderbookSpreadBps.toFixed(0)}bps` : ""}`,
             }))
-          : [{ label: "Status", value: "No direct grain prediction contracts in current snapshot" }],
+          : [{ label: "Status", value: "No direct grain prediction contracts for selected region/sort" }],
       },
       {
         id: "SYS_PREDICTION_RISK_TRENDS",
@@ -1255,7 +1277,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1350,6 +1372,14 @@ export default function MonitorV3Page() {
   }, [visibleWidgets]);
   const liveTotalCount = healthCounts.live + healthCounts.degraded + healthCounts.empty;
   const livePercent = liveTotalCount > 0 ? Math.round((healthCounts.live / liveTotalCount) * 100) : 0;
+  const predictionHealth = useMemo(() => {
+    const hasIndices = (predictionMarketsQuery.data?.indices || []).some((row) => row.value != null);
+    const hasTrends = Object.values(predictionTrendsQuery.data?.byIndex || {}).some((row) => (row?.points || []).length > 0);
+    const marketCount = predictionMarketsQuery.data?.marketCount || 0;
+    if (hasIndices && hasTrends) return "live" as const;
+    if (marketCount > 0 || hasIndices || hasTrends) return "degraded" as const;
+    return "empty" as const;
+  }, [predictionMarketsQuery.data, predictionTrendsQuery.data]);
   const refreshToken = [
     newsQuery.dataUpdatedAt,
     grainWidgetsQuery.dataUpdatedAt,
@@ -1566,6 +1596,32 @@ export default function MonitorV3Page() {
             <option value="source">Source</option>
           </select>
 
+          <select
+            value={directPredictionRegion}
+            onChange={(event) => setDirectPredictionRegion(event.target.value as DirectPredictionRegion)}
+            className="rounded border border-border bg-card px-2 py-1 text-xs uppercase tracking-[0.12em]"
+            title="Direct grain prediction region filter"
+          >
+            <option value="ALL">Pred region: all</option>
+            <option value="GLOBAL">Pred region: global</option>
+            {COUNTRY_OPTIONS.map((option) => (
+              <option key={`pred-region-${option.id}`} value={option.id}>
+                Pred region: {option.id}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={directPredictionSort}
+            onChange={(event) => setDirectPredictionSort(event.target.value as DirectPredictionSort)}
+            className="rounded border border-border bg-card px-2 py-1 text-xs uppercase tracking-[0.12em]"
+            title="Direct grain prediction sort"
+          >
+            <option value="liquidity">Pred sort: liquidity</option>
+            <option value="volume">Pred sort: volume</option>
+            <option value="quality">Pred sort: quality</option>
+          </select>
+
           <button
             onClick={() => setShowHidden((current) => !current)}
             className={cn(
@@ -1644,6 +1700,18 @@ export default function MonitorV3Page() {
             </span>
             <span className={cn("rounded border px-1.5 py-0.5", (healthTrend?.liveDelta || 0) >= 0 ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-red-500/60 bg-red-500/10 text-red-300")}>
               Δ {healthTrend ? `${healthTrend.liveDelta >= 0 ? "+" : ""}${healthTrend.liveDelta} (${healthTrend.livePctDelta >= 0 ? "+" : ""}${healthTrend.livePctDelta}%)` : "n/a"}
+            </span>
+            <span
+              className={cn(
+                "rounded border px-1.5 py-0.5 uppercase tracking-[0.1em]",
+                predictionHealth === "live"
+                  ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300"
+                  : predictionHealth === "degraded"
+                    ? "border-amber-500/60 bg-amber-500/10 text-amber-300"
+                    : "border-red-500/60 bg-red-500/10 text-red-300",
+              )}
+            >
+              prediction {predictionHealth}
             </span>
           </div>
         </section>
@@ -1784,6 +1852,8 @@ export default function MonitorV3Page() {
                   setSortMode("default");
                   setHealthFilter("all");
                   setPinDenseTop(true);
+                  setDirectPredictionRegion("ALL");
+                  setDirectPredictionSort("liquidity");
                   setRenderPreset("mixed");
                   setRenderModeById({});
                 }}
