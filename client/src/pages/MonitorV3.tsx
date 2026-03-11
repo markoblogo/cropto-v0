@@ -1078,11 +1078,6 @@ export default function MonitorV3Page() {
     readJson<DirectPredictionRegion>(STORAGE_KEYS.directPredictionRegion, "ALL"),
   );
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
-  const [selectedGeoglamId, setSelectedGeoglamId] = useState<string | null>(null);
-  const [geoglamZoom, setGeoglamZoom] = useState<number>(1);
-  const [geoglamPan, setGeoglamPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isGeoglamDragging, setIsGeoglamDragging] = useState(false);
-  const [geoglamDragOrigin, setGeoglamDragOrigin] = useState<{ x: number; y: number } | null>(null);
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -2156,22 +2151,6 @@ export default function MonitorV3Page() {
     yieldFoodSecurityQuery.data?.foodSecurity?.status ||
     "CONSTRAINED"
   ).toUpperCase();
-  const selectedGeoglamDataset =
-    (selectedGeoglamId ? yieldGeoglamRows.find((row) => row.id === selectedGeoglamId) : null) || yieldGeoglamRows[0] || null;
-
-  useEffect(() => {
-    if (!yieldGeoglamRows.length) {
-      setSelectedGeoglamId(null);
-      setGeoglamZoom(1);
-      setGeoglamPan({ x: 0, y: 0 });
-      return;
-    }
-    if (!selectedGeoglamId || !yieldGeoglamRows.some((row) => row.id === selectedGeoglamId)) {
-      setSelectedGeoglamId(yieldGeoglamRows[0].id);
-      setGeoglamZoom(1);
-      setGeoglamPan({ x: 0, y: 0 });
-    }
-  }, [yieldGeoglamRows, selectedGeoglamId]);
 
   const applyRenderPreset = (preset: RenderPreset) => {
     setRenderPreset(preset);
@@ -2471,109 +2450,18 @@ export default function MonitorV3Page() {
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Global Situation</span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => {
-                    if (!yieldGeoglamRows.length || !selectedGeoglamDataset) return;
-                    const idx = yieldGeoglamRows.findIndex((row) => row.id === selectedGeoglamDataset.id);
-                    const next = idx <= 0 ? yieldGeoglamRows[yieldGeoglamRows.length - 1] : yieldGeoglamRows[idx - 1];
-                    setSelectedGeoglamId(next.id);
-                    setGeoglamPan({ x: 0, y: 0 });
-                  }}
-                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-                  title="Previous GEOGLAM map"
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={() => {
-                    if (!yieldGeoglamRows.length || !selectedGeoglamDataset) return;
-                    const idx = yieldGeoglamRows.findIndex((row) => row.id === selectedGeoglamDataset.id);
-                    const next = idx >= yieldGeoglamRows.length - 1 ? yieldGeoglamRows[0] : yieldGeoglamRows[idx + 1];
-                    setSelectedGeoglamId(next.id);
-                    setGeoglamPan({ x: 0, y: 0 });
-                  }}
-                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-                  title="Next GEOGLAM map"
-                >
-                  ›
-                </button>
-                <button
-                  onClick={() => setGeoglamZoom((current) => Math.max(1, Number((current - 0.2).toFixed(2))))}
-                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-                  title="Zoom out"
-                >
-                  -
-                </button>
-                <button
-                  onClick={() => setGeoglamZoom((current) => Math.min(2.8, Number((current + 0.2).toFixed(2))))}
-                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-                  title="Zoom in"
-                >
-                  +
-                </button>
-                {selectedGeoglamDataset?.sourceUrl ? (
-                  <a
-                    href={selectedGeoglamDataset.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-                    title="Open GEOGLAM source"
-                  >
-                    ↗
-                  </a>
-                ) : null}
-              </div>
+              <span className="rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-amber-300">
+                custom map layers in progress
+              </span>
             </div>
-            <div
-              className="relative h-[300px] overflow-hidden rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black"
-              onWheel={(event) => {
-                event.preventDefault();
-                const delta = event.deltaY > 0 ? -0.12 : 0.12;
-                setGeoglamZoom((current) => Math.max(1, Math.min(2.8, Number((current + delta).toFixed(2)))));
-              }}
-              onMouseDown={(event) => {
-                setIsGeoglamDragging(true);
-                setGeoglamDragOrigin({ x: event.clientX - geoglamPan.x, y: event.clientY - geoglamPan.y });
-              }}
-              onMouseMove={(event) => {
-                if (!isGeoglamDragging || !geoglamDragOrigin) return;
-                setGeoglamPan({
-                  x: Math.max(-220, Math.min(220, event.clientX - geoglamDragOrigin.x)),
-                  y: Math.max(-160, Math.min(160, event.clientY - geoglamDragOrigin.y)),
-                });
-              }}
-              onMouseUp={() => {
-                setIsGeoglamDragging(false);
-                setGeoglamDragOrigin(null);
-              }}
-              onMouseLeave={() => {
-                setIsGeoglamDragging(false);
-                setGeoglamDragOrigin(null);
-              }}
-            >
-              {selectedGeoglamDataset?.thumbnailUrl ? (
-                <img
-                  src={selectedGeoglamDataset.thumbnailUrl}
-                  alt={selectedGeoglamDataset.title}
-                  className="h-full w-full object-cover transition-transform duration-200"
-                  style={{
-                    transform: `translate(${geoglamPan.x}px, ${geoglamPan.y}px) scale(${geoglamZoom})`,
-                    cursor: isGeoglamDragging ? "grabbing" : geoglamZoom > 1 ? "grab" : "default",
-                  }}
-                  draggable={false}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                  GEOGLAM preview unavailable for current filters
-                </div>
-              )}
-              <div className="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1 text-xs text-white">
-                <a href={selectedGeoglamDataset?.sourceUrl || "#"} target="_blank" rel="noreferrer" className="line-clamp-1 hover:underline">
-                  {selectedGeoglamDataset?.title || "No GEOGLAM dataset selected"}
-                </a>
-                <div className="text-[10px] text-white/80">
-                  {selectedGeoglamDataset?.crop || "ALL"} • zoom {geoglamZoom.toFixed(1)}x • drag to pan
+            <div className="relative h-[360px] overflow-hidden rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.12),transparent_45%),radial-gradient(circle_at_80%_35%,rgba(6,182,212,0.10),transparent_42%),radial-gradient(circle_at_50%_80%,rgba(251,191,36,0.08),transparent_45%)]" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="max-w-[75%] rounded border border-border bg-black/45 px-3 py-2 text-center">
+                  <div className="text-sm font-semibold">Internal Geo Layer Pipeline</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    GEOGLAM public previews are paused from hero. Next step: custom map with switchable internal layers (logistics, yields, weather, risk).
+                  </div>
                 </div>
               </div>
             </div>
@@ -2700,52 +2588,36 @@ export default function MonitorV3Page() {
                 <span>{yieldFoodSecurityQuery.data?.geoglam?.selectedCount ?? 0} rows</span>
               </div>
               <div className="monitor-widget-scroll max-h-[180px] space-y-1 overflow-y-auto pr-1">
-                {yieldGeoglamRows.length > 0 ? (
-                  yieldGeoglamRows.slice(0, 12).map((row) => (
-                    <button
-                      key={`geoglam-${row.id}`}
-                      onClick={() => {
-                        setSelectedGeoglamId(row.id);
-                        setGeoglamZoom(1);
-                        setGeoglamPan({ x: 0, y: 0 });
-                      }}
-                      onDoubleClick={() => {
-                        if (row.sourceUrl) window.open(row.sourceUrl, "_blank", "noopener,noreferrer");
-                      }}
-                      className={cn(
-                        "block w-full rounded border px-1.5 py-1 text-left",
-                        selectedGeoglamDataset?.id === row.id ? "border-cyan-400/60 bg-cyan-500/10" : "border-border hover:border-primary/60",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="line-clamp-1 text-xs font-medium">{row.title}</div>
-                        {row.sourceUrl ? (
-                          <a
-                            href={row.sourceUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(event) => event.stopPropagation()}
-                            className="rounded border border-border px-1 py-0 text-[10px] text-muted-foreground hover:text-foreground"
-                            title="Open GEOGLAM report"
-                          >
-                            ↗
-                          </a>
-                        ) : null}
-                      </div>
-                      <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <span className="rounded border border-border px-1 py-0">{row.crop}</span>
-                        <span>•</span>
-                        <span className={cn(row.countryRelevant ? "text-emerald-300" : "text-muted-foreground")}>
-                          {row.countryRelevant ? "countryRelevant" : "global"}
-                        </span>
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <div className="rounded border border-dashed border-border p-2 text-xs text-muted-foreground">
-                    {yieldFoodSecurityQuery.data?.geoglam?.note || "No GEOGLAM datasets for current filter."}
+                <div className="rounded border border-dashed border-border bg-black/20 p-2">
+                  <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em]">
+                    <span className="text-amber-300">Paused from live map</span>
+                    <span className="text-muted-foreground">backfill only</span>
                   </div>
-                )}
+                  <div className="text-xs text-muted-foreground">
+                    GEOGLAM archive rows are kept only as reference metadata. Hero map now stays on internal layers pipeline to avoid stale
+                    2024-only visuals.
+                  </div>
+                  <div className="mt-2 grid grid-cols-1 gap-1 text-xs">
+                    <div className="rounded border border-border px-1.5 py-1">
+                      <span className="text-muted-foreground">Latest update:</span>{" "}
+                      <span>{yieldFoodSecurityQuery.data?.geoglam?.latestUpdate ? `${formatAgeShort(yieldFoodSecurityQuery.data.geoglam.latestUpdate)} ago` : "n/a"}</span>
+                    </div>
+                    <div className="rounded border border-border px-1.5 py-1">
+                      <span className="text-muted-foreground">Status rationale:</span>{" "}
+                      <span>{yieldFoodSecurityQuery.data?.geoglam?.note || "No GEOGLAM datasets for current filter."}</span>
+                    </div>
+                  </div>
+                  {yieldFoodSecurityQuery.data?.geoglam?.archiveUrl ? (
+                    <a
+                      href={yieldFoodSecurityQuery.data.geoglam.archiveUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                    >
+                      Open archive ↗
+                    </a>
+                  ) : null}
+                </div>
               </div>
             </article>
 

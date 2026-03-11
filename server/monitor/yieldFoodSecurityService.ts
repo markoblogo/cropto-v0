@@ -6,6 +6,7 @@ const GEOGLAM_ARCGIS_ITEMS_BASE_URL =
 const FETCH_TIMEOUT_MS = Number.parseInt(process.env.MONITOR_YIELD_FS_FETCH_TIMEOUT_MS || "7000", 10);
 const CACHE_TTL_MS = Number.parseInt(process.env.MONITOR_YIELD_FS_CACHE_TTL_MS || String(15 * 60 * 1000), 10);
 const GEOGLAM_MAX_ITEM_DETAILS = Number.parseInt(process.env.MONITOR_YIELD_GEOGLAM_MAX_ITEMS || "18", 10);
+const GEOGLAM_FRESHNESS_MAX_DAYS = Number.parseInt(process.env.MONITOR_YIELD_GEOGLAM_FRESHNESS_MAX_DAYS || "120", 10);
 
 export type YieldCrop = "ALL" | "WHEAT" | "MAIZE" | "RICE" | "SOYBEAN" | "SORGHUM" | "MILLET" | "SYNTHESIS";
 type YieldStatus = "REFRESH" | "INDICATIVE" | "CONSTRAINED";
@@ -190,8 +191,30 @@ async function fetchGeoglamDatasets(country: string, crop: YieldCrop): Promise<Y
 
     const latestUpdate = datasets[0]?.updatedAt;
     const failedCount = settled.filter((row) => row.status === "rejected").length;
+    const latestTs = latestUpdate ? Date.parse(latestUpdate) : NaN;
+    const ageDays =
+      Number.isFinite(latestTs) ? Math.floor((Date.now() - latestTs) / (24 * 60 * 60 * 1000)) : Number.POSITIVE_INFINITY;
+    const stale = !Number.isFinite(latestTs) || ageDays > GEOGLAM_FRESHNESS_MAX_DAYS;
     const status: YieldStatus =
-      datasets.length > 0 ? "REFRESH" : failedCount < settled.length ? "INDICATIVE" : "CONSTRAINED";
+      datasets.length > 0
+        ? stale
+          ? "CONSTRAINED"
+          : "REFRESH"
+        : failedCount < settled.length
+          ? "INDICATIVE"
+          : "CONSTRAINED";
+
+    if (stale && datasets.length > 0) {
+      return {
+        status: "CONSTRAINED",
+        source: "GEOGLAM Crop Monitor (ArcGIS public archive)",
+        archiveUrl: GEOGLAM_ARCHIVE_URL,
+        selectedCount: 0,
+        latestUpdate,
+        note: `GEOGLAM archive is stale for hero usage: latest update is ${Number.isFinite(ageDays) ? `${ageDays}d ago` : "unknown"} (freshness limit ${GEOGLAM_FRESHNESS_MAX_DAYS}d)`,
+        datasets: [],
+      };
+    }
 
     return {
       status,
