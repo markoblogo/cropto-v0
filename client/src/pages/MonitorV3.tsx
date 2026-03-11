@@ -165,6 +165,15 @@ const COUNTRY_OPTIONS: Array<{ id: Country; label: string }> = [
   { id: "DE", label: "Germany" },
   { id: "RO", label: "Romania" },
 ];
+const COUNTRY_NEWS_HINTS: Record<Country, string[]> = {
+  US: ["united states", "u.s.", "usa", "us "],
+  UA: ["ukraine", "ukrainian", "kyiv", "odesa", "odessa", "black sea"],
+  BR: ["brazil", "brazilian", "sao paulo", "parana"],
+  AR: ["argentina", "argentine", "buenos aires", "rosario"],
+  FR: ["france", "french", "paris"],
+  DE: ["germany", "german", "berlin", "hamburg"],
+  RO: ["romania", "romanian", "bucharest", "constanta"],
+};
 const KIND_TO_TOPIC: Record<string, Exclude<MonitorTopic, "all">> = {
   GLOBAL_SPOT_TABLE: "markets",
   CROP_PRICE_INDEX: "markets",
@@ -391,6 +400,40 @@ function formatFxPair(pair: string, rates: FxResponse["rates"]): string {
   if (!baseUsd || !quoteUsd) return "n/a";
   const cross = baseUsd / quoteUsd;
   return cross.toFixed(4);
+}
+
+function newsTopics(item: NewsItem): string[] {
+  return (item.topic_tags || []).map((tag) => tag.toLowerCase());
+}
+
+function inferNewsTopic(item: NewsItem): MonitorTopic {
+  const tags = newsTopics(item);
+  if (tags.includes("logistics")) return "logistics";
+  if (tags.includes("policy")) return "policy";
+  if (tags.includes("weather")) return "weather";
+  if (tags.includes("markets") || tags.includes("trade")) return "markets";
+  return "all";
+}
+
+function newsMatchesCountry(item: NewsItem, country: Country) {
+  const haystack = `${item.title} ${item.summary || ""}`.toLowerCase();
+  const hints = COUNTRY_NEWS_HINTS[country] || [];
+  return hints.some((hint) => haystack.includes(hint));
+}
+
+function newsMatchesRole(item: NewsItem, role: MonitorRole) {
+  if (role === "all") return true;
+  const topic = inferNewsTopic(item);
+  if (role === "farmer") return topic === "markets" || topic === "weather" || topic === "policy" || topic === "all";
+  if (role === "trader") return topic === "markets" || topic === "logistics" || topic === "policy" || topic === "all";
+  return topic === "logistics" || topic === "policy" || topic === "markets" || topic === "all";
+}
+
+function newsMatchesTopic(item: NewsItem, topic: MonitorTopic) {
+  if (topic === "all") return true;
+  const tags = newsTopics(item);
+  if (tags.includes(topic)) return true;
+  return inferNewsTopic(item) === topic;
 }
 
 function getGridColumnCount(width: number) {
@@ -747,11 +790,19 @@ export default function MonitorV3Page() {
 
   const filteredSignals = useMemo(() => {
     return topSignals.filter((item) => {
-      if (topic === "all") return true;
-      const tags = (item.topic_tags || []).map((tag) => tag.toLowerCase());
-      return tags.includes(topic);
+      if (!newsMatchesRole(item, role)) return false;
+      if (!newsMatchesTopic(item, topic)) return false;
+      return newsMatchesCountry(item, country);
     });
-  }, [topSignals, topic]);
+  }, [topSignals, topic, role, country]);
+
+  const filteredFeed = useMemo(() => {
+    return feed.filter((item) => {
+      if (!newsMatchesRole(item, role)) return false;
+      if (!newsMatchesTopic(item, topic)) return false;
+      return newsMatchesCountry(item, country);
+    });
+  }, [feed, topic, role, country]);
 
   const applyRenderPreset = (preset: RenderPreset) => {
     setRenderPreset(preset);
@@ -950,12 +1001,16 @@ export default function MonitorV3Page() {
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Live Feed</div>
             <div className="space-y-1.5">
-              {feed.slice(0, 5).map((item) => (
-                <div key={item.id} className="rounded border border-border p-1.5 text-xs">
-                  <div className="line-clamp-2 font-medium">{item.title}</div>
-                  <div className="mt-1 text-[10px] text-muted-foreground">{item.source_name}</div>
-                </div>
-              ))}
+              {filteredFeed.length === 0 ? (
+                <div className="rounded border border-dashed border-border p-1.5 text-xs text-muted-foreground">No live feed items for current filters.</div>
+              ) : (
+                filteredFeed.slice(0, 5).map((item) => (
+                  <div key={item.id} className="rounded border border-border p-1.5 text-xs">
+                    <div className="line-clamp-2 font-medium">{item.title}</div>
+                    <div className="mt-1 text-[10px] text-muted-foreground">{item.source_name}</div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
           <div className="rounded border border-border bg-card p-2">
