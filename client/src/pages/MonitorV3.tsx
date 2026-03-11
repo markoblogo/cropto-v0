@@ -1019,11 +1019,16 @@ function normalizeToUsdTon(args: {
   rates?: Array<{ currency: string; usdPerUnit: number }>;
 }) {
   const current = typeof args.current === "number" ? args.current : null;
-  const unit = String(args.unit || "").toLowerCase();
+  const unitFromField = String(args.unit || "").toLowerCase();
+  const unitFromTextMatch = (args.valueText || "").match(/\/\s*([a-z]+)/i);
+  const unitFromText = (unitFromTextMatch?.[1] || "").toLowerCase();
+  const unit = unitFromField || unitFromText;
   const currencyRaw = String(args.currency || "").toUpperCase();
   const currencyFromText = (args.valueText || "").match(/\b([A-Z]{3})\s*\/\s*kg\b/i)?.[1]?.toUpperCase();
-  const currency = currencyRaw || currencyFromText || "";
-  const usdPerUnit = args.rates?.find((rate) => String(rate.currency).toUpperCase() === currency)?.usdPerUnit;
+  const currencyFromTextGeneric = (args.valueText || "").match(/\b([A-Z]{3})\s*\/\s*[a-z]+\b/i)?.[1]?.toUpperCase();
+  const currency = currencyRaw || currencyFromText || currencyFromTextGeneric || "";
+  const liveUsdPerUnit = args.rates?.find((rate) => String(rate.currency).toUpperCase() === currency)?.usdPerUnit;
+  const usdPerUnit = liveUsdPerUnit ?? (currency === "UAH" ? 0.024 : null);
   if (current == null || !currency || !usdPerUnit) return null;
   if (unit.includes("kg")) {
     return Number((current * 1000 * usdPerUnit).toFixed(2));
@@ -1075,6 +1080,9 @@ export default function MonitorV3Page() {
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
   const [selectedGeoglamId, setSelectedGeoglamId] = useState<string | null>(null);
   const [geoglamZoom, setGeoglamZoom] = useState<number>(1);
+  const [geoglamPan, setGeoglamPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isGeoglamDragging, setIsGeoglamDragging] = useState(false);
+  const [geoglamDragOrigin, setGeoglamDragOrigin] = useState<{ x: number; y: number } | null>(null);
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -2155,11 +2163,13 @@ export default function MonitorV3Page() {
     if (!yieldGeoglamRows.length) {
       setSelectedGeoglamId(null);
       setGeoglamZoom(1);
+      setGeoglamPan({ x: 0, y: 0 });
       return;
     }
     if (!selectedGeoglamId || !yieldGeoglamRows.some((row) => row.id === selectedGeoglamId)) {
       setSelectedGeoglamId(yieldGeoglamRows[0].id);
       setGeoglamZoom(1);
+      setGeoglamPan({ x: 0, y: 0 });
     }
   }, [yieldGeoglamRows, selectedGeoglamId]);
 
@@ -2468,6 +2478,7 @@ export default function MonitorV3Page() {
                     const idx = yieldGeoglamRows.findIndex((row) => row.id === selectedGeoglamDataset.id);
                     const next = idx <= 0 ? yieldGeoglamRows[yieldGeoglamRows.length - 1] : yieldGeoglamRows[idx - 1];
                     setSelectedGeoglamId(next.id);
+                    setGeoglamPan({ x: 0, y: 0 });
                   }}
                   className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
                   title="Previous GEOGLAM map"
@@ -2480,6 +2491,7 @@ export default function MonitorV3Page() {
                     const idx = yieldGeoglamRows.findIndex((row) => row.id === selectedGeoglamDataset.id);
                     const next = idx >= yieldGeoglamRows.length - 1 ? yieldGeoglamRows[0] : yieldGeoglamRows[idx + 1];
                     setSelectedGeoglamId(next.id);
+                    setGeoglamPan({ x: 0, y: 0 });
                   }}
                   className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
                   title="Next GEOGLAM map"
@@ -2500,15 +2512,56 @@ export default function MonitorV3Page() {
                 >
                   +
                 </button>
+                {selectedGeoglamDataset?.sourceUrl ? (
+                  <a
+                    href={selectedGeoglamDataset.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                    title="Open GEOGLAM source"
+                  >
+                    ↗
+                  </a>
+                ) : null}
               </div>
             </div>
-            <div className="relative h-[230px] overflow-hidden rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black">
+            <div
+              className="relative h-[300px] overflow-hidden rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black"
+              onWheel={(event) => {
+                event.preventDefault();
+                const delta = event.deltaY > 0 ? -0.12 : 0.12;
+                setGeoglamZoom((current) => Math.max(1, Math.min(2.8, Number((current + delta).toFixed(2)))));
+              }}
+              onMouseDown={(event) => {
+                setIsGeoglamDragging(true);
+                setGeoglamDragOrigin({ x: event.clientX - geoglamPan.x, y: event.clientY - geoglamPan.y });
+              }}
+              onMouseMove={(event) => {
+                if (!isGeoglamDragging || !geoglamDragOrigin) return;
+                setGeoglamPan({
+                  x: Math.max(-220, Math.min(220, event.clientX - geoglamDragOrigin.x)),
+                  y: Math.max(-160, Math.min(160, event.clientY - geoglamDragOrigin.y)),
+                });
+              }}
+              onMouseUp={() => {
+                setIsGeoglamDragging(false);
+                setGeoglamDragOrigin(null);
+              }}
+              onMouseLeave={() => {
+                setIsGeoglamDragging(false);
+                setGeoglamDragOrigin(null);
+              }}
+            >
               {selectedGeoglamDataset?.thumbnailUrl ? (
                 <img
                   src={selectedGeoglamDataset.thumbnailUrl}
                   alt={selectedGeoglamDataset.title}
                   className="h-full w-full object-cover transition-transform duration-200"
-                  style={{ transform: `scale(${geoglamZoom})` }}
+                  style={{
+                    transform: `translate(${geoglamPan.x}px, ${geoglamPan.y}px) scale(${geoglamZoom})`,
+                    cursor: isGeoglamDragging ? "grabbing" : geoglamZoom > 1 ? "grab" : "default",
+                  }}
+                  draggable={false}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
@@ -2520,7 +2573,7 @@ export default function MonitorV3Page() {
                   {selectedGeoglamDataset?.title || "No GEOGLAM dataset selected"}
                 </a>
                 <div className="text-[10px] text-white/80">
-                  {selectedGeoglamDataset?.crop || "ALL"} • zoom {geoglamZoom.toFixed(1)}x
+                  {selectedGeoglamDataset?.crop || "ALL"} • zoom {geoglamZoom.toFixed(1)}x • drag to pan
                 </div>
               </div>
             </div>
@@ -2654,13 +2707,31 @@ export default function MonitorV3Page() {
                       onClick={() => {
                         setSelectedGeoglamId(row.id);
                         setGeoglamZoom(1);
+                        setGeoglamPan({ x: 0, y: 0 });
+                      }}
+                      onDoubleClick={() => {
+                        if (row.sourceUrl) window.open(row.sourceUrl, "_blank", "noopener,noreferrer");
                       }}
                       className={cn(
                         "block w-full rounded border px-1.5 py-1 text-left",
                         selectedGeoglamDataset?.id === row.id ? "border-cyan-400/60 bg-cyan-500/10" : "border-border hover:border-primary/60",
                       )}
                     >
-                      <div className="line-clamp-1 text-xs font-medium">{row.title}</div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="line-clamp-1 text-xs font-medium">{row.title}</div>
+                        {row.sourceUrl ? (
+                          <a
+                            href={row.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(event) => event.stopPropagation()}
+                            className="rounded border border-border px-1 py-0 text-[10px] text-muted-foreground hover:text-foreground"
+                            title="Open GEOGLAM report"
+                          >
+                            ↗
+                          </a>
+                        ) : null}
+                      </div>
                       <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
                         <span className="rounded border border-border px-1 py-0">{row.crop}</span>
                         <span>•</span>
@@ -2695,7 +2766,7 @@ export default function MonitorV3Page() {
                         </span>
                       </div>
                       {Array.isArray(row.series) && row.series.length >= 2 ? (
-                        <svg viewBox="0 0 100 100" className="mt-1 h-8 w-full">
+                        <svg viewBox="0 0 100 100" className="mt-1 h-12 w-full">
                           <polyline
                             fill="none"
                             stroke="currentColor"
