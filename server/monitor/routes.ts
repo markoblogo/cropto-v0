@@ -89,6 +89,7 @@ import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { capBySource, filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
 import { getPredictionMarketsSnapshot } from "./predictionMarketsService";
 import { getPredictionRiskTrends, startPredictionMarketsScheduler } from "./predictionMarketsPersistence";
+import { getAgroExpectationsSnapshot } from "./agroExpectationsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -567,6 +568,39 @@ export function registerMonitorRoutes(app: Express): void {
         keys: ["inflation_risk", "rates_risk", "geopolitics_risk", "grain_risk"],
         byIndex: {},
         message: error?.message || "Failed to load prediction risk trends",
+      });
+    }
+  });
+
+  app.get("/api/monitor/agro-expectations", async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === "1";
+      const payload = await getAgroExpectationsSnapshot(forceRefresh);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        cacheHit: false,
+        barometer: {
+          status: "CONSTRAINED",
+          source: "Purdue/CME Ag Economy Barometer",
+          agEconomy: null,
+          currentConditions: null,
+          futureExpectations: null,
+          note: error?.message || "Failed to load barometer",
+        },
+        etfProxies: {
+          status: "CONSTRAINED",
+          rows: [],
+          cgoComposite: {
+            value: null,
+            dayChangePct: null,
+            d30ChangePct: null,
+            weights: { CORN: 0.4, WEAT: 0.3, SOYB: 0.3 },
+            series: [],
+            note: "Composite unavailable",
+          },
+        },
       });
     }
   });

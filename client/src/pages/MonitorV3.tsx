@@ -151,6 +151,40 @@ type PredictionRiskTrendsResponse = {
   >;
 };
 
+type AgroExpectationsResponse = {
+  generatedAt?: string;
+  cacheHit?: boolean;
+  barometer?: {
+    status?: string;
+    source?: string;
+    updatedAt?: string;
+    agEconomy?: number | null;
+    currentConditions?: number | null;
+    futureExpectations?: number | null;
+    note?: string;
+  };
+  etfProxies?: {
+    status?: string;
+    rows?: Array<{
+      symbol: string;
+      label: string;
+      price: number | null;
+      dayChangePct: number | null;
+      d30ChangePct: number | null;
+      series?: number[];
+      status?: string;
+    }>;
+    cgoComposite?: {
+      value: number | null;
+      dayChangePct: number | null;
+      d30ChangePct: number | null;
+      weights?: Record<string, number>;
+      series?: number[];
+      note?: string;
+    };
+  };
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
@@ -944,6 +978,15 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const agroExpectationsQuery = useQuery<AgroExpectationsResponse>({
+    queryKey: ["monitor-v3-agro-expectations"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/agro-expectations");
+      if (!response.ok) throw new Error("Failed to load agro expectations");
+      return response.json();
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1213,6 +1256,102 @@ export default function MonitorV3Page() {
         ],
       },
       {
+        id: "SYS_FARMER_SENTIMENT_US",
+        title: "Farmer Sentiment (US)",
+        subtitle: "Purdue/CME Ag Economy Barometer",
+        status: (agroExpectationsQuery.data?.barometer?.status || "CONSTRAINED").toUpperCase(),
+        source: agroExpectationsQuery.data?.barometer?.source || "Purdue/CME",
+        updatedAt: agroExpectationsQuery.data?.generatedAt,
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: "US",
+        metrics: [
+          {
+            label: "Ag Economy",
+            value:
+              typeof agroExpectationsQuery.data?.barometer?.agEconomy === "number"
+                ? `${agroExpectationsQuery.data?.barometer?.agEconomy.toFixed(0)} pts`
+                : "n/a",
+          },
+          {
+            label: "Current Conditions",
+            value:
+              typeof agroExpectationsQuery.data?.barometer?.currentConditions === "number"
+                ? `${agroExpectationsQuery.data?.barometer?.currentConditions.toFixed(0)} pts`
+                : "n/a",
+          },
+          {
+            label: "Future Expectations",
+            value:
+              typeof agroExpectationsQuery.data?.barometer?.futureExpectations === "number"
+                ? `${agroExpectationsQuery.data?.barometer?.futureExpectations.toFixed(0)} pts`
+                : "n/a",
+          },
+        ],
+      },
+      {
+        id: "SYS_AGRI_ETF_PROXY",
+        title: "Agri ETF Proxies",
+        subtitle: "CORN/WEAT/SOYB/DBA/TAGS baseline",
+        status: (agroExpectationsQuery.data?.etfProxies?.status || "CONSTRAINED").toUpperCase(),
+        source: "Stooq snapshot",
+        updatedAt: agroExpectationsQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: (agroExpectationsQuery.data?.etfProxies?.rows || []).length
+          ? (agroExpectationsQuery.data?.etfProxies?.rows || []).slice(0, 5).map((row) => ({
+              label: row.symbol,
+              value:
+                typeof row.price === "number"
+                  ? `${row.price.toFixed(2)} USD | 30d ${typeof row.d30ChangePct === "number" ? `${row.d30ChangePct >= 0 ? "+" : ""}${row.d30ChangePct.toFixed(2)}%` : "n/a"}`
+                  : "n/a",
+              delta: typeof row.dayChangePct === "number" ? row.dayChangePct : undefined,
+              series: Array.isArray(row.series) && row.series.length >= 2 ? row.series : undefined,
+            }))
+          : [{ label: "Status", value: "No ETF rows yet" }],
+      },
+      {
+        id: "SYS_CGO_COMPOSITE",
+        title: "CGO Composite",
+        subtitle: "40/30/30 CORN-WEAT-SOYB normalized basket",
+        status: (agroExpectationsQuery.data?.etfProxies?.status || "CONSTRAINED").toUpperCase(),
+        source: "Cropto composite",
+        updatedAt: agroExpectationsQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: [
+          {
+            label: "CGO Index",
+            value:
+              typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.value === "number"
+                ? `${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.value.toFixed(2)} pts`
+                : "n/a",
+            delta:
+              typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.dayChangePct === "number"
+                ? agroExpectationsQuery.data?.etfProxies?.cgoComposite?.dayChangePct
+                : undefined,
+            series:
+              Array.isArray(agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series) &&
+              (agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series?.length || 0) >= 2
+                ? agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series
+                : undefined,
+          },
+          {
+            label: "30d Change",
+            value:
+              typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct === "number"
+                ? `${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct >= 0 ? "+" : ""}${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct.toFixed(2)}%`
+                : "n/a",
+          },
+          {
+            label: "Weights",
+            value: "CORN 40 | WEAT 30 | SOYB 30",
+          },
+        ],
+      },
+      {
         id: "SYS_DIRECT_GRAIN_PREDICTION",
         title: "Direct Grain Prediction Markets",
         subtitle: "Open grain/oilseed contracts from Kalshi & Polymarket",
@@ -1277,7 +1416,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1390,6 +1529,7 @@ export default function MonitorV3Page() {
     predictionMarketsQuery.dataUpdatedAt,
     activationQuery.dataUpdatedAt,
     predictionTrendsQuery.dataUpdatedAt,
+    agroExpectationsQuery.dataUpdatedAt,
   ].join(":");
   const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
   const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
@@ -1454,6 +1594,7 @@ export default function MonitorV3Page() {
         fxQuery.refetch(),
         predictionMarketsQuery.refetch(),
         predictionTrendsQuery.refetch(),
+        agroExpectationsQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);
