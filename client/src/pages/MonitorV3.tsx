@@ -558,6 +558,14 @@ function inferCardType(widget: GridWidget): CardType {
   return "quote";
 }
 
+function cardPlacementPriority(widget: GridWidget) {
+  const type = inferCardType(widget);
+  if (type === "table") return 4;
+  if (type === "news") return 3;
+  if (type === "quote") return 2;
+  return 1;
+}
+
 function cardTypeTone(cardType: CardType) {
   if (cardType === "quote") return "border-cyan-500/60 bg-cyan-500/10 text-cyan-300";
   if (cardType === "table") return "border-violet-500/60 bg-violet-500/10 text-violet-300";
@@ -1161,7 +1169,15 @@ export default function MonitorV3Page() {
         return true;
       });
 
-    if (sortMode === "default") return filtered;
+    if (sortMode === "default") {
+      return [...filtered].sort((a, b) => {
+        const typeRank = cardPlacementPriority(b) - cardPlacementPriority(a);
+        if (typeRank !== 0) return typeRank;
+        const statusRank = getStatusRank(b.status) - getStatusRank(a.status);
+        if (statusRank !== 0) return statusRank;
+        return a.title.localeCompare(b.title);
+      });
+    }
     if (sortMode === "source") {
       return [...filtered].sort((a, b) => a.source.localeCompare(b.source) || a.title.localeCompare(b.title));
     }
@@ -1198,6 +1214,33 @@ export default function MonitorV3Page() {
       { live: 0, degraded: 0, empty: 0 },
     );
   }, [visibleWidgets]);
+  const liveTotalCount = healthCounts.live + healthCounts.degraded + healthCounts.empty;
+  const livePercent = liveTotalCount > 0 ? Math.round((healthCounts.live / liveTotalCount) * 100) : 0;
+  const refreshToken = [
+    newsQuery.dataUpdatedAt,
+    grainWidgetsQuery.dataUpdatedAt,
+    grainMarketsQuery.dataUpdatedAt,
+    logisticsQuery.dataUpdatedAt,
+    indicesQuery.dataUpdatedAt,
+    fxQuery.dataUpdatedAt,
+    activationQuery.dataUpdatedAt,
+  ].join(":");
+  const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
+  const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
+  useEffect(() => {
+    const current = { token: refreshToken, live: healthCounts.live, total: liveTotalCount };
+    const prev = lastHealthRef.current;
+    if (!prev || prev.token === current.token) return;
+    const prevPct = prev.total > 0 ? (prev.live / prev.total) * 100 : 0;
+    const currentPct = current.total > 0 ? (current.live / current.total) * 100 : 0;
+    setHealthTrend({
+      liveDelta: current.live - prev.live,
+      livePctDelta: Math.round((currentPct - prevPct) * 10) / 10,
+    });
+  }, [refreshToken, healthCounts.live, liveTotalCount]);
+  useEffect(() => {
+    lastHealthRef.current = { token: refreshToken, live: healthCounts.live, total: liveTotalCount };
+  }, [refreshToken, healthCounts.live, liveTotalCount]);
 
   const topSignals = newsQuery.data?.topSignals || [];
   const feed = newsQuery.data?.feed || [];
@@ -1420,6 +1463,10 @@ export default function MonitorV3Page() {
             <span className="rounded border border-emerald-500/60 bg-emerald-500/10 px-1 py-0 text-emerald-300">{healthCounts.live}</span>
             <span className="rounded border border-amber-500/60 bg-amber-500/10 px-1 py-0 text-amber-300">{healthCounts.degraded}</span>
             <span className="rounded border border-red-500/60 bg-red-500/10 px-1 py-0 text-red-300">{healthCounts.empty}</span>
+            <span className="rounded border border-cyan-500/60 bg-cyan-500/10 px-1 py-0 text-cyan-300">live {livePercent}%</span>
+            <span className={cn("rounded border px-1 py-0", (healthTrend?.liveDelta || 0) >= 0 ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-red-500/60 bg-red-500/10 text-red-300")}>
+              Δ {healthTrend ? `${healthTrend.liveDelta >= 0 ? "+" : ""}${healthTrend.liveDelta} (${healthTrend.livePctDelta >= 0 ? "+" : ""}${healthTrend.livePctDelta}%)` : "n/a"}
+            </span>
           </div>
         </div>
       </section>

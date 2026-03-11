@@ -94,16 +94,22 @@ import { buildMonitorTriageReport } from "./utils/triage";
 function triageReportToMarkdown(report: any): string {
   const providers = Array.isArray(report?.providers) ? report.providers : [];
   const nextActions = Array.isArray(report?.nextActions) ? report.nextActions : [];
+  const statusRationale = (row: any) => {
+    const status = String(row?.status || "").toUpperCase();
+    if (status === "INDICATIVE") return "partial usable rows available";
+    if (status === "CONSTRAINED") return "no usable rows in latest fetch; upstream constrained";
+    return "—";
+  };
   const lines = [
     "# Monitor Triage Report",
     "",
     `Generated: ${report?.runtime?.timestamp || new Date().toISOString()}`,
     "",
-    "| Provider | Status | Coverage | errorKind | Suggested fix |",
-    "| --- | --- | --- | --- | --- |",
+    "| Provider | Status | Coverage | errorKind | Rationale | Suggested fix |",
+    "| --- | --- | --- | --- | --- | --- |",
     ...providers.map((row: any) => {
       const fix = Array.isArray(row?.suggestedFix?.actions) ? row.suggestedFix.actions[0] : "No action";
-      return `| ${row?.providerId || "unknown"} | ${row?.status || "OFFLINE"} | ${row?.coverage || "0/0"} | ${row?.errorKind || "none"} | ${fix.replace(/\|/g, "\\|")} |`;
+      return `| ${row?.providerId || "unknown"} | ${row?.status || "OFFLINE"} | ${row?.coverage || "0/0"} | ${row?.errorKind || "none"} | ${statusRationale(row)} | ${fix.replace(/\|/g, "\\|")} |`;
     }),
   ];
 
