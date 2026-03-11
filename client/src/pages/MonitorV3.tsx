@@ -87,6 +87,7 @@ type MonitorIndex = {
   source: string;
   value: number;
   change?: number;
+  updatedAt?: string;
 };
 
 type IndicesResponse = {
@@ -335,10 +336,45 @@ function metricLooksUsable(metric: { value: string }) {
 }
 
 function widgetDataState(widget: GridWidget): "live" | "degraded" | "empty" {
+  if (isIndexCardStale(widget)) return "degraded";
   const hasUsable = widget.metrics.some(metricLooksUsable);
   if (!hasUsable) return "empty";
   if (isDegradedStatus(widget.status)) return "degraded";
   return "live";
+}
+
+function parseTimestamp(value?: string): number | null {
+  if (!value) return null;
+  const ts = Date.parse(value);
+  return Number.isFinite(ts) ? ts : null;
+}
+
+function isIndexCard(widget: GridWidget) {
+  return widget.id.startsWith("IDX_");
+}
+
+function staleAgeMs(widget: GridWidget): number | null {
+  const ts = parseTimestamp(widget.updatedAt);
+  if (ts === null) return null;
+  return Date.now() - ts;
+}
+
+function isIndexCardStale(widget: GridWidget) {
+  if (!isIndexCard(widget)) return false;
+  const ageMs = staleAgeMs(widget);
+  if (ageMs === null) return false;
+  return ageMs > 24 * 60 * 60 * 1000;
+}
+
+function formatStaleAge(widget: GridWidget) {
+  const ageMs = staleAgeMs(widget);
+  if (ageMs === null) return null;
+  const totalMinutes = Math.floor(ageMs / 60000);
+  if (totalMinutes < 60) return `${totalMinutes}m`;
+  const totalHours = Math.floor(totalMinutes / 60);
+  if (totalHours < 48) return `${totalHours}h`;
+  const totalDays = Math.floor(totalHours / 24);
+  return `${totalDays}d`;
 }
 
 function inferRenderMode(widget: GridWidget): RenderMode {
@@ -654,7 +690,7 @@ export default function MonitorV3Page() {
       subtitle: "Composite index",
       status: "REFRESH",
       source: row.source || "Index source",
-      updatedAt: undefined,
+      updatedAt: row.updatedAt,
       topic: "markets",
       roles: ["farmer", "trader", "broker"],
       territory: "GLOBAL",
@@ -1103,6 +1139,7 @@ export default function MonitorV3Page() {
             {visibleWidgets.map((widget) => {
               const layout = layoutById[widget.id] || ({ w: 1, h: 1 } as GridLayout);
               const dataState = widgetDataState(widget);
+              const staleBadge = isIndexCardStale(widget) ? formatStaleAge(widget) : null;
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
               const headerMaxHeight = compactCard ? 54 : 98;
@@ -1172,6 +1209,11 @@ export default function MonitorV3Page() {
                     </div>
                     <div className={cn("flex items-center gap-1 text-[9px]", compactCard ? "mb-0.5" : "mb-1")}>
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", getStatusTone(widget.status))}>{widget.status}</span>
+                      {staleBadge ? (
+                        <span className="rounded border border-amber-500/70 bg-amber-500/10 px-1 py-0 uppercase tracking-[0.1em] text-amber-300">
+                          stale {staleBadge}
+                        </span>
+                      ) : null}
                       {dataState === "empty" ? (
                         <span className="rounded border border-red-500/60 bg-red-500/10 px-1 py-0 uppercase tracking-[0.1em] text-red-300">gap</span>
                       ) : null}
