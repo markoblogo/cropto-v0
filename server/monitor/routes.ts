@@ -571,7 +571,8 @@ export function registerMonitorRoutes(app: Express): void {
       const country = typeof req.query.country === "string" ? req.query.country : undefined;
       const priceTypeRaw = typeof req.query.priceType === "string" ? req.query.priceType.toUpperCase() : undefined;
       const priceType = priceTypeRaw === "RETAIL" || priceTypeRaw === "WHOLESALE" ? priceTypeRaw : undefined;
-      const payload = await grainWidgetsService.list({ country, priceType });
+      const forceRefresh = req.query.refresh === "1";
+      const payload = await grainWidgetsService.list({ country, priceType, forceRefresh });
       return res.json({
         enabled: true,
         ...payload,

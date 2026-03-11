@@ -661,7 +661,7 @@ export class GrainWidgetsService {
     }, GRAIN_WIDGETS_REFRESH_MS);
   }
 
-  async list(opts?: { country?: string; priceType?: "RETAIL" | "WHOLESALE" }): Promise<GrainWidgetsResponse> {
+  async list(opts?: { country?: string; priceType?: "RETAIL" | "WHOLESALE"; forceRefresh?: boolean }): Promise<GrainWidgetsResponse> {
     const selectedCountry = String(opts?.country || this.lastCountry || "US").toUpperCase();
     const selectedPriceType = String(opts?.priceType || this.lastPriceType || "WHOLESALE").toUpperCase() === "RETAIL"
       ? "RETAIL"
@@ -682,7 +682,7 @@ export class GrainWidgetsService {
       };
     }
 
-    const force = selectedCountry !== this.lastCountry || selectedPriceType !== this.lastPriceType;
+    const force = Boolean(opts?.forceRefresh) || selectedCountry !== this.lastCountry || selectedPriceType !== this.lastPriceType;
     this.lastCountry = selectedCountry;
     this.lastPriceType = selectedPriceType;
     let refreshTimedOut = false;
