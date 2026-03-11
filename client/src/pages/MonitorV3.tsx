@@ -162,18 +162,6 @@ const COUNTRY_OPTIONS: Array<{ id: Country; label: string }> = [
   { id: "DE", label: "Germany" },
   { id: "RO", label: "Romania" },
 ];
-const CLOCK_ZONE_OPTIONS = [
-  "UTC",
-  "Europe/Paris",
-  "America/New_York",
-  "America/Chicago",
-  "America/Sao_Paulo",
-  "Europe/Kyiv",
-  "Asia/Singapore",
-  "Asia/Tokyo",
-];
-const FX_PAIR_OPTIONS = ["EUR/USD", "USD/BRL", "USD/ARS", "USD/UAH", "BRL/USD", "UAH/USD", "ARS/USD"];
-
 const KIND_TO_TOPIC: Record<string, Exclude<MonitorTopic, "all">> = {
   GLOBAL_SPOT_TABLE: "markets",
   CROP_PRICE_INDEX: "markets",
@@ -519,8 +507,72 @@ export default function MonitorV3Page() {
       metrics: [{ label: "Index", value: formatMetric(row.value, "pts"), delta: row.change }],
     }));
 
-    return [...widgetsFromExpansion, ...widgetsFromMarkets, ...widgetsFromLogistics, ...widgetsFromIndices];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data]);
+    const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
+      const key = `${row.slug} ${row.name}`.toLowerCase();
+      return key.includes("btc") || key.includes("bitcoin") || key.includes("gold") || key.includes("oil") || key.includes("brent") || key.includes("wti");
+    });
+    const sentimentItems = sentimentCandidates.slice(0, 3);
+    const feedItems = newsQuery.data?.feed || [];
+    const topSignalItems = newsQuery.data?.topSignals || [];
+
+    const widgetsFromGlobalContext: GridWidget[] = [
+      {
+        id: "SYS_WORLD_CLOCK",
+        title: "World Clock",
+        subtitle: "Reference timezone snapshot",
+        status: "REFRESH",
+        source: "Cropto system",
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: clockZones.slice(0, 3).map((zone) => {
+          const current = formatTimeInZone(zone);
+          return { label: zone, value: current.time };
+        }),
+      },
+      {
+        id: "SYS_FX_PAIRS",
+        title: "FX Pairs",
+        subtitle: "Cross rates for macro context",
+        status: fxQuery.data?.mode === "live" ? "REFRESH" : "INDICATIVE",
+        source: "Monitor FX",
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: fxPairs.slice(0, 2).map((pair) => ({ label: pair, value: formatFxPair(pair, fxQuery.data?.rates) })),
+      },
+      {
+        id: "SYS_MARKET_SENTIMENT",
+        title: "Market Sentiment",
+        subtitle: "BTC / Gold / Oil proxy basket",
+        status: sentimentItems.length ? "REFRESH" : "INDICATIVE",
+        source: "Indices aggregate",
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: sentimentItems.length
+          ? sentimentItems.map((item) => ({ label: item.name, value: formatMetric(item.value, "pts"), delta: item.change }))
+          : [{ label: "Sentiment feed", value: "No BTC/Gold/Oil series" }],
+      },
+      {
+        id: "SYS_MACRO_PULSE",
+        title: "Macro Pulse",
+        subtitle: "Signal + flow aggregate",
+        status: "REFRESH",
+        source: "Cropto monitor",
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: [
+          { label: "Signal volume 24h", value: String(feedItems.length) },
+          { label: "Top priority count", value: String(topSignalItems.length) },
+          { label: "FX mode", value: fxQuery.data?.mode || "n/a" },
+        ],
+      },
+    ];
+
+    return [...widgetsFromGlobalContext, ...widgetsFromExpansion, ...widgetsFromMarkets, ...widgetsFromLogistics, ...widgetsFromIndices];
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -628,11 +680,6 @@ export default function MonitorV3Page() {
   };
 
   const hiddenCount = hiddenIds.length;
-  const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
-    const key = `${row.slug} ${row.name}`.toLowerCase();
-    return key.includes("btc") || key.includes("bitcoin") || key.includes("gold") || key.includes("oil") || key.includes("brent") || key.includes("wti");
-  });
-  const sentimentItems = sentimentCandidates.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -780,99 +827,6 @@ export default function MonitorV3Page() {
           ))}
         </section>
 
-        <section className="grid gap-2 lg:grid-cols-4">
-          <article className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">World Clock</div>
-            <div className="space-y-2">
-              {clockZones.map((zone, idx) => {
-                const current = formatTimeInZone(zone);
-                return (
-                  <div key={`${zone}-${idx}`} className="rounded border border-border bg-muted/10 p-1.5">
-                    <select
-                      value={zone}
-                      onChange={(event) =>
-                        setClockZones((currentZones) => currentZones.map((value, i) => (i === idx ? event.target.value : value)))
-                      }
-                      className="mb-1 w-full rounded border border-border bg-card px-1.5 py-0.5 text-[10px]"
-                    >
-                      {CLOCK_ZONE_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="text-sm font-semibold">{current.time}</div>
-                    <div className="text-[10px] text-muted-foreground">{current.date}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </article>
-
-          <article className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">FX Pairs</div>
-            <div className="space-y-2">
-              {fxPairs.map((pair, idx) => (
-                <div key={`${pair}-${idx}`} className="rounded border border-border bg-muted/10 p-1.5">
-                  <select
-                    value={pair}
-                    onChange={(event) =>
-                      setFxPairs((currentPairs) => currentPairs.map((value, i) => (i === idx ? event.target.value : value)))
-                    }
-                    className="mb-1 w-full rounded border border-border bg-card px-1.5 py-0.5 text-[10px]"
-                  >
-                    {FX_PAIR_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="text-sm font-semibold">{formatFxPair(pair, fxQuery.data?.rates)}</div>
-                  <div className="text-[10px] text-muted-foreground">{fxQuery.data?.mode === "live" ? "live fx snapshot" : "fallback snapshot"}</div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Market Sentiment</div>
-            <div className="space-y-1.5">
-              {sentimentItems.length === 0 ? (
-                <div className="rounded border border-border bg-muted/10 p-1.5 text-xs text-muted-foreground">No BTC/Gold/Oil indices in current source set.</div>
-              ) : (
-                sentimentItems.map((item) => (
-                  <div key={item.slug} className="rounded border border-border bg-muted/10 p-1.5">
-                    <div className="text-xs">{item.name}</div>
-                    <div className="text-sm font-semibold">{formatMetric(item.value, "pts")}</div>
-                    <div className={cn("text-[11px]", (item.change || 0) >= 0 ? "text-emerald-400" : "text-red-400")}>
-                      {(item.change || 0) >= 0 ? "+" : ""}
-                      {(item.change || 0).toFixed(2)}%
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </article>
-
-          <article className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Macro Pulse</div>
-            <div className="space-y-1.5">
-              <div className="rounded border border-border bg-muted/10 p-1.5">
-                <div className="text-xs">Signal volume 24h</div>
-                <div className="text-sm font-semibold">{feed.length}</div>
-              </div>
-              <div className="rounded border border-border bg-muted/10 p-1.5">
-                <div className="text-xs">Top priority count</div>
-                <div className="text-sm font-semibold">{filteredSignals.length}</div>
-              </div>
-              <div className="rounded border border-border bg-muted/10 p-1.5">
-                <div className="text-xs">FX mode</div>
-                <div className="text-sm font-semibold">{fxQuery.data?.mode || "n/a"}</div>
-              </div>
-            </div>
-          </article>
-        </section>
-
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
@@ -962,7 +916,11 @@ export default function MonitorV3Page() {
                   <div className="space-y-1">
                     {(() => {
                       const mode = inferRenderMode(widget);
-                      const items = widget.metrics.slice(0, layout.h === 2 ? 4 : 2);
+                      const rawItems = widget.metrics.slice(0, layout.h === 2 ? 4 : 2);
+                      const items =
+                        rawItems.length > 0
+                          ? rawItems
+                          : [{ label: "Status", value: isDegradedStatus(widget.status) ? "No live numeric metrics" : "No numeric metrics yet" }];
                       if (mode === "list") {
                         return items.map((metric) => (
                           <button
