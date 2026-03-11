@@ -483,16 +483,32 @@ function completenessTone(score: number) {
   return "border-red-500/70 bg-red-500/10 text-red-300";
 }
 
+function hostFromUrl(value?: string) {
+  if (!value) return undefined;
+  try {
+    return new URL(value).host;
+  } catch {
+    return undefined;
+  }
+}
+
 function buildDataFirstFallbackRows(
   widget: GridWidget,
   state: "live" | "degraded" | "empty",
+  debug?: ProviderDebug,
 ): Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }> {
   if (state === "live") return [];
   const usableCount = widget.metrics.filter(metricLooksUsable).length;
   const totalCount = widget.metrics.length;
   const freshness = formatAgeShort(widget.updatedAt);
+  const errorKind = debug?.lastError?.errorKind || "unknown";
+  const http = debug?.httpStatus ?? debug?.lastError?.httpStatus;
+  const sourceHost = hostFromUrl(debug?.finalUrl || debug?.sourceUrlUsed);
   return [
     { label: "State", value: state === "degraded" ? "Fallback / constrained upstream" : "No usable data rows" },
+    { label: "Error kind", value: String(errorKind).toLowerCase() },
+    { label: "HTTP", value: http != null ? String(http) : "n/a" },
+    { label: "Source host", value: sourceHost || widget.source },
     { label: "Freshness", value: freshness === "n/a" ? "timestamp unavailable" : `updated ${freshness} ago` },
     { label: "Coverage", value: `${usableCount}/${totalCount} usable rows` },
     { label: "Provider", value: `${widget.status} via ${widget.source}` },
@@ -1479,6 +1495,7 @@ export default function MonitorV3Page() {
               const dataState = widgetDataState(widget);
               const completenessScore = computeDataCompletenessScore(widget);
               const cardType = inferCardType(widget);
+              const providerDebug = providerDebugByWidgetId[widget.id];
               const staleBadge = isIndexCardStale(widget) ? formatStaleAge(widget) : null;
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
@@ -1590,7 +1607,7 @@ export default function MonitorV3Page() {
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
                       const maxRows = layout.h === 2 ? 7 : 4;
                       const rawItems = widget.metrics.slice(0, maxRows);
-                      const fallbackRows = buildDataFirstFallbackRows(widget, dataState);
+                      const fallbackRows = buildDataFirstFallbackRows(widget, dataState, providerDebug);
                       const baseItems =
                         rawItems.length > 0
                           ? rawItems

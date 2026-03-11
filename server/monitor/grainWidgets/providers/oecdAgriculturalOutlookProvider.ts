@@ -26,6 +26,35 @@ function extractMatch(text: string, patterns: RegExp[]): { value: number; unit: 
   return undefined;
 }
 
+function extractGenericProjection(
+  text: string,
+  opts: { keyword: RegExp; fallbackUnit: string; valueMin?: number; valueMax?: number },
+): { value: number; unit: string; horizon: string } | undefined {
+  const normalized = text.replace(/\s+/g, " ");
+  const index = normalized.search(opts.keyword);
+  if (index < 0) return undefined;
+  const window = normalized.slice(Math.max(0, index - 120), Math.min(normalized.length, index + 620));
+  const horizon = window.match(/\b(20[3-5]\d)\b/)?.[1] || "2034";
+
+  const usdPerTon = window.match(/(?:usd|us\$)\s*(\d+(?:\.\d+)?)\s*\/?\s*t(?:onne)?/i);
+  if (usdPerTon?.[1]) {
+    const value = Number.parseFloat(usdPerTon[1]);
+    if (Number.isFinite(value)) return { value, unit: "USD/t", horizon };
+  }
+
+  const mtValue = window.match(/(\d+(?:\.\d+)?)\s*(mt|million tonnes|million tons|million tonnes)/i);
+  if (mtValue?.[1] && mtValue?.[2]) {
+    const value = Number.parseFloat(mtValue[1]);
+    if (Number.isFinite(value)) return { value, unit: mtValue[2], horizon };
+  }
+
+  const looseNumber = (window.match(/\d+(?:\.\d+)?/g) || [])
+    .map((value) => Number.parseFloat(value))
+    .find((value) => Number.isFinite(value) && value >= (opts.valueMin ?? 20) && value <= (opts.valueMax ?? 3000));
+  if (looseNumber != null) return { value: looseNumber, unit: opts.fallbackUnit, horizon };
+  return undefined;
+}
+
 export class OecdAgriculturalOutlookProvider implements GrainWidgetsProvider {
   id = "oecd-agricultural-outlook";
   kind = "OECD_AGRICULTURAL_OUTLOOK" as const;
@@ -55,6 +84,71 @@ export class OecdAgriculturalOutlookProvider implements GrainWidgetsProvider {
     if (rapeseed) items.push({ id: "oecd-rapeseed", commodity: "RAPESEED", label: "Rapeseed projected production", projectedValue: rapeseed.value, unit: rapeseed.unit, horizon: rapeseed.horizon, cadence: "annual", confidence: "LOW", notes: ["Structural outlook metric"] });
     const sunflower = extractMatch(oilseedsText, [/sunflower[^.]*?production[^.]*?(\d+(?:\.\d+)?)\s*(Mt|million tonnes)[^.]*?by\s+(\d{4})/i]);
     if (sunflower) items.push({ id: "oecd-sunflower", commodity: "SUNFLOWER", label: "Sunflower projected production", projectedValue: sunflower.value, unit: sunflower.unit, horizon: sunflower.horizon, cadence: "annual", confidence: "LOW", notes: ["Structural outlook metric"] });
+
+    if (!items.find((item) => item.commodity === "WHEAT")) {
+      const generic = extractGenericProjection(cerealsText, { keyword: /wheat/i, fallbackUnit: "USD/t", valueMin: 60, valueMax: 800 });
+      if (generic) {
+        items.push({
+          id: "oecd-wheat-generic",
+          commodity: "WHEAT",
+          label: "Wheat projected reference",
+          projectedValue: generic.value,
+          unit: generic.unit,
+          horizon: generic.horizon,
+          cadence: "annual",
+          confidence: "LOW",
+          notes: ["Generic parse fallback from OECD outlook text"],
+        });
+      }
+    }
+    if (!items.find((item) => item.commodity === "MAIZE")) {
+      const generic = extractGenericProjection(cerealsText, { keyword: /maize|corn/i, fallbackUnit: "USD/t", valueMin: 50, valueMax: 700 });
+      if (generic) {
+        items.push({
+          id: "oecd-maize-generic",
+          commodity: "MAIZE",
+          label: "Maize projected reference",
+          projectedValue: generic.value,
+          unit: generic.unit,
+          horizon: generic.horizon,
+          cadence: "annual",
+          confidence: "LOW",
+          notes: ["Generic parse fallback from OECD outlook text"],
+        });
+      }
+    }
+    if (!items.find((item) => item.commodity === "SOYBEANS")) {
+      const generic = extractGenericProjection(oilseedsText, { keyword: /soybean|soybeans|soy/i, fallbackUnit: "USD/t", valueMin: 100, valueMax: 1000 });
+      if (generic) {
+        items.push({
+          id: "oecd-soybeans-generic",
+          commodity: "SOYBEANS",
+          label: "Soybean projected reference",
+          projectedValue: generic.value,
+          unit: generic.unit,
+          horizon: generic.horizon,
+          cadence: "annual",
+          confidence: "LOW",
+          notes: ["Generic parse fallback from OECD outlook text"],
+        });
+      }
+    }
+    if (!items.find((item) => item.commodity === "RAPESEED")) {
+      const generic = extractGenericProjection(oilseedsText, { keyword: /rapeseed|canola/i, fallbackUnit: "Mt", valueMin: 5, valueMax: 400 });
+      if (generic) {
+        items.push({
+          id: "oecd-rapeseed-generic",
+          commodity: "RAPESEED",
+          label: "Rapeseed projected reference",
+          projectedValue: generic.value,
+          unit: generic.unit,
+          horizon: generic.horizon,
+          cadence: "annual",
+          confidence: "LOW",
+          notes: ["Generic parse fallback from OECD outlook text"],
+        });
+      }
+    }
     if (!items.length) throw new Error("oecd_outlook_items_empty");
 
     const widget: GrainWidgetOecdAgriculturalOutlook = {

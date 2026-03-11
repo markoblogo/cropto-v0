@@ -419,8 +419,7 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
       }
     }
 
-    if (!rows.length) {
-      if (!csvUrl) throw new Error("wb_microdata_csv_url_unresolved");
+    if (!rows.length && csvUrl) {
       const csvResponse = await fetchTextResponseWithTimeout(csvUrl, WB_MICRODATA_TIMEOUT_MS, { accept: "text/csv,text/plain,*/*" });
       const normalizedText = csvResponse.text.includes("\u0000") ? csvResponse.text.replace(/\u0000/g, "") : csvResponse.text;
       const parsedRows = parseCsv(normalizedText);
