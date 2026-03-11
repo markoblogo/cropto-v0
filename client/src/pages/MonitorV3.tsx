@@ -251,6 +251,38 @@ type BinanceRiskTrendsResponse = {
   };
 };
 
+type GlobalIndicesResponse = {
+  generatedAt?: string;
+  cacheHit?: boolean;
+  status?: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+  providerMode?: "twelvedata" | "fallback";
+  rows?: Array<{
+    symbol: string;
+    name: string;
+    region: "US" | "EU" | "EM" | "BR" | "AR";
+    value: number | null;
+    dayChangePct: number | null;
+    provider: string;
+    source: "eod" | "intraday" | "fallback";
+    series?: number[];
+    status: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+    note?: string;
+  }>;
+  riskOnOff?: {
+    regime: "RISK_ON" | "NEUTRAL" | "RISK_OFF";
+    score: number | null;
+    matrix?: Array<{ label: string; value: number | null }>;
+    note?: string;
+  };
+  crossAsset?: {
+    btc: number | null;
+    gold: number | null;
+    oil: number | null;
+    dxy: number | null;
+    note?: string;
+  };
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
@@ -1090,6 +1122,15 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const globalIndicesQuery = useQuery<GlobalIndicesResponse>({
+    queryKey: ["monitor-v3-global-indices"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/global-indices");
+      if (!response.ok) throw new Error("Failed to load global indices");
+      return response.json();
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1294,6 +1335,9 @@ export default function MonitorV3Page() {
     const ethOptionsRow = binanceRows.find((row) => row.symbol === "ETH_OPTIONS");
     const btcRiskTrend = binanceRiskTrendsQuery.data?.bySymbol?.BTCUSDT;
     const ethRiskTrend = binanceRiskTrendsQuery.data?.bySymbol?.ETHUSDT;
+    const globalIndicesRows = globalIndicesQuery.data?.rows || [];
+    const globalIndicesStatus = (globalIndicesQuery.data?.status || "CONSTRAINED").toUpperCase();
+    const riskOnOff = globalIndicesQuery.data?.riskOnOff;
 
     const widgetsFromGlobalContext: GridWidget[] = [
       {
@@ -1345,6 +1389,51 @@ export default function MonitorV3Page() {
                 delta: item.valueChangePct,
               }))
             : [{ label: "Sentiment feed", value: "No live BTC/Gold/Oil series (constrained)" }],
+      },
+      {
+        id: "SYS_GLOBAL_INDICES",
+        title: "Global Indices",
+        subtitle: "US/EU/EM benchmark snapshot",
+        status: globalIndicesStatus,
+        source: globalIndicesQuery.data?.providerMode === "twelvedata" ? "Twelve Data" : "Fallback baseline",
+        updatedAt: globalIndicesQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: globalIndicesRows.length > 0
+          ? globalIndicesRows.slice(0, 8).map((row) => ({
+              label: row.name,
+              value: typeof row.value === "number" ? row.value.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "n/a",
+              delta: typeof row.dayChangePct === "number" ? row.dayChangePct : undefined,
+              series: Array.isArray(row.series) && row.series.length >= 2 ? row.series : undefined,
+            }))
+          : [{ label: "State", value: "No global index rows available" }],
+      },
+      {
+        id: "SYS_GLOBAL_RISK_ON_OFF",
+        title: "Global Risk On/Off",
+        subtitle: "Equities + cross-asset directional matrix",
+        status: globalIndicesStatus,
+        source: "Global indices layer",
+        updatedAt: globalIndicesQuery.data?.generatedAt,
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: riskOnOff
+          ? [
+              {
+                label: "Regime",
+                value: riskOnOff.regime.replace("_", " "),
+                delta: typeof riskOnOff.score === "number" ? riskOnOff.score : undefined,
+                deltaFormat: "abs" as const,
+              },
+              ...((riskOnOff.matrix || []).slice(0, 6).map((row) => ({
+                label: row.label,
+                value: row.value == null ? "n/a" : `${row.value.toFixed(2)}%`,
+                delta: row.value == null ? undefined : row.value,
+              }))),
+            ]
+          : [{ label: "State", value: "Risk-on/off matrix unavailable" }],
       },
       {
         id: "SYS_BINANCE_COMMODITY_PROXY",
@@ -1678,7 +1767,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1865,6 +1954,7 @@ export default function MonitorV3Page() {
         cgoWeightsQuery.refetch(),
         binanceSnapshotQuery.refetch(),
         binanceRiskTrendsQuery.refetch(),
+        globalIndicesQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);

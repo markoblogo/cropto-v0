@@ -93,6 +93,7 @@ import { getAgroExpectationsSnapshot } from "./agroExpectationsService";
 import { getAgroCompositeTrends, getCgoWeightsSnapshot, startAgroExpectationsScheduler } from "./agroExpectationsPersistence";
 import { getBinanceMarketSnapshot } from "./binanceMarketService";
 import { getBinanceRiskTrends, startBinanceMarketScheduler } from "./binanceMarketPersistence";
+import { getGlobalIndicesSnapshot } from "./globalIndicesService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -678,6 +679,35 @@ export function registerMonitorRoutes(app: Express): void {
         bySymbol: {},
         macroRisk: { score: null, avgIv: null, avgAbsMove: null },
         message: error?.message || "Binance risk trends unavailable",
+      });
+    }
+  });
+
+  app.get("/api/monitor/global-indices", async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === "1";
+      const payload = await getGlobalIndicesSnapshot(forceRefresh);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        cacheHit: false,
+        status: "CONSTRAINED",
+        providerMode: "fallback",
+        rows: [],
+        riskOnOff: {
+          regime: "NEUTRAL",
+          score: null,
+          matrix: [],
+          note: error?.message || "Global indices unavailable",
+        },
+        crossAsset: {
+          btc: null,
+          gold: null,
+          oil: null,
+          dxy: null,
+          note: "Global indices unavailable",
+        },
       });
     }
   });
