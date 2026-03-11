@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Maximize2, Minimize2, Moon, Plus, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -436,6 +436,8 @@ export default function MonitorV3Page() {
     typeof window === "undefined" ? 1536 : window.innerWidth,
   );
   const [renderPreset, setRenderPreset] = useState<RenderPreset>("mixed");
+  const [isRefreshingData, setIsRefreshingData] = useState(false);
+  const forceRefreshWidgetsRef = useRef(false);
 
   const [order, setOrder] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.order, []));
   const [layoutById, setLayoutById] = useState<Record<string, GridLayout>>(() => readJson<Record<string, GridLayout>>(STORAGE_KEYS.layout, {}));
@@ -485,7 +487,9 @@ export default function MonitorV3Page() {
     queryKey: ["monitor-v3-grain-widgets", country],
     staleTime: 90_000,
     queryFn: async () => {
-      const response = await fetch(`/api/monitor/grain-widgets?country=${country}`);
+      const refreshBit = forceRefreshWidgetsRef.current ? "&refresh=1" : "";
+      const response = await fetch(`/api/monitor/grain-widgets?country=${country}${refreshBit}`);
+      forceRefreshWidgetsRef.current = false;
       if (!response.ok) throw new Error("Failed to load grain widgets");
       return response.json();
     },
@@ -760,6 +764,23 @@ export default function MonitorV3Page() {
     });
   };
 
+  const refreshAllData = async () => {
+    setIsRefreshingData(true);
+    forceRefreshWidgetsRef.current = true;
+    try {
+      await Promise.all([
+        newsQuery.refetch(),
+        grainWidgetsQuery.refetch(),
+        grainMarketsQuery.refetch(),
+        logisticsQuery.refetch(),
+        indicesQuery.refetch(),
+        fxQuery.refetch(),
+      ]);
+    } finally {
+      setIsRefreshingData(false);
+    }
+  };
+
   const resizeWidget = (id: string, axis: "w" | "h", delta: 1 | -1) => {
     setLayoutById((current) => {
       const prev = current[id] || ({ w: 1, h: 1 } as GridLayout);
@@ -904,6 +925,18 @@ export default function MonitorV3Page() {
             )}
           >
             Hidden {hiddenCount}
+          </button>
+          <button
+            onClick={refreshAllData}
+            disabled={isRefreshingData}
+            className={cn(
+              "rounded border px-2 py-1 text-xs",
+              isRefreshingData
+                ? "cursor-not-allowed border-cyan-500/50 bg-cyan-500/10 text-cyan-300"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {isRefreshingData ? "Refreshing..." : "Refresh data"}
           </button>
         </div>
       </section>
