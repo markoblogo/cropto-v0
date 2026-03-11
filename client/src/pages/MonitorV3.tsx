@@ -93,6 +93,14 @@ type IndicesResponse = {
   items?: MonitorIndex[];
 };
 
+type FxResponse = {
+  enabled?: boolean;
+  mode?: "live" | "coming_soon";
+  asOf?: string;
+  source?: string;
+  rates?: Array<{ currency: string; usdPerUnit: number }>;
+};
+
 type GridWidget = {
   id: string;
   title: string;
@@ -113,6 +121,7 @@ type CustomWidgetDraft = {
   source: string;
   topic: Exclude<MonitorTopic, "all">;
 };
+type RenderMode = "metric" | "spark" | "bar" | "list";
 
 const STORAGE_PREFIX = "monitor_v3_";
 const STORAGE_KEYS = {
@@ -125,6 +134,8 @@ const STORAGE_KEYS = {
   hidden: `${STORAGE_PREFIX}hidden`,
   layout: `${STORAGE_PREFIX}layout`,
   custom: `${STORAGE_PREFIX}custom`,
+  clockZones: `${STORAGE_PREFIX}clock_zones`,
+  fxPairs: `${STORAGE_PREFIX}fx_pairs`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -151,6 +162,17 @@ const COUNTRY_OPTIONS: Array<{ id: Country; label: string }> = [
   { id: "DE", label: "Germany" },
   { id: "RO", label: "Romania" },
 ];
+const CLOCK_ZONE_OPTIONS = [
+  "UTC",
+  "Europe/Paris",
+  "America/New_York",
+  "America/Chicago",
+  "America/Sao_Paulo",
+  "Europe/Kyiv",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+];
+const FX_PAIR_OPTIONS = ["EUR/USD", "USD/BRL", "USD/ARS", "USD/UAH", "BRL/USD", "UAH/USD", "ARS/USD"];
 
 const KIND_TO_TOPIC: Record<string, Exclude<MonitorTopic, "all">> = {
   GLOBAL_SPOT_TABLE: "markets",
@@ -265,6 +287,67 @@ function isDegradedStatus(status: string) {
   return key === "FALLBACK" || key === "OFFLINE";
 }
 
+function inferRenderMode(widget: GridWidget): RenderMode {
+  const deltaCount = widget.metrics.filter((metric) => typeof metric.delta === "number").length;
+  if (widget.topic === "logistics") return "bar";
+  if (widget.topic === "policy") return "list";
+  if (deltaCount >= 2) return "spark";
+  return "metric";
+}
+
+function parseMetricNumber(value: string): number | null {
+  const match = value.replace(/,/g, ".").match(/-?\d+(\.\d+)?/);
+  if (!match) return null;
+  const num = Number.parseFloat(match[0]);
+  return Number.isFinite(num) ? num : null;
+}
+
+function miniSparkValues(widget: GridWidget): number[] {
+  const fromDelta = widget.metrics
+    .map((metric) => (typeof metric.delta === "number" ? metric.delta : null))
+    .filter((value): value is number => value !== null);
+  if (fromDelta.length >= 2) return fromDelta;
+  const fromValue = widget.metrics
+    .map((metric) => parseMetricNumber(metric.value))
+    .filter((value): value is number => value !== null);
+  if (fromValue.length >= 2) return fromValue;
+  return [0, 0, 0];
+}
+
+function formatTimeInZone(zone: string): { time: string; date: string } {
+  const now = new Date();
+  const time = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: zone,
+    hour12: false,
+  }).format(now);
+  const date = new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    day: "2-digit",
+    weekday: "short",
+    timeZone: zone,
+  }).format(now);
+  return { time, date };
+}
+
+function formatFxPair(pair: string, rates: FxResponse["rates"]): string {
+  const [base, quote] = pair.split("/");
+  const map = Object.fromEntries((rates || []).map((row) => [row.currency, row.usdPerUnit]));
+  const usd = 1;
+  const toUsd = (currency: string): number | null => {
+    if (currency === "USD") return usd;
+    const v = map[currency];
+    return typeof v === "number" && v > 0 ? v : null;
+  };
+  const baseUsd = toUsd(base);
+  const quoteUsd = toUsd(quote);
+  if (!baseUsd || !quoteUsd) return "n/a";
+  const cross = baseUsd / quoteUsd;
+  return cross.toFixed(4);
+}
+
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
 
@@ -282,6 +365,8 @@ export default function MonitorV3Page() {
   const [layoutById, setLayoutById] = useState<Record<string, GridLayout>>(() => readJson<Record<string, GridLayout>>(STORAGE_KEYS.layout, {}));
   const [hiddenIds, setHiddenIds] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.hidden, []));
   const [customWidgets, setCustomWidgets] = useState<GridWidget[]>(() => readJson<GridWidget[]>(STORAGE_KEYS.custom, []));
+  const [clockZones, setClockZones] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.clockZones, ["UTC", "Europe/Paris", "America/New_York"]));
+  const [fxPairs, setFxPairs] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.fxPairs, ["EUR/USD", "USD/BRL"]));
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -303,6 +388,8 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.layout, layoutById), [layoutById]);
   useEffect(() => writeJson(STORAGE_KEYS.hidden, hiddenIds), [hiddenIds]);
   useEffect(() => writeJson(STORAGE_KEYS.custom, customWidgets), [customWidgets]);
+  useEffect(() => writeJson(STORAGE_KEYS.clockZones, clockZones), [clockZones]);
+  useEffect(() => writeJson(STORAGE_KEYS.fxPairs, fxPairs), [fxPairs]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -350,6 +437,15 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/indices");
       if (!response.ok) throw new Error("Failed to load monitor indices");
+      return response.json();
+    },
+  });
+  const fxQuery = useQuery<FxResponse>({
+    queryKey: ["monitor-v3-fx"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/macro-fx");
+      if (!response.ok) throw new Error("Failed to load macro fx");
       return response.json();
     },
   });
@@ -532,6 +628,11 @@ export default function MonitorV3Page() {
   };
 
   const hiddenCount = hiddenIds.length;
+  const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
+    const key = `${row.slug} ${row.name}`.toLowerCase();
+    return key.includes("btc") || key.includes("bitcoin") || key.includes("gold") || key.includes("oil") || key.includes("brent") || key.includes("wti");
+  });
+  const sentimentItems = sentimentCandidates.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -679,6 +780,99 @@ export default function MonitorV3Page() {
           ))}
         </section>
 
+        <section className="grid gap-2 lg:grid-cols-4">
+          <article className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">World Clock</div>
+            <div className="space-y-2">
+              {clockZones.map((zone, idx) => {
+                const current = formatTimeInZone(zone);
+                return (
+                  <div key={`${zone}-${idx}`} className="rounded border border-border bg-muted/10 p-1.5">
+                    <select
+                      value={zone}
+                      onChange={(event) =>
+                        setClockZones((currentZones) => currentZones.map((value, i) => (i === idx ? event.target.value : value)))
+                      }
+                      className="mb-1 w-full rounded border border-border bg-card px-1.5 py-0.5 text-[10px]"
+                    >
+                      {CLOCK_ZONE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="text-sm font-semibold">{current.time}</div>
+                    <div className="text-[10px] text-muted-foreground">{current.date}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+
+          <article className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">FX Pairs</div>
+            <div className="space-y-2">
+              {fxPairs.map((pair, idx) => (
+                <div key={`${pair}-${idx}`} className="rounded border border-border bg-muted/10 p-1.5">
+                  <select
+                    value={pair}
+                    onChange={(event) =>
+                      setFxPairs((currentPairs) => currentPairs.map((value, i) => (i === idx ? event.target.value : value)))
+                    }
+                    className="mb-1 w-full rounded border border-border bg-card px-1.5 py-0.5 text-[10px]"
+                  >
+                    {FX_PAIR_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="text-sm font-semibold">{formatFxPair(pair, fxQuery.data?.rates)}</div>
+                  <div className="text-[10px] text-muted-foreground">{fxQuery.data?.mode === "live" ? "live fx snapshot" : "fallback snapshot"}</div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Market Sentiment</div>
+            <div className="space-y-1.5">
+              {sentimentItems.length === 0 ? (
+                <div className="rounded border border-border bg-muted/10 p-1.5 text-xs text-muted-foreground">No BTC/Gold/Oil indices in current source set.</div>
+              ) : (
+                sentimentItems.map((item) => (
+                  <div key={item.slug} className="rounded border border-border bg-muted/10 p-1.5">
+                    <div className="text-xs">{item.name}</div>
+                    <div className="text-sm font-semibold">{formatMetric(item.value, "pts")}</div>
+                    <div className={cn("text-[11px]", (item.change || 0) >= 0 ? "text-emerald-400" : "text-red-400")}>
+                      {(item.change || 0) >= 0 ? "+" : ""}
+                      {(item.change || 0).toFixed(2)}%
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </article>
+
+          <article className="rounded border border-border bg-card p-2">
+            <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Macro Pulse</div>
+            <div className="space-y-1.5">
+              <div className="rounded border border-border bg-muted/10 p-1.5">
+                <div className="text-xs">Signal volume 24h</div>
+                <div className="text-sm font-semibold">{feed.length}</div>
+              </div>
+              <div className="rounded border border-border bg-muted/10 p-1.5">
+                <div className="text-xs">Top priority count</div>
+                <div className="text-sm font-semibold">{filteredSignals.length}</div>
+              </div>
+              <div className="rounded border border-border bg-muted/10 p-1.5">
+                <div className="text-xs">FX mode</div>
+                <div className="text-sm font-semibold">{fxQuery.data?.mode || "n/a"}</div>
+              </div>
+            </div>
+          </article>
+        </section>
+
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
@@ -766,20 +960,107 @@ export default function MonitorV3Page() {
                   </div>
 
                   <div className="space-y-1">
-                    {widget.metrics.slice(0, layout.h === 2 ? 4 : 2).map((metric) => {
-                      const metricNode = (
-                        <>
-                          <div className="truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</div>
-                          <div className="text-sm font-semibold">{metric.value}</div>
-                          {typeof metric.delta === "number" ? (
-                            <div className={cn("text-[11px]", metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
-                              {metric.delta >= 0 ? "+" : ""}
-                              {metric.delta.toFixed(2)}%
+                    {(() => {
+                      const mode = inferRenderMode(widget);
+                      const items = widget.metrics.slice(0, layout.h === 2 ? 4 : 2);
+                      if (mode === "list") {
+                        return items.map((metric) => (
+                          <button
+                            key={`${widget.id}-${metric.label}`}
+                            onClick={() =>
+                              setSelectedMetric({
+                                widgetTitle: widget.title,
+                                widgetSource: widget.source,
+                                widgetStatus: widget.status,
+                                metricLabel: metric.label,
+                                metricValue: metric.value,
+                                metricDelta: metric.delta,
+                                href: metric.href,
+                              })
+                            }
+                            className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                          >
+                            <div className="flex items-start justify-between gap-2 text-xs">
+                              <span className="line-clamp-1">{metric.label}</span>
+                              <span className={cn(typeof metric.delta === "number" && metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
+                                {typeof metric.delta === "number" ? `${metric.delta >= 0 ? "+" : ""}${metric.delta.toFixed(2)}%` : "n/a"}
+                              </span>
                             </div>
-                          ) : null}
-                        </>
-                      );
-                      return (
+                            <div className="mt-1 text-xs text-muted-foreground">{metric.value}</div>
+                          </button>
+                        ));
+                      }
+                      if (mode === "bar") {
+                        return items.map((metric) => {
+                          const width = Math.min(100, Math.max(6, Math.abs(metric.delta || 0) * 8));
+                          return (
+                            <button
+                              key={`${widget.id}-${metric.label}`}
+                              onClick={() =>
+                                setSelectedMetric({
+                                  widgetTitle: widget.title,
+                                  widgetSource: widget.source,
+                                  widgetStatus: widget.status,
+                                  metricLabel: metric.label,
+                                  metricValue: metric.value,
+                                  metricDelta: metric.delta,
+                                  href: metric.href,
+                                })
+                              }
+                              className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                            >
+                              <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                                <span>{metric.label}</span>
+                                <span>{metric.value}</span>
+                              </div>
+                              <div className="mt-1 h-1.5 rounded bg-muted">
+                                <div
+                                  className={cn("h-1.5 rounded", (metric.delta || 0) >= 0 ? "bg-emerald-500" : "bg-red-500")}
+                                  style={{ width: `${width}%` }}
+                                />
+                              </div>
+                            </button>
+                          );
+                        });
+                      }
+                      if (mode === "spark") {
+                        const values = miniSparkValues(widget);
+                        const min = Math.min(...values);
+                        const max = Math.max(...values);
+                        const normalized = values.map((value) => (max === min ? 50 : ((value - min) / (max - min)) * 100));
+                        const points = normalized.map((value, idx) => `${idx * (100 / Math.max(1, normalized.length - 1))},${100 - value}`).join(" ");
+                        return (
+                          <button
+                            key={`${widget.id}-spark`}
+                            onClick={() =>
+                              setSelectedMetric({
+                                widgetTitle: widget.title,
+                                widgetSource: widget.source,
+                                widgetStatus: widget.status,
+                                metricLabel: widget.metrics[0]?.label || "Metric",
+                                metricValue: widget.metrics[0]?.value || "n/a",
+                                metricDelta: widget.metrics[0]?.delta,
+                                href: widget.metrics[0]?.href,
+                              })
+                            }
+                            className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
+                          >
+                            <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Trend</div>
+                            <svg viewBox="0 0 100 100" className="h-12 w-full">
+                              <polyline fill="none" stroke="currentColor" strokeWidth="2" points={points} className="text-cyan-400" />
+                            </svg>
+                            <div className="mt-1 grid grid-cols-2 gap-1 text-[11px]">
+                              {items.slice(0, 2).map((metric) => (
+                                <div key={`${widget.id}-${metric.label}`} className="rounded border border-border px-1 py-0.5">
+                                  <div className="truncate text-[10px] text-muted-foreground">{metric.label}</div>
+                                  <div className="font-semibold">{metric.value}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </button>
+                        );
+                      }
+                      return items.map((metric) => (
                         <button
                           key={`${widget.id}-${metric.label}`}
                           onClick={() =>
@@ -795,10 +1076,17 @@ export default function MonitorV3Page() {
                           }
                           className="block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50"
                         >
-                          {metricNode}
+                          <div className="truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</div>
+                          <div className="text-sm font-semibold">{metric.value}</div>
+                          {typeof metric.delta === "number" ? (
+                            <div className={cn("text-[11px]", metric.delta >= 0 ? "text-emerald-400" : "text-red-400")}>
+                              {metric.delta >= 0 ? "+" : ""}
+                              {metric.delta.toFixed(2)}%
+                            </div>
+                          ) : null}
                         </button>
-                      );
-                    })}
+                      ));
+                    })()}
                   </div>
 
                   <button
