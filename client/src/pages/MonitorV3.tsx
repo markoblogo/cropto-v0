@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Maximize2, Minimize2, Moon, Plus, Sun, X } from "lucide-react";
+import { Info, Maximize2, Minimize2, Moon, Pin, Plus, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
@@ -115,6 +115,24 @@ type GridWidget = {
   territory: string;
   metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }>;
 };
+type CardType = "quote" | "table" | "news" | "health";
+type ProviderDebug = {
+  providerId: string;
+  status?: string;
+  sourceUrlUsed?: string;
+  finalUrl?: string;
+  httpStatus?: number;
+  lastFetchAt?: string;
+  lastError?: {
+    errorKind?: string;
+    message?: string;
+    httpStatus?: number;
+  };
+  notes?: string[];
+};
+type ActivationReportResponse = {
+  providers?: ProviderDebug[];
+};
 
 type GridLayout = { w: 1 | 2 | 3; h: 1 | 2 };
 type CustomWidgetDraft = {
@@ -141,6 +159,7 @@ const STORAGE_KEYS = {
   clockZones: `${STORAGE_PREFIX}clock_zones`,
   fxPairs: `${STORAGE_PREFIX}fx_pairs`,
   renderModes: `${STORAGE_PREFIX}render_modes`,
+  heroPins: `${STORAGE_PREFIX}hero_pins`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -206,6 +225,29 @@ const KIND_TO_ROLES: Record<string, Array<Exclude<MonitorRole, "all">>> = {
   USDA_PSD_BALANCES: ["farmer", "trader", "broker"],
   AMIS_GLOBAL_BALANCE: ["farmer", "trader", "broker"],
   USDA_NASS_PRODUCER_PRICES: ["farmer", "trader"],
+};
+const WIDGET_KIND_TO_PROVIDER: Record<string, string> = {
+  GLOBAL_SPOT_TABLE: "dbnomics-worldbank",
+  CROP_PRICE_INDEX: "fao-ffpi",
+  USDA_MARS_REPORTS: "usda-mars-public",
+  US_CASH_EXPORT_CONTEXT: "us-cash-export-context",
+  USDA_MARS_DAILY_MARKET_RATES_TXT: "usda-mars-daily-txt",
+  ALPHAVANTAGE_GRAIN_BENCHMARKS: "alpha-vantage-commodities",
+  NASDAQ_DATA_LINK_SNAPSHOT: "nasdaq-datalink",
+  EC_CEREALS_MULTI_COUNTRY: "ec-cereals-prices",
+  EC_OILSEEDS_MULTI_COUNTRY: "ec-oilseeds-prices",
+  USDA_NASS_PRODUCER_PRICES: "usda-nass-quickstats",
+  WFP_MARKET_PRICES_MULTI_COUNTRY: "wfp-databridges",
+  WB_MICRODATA_MARKET_PRICES: "worldbank-microdata",
+  EUROSTAT_AGRI_PRICE_INDICES: "eurostat-agri-indices",
+  USDA_PSD_BALANCES: "usda-psd",
+  AMIS_GLOBAL_BALANCE: "amis-outlook",
+  IMF_COMMODITY_BENCHMARKS: "imf-pcps",
+  OECD_AGRICULTURAL_OUTLOOK: "oecd-agricultural-outlook",
+  USDA_GTR_LOGISTICS_SNAPSHOT: "usda-gtr-logistics",
+  CANADA_GRAIN_RAIL_PERFORMANCE: "canada-grain-rail-performance",
+  FAOSTAT_PP_MULTI_COUNTRY: "faostat-pp",
+  FPMA_MARKET_PRICES_MULTI_COUNTRY: "fpma-market-prices",
 };
 
 function readJson<T>(key: string, fallback: T): T {
@@ -458,6 +500,10 @@ function buildDataFirstFallbackRows(
 }
 
 function inferRenderMode(widget: GridWidget): RenderMode {
+  const cardType = inferCardType(widget);
+  if (cardType === "news") return "list";
+  if (cardType === "health") return "bar";
+  if (cardType === "table") return "list";
   if (widget.id.startsWith("TXT_")) return "list";
   const hasSeries = widget.metrics.some((metric) => Array.isArray(metric.series) && metric.series.length >= 2);
   if (hasSeries) return "spark";
@@ -471,6 +517,25 @@ function inferRenderMode(widget: GridWidget): RenderMode {
   if (deltaCount >= 2) return "spark";
   if (numericValueCount >= 3) return "bar";
   return "metric";
+}
+
+function inferCardType(widget: GridWidget): CardType {
+  if (widget.id.startsWith("TXT_")) return "news";
+  if (widget.id.startsWith("LG_") || isDegradedStatus(widget.status) || widgetDataState(widget) !== "live") return "health";
+  const hasSeries = widget.metrics.some((metric) => Array.isArray(metric.series) && metric.series.length >= 2);
+  const numericValueCount = widget.metrics
+    .map((metric) => parseMetricNumber(metric.value))
+    .filter((value): value is number => value !== null).length;
+  if (hasSeries) return "quote";
+  if (numericValueCount >= 2 && widget.metrics.length >= 3) return "table";
+  return "quote";
+}
+
+function cardTypeTone(cardType: CardType) {
+  if (cardType === "quote") return "border-cyan-500/60 bg-cyan-500/10 text-cyan-300";
+  if (cardType === "table") return "border-violet-500/60 bg-violet-500/10 text-violet-300";
+  if (cardType === "news") return "border-amber-500/60 bg-amber-500/10 text-amber-300";
+  return "border-rose-500/60 bg-rose-500/10 text-rose-300";
 }
 
 function parseMetricNumber(value: string): number | null {
@@ -633,6 +698,8 @@ export default function MonitorV3Page() {
   const [renderModeById, setRenderModeById] = useState<Record<string, RenderModeOverride>>(() =>
     readJson<Record<string, RenderModeOverride>>(STORAGE_KEYS.renderModes, {}),
   );
+  const [heroPins, setHeroPins] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.heroPins, []));
+  const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -658,6 +725,7 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.clockZones, clockZones), [clockZones]);
   useEffect(() => writeJson(STORAGE_KEYS.fxPairs, fxPairs), [fxPairs]);
   useEffect(() => writeJson(STORAGE_KEYS.renderModes, renderModeById), [renderModeById]);
+  useEffect(() => writeJson(STORAGE_KEYS.heroPins, heroPins), [heroPins]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -716,6 +784,15 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/macro-fx");
       if (!response.ok) throw new Error("Failed to load macro fx");
+      return response.json();
+    },
+  });
+  const activationQuery = useQuery<ActivationReportResponse>({
+    queryKey: ["monitor-v3-activation"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/activation-report");
+      if (!response.ok) throw new Error("Failed to load activation report");
       return response.json();
     },
   });
@@ -957,6 +1034,22 @@ export default function MonitorV3Page() {
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
+  const providerById = useMemo(
+    () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
+    [activationQuery.data],
+  );
+  const providerDebugByWidgetId = useMemo(() => {
+    const pairs: Array<[string, ProviderDebug]> = [];
+    allWidgets.forEach((widget) => {
+      if (!widget.id.startsWith("GW_")) return;
+      const kind = widget.id.replace(/^GW_/, "");
+      const providerId = WIDGET_KIND_TO_PROVIDER[kind];
+      if (!providerId) return;
+      const provider = providerById[providerId];
+      if (provider) pairs.push([widget.id, provider]);
+    });
+    return Object.fromEntries(pairs);
+  }, [allWidgets, providerById]);
 
   const groupedOrder = useMemo(() => {
     const allIds = allWidgets.map((w) => w.id);
@@ -979,6 +1072,7 @@ export default function MonitorV3Page() {
       .filter((widget): widget is GridWidget => Boolean(widget))
       .filter((widget) => {
         if (hiddenIds.includes(widget.id) && !showHidden) return false;
+        if (heroPins.includes(widget.id)) return false;
         if (role !== "all" && !widget.roles.includes(role)) return false;
         if (topic !== "all" && widget.topic !== topic) return false;
         if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
@@ -1005,7 +1099,12 @@ export default function MonitorV3Page() {
       if (aDelta !== bDelta) return bDelta - aDelta;
       return getStatusRank(b.status) - getStatusRank(a.status);
     });
-  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode]);
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode, heroPins]);
+
+  const heroPinnedWidgets = useMemo(
+    () => heroPins.map((id) => widgetMap[id]).filter((widget): widget is GridWidget => Boolean(widget)).slice(0, 4),
+    [heroPins, widgetMap],
+  );
 
   const healthCounts = useMemo(() => {
     return visibleWidgets.reduce(
@@ -1274,6 +1373,44 @@ export default function MonitorV3Page() {
           ))}
         </section>
 
+        <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, idx) => {
+            const widget = heroPinnedWidgets[idx];
+            if (!widget) {
+              return (
+                <article key={`hero-slot-${idx}`} className="rounded border border-dashed border-border bg-card p-2">
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Hero Slot {idx + 1}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">Pin a grid widget here.</div>
+                </article>
+              );
+            }
+            return (
+              <article key={widget.id} className="rounded border border-border bg-card p-2">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">{widget.title}</div>
+                    <div className="truncate text-[10px] text-muted-foreground">{widget.source}</div>
+                  </div>
+                  <button
+                    onClick={() => setHeroPins((current) => current.filter((id) => id !== widget.id))}
+                    className="rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                  >
+                    to grid
+                  </button>
+                </div>
+                <div className="monitor-widget-scroll max-h-[120px] space-y-1 overflow-y-auto pr-1">
+                  {widget.metrics.slice(0, 4).map((metric) => (
+                    <div key={`${widget.id}-${metric.label}`} className="rounded border border-border bg-muted/10 px-1.5 py-1">
+                      <div className="truncate text-[10px] uppercase tracking-[0.1em] text-muted-foreground">{metric.label}</div>
+                      <div className="line-clamp-2 text-xs">{metric.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            );
+          })}
+        </section>
+
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Main Widget Grid</h2>
@@ -1313,6 +1450,7 @@ export default function MonitorV3Page() {
                   setOrder([]);
                   setLayoutById({});
                   setHiddenIds([]);
+                  setHeroPins([]);
                   setGrouping("manual");
                   setSortMode("default");
                   setRenderPreset("mixed");
@@ -1331,6 +1469,7 @@ export default function MonitorV3Page() {
               const layout = layoutById[widget.id] || ({ w: 1, h: 1 } as GridLayout);
               const dataState = widgetDataState(widget);
               const completenessScore = computeDataCompletenessScore(widget);
+              const cardType = inferCardType(widget);
               const staleBadge = isIndexCardStale(widget) ? formatStaleAge(widget) : null;
               const spanW = Math.min(layout.w, gridColumnCount);
               const compactCard = layout.h === 1;
@@ -1375,6 +1514,25 @@ export default function MonitorV3Page() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() =>
+                            setHeroPins((current) => {
+                              if (current.includes(widget.id)) return current;
+                              return [...current, widget.id].slice(-4);
+                            })
+                          }
+                          className="rounded border border-border px-1 py-0 text-[9px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                          title="Pin to hero"
+                        >
+                          <Pin size={11} />
+                        </button>
+                        <button
+                          onClick={() => setDebugWidgetId(widget.id)}
+                          className="rounded border border-border px-1 py-0 text-[9px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                          title="Provider debug"
+                        >
+                          <Info size={11} />
+                        </button>
+                        <button
+                          onClick={() =>
                             setRenderModeById((current) => ({
                               ...current,
                               [widget.id]: nextRenderMode(current[widget.id] || "auto"),
@@ -1400,6 +1558,7 @@ export default function MonitorV3Page() {
                       </div>
                     </div>
                     <div className={cn("flex items-center gap-1 text-[9px]", compactCard ? "mb-0.5" : "mb-1")}>
+                      <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", cardTypeTone(cardType))}>{cardType}</span>
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", getStatusTone(widget.status))}>{widget.status}</span>
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", completenessTone(completenessScore))}>
                         data {completenessScore}
@@ -1751,6 +1910,82 @@ export default function MonitorV3Page() {
               ) : null}
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {debugWidgetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 p-0">
+          <aside className="h-full w-full max-w-xl overflow-y-auto border-l border-border bg-card p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold">Provider Debug</h3>
+              <button
+                onClick={() => setDebugWidgetId(null)}
+                className="rounded border border-border px-1.5 py-1 text-muted-foreground hover:text-foreground"
+              >
+                <X size={12} />
+              </button>
+            </div>
+            {(() => {
+              const widget = widgetMap[debugWidgetId];
+              const debug = providerDebugByWidgetId[debugWidgetId];
+              if (!widget) return <div className="text-sm text-muted-foreground">Widget not found.</div>;
+              return (
+                <div className="space-y-2 text-sm">
+                  <div className="rounded border border-border bg-muted/10 p-2">
+                    <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Widget</div>
+                    <div className="mt-1 font-semibold">{widget.title}</div>
+                    <div className="text-xs text-muted-foreground">{widget.id}</div>
+                  </div>
+                  {!debug ? (
+                    <div className="rounded border border-border bg-muted/10 p-2 text-muted-foreground">
+                      No provider debug mapping for this widget type yet.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded border border-border bg-muted/10 p-2">
+                          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Provider</div>
+                          <div className="mt-1">{debug.providerId}</div>
+                        </div>
+                        <div className="rounded border border-border bg-muted/10 p-2">
+                          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Status</div>
+                          <div className="mt-1">{debug.status || "n/a"}</div>
+                        </div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">lastFetchAt</div>
+                        <div className="mt-1 break-all">{debug.lastFetchAt || "n/a"}</div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">httpStatus</div>
+                        <div className="mt-1">{debug.httpStatus ?? debug.lastError?.httpStatus ?? "n/a"}</div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">errorKind</div>
+                        <div className="mt-1">{debug.lastError?.errorKind || "none"}</div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">finalUrl</div>
+                        <div className="mt-1 break-all">{debug.finalUrl || "n/a"}</div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">sourceUrlUsed</div>
+                        <div className="mt-1 break-all">{debug.sourceUrlUsed || "n/a"}</div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">lastError.message</div>
+                        <div className="mt-1 whitespace-pre-wrap break-words">{debug.lastError?.message || "n/a"}</div>
+                      </div>
+                      <div className="rounded border border-border bg-muted/10 p-2">
+                        <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">notes</div>
+                        <div className="mt-1 whitespace-pre-wrap break-words">{(debug.notes || []).join("\n") || "n/a"}</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+          </aside>
         </div>
       ) : null}
     </div>
