@@ -1290,6 +1290,8 @@ export default function MonitorV3Page() {
     const binanceRows = binanceSnapshotQuery.data?.rows || [];
     const binanceCommodityRows = binanceRows.filter((row) => row.assetType === "token_commodity");
     const binanceMajorRows = binanceRows.filter((row) => ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT"].includes(row.symbol));
+    const btcOptionsRow = binanceRows.find((row) => row.symbol === "BTC_OPTIONS");
+    const ethOptionsRow = binanceRows.find((row) => row.symbol === "ETH_OPTIONS");
     const btcRiskTrend = binanceRiskTrendsQuery.data?.bySymbol?.BTCUSDT;
     const ethRiskTrend = binanceRiskTrendsQuery.data?.bySymbol?.ETHUSDT;
 
@@ -1432,6 +1434,13 @@ export default function MonitorV3Page() {
               typeof binanceSnapshotQuery.data?.macroRisk?.ethVolProxy === "number"
                 ? `${(binanceSnapshotQuery.data?.macroRisk?.ethVolProxy * 100).toFixed(1)}%`
                 : "n/a",
+          },
+          {
+            label: "Options OI",
+            value:
+              typeof btcOptionsRow?.openInterest === "number" || typeof ethOptionsRow?.openInterest === "number"
+                ? `BTC ${typeof btcOptionsRow?.openInterest === "number" ? Math.round(btcOptionsRow.openInterest).toLocaleString("en-US") : "n/a"} | ETH ${typeof ethOptionsRow?.openInterest === "number" ? Math.round(ethOptionsRow.openInterest).toLocaleString("en-US") : "n/a"}`
+                : "unavailable",
           },
         ],
       },

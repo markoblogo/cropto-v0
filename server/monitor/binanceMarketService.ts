@@ -1,6 +1,7 @@
 import { fetchWithHeaders } from "./grainWidgets/providers/utils";
 
 const BINANCE_SPOT_BASE_URL = process.env.BINANCE_SPOT_BASE_URL || "https://api.binance.com";
+const BINANCE_OPTIONS_BASE_URL = process.env.BINANCE_OPTIONS_BASE_URL || "https://eapi.binance.com";
 const FETCH_TIMEOUT_MS = Number.parseInt(process.env.MONITOR_BINANCE_FETCH_TIMEOUT_MS || "7000", 10);
 const CACHE_TTL_MS = Number.parseInt(process.env.MONITOR_BINANCE_CACHE_TTL_MS || String(2 * 60 * 1000), 10);
 
@@ -103,28 +104,97 @@ async function loadKlines(symbol: SymbolCode, interval = "1h", limit = 48) {
     .filter((row) => Number.isFinite(row.close) && row.close > 0);
 }
 
-function annualizedVolFromKlines(points: Array<{ close: number }>): number | null {
-  if (points.length < 10) return null;
-  const returns: number[] = [];
-  for (let i = 1; i < points.length; i += 1) {
-    const prev = points[i - 1]?.close;
-    const cur = points[i]?.close;
-    if (!prev || !cur || prev <= 0 || cur <= 0) continue;
-    returns.push(Math.log(cur / prev));
+async function loadOptionsOpenInterest(underlying: "BTCUSDT" | "ETHUSDT", optionSymbolHint?: string): Promise<number | null> {
+  const underlyingAsset = underlying.replace("USDT", "");
+  const candidates = [
+    `${BINANCE_OPTIONS_BASE_URL}/eapi/v1/openInterest?underlyingAsset=${underlyingAsset}`,
+    `${BINANCE_OPTIONS_BASE_URL}/eapi/v1/openInterest?underlying=${underlying}`,
+    optionSymbolHint ? `${BINANCE_OPTIONS_BASE_URL}/eapi/v1/openInterest?symbol=${encodeURIComponent(optionSymbolHint)}` : "",
+  ].filter(Boolean);
+
+  for (const url of candidates) {
+    try {
+      const payload = await fetchJson<any>(url);
+      if (Array.isArray(payload)) {
+        const oi = payload
+          .map((item) => parseFloatSafe(item?.sumOpenInterest ?? item?.openInterest ?? item?.openInterestUsd ?? item?.openInterestValue))
+          .filter((v): v is number => typeof v === "number")
+          .reduce((acc, v) => acc + v, 0);
+        if (oi > 0) return Number(oi.toFixed(4));
+      } else if (payload && typeof payload === "object") {
+        const oi = parseFloatSafe(payload?.sumOpenInterest ?? payload?.openInterest ?? payload?.openInterestUsd ?? payload?.openInterestValue);
+        if (oi != null && oi > 0) return Number(oi.toFixed(4));
+      }
+    } catch {
+      // try next candidate
+    }
   }
-  if (returns.length < 8) return null;
-  const mean = returns.reduce((acc, r) => acc + r, 0) / returns.length;
-  const variance = returns.reduce((acc, r) => acc + (r - mean) ** 2, 0) / returns.length;
-  const std = Math.sqrt(variance);
-  const annualized = std * Math.sqrt(24 * 365);
-  return Number(annualized.toFixed(4));
+  return null;
+}
+
+async function loadOptionsAggregate(underlying: "BTCUSDT" | "ETHUSDT") {
+  const [tickerRowsRaw, markRowsRaw] = await Promise.all([
+    fetchJson<any[]>(`${BINANCE_OPTIONS_BASE_URL}/eapi/v1/ticker?underlying=${underlying}`),
+    fetchJson<any[]>(`${BINANCE_OPTIONS_BASE_URL}/eapi/v1/mark?underlying=${underlying}`),
+  ]);
+
+  const tickerRows = Array.isArray(tickerRowsRaw) ? tickerRowsRaw : [];
+  const markRows = Array.isArray(markRowsRaw) ? markRowsRaw : [];
+  const tickerBySymbol = new Map<string, any>(tickerRows.map((row) => [String(row?.symbol || ""), row]));
+  const markBySymbol = new Map<string, any>(markRows.map((row) => [String(row?.symbol || ""), row]));
+  const unionSymbols = new Set<string>([...tickerBySymbol.keys(), ...markBySymbol.keys()].filter(Boolean));
+
+  let volume24h = 0;
+  let weightedIvNumerator = 0;
+  let weightedIvDenominator = 0;
+  let weightedPctNumerator = 0;
+  let weightedPctDenominator = 0;
+
+  for (const symbol of unionSymbols) {
+    const ticker = tickerBySymbol.get(symbol);
+    const mark = markBySymbol.get(symbol);
+    const amount = parseFloatSafe(ticker?.amount) ?? parseFloatSafe(ticker?.volume) ?? 0;
+    const markIv = parseFloatSafe(mark?.markIV);
+    const pct = parseFloatSafe(ticker?.priceChangePercent);
+    if (amount > 0) {
+      volume24h += amount;
+      if (markIv != null) {
+        weightedIvNumerator += markIv * amount;
+        weightedIvDenominator += amount;
+      }
+      if (pct != null) {
+        weightedPctNumerator += pct * amount;
+        weightedPctDenominator += amount;
+      }
+    }
+  }
+
+  const impliedVolatility =
+    weightedIvDenominator > 0
+      ? Number((weightedIvNumerator / weightedIvDenominator).toFixed(6))
+      : null;
+  const priceChange24hPct =
+    weightedPctDenominator > 0
+      ? Number((weightedPctNumerator / weightedPctDenominator).toFixed(6))
+      : null;
+  const openInterest = await loadOptionsOpenInterest(underlying, unionSymbols.values().next().value);
+
+  return {
+    impliedVolatility,
+    priceChange24hPct,
+    volume24h: volume24h > 0 ? Number(volume24h.toFixed(4)) : null,
+    openInterest,
+    contractsCount: unionSymbols.size,
+    markRows: markRows.length,
+    tickerRows: tickerRows.length,
+  };
 }
 
 function buildMacroRisk(rows: BinanceMarketRow[]) {
   const btcSpot = rows.find((row) => row.symbol === "BTCUSDT");
   const ethSpot = rows.find((row) => row.symbol === "ETHUSDT");
-  const btcOpt = rows.find((row) => row.symbol === "BTC_OPTIONS_PROXY");
-  const ethOpt = rows.find((row) => row.symbol === "ETH_OPTIONS_PROXY");
+  const btcOpt = rows.find((row) => row.symbol === "BTC_OPTIONS");
+  const ethOpt = rows.find((row) => row.symbol === "ETH_OPTIONS");
   const paxg = rows.find((row) => row.symbol === "PAXGUSDT");
 
   const btcVol = btcOpt?.impliedVolatility ?? null;
@@ -141,7 +211,7 @@ function buildMacroRisk(rows: BinanceMarketRow[]) {
     score: Number.isFinite(score) ? score : null,
     btcVolProxy: btcVol,
     ethVolProxy: ethVol,
-    note: "Macro risk proxy from BTC/ETH realized vol + majors momentum + PAXG hedge signal",
+    note: "Macro risk from Binance options IV + majors momentum + PAXG hedge signal",
   };
 }
 
@@ -190,42 +260,77 @@ export async function getBinanceMarketSnapshot(forceRefresh = false): Promise<Bi
     }),
   );
 
-  const btcKlines = rows.find((row) => row.symbol === "BTCUSDT")?.series || [];
-  const ethKlines = rows.find((row) => row.symbol === "ETHUSDT")?.series || [];
-  const btcVol = annualizedVolFromKlines(btcKlines.map((close) => ({ close })));
-  const ethVol = annualizedVolFromKlines(ethKlines.map((close) => ({ close })));
-  const btcSpot = rows.find((row) => row.symbol === "BTCUSDT");
-  const ethSpot = rows.find((row) => row.symbol === "ETHUSDT");
+  try {
+    const btc = await loadOptionsAggregate("BTCUSDT");
+    rows.push({
+      symbol: "BTC_OPTIONS",
+      assetType: "options_agg",
+      underlying: "BTC",
+      price: null,
+      priceChange24hPct: btc.priceChange24hPct,
+      volume24h: btc.volume24h,
+      openInterest: btc.openInterest,
+      impliedVolatility: btc.impliedVolatility,
+      source: "binance_options_api",
+      status: btc.impliedVolatility != null ? "REFRESH" : "INDICATIVE",
+      extra: {
+        contractsCount: btc.contractsCount,
+        tickerRows: btc.tickerRows,
+        markRows: btc.markRows,
+        openInterestMode: btc.openInterest != null ? "direct" : "unavailable",
+      },
+    });
+  } catch (error: any) {
+    rows.push({
+      symbol: "BTC_OPTIONS",
+      assetType: "options_agg",
+      underlying: "BTC",
+      price: null,
+      priceChange24hPct: null,
+      volume24h: null,
+      openInterest: null,
+      impliedVolatility: null,
+      source: "binance_options_api",
+      status: "CONSTRAINED",
+      extra: { error: String(error?.message || "options_fetch_failed") },
+    });
+  }
 
-  rows.push({
-    symbol: "BTC_OPTIONS_PROXY",
-    assetType: "options_agg",
-    underlying: "BTC",
-    price: null,
-    priceChange24hPct: null,
-    volume24h: btcSpot?.volume24h ?? null,
-    openInterest: null,
-    impliedVolatility: btcVol,
-    source: "binance_spot_rest_proxy",
-    status: btcVol != null ? "INDICATIVE" : "CONSTRAINED",
-    series: btcKlines.length >= 2 ? btcKlines : undefined,
-    extra: { note: "Derived from realized volatility over 1h klines until direct options feed is connected" },
-  });
-
-  rows.push({
-    symbol: "ETH_OPTIONS_PROXY",
-    assetType: "options_agg",
-    underlying: "ETH",
-    price: null,
-    priceChange24hPct: null,
-    volume24h: ethSpot?.volume24h ?? null,
-    openInterest: null,
-    impliedVolatility: ethVol,
-    source: "binance_spot_rest_proxy",
-    status: ethVol != null ? "INDICATIVE" : "CONSTRAINED",
-    series: ethKlines.length >= 2 ? ethKlines : undefined,
-    extra: { note: "Derived from realized volatility over 1h klines until direct options feed is connected" },
-  });
+  try {
+    const eth = await loadOptionsAggregate("ETHUSDT");
+    rows.push({
+      symbol: "ETH_OPTIONS",
+      assetType: "options_agg",
+      underlying: "ETH",
+      price: null,
+      priceChange24hPct: eth.priceChange24hPct,
+      volume24h: eth.volume24h,
+      openInterest: eth.openInterest,
+      impliedVolatility: eth.impliedVolatility,
+      source: "binance_options_api",
+      status: eth.impliedVolatility != null ? "REFRESH" : "INDICATIVE",
+      extra: {
+        contractsCount: eth.contractsCount,
+        tickerRows: eth.tickerRows,
+        markRows: eth.markRows,
+        openInterestMode: eth.openInterest != null ? "direct" : "unavailable",
+      },
+    });
+  } catch (error: any) {
+    rows.push({
+      symbol: "ETH_OPTIONS",
+      assetType: "options_agg",
+      underlying: "ETH",
+      price: null,
+      priceChange24hPct: null,
+      volume24h: null,
+      openInterest: null,
+      impliedVolatility: null,
+      source: "binance_options_api",
+      status: "CONSTRAINED",
+      extra: { error: String(error?.message || "options_fetch_failed") },
+    });
+  }
 
   rows.sort((a, b) => a.symbol.localeCompare(b.symbol));
   const payload: BinanceSnapshotPayload = {

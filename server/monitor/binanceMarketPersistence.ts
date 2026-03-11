@@ -105,7 +105,7 @@ export async function getBinanceRiskTrends(hours = 168) {
   await ensureTable();
   const safeHours = Math.max(1, Math.min(24 * 30, Number.isFinite(hours) ? hours : 168));
   const since = new Date(Date.now() - safeHours * 60 * 60 * 1000);
-  const symbols = ["BTCUSDT", "ETHUSDT", "PAXGUSDT", "BTC_OPTIONS_PROXY", "ETH_OPTIONS_PROXY"] as const;
+  const symbols = ["BTCUSDT", "ETHUSDT", "PAXGUSDT", "BTC_OPTIONS", "ETH_OPTIONS"] as const;
 
   const bySymbol: Record<string, { latest: number | null; delta24h: number | null; delta7d: number | null; points: Array<{ ts: string; value: number }> }> = {};
   for (const symbol of symbols) {
@@ -121,7 +121,7 @@ export async function getBinanceRiskTrends(hours = 168) {
 
     const points = rows
       .map((row) => {
-        const raw = symbol.endsWith("_PROXY") ? row.iv : row.price;
+        const raw = symbol.endsWith("_OPTIONS") ? row.iv : row.price;
         const value = Number.parseFloat(String(raw || ""));
         return {
           ts: row.ts ? new Date(row.ts).toISOString() : new Date().toISOString(),
@@ -173,8 +173,8 @@ export async function getBinanceRiskTrends(hours = 168) {
   }
   const btcChange = Number.parseFloat(String(latestMap.get("BTCUSDT")?.priceChange24hPct || "0"));
   const ethChange = Number.parseFloat(String(latestMap.get("ETHUSDT")?.priceChange24hPct || "0"));
-  const btcIv = Number.parseFloat(String(latestMap.get("BTC_OPTIONS_PROXY")?.impliedVolatility || "0"));
-  const ethIv = Number.parseFloat(String(latestMap.get("ETH_OPTIONS_PROXY")?.impliedVolatility || "0"));
+  const btcIv = Number.parseFloat(String(latestMap.get("BTC_OPTIONS")?.impliedVolatility || "0"));
+  const ethIv = Number.parseFloat(String(latestMap.get("ETH_OPTIONS")?.impliedVolatility || "0"));
   const avgAbsMove = (Math.abs(btcChange) + Math.abs(ethChange)) / 2;
   const avgIv = (btcIv + ethIv) / 2;
   const macroRiskScore = Number((100 * (0.55 * Math.min(1, avgIv / 1.2) + 0.45 * Math.min(1, avgAbsMove / 8))).toFixed(2));
