@@ -111,7 +111,7 @@ export const USDA_FAS_PSD_API_KEY = process.env.USDA_FAS_PSD_API_KEY || "";
 export const USDA_MARS_BASE_URL = process.env.USDA_MARS_BASE_URL || "https://marsapi.ams.usda.gov/services/v3.1/public";
 export const USDA_MARS_PUBLIC_INDEX_URLS = (
   process.env.USDA_MARS_PUBLIC_INDEX_URLS ||
-  "https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports/all,https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports"
+  "https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReports/all?format=json,https://marsapi.ams.usda.gov/services/v3.1/public/listPublishedReports?format=json,https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports/all,https://marsapi.ams.usda.gov/services/v1.1/public/listPublishedReports"
 )
   .split(",")
   .map((value) => value.trim())

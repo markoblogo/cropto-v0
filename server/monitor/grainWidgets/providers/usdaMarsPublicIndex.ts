@@ -38,7 +38,38 @@ function parseRow(line: string): UsdaMarsPublicIndexRow | undefined {
   };
 }
 
+function parseJsonIndex(text: string): UsdaMarsPublicIndexRow[] {
+  try {
+    const payload = JSON.parse(text);
+    const reports = Array.isArray(payload?.reports) ? payload.reports : [];
+    return reports
+      .map((row: any): UsdaMarsPublicIndexRow | undefined => {
+        const id = String(row?.id ?? "").trim();
+        const fileName = String(row?.fileName ?? "").trim();
+        const fileExtension = String(row?.fileExtension ?? "").trim().toLowerCase();
+        const reportTitle = String(row?.reportTitle ?? "").trim();
+        if (!id || !fileName || !fileExtension || !reportTitle) return undefined;
+        return {
+          id,
+          fileName,
+          fileExtension,
+          publishedDate: parseDateIso(String(row?.publishedDate ?? "")),
+          publishedDateMs: row?.publishedDateMilliseconds != null ? String(row.publishedDateMilliseconds) : undefined,
+          reportBeginDate: String(row?.reportBeginDate ?? "").trim() || undefined,
+          reportEndDate: String(row?.reportEndDate ?? "").trim() || undefined,
+          reportTitle,
+        };
+      })
+      .filter((row: UsdaMarsPublicIndexRow | undefined): row is UsdaMarsPublicIndexRow => Boolean(row));
+  } catch {
+    return [];
+  }
+}
+
 export function parseUsdaMarsPublicIndex(text: string): UsdaMarsPublicIndexRow[] {
+  const jsonRows = parseJsonIndex(text);
+  if (jsonRows.length) return jsonRows;
+
   return text
     .split(/\r?\n/)
     .map((line) => line.trimEnd())
