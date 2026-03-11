@@ -251,6 +251,43 @@ function pickMetrics(widget?: GrainWidgetRecord): Array<{ label: string; value: 
   return metrics;
 }
 
+function pickFallbackMetrics(widget?: GrainWidgetRecord): Array<{ label: string; value: string; delta?: number }> {
+  if (!widget) return [{ label: "Status", value: "No payload" }];
+  const notes = widget.notes || [];
+  const metrics: Array<{ label: string; value: string; delta?: number }> = [];
+
+  const coverage = notes.find((note) => /coverage\s*\d+\s*\/\s*\d+/i.test(note));
+  if (coverage) metrics.push({ label: "Coverage", value: coverage });
+
+  const cadence = notes.find((note) => /cadence/i.test(note));
+  if (cadence) metrics.push({ label: "Cadence", value: cadence.replace(/^.*cadence[:\s]*/i, "") || cadence });
+
+  const territoryLabel = widget.territory?.label || widget.territory?.code;
+  if (territoryLabel) metrics.push({ label: "Territory", value: territoryLabel });
+
+  const firstNote = notes.find((note) => note && note.length > 0);
+  if (firstNote) metrics.push({ label: "Note", value: firstNote.slice(0, 72) });
+
+  if (widget.updatedAt) {
+    const ts = new Date(widget.updatedAt);
+    if (!Number.isNaN(ts.getTime())) {
+      metrics.push({
+        label: "Updated",
+        value: ts.toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" }),
+      });
+    }
+  }
+
+  if (metrics.length === 0) {
+    metrics.push({
+      label: "Status",
+      value: widget.status ? `${widget.status} payload without numeric rows` : "Payload without numeric rows",
+    });
+  }
+
+  return metrics.slice(0, 3);
+}
+
 function getStatusTone(status: string) {
   const key = status.toUpperCase();
   if (key === "REFRESH" || key === "LIVE") return "border-emerald-500/60 text-emerald-300";
@@ -452,6 +489,8 @@ export default function MonitorV3Page() {
       .map((kind) => {
         const widget = byKind[kind];
         if (!widget) return null;
+        const numericMetrics = pickMetrics(widget);
+        const metrics = numericMetrics.length > 0 ? numericMetrics : pickFallbackMetrics(widget);
         return {
           id: `GW_${kind}`,
           title: labelFromKind(kind),
@@ -462,7 +501,7 @@ export default function MonitorV3Page() {
           topic: KIND_TO_TOPIC[kind] || "markets",
           roles: KIND_TO_ROLES[kind] || ["farmer", "trader", "broker"],
           territory: widget.territory?.code || "GLOBAL",
-          metrics: pickMetrics(widget).map((m) => ({ ...m, href: widget.sourceUrl })),
+          metrics: metrics.map((m) => ({ ...m, href: widget.sourceUrl })),
         } as GridWidget;
       })
       .filter((item): item is GridWidget => Boolean(item));
@@ -878,7 +917,7 @@ export default function MonitorV3Page() {
                     setDraggedId(null);
                   }}
                   className={cn(
-                    "group relative overflow-hidden rounded border bg-card p-2",
+                    "group relative flex flex-col overflow-hidden rounded border bg-card p-2",
                     isDegradedStatus(widget.status)
                       ? "border-dashed border-amber-500/40 bg-amber-500/5"
                       : "border-border",
@@ -913,7 +952,7 @@ export default function MonitorV3Page() {
                     <span className="max-w-[48%] truncate rounded border border-border px-1.5 py-0 text-muted-foreground">{widget.source}</span>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
                     {(() => {
                       const mode = inferRenderMode(widget);
                       const rawItems = widget.metrics.slice(0, layout.h === 2 ? 4 : 2);
