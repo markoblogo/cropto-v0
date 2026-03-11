@@ -2683,7 +2683,7 @@ export default function MonitorV3Page() {
                 <rect x="0" y="0" width="1000" height="460" fill="url(#oceanGlow)" />
                 <g transform={`translate(${geoPan.x} ${geoPan.y}) scale(${geoZoom}) translate(${(1 - geoZoom) * 500} ${(1 - geoZoom) * 230})`}>
                   <image
-                    href="/maps/monitor-map.svg"
+                    href="/maps/monitor-map.png"
                     x="0"
                     y="0"
                     width="1000"
