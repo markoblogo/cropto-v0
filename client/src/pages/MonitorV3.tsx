@@ -122,6 +122,7 @@ type CustomWidgetDraft = {
   topic: Exclude<MonitorTopic, "all">;
 };
 type RenderMode = "metric" | "spark" | "bar" | "list";
+type RenderModeOverride = "auto" | RenderMode;
 
 const STORAGE_PREFIX = "monitor_v3_";
 const STORAGE_KEYS = {
@@ -136,6 +137,7 @@ const STORAGE_KEYS = {
   custom: `${STORAGE_PREFIX}custom`,
   clockZones: `${STORAGE_PREFIX}clock_zones`,
   fxPairs: `${STORAGE_PREFIX}fx_pairs`,
+  renderModes: `${STORAGE_PREFIX}render_modes`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -397,6 +399,12 @@ function getGridColumnCount(width: number) {
   return 1;
 }
 
+function nextRenderMode(current: RenderModeOverride): RenderModeOverride {
+  const order: RenderModeOverride[] = ["auto", "metric", "spark", "bar", "list"];
+  const idx = order.indexOf(current);
+  return order[(idx + 1) % order.length];
+}
+
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
 
@@ -419,6 +427,9 @@ export default function MonitorV3Page() {
   const [customWidgets, setCustomWidgets] = useState<GridWidget[]>(() => readJson<GridWidget[]>(STORAGE_KEYS.custom, []));
   const [clockZones, setClockZones] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.clockZones, ["UTC", "Europe/Paris", "America/New_York"]));
   const [fxPairs, setFxPairs] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.fxPairs, ["EUR/USD", "USD/BRL"]));
+  const [renderModeById, setRenderModeById] = useState<Record<string, RenderModeOverride>>(() =>
+    readJson<Record<string, RenderModeOverride>>(STORAGE_KEYS.renderModes, {}),
+  );
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -442,6 +453,7 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.custom, customWidgets), [customWidgets]);
   useEffect(() => writeJson(STORAGE_KEYS.clockZones, clockZones), [clockZones]);
   useEffect(() => writeJson(STORAGE_KEYS.fxPairs, fxPairs), [fxPairs]);
+  useEffect(() => writeJson(STORAGE_KEYS.renderModes, renderModeById), [renderModeById]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -943,6 +955,7 @@ export default function MonitorV3Page() {
                   setHiddenIds([]);
                   setGrouping("manual");
                   setSortMode("default");
+                  setRenderModeById({});
                 }}
                 className="rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
@@ -996,18 +1009,32 @@ export default function MonitorV3Page() {
                         <h3 className={cn("line-clamp-1 font-semibold leading-tight", compactCard ? "text-sm" : "text-base")}>{widget.title}</h3>
                         {!compactCard ? <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{widget.subtitle}</p> : null}
                       </div>
-                      <button
-                        onClick={() => {
-                          setHiddenIds((current) => (current.includes(widget.id) ? current : [...current, widget.id]));
-                          if (widget.id.startsWith("CUSTOM_")) {
-                            setCustomWidgets((current) => current.filter((item) => item.id !== widget.id));
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() =>
+                            setRenderModeById((current) => ({
+                              ...current,
+                              [widget.id]: nextRenderMode(current[widget.id] || "auto"),
+                            }))
                           }
-                        }}
-                        className="rounded border border-border px-1.5 py-0.5 text-muted-foreground hover:border-red-400 hover:text-red-300"
-                        aria-label="Hide widget"
-                      >
-                        <X size={12} />
-                      </button>
+                          className="rounded border border-border px-1 py-0 text-[9px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                          title="Switch render mode: auto/metric/spark/bar/list"
+                        >
+                          {(renderModeById[widget.id] || "auto").slice(0, 1)}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setHiddenIds((current) => (current.includes(widget.id) ? current : [...current, widget.id]));
+                            if (widget.id.startsWith("CUSTOM_")) {
+                              setCustomWidgets((current) => current.filter((item) => item.id !== widget.id));
+                            }
+                          }}
+                          className="rounded border border-border px-1.5 py-0.5 text-muted-foreground hover:border-red-400 hover:text-red-300"
+                          aria-label="Hide widget"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
                     </div>
                     <div className={cn("flex items-center gap-1 text-[9px]", compactCard ? "mb-0.5" : "mb-1")}>
                       <span className={cn("rounded border px-1 py-0 uppercase tracking-[0.1em]", getStatusTone(widget.status))}>{widget.status}</span>
@@ -1020,7 +1047,8 @@ export default function MonitorV3Page() {
 
                   <div className="monitor-widget-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
                     {(() => {
-                      const mode = inferRenderMode(widget);
+                      const modeOverride = renderModeById[widget.id] || "auto";
+                      const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
                       const rawItems = widget.metrics.slice(0, layout.h === 2 ? 5 : 3);
                       const items =
                         rawItems.length > 0
