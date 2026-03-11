@@ -283,6 +283,22 @@ type GlobalIndicesResponse = {
   };
 };
 
+type GlobalIndicesTrendsResponse = {
+  generatedAt?: string;
+  hours?: number;
+  status?: string;
+  provider?: string;
+  bySymbol?: Record<
+    string,
+    {
+      latest: number | null;
+      delta24h: number | null;
+      delta7d: number | null;
+      points: Array<{ ts: string; value: number }>;
+    }
+  >;
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
@@ -1131,6 +1147,15 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const globalIndicesTrendsQuery = useQuery<GlobalIndicesTrendsResponse>({
+    queryKey: ["monitor-v3-global-indices-trends"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/global-indices-trends?hours=168");
+      if (!response.ok) throw new Error("Failed to load global indices trends");
+      return response.json();
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1338,6 +1363,36 @@ export default function MonitorV3Page() {
     const globalIndicesRows = globalIndicesQuery.data?.rows || [];
     const globalIndicesStatus = (globalIndicesQuery.data?.status || "CONSTRAINED").toUpperCase();
     const riskOnOff = globalIndicesQuery.data?.riskOnOff;
+    const ffpiWidget = byKind.CROP_PRICE_INDEX;
+    const wfpWidget = byKind.WFP_MARKET_PRICES_MULTI_COUNTRY;
+    const wbWidget = byKind.WB_MICRODATA_MARKET_PRICES;
+    const faostatWidget = byKind.FAOSTAT_PP_MULTI_COUNTRY;
+    const oecdWidget = byKind.OECD_AGRICULTURAL_OUTLOOK;
+    const ffpiMetrics = pickMetrics(ffpiWidget);
+    const wfpMetrics = pickMetrics(wfpWidget);
+    const wbMetrics = pickMetrics(wbWidget);
+    const faoDeltas = ffpiMetrics.map((m) => (typeof m.delta === "number" ? Math.abs(m.delta) : null)).filter((v): v is number => v !== null);
+    const wfpDeltas = wfpMetrics.map((m) => (typeof m.delta === "number" ? Math.abs(m.delta) : null)).filter((v): v is number => v !== null);
+    const wbDeltas = wbMetrics.map((m) => (typeof m.delta === "number" ? Math.abs(m.delta) : null)).filter((v): v is number => v !== null);
+    const avgValue = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+    const foodStressRaw =
+      (avgValue(faoDeltas) ?? 0) * 0.3 +
+      (avgValue(wfpDeltas) ?? 0) * 0.5 +
+      (avgValue(wbDeltas) ?? 0) * 0.2;
+    const foodStressScore = Number.isFinite(foodStressRaw) ? Math.max(0, Math.min(1, foodStressRaw / 15)) : null;
+    const eurUsd = formatFxPair("EUR/USD", fxQuery.data?.rates);
+    const usdBrl = formatFxPair("USD/BRL", fxQuery.data?.rates);
+    const globalTrendSpx = globalIndicesTrendsQuery.data?.bySymbol?.SPX?.points?.map((point) => point.value) || [];
+    const globalTrendIxic = globalIndicesTrendsQuery.data?.bySymbol?.IXIC?.points?.map((point) => point.value) || [];
+    const matrixSeries = globalTrendSpx.length >= 2 && globalTrendIxic.length >= 2
+      ? globalTrendSpx
+          .slice(-Math.min(globalTrendSpx.length, globalTrendIxic.length))
+          .map((point, idx) => {
+            const left = point;
+            const right = globalTrendIxic[globalTrendIxic.length - Math.min(globalTrendSpx.length, globalTrendIxic.length) + idx];
+            return Number((((left + right) / 2)).toFixed(4));
+          })
+      : undefined;
 
     const widgetsFromGlobalContext: GridWidget[] = [
       {
@@ -1434,6 +1489,42 @@ export default function MonitorV3Page() {
               }))),
             ]
           : [{ label: "State", value: "Risk-on/off matrix unavailable" }],
+      },
+      {
+        id: "SYS_GLOBAL_LINK_MATRIX",
+        title: "Global Link Matrix",
+        subtitle: "Indices + BTC/Gold + FX compact linkage",
+        status: globalIndicesStatus,
+        source: "Cross-asset matrix",
+        updatedAt: globalIndicesQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: [
+          {
+            label: "Regime",
+            value: riskOnOff ? `${riskOnOff.regime.replace("_", " ")}${riskOnOff.score != null ? ` (${riskOnOff.score.toFixed(1)})` : ""}` : "n/a",
+            delta: riskOnOff?.score ?? undefined,
+            deltaFormat: "abs",
+            series: matrixSeries,
+          },
+          {
+            label: "US/EU/EM",
+            value: riskOnOff?.matrix
+              ? `${(riskOnOff.matrix.find((item) => item.label === "US Equities")?.value ?? 0).toFixed(2)}% / ${(riskOnOff.matrix.find((item) => item.label === "EU Equities")?.value ?? 0).toFixed(2)}% / ${(riskOnOff.matrix.find((item) => item.label === "EM Equities")?.value ?? 0).toFixed(2)}%`
+              : "n/a",
+          },
+          {
+            label: "BTC/Gold",
+            value: riskOnOff?.matrix
+              ? `${(riskOnOff.matrix.find((item) => item.label === "BTC")?.value ?? 0).toFixed(2)}% / ${(riskOnOff.matrix.find((item) => item.label === "Gold")?.value ?? 0).toFixed(2)}%`
+              : "n/a",
+          },
+          {
+            label: "FX",
+            value: `EUR/USD ${eurUsd} | USD/BRL ${usdBrl}`,
+          },
+        ],
       },
       {
         id: "SYS_BINANCE_COMMODITY_PROXY",
@@ -1703,6 +1794,83 @@ export default function MonitorV3Page() {
         ],
       },
       {
+        id: "SYS_YIELD_CONDITIONS",
+        title: "Yield Conditions",
+        subtitle: "GEOGLAM + outlook proxy (public layer)",
+        status: oecdWidget?.status?.toUpperCase() === "REFRESH" ? "INDICATIVE" : "CONSTRAINED",
+        source: "GEOGLAM / OECD proxy",
+        updatedAt: globalIndicesQuery.data?.generatedAt,
+        topic: "weather",
+        roles: ["farmer", "trader", "broker"],
+        territory: country,
+        metrics: [
+          {
+            label: "Crop monitor",
+            value: "GEOGLAM direct layer in progress (public ArcGIS)",
+          },
+          {
+            label: "Outlook proxy",
+            value: (oecdWidget?.items || []).length
+              ? `${(oecdWidget.items || []).slice(0, 1).map((item: any) => item?.title || item?.label || "OECD row").join(" | ")}`
+              : "No OECD outlook rows",
+          },
+          {
+            label: "Country focus",
+            value: country,
+          },
+        ],
+      },
+      {
+        id: "SYS_FAO_FOOD_PRICES",
+        title: "FAO Food Price Pressure",
+        subtitle: "Global cereals + vegetable oils pressure",
+        status: (ffpiWidget?.status || "CONSTRAINED").toUpperCase(),
+        source: ffpiWidget?.sourceName || "FAO FFPI",
+        updatedAt: ffpiWidget?.updatedAt || globalIndicesQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: ffpiMetrics.length
+          ? ffpiMetrics.slice(0, 3).map((metric) => ({
+              label: metric.label,
+              value: metric.value,
+              delta: metric.delta,
+              series: metric.series,
+            }))
+          : [{ label: "State", value: "No FAO rows" }],
+      },
+      {
+        id: "SYS_FOOD_SECURITY_STRESS",
+        title: "Food Security Stress",
+        subtitle: "WFP + WB + FAO blended stress score",
+        status: (wfpWidget?.status || wbWidget?.status || "CONSTRAINED").toUpperCase(),
+        source: "WFP + World Bank + FAO",
+        updatedAt: wfpWidget?.updatedAt || wbWidget?.updatedAt || ffpiWidget?.updatedAt,
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: country,
+        metrics: [
+          {
+            label: "Stress score",
+            value: foodStressScore != null ? `${(foodStressScore * 100).toFixed(1)} / 100` : "n/a",
+            delta: foodStressScore != null ? foodStressScore * 100 : undefined,
+            deltaFormat: "abs",
+          },
+          {
+            label: "WFP market layer",
+            value: wfpMetrics.length ? `${wfpMetrics.length} usable rows` : "No WFP rows",
+          },
+          {
+            label: "WB microdata",
+            value: wbMetrics.length ? `${wbMetrics.length} usable rows` : "No WB rows",
+          },
+          {
+            label: "FAOSTAT",
+            value: (faostatWidget?.rows || []).length ? `${(faostatWidget.rows || []).length} rows` : "No FAOSTAT rows",
+          },
+        ],
+      },
+      {
         id: "SYS_DIRECT_GRAIN_PREDICTION",
         title: "Direct Grain Prediction Markets",
         subtitle: "Open grain/oilseed contracts from Kalshi & Polymarket",
@@ -1767,7 +1935,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, country, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1955,6 +2123,7 @@ export default function MonitorV3Page() {
         binanceSnapshotQuery.refetch(),
         binanceRiskTrendsQuery.refetch(),
         globalIndicesQuery.refetch(),
+        globalIndicesTrendsQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);

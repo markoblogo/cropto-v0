@@ -94,6 +94,7 @@ import { getAgroCompositeTrends, getCgoWeightsSnapshot, startAgroExpectationsSch
 import { getBinanceMarketSnapshot } from "./binanceMarketService";
 import { getBinanceRiskTrends, startBinanceMarketScheduler } from "./binanceMarketPersistence";
 import { getGlobalIndicesSnapshot } from "./globalIndicesService";
+import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndicesPersistence";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -419,6 +420,7 @@ export function registerMonitorRoutes(app: Express): void {
   startPredictionMarketsScheduler();
   startAgroExpectationsScheduler();
   startBinanceMarketScheduler();
+  startGlobalIndicesScheduler();
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
@@ -708,6 +710,23 @@ export function registerMonitorRoutes(app: Express): void {
           dxy: null,
           note: "Global indices unavailable",
         },
+      });
+    }
+  });
+
+  app.get("/api/monitor/global-indices-trends", async (req, res) => {
+    try {
+      const hoursRaw = typeof req.query.hours === "string" ? Number.parseInt(req.query.hours, 10) : 168;
+      const payload = await getGlobalIndexTrends(Number.isFinite(hoursRaw) ? hoursRaw : 168);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        hours: 168,
+        bySymbol: {},
+        status: "CONSTRAINED",
+        provider: "unknown",
+        message: error?.message || "Global index trends unavailable",
       });
     }
   });

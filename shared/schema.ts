@@ -239,6 +239,21 @@ export const binanceMarketSnapshot = pgTable("binance_market_snapshot", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const globalIndexSnapshot = pgTable("global_index_snapshot", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  provider: text("provider").notNull(),
+  symbol: text("symbol").notNull(),
+  name: text("name").notNull(),
+  region: text("region").notNull(),
+  value: decimal("value", { precision: 20, scale: 8 }),
+  dayChangePct: decimal("day_change_pct", { precision: 12, scale: 6 }),
+  source: text("source").notNull().default("eod"),
+  status: text("status").notNull().default("INDICATIVE"),
+  extra: text("extra"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const indexPrices = pgTable("index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   commodity: text("commodity").notNull(),
@@ -623,6 +638,11 @@ export const insertMacroRiskTimeseriesSchema = createInsertSchema(macroRiskTimes
   createdAt: true,
 });
 
+export const insertGlobalIndexSnapshotSchema = createInsertSchema(globalIndexSnapshot).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
   id: true,
   createdAt: true,
@@ -734,6 +754,8 @@ export type MacroPredictionMarket = typeof macroPredictionMarkets.$inferSelect;
 export type UpsertMacroPredictionMarket = z.infer<typeof upsertMacroPredictionMarketSchema>;
 export type MacroRiskTimeseries = typeof macroRiskTimeseries.$inferSelect;
 export type InsertMacroRiskTimeseries = z.infer<typeof insertMacroRiskTimeseriesSchema>;
+export type GlobalIndexSnapshot = typeof globalIndexSnapshot.$inferSelect;
+export type InsertGlobalIndexSnapshot = z.infer<typeof insertGlobalIndexSnapshotSchema>;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
 export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;
