@@ -390,6 +390,13 @@ function formatFxPair(pair: string, rates: FxResponse["rates"]): string {
   return cross.toFixed(4);
 }
 
+function getGridColumnCount(width: number) {
+  if (width >= 1536) return 5; // 2xl
+  if (width >= 1280) return 4; // xl
+  if (width >= 768) return 2; // md
+  return 1;
+}
+
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
 
@@ -402,6 +409,9 @@ export default function MonitorV3Page() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window === "undefined" ? 1536 : window.innerWidth,
+  );
 
   const [order, setOrder] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.order, []));
   const [layoutById, setLayoutById] = useState<Record<string, GridLayout>>(() => readJson<Record<string, GridLayout>>(STORAGE_KEYS.layout, {}));
@@ -496,6 +506,12 @@ export default function MonitorV3Page() {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const coreWidgets = useMemo<GridWidget[]>(() => {
@@ -695,6 +711,7 @@ export default function MonitorV3Page() {
 
   const topSignals = newsQuery.data?.topSignals || [];
   const feed = newsQuery.data?.feed || [];
+  const gridColumnCount = getGridColumnCount(viewportWidth);
 
   const filteredSignals = useMemo(() => {
     return topSignals.filter((item) => {
@@ -935,10 +952,11 @@ export default function MonitorV3Page() {
             </div>
           </div>
 
-          <div className="grid auto-rows-[168px] grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
+          <div className="grid auto-rows-[168px] grid-cols-1 grid-flow-row-dense gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
             {visibleWidgets.map((widget) => {
               const layout = layoutById[widget.id] || ({ w: 1, h: 1 } as GridLayout);
               const dataState = widgetDataState(widget);
+              const spanW = Math.min(layout.w, gridColumnCount);
               return (
                 <article
                   key={widget.id}
@@ -965,7 +983,7 @@ export default function MonitorV3Page() {
                         : "border-border",
                   )}
                   style={{
-                    gridColumn: `span ${layout.w} / span ${layout.w}`,
+                    gridColumn: `span ${spanW} / span ${spanW}`,
                     gridRow: `span ${layout.h} / span ${layout.h}`,
                     cursor: grouping === "manual" ? "grab" : "default",
                   }}
