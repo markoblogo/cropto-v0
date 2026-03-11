@@ -318,6 +318,7 @@ type YieldFoodSecurityResponse = {
       title: string;
       crop: YieldCropFilter;
       sourceUrl: string;
+      thumbnailUrl?: string;
       updatedAt?: string;
       countryRelevant?: boolean;
       tags?: string[];
@@ -348,6 +349,9 @@ type YieldFoodSecurityResponse = {
       label: string;
       value: string;
       changePct?: number;
+      current?: number;
+      unit?: string;
+      currency?: string;
     }>;
     note?: string;
   };
@@ -999,6 +1003,37 @@ function modeForPreset(widget: GridWidget, preset: RenderPreset): RenderModeOver
   return hasDelta ? "spark" : "metric";
 }
 
+function buildMiniSparkPoints(series: number[]) {
+  if (!Array.isArray(series) || series.length < 2) return "";
+  const min = Math.min(...series);
+  const max = Math.max(...series);
+  const normalized = series.map((value) => (max === min ? 50 : ((value - min) / (max - min)) * 100));
+  return normalized.map((value, idx) => `${idx * (100 / Math.max(1, normalized.length - 1))},${100 - value}`).join(" ");
+}
+
+function normalizeToUsdTon(args: {
+  current?: number;
+  unit?: string;
+  currency?: string;
+  valueText?: string;
+  rates?: Array<{ currency: string; usdPerUnit: number }>;
+}) {
+  const current = typeof args.current === "number" ? args.current : null;
+  const unit = String(args.unit || "").toLowerCase();
+  const currencyRaw = String(args.currency || "").toUpperCase();
+  const currencyFromText = (args.valueText || "").match(/\b([A-Z]{3})\s*\/\s*kg\b/i)?.[1]?.toUpperCase();
+  const currency = currencyRaw || currencyFromText || "";
+  const usdPerUnit = args.rates?.find((rate) => String(rate.currency).toUpperCase() === currency)?.usdPerUnit;
+  if (current == null || !currency || !usdPerUnit) return null;
+  if (unit.includes("kg")) {
+    return Number((current * 1000 * usdPerUnit).toFixed(2));
+  }
+  if (unit.includes("ton") || unit.includes("/t")) {
+    return Number((current * usdPerUnit).toFixed(2));
+  }
+  return null;
+}
+
 export default function MonitorV3Page() {
   const { theme, setTheme } = useTheme();
 
@@ -1038,6 +1073,8 @@ export default function MonitorV3Page() {
     readJson<DirectPredictionRegion>(STORAGE_KEYS.directPredictionRegion, "ALL"),
   );
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
+  const [selectedGeoglamId, setSelectedGeoglamId] = useState<string | null>(null);
+  const [geoglamZoom, setGeoglamZoom] = useState<number>(1);
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -2111,6 +2148,20 @@ export default function MonitorV3Page() {
     yieldFoodSecurityQuery.data?.foodSecurity?.status ||
     "CONSTRAINED"
   ).toUpperCase();
+  const selectedGeoglamDataset =
+    (selectedGeoglamId ? yieldGeoglamRows.find((row) => row.id === selectedGeoglamId) : null) || yieldGeoglamRows[0] || null;
+
+  useEffect(() => {
+    if (!yieldGeoglamRows.length) {
+      setSelectedGeoglamId(null);
+      setGeoglamZoom(1);
+      return;
+    }
+    if (!selectedGeoglamId || !yieldGeoglamRows.some((row) => row.id === selectedGeoglamId)) {
+      setSelectedGeoglamId(yieldGeoglamRows[0].id);
+      setGeoglamZoom(1);
+    }
+  }, [yieldGeoglamRows, selectedGeoglamId]);
 
   const applyRenderPreset = (preset: RenderPreset) => {
     setRenderPreset(preset);
@@ -2408,8 +2459,71 @@ export default function MonitorV3Page() {
 
         <section className="grid gap-2 xl:grid-cols-[2fr_1fr_1fr]">
           <div className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Global Situation</div>
-            <div className="h-[230px] rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black" />
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Global Situation</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    if (!yieldGeoglamRows.length || !selectedGeoglamDataset) return;
+                    const idx = yieldGeoglamRows.findIndex((row) => row.id === selectedGeoglamDataset.id);
+                    const next = idx <= 0 ? yieldGeoglamRows[yieldGeoglamRows.length - 1] : yieldGeoglamRows[idx - 1];
+                    setSelectedGeoglamId(next.id);
+                  }}
+                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Previous GEOGLAM map"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() => {
+                    if (!yieldGeoglamRows.length || !selectedGeoglamDataset) return;
+                    const idx = yieldGeoglamRows.findIndex((row) => row.id === selectedGeoglamDataset.id);
+                    const next = idx >= yieldGeoglamRows.length - 1 ? yieldGeoglamRows[0] : yieldGeoglamRows[idx + 1];
+                    setSelectedGeoglamId(next.id);
+                  }}
+                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Next GEOGLAM map"
+                >
+                  ›
+                </button>
+                <button
+                  onClick={() => setGeoglamZoom((current) => Math.max(1, Number((current - 0.2).toFixed(2))))}
+                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Zoom out"
+                >
+                  -
+                </button>
+                <button
+                  onClick={() => setGeoglamZoom((current) => Math.min(2.8, Number((current + 0.2).toFixed(2))))}
+                  className="rounded border border-border px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Zoom in"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div className="relative h-[230px] overflow-hidden rounded border border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:to-black">
+              {selectedGeoglamDataset?.thumbnailUrl ? (
+                <img
+                  src={selectedGeoglamDataset.thumbnailUrl}
+                  alt={selectedGeoglamDataset.title}
+                  className="h-full w-full object-cover transition-transform duration-200"
+                  style={{ transform: `scale(${geoglamZoom})` }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                  GEOGLAM preview unavailable for current filters
+                </div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1 text-xs text-white">
+                <a href={selectedGeoglamDataset?.sourceUrl || "#"} target="_blank" rel="noreferrer" className="line-clamp-1 hover:underline">
+                  {selectedGeoglamDataset?.title || "No GEOGLAM dataset selected"}
+                </a>
+                <div className="text-[10px] text-white/80">
+                  {selectedGeoglamDataset?.crop || "ALL"} • zoom {geoglamZoom.toFixed(1)}x
+                </div>
+              </div>
+            </div>
           </div>
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Live Feed</div>
@@ -2495,6 +2609,9 @@ export default function MonitorV3Page() {
             <span className={cn("rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em]", getStatusTone(yieldSectionStatus))}>
               {yieldSectionStatus}
             </span>
+            <span className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              {yieldFoodSecurityQuery.data?.geoglam?.note || "public geoglam + fao + wfp/wb blend"}
+            </span>
             <div className="ml-auto flex items-center gap-2">
               <select
                 value={country}
@@ -2531,21 +2648,27 @@ export default function MonitorV3Page() {
               </div>
               <div className="monitor-widget-scroll max-h-[180px] space-y-1 overflow-y-auto pr-1">
                 {yieldGeoglamRows.length > 0 ? (
-                  yieldGeoglamRows.slice(0, 8).map((row) => (
-                    <a
+                  yieldGeoglamRows.slice(0, 12).map((row) => (
+                    <button
                       key={`geoglam-${row.id}`}
-                      href={row.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block rounded border border-border px-1.5 py-1 hover:border-primary/60"
+                      onClick={() => {
+                        setSelectedGeoglamId(row.id);
+                        setGeoglamZoom(1);
+                      }}
+                      className={cn(
+                        "block w-full rounded border px-1.5 py-1 text-left",
+                        selectedGeoglamDataset?.id === row.id ? "border-cyan-400/60 bg-cyan-500/10" : "border-border hover:border-primary/60",
+                      )}
                     >
                       <div className="line-clamp-1 text-xs font-medium">{row.title}</div>
                       <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <span>{row.crop}</span>
+                        <span className="rounded border border-border px-1 py-0">{row.crop}</span>
                         <span>•</span>
-                        <span>{row.countryRelevant ? "country hit" : "global"}</span>
+                        <span className={cn(row.countryRelevant ? "text-emerald-300" : "text-muted-foreground")}>
+                          {row.countryRelevant ? "countryRelevant" : "global"}
+                        </span>
                       </div>
-                    </a>
+                    </button>
                   ))
                 ) : (
                   <div className="rounded border border-dashed border-border p-2 text-xs text-muted-foreground">
@@ -2564,13 +2687,24 @@ export default function MonitorV3Page() {
                 {yieldFaoRows.length > 0 ? (
                   yieldFaoRows.slice(0, 6).map((row, idx) => (
                     <div key={`yield-fao-${idx}`} className="rounded border border-border px-1.5 py-1">
-                      <div className="text-xs">{row.label}</div>
+                      <div className="text-xs font-medium">{row.label}</div>
                       <div className="mt-0.5 flex items-center justify-between text-xs text-muted-foreground">
                         <span>{row.value}</span>
                         <span className={cn(typeof row.deltaPct === "number" && row.deltaPct >= 0 ? "text-emerald-400" : "text-red-400")}>
                           {typeof row.deltaPct === "number" ? `${row.deltaPct >= 0 ? "+" : ""}${row.deltaPct.toFixed(2)}%` : "n/a"}
                         </span>
                       </div>
+                      {Array.isArray(row.series) && row.series.length >= 2 ? (
+                        <svg viewBox="0 0 100 100" className="mt-1 h-8 w-full">
+                          <polyline
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            points={buildMiniSparkPoints(row.series)}
+                            className="text-cyan-400"
+                          />
+                        </svg>
+                      ) : null}
                     </div>
                   ))
                 ) : (
@@ -2592,10 +2726,25 @@ export default function MonitorV3Page() {
                 {yieldStressRows.length > 0 ? (
                   yieldStressRows.slice(0, 8).map((row, idx) => (
                     <div key={`yield-stress-${idx}`} className="rounded border border-border px-1.5 py-1">
-                      <div className="line-clamp-1 text-xs">{row.label}</div>
+                      <div className="line-clamp-1 text-xs font-medium">{row.label}</div>
                       <div className="mt-0.5 flex items-center justify-between text-[10px] text-muted-foreground">
                         <span>{row.source} • {row.crop}</span>
                         <span>{row.value}</span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">USD/t norm</span>
+                        <span className="font-semibold text-foreground">
+                          {(() => {
+                            const normalized = normalizeToUsdTon({
+                              current: row.current,
+                              unit: row.unit,
+                              currency: row.currency,
+                              valueText: row.value,
+                              rates: fxQuery.data?.rates,
+                            });
+                            return normalized != null ? `${normalized.toFixed(2)} USD/t` : "n/a";
+                          })()}
+                        </span>
                       </div>
                     </div>
                   ))

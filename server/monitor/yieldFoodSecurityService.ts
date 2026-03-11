@@ -17,6 +17,7 @@ type GeoglamDataset = {
   title: string;
   crop: YieldCrop;
   sourceUrl: string;
+  thumbnailUrl?: string;
   updatedAt?: string;
   countryRelevant: boolean;
   tags: string[];
@@ -61,6 +62,9 @@ type YieldFoodSecurityPayload = {
       label: string;
       value: string;
       changePct?: number;
+      current?: number;
+      unit?: string;
+      currency?: string;
     }>;
     note: string;
   };
@@ -166,6 +170,10 @@ async function fetchGeoglamDatasets(country: string, crop: YieldCrop): Promise<Y
           title,
           crop: inferred,
           sourceUrl: `https://uofmd.maps.arcgis.com/home/item.html?id=${id}`,
+          thumbnailUrl:
+            typeof payload?.thumbnail === "string" && payload.thumbnail
+              ? `${GEOGLAM_ARCGIS_ITEMS_BASE_URL}/${id}/info/${payload.thumbnail}`
+              : undefined,
           updatedAt: typeof payload?.modified === "number" ? new Date(payload.modified).toISOString() : undefined,
           countryRelevant: countryRelevant(country, textBlob),
           tags,
@@ -278,6 +286,9 @@ function buildFoodSecurity(byKind: GrainWidgetsByKind, crop: YieldCrop) {
       label: String(row?.label || row?.id || "Market row"),
       value: row?.current != null ? `${Number(row.current).toFixed(2)} ${String(row?.unit || "")}`.trim() : "n/a",
       changePct: parseNum(row?.changePct) ?? undefined,
+      current: parseNum(row?.current) ?? undefined,
+      unit: typeof row?.unit === "string" ? row.unit : undefined,
+      currency: typeof row?.currency === "string" ? row.currency : undefined,
     })),
     note:
       stressScore != null
