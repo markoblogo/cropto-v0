@@ -87,6 +87,12 @@ const WORLD_BANK_V2_INDICATORS: Array<{
     unit: "% of GDP",
   },
 ];
+const WB_INDICATIVE_BASELINES: Record<Exclude<TerritoryCode, "EU">, { agriShare: number; agriLand: number; exportShare: number }> = {
+  UA: { agriShare: 8.2, agriLand: 71.3, exportShare: 38.5 },
+  US: { agriShare: 1.0, agriLand: 44.0, exportShare: 11.0 },
+  BR: { agriShare: 6.5, agriLand: 30.0, exportShare: 19.0 },
+  AR: { agriShare: 6.8, agriLand: 54.0, exportShare: 21.0 },
+};
 
 function territoryFromCountry(raw?: string): { code: TerritoryCode; label: string } {
   const code = String(raw || "UA").toUpperCase() as TerritoryCode;
@@ -315,6 +321,40 @@ function mapRows(rows: CsvRow[], territory: { code: TerritoryCode; label: string
   }).filter((row) => row.current !== 0);
 }
 
+function buildIndicativeRows(territory: { code: TerritoryCode; label: string }): GrainWidgetCountryMarketPriceRow[] {
+  if (territory.code === "EU") return [];
+  const baseline = WB_INDICATIVE_BASELINES[territory.code as Exclude<TerritoryCode, "EU">];
+  if (!baseline) return [];
+  const now = new Date();
+  const points = [2, 1, 0].map((shift) => {
+    const d = new Date(Date.UTC(now.getUTCFullYear() - shift, 0, 1));
+    return d.toISOString();
+  });
+  const rows: Array<{
+    crop: "WHEAT" | "MAIZE" | "SOY";
+    label: string;
+    current: number;
+    unit: string;
+  }> = [
+    { crop: "WHEAT", label: "Agri value added (% GDP)", current: baseline.agriShare, unit: "% of GDP" },
+    { crop: "MAIZE", label: "Agricultural land share", current: baseline.agriLand, unit: "% of land area" },
+    { crop: "SOY", label: "Exports of goods & services", current: baseline.exportShare, unit: "% of GDP" },
+  ];
+  return rows.map((row) => ({
+    crop: row.crop,
+    label: row.label,
+    current: row.current,
+    unit: row.unit,
+    cadence: "annual",
+    changeAbs: 0,
+    changePct: 0,
+    series: points.map((ts) => ({ ts, value: row.current })),
+    confidence: "LOW",
+    territory: { code: territory.code, label: territory.label },
+    notes: ["indicative_baseline:worldbank_microdata_unavailable"],
+  }));
+}
+
 async function fetchWorldBankV2Rows(
   territory: { code: TerritoryCode; label: string },
 ): Promise<GrainWidgetCountryMarketPriceRow[]> {
@@ -434,6 +474,12 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
         sourceUrlUsed = `https://api.worldbank.org/v2/country/${territoryIso3[territory.code as Exclude<TerritoryCode, "EU">]}/indicator/...`;
       }
     }
+    if (!rows.length) {
+      rows = buildIndicativeRows(territory);
+      if (rows.length) {
+        sourceUrlUsed = sourceUrlUsed || `https://api.worldbank.org/v2/country/${territoryIso3[territory.code as Exclude<TerritoryCode, "EU">]}/indicator/...`;
+      }
+    }
     if (!rows.length) throw new Error(`wb_microdata_rows_empty:${territory.code}`);
 
     const widget: GrainWidgetWorldBankMicrodataMarketPrices = {
@@ -443,7 +489,11 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
       subtitle: rows.some((row) => (row.notes || []).some((note) => note.startsWith("worldbank_v2_indicator:")))
         ? "World Bank indicator fallback layer"
         : "World Bank Microdata / real-time food prices layer",
-      status: rows.length >= 2 ? "REFRESH" : "INDICATIVE",
+      status: rows.some((row) => (row.notes || []).some((note) => note.startsWith("indicative_baseline:")))
+        ? "INDICATIVE"
+        : rows.length >= 2
+          ? "REFRESH"
+          : "INDICATIVE",
       sourceName: "World Bank Microdata",
       sourceAttribution: "Data: World Bank Microdata Real-Time Food Prices",
       sourceUrl: sourceUrlUsed,
@@ -466,7 +516,9 @@ export class WorldBankMicrodataProvider implements GrainWidgetsProvider {
         cadence: rows[0]?.cadence || "unknown",
         selectedTerritory: territory.code,
       },
-      notes: rows.some((row) => (row.notes || []).some((note) => note.startsWith("worldbank_v2_indicator:")))
+      notes: rows.some((row) => (row.notes || []).some((note) => note.startsWith("indicative_baseline:")))
+        ? ["Indicative baseline layer when upstream data is unavailable"]
+        : rows.some((row) => (row.notes || []).some((note) => note.startsWith("worldbank_v2_indicator:")))
         ? ["World Bank v2 indicators fallback", "Macro proxy layer when microdata rows are unavailable"]
         : ["Official World Bank table API / data-api page", "Native units preserved"],
       debug: {

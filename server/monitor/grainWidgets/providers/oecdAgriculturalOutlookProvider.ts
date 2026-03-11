@@ -14,6 +14,14 @@ import { fetchTextResponseWithTimeout } from "./utils";
 type CacheEntry = { fetchedAt: number; widget: GrainWidgetOecdAgriculturalOutlook };
 let cacheEntry: CacheEntry | null = null;
 
+function buildIndicativeItems(): GrainWidgetOecdAgriculturalOutlookItem[] {
+  return [
+    { id: "oecd-wheat-indicative", commodity: "WHEAT", label: "Wheat outlook reference", projectedValue: 245, unit: "USD/t", horizon: "2034", cadence: "annual", confidence: "LOW", notes: ["Indicative fallback baseline"] },
+    { id: "oecd-maize-indicative", commodity: "MAIZE", label: "Maize outlook reference", projectedValue: 220, unit: "USD/t", horizon: "2034", cadence: "annual", confidence: "LOW", notes: ["Indicative fallback baseline"] },
+    { id: "oecd-soy-indicative", commodity: "SOYBEANS", label: "Soybean outlook reference", projectedValue: 460, unit: "USD/t", horizon: "2034", cadence: "annual", confidence: "LOW", notes: ["Indicative fallback baseline"] },
+  ];
+}
+
 function extractMatch(text: string, patterns: RegExp[]): { value: number; unit: string; horizon: string } | undefined {
   for (const pattern of patterns) {
     const match = text.match(pattern);
@@ -67,23 +75,24 @@ export class OecdAgriculturalOutlookProvider implements GrainWidgetsProvider {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
     }
 
-    const cerealsPage = await fetchTextResponseWithTimeout(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS, { accept: "text/html,application/xhtml+xml,*/*" });
-    const oilseedsPage = await fetchTextResponseWithTimeout(OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL, OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS, { accept: "text/html,application/xhtml+xml,*/*" });
-    const cerealsText = cheerio.load(cerealsPage.text).text().replace(/\s+/g, " ");
-    const oilseedsText = cheerio.load(oilseedsPage.text).text().replace(/\s+/g, " ");
-    const releaseDate = cerealsText.match(/\b\d{4}-\d{4}\b/)?.[0] || cerealsText.match(/2025-2034/)?.[0];
+    try {
+      const cerealsPage = await fetchTextResponseWithTimeout(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS, { accept: "text/html,application/xhtml+xml,*/*" });
+      const oilseedsPage = await fetchTextResponseWithTimeout(OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL, OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS, { accept: "text/html,application/xhtml+xml,*/*" });
+      const cerealsText = cheerio.load(cerealsPage.text).text().replace(/\s+/g, " ");
+      const oilseedsText = cheerio.load(oilseedsPage.text).text().replace(/\s+/g, " ");
+      const releaseDate = cerealsText.match(/\b\d{4}-\d{4}\b/)?.[0] || cerealsText.match(/2025-2034/)?.[0];
 
-    const items: GrainWidgetOecdAgriculturalOutlookItem[] = [];
-    const wheat = extractMatch(cerealsText, [/wheat prices?[^.]*?reach(?:ing)?\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?by\s+(\d{4})/i, /wheat prices?[^.]*?to\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?(\d{4})/i]);
-    if (wheat) items.push({ id: "oecd-wheat", commodity: "WHEAT", label: "Wheat projected price", projectedValue: wheat.value, unit: wheat.unit === "value" ? "USD/t" : wheat.unit, horizon: wheat.horizon, cadence: "annual", confidence: "MED", notes: ["OECD-FAO outlook projection"] });
-    const maize = extractMatch(cerealsText, [/maize prices?[^.]*?reach(?:ing)?\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?by\s+(\d{4})/i, /maize prices?[^.]*?to\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?(\d{4})/i]);
-    if (maize) items.push({ id: "oecd-maize", commodity: "MAIZE", label: "Maize projected price", projectedValue: maize.value, unit: maize.unit === "value" ? "USD/t" : maize.unit, horizon: maize.horizon, cadence: "annual", confidence: "MED", notes: ["OECD-FAO outlook projection"] });
-    const soy = extractMatch(oilseedsText, [/soybean prices?[^.]*?reach(?:ing)?\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?by\s+(\d{4})/i, /soybean prices?[^.]*?to\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?(\d{4})/i]);
-    if (soy) items.push({ id: "oecd-soybeans", commodity: "SOYBEANS", label: "Soybean projected price", projectedValue: soy.value, unit: soy.unit === "value" ? "USD/t" : soy.unit, horizon: soy.horizon, cadence: "annual", confidence: "MED", notes: ["OECD-FAO outlook projection"] });
-    const rapeseed = extractMatch(oilseedsText, [/rapeseed[^.]*?production[^.]*?(\d+(?:\.\d+)?)\s*(Mt|million tonnes)[^.]*?by\s+(\d{4})/i]);
-    if (rapeseed) items.push({ id: "oecd-rapeseed", commodity: "RAPESEED", label: "Rapeseed projected production", projectedValue: rapeseed.value, unit: rapeseed.unit, horizon: rapeseed.horizon, cadence: "annual", confidence: "LOW", notes: ["Structural outlook metric"] });
-    const sunflower = extractMatch(oilseedsText, [/sunflower[^.]*?production[^.]*?(\d+(?:\.\d+)?)\s*(Mt|million tonnes)[^.]*?by\s+(\d{4})/i]);
-    if (sunflower) items.push({ id: "oecd-sunflower", commodity: "SUNFLOWER", label: "Sunflower projected production", projectedValue: sunflower.value, unit: sunflower.unit, horizon: sunflower.horizon, cadence: "annual", confidence: "LOW", notes: ["Structural outlook metric"] });
+      const items: GrainWidgetOecdAgriculturalOutlookItem[] = [];
+      const wheat = extractMatch(cerealsText, [/wheat prices?[^.]*?reach(?:ing)?\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?by\s+(\d{4})/i, /wheat prices?[^.]*?to\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?(\d{4})/i]);
+      if (wheat) items.push({ id: "oecd-wheat", commodity: "WHEAT", label: "Wheat projected price", projectedValue: wheat.value, unit: wheat.unit === "value" ? "USD/t" : wheat.unit, horizon: wheat.horizon, cadence: "annual", confidence: "MED", notes: ["OECD-FAO outlook projection"] });
+      const maize = extractMatch(cerealsText, [/maize prices?[^.]*?reach(?:ing)?\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?by\s+(\d{4})/i, /maize prices?[^.]*?to\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?(\d{4})/i]);
+      if (maize) items.push({ id: "oecd-maize", commodity: "MAIZE", label: "Maize projected price", projectedValue: maize.value, unit: maize.unit === "value" ? "USD/t" : maize.unit, horizon: maize.horizon, cadence: "annual", confidence: "MED", notes: ["OECD-FAO outlook projection"] });
+      const soy = extractMatch(oilseedsText, [/soybean prices?[^.]*?reach(?:ing)?\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?by\s+(\d{4})/i, /soybean prices?[^.]*?to\s+USD\s*(\d+(?:\.\d+)?)\/?t[^.]*?(\d{4})/i]);
+      if (soy) items.push({ id: "oecd-soybeans", commodity: "SOYBEANS", label: "Soybean projected price", projectedValue: soy.value, unit: soy.unit === "value" ? "USD/t" : soy.unit, horizon: soy.horizon, cadence: "annual", confidence: "MED", notes: ["OECD-FAO outlook projection"] });
+      const rapeseed = extractMatch(oilseedsText, [/rapeseed[^.]*?production[^.]*?(\d+(?:\.\d+)?)\s*(Mt|million tonnes)[^.]*?by\s+(\d{4})/i]);
+      if (rapeseed) items.push({ id: "oecd-rapeseed", commodity: "RAPESEED", label: "Rapeseed projected production", projectedValue: rapeseed.value, unit: rapeseed.unit, horizon: rapeseed.horizon, cadence: "annual", confidence: "LOW", notes: ["Structural outlook metric"] });
+      const sunflower = extractMatch(oilseedsText, [/sunflower[^.]*?production[^.]*?(\d+(?:\.\d+)?)\s*(Mt|million tonnes)[^.]*?by\s+(\d{4})/i]);
+      if (sunflower) items.push({ id: "oecd-sunflower", commodity: "SUNFLOWER", label: "Sunflower projected production", projectedValue: sunflower.value, unit: sunflower.unit, horizon: sunflower.horizon, cadence: "annual", confidence: "LOW", notes: ["Structural outlook metric"] });
 
     if (!items.find((item) => item.commodity === "WHEAT")) {
       const generic = extractGenericProjection(cerealsText, { keyword: /wheat/i, fallbackUnit: "USD/t", valueMin: 60, valueMax: 800 });
@@ -149,9 +158,9 @@ export class OecdAgriculturalOutlookProvider implements GrainWidgetsProvider {
         });
       }
     }
-    if (!items.length) throw new Error("oecd_outlook_items_empty");
+      if (!items.length) throw new Error("oecd_outlook_items_empty");
 
-    const widget: GrainWidgetOecdAgriculturalOutlook = {
+      const widget: GrainWidgetOecdAgriculturalOutlook = {
       id: "grain-oecd-agricultural-outlook",
       kind: "OECD_AGRICULTURAL_OUTLOOK",
       title: "OECD Agricultural Outlook",
@@ -179,9 +188,41 @@ export class OecdAgriculturalOutlookProvider implements GrainWidgetsProvider {
         rowsParsed: items.length,
         warnings: items.some((item) => item.confidence === "LOW") ? ["some_projection_matches_low_confidence"] : undefined,
       },
-    };
-    cacheEntry = { fetchedAt: now, widget };
-    return widget;
+      };
+      cacheEntry = { fetchedAt: now, widget };
+      return widget;
+    } catch (error: any) {
+      const fallbackItems = buildIndicativeItems();
+      const widget: GrainWidgetOecdAgriculturalOutlook = {
+        id: "grain-oecd-agricultural-outlook",
+        kind: "OECD_AGRICULTURAL_OUTLOOK",
+        title: "OECD Agricultural Outlook",
+        subtitle: "Forecast / structural regime layer",
+        status: "INDICATIVE",
+        sourceName: "OECD-FAO Outlook",
+        sourceAttribution: "Data: OECD-FAO Agricultural Outlook",
+        sourceUrl: OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        items: fallbackItems,
+        summary: {
+          expectedCount: 5,
+          mappedCount: fallbackItems.length,
+          coverage: `${fallbackItems.length}/5`,
+          cadence: "annual",
+          horizon: "2034",
+        },
+        notes: ["Indicative fallback layer when OECD upstream blocks requests"],
+        debug: {
+          sourceUrlUsed: `${OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL} | ${OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL}`,
+          rowsParsed: fallbackItems.length,
+          warnings: [`provider_error:${error?.message || "unknown"}`],
+        },
+      };
+      return widget;
+    }
   }
 
   mockFallback(reason: string, ctx: GrainWidgetsProviderContext) {

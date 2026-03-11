@@ -160,6 +160,7 @@ const STORAGE_KEYS = {
   fxPairs: `${STORAGE_PREFIX}fx_pairs`,
   renderModes: `${STORAGE_PREFIX}render_modes`,
   heroPins: `${STORAGE_PREFIX}hero_pins`,
+  liveOnly: `${STORAGE_PREFIX}live_only`,
 };
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
@@ -554,6 +555,31 @@ function cardTypeTone(cardType: CardType) {
   return "border-rose-500/60 bg-rose-500/10 text-rose-300";
 }
 
+function metricPriority(metric: { label: string; value: string; delta?: number; href?: string }, cardType: CardType) {
+  const label = (metric.label || "").toLowerCase();
+  const value = (metric.value || "").toLowerCase();
+  const numeric = parseMetricNumber(metric.value) !== null;
+  const staticish =
+    /^(note|provider|state|freshness|coverage|territory|updated|source host|http|error kind)$/.test(label) ||
+    /no usable|payload without|timestamp unavailable/.test(value);
+  let score = 0;
+  if (numeric) score += 40;
+  if (typeof metric.delta === "number") score += 14;
+  if (metric.href) score += 10;
+  if (!staticish) score += 16;
+  if (metricLooksUsable(metric)) score += 12;
+  if (cardType === "news" && metric.href) score += 14;
+  if (cardType === "table" && numeric) score += 12;
+  return score;
+}
+
+function prioritizeMetricsForCard(
+  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }>,
+  cardType: CardType,
+) {
+  return [...metrics].sort((a, b) => metricPriority(b, cardType) - metricPriority(a, cardType));
+}
+
 function parseMetricNumber(value: string): number | null {
   const match = value.replace(/,/g, ".").match(/-?\d+(\.\d+)?/);
   if (!match) return null;
@@ -715,6 +741,7 @@ export default function MonitorV3Page() {
     readJson<Record<string, RenderModeOverride>>(STORAGE_KEYS.renderModes, {}),
   );
   const [heroPins, setHeroPins] = useState<string[]>(() => readJson<string[]>(STORAGE_KEYS.heroPins, []));
+  const [showOnlyLive, setShowOnlyLive] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.liveOnly, false));
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
@@ -742,6 +769,7 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.fxPairs, fxPairs), [fxPairs]);
   useEffect(() => writeJson(STORAGE_KEYS.renderModes, renderModeById), [renderModeById]);
   useEffect(() => writeJson(STORAGE_KEYS.heroPins, heroPins), [heroPins]);
+  useEffect(() => writeJson(STORAGE_KEYS.liveOnly, showOnlyLive), [showOnlyLive]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -1098,6 +1126,7 @@ export default function MonitorV3Page() {
       .filter((widget) => {
         if (hiddenIds.includes(widget.id) && !showHidden) return false;
         if (heroPins.includes(widget.id)) return false;
+        if (showOnlyLive && widgetDataState(widget) !== "live") return false;
         if (role !== "all" && !widget.roles.includes(role)) return false;
         if (topic !== "all" && widget.topic !== topic) return false;
         if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
@@ -1124,7 +1153,7 @@ export default function MonitorV3Page() {
       if (aDelta !== bDelta) return bDelta - aDelta;
       return getStatusRank(b.status) - getStatusRank(a.status);
     });
-  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode, heroPins]);
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode, heroPins, showOnlyLive]);
 
   const heroPinnedWidgets = useMemo(
     () => heroPins.map((id) => widgetMap[id]).filter((widget): widget is GridWidget => Boolean(widget)).slice(0, 4),
@@ -1336,6 +1365,15 @@ export default function MonitorV3Page() {
             )}
           >
             Hidden {hiddenCount}
+          </button>
+          <button
+            onClick={() => setShowOnlyLive((current) => !current)}
+            className={cn(
+              "rounded border px-2 py-1 text-xs",
+              showOnlyLive ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-border text-muted-foreground",
+            )}
+          >
+            Live only {showOnlyLive ? "on" : "off"}
           </button>
           <button
             onClick={refreshAllData}
@@ -1606,13 +1644,20 @@ export default function MonitorV3Page() {
                       const modeOverride = renderModeById[widget.id] || "auto";
                       const mode: RenderMode = modeOverride === "auto" ? inferRenderMode(widget) : modeOverride;
                       const maxRows = layout.h === 2 ? 7 : 4;
-                      const rawItems = widget.metrics.slice(0, maxRows);
+                      const rawItems = prioritizeMetricsForCard(widget.metrics, cardType).slice(0, maxRows + 2);
                       const fallbackRows = buildDataFirstFallbackRows(widget, dataState, providerDebug);
                       const baseItems =
                         rawItems.length > 0
                           ? rawItems
                           : [{ label: "Status", value: isDegradedStatus(widget.status) ? "No live numeric metrics" : "No numeric metrics yet" }];
-                      const items = (fallbackRows.length > 0 ? [...fallbackRows, ...baseItems] : baseItems).slice(0, maxRows);
+                      const usableBase = baseItems.filter(metricLooksUsable);
+                      const items = (
+                        fallbackRows.length > 0
+                          ? usableBase.length > 0
+                            ? [...usableBase, ...fallbackRows]
+                            : [...fallbackRows, ...baseItems]
+                          : baseItems
+                      ).slice(0, maxRows);
                       if (mode === "list") {
                         return items.map((metric) => (
                           <button
