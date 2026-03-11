@@ -162,6 +162,40 @@ export const appSettings = pgTable("app_settings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const macroPredictionMarkets = pgTable("macro_prediction_markets", {
+  id: text("id").primaryKey(),
+  source: text("source").notNull(), // kalshi | polymarket
+  marketType: text("market_type").notNull().default("binary"),
+  question: text("question").notNull(),
+  description: text("description"),
+  category: text("category").notNull().default("other"),
+  tags: text("tags"), // JSON array string
+  region: text("region").notNull().default("GLOBAL"),
+  impliedProbability: decimal("implied_probability", { precision: 10, scale: 6 }),
+  yesPrice: decimal("yes_price", { precision: 10, scale: 6 }),
+  noPrice: decimal("no_price", { precision: 10, scale: 6 }),
+  volume24h: decimal("volume_24h", { precision: 20, scale: 4 }),
+  openInterest: decimal("open_interest", { precision: 20, scale: 4 }),
+  liquidityScore: decimal("liquidity_score", { precision: 10, scale: 6 }),
+  status: text("status").notNull().default("open"),
+  closeTime: timestamp("close_time"),
+  resolveTime: timestamp("resolve_time"),
+  raw: text("raw"),
+  scrapedAt: timestamp("scraped_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const macroRiskTimeseries = pgTable("macro_risk_timeseries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  source: text("source").notNull().default("prediction_markets"),
+  indexName: text("index_name").notNull(),
+  region: text("region").notNull().default("GLOBAL"),
+  value: decimal("value", { precision: 10, scale: 6 }).notNull(),
+  details: text("details"), // JSON object string
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const indexPrices = pgTable("index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   commodity: text("commodity").notNull(),
@@ -537,6 +571,15 @@ export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
   createdAt: true,
 });
 
+export const upsertMacroPredictionMarketSchema = createInsertSchema(macroPredictionMarkets).omit({
+  updatedAt: true,
+});
+
+export const insertMacroRiskTimeseriesSchema = createInsertSchema(macroRiskTimeseries).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
   id: true,
   createdAt: true,
@@ -644,6 +687,10 @@ export type Feedback = typeof feedback.$inferSelect;
 export type InsertAnalyticsEvent = z.infer<typeof insertAnalyticsEventSchema>;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type AppSetting = typeof appSettings.$inferSelect;
+export type MacroPredictionMarket = typeof macroPredictionMarkets.$inferSelect;
+export type UpsertMacroPredictionMarket = z.infer<typeof upsertMacroPredictionMarketSchema>;
+export type MacroRiskTimeseries = typeof macroRiskTimeseries.$inferSelect;
+export type InsertMacroRiskTimeseries = z.infer<typeof insertMacroRiskTimeseriesSchema>;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
 export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;

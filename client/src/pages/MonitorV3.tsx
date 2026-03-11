@@ -103,6 +103,52 @@ type FxResponse = {
   rates?: Array<{ currency: string; usdPerUnit: number }>;
 };
 
+type PredictionRiskIndex = {
+  key: "inflation_risk" | "rates_risk" | "geopolitics_risk" | "grain_risk";
+  label: string;
+  value: number | null;
+  contributors: number;
+  totalWeight: number;
+};
+
+type PredictionMarketRow = {
+  id: string;
+  source: "kalshi" | "polymarket";
+  question: string;
+  impliedProbability: number;
+  volume24h: number;
+  liquidityScore: number;
+  closeTime?: string;
+  region: string;
+  tags: string[];
+};
+
+type PredictionMarketsResponse = {
+  generatedAt?: string;
+  cacheHit?: boolean;
+  marketCount?: number;
+  indices?: PredictionRiskIndex[];
+  directGrainMarkets?: PredictionMarketRow[];
+  sources?: {
+    kalshi?: { ok: boolean; count: number; error?: string };
+    polymarket?: { ok: boolean; count: number; error?: string };
+  };
+};
+
+type PredictionRiskTrendsResponse = {
+  generatedAt?: string;
+  hours?: number;
+  byIndex?: Record<
+    "inflation_risk" | "rates_risk" | "geopolitics_risk" | "grain_risk",
+    {
+      latest: number | null;
+      delta24h: number | null;
+      delta7d: number | null;
+      points: Array<{ ts: string; value: number }>;
+    }
+  >;
+};
+
 type GridWidget = {
   id: string;
   title: string;
@@ -865,6 +911,24 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const predictionMarketsQuery = useQuery<PredictionMarketsResponse>({
+    queryKey: ["monitor-v3-prediction-markets"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/prediction-markets");
+      if (!response.ok) throw new Error("Failed to load prediction markets");
+      return response.json();
+    },
+  });
+  const predictionTrendsQuery = useQuery<PredictionRiskTrendsResponse>({
+    queryKey: ["monitor-v3-prediction-risk-trends"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/prediction-risk-trends?hours=168");
+      if (!response.ok) throw new Error("Failed to load prediction risk trends");
+      return response.json();
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1085,15 +1149,21 @@ export default function MonitorV3Page() {
       {
         id: "SYS_MARKET_SENTIMENT",
         title: "Market Sentiment",
-        subtitle: "BTC / Gold / Oil proxy basket",
-        status: sentimentItems.length ? "REFRESH" : "INDICATIVE",
-        source: "Indices aggregate",
+        subtitle: "Prediction markets macro risk layer",
+        status: (predictionMarketsQuery.data?.indices?.length || 0) > 0 ? "REFRESH" : (sentimentItems.length ? "INDICATIVE" : "OFFLINE"),
+        source: "Kalshi + Polymarket",
         topic: "markets",
         roles: ["farmer", "trader", "broker"],
         territory: "GLOBAL",
-        metrics: sentimentItems.length
-          ? sentimentItems.map((item) => ({ label: item.name, value: formatMetric(item.value, "pts"), delta: item.change }))
-          : marketSentimentFallback.length
+        metrics: (predictionMarketsQuery.data?.indices || []).length > 0
+          ? (predictionMarketsQuery.data?.indices || []).map((item) => ({
+              label: item.label,
+              value: item.value != null ? `${(item.value * 100).toFixed(1)}%` : "n/a",
+              delta: undefined,
+            }))
+          : sentimentItems.length
+            ? sentimentItems.map((item) => ({ label: item.name, value: formatMetric(item.value, "pts"), delta: item.change }))
+            : marketSentimentFallback.length
             ? marketSentimentFallback.map((item) => ({
                 label: item.title,
                 value: formatMetric(item.valueCurrent, `${item.currency || ""}/${item.unit || ""}`),
@@ -1104,8 +1174,8 @@ export default function MonitorV3Page() {
       {
         id: "SYS_MACRO_PULSE",
         title: "Macro Pulse",
-        subtitle: "Signal + flow aggregate",
-        status: "REFRESH",
+        subtitle: "Signals + prediction market pulse",
+        status: (predictionMarketsQuery.data?.marketCount || 0) > 0 ? "REFRESH" : "INDICATIVE",
         source: "Cropto monitor",
         topic: "policy",
         roles: ["farmer", "trader", "broker"],
@@ -1113,8 +1183,63 @@ export default function MonitorV3Page() {
         metrics: [
           { label: "Signal volume 24h", value: String(feedItems.length) },
           { label: "Top priority count", value: String(topSignalItems.length) },
-          { label: "FX mode", value: fxQuery.data?.mode || "n/a" },
+          { label: "Prediction markets", value: String(predictionMarketsQuery.data?.marketCount || 0) },
+          {
+            label: "Providers",
+            value: `K:${predictionMarketsQuery.data?.sources?.kalshi?.count || 0} P:${predictionMarketsQuery.data?.sources?.polymarket?.count || 0}`,
+          },
         ],
+      },
+      {
+        id: "SYS_DIRECT_GRAIN_PREDICTION",
+        title: "Direct Grain Prediction Markets",
+        subtitle: "Open grain/oilseed contracts from Kalshi & Polymarket",
+        status: (predictionMarketsQuery.data?.directGrainMarkets?.length || 0) > 0 ? "INDICATIVE" : "OFFLINE",
+        source: "Kalshi + Polymarket",
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: (predictionMarketsQuery.data?.directGrainMarkets || []).length > 0
+          ? (predictionMarketsQuery.data?.directGrainMarkets || []).slice(0, 8).map((row) => ({
+              label: `${row.source.toUpperCase()} ${row.region}`,
+              value: `${row.question} • ${row.impliedProbability.toFixed(1)}% • vol ${Math.round(row.volume24h)}`,
+            }))
+          : [{ label: "Status", value: "No direct grain prediction contracts in current snapshot" }],
+      },
+      {
+        id: "SYS_PREDICTION_RISK_TRENDS",
+        title: "Prediction Risk Trends 24h/7d",
+        subtitle: "Timeseries from persisted macro_risk_timeseries",
+        status: predictionTrendsQuery.data?.byIndex ? "REFRESH" : "INDICATIVE",
+        source: "Prediction timeseries",
+        topic: "policy",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: ([
+          { key: "inflation_risk", label: "Inflation Risk" },
+          { key: "rates_risk", label: "Rates Risk" },
+          { key: "geopolitics_risk", label: "Geopolitics Risk" },
+          { key: "grain_risk", label: "Grain Risk" },
+        ] as const).map((item) => {
+          const trend = predictionTrendsQuery.data?.byIndex?.[item.key];
+          const latest = trend?.latest;
+          const d24 = trend?.delta24h;
+          const d7 = trend?.delta7d;
+          const series = Array.isArray(trend?.points)
+            ? trend?.points.map((point: { ts: string; value: number }) => Number(point.value) * 100).filter(Number.isFinite)
+            : [];
+          const parts: string[] = [];
+          if (latest != null && Number.isFinite(latest)) parts.push(`${(latest * 100).toFixed(1)}%`);
+          if (d24 != null && Number.isFinite(d24)) parts.push(`24h ${d24 >= 0 ? "+" : ""}${(d24 * 100).toFixed(1)}pp`);
+          if (d7 != null && Number.isFinite(d7)) parts.push(`7d ${d7 >= 0 ? "+" : ""}${(d7 * 100).toFixed(1)}pp`);
+          return {
+            label: item.label,
+            value: parts.length > 0 ? parts.join(" | ") : "n/a",
+            delta: typeof d24 === "number" ? d24 * 100 : undefined,
+            deltaFormat: "abs" as const,
+            series,
+          };
+        }),
       },
     ];
 
@@ -1130,7 +1255,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1232,7 +1357,9 @@ export default function MonitorV3Page() {
     logisticsQuery.dataUpdatedAt,
     indicesQuery.dataUpdatedAt,
     fxQuery.dataUpdatedAt,
+    predictionMarketsQuery.dataUpdatedAt,
     activationQuery.dataUpdatedAt,
+    predictionTrendsQuery.dataUpdatedAt,
   ].join(":");
   const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
   const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
@@ -1295,6 +1422,8 @@ export default function MonitorV3Page() {
         logisticsQuery.refetch(),
         indicesQuery.refetch(),
         fxQuery.refetch(),
+        predictionMarketsQuery.refetch(),
+        predictionTrendsQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);

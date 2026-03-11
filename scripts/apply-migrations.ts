@@ -87,6 +87,7 @@ async function main() {
       '011_market_price_ingestion.sql',
       '012_ingestion_fx_and_identity.sql',
       '013_extend_user_role_broker.sql',
+      '014_prediction_markets.sql',
     ];
 
     let successCount = 0;

@@ -87,6 +87,8 @@ import { GrainMarketsService } from "./grainMarkets";
 import { GrainWidgetsService } from "./grainWidgets";
 import { LogisticsIndicatorsService } from "./logisticsIndicators";
 import { capBySource, filterMonitorNews, getMonitorNews, topSignals } from "./newsService";
+import { getPredictionMarketsSnapshot } from "./predictionMarketsService";
+import { getPredictionRiskTrends, startPredictionMarketsScheduler } from "./predictionMarketsPersistence";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -409,6 +411,7 @@ export function registerMonitorRoutes(app: Express): void {
   logisticsIndicatorsService.start();
   grainMarketsService.start();
   grainWidgetsService.start();
+  startPredictionMarketsScheduler();
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
@@ -526,6 +529,44 @@ export function registerMonitorRoutes(app: Express): void {
         mode: "coming_soon",
         message: "FX snapshot temporarily unavailable",
         rates: [],
+      });
+    }
+  });
+
+  app.get("/api/monitor/prediction-markets", async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === "1";
+      const payload = await getPredictionMarketsSnapshot(forceRefresh);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        source: "kalshi+polymarket",
+        cacheHit: false,
+        marketCount: 0,
+        sources: {
+          kalshi: { ok: false, count: 0, error: "unavailable" },
+          polymarket: { ok: false, count: 0, error: "unavailable" },
+        },
+        indices: [],
+        directGrainMarkets: [],
+        message: error?.message || "Failed to load prediction markets",
+      });
+    }
+  });
+
+  app.get("/api/monitor/prediction-risk-trends", async (req, res) => {
+    try {
+      const hoursRaw = typeof req.query.hours === "string" ? Number.parseInt(req.query.hours, 10) : 168;
+      const payload = await getPredictionRiskTrends(Number.isFinite(hoursRaw) ? hoursRaw : 168);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        hours: 168,
+        keys: ["inflation_risk", "rates_risk", "geopolitics_risk", "grain_risk"],
+        byIndex: {},
+        message: error?.message || "Failed to load prediction risk trends",
       });
     }
   });
