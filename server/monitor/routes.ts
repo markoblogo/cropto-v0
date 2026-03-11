@@ -90,6 +90,7 @@ import { capBySource, filterMonitorNews, getMonitorNews, topSignals } from "./ne
 import { getPredictionMarketsSnapshot } from "./predictionMarketsService";
 import { getPredictionRiskTrends, startPredictionMarketsScheduler } from "./predictionMarketsPersistence";
 import { getAgroExpectationsSnapshot } from "./agroExpectationsService";
+import { getAgroCompositeTrends, getCgoWeightsSnapshot, startAgroExpectationsScheduler } from "./agroExpectationsPersistence";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
@@ -413,6 +414,7 @@ export function registerMonitorRoutes(app: Express): void {
   grainMarketsService.start();
   grainWidgetsService.start();
   startPredictionMarketsScheduler();
+  startAgroExpectationsScheduler();
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
@@ -601,6 +603,41 @@ export function registerMonitorRoutes(app: Express): void {
             note: "Composite unavailable",
           },
         },
+      });
+    }
+  });
+
+  app.get("/api/monitor/agro-composite-trends", async (req, res) => {
+    try {
+      const hoursRaw = typeof req.query.hours === "string" ? Number.parseInt(req.query.hours, 10) : 168;
+      const region = typeof req.query.region === "string" ? req.query.region.toUpperCase() : "GLOBAL";
+      const payload = await getAgroCompositeTrends(Number.isFinite(hoursRaw) ? hoursRaw : 168, region);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        hours: 168,
+        region: "GLOBAL",
+        byIndex: {},
+        message: error?.message || "Failed to load agro composite trends",
+      });
+    }
+  });
+
+  app.get("/api/monitor/cgo-weights", async (req, res) => {
+    try {
+      const yearRaw = typeof req.query.year === "string" ? Number.parseInt(req.query.year, 10) : new Date().getUTCFullYear();
+      const region = typeof req.query.region === "string" ? req.query.region.toUpperCase() : "GLOBAL";
+      const year = Number.isFinite(yearRaw) ? yearRaw : new Date().getUTCFullYear();
+      const payload = await getCgoWeightsSnapshot(year, region);
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        year: new Date().getUTCFullYear(),
+        region: "GLOBAL",
+        rows: [],
+        message: error?.message || "Failed to load CGO weights",
       });
     }
   });

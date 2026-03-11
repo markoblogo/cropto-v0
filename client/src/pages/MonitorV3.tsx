@@ -185,6 +185,28 @@ type AgroExpectationsResponse = {
   };
 };
 
+type AgroCompositeTrendsResponse = {
+  generatedAt?: string;
+  hours?: number;
+  region?: string;
+  byIndex?: Record<
+    "cgo_basic" | "cgo_ext",
+    {
+      latest: number | null;
+      delta24h: number | null;
+      delta7d: number | null;
+      points: Array<{ ts: string; value: number }>;
+    }
+  >;
+};
+
+type CgoWeightsResponse = {
+  generatedAt?: string;
+  year?: number;
+  region?: string;
+  rows?: Array<{ commodity: string; weight: number; source?: string; updatedAt?: string }>;
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 
@@ -987,6 +1009,25 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const agroCompositeTrendsQuery = useQuery<AgroCompositeTrendsResponse>({
+    queryKey: ["monitor-v3-agro-composite-trends", "GLOBAL"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/agro-composite-trends?hours=168&region=GLOBAL");
+      if (!response.ok) throw new Error("Failed to load agro composite trends");
+      return response.json();
+    },
+  });
+  const cgoWeightsQuery = useQuery<CgoWeightsResponse>({
+    queryKey: ["monitor-v3-cgo-weights", "GLOBAL"],
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const year = new Date().getUTCFullYear();
+      const response = await fetch(`/api/monitor/cgo-weights?year=${year}&region=GLOBAL`);
+      if (!response.ok) throw new Error("Failed to load cgo weights");
+      return response.json();
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1317,7 +1358,7 @@ export default function MonitorV3Page() {
         subtitle: "40/30/30 CORN-WEAT-SOYB normalized basket",
         status: (agroExpectationsQuery.data?.etfProxies?.status || "CONSTRAINED").toUpperCase(),
         source: "Cropto composite",
-        updatedAt: agroExpectationsQuery.data?.generatedAt,
+        updatedAt: agroCompositeTrendsQuery.data?.generatedAt || agroExpectationsQuery.data?.generatedAt,
         topic: "markets",
         roles: ["farmer", "trader", "broker"],
         territory: "GLOBAL",
@@ -1325,29 +1366,83 @@ export default function MonitorV3Page() {
           {
             label: "CGO Index",
             value:
-              typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.value === "number"
-                ? `${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.value.toFixed(2)} pts`
+              typeof agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.latest === "number"
+                ? `${agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.latest.toFixed(2)} pts`
+                : typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.value === "number"
+                  ? `${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.value.toFixed(2)} pts`
+                  : "n/a",
+            delta:
+              typeof agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.delta24h === "number"
+                ? agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.delta24h
+                : typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.dayChangePct === "number"
+                  ? agroExpectationsQuery.data?.etfProxies?.cgoComposite?.dayChangePct
+                  : undefined,
+            series:
+              Array.isArray(agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.points) &&
+              (agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.points?.length || 0) >= 2
+                ? agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.points.map((point) => point.value)
+                : Array.isArray(agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series) &&
+                    (agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series?.length || 0) >= 2
+                  ? agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series
+                  : undefined,
+          },
+          {
+            label: "7d Delta",
+            value:
+              typeof agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.delta7d === "number"
+                ? `${agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.delta7d >= 0 ? "+" : ""}${agroCompositeTrendsQuery.data?.byIndex?.cgo_basic?.delta7d.toFixed(2)} pts`
+                : typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct === "number"
+                  ? `${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct >= 0 ? "+" : ""}${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct.toFixed(2)}%`
+                  : "n/a",
+          },
+          {
+            label: "Mode",
+            value: "basic 40/30/30",
+          },
+        ],
+      },
+      {
+        id: "SYS_CGO_EXT",
+        title: "CGO Ext (World Weights)",
+        subtitle: "FAO/USDA-aligned extended proxy basket",
+        status: agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.latest != null ? "INDICATIVE" : "CONSTRAINED",
+        source: "Cropto composite ext",
+        updatedAt: agroCompositeTrendsQuery.data?.generatedAt || agroExpectationsQuery.data?.generatedAt,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: [
+          {
+            label: "CGO Ext",
+            value:
+              typeof agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.latest === "number"
+                ? `${agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.latest.toFixed(2)} pts`
                 : "n/a",
             delta:
-              typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.dayChangePct === "number"
-                ? agroExpectationsQuery.data?.etfProxies?.cgoComposite?.dayChangePct
+              typeof agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.delta24h === "number"
+                ? agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.delta24h
                 : undefined,
+            deltaFormat: "abs",
             series:
-              Array.isArray(agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series) &&
-              (agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series?.length || 0) >= 2
-                ? agroExpectationsQuery.data?.etfProxies?.cgoComposite?.series
+              Array.isArray(agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.points) &&
+              (agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.points?.length || 0) >= 2
+                ? agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.points.map((point) => point.value)
                 : undefined,
           },
           {
-            label: "30d Change",
+            label: "7d Delta",
             value:
-              typeof agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct === "number"
-                ? `${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct >= 0 ? "+" : ""}${agroExpectationsQuery.data?.etfProxies?.cgoComposite?.d30ChangePct.toFixed(2)}%`
+              typeof agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.delta7d === "number"
+                ? `${agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.delta7d >= 0 ? "+" : ""}${agroCompositeTrendsQuery.data?.byIndex?.cgo_ext?.delta7d.toFixed(2)} pts`
                 : "n/a",
           },
           {
             label: "Weights",
-            value: "CORN 40 | WEAT 30 | SOYB 30",
+            value:
+              (cgoWeightsQuery.data?.rows || [])
+                .slice(0, 3)
+                .map((row) => `${String(row.commodity).toUpperCase()}:${Math.round((row.weight || 0) * 100)}%`)
+                .join(" | ") || "seed defaults",
           },
         ],
       },
@@ -1416,7 +1511,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -1530,6 +1625,8 @@ export default function MonitorV3Page() {
     activationQuery.dataUpdatedAt,
     predictionTrendsQuery.dataUpdatedAt,
     agroExpectationsQuery.dataUpdatedAt,
+    agroCompositeTrendsQuery.dataUpdatedAt,
+    cgoWeightsQuery.dataUpdatedAt,
   ].join(":");
   const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
   const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
@@ -1595,6 +1692,8 @@ export default function MonitorV3Page() {
         predictionMarketsQuery.refetch(),
         predictionTrendsQuery.refetch(),
         agroExpectationsQuery.refetch(),
+        agroCompositeTrendsQuery.refetch(),
+        cgoWeightsQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);

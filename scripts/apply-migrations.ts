@@ -89,6 +89,7 @@ async function main() {
       '013_extend_user_role_broker.sql',
       '014_prediction_markets.sql',
       '015_prediction_markets_quality.sql',
+      '016_agro_expectations.sql',
     ];
 
     let successCount = 0;

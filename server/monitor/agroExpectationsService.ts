@@ -8,21 +8,23 @@ const STOOQ_SYMBOLS = ["corn.us", "weat.us", "soyb.us", "dba.us", "tags.us"] as 
 
 type SeriesPoint = { ts: string; value: number };
 
-type EftRow = {
+export type AgroExpectationStatus = "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+
+export type EtfRow = {
   symbol: string;
   label: string;
   price: number | null;
   dayChangePct: number | null;
   d30ChangePct: number | null;
   series: number[];
-  status: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+  status: AgroExpectationStatus;
 };
 
-type AgroExpectationsPayload = {
+export type AgroExpectationsPayload = {
   generatedAt: string;
   cacheHit: boolean;
   barometer: {
-    status: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
+    status: AgroExpectationStatus;
     source: string;
     updatedAt?: string;
     agEconomy: number | null;
@@ -31,8 +33,8 @@ type AgroExpectationsPayload = {
     note?: string;
   };
   etfProxies: {
-    status: "REFRESH" | "INDICATIVE" | "CONSTRAINED";
-    rows: EftRow[];
+    status: AgroExpectationStatus;
+    rows: EtfRow[];
     cgoComposite: {
       value: number | null;
       dayChangePct: number | null;
@@ -98,14 +100,14 @@ function toSeries(values: SeriesPoint[], limit = 14): number[] {
   return values.slice(-limit).map((point) => Number(point.value.toFixed(4)));
 }
 
-function statusForRows(rows: EftRow[]): "REFRESH" | "INDICATIVE" | "CONSTRAINED" {
+function statusForRows(rows: EtfRow[]): AgroExpectationStatus {
   const live = rows.filter((row) => row.status === "REFRESH").length;
   if (live >= 3) return "REFRESH";
   if (rows.some((row) => row.status !== "CONSTRAINED")) return "INDICATIVE";
   return "CONSTRAINED";
 }
 
-function buildComposite(rows: EftRow[]) {
+function buildComposite(rows: EtfRow[]) {
   const bySymbol = Object.fromEntries(rows.map((row) => [row.symbol, row]));
   const weights = { CORN: 0.4, WEAT: 0.3, SOYB: 0.3 };
   const corn = bySymbol.CORN;
@@ -132,7 +134,7 @@ function buildComposite(rows: EftRow[]) {
   const w0 = w[0] || 1;
   const s0 = s[0] || 1;
 
-  const composite = c.map((_, idx) => {
+  const composite = c.map((_: number, idx: number) => {
     const cRel = c[idx] / c0;
     const wRel = w[idx] / w0;
     const sRel = s[idx] / s0;
@@ -196,7 +198,7 @@ export async function getAgroExpectationsSnapshot(forceRefresh = false): Promise
     };
   }
 
-  const rows: EftRow[] = [];
+  const rows: EtfRow[] = [];
   await Promise.all(
     STOOQ_SYMBOLS.map(async (symbol) => {
       const upper = symbol.replace(".us", "").toUpperCase();

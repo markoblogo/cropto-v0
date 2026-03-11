@@ -199,6 +199,28 @@ export const macroRiskTimeseries = pgTable("macro_risk_timeseries", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const cgoWeights = pgTable("cgo_weights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  year: integer("year").notNull(),
+  region: text("region").notNull().default("GLOBAL"),
+  commodity: text("commodity").notNull(),
+  weight: decimal("weight", { precision: 12, scale: 8 }).notNull(),
+  source: text("source").notNull().default("seed"),
+  meta: text("meta"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const agroCompositeTimeseries = pgTable("agro_composite_timeseries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  source: text("source").notNull().default("agro_expectations"),
+  indexName: text("index_name").notNull(),
+  region: text("region").notNull().default("GLOBAL"),
+  value: decimal("value", { precision: 14, scale: 6 }).notNull(),
+  details: text("details"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const indexPrices = pgTable("index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   commodity: text("commodity").notNull(),
