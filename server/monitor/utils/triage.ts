@@ -4,6 +4,8 @@ import {
   AMIS_TIMEOUT_MS,
   CANADA_RAIL_PRODUCT_ID,
   CANADA_RAIL_WDS_BASE_URL,
+  DBNOMICS_API_BASE_URL,
+  DBNOMICS_TIMEOUT_MS,
   EC_AGRI_API_BASE_URL,
   EC_AGRI_TIMEOUT_MS,
   EC_CEREALS_API_PATH,
@@ -57,6 +59,7 @@ import {
   OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
   OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
 } from "../grainWidgets/config";
+import { probeDbnomicsCore10 } from "../grainWidgets/providers/dbNomicsCoreRegistry";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "../grainWidgets/providers/fpmaDiscovery";
 import { fetchWithHeaders } from "../grainWidgets/providers/utils";
 
@@ -449,6 +452,25 @@ function providerSuggestedFix(args: {
     }
   }
 
+  if (args.providerId === "dbnomics-core10") {
+    if (args.errorKind === "CONFIG_MISSING") {
+      severity = "BLOCKER";
+      type = "SET_ENV";
+      envKeys = ["DBNOMICS_API_BASE_URL"];
+      exampleValues = ["https://api.db.nomics.world/v22"];
+      why = "Core 10 validation cannot run because DBnomics base URL is missing.";
+      actions.length = 0;
+      actions.push("Set DBNOMICS_API_BASE_URL and verify /api/monitor/activation-report?deep=1.");
+    } else if (args.errorKind && args.errorKind !== "UNKNOWN") {
+      severity = "WARN";
+      type = "CHANGE_CONFIG";
+      why = "Some Core 10 DBnomics series are not ready.";
+      actions.length = 0;
+      actions.push("Check dbnomicsCore10 items in activation-report and replace failed series IDs in the Core 10 registry.");
+      actions.push("Keep IMF/WB fallback widgets enabled while Core 10 readiness is below target.");
+    }
+  }
+
   if (args.providerId === "fpma-market-prices" && args.errorKind === "PARSE") {
     severity = "WARN";
     type = "CHANGE_CONFIG";
@@ -550,6 +572,7 @@ function providerSuggestedFix(args: {
 }
 
 type TargetProviderId =
+  | "dbnomics-core10"
   | "fpma-market-prices"
   | "faostat-pp"
   | "usda-gtr-logistics"
@@ -568,6 +591,7 @@ type TargetProviderId =
   | "oecd-agricultural-outlook";
 
 const TARGETS: Array<{ providerId: TargetProviderId; widgetKind: string; expectedCount: number }> = [
+  { providerId: "dbnomics-core10", widgetKind: "GLOBAL_SPOT_TABLE", expectedCount: 10 },
   { providerId: "fpma-market-prices", widgetKind: "FPMA_MARKET_PRICES_MULTI_COUNTRY", expectedCount: 5 },
   { providerId: "faostat-pp", widgetKind: "FAOSTAT_PP_MULTI_COUNTRY", expectedCount: 5 },
   { providerId: "usda-gtr-logistics", widgetKind: "USDA_GTR_LOGISTICS_SNAPSHOT", expectedCount: 2 },
@@ -646,6 +670,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     ENABLE_CANADA_GRAIN_RAIL_WIDGET,
     ENABLE_USDA_GTR_LOGISTICS_WIDGET,
     ENABLE_USDA_MARS_DAILY_TXT,
+    DBNOMICS_API_BASE_URL: DBNOMICS_API_BASE_URL ? "present" : "missing",
     EC_AGRI_API_BASE_URL: EC_AGRI_API_BASE_URL ? "present" : "missing",
     FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
     FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
@@ -688,6 +713,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     marsIndexUrl;
 
   const [
+    dbnomicsCore10Probe,
     ecCereals,
     ecOilseeds,
     fpma,
@@ -706,6 +732,22 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     oecd,
     canadaRail,
   ] = await Promise.all([
+    withQuickBudget(
+      probeDbnomicsCore10({
+        baseUrl: DBNOMICS_API_BASE_URL,
+        timeoutMs: clampReportProbeTimeout(DBNOMICS_TIMEOUT_MS),
+      }),
+      () => ({
+        items: [],
+        summary: {
+          total: 10,
+          ready: 0,
+          coverage: "0/10",
+          status: "CONSTRAINED" as const,
+          errorKind: "UNKNOWN" as const,
+        },
+      }),
+    ),
     safeProbe(`${EC_AGRI_API_BASE_URL.replace(/\/+$/, "")}/${EC_CEREALS_API_PATH.replace(/^\/+/, "")}/products`, {
       configMissing: !EC_AGRI_API_BASE_URL,
       timeoutMs: clampReportProbeTimeout(EC_AGRI_TIMEOUT_MS),
@@ -785,6 +827,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
   ]);
 
   const probes = {
+    dbnomicsCore10: dbnomicsCore10Probe.summary,
     ecCereals,
     ecOilseeds,
     fpma,
@@ -808,6 +851,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     const provider = providers.find((item: any) => item.providerId === providerId);
     const widget = byKind[widgetKind] as any;
     const configMissing =
+      (providerId === "dbnomics-core10" && !DBNOMICS_API_BASE_URL) ||
       (providerId === "fpma-market-prices" && !FPMA_API_BASE_URL) ||
       (providerId === "faostat-pp" && !FAOSTAT_BASE_URL) ||
       (providerId === "usda-gtr-logistics" && USDA_GTR_DATASET_URLS.length === 0) ||
@@ -819,8 +863,23 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       (providerId === "wfp-databridges" && !WFP_DATABRIDGES_BASE_URL) ||
       (providerId === "worldbank-microdata" && !WB_MICRODATA_BASE_URL) ||
       (providerId === "eurostat-agri-indices" && !EUROSTAT_BASE_URL);
+    const core10ErrorKind: TriageErrorKind | undefined =
+      dbnomicsCore10Probe.summary.errorKind === "PARSE_ERROR"
+        ? "PARSE"
+        : dbnomicsCore10Probe.summary.errorKind === "EMPTY_DATA"
+          ? "EMPTY"
+        : dbnomicsCore10Probe.summary.errorKind;
+
     const probeMatch =
-      providerId === "ec-cereals-prices" ? probes.ecCereals :
+      providerId === "dbnomics-core10"
+        ? {
+            url: `${DBNOMICS_API_BASE_URL.replace(/\/+$/, "")}/datasets/IMF/PCPS`,
+            ok: dbnomicsCore10Probe.summary.ready > 0,
+            elapsedMs: 0,
+            errorKind: core10ErrorKind,
+            errorMessage: dbnomicsCore10Probe.summary.errorKind ? `core10_${String(dbnomicsCore10Probe.summary.errorKind).toLowerCase()}` : undefined,
+          }
+      : providerId === "ec-cereals-prices" ? probes.ecCereals :
       providerId === "ec-oilseeds-prices" ? probes.ecOilseeds :
       providerId === "fpma-market-prices" ? probes.fpma :
       providerId === "faostat-pp" ? probes.faostat :
@@ -849,14 +908,22 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       configMissing,
     });
     const errorMessageShort = shortMessage(lastError?.message);
-    const sourceUrlUsed = redactUrl(provider?.downloadUrlUsed || provider?.sourceUrlUsed || widget?.debug?.downloadUrlUsed || widget?.debug?.sourceUrlUsed || widget?.sourceUrl);
-    const coverage = provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCount}`;
+    const sourceUrlUsed = providerId === "dbnomics-core10"
+      ? `${DBNOMICS_API_BASE_URL.replace(/\/+$/, "")}/datasets/IMF/PCPS`
+      : redactUrl(provider?.downloadUrlUsed || provider?.sourceUrlUsed || widget?.debug?.downloadUrlUsed || widget?.debug?.sourceUrlUsed || widget?.sourceUrl);
+    const coverage = providerId === "dbnomics-core10"
+      ? dbnomicsCore10Probe.summary.coverage
+      : provider?.coverage || `${provider?.mappedCount ?? 0}/${provider?.expectedCount ?? expectedCount}`;
     const notes = Array.isArray(provider?.notes) ? provider.notes : Array.isArray(widget?.notes) ? widget.notes : [];
 
-    const mappedCount = provider?.mappedCount ?? 0;
+    const mappedCount = providerId === "dbnomics-core10"
+      ? dbnomicsCore10Probe.summary.ready
+      : (provider?.mappedCount ?? 0);
     const normalizedStatus = normalizeTriageStatus(
       providerId,
-      String(widget?.status || provider?.status || "OFFLINE"),
+      providerId === "dbnomics-core10"
+        ? dbnomicsCore10Probe.summary.status
+        : String(widget?.status || provider?.status || "OFFLINE"),
       mappedCount,
     );
 
@@ -869,15 +936,23 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       errorKind: refinedErrorKind,
       errorMessageShort,
       sourceUrlUsed,
-      fallbackChainUsed: provider?.fallbackChain || "real->cache->mock",
-      lastFetchAt: provider?.lastSuccessAt || provider?.lastAttemptAt,
+      fallbackChainUsed: providerId === "dbnomics-core10" ? "registry_probe" : (provider?.fallbackChain || "real->cache->mock"),
+      lastFetchAt: providerId === "dbnomics-core10" ? nowIso : (provider?.lastSuccessAt || provider?.lastAttemptAt),
       suggestedFix: providerSuggestedFix({
         providerId,
         errorKind: refinedErrorKind,
         errorMessage: lastError?.message || probeMatch?.errorMessage,
         sourceUrlUsed,
         downloadUrlUsed: redactUrl(provider?.downloadUrlUsed || widget?.debug?.downloadUrlUsed),
-        notes,
+        notes: providerId === "dbnomics-core10"
+          ? [
+              ...notes,
+              ...dbnomicsCore10Probe.items
+                .filter((item) => item.status !== "READY")
+                .slice(0, 4)
+                .map((item) => `${item.id}:${item.status}${item.errorKind ? `:${item.errorKind}` : ""}`),
+            ]
+          : notes,
         configMissing,
       }),
     };

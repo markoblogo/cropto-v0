@@ -97,6 +97,7 @@ import { getGlobalIndicesSnapshot } from "./globalIndicesService";
 import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndicesPersistence";
 import { getYieldFoodSecuritySnapshot } from "./yieldFoodSecurityService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
+import { probeDbnomicsCore10 } from "./grainWidgets/providers/dbNomicsCoreRegistry";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
 
@@ -1091,7 +1092,7 @@ export function registerMonitorRoutes(app: Express): void {
         return mappedCount > 0 ? "INDICATIVE" : "CONSTRAINED";
       };
 
-      const providerReport = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "wfp-databridges", "worldbank-microdata", "eurostat-agri-indices", "usda-psd", "amis-outlook", "imf-pcps", "oecd-agricultural-outlook", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
+      const providerReport: any[] = ["dbnomics-worldbank", "fao-ffpi", "usda-mars-public", "us-cash-export-context", "usda-mars-daily-txt", "alpha-vantage-commodities", "nasdaq-datalink", "ec-cereals-prices", "ec-oilseeds-prices", "usda-nass-quickstats", "wfp-databridges", "worldbank-microdata", "eurostat-agri-indices", "usda-psd", "amis-outlook", "imf-pcps", "oecd-agricultural-outlook", "usda-gtr-logistics", "canada-grain-rail-performance", "faostat-pp", "fpma-market-prices"].map((providerId) => {
         const provider = providers.find((item: any) => item.providerId === providerId);
         const kind = providerToKind[providerId];
         const widget = byKind[kind] as any;
@@ -1174,6 +1175,54 @@ export function registerMonitorRoutes(app: Express): void {
               : []),
           ],
         };
+      });
+
+      const dbnomicsCore10 = await withQuickReportBudget(
+        probeDbnomicsCore10({
+          baseUrl: DBNOMICS_API_BASE_URL,
+          timeoutMs: Math.min(GRAIN_WIDGETS_FETCH_TIMEOUT_MS, REPORT_PROBE_TIMEOUT_MS),
+        }),
+        () => ({
+          items: [],
+          summary: {
+            total: 10,
+            ready: 0,
+            coverage: "0/10",
+            status: "CONSTRAINED" as const,
+            errorKind: "UNKNOWN" as const,
+          },
+        }),
+      );
+      providerReport.push({
+        providerId: "dbnomics-core10",
+        enabled: true,
+        status: dbnomicsCore10.summary.status,
+        sourceUrlUsed: `${DBNOMICS_API_BASE_URL}/datasets/IMF/PCPS`,
+        expectedCount: dbnomicsCore10.summary.total,
+        mappedCount: dbnomicsCore10.summary.ready,
+        coverage: dbnomicsCore10.summary.coverage,
+        lastFetchAt: nowIso,
+        cacheHit: false,
+        fallbackChainUsed: "real->cache->mock",
+        lastError: dbnomicsCore10.summary.errorKind
+          ? {
+              name: "ProviderError",
+              code: undefined,
+              message: `core10_probe_${String(dbnomicsCore10.summary.errorKind).toLowerCase()}`,
+              httpStatus: undefined,
+              errorKind:
+                dbnomicsCore10.summary.errorKind === "PARSE_ERROR"
+                  ? "PARSE_ERROR"
+                  : dbnomicsCore10.summary.errorKind,
+            }
+          : undefined,
+        notes: [
+          "Core 10 DBnomics registry readiness (IMF PCPS + WB commodity_prices)",
+          ...dbnomicsCore10.items
+            .filter((item) => item.status !== "READY")
+            .slice(0, 4)
+            .map((item) => `${item.id}:${item.status}${item.errorKind ? `:${item.errorKind}` : ""}`),
+        ],
       });
 
       const hasSparklineEligibleSeries = (widget: any): boolean => {
@@ -1438,9 +1487,11 @@ export function registerMonitorRoutes(app: Express): void {
         providers: providerReport,
         fpmaDiscovery,
         fpmaResolutionTest,
+        dbnomicsCore10,
         widgets: widgetSnapshot,
         networkProbe: {
           dbnomics: dbnomicsProbe,
+          dbnomicsCore10Summary: dbnomicsCore10.summary,
           faoFfpi: faoProbe,
           usdaMars: marsProbe,
           usdaMarsDailyTxt: marsDailyTxtProbe,
