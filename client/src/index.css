@@ -401,6 +401,20 @@
     background: hsl(var(--muted-foreground) / 0.55);
   }
 
+  .monitor-map-popup .maplibregl-popup-content {
+    background: rgba(2, 8, 18, 0.96);
+    color: #e2e8f0;
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+    padding: 8px 10px;
+  }
+
+  .monitor-map-popup .maplibregl-popup-tip {
+    border-top-color: rgba(2, 8, 18, 0.96);
+    border-bottom-color: rgba(2, 8, 18, 0.96);
+  }
+
   .prose p {
     @apply mb-4 text-foreground leading-relaxed;
   }

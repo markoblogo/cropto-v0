@@ -4053,58 +4053,9 @@ export default function MonitorV3Page() {
               </div>
             </div>
             <div className="relative h-[392px] overflow-hidden rounded border border-border bg-[#06090f]">
-              {mapVideoSource ? (
-                <div className="relative h-full w-full bg-black">
-                  <div className="absolute left-2 top-2 z-20 rounded border border-cyan-500/60 bg-cyan-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-cyan-300">
-                    video on map
-                  </div>
-                  {mapVideoSource.mode === "iframe" && mapVideoSource.url ? (
-                    <iframe
-                      src={mapVideoSource.url}
-                      title={mapVideoSource.name}
-                      loading="lazy"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      className="h-full w-full"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : mapVideoSource.mode === "video" && mapVideoSource.url ? (
-                    <video
-                      className="h-full w-full object-cover"
-                      controls
-                      autoPlay
-                      muted
-                      playsInline
-                      preload="metadata"
-                      src={mapVideoSource.url}
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Stream unavailable for map preview.</div>
-                  )}
-                  <div className="absolute right-2 top-2 flex gap-1">
-                    {mapVideoSource.url ? (
-                      <a
-                        href={mapVideoSource.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded border border-border bg-black/55 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
-                      >
-                        Open source
-                      </a>
-                    ) : null}
-                    <button
-                      onClick={() => setMapVideoSourceId(null)}
-                      className="rounded border border-border bg-black/55 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
-                    >
-                      Back to map
-                    </button>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 border-t border-border bg-black/65 px-2 py-1 text-xs text-zinc-200">
-                    {mapVideoSource.name}
-                  </div>
-                </div>
-              ) : (
+              <div ref={heroMapContainerRef} className="h-full w-full" />
+              {!mapVideoSource ? (
                 <>
-                  <div ref={heroMapContainerRef} className="h-full w-full" />
                   <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                     <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
                       zoom {geoZoom.toFixed(1)}x
@@ -4152,6 +4103,55 @@ export default function MonitorV3Page() {
                     Internal geo layers engine: maplibre foundation active. GEOGLAM remains paused in hero until fresher layer sources are connected.
                   </div>
                 </>
+              ) : (
+                <div className="absolute inset-0 z-20 bg-black">
+                  <div className="absolute left-2 top-2 z-20 rounded border border-cyan-500/60 bg-cyan-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-cyan-300">
+                    video on map
+                  </div>
+                  {mapVideoSource.mode === "iframe" && mapVideoSource.url ? (
+                    <iframe
+                      src={mapVideoSource.url}
+                      title={mapVideoSource.name}
+                      loading="lazy"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      className="h-full w-full"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : mapVideoSource.mode === "video" && mapVideoSource.url ? (
+                    <video
+                      className="h-full w-full object-cover"
+                      controls
+                      autoPlay
+                      muted
+                      playsInline
+                      preload="metadata"
+                      src={mapVideoSource.url}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Stream unavailable for map preview.</div>
+                  )}
+                  <div className="absolute right-2 top-2 flex gap-1">
+                    {mapVideoSource.url ? (
+                      <a
+                        href={mapVideoSource.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded border border-border bg-black/55 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+                      >
+                        Open source
+                      </a>
+                    ) : null}
+                    <button
+                      onClick={() => setMapVideoSourceId(null)}
+                      className="rounded border border-border bg-black/55 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+                    >
+                      Back to map
+                    </button>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 border-t border-border bg-black/65 px-2 py-1 text-xs text-zinc-200">
+                    {mapVideoSource.name}
+                  </div>
+                </div>
               )}
             </div>
             <div className="mt-1 text-[10px] text-muted-foreground">
