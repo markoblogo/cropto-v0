@@ -477,6 +477,15 @@ const STATIC_VIDEO_SOURCES: VideoSource[] = [
     note: "Live terminal gate camera",
   },
   {
+    id: "windy-port-du-belon",
+    name: "Windy Port du Belon",
+    category: "ports",
+    status: "LIVE_EMBED",
+    mode: "iframe",
+    url: "https://webcams.windy.com/webcams/public/embed/player/1759341131/day",
+    note: "Public Windy webcam embed",
+  },
+  {
     id: "moneycontrol-live-tv",
     name: "Moneycontrol Live TV",
     category: "markets_tv",
