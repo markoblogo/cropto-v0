@@ -1577,6 +1577,14 @@ function formatDurationCompact(durationSec: number | null | undefined): string {
   return `${hh}h ${mm}m`;
 }
 
+function formatPlaybackClock(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "00:00";
+  const whole = Math.floor(seconds);
+  const mm = Math.floor(whole / 60);
+  const ss = whole % 60;
+  return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
 function normalizeToUsdTon(args: {
   current?: number;
   unit?: string;
@@ -1649,6 +1657,16 @@ export default function MonitorV3Page() {
   const [videoTopic, setVideoTopic] = useState<VideoTopic>(() => readJson<VideoTopic>(STORAGE_KEYS.videoTopic, "all"));
   const [videoChannel, setVideoChannel] = useState<string>(() => readJson<string>(STORAGE_KEYS.videoChannel, "all"));
   const [mapVideoSourceId, setMapVideoSourceId] = useState<string | null>(null);
+  const [podcastCountryFilter, setPodcastCountryFilter] = useState<string>("ALL");
+  const [podcastLanguageFilter, setPodcastLanguageFilter] = useState<string>("all");
+  const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
+  const [selectedPodcastEpisodeId, setSelectedPodcastEpisodeId] = useState<string | null>(null);
+  const [podcastProgressPct, setPodcastProgressPct] = useState<number>(0);
+  const [podcastDurationSec, setPodcastDurationSec] = useState<number>(0);
+  const [podcastCurrentSec, setPodcastCurrentSec] = useState<number>(0);
+  const [podcastIsPlaying, setPodcastIsPlaying] = useState<boolean>(false);
+  const [podcastVolume, setPodcastVolume] = useState<number>(0.8);
+  const podcastAudioRef = useRef<HTMLAudioElement | null>(null);
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
   const [debugProviderId, setDebugProviderId] = useState<string | null>(null);
   const [geoLayers, setGeoLayers] = useState<Record<GeoLayerId, boolean>>({
@@ -1893,6 +1911,25 @@ export default function MonitorV3Page() {
         .sort((a, b) => Date.parse(b.publishedAt || "") - Date.parse(a.publishedAt || ""))
         .slice(0, 10);
       return { catalog, episodes };
+    },
+  });
+  const podcastCatalogQuery = useQuery<PodcastCatalogResponse>({
+    queryKey: ["monitor-v3-podcasts-catalog"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/podcasts/catalog");
+      if (!response.ok) throw new Error("Failed to load podcasts catalog");
+      return response.json();
+    },
+  });
+  const selectedPodcastEpisodesQuery = useQuery<PodcastEpisodesResponse>({
+    queryKey: ["monitor-v3-podcast-episodes", selectedPodcastId],
+    enabled: Boolean(selectedPodcastId),
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch(`/api/monitor/podcasts/${encodeURIComponent(String(selectedPodcastId))}/episodes?limit=40`);
+      if (!response.ok) throw new Error("Failed to load podcast episodes");
+      return response.json();
     },
   });
   const providerById = useMemo(
@@ -2920,6 +2957,59 @@ export default function MonitorV3Page() {
     if (roleTopicFeed.length >= 6) return roleTopicFeed;
     return feed;
   }, [filteredFeed, roleTopicFeed, feed]);
+  const podcastCatalog = podcastCatalogQuery.data?.items || [];
+  const podcastCountryOptions = useMemo(() => {
+    const options = new Set<string>(["ALL"]);
+    podcastCatalog.forEach((item) => item.countries.forEach((countryCode) => options.add(countryCode)));
+    return Array.from(options);
+  }, [podcastCatalog]);
+  const podcastLanguageOptions = useMemo(() => {
+    const options = new Set<string>(["all"]);
+    podcastCatalog.forEach((item) => item.languages.forEach((language) => options.add(language.toLowerCase())));
+    return Array.from(options);
+  }, [podcastCatalog]);
+  const filteredPodcastCatalog = useMemo(() => {
+    return podcastCatalog.filter((item) => {
+      if (podcastCountryFilter !== "ALL" && !item.countries.includes(podcastCountryFilter)) return false;
+      if (podcastLanguageFilter !== "all" && !item.languages.map((lang) => lang.toLowerCase()).includes(podcastLanguageFilter)) return false;
+      return true;
+    });
+  }, [podcastCatalog, podcastCountryFilter, podcastLanguageFilter]);
+  const selectedPodcast = useMemo(
+    () => filteredPodcastCatalog.find((item) => item.id === selectedPodcastId) || null,
+    [filteredPodcastCatalog, selectedPodcastId],
+  );
+  const selectedPodcastEpisodes = selectedPodcastEpisodesQuery.data?.episodes || [];
+  const activePodcastEpisode = useMemo(
+    () => selectedPodcastEpisodes.find((item) => item.id === selectedPodcastEpisodeId) || selectedPodcastEpisodes[0] || null,
+    [selectedPodcastEpisodes, selectedPodcastEpisodeId],
+  );
+
+  useEffect(() => {
+    if (!filteredPodcastCatalog.length) {
+      setSelectedPodcastId(null);
+      return;
+    }
+    if (!selectedPodcastId || !filteredPodcastCatalog.some((item) => item.id === selectedPodcastId)) {
+      setSelectedPodcastId(filteredPodcastCatalog[0].id);
+    }
+  }, [filteredPodcastCatalog, selectedPodcastId]);
+
+  useEffect(() => {
+    if (!selectedPodcastEpisodes.length) {
+      setSelectedPodcastEpisodeId(null);
+      return;
+    }
+    if (!selectedPodcastEpisodeId || !selectedPodcastEpisodes.some((item) => item.id === selectedPodcastEpisodeId)) {
+      setSelectedPodcastEpisodeId(selectedPodcastEpisodes[0].id);
+    }
+  }, [selectedPodcastEpisodes, selectedPodcastEpisodeId]);
+
+  useEffect(() => {
+    setPodcastProgressPct(0);
+    setPodcastCurrentSec(0);
+    setPodcastDurationSec(0);
+  }, [selectedPodcastId, selectedPodcastEpisodeId]);
   const customHlsSources = useMemo<VideoSource[]>(() => {
     const urls = [
       import.meta.env.VITE_MONITOR_HLS_1 as string | undefined,
@@ -3141,6 +3231,8 @@ export default function MonitorV3Page() {
         globalIndicesTrendsQuery.refetch(),
         yieldFoodSecurityQuery.refetch(),
         podcastsQuery.refetch(),
+        podcastCatalogQuery.refetch(),
+        selectedPodcastEpisodesQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);
@@ -3862,16 +3954,204 @@ export default function MonitorV3Page() {
         </section>
 
         <section className="grid gap-2 md:grid-cols-3">
-          {filteredSignals.slice(0, 3).map((item, idx) => (
-            <article key={item.id} className="rounded border border-border bg-card p-2">
-              <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                <span>Priority #{idx + 1}</span>
-                <span>{item.source_name}</span>
+          <article className="rounded border border-cyan-500/30 bg-gradient-to-b from-cyan-500/5 to-transparent p-2">
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              <span>Audio Player</span>
+              <span>{activePodcastEpisode ? formatAgeShort(activePodcastEpisode.publishedAt) : "n/a"}</span>
+            </div>
+            <div className="line-clamp-1 text-sm font-semibold">{activePodcastEpisode?.title || "Select podcast episode"}</div>
+            <div className="line-clamp-1 text-[11px] text-muted-foreground">{selectedPodcast?.title || "No podcast selected"}</div>
+
+            <div className="mt-2 rounded border border-border bg-black/20 p-1.5">
+              <div className="relative h-10 overflow-hidden rounded border border-border bg-muted/20 px-1 py-1">
+                <div className="absolute left-0 top-0 h-full bg-cyan-500/15" style={{ width: `${podcastProgressPct}%` }} />
+                <div className="relative z-10 flex h-full items-end gap-0.5">
+                  {Array.from({ length: 36 }).map((_, idx) => {
+                    const base = 18 + ((idx * 17) % 24);
+                    const active = idx <= Math.floor((podcastProgressPct / 100) * 36);
+                    return (
+                      <span
+                        key={`podcast-wave-${idx}`}
+                        className={cn("w-[2px] rounded-sm", active ? "bg-cyan-300" : "bg-cyan-500/45")}
+                        style={{ height: `${base}px` }}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-              <h3 className="line-clamp-2 text-sm font-semibold">{item.title}</h3>
-              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.summary || "Signal summary unavailable."}</p>
-            </article>
-          ))}
+              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                <span>{formatPlaybackClock(podcastCurrentSec)}</span>
+                <span>{formatPlaybackClock(podcastDurationSec)}</span>
+              </div>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (!podcastAudioRef.current || !activePodcastEpisode) return;
+                  if (podcastAudioRef.current.paused) {
+                    podcastAudioRef.current.play().catch(() => null);
+                  } else {
+                    podcastAudioRef.current.pause();
+                  }
+                }}
+                className="rounded border border-cyan-500/60 bg-cyan-500/10 px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-cyan-300"
+              >
+                {podcastIsPlaying ? "Pause" : "Play"}
+              </button>
+              <label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Vol</label>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={podcastVolume}
+                onChange={(event) => {
+                  const volume = Number(event.target.value);
+                  setPodcastVolume(volume);
+                  if (podcastAudioRef.current) podcastAudioRef.current.volume = volume;
+                }}
+                className="w-24 accent-cyan-400"
+              />
+              {activePodcastEpisode?.url ? (
+                <a
+                  href={activePodcastEpisode.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ml-auto rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                >
+                  source
+                </a>
+              ) : null}
+            </div>
+            <audio
+              ref={podcastAudioRef}
+              key={activePodcastEpisode?.id || "no-episode"}
+              src={activePodcastEpisode?.audioUrl || ""}
+              preload="metadata"
+              onLoadedMetadata={(event) => {
+                const duration = Number(event.currentTarget.duration || 0);
+                setPodcastDurationSec(Number.isFinite(duration) ? duration : 0);
+                event.currentTarget.volume = podcastVolume;
+              }}
+              onTimeUpdate={(event) => {
+                const current = Number(event.currentTarget.currentTime || 0);
+                const duration = Number(event.currentTarget.duration || 0);
+                setPodcastCurrentSec(Number.isFinite(current) ? current : 0);
+                setPodcastDurationSec(Number.isFinite(duration) ? duration : 0);
+                if (duration > 0) setPodcastProgressPct(Math.max(0, Math.min(100, (current / duration) * 100)));
+              }}
+              onPlay={() => setPodcastIsPlaying(true)}
+              onPause={() => setPodcastIsPlaying(false)}
+              onEnded={() => setPodcastIsPlaying(false)}
+              className="hidden"
+            />
+          </article>
+
+          <article className="rounded border border-border bg-card p-2">
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              <span>Podcast Catalog</span>
+              <span>{filteredPodcastCatalog.length}</span>
+            </div>
+            <div className="mb-1.5 grid grid-cols-2 gap-1">
+              <select
+                value={podcastCountryFilter}
+                onChange={(event) => setPodcastCountryFilter(event.target.value)}
+                className="rounded border border-border bg-card px-1.5 py-1 text-[11px]"
+              >
+                {podcastCountryOptions.map((countryCode) => {
+                  const label = countryCode === "ALL" ? "All countries" : COUNTRY_OPTIONS.find((item) => item.id === countryCode)?.label || countryCode;
+                  return (
+                    <option key={`podcast-country-${countryCode}`} value={countryCode}>
+                      {label}
+                    </option>
+                  );
+                })}
+              </select>
+              <select
+                value={podcastLanguageFilter}
+                onChange={(event) => setPodcastLanguageFilter(event.target.value)}
+                className="rounded border border-border bg-card px-1.5 py-1 text-[11px]"
+              >
+                {podcastLanguageOptions.map((language) => (
+                  <option key={`podcast-lang-${language}`} value={language}>
+                    {language === "all" ? "All languages" : language.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="monitor-widget-scroll max-h-[150px] space-y-1 overflow-y-auto pr-0.5">
+              {podcastCatalogQuery.isLoading ? (
+                <div className="rounded border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">Loading catalog...</div>
+              ) : filteredPodcastCatalog.length === 0 ? (
+                <div className="rounded border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
+                  No podcasts for selected filters.
+                </div>
+              ) : (
+                filteredPodcastCatalog.map((item) => (
+                  <button
+                    key={`podcast-catalog-${item.id}`}
+                    onClick={() => {
+                      setSelectedPodcastId(item.id);
+                      setSelectedPodcastEpisodeId(null);
+                    }}
+                    className={cn(
+                      "block w-full rounded border px-1.5 py-1 text-left",
+                      selectedPodcastId === item.id
+                        ? "border-cyan-500/60 bg-cyan-500/10"
+                        : "border-border bg-muted/10 hover:border-cyan-500/40",
+                    )}
+                  >
+                    <div className="line-clamp-1 text-xs font-medium">{item.title}</div>
+                    <div className="line-clamp-1 text-[10px] text-muted-foreground">
+                      {(item.countries || []).join(", ") || "GLOBAL"} • {(item.languages || []).map((lang) => lang.toUpperCase()).join(", ")}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </article>
+
+          <article className="rounded border border-border bg-card p-2">
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              <span>Episodes</span>
+              <span>{selectedPodcastEpisodes.length}</span>
+            </div>
+            <div className="monitor-widget-scroll max-h-[185px] space-y-1 overflow-y-auto pr-0.5">
+              {selectedPodcastEpisodesQuery.isLoading ? (
+                <div className="rounded border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">Loading episodes...</div>
+              ) : selectedPodcastEpisodes.length === 0 ? (
+                <div className="rounded border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
+                  No episodes for selected podcast.
+                </div>
+              ) : (
+                selectedPodcastEpisodes.map((episode) => (
+                  <button
+                    key={`podcast-episode-${episode.id}`}
+                    onClick={() => {
+                      setSelectedPodcastEpisodeId(episode.id);
+                      setTimeout(() => {
+                        if (podcastAudioRef.current) {
+                          podcastAudioRef.current.play().catch(() => null);
+                        }
+                      }, 0);
+                    }}
+                    className={cn(
+                      "block w-full rounded border px-1.5 py-1 text-left",
+                      activePodcastEpisode?.id === episode.id
+                        ? "border-cyan-500/60 bg-cyan-500/10"
+                        : "border-border bg-muted/10 hover:border-cyan-500/40",
+                    )}
+                  >
+                    <div className="line-clamp-1 text-xs font-medium">{episode.title}</div>
+                    <div className="line-clamp-1 text-[10px] text-muted-foreground">
+                      {formatDurationCompact(episode.durationSec) || "n/a"} • {formatAgeShort(episode.publishedAt)}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </article>
         </section>
 
         <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
