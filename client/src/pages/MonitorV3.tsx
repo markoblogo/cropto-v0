@@ -730,6 +730,33 @@ const STATIC_VIDEO_SOURCES: VideoSource[] = [
     url: "https://www.windy.com/webcams/1349910608",
     note: "Provider-gated embed; link-out only",
   },
+  {
+    id: "windy-hakos-guest-farm",
+    name: "Windy Hakos Guest Farm",
+    category: "custom",
+    status: "CONSTRAINED",
+    mode: "link",
+    url: "https://www.windy.com/fr/-Webcams/Namibie/Khomas/Hakos-Guest-Farm/webcams/1612254382",
+    note: "Agro/rural candidate; provider-gated embed, link-out only",
+  },
+  {
+    id: "windy-rully-chambre-agriculture",
+    name: "Windy Rully Chambre d'Agriculture",
+    category: "custom",
+    status: "CONSTRAINED",
+    mode: "link",
+    url: "https://www.windy.com/webcams/1758308633",
+    note: "Agro institution camera; provider-gated embed, link-out only",
+  },
+  {
+    id: "windy-cambo-les-bains",
+    name: "Windy Cambo-les-Bains Rural",
+    category: "custom",
+    status: "CONSTRAINED",
+    mode: "link",
+    url: "https://www.windy.com/webcams/1545903119",
+    note: "Rural/agri context camera; provider-gated embed, link-out only",
+  },
 ];
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
