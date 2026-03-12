@@ -3989,6 +3989,7 @@ export default function MonitorV3Page() {
       closeButton: false,
       closeOnClick: true,
       offset: 12,
+      maxWidth: "420px",
       className: "monitor-map-popup",
     });
     heroMapPopupRef.current = popup;
@@ -4049,17 +4050,17 @@ export default function MonitorV3Page() {
       popupMetricLine("Yield vs trend", `${payload.metrics.yield_deviation >= 0 ? "+" : ""}${Math.round(payload.metrics.yield_deviation * 100)}%`),
     ].join("");
     popup.setHTML(
-      `<div style="width:300px;font-size:12px;line-height:1.25;">
+      `<div style="width:min(300px,72vw);font-size:11px;line-height:1.22;">
         <div style="display:flex;justify-content:space-between;gap:8px;">
           <div style="font-weight:700;color:#e2e8f0;">${escapeHtml(payload.name)}</div>
           <div style="color:${payload.stress_level === "high" ? "#fca5a5" : payload.stress_level === "medium" ? "#fcd34d" : "#86efac"};font-weight:700;">${payload.stress_score}/100</div>
         </div>
         <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Rainfall vs norm</div>
-        <svg viewBox="0 0 240 48" style="width:100%;height:46px;background:rgba(2,6,23,0.55);border:1px solid rgba(148,163,184,0.25);border-radius:6px;">
+        <svg viewBox="0 0 240 40" style="width:100%;height:40px;background:rgba(2,6,23,0.55);border:1px solid rgba(148,163,184,0.25);border-radius:6px;">
           <path d="${rainPath}" fill="none" stroke="#22d3ee" stroke-width="2" />
         </svg>
         <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">NDVI vs median</div>
-        <svg viewBox="0 0 240 48" style="width:100%;height:46px;background:rgba(2,6,23,0.55);border:1px solid rgba(148,163,184,0.25);border-radius:6px;">
+        <svg viewBox="0 0 240 40" style="width:100%;height:40px;background:rgba(2,6,23,0.55);border:1px solid rgba(148,163,184,0.25);border-radius:6px;">
           <path d="${ndviPath}" fill="none" stroke="#34d399" stroke-width="2" />
         </svg>
         <div style="margin-top:8px;display:grid;gap:4px;">${metricsHtml}</div>
@@ -4200,6 +4201,7 @@ export default function MonitorV3Page() {
               closeButton: false,
               closeOnClick: true,
               offset: 12,
+              maxWidth: "420px",
               className: "monitor-map-popup",
             });
           }
@@ -4220,6 +4222,7 @@ export default function MonitorV3Page() {
             closeButton: false,
             closeOnClick: true,
             offset: 12,
+            maxWidth: "420px",
             className: "monitor-map-popup",
           });
         }
@@ -4309,6 +4312,7 @@ export default function MonitorV3Page() {
                 closeButton: false,
                 closeOnClick: true,
                 offset: 12,
+                maxWidth: "420px",
                 className: "monitor-map-popup",
               });
             }
@@ -4323,6 +4327,7 @@ export default function MonitorV3Page() {
               closeButton: false,
               closeOnClick: true,
               offset: 12,
+              maxWidth: "420px",
               className: "monitor-map-popup",
             });
           }

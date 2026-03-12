@@ -408,6 +408,8 @@
     border-radius: 8px;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
     padding: 8px 10px;
+    overflow: hidden;
+    max-width: min(420px, 78vw);
   }
 
   .monitor-map-popup .maplibregl-popup-tip {
