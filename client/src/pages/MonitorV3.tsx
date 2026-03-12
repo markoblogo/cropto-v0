@@ -357,6 +357,42 @@ type YieldFoodSecurityResponse = {
   };
 };
 
+type PodcastCatalogItem = {
+  id: string;
+  title: string;
+  region: string;
+  countries: string[];
+  languages: string[];
+  website: string;
+  focus: string[];
+};
+
+type PodcastCatalogResponse = {
+  items?: PodcastCatalogItem[];
+};
+
+type PodcastEpisode = {
+  id: string;
+  title: string;
+  publishedAt: string;
+  audioUrl: string;
+  url: string;
+  durationSec: number | null;
+  source: string;
+  commodities: string[];
+  regions: string[];
+};
+
+type PodcastEpisodesResponse = {
+  podcast?: PodcastCatalogItem | null;
+  episodes?: PodcastEpisode[];
+};
+
+type PodcastsWidgetResponse = {
+  catalog: PodcastCatalogItem[];
+  episodes: PodcastEpisode[];
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
 type GeoLayerId = "markets" | "logistics" | "weather" | "risk";
@@ -381,7 +417,7 @@ type GridWidget = {
   topic: Exclude<MonitorTopic, "all">;
   roles: Array<Exclude<MonitorRole, "all">>;
   territory: string;
-  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }>;
+  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; audioUrl?: string; series?: number[] }>;
 };
 type CardType = "quote" | "table" | "news" | "health";
 type ProviderDebug = {
@@ -1222,7 +1258,7 @@ function buildDataFirstFallbackRows(
   widget: GridWidget,
   state: "live" | "degraded" | "empty",
   debug?: ProviderDebug,
-): Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }> {
+): Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; audioUrl?: string; series?: number[] }> {
   if (state === "live") return [];
   const usableCount = widget.metrics.filter(metricLooksUsable).length;
   const totalCount = widget.metrics.length;
@@ -1355,7 +1391,7 @@ function cardTypeTone(cardType: CardType) {
   return "border-rose-500/60 bg-rose-500/10 text-rose-300";
 }
 
-function metricPriority(metric: { label: string; value: string; delta?: number; href?: string }, cardType: CardType) {
+function metricPriority(metric: { label: string; value: string; delta?: number; href?: string; audioUrl?: string }, cardType: CardType) {
   const label = (metric.label || "").toLowerCase();
   const value = (metric.value || "").toLowerCase();
   const numeric = parseMetricNumber(metric.value) !== null;
@@ -1374,7 +1410,7 @@ function metricPriority(metric: { label: string; value: string; delta?: number; 
 }
 
 function prioritizeMetricsForCard(
-  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; series?: number[] }>,
+  metrics: Array<{ label: string; value: string; delta?: number; deltaFormat?: "pct" | "abs"; href?: string; audioUrl?: string; series?: number[] }>,
   cardType: CardType,
 ) {
   return [...metrics].sort((a, b) => metricPriority(b, cardType) - metricPriority(a, cardType));
@@ -1525,6 +1561,22 @@ function buildMiniSparkPoints(series: number[]) {
   return normalized.map((value, idx) => `${idx * (100 / Math.max(1, normalized.length - 1))},${100 - value}`).join(" ");
 }
 
+function monitorCountryToPodcastRegion(country: Country): string {
+  if (country === "US") return "North America";
+  if (country === "BR" || country === "AR") return "South America";
+  if (country === "UA" || country === "FR" || country === "DE" || country === "RO") return "Europe";
+  return "Global";
+}
+
+function formatDurationCompact(durationSec: number | null | undefined): string {
+  if (typeof durationSec !== "number" || !Number.isFinite(durationSec) || durationSec <= 0) return "";
+  const totalMin = Math.round(durationSec / 60);
+  if (totalMin < 60) return `${totalMin}m`;
+  const hh = Math.floor(totalMin / 60);
+  const mm = totalMin % 60;
+  return `${hh}h ${mm}m`;
+}
+
 function normalizeToUsdTon(args: {
   current?: number;
   unit?: string;
@@ -1621,6 +1673,7 @@ export default function MonitorV3Page() {
     metricDelta?: number;
     metricDeltaFormat?: "pct" | "abs";
     href?: string;
+    audioUrl?: string;
   } | null>(null);
 
   useEffect(() => writeJson(STORAGE_KEYS.role, role), [role]);
@@ -1805,6 +1858,43 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const podcastsQuery = useQuery<PodcastsWidgetResponse>({
+    queryKey: ["monitor-v3-podcasts", country],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const region = monitorCountryToPodcastRegion(country);
+      const primaryCatalogResponse = await fetch(
+        `/api/monitor/podcasts/catalog?region=${encodeURIComponent(region)}&country=${encodeURIComponent(country)}`,
+      );
+      if (!primaryCatalogResponse.ok) throw new Error("Failed to load podcasts catalog");
+      const primaryCatalogPayload = (await primaryCatalogResponse.json()) as PodcastCatalogResponse;
+      let catalog = Array.isArray(primaryCatalogPayload.items) ? primaryCatalogPayload.items : [];
+      if (catalog.length === 0) {
+        const fallbackResponse = await fetch("/api/monitor/podcasts/catalog");
+        if (!fallbackResponse.ok) throw new Error("Failed to load fallback podcasts catalog");
+        const fallbackPayload = (await fallbackResponse.json()) as PodcastCatalogResponse;
+        catalog = Array.isArray(fallbackPayload.items) ? fallbackPayload.items : [];
+      }
+      const catalogSlice = catalog.slice(0, 3);
+      const episodeResponses = await Promise.all(
+        catalogSlice.map(async (podcast) => {
+          try {
+            const response = await fetch(`/api/monitor/podcasts/${encodeURIComponent(podcast.id)}/episodes?limit=6`);
+            if (!response.ok) return [] as PodcastEpisode[];
+            const payload = (await response.json()) as PodcastEpisodesResponse;
+            return Array.isArray(payload.episodes) ? payload.episodes : [];
+          } catch {
+            return [] as PodcastEpisode[];
+          }
+        }),
+      );
+      const episodes = episodeResponses
+        .flat()
+        .sort((a, b) => Date.parse(b.publishedAt || "") - Date.parse(a.publishedAt || ""))
+        .slice(0, 10);
+      return { catalog, episodes };
+    },
+  });
   const providerById = useMemo(
     () => Object.fromEntries((activationQuery.data?.providers || []).map((provider) => [provider.providerId, provider])),
     [activationQuery.data],
@@ -1985,6 +2075,33 @@ export default function MonitorV3Page() {
       roles: ["farmer", "trader", "broker"],
       territory: "GLOBAL",
       metrics: buildTopicNewsMetrics(feedItems, "weather", "Weather feed"),
+    };
+    const podcastEpisodes = podcastsQuery.data?.episodes || [];
+    const podcastsCatalog = podcastsQuery.data?.catalog || [];
+    const podcastsWidget: GridWidget = {
+      id: "AUDIO_AGRO_PODCASTS",
+      title: "Agro Podcasts",
+      subtitle:
+        podcastsCatalog.length > 0
+          ? `${podcastsCatalog.slice(0, 2).map((podcast) => podcast.title).join(" · ")}`
+          : "Audio briefings for grain/oilseeds context",
+      status: podcastEpisodes.length > 0 ? "REFRESH" : "CONSTRAINED",
+      source: "Podcast RSS",
+      updatedAt: podcastEpisodes[0]?.publishedAt,
+      topic: "markets",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics:
+        podcastEpisodes.length > 0
+          ? podcastEpisodes.slice(0, 8).map((episode) => ({
+              label: episode.title || "Podcast episode",
+              value: [episode.source, formatDurationCompact(episode.durationSec), formatAgeShort(episode.publishedAt)]
+                .filter(Boolean)
+                .join(" • "),
+              href: episode.url,
+              audioUrl: episode.audioUrl,
+            }))
+          : [{ label: "Audio", value: "No podcast episodes available for current filters" }],
     };
 
     const sentimentCandidates = (indicesQuery.data?.items || []).filter((row) => {
@@ -2512,12 +2629,13 @@ export default function MonitorV3Page() {
       marketsFeedWidget,
       policyFeedWidget,
       weatherFeedWidget,
+      podcastsWidget,
       ...widgetsFromExpansion,
       ...widgetsFromMarkets,
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, country, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, country, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -3022,6 +3140,7 @@ export default function MonitorV3Page() {
         globalIndicesQuery.refetch(),
         globalIndicesTrendsQuery.refetch(),
         yieldFoodSecurityQuery.refetch(),
+        podcastsQuery.refetch(),
       ]);
     } finally {
       setIsRefreshingData(false);
@@ -4175,6 +4294,7 @@ export default function MonitorV3Page() {
                                 metricDelta: metric.delta,
                                 metricDeltaFormat: metric.deltaFormat,
                                 href: metric.href,
+                                audioUrl: metric.audioUrl,
                               })
                             }
                             className={cn("block w-full rounded border border-border bg-muted/10 p-1.5 text-left hover:border-primary/50", rowMinHeight)}
@@ -4226,6 +4346,7 @@ export default function MonitorV3Page() {
                                   metricDelta: metric.delta,
                                   metricDeltaFormat: metric.deltaFormat,
                                   href: metric.href,
+                                  audioUrl: metric.audioUrl,
                                 })
                               }
                               className={cn(
@@ -4266,6 +4387,7 @@ export default function MonitorV3Page() {
                                 metricDelta: widget.metrics[0]?.delta,
                                 metricDeltaFormat: widget.metrics[0]?.deltaFormat,
                                 href: widget.metrics[0]?.href,
+                                audioUrl: widget.metrics[0]?.audioUrl,
                               })
                             }
                             className={cn(
@@ -4301,6 +4423,7 @@ export default function MonitorV3Page() {
                               metricDelta: metric.delta,
                               metricDeltaFormat: metric.deltaFormat,
                               href: metric.href,
+                              audioUrl: metric.audioUrl,
                             })
                           }
                           className={cn(
@@ -4590,6 +4713,12 @@ export default function MonitorV3Page() {
                 >
                   Open source
                 </a>
+              ) : null}
+              {selectedMetric.audioUrl ? (
+                <div className="rounded border border-border bg-muted/10 p-2">
+                  <div className="mb-1 text-xs uppercase tracking-[0.12em] text-muted-foreground">Audio</div>
+                  <audio controls preload="none" className="w-full" src={selectedMetric.audioUrl} />
+                </div>
               ) : null}
             </div>
           </div>

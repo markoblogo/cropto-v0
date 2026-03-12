@@ -99,6 +99,7 @@ import { getBinanceRiskTrends, startBinanceMarketScheduler } from "./binanceMark
 import { getGlobalIndicesSnapshot } from "./globalIndicesService";
 import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndicesPersistence";
 import { getYieldFoodSecuritySnapshot } from "./yieldFoodSecurityService";
+import { listPodcastCatalog, listPodcastEpisodes } from "./podcastsService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { probeDbnomicsCore10 } from "./grainWidgets/providers/dbNomicsCoreRegistry";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
@@ -780,6 +781,40 @@ export function registerMonitorRoutes(app: Express): void {
           marketRows: [],
           note: "Yield/Food Security endpoint unavailable",
         },
+      });
+    }
+  });
+
+  app.get("/api/monitor/podcasts/catalog", (req, res) => {
+    try {
+      const region = typeof req.query.region === "string" ? req.query.region : undefined;
+      const country = typeof req.query.country === "string" ? req.query.country : undefined;
+      const items = listPodcastCatalog({ region, country });
+      return res.json({ items });
+    } catch (error: any) {
+      return res.status(500).json({
+        items: [],
+        message: error?.message || "Failed to load podcasts catalog",
+      });
+    }
+  });
+
+  app.get("/api/monitor/podcasts/:podcastId/episodes", async (req, res) => {
+    try {
+      const podcastId = String(req.params.podcastId || "");
+      const limit = typeof req.query.limit === "string" ? Number.parseInt(req.query.limit, 10) : 20;
+      const offset = typeof req.query.offset === "string" ? Number.parseInt(req.query.offset, 10) : 0;
+      const payload = await listPodcastEpisodes(podcastId, { limit, offset });
+      return res.json(payload);
+    } catch (error: any) {
+      const message = String(error?.message || "Failed to load podcast episodes");
+      if (message.startsWith("podcast_not_found:")) {
+        return res.status(404).json({ message });
+      }
+      return res.status(500).json({
+        podcast: null,
+        episodes: [],
+        message,
       });
     }
   });
