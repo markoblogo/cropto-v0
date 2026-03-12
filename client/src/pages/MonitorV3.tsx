@@ -3123,7 +3123,7 @@ export default function MonitorV3Page() {
         </section>
 
         <section className="grid items-stretch gap-2 xl:grid-cols-[2fr_1.15fr_0.85fr]">
-          <div className="flex min-h-[520px] flex-col rounded border border-border bg-card p-2">
+          <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Global Situation</span>
               <div className="flex items-center gap-1">
@@ -3162,7 +3162,7 @@ export default function MonitorV3Page() {
             </div>
             <div
               className={cn(
-                "relative min-h-[420px] flex-1 overflow-hidden rounded border border-border bg-[#06090f]",
+                "relative h-[392px] overflow-hidden rounded border border-border bg-[#06090f]",
                 mapVideoSource ? "cursor-default" : geoDragging ? "cursor-grabbing" : "cursor-grab",
               )}
               onWheel={(event) => {
@@ -3346,7 +3346,7 @@ export default function MonitorV3Page() {
                 : "Drag to pan, mouse wheel to zoom. Layer points are synthesized from live feed, prediction risk, and market deltas."}
             </div>
           </div>
-          <div className="flex min-h-[520px] flex-col rounded border border-border bg-card p-2">
+          <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Video Rail</span>
               <span>{videoRailSlots.length}/6 live</span>
@@ -3376,7 +3376,7 @@ export default function MonitorV3Page() {
                 ))}
               </select>
             </div>
-            <div className="monitor-widget-scroll flex-1 overflow-y-auto pr-0.5">
+            <div className="monitor-widget-scroll max-h-[392px] overflow-y-auto pr-0.5">
               <div className="grid grid-cols-1 gap-1.5 2xl:grid-cols-2">
               {Array.from({ length: 6 }).map((_, idx) => {
                 const source = videoRailSlots[idx];
@@ -3474,12 +3474,12 @@ export default function MonitorV3Page() {
             </div>
             </div>
           </div>
-          <div className="flex min-h-[520px] flex-col rounded border border-border bg-card p-2">
+          <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Live Feed</span>
               <span>RSS + signals</span>
             </div>
-            <div className="monitor-widget-scroll min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5">
+            <div className="monitor-widget-scroll max-h-[392px] space-y-1.5 overflow-y-auto pr-0.5">
               {filteredFeed.length === 0 ? (
                 <div className="rounded border border-dashed border-border p-1.5 text-xs text-muted-foreground">No live feed items for current filters.</div>
               ) : (
