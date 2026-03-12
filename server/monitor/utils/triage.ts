@@ -57,6 +57,9 @@ import {
   WFP_DATABRIDGES_TIMEOUT_MS,
   WFP_DATABRIDGES_TOKEN,
   OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
+  OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL,
+  OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET,
+  OECD_AGRICULTURAL_OUTLOOK_SDMX_START_PERIOD,
   OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
 } from "../grainWidgets/config";
 import { probeDbnomicsCore10 } from "../grainWidgets/providers/dbNomicsCoreRegistry";
@@ -686,6 +689,9 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
     AMIS_MARKET_MONITOR_URL: AMIS_MARKET_MONITOR_URL ? "present" : "missing",
     IMF_PCPS_TABLE2_URL: IMF_PCPS_TABLE2_URL ? "present" : "missing",
     OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL: OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL ? "present" : "missing",
+    OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL: OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL ? "present" : "missing",
+    OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET: OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET ? "present" : "missing",
+    OECD_AGRICULTURAL_OUTLOOK_SDMX_START_PERIOD: OECD_AGRICULTURAL_OUTLOOK_SDMX_START_PERIOD ? "present" : "missing",
     CANADA_RAIL_WDS_BASE_URL: CANADA_RAIL_WDS_BASE_URL ? "present" : "missing",
     FPMA_DATA_PATHS,
     USDA_GTR_DATASET_URLS: USDA_GTR_DATASET_URLS.length ? "present" : "missing",
@@ -816,8 +822,8 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       configMissing: !IMF_PCPS_TABLE2_URL,
       timeoutMs: clampReportProbeTimeout(IMF_PCPS_TIMEOUT_MS),
     }),
-    safeProbe(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, {
-      configMissing: !OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
+    safeProbe(`${OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL.replace(/\/+$/, "")}/${OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET}?format=structure`, {
+      configMissing: !OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL || !OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET,
       timeoutMs: clampReportProbeTimeout(OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS),
     }),
     safeProbe(`${CANADA_RAIL_WDS_BASE_URL.replace(/\/+$/, "")}/getFullTableDownloadCSV/${CANADA_RAIL_PRODUCT_ID}/en`, {
@@ -859,7 +865,7 @@ export async function buildMonitorTriageReport(grainWidgetsService: {
       (providerId === "usda-psd" && (!USDA_FAS_OPENDATA_BASE_URL || !USDA_FAS_API_KEY)) ||
       (providerId === "amis-outlook" && !AMIS_MARKET_MONITOR_URL) ||
       (providerId === "imf-pcps" && !IMF_PCPS_TABLE2_URL) ||
-      (providerId === "oecd-agricultural-outlook" && !OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL) ||
+      (providerId === "oecd-agricultural-outlook" && (!OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL || !OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET)) ||
       (providerId === "wfp-databridges" && !WFP_DATABRIDGES_BASE_URL) ||
       (providerId === "worldbank-microdata" && !WB_MICRODATA_BASE_URL) ||
       (providerId === "eurostat-agri-indices" && !EUROSTAT_BASE_URL);

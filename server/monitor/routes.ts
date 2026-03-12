@@ -61,6 +61,9 @@ import {
   IMF_PCPS_TIMEOUT_MS,
   OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL,
   OECD_AGRICULTURAL_OUTLOOK_OILSEEDS_URL,
+  OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL,
+  OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET,
+  OECD_AGRICULTURAL_OUTLOOK_SDMX_START_PERIOD,
   OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS,
   USDA_FAS_API_KEY,
   USDA_FAS_OPENDATA_BASE_URL,
@@ -1360,6 +1363,7 @@ export function registerMonitorRoutes(app: Express): void {
       const faostatProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/definitions/types/area`;
       const faostatSampleProbeUrl = `${FAOSTAT_BASE_URL.replace(/\/+$/, "")}/data/PP?area=231&item=15&year=2022&outputType=json`;
       const fpmaProbeUrl = `${FPMA_API_BASE_URL.replace(/\/+$/, "")}/prices?format=json`;
+      const oecdSdmxProbeUrl = `${OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL.replace(/\/+$/, "")}/${OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET}?format=structure`;
       const [
         dbnomicsProbe,
         faoProbe,
@@ -1411,7 +1415,7 @@ export function registerMonitorRoutes(app: Express): void {
         }),
         probeUrl(AMIS_MARKET_MONITOR_URL, { timeoutMs: clampReportProbeTimeout(AMIS_TIMEOUT_MS) }),
         probeUrl(IMF_PCPS_TABLE2_URL, { timeoutMs: clampReportProbeTimeout(IMF_PCPS_TIMEOUT_MS) }),
-        probeUrl(OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL, { timeoutMs: clampReportProbeTimeout(OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS) }),
+        probeUrl(oecdSdmxProbeUrl, { timeoutMs: clampReportProbeTimeout(OECD_AGRICULTURAL_OUTLOOK_TIMEOUT_MS) }),
         probeUrl(faostatProbeUrl, { timeoutMs: clampReportProbeTimeout(FAOSTAT_TIMEOUT_MS) }),
         probeUrl(faostatSampleProbeUrl, { timeoutMs: clampReportProbeTimeout(FAOSTAT_TIMEOUT_MS) }),
         probeUrl(fpmaProbeUrl, { timeoutMs: REPORT_PROBE_TIMEOUT_MS }),
@@ -1476,6 +1480,9 @@ export function registerMonitorRoutes(app: Express): void {
             AMIS_MARKET_MONITOR_URL: AMIS_MARKET_MONITOR_URL ? "present" : "missing",
             IMF_PCPS_TABLE2_URL: IMF_PCPS_TABLE2_URL ? "present" : "missing",
             OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL: OECD_AGRICULTURAL_OUTLOOK_CEREALS_URL ? "present" : "missing",
+            OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL: OECD_AGRICULTURAL_OUTLOOK_SDMX_BASE_URL ? "present" : "missing",
+            OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET: OECD_AGRICULTURAL_OUTLOOK_SDMX_DATASET ? "present" : "missing",
+            OECD_AGRICULTURAL_OUTLOOK_SDMX_START_PERIOD: OECD_AGRICULTURAL_OUTLOOK_SDMX_START_PERIOD ? "present" : "missing",
             CANADA_RAIL_WDS_BASE_URL: CANADA_RAIL_WDS_BASE_URL ? "present" : "missing",
             FAOSTAT_BASE_URL: FAOSTAT_BASE_URL ? "present" : "missing",
             FPMA_API_BASE_URL: FPMA_API_BASE_URL ? "present" : "missing",
