@@ -432,6 +432,16 @@ type RenderMode = "metric" | "spark" | "bar" | "list";
 type RenderModeOverride = "auto" | RenderMode;
 type RenderPreset = "mixed" | "data_dense" | "headlines";
 type HealthFilter = "all" | "live" | "degraded" | "empty";
+type VideoSourceStatus = "LIVE_EMBED" | "LIVE_STREAM" | "CONSTRAINED" | "CONTRACT_REQUIRED";
+type VideoSource = {
+  id: string;
+  name: string;
+  category: "markets_tv" | "ports" | "custom";
+  status: VideoSourceStatus;
+  mode: "iframe" | "video" | "link";
+  url?: string;
+  note?: string;
+};
 
 const STORAGE_PREFIX = "monitor_v3_";
 const STORAGE_KEYS = {
@@ -455,6 +465,54 @@ const STORAGE_KEYS = {
   directPredictionRegion: `${STORAGE_PREFIX}direct_prediction_region`,
   yieldCrop: `${STORAGE_PREFIX}yield_crop`,
 };
+
+const STATIC_VIDEO_SOURCES: VideoSource[] = [
+  {
+    id: "portmiami-earthcam",
+    name: "PortMiami (EarthCam)",
+    category: "ports",
+    status: "LIVE_EMBED",
+    mode: "iframe",
+    url: "https://www.earthcam.com/js/video/embed.php?type=h264&vid=pomcam02.flv&w=auto&company=POM&timezone=America/New_York&metar=KTEB&ecn=0&requested_version=current",
+    note: "Live terminal gate camera",
+  },
+  {
+    id: "moneycontrol-live-tv",
+    name: "Moneycontrol Live TV",
+    category: "markets_tv",
+    status: "CONSTRAINED",
+    mode: "link",
+    url: "https://www.moneycontrol.com/tv/live-event",
+    note: "Consent/login gate",
+  },
+  {
+    id: "lseg-newscasts",
+    name: "LSEG Newscasts",
+    category: "markets_tv",
+    status: "CONTRACT_REQUIRED",
+    mode: "link",
+    url: "https://www.lseg.com/en/data-analytics/products/lseg-newscasts-financial-video-platform",
+    note: "Commercial API/embed contract required",
+  },
+  {
+    id: "port-montreal-cams",
+    name: "Port of Montreal",
+    category: "ports",
+    status: "CONSTRAINED",
+    mode: "link",
+    url: "https://www.port-montreal.com/en/goods/real-time/cameras",
+    note: "Frame restrictions / challenge",
+  },
+  {
+    id: "geelong-webcams",
+    name: "Geelong Webcams",
+    category: "ports",
+    status: "CONSTRAINED",
+    mode: "link",
+    url: "https://www.onlygeelong.com.au/vrca-webcams",
+    note: "Frame restrictions",
+  },
+];
 
 const ROLE_OPTIONS: Array<{ id: MonitorRole; label: string }> = [
   { id: "all", label: "Show All" },
@@ -2399,6 +2457,33 @@ export default function MonitorV3Page() {
     });
     return applyCountryFallbackFilter(roleTopic, country);
   }, [feed, topic, role, country]);
+  const customHlsSources = useMemo<VideoSource[]>(() => {
+    const urls = [
+      import.meta.env.VITE_MONITOR_HLS_1 as string | undefined,
+      import.meta.env.VITE_MONITOR_HLS_2 as string | undefined,
+      import.meta.env.VITE_MONITOR_HLS_3 as string | undefined,
+    ]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+    return urls.map((url, idx) => ({
+      id: `custom-hls-${idx + 1}`,
+      name: `Custom HLS ${idx + 1}`,
+      category: "custom",
+      status: "LIVE_STREAM",
+      mode: "video",
+      url,
+      note: "RTSP->HLS live stream",
+    }));
+  }, []);
+  const videoSources = useMemo<VideoSource[]>(() => [...STATIC_VIDEO_SOURCES, ...customHlsSources], [customHlsSources]);
+  const liveVideoSources = useMemo(
+    () => videoSources.filter((source) => (source.status === "LIVE_EMBED" || source.status === "LIVE_STREAM") && Boolean(source.url)),
+    [videoSources],
+  );
+  const pendingVideoSources = useMemo(
+    () => videoSources.filter((source) => source.status === "CONSTRAINED" || source.status === "CONTRACT_REQUIRED"),
+    [videoSources],
+  );
 
   const geoPoints = useMemo<GeoPoint[]>(() => {
     const points: GeoPoint[] = [];
@@ -3056,11 +3141,86 @@ export default function MonitorV3Page() {
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Video Rail</div>
             <div className="grid grid-cols-2 gap-1.5">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="aspect-video rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
-                  Stream {idx + 1}
-                </div>
-              ))}
+              {Array.from({ length: 4 }).map((_, idx) => {
+                const source = liveVideoSources[idx];
+                if (!source) {
+                  return (
+                    <div key={`video-slot-empty-${idx}`} className="aspect-video rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
+                      Live slot {idx + 1}
+                    </div>
+                  );
+                }
+                if (source.mode === "iframe" && source.url) {
+                  return (
+                    <div key={source.id} className="relative aspect-video overflow-hidden rounded border border-border bg-black/30">
+                      <iframe
+                        src={source.url}
+                        title={source.name}
+                        loading="lazy"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        className="h-full w-full"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
+                        {source.name}
+                      </div>
+                    </div>
+                  );
+                }
+                if (source.mode === "video" && source.url) {
+                  return (
+                    <div key={source.id} className="relative aspect-video overflow-hidden rounded border border-border bg-black/30">
+                      <video
+                        className="h-full w-full object-cover"
+                        controls
+                        autoPlay
+                        muted
+                        playsInline
+                        preload="metadata"
+                        src={source.url}
+                      />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
+                        {source.name}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={source.id} className="aspect-video rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
+                    {source.name}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-1.5 rounded border border-border bg-muted/10 px-1.5 py-1">
+              <div className="mb-1 text-[9px] uppercase tracking-[0.12em] text-muted-foreground">Pending sources</div>
+              <div className="space-y-1">
+                {pendingVideoSources.map((source) => (
+                  <div key={`pending-video-${source.id}`} className="flex items-center gap-1 text-[10px]">
+                    <span
+                      className={cn(
+                        "rounded border px-1 py-0 uppercase tracking-[0.1em]",
+                        source.status === "CONTRACT_REQUIRED"
+                          ? "border-violet-500/60 bg-violet-500/10 text-violet-300"
+                          : "border-amber-500/60 bg-amber-500/10 text-amber-300",
+                      )}
+                    >
+                      {source.status === "CONTRACT_REQUIRED" ? "locked" : "constrained"}
+                    </span>
+                    <span className="truncate text-muted-foreground">{source.name}</span>
+                    {source.url ? (
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="ml-auto rounded border border-border px-1 py-0 text-[10px] text-muted-foreground hover:text-foreground"
+                      >
+                        open
+                      </a>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
