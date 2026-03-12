@@ -911,6 +911,40 @@ function cardPlacementPriority(widget: GridWidget) {
   return 1;
 }
 
+function topicPlacementPriority(topic: MonitorTopic) {
+  if (topic === "markets") return 4;
+  if (topic === "logistics") return 3;
+  if (topic === "policy") return 2;
+  if (topic === "weather") return 1;
+  return 0;
+}
+
+function widgetAutoPackScore(widget: GridWidget) {
+  const cardType = inferCardType(widget);
+  const dataState = widgetDataState(widget);
+  const usableCount = widget.metrics.filter(metricLooksUsable).length;
+  const hrefCount = widget.metrics.filter((metric) => Boolean(metric.href)).length;
+  const maxDelta = Math.max(...widget.metrics.map((metric) => Math.abs(metric.delta || 0)), 0);
+  const now = Date.now();
+  const ts = parseTimestamp(widget.updatedAt);
+  const ageMinutes = ts == null ? 24 * 60 : Math.max(0, Math.floor((now - ts) / 60000));
+  const freshnessBoost = Math.max(0, 32 - Math.min(32, ageMinutes / 8));
+  let score = 0;
+  if (dataState === "live") score += 130;
+  else if (dataState === "degraded") score += 70;
+  else score += 20;
+  score += topicPlacementPriority(widget.topic) * 8;
+  score += cardPlacementPriority(widget) * 12;
+  score += freshnessBoost;
+  score += Math.min(24, usableCount * 4);
+  score += Math.min(18, hrefCount * 3);
+  score += Math.min(24, maxDelta * 10);
+  if (cardType === "news" || cardType === "table") {
+    score += dataState === "live" ? 28 : 8;
+  }
+  return score;
+}
+
 function cardTypeTone(cardType: CardType) {
   if (cardType === "quote") return "border-cyan-500/60 bg-cyan-500/10 text-cyan-300";
   if (cardType === "table") return "border-violet-500/60 bg-violet-500/10 text-violet-300";
@@ -2134,10 +2168,13 @@ export default function MonitorV3Page() {
     if (sortMode === "default") {
       if (!pinDenseTop) return filtered;
       return [...filtered].sort((a, b) => {
-        const typeRank = cardPlacementPriority(b) - cardPlacementPriority(a);
-        if (typeRank !== 0) return typeRank;
-        const statusRank = getStatusRank(b.status) - getStatusRank(a.status);
-        if (statusRank !== 0) return statusRank;
+        const topicRank = topicPlacementPriority(b.topic) - topicPlacementPriority(a.topic);
+        if (topicRank !== 0) return topicRank;
+        const scoreRank = widgetAutoPackScore(b) - widgetAutoPackScore(a);
+        if (scoreRank !== 0) return scoreRank;
+        const aTime = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+        const bTime = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+        if (aTime !== bTime) return bTime - aTime;
         return a.title.localeCompare(b.title);
       });
     }
