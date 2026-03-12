@@ -410,6 +410,9 @@
     padding: 8px 10px;
     overflow: hidden;
     max-width: min(420px, 78vw);
+    max-height: min(62vh, 420px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .monitor-map-popup .maplibregl-popup-tip {

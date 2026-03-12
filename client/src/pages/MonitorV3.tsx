@@ -1863,7 +1863,7 @@ function buildAgriEventsPopupHtml(args: { label: string; value: string; events: 
       </a>`;
     })
     .join("");
-  return `<div style="width:min(360px, 74vw);max-height:340px;overflow:auto;font-size:12px;line-height:1.2;">
+  return `<div style="width:min(360px, 74vw);font-size:12px;line-height:1.2;">
     <div style="font-weight:700;color:#e2e8f0;">${escapeHtml(args.label)}</div>
     <div style="color:#94a3b8;margin-top:2px;">${escapeHtml(args.value)}</div>
     <div style="margin-top:8px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Events in this country</div>
