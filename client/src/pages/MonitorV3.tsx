@@ -3954,17 +3954,18 @@ export default function MonitorV3Page() {
         </section>
 
         <section className="grid gap-2 md:grid-cols-3">
-          <article className="rounded border border-cyan-500/30 bg-gradient-to-b from-cyan-500/5 to-transparent p-2">
-            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <article className="rounded border border-cyan-500/35 bg-gradient-to-b from-[#05111a] via-[#040a12] to-transparent p-2">
+            <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
               <span>Audio Player</span>
               <span>{activePodcastEpisode ? formatAgeShort(activePodcastEpisode.publishedAt) : "n/a"}</span>
             </div>
-            <div className="line-clamp-1 text-sm font-semibold">{activePodcastEpisode?.title || "Select podcast episode"}</div>
-            <div className="line-clamp-1 text-[11px] text-muted-foreground">{selectedPodcast?.title || "No podcast selected"}</div>
+            <div className="line-clamp-1 text-sm font-semibold leading-tight">{activePodcastEpisode?.title || "Select podcast episode"}</div>
+            <div className="line-clamp-1 text-[10px] uppercase tracking-[0.1em] text-cyan-300/80">{selectedPodcast?.title || "No podcast selected"}</div>
 
-            <div className="mt-2 rounded border border-border bg-black/20 p-1.5">
-              <div className="relative h-10 overflow-hidden rounded border border-border bg-muted/20 px-1 py-1">
-                <div className="absolute left-0 top-0 h-full bg-cyan-500/15" style={{ width: `${podcastProgressPct}%` }} />
+            <div className="mt-2 rounded border border-cyan-500/25 bg-black/40 p-1.5">
+              <div className="relative h-11 overflow-hidden rounded border border-cyan-500/25 bg-[#02070e] px-1 py-1">
+                <div className="absolute left-0 top-0 h-full bg-cyan-500/8" style={{ width: `${podcastProgressPct}%` }} />
+                <div className="absolute left-0 top-0 h-[1px] bg-cyan-300/80" style={{ width: `${podcastProgressPct}%` }} />
                 <div className="relative z-10 flex h-full items-end gap-0.5">
                   {Array.from({ length: 36 }).map((_, idx) => {
                     const base = 18 + ((idx * 17) % 24);
@@ -3972,14 +3973,14 @@ export default function MonitorV3Page() {
                     return (
                       <span
                         key={`podcast-wave-${idx}`}
-                        className={cn("w-[2px] rounded-sm", active ? "bg-cyan-300" : "bg-cyan-500/45")}
+                        className={cn("w-[2px] rounded-sm", active ? "bg-cyan-300 shadow-[0_0_6px_rgba(34,211,238,0.55)]" : "bg-cyan-700/55")}
                         style={{ height: `${base}px` }}
                       />
                     );
                   })}
                 </div>
               </div>
-              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="mt-1 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
                 <span>{formatPlaybackClock(podcastCurrentSec)}</span>
                 <span>{formatPlaybackClock(podcastDurationSec)}</span>
               </div>
@@ -3995,11 +3996,11 @@ export default function MonitorV3Page() {
                     podcastAudioRef.current.pause();
                   }
                 }}
-                className="rounded border border-cyan-500/60 bg-cyan-500/10 px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-cyan-300"
+                className="rounded border border-cyan-500/60 bg-cyan-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-cyan-300"
               >
                 {podcastIsPlaying ? "Pause" : "Play"}
               </button>
-              <label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Vol</label>
+              <label className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Vol</label>
               <input
                 type="range"
                 min={0}
@@ -4018,7 +4019,7 @@ export default function MonitorV3Page() {
                   href={activePodcastEpisode.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="ml-auto rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
+                  className="ml-auto rounded border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
                 >
                   source
                 </a>
@@ -4048,8 +4049,8 @@ export default function MonitorV3Page() {
             />
           </article>
 
-          <article className="rounded border border-border bg-card p-2">
-            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <article className="rounded border border-cyan-500/20 bg-card p-2">
+            <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
               <span>Podcast Catalog</span>
               <span>{filteredPodcastCatalog.length}</span>
             </div>
@@ -4057,7 +4058,7 @@ export default function MonitorV3Page() {
               <select
                 value={podcastCountryFilter}
                 onChange={(event) => setPodcastCountryFilter(event.target.value)}
-                className="rounded border border-border bg-card px-1.5 py-1 text-[11px]"
+                className="rounded border border-border bg-card px-1.5 py-1 text-[10px]"
               >
                 {podcastCountryOptions.map((countryCode) => {
                   const label = countryCode === "ALL" ? "All countries" : COUNTRY_OPTIONS.find((item) => item.id === countryCode)?.label || countryCode;
@@ -4071,7 +4072,7 @@ export default function MonitorV3Page() {
               <select
                 value={podcastLanguageFilter}
                 onChange={(event) => setPodcastLanguageFilter(event.target.value)}
-                className="rounded border border-border bg-card px-1.5 py-1 text-[11px]"
+                className="rounded border border-border bg-card px-1.5 py-1 text-[10px]"
               >
                 {podcastLanguageOptions.map((language) => (
                   <option key={`podcast-lang-${language}`} value={language}>
@@ -4102,8 +4103,8 @@ export default function MonitorV3Page() {
                         : "border-border bg-muted/10 hover:border-cyan-500/40",
                     )}
                   >
-                    <div className="line-clamp-1 text-xs font-medium">{item.title}</div>
-                    <div className="line-clamp-1 text-[10px] text-muted-foreground">
+                    <div className="line-clamp-1 text-[11px] font-medium">{item.title}</div>
+                    <div className="line-clamp-1 text-[9px] uppercase tracking-[0.08em] text-muted-foreground">
                       {(item.countries || []).join(", ") || "GLOBAL"} • {(item.languages || []).map((lang) => lang.toUpperCase()).join(", ")}
                     </div>
                   </button>
@@ -4112,8 +4113,8 @@ export default function MonitorV3Page() {
             </div>
           </article>
 
-          <article className="rounded border border-border bg-card p-2">
-            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <article className="rounded border border-cyan-500/20 bg-card p-2">
+            <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
               <span>Episodes</span>
               <span>{selectedPodcastEpisodes.length}</span>
             </div>
@@ -4143,8 +4144,8 @@ export default function MonitorV3Page() {
                         : "border-border bg-muted/10 hover:border-cyan-500/40",
                     )}
                   >
-                    <div className="line-clamp-1 text-xs font-medium">{episode.title}</div>
-                    <div className="line-clamp-1 text-[10px] text-muted-foreground">
+                    <div className="line-clamp-1 text-[11px] font-medium">{episode.title}</div>
+                    <div className="line-clamp-1 text-[9px] uppercase tracking-[0.08em] text-muted-foreground">
                       {formatDurationCompact(episode.durationSec) || "n/a"} • {formatAgeShort(episode.publishedAt)}
                     </div>
                   </button>
