@@ -433,6 +433,7 @@ type RenderModeOverride = "auto" | RenderMode;
 type RenderPreset = "mixed" | "data_dense" | "headlines";
 type HealthFilter = "all" | "live" | "degraded" | "empty";
 type VideoSourceStatus = "LIVE_EMBED" | "LIVE_STREAM" | "CONSTRAINED" | "CONTRACT_REQUIRED";
+type VideoTopic = "all" | "logistics" | "agro" | "news" | "finance";
 type VideoSource = {
   id: string;
   name: string;
@@ -464,7 +465,17 @@ const STORAGE_KEYS = {
   directPredictionSort: `${STORAGE_PREFIX}direct_prediction_sort`,
   directPredictionRegion: `${STORAGE_PREFIX}direct_prediction_region`,
   yieldCrop: `${STORAGE_PREFIX}yield_crop`,
+  videoTopic: `${STORAGE_PREFIX}video_topic`,
+  videoChannel: `${STORAGE_PREFIX}video_channel`,
 };
+
+const VIDEO_TOPIC_OPTIONS: Array<{ id: VideoTopic; label: string }> = [
+  { id: "all", label: "All" },
+  { id: "logistics", label: "Logistics" },
+  { id: "agro", label: "Agro" },
+  { id: "news", label: "News" },
+  { id: "finance", label: "Finance" },
+];
 
 const STATIC_VIDEO_SOURCES: VideoSource[] = [
   {
@@ -991,6 +1002,20 @@ function hostFromUrl(value?: string) {
   }
 }
 
+function inferVideoTopic(source: VideoSource): Exclude<VideoTopic, "all"> {
+  const text = `${source.id} ${source.name} ${source.note || ""}`.toLowerCase();
+  if (text.includes("farm") || text.includes("agri") || text.includes("grain")) return "agro";
+  if (text.includes("tv") || text.includes("newscast") || text.includes("finance") || text.includes("bloomberg")) return "finance";
+  if (text.includes("news")) return "news";
+  if (text.includes("port") || text.includes("harbor") || text.includes("webcam") || text.includes("earthcam") || text.includes("windy")) return "logistics";
+  return "news";
+}
+
+function needsLargeVideoCanvas(source: VideoSource) {
+  const text = `${source.id} ${source.name}`.toLowerCase();
+  return text.includes("windy");
+}
+
 function buildDataFirstFallbackRows(
   widget: GridWidget,
   state: "live" | "degraded" | "empty",
@@ -1367,6 +1392,9 @@ export default function MonitorV3Page() {
     readJson<DirectPredictionRegion>(STORAGE_KEYS.directPredictionRegion, "ALL"),
   );
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
+  const [videoTopic, setVideoTopic] = useState<VideoTopic>(() => readJson<VideoTopic>(STORAGE_KEYS.videoTopic, "all"));
+  const [videoChannel, setVideoChannel] = useState<string>(() => readJson<string>(STORAGE_KEYS.videoChannel, "all"));
+  const [mapVideoSourceId, setMapVideoSourceId] = useState<string | null>(null);
   const [debugWidgetId, setDebugWidgetId] = useState<string | null>(null);
   const [debugProviderId, setDebugProviderId] = useState<string | null>(null);
   const [geoLayers, setGeoLayers] = useState<Record<GeoLayerId, boolean>>({
@@ -1412,6 +1440,8 @@ export default function MonitorV3Page() {
   useEffect(() => writeJson(STORAGE_KEYS.directPredictionSort, directPredictionSort), [directPredictionSort]);
   useEffect(() => writeJson(STORAGE_KEYS.directPredictionRegion, directPredictionRegion), [directPredictionRegion]);
   useEffect(() => writeJson(STORAGE_KEYS.yieldCrop, yieldCrop), [yieldCrop]);
+  useEffect(() => writeJson(STORAGE_KEYS.videoTopic, videoTopic), [videoTopic]);
+  useEffect(() => writeJson(STORAGE_KEYS.videoChannel, videoChannel), [videoChannel]);
 
   const newsQuery = useQuery<NewsResponse>({
     queryKey: ["monitor-v3-news"],
@@ -2588,6 +2618,33 @@ export default function MonitorV3Page() {
     () => videoSources.filter((source) => (source.status === "LIVE_EMBED" || source.status === "LIVE_STREAM") && Boolean(source.url)),
     [videoSources],
   );
+  const videoSourcesByTopic = useMemo(
+    () =>
+      liveVideoSources.filter((source) => {
+        if (videoTopic === "all") return true;
+        return inferVideoTopic(source) === videoTopic;
+      }),
+    [liveVideoSources, videoTopic],
+  );
+  useEffect(() => {
+    if (videoChannel === "all") return;
+    if (!videoSourcesByTopic.some((source) => source.id === videoChannel)) {
+      setVideoChannel("all");
+    }
+  }, [videoChannel, videoSourcesByTopic]);
+  const selectedVideoChannel = useMemo(
+    () => videoSourcesByTopic.find((source) => source.id === videoChannel) || null,
+    [videoChannel, videoSourcesByTopic],
+  );
+  const prioritizedVideoSources = useMemo(() => {
+    if (!selectedVideoChannel) return videoSourcesByTopic;
+    return [selectedVideoChannel, ...videoSourcesByTopic.filter((source) => source.id !== selectedVideoChannel.id)];
+  }, [selectedVideoChannel, videoSourcesByTopic]);
+  const videoRailSlots = useMemo(() => prioritizedVideoSources.slice(0, 6), [prioritizedVideoSources]);
+  const mapVideoSource = useMemo(
+    () => (mapVideoSourceId ? liveVideoSources.find((source) => source.id === mapVideoSourceId) || null : null),
+    [liveVideoSources, mapVideoSourceId],
+  );
   const pendingVideoSources = useMemo(
     () => videoSources.filter((source) => source.status === "CONSTRAINED" || source.status === "CONTRACT_REQUIRED"),
     [videoSources],
@@ -3070,7 +3127,7 @@ export default function MonitorV3Page() {
           ) : null}
         </section>
 
-        <section className="grid gap-2 xl:grid-cols-[2fr_1fr_1fr]">
+        <section className="grid gap-2 xl:grid-cols-[2fr_1.15fr_0.85fr]">
           <div className="rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Global Situation</span>
@@ -3102,19 +3159,22 @@ export default function MonitorV3Page() {
             </div>
             <div
               className={cn(
-                "relative h-[360px] overflow-hidden rounded border border-border bg-[#06090f]",
-                geoDragging ? "cursor-grabbing" : "cursor-grab",
+                "relative h-[380px] overflow-hidden rounded border border-border bg-[#06090f]",
+                mapVideoSource ? "cursor-default" : geoDragging ? "cursor-grabbing" : "cursor-grab",
               )}
               onWheel={(event) => {
+                if (mapVideoSource) return;
                 event.preventDefault();
                 const delta = event.deltaY < 0 ? 0.1 : -0.1;
                 setGeoZoom((current) => clamp(Number((current + delta).toFixed(2)), 0.8, 2.4));
               }}
               onMouseDown={(event) => {
+                if (mapVideoSource) return;
                 setGeoDragging(true);
                 geoDragStartRef.current = { x: event.clientX, y: event.clientY, panX: geoPan.x, panY: geoPan.y };
               }}
               onMouseMove={(event) => {
+                if (mapVideoSource) return;
                 const start = geoDragStartRef.current;
                 if (!geoDragging || !start) return;
                 const dx = event.clientX - start.x;
@@ -3134,133 +3194,198 @@ export default function MonitorV3Page() {
                 setGeoHoverPointId(null);
               }}
             >
-              <svg viewBox="0 0 1000 460" className="h-full w-full select-none">
-                <defs>
-                  <radialGradient id="oceanGlow" cx="50%" cy="45%">
-                    <stop offset="0%" stopColor="#0f172a" />
-                    <stop offset="100%" stopColor="#020617" />
-                  </radialGradient>
-                  <filter id="mapBlur">
-                    <feGaussianBlur stdDeviation="0.5" />
-                  </filter>
-                </defs>
-                <rect x="0" y="0" width="1000" height="460" fill="url(#oceanGlow)" />
-                <g transform={`translate(${geoPan.x} ${geoPan.y}) scale(${geoZoom}) translate(${(1 - geoZoom) * 500} ${(1 - geoZoom) * 230})`}>
-                  <image
-                    href="/maps/monitor-map.png"
-                    x="0"
-                    y="0"
-                    width="1000"
-                    height="460"
-                    preserveAspectRatio="xMidYMid slice"
-                    opacity="0.95"
-                  />
-                  <rect x="0" y="0" width="1000" height="460" fill="#020617" opacity="0.22" />
-                  <g stroke="#0b1220" strokeWidth="1" opacity="0.55">
-                    {Array.from({ length: 9 }).map((_, idx) => (
-                      <line key={`lat-${idx}`} x1="0" y1={idx * 58} x2="1000" y2={idx * 58} />
-                    ))}
-                    {Array.from({ length: 11 }).map((_, idx) => (
-                      <line key={`lon-${idx}`} x1={idx * 100} y1="0" x2={idx * 100} y2="460" />
-                    ))}
-                  </g>
-                  {activeGeoPoints.map((point) => {
-                    const meta = GEO_LAYER_META[point.layer];
-                    const isHover = geoHoverPointId === point.id;
-                    const radius = 4 + point.intensity * 14;
-                    return (
-                      <g
-                        key={point.id}
-                        onMouseEnter={() => setGeoHoverPointId(point.id)}
-                        onMouseLeave={() => setGeoHoverPointId(null)}
+              {mapVideoSource ? (
+                <div className="relative h-full w-full bg-black">
+                  {mapVideoSource.mode === "iframe" && mapVideoSource.url ? (
+                    <iframe
+                      src={mapVideoSource.url}
+                      title={mapVideoSource.name}
+                      loading="lazy"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      className="h-full w-full"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : mapVideoSource.mode === "video" && mapVideoSource.url ? (
+                    <video
+                      className="h-full w-full object-cover"
+                      controls
+                      autoPlay
+                      muted
+                      playsInline
+                      preload="metadata"
+                      src={mapVideoSource.url}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Stream unavailable for map preview.</div>
+                  )}
+                  <div className="absolute right-2 top-2 flex gap-1">
+                    {mapVideoSource.url ? (
+                      <a
+                        href={mapVideoSource.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded border border-border bg-black/55 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
                       >
-                        <circle cx={point.x} cy={point.y} r={radius + (isHover ? 4 : 0)} fill={meta.stroke} opacity={0.15 + point.intensity * 0.28} />
-                        <circle cx={point.x} cy={point.y} r={2.6 + point.intensity * 3.2} fill={meta.stroke} filter="url(#mapBlur)" />
-                        {isHover ? (
-                          <>
-                            <rect x={point.x + 10} y={point.y - 30} rx="4" ry="4" width="150" height="30" fill="#020617" stroke={meta.stroke} />
-                            <text x={point.x + 16} y={point.y - 18} fill="#e2e8f0" fontSize="10">{point.label}</text>
-                            <text x={point.x + 16} y={point.y - 8} fill={meta.stroke} fontSize="10">{point.value}</text>
-                          </>
-                        ) : null}
-                      </g>
-                    );
-                  })}
-                </g>
-              </svg>
-              <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
-                  zoom {geoZoom.toFixed(1)}x
-                </span>
-                <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
-                  points {activeGeoPoints.length}
-                </span>
-              </div>
-              <div className="absolute right-2 top-2 flex gap-1">
-                <button
-                  onClick={() => setGeoZoom((current) => clamp(Number((current - 0.1).toFixed(2)), 0.8, 2.4))}
-                  className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  -
-                </button>
-                <button
-                  onClick={() => setGeoZoom((current) => clamp(Number((current + 0.1).toFixed(2)), 0.8, 2.4))}
-                  className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  +
-                </button>
-              </div>
-              <div className="absolute left-2 top-2 flex flex-wrap gap-1">
-                {(Object.keys(GEO_LAYER_META) as GeoLayerId[]).map((layerId) => (
-                  <span
-                    key={`geo-legend-${layerId}`}
-                    className={cn(
-                      "rounded border border-border bg-black/35 px-1.5 py-0.5 text-[10px]",
-                      GEO_LAYER_META[layerId].tone,
-                    )}
-                  >
-                    {GEO_LAYER_META[layerId].label}
-                  </span>
-                ))}
-              </div>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t border-border bg-black/45 px-2 py-1 text-[10px] text-muted-foreground">
-                Internal geo layers engine: canvas/svg foundation active. GEOGLAM remains paused in hero until fresher layer sources are connected.
-              </div>
-            </div>
-            <div className="mt-1 text-[10px] text-muted-foreground">
-              Drag to pan, mouse wheel to zoom. Layer points are synthesized from live feed, prediction risk, and market deltas.
-            </div>
-          </div>
-          <div className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Live Feed</div>
-            <div className="space-y-1.5">
-              {filteredFeed.length === 0 ? (
-                <div className="rounded border border-dashed border-border p-1.5 text-xs text-muted-foreground">No live feed items for current filters.</div>
-              ) : (
-                filteredFeed.slice(0, 5).map((item) => (
-                  <div key={item.id} className="rounded border border-border p-1.5 text-xs">
-                    <div className="line-clamp-2 font-medium">{item.title}</div>
-                    <div className="mt-1 text-[10px] text-muted-foreground">{item.source_name}</div>
+                        Open source
+                      </a>
+                    ) : null}
+                    <button
+                      onClick={() => setMapVideoSourceId(null)}
+                      className="rounded border border-border bg-black/55 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+                    >
+                      Back to map
+                    </button>
                   </div>
-                ))
+                  <div className="absolute inset-x-0 bottom-0 border-t border-border bg-black/65 px-2 py-1 text-xs text-zinc-200">
+                    {mapVideoSource.name}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <svg viewBox="0 0 1000 460" className="h-full w-full select-none">
+                    <defs>
+                      <radialGradient id="oceanGlow" cx="50%" cy="45%">
+                        <stop offset="0%" stopColor="#0f172a" />
+                        <stop offset="100%" stopColor="#020617" />
+                      </radialGradient>
+                      <filter id="mapBlur">
+                        <feGaussianBlur stdDeviation="0.5" />
+                      </filter>
+                    </defs>
+                    <rect x="0" y="0" width="1000" height="460" fill="url(#oceanGlow)" />
+                    <g transform={`translate(${geoPan.x} ${geoPan.y}) scale(${geoZoom}) translate(${(1 - geoZoom) * 500} ${(1 - geoZoom) * 230})`}>
+                      <image
+                        href="/maps/monitor-map.png"
+                        x="0"
+                        y="0"
+                        width="1000"
+                        height="460"
+                        preserveAspectRatio="xMidYMid slice"
+                        opacity="0.95"
+                      />
+                      <rect x="0" y="0" width="1000" height="460" fill="#020617" opacity="0.22" />
+                      <g stroke="#0b1220" strokeWidth="1" opacity="0.55">
+                        {Array.from({ length: 9 }).map((_, idx) => (
+                          <line key={`lat-${idx}`} x1="0" y1={idx * 58} x2="1000" y2={idx * 58} />
+                        ))}
+                        {Array.from({ length: 11 }).map((_, idx) => (
+                          <line key={`lon-${idx}`} x1={idx * 100} y1="0" x2={idx * 100} y2="460" />
+                        ))}
+                      </g>
+                      {activeGeoPoints.map((point) => {
+                        const meta = GEO_LAYER_META[point.layer];
+                        const isHover = geoHoverPointId === point.id;
+                        const radius = 4 + point.intensity * 14;
+                        return (
+                          <g
+                            key={point.id}
+                            onMouseEnter={() => setGeoHoverPointId(point.id)}
+                            onMouseLeave={() => setGeoHoverPointId(null)}
+                          >
+                            <circle cx={point.x} cy={point.y} r={radius + (isHover ? 4 : 0)} fill={meta.stroke} opacity={0.15 + point.intensity * 0.28} />
+                            <circle cx={point.x} cy={point.y} r={2.6 + point.intensity * 3.2} fill={meta.stroke} filter="url(#mapBlur)" />
+                            {isHover ? (
+                              <>
+                                <rect x={point.x + 10} y={point.y - 30} rx="4" ry="4" width="150" height="30" fill="#020617" stroke={meta.stroke} />
+                                <text x={point.x + 16} y={point.y - 18} fill="#e2e8f0" fontSize="10">{point.label}</text>
+                                <text x={point.x + 16} y={point.y - 8} fill={meta.stroke} fontSize="10">{point.value}</text>
+                              </>
+                            ) : null}
+                          </g>
+                        );
+                      })}
+                    </g>
+                  </svg>
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
+                      zoom {geoZoom.toFixed(1)}x
+                    </span>
+                    <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
+                      points {activeGeoPoints.length}
+                    </span>
+                  </div>
+                  <div className="absolute right-2 top-2 flex gap-1">
+                    <button
+                      onClick={() => setGeoZoom((current) => clamp(Number((current - 0.1).toFixed(2)), 0.8, 2.4))}
+                      className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      -
+                    </button>
+                    <button
+                      onClick={() => setGeoZoom((current) => clamp(Number((current + 0.1).toFixed(2)), 0.8, 2.4))}
+                      className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="absolute left-2 top-2 flex flex-wrap gap-1">
+                    {(Object.keys(GEO_LAYER_META) as GeoLayerId[]).map((layerId) => (
+                      <span
+                        key={`geo-legend-${layerId}`}
+                        className={cn(
+                          "rounded border border-border bg-black/35 px-1.5 py-0.5 text-[10px]",
+                          GEO_LAYER_META[layerId].tone,
+                        )}
+                      >
+                        {GEO_LAYER_META[layerId].label}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t border-border bg-black/45 px-2 py-1 text-[10px] text-muted-foreground">
+                    Internal geo layers engine: canvas/svg foundation active. GEOGLAM remains paused in hero until fresher layer sources are connected.
+                  </div>
+                </>
               )}
             </div>
+            <div className="mt-1 text-[10px] text-muted-foreground">
+              {mapVideoSource
+                ? "Video preview is opened in map zone. Use Back to map to return."
+                : "Drag to pan, mouse wheel to zoom. Layer points are synthesized from live feed, prediction risk, and market deltas."}
+            </div>
           </div>
           <div className="rounded border border-border bg-card p-2">
-            <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Video Rail</div>
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Video Rail</span>
+              <span>{videoRailSlots.length}/6 live</span>
+            </div>
+            <div className="mb-1 flex gap-1">
+              <select
+                value={videoTopic}
+                onChange={(event) => setVideoTopic(event.target.value as VideoTopic)}
+                className="min-w-0 flex-1 rounded border border-border bg-card px-1.5 py-1 text-[11px] uppercase tracking-[0.12em]"
+              >
+                {VIDEO_TOPIC_OPTIONS.map((option) => (
+                  <option key={`video-topic-${option.id}`} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={videoChannel}
+                onChange={(event) => setVideoChannel(event.target.value)}
+                className="min-w-0 flex-[1.4] rounded border border-border bg-card px-1.5 py-1 text-[11px]"
+              >
+                <option value="all">All channels</option>
+                {videoSourcesByTopic.map((source) => (
+                  <option key={`video-channel-${source.id}`} value={source.id}>
+                    {source.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="grid grid-cols-2 gap-1.5">
-              {Array.from({ length: 4 }).map((_, idx) => {
-                const source = liveVideoSources[idx];
+              {Array.from({ length: 6 }).map((_, idx) => {
+                const source = videoRailSlots[idx];
                 if (!source) {
                   return (
-                    <div key={`video-slot-empty-${idx}`} className="aspect-video rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
+                    <div key={`video-slot-empty-${idx}`} className="aspect-video min-h-[92px] rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
                       Live slot {idx + 1}
                     </div>
                   );
                 }
-                if (source.mode === "iframe" && source.url) {
+                if (source.mode === "iframe" && source.url && !needsLargeVideoCanvas(source)) {
                   return (
-                    <div key={source.id} className="relative aspect-video overflow-hidden rounded border border-border bg-black/30">
+                    <div key={source.id} className="relative aspect-video min-h-[92px] overflow-hidden rounded border border-border bg-black/30">
                       <iframe
                         src={source.url}
                         title={source.name}
@@ -3269,6 +3394,12 @@ export default function MonitorV3Page() {
                         className="h-full w-full"
                         referrerPolicy="no-referrer"
                       />
+                      <button
+                        onClick={() => setMapVideoSourceId(source.id)}
+                        className="absolute right-1 top-1 rounded border border-border bg-black/65 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
+                      >
+                        map
+                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
@@ -3277,7 +3408,7 @@ export default function MonitorV3Page() {
                 }
                 if (source.mode === "video" && source.url) {
                   return (
-                    <div key={source.id} className="relative aspect-video overflow-hidden rounded border border-border bg-black/30">
+                    <div key={source.id} className="relative aspect-video min-h-[92px] overflow-hidden rounded border border-border bg-black/30">
                       <video
                         className="h-full w-full object-cover"
                         controls
@@ -3287,6 +3418,12 @@ export default function MonitorV3Page() {
                         preload="metadata"
                         src={source.url}
                       />
+                      <button
+                        onClick={() => setMapVideoSourceId(source.id)}
+                        className="absolute right-1 top-1 rounded border border-border bg-black/65 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
+                      >
+                        map
+                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
@@ -3294,8 +3431,27 @@ export default function MonitorV3Page() {
                   );
                 }
                 return (
-                  <div key={source.id} className="aspect-video rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
-                    {source.name}
+                  <div key={source.id} className="relative aspect-video min-h-[92px] rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
+                    <div className="line-clamp-2">{source.name}</div>
+                    <div className="mt-0.5 text-[9px] text-muted-foreground/80">{source.note || "Preview available in map zone"}</div>
+                    <div className="absolute inset-x-1 bottom-1 flex gap-1">
+                      <button
+                        onClick={() => setMapVideoSourceId(source.id)}
+                        className="rounded border border-border bg-black/45 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
+                      >
+                        Open on map
+                      </button>
+                      {source.url ? (
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded border border-border bg-black/45 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
+                        >
+                          source
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 );
               })}
@@ -3329,6 +3485,48 @@ export default function MonitorV3Page() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+          <div className="rounded border border-border bg-card p-2">
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Live Feed</span>
+              <span>RSS + signals</span>
+            </div>
+            <div className="monitor-widget-scroll max-h-[380px] space-y-1.5 overflow-y-auto pr-0.5">
+              {filteredFeed.length === 0 ? (
+                <div className="rounded border border-dashed border-border p-1.5 text-xs text-muted-foreground">No live feed items for current filters.</div>
+              ) : (
+                filteredFeed.slice(0, 14).map((item) => {
+                  const card = (
+                    <>
+                      <div className="line-clamp-2 text-sm font-medium">{item.title}</div>
+                      <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <span className="rounded border border-border px-1 py-0 uppercase tracking-[0.08em]">rss</span>
+                        <span className="truncate">{item.source_name}</span>
+                        <span className="ml-auto">{formatAgeShort(item.published_at)}</span>
+                      </div>
+                    </>
+                  );
+                  if (item.url) {
+                    return (
+                      <a
+                        key={item.id}
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded border border-border p-1.5 hover:border-cyan-500/60 hover:bg-cyan-500/5"
+                      >
+                        {card}
+                      </a>
+                    );
+                  }
+                  return (
+                    <div key={item.id} className="rounded border border-border p-1.5">
+                      {card}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>
