@@ -1852,17 +1852,18 @@ function buildAgriEventsPopupHtml(args: { label: string; value: string; events: 
     .slice(0, 10)
     .map((event) => {
       const href = event.website ? ` href="${escapeHtml(event.website)}" target="_blank" rel="noreferrer"` : "";
-      const scopeTone = event.scope === "global" ? "#a78bfa" : "#38bdf8";
+      const scopeTone = event.scope === "global" ? "#c4b5fd" : "#67e8f9";
       return `<a${href} style="display:block;text-decoration:none;color:#e2e8f0;border:1px solid rgba(148,163,184,0.22);border-radius:6px;padding:6px;margin-top:6px;background:rgba(2,6,23,0.4);">
-        <div style="display:flex;justify-content:space-between;gap:8px;">
-          <div style="font-size:11px;line-height:1.2;">${escapeHtml(event.title || "Event")}</div>
-          <div style="font-size:10px;color:${scopeTone};text-transform:uppercase;">${escapeHtml(event.scope || "")}</div>
+        <div style="font-size:11px;line-height:1.25;word-break:break-word;">${escapeHtml(event.title || "Event")}</div>
+        <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:10px;color:${scopeTone};text-transform:uppercase;border:1px solid rgba(148,163,184,0.28);border-radius:999px;padding:1px 6px;">${escapeHtml(event.scope || "")}</span>
+          <span style="font-size:10px;color:#94a3b8;">${escapeHtml(event.region || "")}</span>
         </div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:4px;">${escapeHtml(event.start_date)} → ${escapeHtml(event.end_date)} • ${escapeHtml(event.city)}, ${escapeHtml(event.country)}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:4px;word-break:break-word;">${escapeHtml(event.start_date)} → ${escapeHtml(event.end_date)} • ${escapeHtml(event.city)}, ${escapeHtml(event.country)}</div>
       </a>`;
     })
     .join("");
-  return `<div style="width:310px;max-height:340px;overflow:auto;font-size:12px;line-height:1.2;">
+  return `<div style="width:min(360px, 74vw);max-height:340px;overflow:auto;font-size:12px;line-height:1.2;">
     <div style="font-weight:700;color:#e2e8f0;">${escapeHtml(args.label)}</div>
     <div style="color:#94a3b8;margin-top:2px;">${escapeHtml(args.value)}</div>
     <div style="margin-top:8px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Events in this country</div>
@@ -1970,7 +1971,6 @@ export default function MonitorV3Page() {
   const [logisticsEventCommodity, setLogisticsEventCommodity] = useState<string>("all");
   const [agriEventsScope, setAgriEventsScope] = useState<string>("all");
   const [agriEventsCountry, setAgriEventsCountry] = useState<string>("all");
-  const [chokepointSeverityFilter, setChokepointSeverityFilter] = useState<"all" | "stress">("all");
   const [mapVideoSourceId, setMapVideoSourceId] = useState<string | null>(null);
   const [podcastCountryFilter, setPodcastCountryFilter] = useState<string>("ALL");
   const [podcastLanguageFilter, setPodcastLanguageFilter] = useState<string>("all");
@@ -3928,11 +3928,9 @@ export default function MonitorV3Page() {
     () =>
       geoPoints.filter((point) => {
         if (!geoLayers[point.layer]) return false;
-        if (point.layer !== "chokepoints") return true;
-        if (chokepointSeverityFilter === "all") return true;
-        return point.chokepointStatus === "stressed" || point.chokepointStatus === "critical";
+        return true;
       }),
-    [geoPoints, geoLayers, chokepointSeverityFilter],
+    [geoPoints, geoLayers],
   );
   const activeGeoPointsGeoJson = useMemo(
     () => ({
@@ -4754,18 +4752,6 @@ export default function MonitorV3Page() {
                   </button>
                 ))}
                 <button
-                  onClick={() => setChokepointSeverityFilter((current) => (current === "all" ? "stress" : "all"))}
-                  className={cn(
-                    "rounded border px-1.5 py-0.5 text-[10px]",
-                    chokepointSeverityFilter === "stress"
-                      ? "border-red-500/70 bg-red-500/12 text-red-300"
-                      : "border-border text-muted-foreground",
-                  )}
-                  title="Filter chokepoints markers"
-                >
-                  choke {chokepointSeverityFilter === "stress" ? "critical+stressed" : "all"}
-                </button>
-                <button
                   onClick={() => {
                     const map = heroMapRef.current;
                     if (!map) return;
@@ -5534,7 +5520,6 @@ export default function MonitorV3Page() {
                   setYieldCrop("ALL");
                   setRenderPreset("mixed");
                   setRenderModeById({});
-                  setChokepointSeverityFilter("all");
                 }}
                 className="rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
