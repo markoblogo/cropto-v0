@@ -1,6 +1,8 @@
 import * as cheerio from "cheerio";
 import { inflateSync } from "node:zlib";
 import {
+  DBNOMICS_API_BASE_URL,
+  DBNOMICS_TIMEOUT_MS,
   ENABLE_IMF_PCPS_WIDGET,
   IMF_PCPS_CACHE_TTL_MS,
   IMF_PCPS_PAGE_URL,
@@ -22,6 +24,17 @@ const TARGETS = [
   { commodity: "SOYBEANS" as const, label: "Soybeans", aliases: ["soybeans", "soybean"] },
 ];
 
+const DBNOMICS_PCPS_SERIES_BY_COMMODITY: Record<(typeof TARGETS)[number]["commodity"], string[]> = {
+  WHEAT: ["M.W00.PWHEAMT.IX"],
+  MAIZE: ["M.W00.PMAIZMT.IX"],
+  SOYBEANS: ["M.W00.PSOYB.IX"],
+};
+
+type DbnomicsSeriesDoc = {
+  period?: Array<string | number>;
+  value?: Array<number | string | null>;
+};
+
 function buildImfRow(target: (typeof TARGETS)[number], seriesValues: number[], extractionMode: string): GrainWidgetImfCommodityBenchmarkRow {
   const current = seriesValues[seriesValues.length - 1];
   const prev = seriesValues[seriesValues.length - 2];
@@ -40,6 +53,79 @@ function buildImfRow(target: (typeof TARGETS)[number], seriesValues: number[], e
       `extraction_mode:${extractionMode}`,
     ],
   } satisfies GrainWidgetImfCommodityBenchmarkRow;
+}
+
+function toIsoFromPeriod(period: string | number): string {
+  const raw = String(period || "").trim();
+  if (/^\d{4}-\d{2}$/.test(raw)) return `${raw}-01T00:00:00.000Z`;
+  if (/^\d{4}$/.test(raw)) return `${raw}-01-01T00:00:00.000Z`;
+  const ts = Date.parse(raw);
+  return Number.isFinite(ts) ? new Date(ts).toISOString() : new Date().toISOString();
+}
+
+async function fetchDbnomicsSeries(seriesCode: string): Promise<{ doc?: DbnomicsSeriesDoc; sourceUrl: string; error?: string }> {
+  const sourceUrl = `${DBNOMICS_API_BASE_URL}/series/IMF/PCPS/${seriesCode}?observations=true`;
+  try {
+    const response = await fetchTextResponseWithTimeout(sourceUrl, DBNOMICS_TIMEOUT_MS);
+    const payload = JSON.parse(response.text);
+    const doc = payload?.series?.docs?.[0] as DbnomicsSeriesDoc | undefined;
+    if (!doc || !Array.isArray(doc.period) || !Array.isArray(doc.value)) {
+      return { sourceUrl, error: "dbnomics_series_shape_unexpected" };
+    }
+    return { sourceUrl, doc };
+  } catch (error: any) {
+    return { sourceUrl, error: error?.message || "dbnomics_fetch_failed" };
+  }
+}
+
+async function fetchRowsFromDbnomics(ctx: GrainWidgetsProviderContext) {
+  const rows: GrainWidgetImfCommodityBenchmarkRow[] = [];
+  const sourceUrlsUsed: string[] = [];
+  const warnings: string[] = [];
+
+  for (const target of TARGETS) {
+    const candidates = DBNOMICS_PCPS_SERIES_BY_COMMODITY[target.commodity] || [];
+    let selectedDoc: DbnomicsSeriesDoc | undefined;
+    let selectedSeries = "";
+
+    for (const seriesCode of candidates) {
+      const result = await fetchDbnomicsSeries(seriesCode);
+      sourceUrlsUsed.push(result.sourceUrl);
+      if (result.doc) {
+        selectedDoc = result.doc;
+        selectedSeries = seriesCode;
+        break;
+      }
+      if (result.error) warnings.push(`${target.commodity}:${seriesCode}:${result.error}`);
+    }
+
+    if (!selectedDoc) continue;
+
+    const tuples = selectedDoc.period
+      ?.map((period, idx) => ({ period, value: parseNumber(selectedDoc.value?.[idx]) }))
+      .filter((entry): entry is { period: string | number; value: number } => entry.value != null) || [];
+
+    if (tuples.length < 3) {
+      warnings.push(`${target.commodity}:${selectedSeries}:insufficient_points`);
+      continue;
+    }
+
+    const subset = tuples.slice(Math.max(0, tuples.length - Math.max(ctx.seriesPoints, 8)));
+    const row = buildImfRow(
+      target,
+      subset.map((item) => item.value),
+      "dbnomics_pcps",
+    );
+    row.series = subset.map((item) => ({ ts: toIsoFromPeriod(item.period), value: Number(item.value.toFixed(4)) }));
+    row.notes = [
+      "Source: DBnomics IMF/PCPS",
+      `series_code:${selectedSeries}`,
+      "Units: index (2016=100)",
+    ];
+    rows.push(row);
+  }
+
+  return { rows, sourceUrlsUsed, warnings };
 }
 
 function parseRowsFromStructuredText(text: string, extractionMode: string): GrainWidgetImfCommodityBenchmarkRow[] {
@@ -160,6 +246,43 @@ export class ImfPcpsProvider implements GrainWidgetsProvider {
     const now = Date.now();
     if (cacheEntry && now - cacheEntry.fetchedAt <= IMF_PCPS_CACHE_TTL_MS) {
       return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
+    }
+
+    const dbnomics = await fetchRowsFromDbnomics(ctx);
+    if (dbnomics.rows.length >= 3) {
+      const widget: GrainWidgetImfCommodityBenchmarks = {
+        id: "grain-imf-commodity-benchmarks",
+        kind: "IMF_COMMODITY_BENCHMARKS",
+        title: "IMF Commodity Benchmarks",
+        subtitle: "Primary commodity price system",
+        status: "REFRESH",
+        sourceName: "IMF",
+        sourceAttribution: "Data: IMF/PCPS via DBnomics",
+        sourceUrl: redactSensitiveUrl(dbnomics.sourceUrlsUsed[0] || `${DBNOMICS_API_BASE_URL}/datasets/IMF/PCPS`),
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        rows: dbnomics.rows,
+        summary: {
+          expectedCount: 4,
+          mappedCount: dbnomics.rows.length,
+          coverage: `${dbnomics.rows.length}/4`,
+          cadence: "monthly",
+        },
+        notes: [
+          "DBnomics IMF/PCPS monthly benchmark layer",
+          "Index units (2016=100)",
+          "Fallback chain: DBnomics -> IMF official parsing",
+        ],
+        debug: {
+          sourceUrlUsed: redactSensitiveUrl(dbnomics.sourceUrlsUsed[0] || `${DBNOMICS_API_BASE_URL}/datasets/IMF/PCPS`),
+          rowsParsed: dbnomics.rows.length,
+          warnings: dbnomics.warnings.length ? dbnomics.warnings : ["data_source:dbnomics_pcps"],
+        },
+      };
+      cacheEntry = { fetchedAt: now, widget };
+      return widget;
     }
 
     const page = await discoverOfficialPage(IMF_PCPS_PAGE_URL, IMF_PCPS_TIMEOUT_MS);
