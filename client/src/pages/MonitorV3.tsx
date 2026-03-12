@@ -1011,11 +1011,6 @@ function inferVideoTopic(source: VideoSource): Exclude<VideoTopic, "all"> {
   return "news";
 }
 
-function needsLargeVideoCanvas(source: VideoSource) {
-  const text = `${source.id} ${source.name}`.toLowerCase();
-  return text.includes("windy");
-}
-
 function buildDataFirstFallbackRows(
   widget: GridWidget,
   state: "live" | "degraded" | "empty",
@@ -3127,8 +3122,8 @@ export default function MonitorV3Page() {
           ) : null}
         </section>
 
-        <section className="grid gap-2 xl:grid-cols-[2fr_1.15fr_0.85fr]">
-          <div className="rounded border border-border bg-card p-2">
+        <section className="grid items-stretch gap-2 xl:grid-cols-[2fr_1.15fr_0.85fr]">
+          <div className="flex min-h-[640px] flex-col rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Global Situation</span>
               <div className="flex items-center gap-1">
@@ -3155,11 +3150,19 @@ export default function MonitorV3Page() {
                 >
                   reset
                 </button>
+                {mapVideoSource ? (
+                  <button
+                    onClick={() => setMapVideoSourceId(null)}
+                    className="rounded border border-cyan-500/60 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] text-cyan-300"
+                  >
+                    video on map
+                  </button>
+                ) : null}
               </div>
             </div>
             <div
               className={cn(
-                "relative h-[380px] overflow-hidden rounded border border-border bg-[#06090f]",
+                "relative min-h-[520px] flex-1 overflow-hidden rounded border border-border bg-[#06090f]",
                 mapVideoSource ? "cursor-default" : geoDragging ? "cursor-grabbing" : "cursor-grab",
               )}
               onWheel={(event) => {
@@ -3343,7 +3346,7 @@ export default function MonitorV3Page() {
                 : "Drag to pan, mouse wheel to zoom. Layer points are synthesized from live feed, prediction risk, and market deltas."}
             </div>
           </div>
-          <div className="rounded border border-border bg-card p-2">
+          <div className="flex min-h-[640px] flex-col rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Video Rail</span>
               <span>{videoRailSlots.length}/6 live</span>
@@ -3373,7 +3376,8 @@ export default function MonitorV3Page() {
                 ))}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="monitor-widget-scroll flex-1 overflow-y-auto pr-0.5">
+              <div className="grid grid-cols-2 gap-1.5">
               {Array.from({ length: 6 }).map((_, idx) => {
                 const source = videoRailSlots[idx];
                 if (!source) {
@@ -3383,9 +3387,13 @@ export default function MonitorV3Page() {
                     </div>
                   );
                 }
-                if (source.mode === "iframe" && source.url && !needsLargeVideoCanvas(source)) {
+                if (source.mode === "iframe" && source.url) {
                   return (
-                    <div key={source.id} className="relative aspect-video min-h-[92px] overflow-hidden rounded border border-border bg-black/30">
+                    <div
+                      key={source.id}
+                      onClick={() => setMapVideoSourceId(source.id)}
+                      className="relative aspect-video min-h-[92px] cursor-pointer overflow-hidden rounded border border-border bg-black/30 text-left"
+                    >
                       <iframe
                         src={source.url}
                         title={source.name}
@@ -3395,7 +3403,11 @@ export default function MonitorV3Page() {
                         referrerPolicy="no-referrer"
                       />
                       <button
-                        onClick={() => setMapVideoSourceId(source.id)}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setMapVideoSourceId(source.id);
+                        }}
                         className="absolute right-1 top-1 rounded border border-border bg-black/65 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
                       >
                         map
@@ -3408,7 +3420,11 @@ export default function MonitorV3Page() {
                 }
                 if (source.mode === "video" && source.url) {
                   return (
-                    <div key={source.id} className="relative aspect-video min-h-[92px] overflow-hidden rounded border border-border bg-black/30">
+                    <div
+                      key={source.id}
+                      onClick={() => setMapVideoSourceId(source.id)}
+                      className="relative aspect-video min-h-[92px] cursor-pointer overflow-hidden rounded border border-border bg-black/30 text-left"
+                    >
                       <video
                         className="h-full w-full object-cover"
                         controls
@@ -3419,7 +3435,11 @@ export default function MonitorV3Page() {
                         src={source.url}
                       />
                       <button
-                        onClick={() => setMapVideoSourceId(source.id)}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setMapVideoSourceId(source.id);
+                        }}
                         className="absolute right-1 top-1 rounded border border-border bg-black/65 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
                       >
                         map
@@ -3431,12 +3451,19 @@ export default function MonitorV3Page() {
                   );
                 }
                 return (
-                  <div key={source.id} className="relative aspect-video min-h-[92px] rounded border border-dashed border-border bg-muted/20 p-1 text-[10px] text-muted-foreground">
+                  <div
+                    key={source.id}
+                    onClick={() => setMapVideoSourceId(source.id)}
+                    className="relative aspect-video min-h-[92px] cursor-pointer rounded border border-dashed border-border bg-muted/20 p-1 text-left text-[10px] text-muted-foreground"
+                  >
                     <div className="line-clamp-2">{source.name}</div>
                     <div className="mt-0.5 text-[9px] text-muted-foreground/80">{source.note || "Preview available in map zone"}</div>
                     <div className="absolute inset-x-1 bottom-1 flex gap-1">
                       <button
-                        onClick={() => setMapVideoSourceId(source.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setMapVideoSourceId(source.id);
+                        }}
                         className="rounded border border-border bg-black/45 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
                       >
                         Open on map
@@ -3446,6 +3473,7 @@ export default function MonitorV3Page() {
                           href={source.url}
                           target="_blank"
                           rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
                           className="rounded border border-border bg-black/45 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
                         >
                           source
@@ -3455,7 +3483,7 @@ export default function MonitorV3Page() {
                   </div>
                 );
               })}
-            </div>
+              </div>
             <div className="mt-1.5 rounded border border-border bg-muted/10 px-1.5 py-1">
               <div className="mb-1 text-[9px] uppercase tracking-[0.12em] text-muted-foreground">Pending sources</div>
               <div className="space-y-1">
@@ -3486,13 +3514,14 @@ export default function MonitorV3Page() {
                 ))}
               </div>
             </div>
+            </div>
           </div>
-          <div className="rounded border border-border bg-card p-2">
+          <div className="flex min-h-[640px] flex-col rounded border border-border bg-card p-2">
             <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>Live Feed</span>
               <span>RSS + signals</span>
             </div>
-            <div className="monitor-widget-scroll max-h-[380px] space-y-1.5 overflow-y-auto pr-0.5">
+            <div className="monitor-widget-scroll min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5">
               {filteredFeed.length === 0 ? (
                 <div className="rounded border border-dashed border-border p-1.5 text-xs text-muted-foreground">No live feed items for current filters.</div>
               ) : (
