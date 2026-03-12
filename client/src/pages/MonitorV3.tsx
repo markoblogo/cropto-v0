@@ -431,9 +431,32 @@ type PodcastsWidgetResponse = {
   episodes: PodcastEpisode[];
 };
 
+type AgriEventItem = {
+  id: string;
+  title: string;
+  scope: "global" | "national";
+  segment: string[];
+  region: string;
+  country: string;
+  city: string;
+  start_date: string;
+  end_date: string;
+  website: string;
+};
+
+type AgriEventsResponse = {
+  generatedAt?: string;
+  today?: string;
+  items?: AgriEventItem[];
+  facets?: {
+    scopes?: Array<{ value: string; count: number }>;
+    countries?: Array<{ value: string; count: number }>;
+  };
+};
+
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
-type GeoLayerId = "markets" | "logistics" | "weather" | "risk" | "food" | "chokepoints";
+type GeoLayerId = "markets" | "logistics" | "weather" | "risk" | "food" | "chokepoints" | "events";
 type GeoPoint = {
   id: string;
   layer: GeoLayerId;
@@ -448,6 +471,7 @@ type GeoPoint = {
   chokepointMode?: LogisticsEventMode;
   weatherRegionId?: string;
   weatherCrop?: string;
+  events?: AgriEventItem[];
 };
 type MapLayerCountryMetric = {
   code: string;
@@ -469,6 +493,7 @@ type MapLayerFeature = {
   properties?: {
     name?: string;
     type?: string;
+    country?: string;
     metrics?: MapLayerCountryMetric[] | {
       traffic_ratio?: number;
       baseline?: number;
@@ -476,6 +501,10 @@ type MapLayerFeature = {
       unit?: string;
       as_of?: string;
     };
+    total_events_count?: number;
+    global_events_count?: number;
+    national_events_count?: number;
+    events?: AgriEventItem[];
     status?: "normal" | "stressed" | "critical";
     severity_level?: 1 | 2 | 3;
     region?: string;
@@ -1158,6 +1187,7 @@ const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: 
   markets: { label: "Markets", tone: "text-cyan-300", stroke: "#22d3ee" },
   logistics: { label: "Logistics", tone: "text-amber-300", stroke: "#f59e0b" },
   chokepoints: { label: "Choke", tone: "text-red-300", stroke: "#ef4444" },
+  events: { label: "Events", tone: "text-violet-300", stroke: "#a78bfa" },
   weather: { label: "Weather", tone: "text-emerald-300", stroke: "#34d399" },
   risk: { label: "Risk", tone: "text-rose-300", stroke: "#fb7185" },
   food: { label: "Food", tone: "text-orange-300", stroke: "#f97316" },
@@ -1817,6 +1847,29 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+function buildAgriEventsPopupHtml(args: { label: string; value: string; events: AgriEventItem[] }): string {
+  const rows = (args.events || [])
+    .slice(0, 10)
+    .map((event) => {
+      const href = event.website ? ` href="${escapeHtml(event.website)}" target="_blank" rel="noreferrer"` : "";
+      const scopeTone = event.scope === "global" ? "#a78bfa" : "#38bdf8";
+      return `<a${href} style="display:block;text-decoration:none;color:#e2e8f0;border:1px solid rgba(148,163,184,0.22);border-radius:6px;padding:6px;margin-top:6px;background:rgba(2,6,23,0.4);">
+        <div style="display:flex;justify-content:space-between;gap:8px;">
+          <div style="font-size:11px;line-height:1.2;">${escapeHtml(event.title || "Event")}</div>
+          <div style="font-size:10px;color:${scopeTone};text-transform:uppercase;">${escapeHtml(event.scope || "")}</div>
+        </div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:4px;">${escapeHtml(event.start_date)} → ${escapeHtml(event.end_date)} • ${escapeHtml(event.city)}, ${escapeHtml(event.country)}</div>
+      </a>`;
+    })
+    .join("");
+  return `<div style="width:310px;max-height:340px;overflow:auto;font-size:12px;line-height:1.2;">
+    <div style="font-weight:700;color:#e2e8f0;">${escapeHtml(args.label)}</div>
+    <div style="color:#94a3b8;margin-top:2px;">${escapeHtml(args.value)}</div>
+    <div style="margin-top:8px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Events in this country</div>
+    ${rows || `<div style="margin-top:6px;color:#94a3b8;">No events rows.</div>`}
+  </div>`;
+}
+
 function monitorCountryToPodcastRegion(country: Country): string {
   if (country === "US") return "North America";
   if (country === "BR" || country === "AR") return "South America";
@@ -1915,6 +1968,8 @@ export default function MonitorV3Page() {
   const [logisticsEventMode, setLogisticsEventMode] = useState<string>("all");
   const [logisticsEventRegion, setLogisticsEventRegion] = useState<string>("all");
   const [logisticsEventCommodity, setLogisticsEventCommodity] = useState<string>("all");
+  const [agriEventsScope, setAgriEventsScope] = useState<string>("all");
+  const [agriEventsCountry, setAgriEventsCountry] = useState<string>("all");
   const [chokepointSeverityFilter, setChokepointSeverityFilter] = useState<"all" | "stress">("all");
   const [mapVideoSourceId, setMapVideoSourceId] = useState<string | null>(null);
   const [podcastCountryFilter, setPodcastCountryFilter] = useState<string>("ALL");
@@ -1933,6 +1988,7 @@ export default function MonitorV3Page() {
     markets: true,
     logistics: true,
     chokepoints: true,
+    events: true,
     weather: true,
     risk: true,
     food: true,
@@ -2184,6 +2240,28 @@ export default function MonitorV3Page() {
       return response.json();
     },
   });
+  const agriEventsQuery = useQuery<AgriEventsResponse>({
+    queryKey: ["monitor-v3-agri-events", agriEventsScope, agriEventsCountry],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        scope: agriEventsScope,
+        country: agriEventsCountry,
+      });
+      const response = await fetch(`/api/monitor/events?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to load agri events");
+      return response.json();
+    },
+  });
+  const agriEventsMapLayerQuery = useQuery<MapLayerResponse>({
+    queryKey: ["monitor-v3-agri-events-map-layer"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/map-layer?layer=agri_events");
+      if (!response.ok) throw new Error("Failed to load agri events map layer");
+      return response.json();
+    },
+  });
   const podcastsQuery = useQuery<PodcastsWidgetResponse>({
     queryKey: ["monitor-v3-podcasts", country],
     staleTime: 90_000,
@@ -2353,6 +2431,26 @@ export default function MonitorV3Page() {
               };
             })
           : [{ label: "Events", value: "No logistics events for current filters" }],
+    };
+    const agriEvents = (agriEventsQuery.data?.items || []).slice(0, 50);
+    const agriEventsWidget: GridWidget = {
+      id: "TXT_AGRI_EVENTS_CALENDAR",
+      title: "Agri Events Calendar",
+      subtitle: "Global + national agri/grain/logistics events",
+      status: agriEvents.length > 0 ? "REFRESH" : "CONSTRAINED",
+      source: "Manual catalog",
+      updatedAt: agriEventsQuery.data?.generatedAt,
+      topic: "policy",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics:
+        agriEvents.length > 0
+          ? agriEvents.slice(0, 20).map((event) => ({
+              label: `${event.title}`,
+              value: `${event.start_date} → ${event.end_date} • ${event.city}, ${event.country} • ${event.scope}`,
+              href: event.website,
+            }))
+          : [{ label: "Events", value: "No active/upcoming events for selected filters" }],
     };
 
     const logisticsSeriesCandidates: Array<{
@@ -3150,6 +3248,7 @@ export default function MonitorV3Page() {
       ...widgetsFromGlobalContext,
       topSignalsWidget,
       logisticsEventsWidget,
+      agriEventsWidget,
       logisticsIndicesWidget,
       marketsFeedWidget,
       policyFeedWidget,
@@ -3160,7 +3259,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, logisticsNewsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, chokepointsLayerQuery.data, weatherRiskLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, logisticsNewsQuery.data, agriEventsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, chokepointsLayerQuery.data, weatherRiskLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -3402,6 +3501,8 @@ export default function MonitorV3Page() {
     binanceSnapshotQuery.dataUpdatedAt,
     binanceRiskTrendsQuery.dataUpdatedAt,
     foodMapLayerQuery.dataUpdatedAt,
+    agriEventsQuery.dataUpdatedAt,
+    agriEventsMapLayerQuery.dataUpdatedAt,
   ].join(":");
   const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
   const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
@@ -3480,6 +3581,20 @@ export default function MonitorV3Page() {
       { value: "mixed", count: 0 },
     ];
   }, [logisticsNewsQuery.data?.facets?.commodities]);
+  const agriEventsScopeOptions = useMemo(() => {
+    const facets = agriEventsQuery.data?.facets?.scopes || [];
+    if (facets.length > 0) return facets;
+    return [
+      { value: "all", count: 0 },
+      { value: "global", count: 0 },
+      { value: "national", count: 0 },
+    ];
+  }, [agriEventsQuery.data?.facets?.scopes]);
+  const agriEventsCountryOptions = useMemo(() => {
+    const facets = agriEventsQuery.data?.facets?.countries || [];
+    if (facets.length > 0) return facets;
+    return [{ value: "all", count: 0 }];
+  }, [agriEventsQuery.data?.facets?.countries]);
   const podcastCatalog = podcastCatalogQuery.data?.items || [];
   const podcastCountryOptions = useMemo(() => {
     const options = new Set<string>(["ALL"]);
@@ -3762,6 +3877,28 @@ export default function MonitorV3Page() {
       });
     });
 
+    const agriEventsFeatures = Array.isArray(agriEventsMapLayerQuery.data?.features) ? agriEventsMapLayerQuery.data.features : [];
+    agriEventsFeatures.forEach((feature) => {
+      const props = feature?.properties || {};
+      const coords = feature?.geometry?.coordinates;
+      if (!Array.isArray(coords) || coords.length !== 2) return;
+      const total = Number(props?.total_events_count || 0);
+      if (!Number.isFinite(total) || total <= 0) return;
+      const countryCode = String(props?.country || "GLOBAL");
+      const events = Array.isArray(props?.events) ? (props.events as AgriEventItem[]) : [];
+      points.push({
+        id: `events-${String(feature?.id || countryCode)}`,
+        layer: "events",
+        country: (countryCode in COUNTRY_GEO_COORDS ? countryCode : "GLOBAL") as Country | "GLOBAL",
+        lon: Number(coords[0]),
+        lat: Number(coords[1]),
+        intensity: clamp(0.2 + total * 0.14, 0.2, 1),
+        label: `${countryCode} agri events`,
+        value: `${total} active/upcoming events (${Number(props?.global_events_count || 0)} global, ${Number(props?.national_events_count || 0)} national)`,
+        events,
+      });
+    });
+
     const weatherRiskFeatures = Array.isArray(weatherRiskLayerQuery.data?.features) ? weatherRiskLayerQuery.data.features : [];
     weatherRiskFeatures.forEach((feature) => {
       const props = feature?.properties || {};
@@ -3785,7 +3922,7 @@ export default function MonitorV3Page() {
     });
 
     return points;
-  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features, chokepointsLayerQuery.data?.features, weatherRiskLayerQuery.data?.features]);
+  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features, chokepointsLayerQuery.data?.features, agriEventsMapLayerQuery.data?.features, weatherRiskLayerQuery.data?.features]);
 
   const activeGeoPoints = useMemo(
     () =>
@@ -3818,6 +3955,7 @@ export default function MonitorV3Page() {
           chokepointMode: point.chokepointMode || "",
           weatherRegionId: point.weatherRegionId || "",
           weatherCrop: point.weatherCrop || "",
+          events: JSON.stringify(point.events || []),
         },
       })),
     }),
@@ -3980,6 +4118,8 @@ export default function MonitorV3Page() {
             "#f97316",
             "chokepoints",
             "#ef4444",
+            "events",
+            "#a78bfa",
             "#60a5fa",
           ],
           "circle-radius": ["+", 9, ["*", ["coalesce", ["get", "intensity"], 0.2], 22]],
@@ -4006,6 +4146,8 @@ export default function MonitorV3Page() {
             "#f97316",
             "chokepoints",
             "#ef4444",
+            "events",
+            "#a78bfa",
             "#60a5fa",
           ],
           "circle-radius": ["+", 3, ["*", ["coalesce", ["get", "intensity"], 0.2], 6]],
@@ -4045,6 +4187,35 @@ export default function MonitorV3Page() {
             });
             return;
           }
+        }
+        if (layer === "events") {
+          let eventsRows: AgriEventItem[] = [];
+          try {
+            const raw = String((props as any).events || "[]");
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) eventsRows = parsed as AgriEventItem[];
+          } catch {
+            eventsRows = [];
+          }
+          if (!heroMapPopupRef.current) {
+            heroMapPopupRef.current = new maplibregl.Popup({
+              closeButton: false,
+              closeOnClick: true,
+              offset: 12,
+              className: "monitor-map-popup",
+            });
+          }
+          heroMapPopupRef.current
+            .setLngLat(coords)
+            .setHTML(
+              buildAgriEventsPopupHtml({
+                label: String((props as any).label || "Agri events"),
+                value: String((props as any).value || ""),
+                events: eventsRows,
+              }),
+            )
+            .addTo(map);
+          return;
         }
         if (!heroMapPopupRef.current) {
           heroMapPopupRef.current = new maplibregl.Popup({
@@ -4134,6 +4305,21 @@ export default function MonitorV3Page() {
             });
             return;
           }
+          if (point.layer === "events") {
+            if (!heroMapPopupRef.current) {
+              heroMapPopupRef.current = new maplibregl.Popup({
+                closeButton: false,
+                closeOnClick: true,
+                offset: 12,
+                className: "monitor-map-popup",
+              });
+            }
+            heroMapPopupRef.current
+              .setLngLat([point.lon, point.lat])
+              .setHTML(buildAgriEventsPopupHtml({ label: point.label, value: point.value, events: point.events || [] }))
+              .addTo(map);
+            return;
+          }
           if (!heroMapPopupRef.current) {
             heroMapPopupRef.current = new maplibregl.Popup({
               closeButton: false,
@@ -4217,6 +4403,10 @@ export default function MonitorV3Page() {
         globalIndicesTrendsQuery.refetch(),
         yieldFoodSecurityQuery.refetch(),
         foodMapLayerQuery.refetch(),
+        weatherRiskLayerQuery.refetch(),
+        chokepointsLayerQuery.refetch(),
+        agriEventsQuery.refetch(),
+        agriEventsMapLayerQuery.refetch(),
         podcastsQuery.refetch(),
         podcastCatalogQuery.refetch(),
         selectedPodcastEpisodesQuery.refetch(),
@@ -5502,6 +5692,32 @@ export default function MonitorV3Page() {
                           {logisticsEventCommodityOptions.map((option) => (
                             <option key={`log-events-commodity-${option.value}`} value={option.value}>
                               {option.value} ({option.count})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
+                    {widget.id === "TXT_AGRI_EVENTS_CALENDAR" ? (
+                      <div className="grid grid-cols-2 gap-1">
+                        <select
+                          value={agriEventsScope}
+                          onChange={(event) => setAgriEventsScope(event.target.value)}
+                          className="rounded border border-border bg-card px-1 py-0.5 text-[10px]"
+                        >
+                          {agriEventsScopeOptions.map((option) => (
+                            <option key={`agri-events-scope-${option.value}`} value={option.value}>
+                              {option.value} ({option.count})
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={agriEventsCountry}
+                          onChange={(event) => setAgriEventsCountry(event.target.value)}
+                          className="rounded border border-border bg-card px-1 py-0.5 text-[10px]"
+                        >
+                          {agriEventsCountryOptions.map((option) => (
+                            <option key={`agri-events-country-${option.value}`} value={option.value}>
+                              {option.value.toUpperCase()} ({option.count})
                             </option>
                           ))}
                         </select>

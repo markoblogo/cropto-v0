@@ -101,6 +101,7 @@ import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndic
 import { getYieldFoodSecuritySnapshot } from "./yieldFoodSecurityService";
 import { listPodcastCatalog, listPodcastEpisodes } from "./podcastsService";
 import { getChokepointsMapLayer, getFoodPricesMapLayer } from "./mapLayersService";
+import { getAgriEventsMapLayer, listAgriEvents } from "./eventsCalendarService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { probeDbnomicsCore10 } from "./grainWidgets/providers/dbNomicsCoreRegistry";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
@@ -1012,17 +1013,40 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/monitor/events", (req, res) => {
+    try {
+      const country = typeof req.query.country === "string" ? req.query.country : undefined;
+      const scope = typeof req.query.scope === "string" ? req.query.scope : undefined;
+      const region = typeof req.query.region === "string" ? req.query.region : undefined;
+      const segment = typeof req.query.segment === "string" ? req.query.segment : undefined;
+      const payload = listAgriEvents({ country, scope, region, segment });
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        today: null,
+        items: [],
+        facets: { scopes: [], countries: [] },
+        message: error?.message || "Failed to load agri events",
+      });
+    }
+  });
+
   app.get("/api/monitor/map-layer", async (req, res) => {
     const layer = String(req.query.layer || "food_prices_wfp").toLowerCase();
     try {
-      if (layer !== "food_prices_wfp" && layer !== "chokepoints" && layer !== "weather_yield_risk") {
+      if (layer !== "food_prices_wfp" && layer !== "chokepoints" && layer !== "weather_yield_risk" && layer !== "agri_events") {
         return res.status(400).json({
           message: `Unsupported layer: ${layer}`,
-          supported: ["food_prices_wfp", "chokepoints", "weather_yield_risk"],
+          supported: ["food_prices_wfp", "chokepoints", "weather_yield_risk", "agri_events"],
         });
       }
       if (layer === "chokepoints") {
         const payload = await getChokepointsMapLayer();
+        return res.json(payload);
+      }
+      if (layer === "agri_events") {
+        const payload = getAgriEventsMapLayer();
         return res.json(payload);
       }
       if (layer === "weather_yield_risk") {
@@ -1063,6 +1087,16 @@ export function registerMonitorRoutes(app: Express): void {
           legend: { metric: "stress_score", unit: "index_0_100", scale: "sequential", min: 0, max: 100 },
           features: [],
           message: error?.message || "Failed to load weather yield risk layer",
+        });
+      }
+      if (layer === "agri_events") {
+        return res.status(500).json({
+          layer_id: "agri_events",
+          layer_type: "point",
+          updated_at: new Date().toISOString(),
+          legend: { metric: "events_count", unit: "count", scale: "sequential", min: 0, max: 0 },
+          features: [],
+          message: error?.message || "Failed to load agri events layer",
         });
       }
       return res.status(500).json({
