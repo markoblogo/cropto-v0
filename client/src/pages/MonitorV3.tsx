@@ -2688,14 +2688,19 @@ export default function MonitorV3Page() {
     return applyCountryFallbackFilter(roleTopic, country);
   }, [topSignals, topic, role, country]);
 
-  const filteredFeed = useMemo(() => {
-    const roleTopic = feed.filter((item) => {
+  const roleTopicFeed = useMemo(() => {
+    return feed.filter((item) => {
       if (!newsMatchesRole(item, role)) return false;
       if (!newsMatchesTopic(item, topic)) return false;
       return true;
     });
-    return applyCountryFallbackFilter(roleTopic, country);
-  }, [feed, topic, role, country]);
+  }, [feed, topic, role]);
+  const filteredFeed = useMemo(() => applyCountryFallbackFilter(roleTopicFeed, country), [roleTopicFeed, country]);
+  const heroFeedItems = useMemo(() => {
+    if (filteredFeed.length >= 6) return filteredFeed;
+    if (roleTopicFeed.length >= 6) return roleTopicFeed;
+    return feed;
+  }, [filteredFeed, roleTopicFeed, feed]);
   const customHlsSources = useMemo<VideoSource[]>(() => {
     const urls = [
       import.meta.env.VITE_MONITOR_HLS_1 as string | undefined,
@@ -2732,14 +2737,13 @@ export default function MonitorV3Page() {
     () => normalizedVideoSources.filter((source) => (source.status === "LIVE_EMBED" || source.status === "LIVE_STREAM") && Boolean(source.url)),
     [normalizedVideoSources],
   );
-  const videoSourcesByTopic = useMemo(
-    () =>
-      liveVideoSources.filter((source) => {
-        if (videoTopic === "all") return true;
-        return inferVideoTopic(source) === videoTopic;
-      }),
-    [liveVideoSources, videoTopic],
-  );
+  const videoSourcesByTopic = useMemo(() => {
+    const scoped = liveVideoSources.filter((source) => {
+      if (videoTopic === "all") return true;
+      return inferVideoTopic(source) === videoTopic;
+    });
+    return scoped.length > 0 ? scoped : liveVideoSources;
+  }, [liveVideoSources, videoTopic]);
   useEffect(() => {
     if (videoChannel === "all") return;
     if (!videoSourcesByTopic.some((source) => source.id === videoChannel)) {
@@ -3599,10 +3603,10 @@ export default function MonitorV3Page() {
               <span>RSS + signals</span>
             </div>
             <div className="monitor-widget-scroll max-h-[392px] space-y-1.5 overflow-y-auto pr-0.5">
-              {filteredFeed.length === 0 ? (
+              {heroFeedItems.length === 0 ? (
                 <div className="rounded border border-dashed border-border p-1.5 text-xs text-muted-foreground">No live feed items for current filters.</div>
               ) : (
-                filteredFeed.slice(0, 14).map((item) => {
+                heroFeedItems.slice(0, 14).map((item) => {
                   const card = (
                     <>
                       <div className="line-clamp-2 text-sm font-medium">{item.title}</div>
