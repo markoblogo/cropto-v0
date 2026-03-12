@@ -100,11 +100,12 @@ import { getGlobalIndicesSnapshot } from "./globalIndicesService";
 import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndicesPersistence";
 import { getYieldFoodSecuritySnapshot } from "./yieldFoodSecurityService";
 import { listPodcastCatalog, listPodcastEpisodes } from "./podcastsService";
-import { getFoodPricesMapLayer } from "./mapLayersService";
+import { getChokepointsMapLayer, getFoodPricesMapLayer } from "./mapLayersService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { probeDbnomicsCore10 } from "./grainWidgets/providers/dbNomicsCoreRegistry";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
+import type { MonitorNewsItem } from "./types";
 
 function triageReportToMarkdown(report: any): string {
   const providers = Array.isArray(report?.providers) ? report.providers : [];
@@ -172,6 +173,97 @@ function topEntries(record: Record<string, number>, limit = 5) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([sourceId, count]) => ({ sourceId, count }));
+}
+
+type LogisticsEventMode = "rail" | "barge" | "ocean" | "truck" | "multi-modal";
+type LogisticsEventRegion = "US" | "Canada" | "Brazil" | "Black Sea" | "Global";
+type LogisticsEventCommodity = "grains" | "agri" | "mixed";
+
+type LogisticsEventItem = {
+  id: string;
+  source: string;
+  title: string;
+  summary?: string;
+  url?: string;
+  publishedAt: string;
+  modes: LogisticsEventMode[];
+  regions: LogisticsEventRegion[];
+  commodities: LogisticsEventCommodity[];
+  indices: string[];
+};
+
+function classifyLogisticsModes(item: MonitorNewsItem): LogisticsEventMode[] {
+  const text = `${item.title || ""} ${item.summary || ""} ${item.source_name || ""}`.toLowerCase();
+  const modes = new Set<LogisticsEventMode>();
+  if (/\brail\b|\btrain\b|\brailroad\b|\bcpkc\b|\bcn\b|\bcsx\b|\bunion pacific\b/.test(text)) modes.add("rail");
+  if (/\bbarge\b|\bmississippi\b|\blocks?\b|\btow\b|\bcolumbia\b|\bsnake river\b/.test(text)) modes.add("barge");
+  if (/\bocean\b|\bmarine\b|\bshipping\b|\bship\b|\bvessel\b|\bport\b|\bharbor\b|\bgulf\b|\bpnw\b|\bblack sea\b/.test(text)) modes.add("ocean");
+  if (/\btruck\b|\btrucking\b|\bdiesel\b|\bhighway\b/.test(text)) modes.add("truck");
+  if (modes.size === 0) modes.add("multi-modal");
+  if (modes.size > 1) modes.add("multi-modal");
+  return Array.from(modes);
+}
+
+function classifyLogisticsRegions(item: MonitorNewsItem): LogisticsEventRegion[] {
+  const text = `${item.title || ""} ${item.summary || ""}`.toLowerCase();
+  const regionTags = (item.region_tags || []).map((tag) => String(tag).toLowerCase());
+  const out = new Set<LogisticsEventRegion>();
+  if (regionTags.some((tag) => tag.includes("us") || tag.includes("usa") || tag.includes("united states")) || /\busa\b|\bunited states\b|\bgulf\b|\bpnw\b/.test(text)) out.add("US");
+  if (regionTags.some((tag) => tag.includes("canada")) || /\bcanada\b|\bcn\b|\bcpkc\b/.test(text)) out.add("Canada");
+  if (regionTags.some((tag) => tag.includes("brazil")) || /\bbrazil\b|\bbrasil\b/.test(text)) out.add("Brazil");
+  if (regionTags.some((tag) => tag.includes("blacksea") || tag.includes("black sea") || tag.includes("ukraine")) || /\bblack sea\b|\bukraine\b|\bodesa\b|\bodessa\b/.test(text)) out.add("Black Sea");
+  if (out.size === 0) out.add("Global");
+  return Array.from(out);
+}
+
+function classifyLogisticsCommodities(item: MonitorNewsItem): LogisticsEventCommodity[] {
+  const cropTags = (item.crop_tags || []).map((tag) => String(tag).toLowerCase());
+  const text = `${item.title || ""} ${item.summary || ""}`.toLowerCase();
+  const out = new Set<LogisticsEventCommodity>();
+  if (cropTags.length > 0 || /\bgrain\b|\bwheat\b|\bcorn\b|\bmaize\b|\bsoy\b|\bsoybean\b|\boilseed\b/.test(text)) out.add("grains");
+  if (/\bagri\b|\bagriculture\b|\bfarm\b|\bfeed\b|\bfertilizer\b/.test(text)) out.add("agri");
+  if (out.size === 0) out.add("mixed");
+  return Array.from(out);
+}
+
+function mapLogisticsIndices(modes: LogisticsEventMode[], regions: LogisticsEventRegion[]): string[] {
+  const linked = new Set<string>();
+  if (modes.includes("rail")) {
+    linked.add("us_rail_tariff_wheat_index");
+    linked.add("rail_deliveries_to_port_index");
+  }
+  if (modes.includes("barge")) {
+    linked.add("us_barge_rate_index");
+    linked.add("us_barge_movement_index");
+  }
+  if (modes.includes("ocean")) {
+    linked.add("ocean_freight_grain_index");
+    linked.add("export_throughput_index");
+  }
+  if (modes.includes("truck") || modes.includes("multi-modal")) {
+    linked.add("logistics_pressure_index");
+  }
+  if (regions.includes("Black Sea")) linked.add("black_sea_corridor_pressure_index");
+  return Array.from(linked);
+}
+
+function toLogisticsEvent(item: MonitorNewsItem): LogisticsEventItem {
+  const modes = classifyLogisticsModes(item);
+  const regions = classifyLogisticsRegions(item);
+  const commodities = classifyLogisticsCommodities(item);
+  const indices = mapLogisticsIndices(modes, regions);
+  return {
+    id: item.id,
+    source: item.source_name || "Unknown source",
+    title: item.title || "Logistics event",
+    summary: item.summary,
+    url: item.url,
+    publishedAt: item.published_at,
+    modes,
+    regions,
+    commodities,
+    indices,
+  };
 }
 
 async function warmGrainWidgetsSnapshot() {
@@ -498,6 +590,65 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/monitor/logistics-news", async (req, res) => {
+    try {
+      const threshold = resolveThreshold(typeof req.query.threshold === "string" ? req.query.threshold : undefined);
+      const modeFilter = String(req.query.mode || "all").toLowerCase();
+      const regionFilter = String(req.query.region || "all").toLowerCase();
+      const commodityFilter = String(req.query.commodity || "all").toLowerCase();
+      const { items, stats } = await getMonitorNews(req.query.refresh === "1", { threshold });
+      const scoped = filterMonitorNews(items, {
+        crop: "all",
+        topic: "all",
+        region: "all",
+        time: req.query.time === "24h" ? "24h" : "7d",
+      });
+      const logistics = scoped.filter((item) => item.category === "logistics-shipping" || item.topic_tags.includes("logistics"));
+      const capped = capBySource(logistics, 4, 120).map(toLogisticsEvent);
+      const filtered = capped.filter((item) => {
+        if (modeFilter !== "all" && !item.modes.some((mode) => mode.toLowerCase() === modeFilter)) return false;
+        if (regionFilter !== "all" && !item.regions.some((region) => region.toLowerCase() === regionFilter)) return false;
+        if (commodityFilter !== "all" && !item.commodities.some((commodity) => commodity.toLowerCase() === commodityFilter)) return false;
+        return true;
+      });
+      const itemsOut = filtered
+        .sort((a, b) => Date.parse(b.publishedAt || "") - Date.parse(a.publishedAt || ""))
+        .slice(0, 80);
+      const facets = {
+        modes: ["all", "rail", "barge", "ocean", "truck", "multi-modal"].map((value) => ({
+          value,
+          count: value === "all" ? capped.length : capped.filter((item) => item.modes.includes(value as LogisticsEventMode)).length,
+        })),
+        regions: ["all", "US", "Canada", "Brazil", "Black Sea", "Global"].map((value) => ({
+          value,
+          count: value === "all" ? capped.length : capped.filter((item) => item.regions.includes(value as LogisticsEventRegion)).length,
+        })),
+        commodities: ["all", "grains", "agri", "mixed"].map((value) => ({
+          value,
+          count: value === "all" ? capped.length : capped.filter((item) => item.commodities.includes(value as LogisticsEventCommodity)).length,
+        })),
+      };
+      return res.json({
+        generatedAt: stats.generatedAt,
+        filters: {
+          mode: modeFilter,
+          region: regionFilter,
+          commodity: commodityFilter,
+          threshold,
+          time: req.query.time === "24h" ? "24h" : "7d",
+        },
+        facets,
+        items: itemsOut,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        items: [],
+        message: error?.message || "Failed to load logistics news",
+      });
+    }
+  });
+
   app.get("/api/monitor/indices", async (_req, res) => {
     if (!MONITOR_FEATURE_FLAGS.ENABLE_CROPTO_INDICES) {
       return res.json({ enabled: false, items: [], note: "Disabled by feature flag" });
@@ -821,13 +972,17 @@ export function registerMonitorRoutes(app: Express): void {
   });
 
   app.get("/api/monitor/map-layer", async (req, res) => {
+    const layer = String(req.query.layer || "food_prices_wfp").toLowerCase();
     try {
-      const layer = String(req.query.layer || "food_prices_wfp").toLowerCase();
-      if (layer !== "food_prices_wfp") {
+      if (layer !== "food_prices_wfp" && layer !== "chokepoints") {
         return res.status(400).json({
           message: `Unsupported layer: ${layer}`,
-          supported: ["food_prices_wfp"],
+          supported: ["food_prices_wfp", "chokepoints"],
         });
+      }
+      if (layer === "chokepoints") {
+        const payload = await getChokepointsMapLayer();
+        return res.json(payload);
       }
       const commodities = typeof req.query.commodities === "string" ? req.query.commodities : undefined;
       const countries = typeof req.query.countries === "string" ? req.query.countries.split(",").map((row) => row.trim()).filter(Boolean) : undefined;
@@ -840,6 +995,16 @@ export function registerMonitorRoutes(app: Express): void {
       });
       return res.json(payload);
     } catch (error: any) {
+      if (layer === "chokepoints") {
+        return res.status(500).json({
+          layer_id: "chokepoints",
+          layer_type: "point",
+          updated_at: new Date().toISOString(),
+          legend: { metric: "traffic_ratio", unit: "ratio", scale: "threshold", min: 0, max: 1.2 },
+          features: [],
+          message: error?.message || "Failed to load chokepoints layer",
+        });
+      }
       return res.status(500).json({
         layer_id: "food_prices_wfp",
         layer_type: "country",

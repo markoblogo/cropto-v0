@@ -78,10 +78,46 @@ type LogisticsIndicator = {
   valueCurrent?: number;
   valueChangePct?: number;
   unit: string;
+  series?: number[];
 };
 
 type LogisticsIndicatorsResponse = {
   widgets?: LogisticsIndicator[];
+  meta?: { generatedAt?: string };
+};
+
+type LogisticsEventMode = "rail" | "barge" | "ocean" | "truck" | "multi-modal";
+type LogisticsEventRegion = "US" | "Canada" | "Brazil" | "Black Sea" | "Global";
+type LogisticsEventCommodity = "grains" | "agri" | "mixed";
+
+type LogisticsEventItem = {
+  id: string;
+  source: string;
+  title: string;
+  summary?: string;
+  url?: string;
+  publishedAt: string;
+  modes: LogisticsEventMode[];
+  regions: LogisticsEventRegion[];
+  commodities: LogisticsEventCommodity[];
+  indices: string[];
+};
+
+type LogisticsNewsResponse = {
+  generatedAt?: string;
+  filters?: {
+    mode?: string;
+    region?: string;
+    commodity?: string;
+    threshold?: number;
+    time?: "24h" | "7d";
+  };
+  facets?: {
+    modes?: Array<{ value: string; count: number }>;
+    regions?: Array<{ value: string; count: number }>;
+    commodities?: Array<{ value: string; count: number }>;
+  };
+  items?: LogisticsEventItem[];
 };
 
 type MonitorIndex = {
@@ -397,16 +433,19 @@ type PodcastsWidgetResponse = {
 
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
-type GeoLayerId = "markets" | "logistics" | "weather" | "risk" | "food";
+type GeoLayerId = "markets" | "logistics" | "weather" | "risk" | "food" | "chokepoints";
 type GeoPoint = {
   id: string;
   layer: GeoLayerId;
-  country: Country;
+  country: Country | "GLOBAL";
   lon: number;
   lat: number;
   intensity: number;
   label: string;
   value: string;
+  chokepointStatus?: "normal" | "stressed" | "critical";
+  chokepointRegion?: string;
+  chokepointMode?: LogisticsEventMode;
 };
 type MapLayerCountryMetric = {
   code: string;
@@ -428,7 +467,19 @@ type MapLayerFeature = {
   properties?: {
     name?: string;
     type?: string;
-    metrics?: MapLayerCountryMetric[];
+    metrics?: MapLayerCountryMetric[] | {
+      traffic_ratio?: number;
+      baseline?: number;
+      current?: number;
+      unit?: string;
+      as_of?: string;
+    };
+    status?: "normal" | "stressed" | "critical";
+    severity_level?: 1 | 2 | 3;
+    region?: string;
+    summary?: string;
+    source_url?: string;
+    source_name?: string;
   };
 };
 
@@ -1079,6 +1130,7 @@ const FOOD_LAYER_OFFSETS: Record<Country, { lon: number; lat: number }> = {
 const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: string }> = {
   markets: { label: "Markets", tone: "text-cyan-300", stroke: "#22d3ee" },
   logistics: { label: "Logistics", tone: "text-amber-300", stroke: "#f59e0b" },
+  chokepoints: { label: "Choke", tone: "text-red-300", stroke: "#ef4444" },
   weather: { label: "Weather", tone: "text-emerald-300", stroke: "#34d399" },
   risk: { label: "Risk", tone: "text-rose-300", stroke: "#fb7185" },
   food: { label: "Food", tone: "text-orange-300", stroke: "#f97316" },
@@ -1805,6 +1857,10 @@ export default function MonitorV3Page() {
   const [yieldCrop, setYieldCrop] = useState<YieldCropFilter>(() => readJson<YieldCropFilter>(STORAGE_KEYS.yieldCrop, "ALL"));
   const [videoTopic, setVideoTopic] = useState<VideoTopic>(() => readJson<VideoTopic>(STORAGE_KEYS.videoTopic, "all"));
   const [videoChannel, setVideoChannel] = useState<string>(() => readJson<string>(STORAGE_KEYS.videoChannel, "all"));
+  const [logisticsEventMode, setLogisticsEventMode] = useState<string>("all");
+  const [logisticsEventRegion, setLogisticsEventRegion] = useState<string>("all");
+  const [logisticsEventCommodity, setLogisticsEventCommodity] = useState<string>("all");
+  const [chokepointSeverityFilter, setChokepointSeverityFilter] = useState<"all" | "stress">("all");
   const [mapVideoSourceId, setMapVideoSourceId] = useState<string | null>(null);
   const [podcastCountryFilter, setPodcastCountryFilter] = useState<string>("ALL");
   const [podcastLanguageFilter, setPodcastLanguageFilter] = useState<string>("all");
@@ -1821,6 +1877,7 @@ export default function MonitorV3Page() {
   const [geoLayers, setGeoLayers] = useState<Record<GeoLayerId, boolean>>({
     markets: true,
     logistics: true,
+    chokepoints: true,
     weather: true,
     risk: true,
     food: true,
@@ -1905,6 +1962,22 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/logistics-indicators");
       if (!response.ok) throw new Error("Failed to load logistics indicators");
+      return response.json();
+    },
+  });
+  const logisticsNewsQuery = useQuery<LogisticsNewsResponse>({
+    queryKey: ["monitor-v3-logistics-news", logisticsEventMode, logisticsEventRegion, logisticsEventCommodity],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        time: "24h",
+        threshold: "3",
+        mode: logisticsEventMode,
+        region: logisticsEventRegion,
+        commodity: logisticsEventCommodity,
+      });
+      const response = await fetch(`/api/monitor/logistics-news?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to load logistics events");
       return response.json();
     },
   });
@@ -2033,6 +2106,15 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/map-layer?layer=food_prices_wfp&commodities=wheat,maize,rice,oilseeds");
       if (!response.ok) throw new Error("Failed to load food map layer");
+      return response.json();
+    },
+  });
+  const chokepointsLayerQuery = useQuery<MapLayerResponse>({
+    queryKey: ["monitor-v3-chokepoints-layer"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/map-layer?layer=chokepoints");
+      if (!response.ok) throw new Error("Failed to load chokepoints map layer");
       return response.json();
     },
   });
@@ -2178,8 +2260,91 @@ export default function MonitorV3Page() {
       topic: "logistics",
       roles: ["trader", "broker", "farmer"],
       territory: "GLOBAL",
-      metrics: [{ label: "Current", value: formatMetric(row.valueCurrent, row.unit), delta: row.valueChangePct, href: row.sourceUrl }],
+      metrics: [{ label: "Current", value: formatMetric(row.valueCurrent, row.unit), delta: row.valueChangePct, href: row.sourceUrl, series: row.series }],
     }));
+
+    const logisticsEvents = (logisticsNewsQuery.data?.items || []).slice(0, 24);
+    const logisticsEventsWidget: GridWidget = {
+      id: "TXT_LOGISTICS_EVENTS_LAYER",
+      title: "Logistics Events",
+      subtitle: "Rail/barge/ocean/truck event stream",
+      status: logisticsEvents.length > 0 ? "REFRESH" : "CONSTRAINED",
+      source: "EIN + Monitor sources",
+      updatedAt: logisticsNewsQuery.data?.generatedAt,
+      topic: "logistics",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics:
+        logisticsEvents.length > 0
+          ? logisticsEvents.slice(0, 10).map((event) => {
+              const summary = String(event.summary || "").replace(/\s+/g, " ").trim();
+              const tags = [event.modes.join("/"), event.regions.join("/"), event.commodities.join("/")].filter(Boolean).join(" • ");
+              const linked = event.indices.length ? `idx:${event.indices.slice(0, 2).join(",")}` : "";
+              return {
+                label: event.title || "Logistics event",
+                value: [event.source, tags, linked || summary || formatAgeShort(event.publishedAt)].filter(Boolean).join(" • "),
+                href: event.url,
+              };
+            })
+          : [{ label: "Events", value: "No logistics events for current filters" }],
+    };
+
+    const logisticsSeriesCandidates: Array<{
+      label: string;
+      value: string;
+      delta?: number;
+      href?: string;
+      series?: number[];
+    }> = [];
+    (logisticsQuery.data?.widgets || []).forEach((row) => {
+      logisticsSeriesCandidates.push({
+        label: row.title,
+        value: formatMetric(row.valueCurrent, row.unit),
+        delta: row.valueChangePct,
+        href: row.sourceUrl,
+        series: row.series,
+      });
+    });
+    const usdaGtrWidget = byKind["USDA_GTR_LOGISTICS_SNAPSHOT"];
+    pickMetrics(usdaGtrWidget).forEach((metric) => {
+      logisticsSeriesCandidates.push({
+        label: metric.label,
+        value: metric.value,
+        delta: metric.delta,
+        href: usdaGtrWidget?.sourceUrl,
+        series: metric.series,
+      });
+    });
+    const pickLogMetric = (
+      label: string,
+      patterns: string[],
+      fallbackUnit = "index",
+    ): { label: string; value: string; delta?: number; href?: string; series?: number[] } => {
+      const match = logisticsSeriesCandidates.find((metric) =>
+        patterns.some((pattern) => `${metric.label} ${metric.value}`.toLowerCase().includes(pattern)),
+      );
+      if (match) return { ...match, label };
+      return { label, value: formatMetric(undefined, fallbackUnit) };
+    };
+    const logisticsIndicesWidget: GridWidget = {
+      id: "LOGISTICS_INDICES_LAYER",
+      title: "Logistics Indices",
+      subtitle: "Tariffs, flows, throughput, and freight pressure",
+      status: logisticsSeriesCandidates.length > 0 ? "REFRESH" : "CONSTRAINED",
+      source: "USDA AMS + monitor indicators",
+      updatedAt: logisticsQuery.data?.meta?.generatedAt || grainWidgetsQuery.data?.widgets?.byKind?.USDA_GTR_LOGISTICS_SNAPSHOT?.updatedAt,
+      topic: "logistics",
+      roles: ["farmer", "trader", "broker"],
+      territory: "GLOBAL",
+      metrics: [
+        pickLogMetric("US Barge Rate Index", ["barge", "mississippi", "tariff"], "index"),
+        pickLogMetric("US Barge Movement Index", ["movement", "locks", "river"], "index"),
+        pickLogMetric("Rail Deliveries to Port", ["rail", "delivery", "port", "pnw", "gulf"], "index"),
+        pickLogMetric("Ocean Freight Grain Index", ["ocean", "freight", "$/t", "japan"], "usd/t"),
+        pickLogMetric("Export Throughput Index", ["inspection", "throughput", "export"], "index"),
+        pickLogMetric("Modal Pressure Snapshot", ["pressure", "score", "modal"], "score"),
+      ],
+    };
 
     const widgetsFromIndices: GridWidget[] = (indicesQuery.data?.items || []).slice(0, 6).map((row) => ({
       id: `IDX_${row.slug}`,
@@ -2212,27 +2377,6 @@ export default function MonitorV3Page() {
               href: item.url,
             }))
           : [{ label: "Signals", value: "No signal headlines yet" }],
-    };
-
-    const logisticsFeedWidget: GridWidget = {
-      id: "TXT_LOGISTICS_FEED",
-      title: "Logistics Feed",
-      subtitle: "Port, freight and corridor headlines",
-      status: "REFRESH",
-      source: "Monitor news",
-      updatedAt: newsQuery.data?.generatedAt,
-      topic: "logistics",
-      roles: ["farmer", "trader", "broker"],
-      territory: "GLOBAL",
-      metrics: (() => {
-        const logisticsItems = feedItems.filter((item) => newsTopics(item).includes("logistics")).slice(0, 5);
-        if (logisticsItems.length === 0) return [{ label: "Feed", value: "No logistics headlines for current window" }];
-        return logisticsItems.map((item) => ({
-          label: item.title || "Logistics headline",
-          value: String(item.summary || "").replace(/\s+/g, " ").trim() || `${item.source_name || "Source"} • ${formatAgeShort(item.published_at)}`,
-          href: item.url,
-        }));
-      })(),
     };
 
     const marketsFeedWidget: GridWidget = {
@@ -2329,6 +2473,7 @@ export default function MonitorV3Page() {
     const eurUsd = formatFxPair("EUR/USD", fxQuery.data?.rates);
     const usdBrl = formatFxPair("USD/BRL", fxQuery.data?.rates);
     const foodMapFeatures = Array.isArray(foodMapLayerQuery.data?.features) ? foodMapLayerQuery.data.features : [];
+    const chokepointsFeatures = Array.isArray(chokepointsLayerQuery.data?.features) ? chokepointsLayerQuery.data.features : [];
     const topFoodStressRows = foodMapFeatures
       .map((feature) => {
         const metrics = Array.isArray(feature?.properties?.metrics) ? feature.properties.metrics : [];
@@ -2343,6 +2488,25 @@ export default function MonitorV3Page() {
       .filter((row) => row.metric && typeof row.metric === "object")
       .sort((a, b) => Math.abs(Number((b.metric as any).yoy_change || 0)) - Math.abs(Number((a.metric as any).yoy_change || 0)))
       .slice(0, 8);
+    const chokepointsRows = chokepointsFeatures
+      .map((feature) => {
+        const props = feature?.properties || {};
+        const metrics = props && typeof props.metrics === "object" && !Array.isArray(props.metrics) ? props.metrics : {};
+        const ratio = typeof (metrics as any).traffic_ratio === "number" ? Number((metrics as any).traffic_ratio) : null;
+        return {
+          id: String(feature?.id || ""),
+          name: String(props?.name || feature?.id || "Chokepoint"),
+          status: String(props?.status || "critical"),
+          severity: Number(props?.severity_level || 2),
+          ratio,
+          unit: String((metrics as any).unit || "ratio"),
+          baseline: typeof (metrics as any).baseline === "number" ? (metrics as any).baseline : null,
+          current: typeof (metrics as any).current === "number" ? (metrics as any).current : null,
+          sourceUrl: String(props?.source_url || ""),
+        };
+      })
+      .sort((a, b) => (a.ratio ?? 0) - (b.ratio ?? 0))
+      .slice(0, 6);
     const globalTrendSpx = globalIndicesTrendsQuery.data?.bySymbol?.SPX?.points?.map((point) => point.value) || [];
     const globalTrendIxic = globalIndicesTrendsQuery.data?.bySymbol?.IXIC?.points?.map((point) => point.value) || [];
     const matrixSeries = globalTrendSpx.length >= 2 && globalTrendIxic.length >= 2
@@ -2378,6 +2542,29 @@ export default function MonitorV3Page() {
               };
             })
           : [{ label: "Layer state", value: "No country rows available for selected commodities" }],
+      },
+      {
+        id: "SYS_LOGISTICS_CHOKEPOINTS",
+        title: "Logistics Chokepoints",
+        subtitle: "Canals/straits flow stress vs baseline",
+        status: chokepointsRows.length > 0 ? "REFRESH" : "CONSTRAINED",
+        source: "Chokepoints baseline layer",
+        updatedAt: chokepointsLayerQuery.data?.updated_at,
+        topic: "logistics",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: chokepointsRows.length > 0
+          ? chokepointsRows.map((row) => {
+              const ratioText = row.ratio != null ? `${Math.round(row.ratio * 100)}% of norm` : "ratio n/a";
+              const flowText = row.current != null && row.baseline != null ? `${row.current.toFixed(1)} / ${row.baseline.toFixed(1)} ${row.unit}` : "flow n/a";
+              return {
+                label: row.name,
+                value: `${row.status.toUpperCase()} • ${ratioText} • ${flowText}`,
+                delta: row.ratio != null ? (row.ratio - 1) * 100 : undefined,
+                href: row.sourceUrl || undefined,
+              };
+            })
+          : [{ label: "Layer state", value: "No chokepoint rows available" }],
       },
       {
         id: "SYS_WORLD_CLOCK",
@@ -2860,7 +3047,8 @@ export default function MonitorV3Page() {
     return [
       ...widgetsFromGlobalContext,
       topSignalsWidget,
-      logisticsFeedWidget,
+      logisticsEventsWidget,
+      logisticsIndicesWidget,
       marketsFeedWidget,
       policyFeedWidget,
       weatherFeedWidget,
@@ -2870,7 +3058,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, logisticsNewsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, chokepointsLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -3156,6 +3344,40 @@ export default function MonitorV3Page() {
     if (roleTopicFeed.length >= 6) return roleTopicFeed;
     return feed;
   }, [filteredFeed, roleTopicFeed, feed]);
+  const logisticsEventModeOptions = useMemo(() => {
+    const facets = logisticsNewsQuery.data?.facets?.modes || [];
+    if (facets.length > 0) return facets;
+    return [
+      { value: "all", count: 0 },
+      { value: "rail", count: 0 },
+      { value: "barge", count: 0 },
+      { value: "ocean", count: 0 },
+      { value: "truck", count: 0 },
+      { value: "multi-modal", count: 0 },
+    ];
+  }, [logisticsNewsQuery.data?.facets?.modes]);
+  const logisticsEventRegionOptions = useMemo(() => {
+    const facets = logisticsNewsQuery.data?.facets?.regions || [];
+    if (facets.length > 0) return facets;
+    return [
+      { value: "all", count: 0 },
+      { value: "US", count: 0 },
+      { value: "Canada", count: 0 },
+      { value: "Brazil", count: 0 },
+      { value: "Black Sea", count: 0 },
+      { value: "Global", count: 0 },
+    ];
+  }, [logisticsNewsQuery.data?.facets?.regions]);
+  const logisticsEventCommodityOptions = useMemo(() => {
+    const facets = logisticsNewsQuery.data?.facets?.commodities || [];
+    if (facets.length > 0) return facets;
+    return [
+      { value: "all", count: 0 },
+      { value: "grains", count: 0 },
+      { value: "agri", count: 0 },
+      { value: "mixed", count: 0 },
+    ];
+  }, [logisticsNewsQuery.data?.facets?.commodities]);
   const podcastCatalog = podcastCatalogQuery.data?.items || [];
   const podcastCountryOptions = useMemo(() => {
     const options = new Set<string>(["ALL"]);
@@ -3410,12 +3632,46 @@ export default function MonitorV3Page() {
       });
     });
 
+    const chokepointsFeatures = Array.isArray(chokepointsLayerQuery.data?.features) ? chokepointsLayerQuery.data.features : [];
+    chokepointsFeatures.forEach((feature) => {
+      const props = feature?.properties || {};
+      const coords = feature?.geometry?.coordinates;
+      if (!Array.isArray(coords) || coords.length !== 2) return;
+      const metrics = props && typeof props.metrics === "object" && !Array.isArray(props.metrics) ? props.metrics as any : null;
+      const ratio = typeof metrics?.traffic_ratio === "number" ? Number(metrics.traffic_ratio) : null;
+      const status = String(props?.status || "critical").toLowerCase();
+      const severity = Number(props?.severity_level || 2);
+      let intensity = ratio != null ? clamp(1 - ratio, 0.18, 1) : 0.6;
+      if (status === "critical") intensity = clamp(intensity + 0.15, 0.25, 1);
+      if (status === "normal") intensity = clamp(intensity - 0.2, 0.1, 0.5);
+      intensity = clamp(intensity + (severity - 1) * 0.1, 0.12, 1);
+      points.push({
+        id: `chokepoint-${String(feature?.id || props?.name || "point")}`,
+        layer: "chokepoints",
+        country: "GLOBAL",
+        lon: Number(coords[0]),
+        lat: Number(coords[1]),
+        intensity,
+        label: String(props?.name || "Chokepoint"),
+        value: ratio != null ? `${Math.round(ratio * 100)}% of baseline flow` : "flow ratio n/a",
+        chokepointStatus: status === "normal" || status === "stressed" || status === "critical" ? status : "critical",
+        chokepointRegion: String(props?.region || "Global"),
+        chokepointMode: String(props?.region || "").toLowerCase().includes("black sea") ? "multi-modal" : "ocean",
+      });
+    });
+
     return points;
-  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features]);
+  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features, chokepointsLayerQuery.data?.features]);
 
   const activeGeoPoints = useMemo(
-    () => geoPoints.filter((point) => geoLayers[point.layer]),
-    [geoPoints, geoLayers],
+    () =>
+      geoPoints.filter((point) => {
+        if (!geoLayers[point.layer]) return false;
+        if (point.layer !== "chokepoints") return true;
+        if (chokepointSeverityFilter === "all") return true;
+        return point.chokepointStatus === "stressed" || point.chokepointStatus === "critical";
+      }),
+    [geoPoints, geoLayers, chokepointSeverityFilter],
   );
   const activeGeoPointsGeoJson = useMemo(
     () => ({
@@ -3433,11 +3689,31 @@ export default function MonitorV3Page() {
           intensity: point.intensity,
           label: point.label,
           value: point.value,
+          chokepointStatus: point.chokepointStatus || "",
+          chokepointRegion: point.chokepointRegion || "",
+          chokepointMode: point.chokepointMode || "",
         },
       })),
     }),
     [activeGeoPoints],
   );
+
+  const applyChokepointEventFilter = (regionRaw?: string, modeRaw?: string) => {
+    const region = String(regionRaw || "").trim();
+    const normalizedRegion =
+      region === "Black Sea" || region.toLowerCase() === "black sea"
+        ? "Black Sea"
+        : region === "US" || region === "Canada" || region === "Brazil" || region === "Global"
+          ? region
+          : "Global";
+    const mode = String(modeRaw || "").trim().toLowerCase();
+    const normalizedMode = mode === "rail" || mode === "barge" || mode === "ocean" || mode === "truck" || mode === "multi-modal"
+      ? mode
+      : "ocean";
+    setLogisticsEventRegion(normalizedRegion);
+    setLogisticsEventMode(normalizedMode);
+    setTopic("logistics");
+  };
 
   useEffect(() => {
     if (!heroMapContainerRef.current) return;
@@ -3484,6 +3760,8 @@ export default function MonitorV3Page() {
             "#fb7185",
             "food",
             "#f97316",
+            "chokepoints",
+            "#ef4444",
             "#60a5fa",
           ],
           "circle-radius": ["+", 9, ["*", ["coalesce", ["get", "intensity"], 0.2], 22]],
@@ -3508,6 +3786,8 @@ export default function MonitorV3Page() {
             "#fb7185",
             "food",
             "#f97316",
+            "chokepoints",
+            "#ef4444",
             "#60a5fa",
           ],
           "circle-radius": ["+", 3, ["*", ["coalesce", ["get", "intensity"], 0.2], 6]],
@@ -3527,6 +3807,10 @@ export default function MonitorV3Page() {
         const feature = event.features?.[0];
         if (!feature || !("properties" in feature)) return;
         const props = feature.properties || {};
+        const layer = String((props as any).layer || "");
+        if (layer === "chokepoints") {
+          applyChokepointEventFilter(String((props as any).chokepointRegion || ""), String((props as any).chokepointMode || "ocean"));
+        }
         const coords = (feature.geometry as any)?.coordinates as [number, number] | undefined;
         if (!coords) return;
         if (!heroMapPopupRef.current) {
@@ -3603,6 +3887,9 @@ export default function MonitorV3Page() {
         el.addEventListener("click", (event) => {
           event.preventDefault();
           event.stopPropagation();
+          if (point.layer === "chokepoints") {
+            applyChokepointEventFilter(point.chokepointRegion, point.chokepointMode || "ocean");
+          }
           if (!heroMapPopupRef.current) {
             heroMapPopupRef.current = new maplibregl.Popup({
               closeButton: false,
@@ -4032,6 +4319,18 @@ export default function MonitorV3Page() {
                     {GEO_LAYER_META[layerId].label}
                   </button>
                 ))}
+                <button
+                  onClick={() => setChokepointSeverityFilter((current) => (current === "all" ? "stress" : "all"))}
+                  className={cn(
+                    "rounded border px-1.5 py-0.5 text-[10px]",
+                    chokepointSeverityFilter === "stress"
+                      ? "border-red-500/70 bg-red-500/12 text-red-300"
+                      : "border-border text-muted-foreground",
+                  )}
+                  title="Filter chokepoints markers"
+                >
+                  choke {chokepointSeverityFilter === "stress" ? "critical+stressed" : "all"}
+                </button>
                 <button
                   onClick={() => {
                     const map = heroMapRef.current;
@@ -4801,6 +5100,7 @@ export default function MonitorV3Page() {
                   setYieldCrop("ALL");
                   setRenderPreset("mixed");
                   setRenderModeById({});
+                  setChokepointSeverityFilter("all");
                 }}
                 className="rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
@@ -4926,6 +5226,43 @@ export default function MonitorV3Page() {
                         <span className="max-w-[42%] truncate rounded border border-border px-1 py-0 text-muted-foreground">{widget.source}</span>
                       ) : null}
                     </div>
+                    {widget.id === "TXT_LOGISTICS_EVENTS_LAYER" ? (
+                      <div className="grid grid-cols-3 gap-1">
+                        <select
+                          value={logisticsEventMode}
+                          onChange={(event) => setLogisticsEventMode(event.target.value)}
+                          className="rounded border border-border bg-card px-1 py-0.5 text-[10px]"
+                        >
+                          {logisticsEventModeOptions.map((option) => (
+                            <option key={`log-events-mode-${option.value}`} value={option.value}>
+                              {option.value} ({option.count})
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={logisticsEventRegion}
+                          onChange={(event) => setLogisticsEventRegion(event.target.value)}
+                          className="rounded border border-border bg-card px-1 py-0.5 text-[10px]"
+                        >
+                          {logisticsEventRegionOptions.map((option) => (
+                            <option key={`log-events-region-${option.value}`} value={option.value}>
+                              {option.value} ({option.count})
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={logisticsEventCommodity}
+                          onChange={(event) => setLogisticsEventCommodity(event.target.value)}
+                          className="rounded border border-border bg-card px-1 py-0.5 text-[10px]"
+                        >
+                          {logisticsEventCommodityOptions.map((option) => (
+                            <option key={`log-events-commodity-${option.value}`} value={option.value}>
+                              {option.value} ({option.count})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="monitor-widget-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">

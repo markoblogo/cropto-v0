@@ -1,3 +1,5 @@
+import { CHOKEPOINTS_CONFIG, toChokepointStatus, toSeverityLevel } from "./chokepointsConfig";
+
 type CountryCode = "US" | "UA" | "BR" | "AR" | "FR" | "DE" | "RO";
 
 type MapMetric = {
@@ -36,6 +38,46 @@ type MapLayerResponse = {
     max: number;
   };
   features: MapFeature[];
+  note?: string;
+};
+
+type ChokepointFeature = {
+  id: string;
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  properties: {
+    name: string;
+    type: "chokepoint";
+    status: "normal" | "stressed" | "critical";
+    severity_level: 1 | 2 | 3;
+    metrics: {
+      traffic_ratio: number;
+      baseline: number;
+      current: number;
+      unit: string;
+      as_of: string;
+    };
+    region: string;
+    summary: string;
+    source_url: string;
+    source_name: string;
+  };
+};
+
+type ChokepointsMapLayerResponse = {
+  layer_id: string;
+  layer_type: "point";
+  updated_at: string;
+  legend: {
+    metric: "traffic_ratio";
+    unit: "ratio";
+    scale: "threshold";
+    min: number;
+    max: number;
+  };
+  features: ChokepointFeature[];
   note?: string;
 };
 
@@ -181,3 +223,59 @@ export async function getFoodPricesMapLayer(args: {
   };
 }
 
+function chokepointsUpdatedAt(features: ChokepointFeature[]): string {
+  const timestamps = features
+    .map((feature) => Date.parse(feature.properties.metrics.as_of))
+    .filter((value) => Number.isFinite(value));
+  if (timestamps.length === 0) return new Date().toISOString();
+  return new Date(Math.max(...timestamps)).toISOString();
+}
+
+export async function getChokepointsMapLayer(): Promise<ChokepointsMapLayerResponse> {
+  const features: ChokepointFeature[] = CHOKEPOINTS_CONFIG.map((point) => {
+    const baseline = Number(point.baseline.value) || 0;
+    const current = Number(point.current.value) || 0;
+    const trafficRatio = baseline > 0 ? Number((current / baseline).toFixed(4)) : 0;
+    const status = toChokepointStatus(trafficRatio);
+    const severityLevel = toSeverityLevel(trafficRatio);
+    return {
+      id: point.id,
+      geometry: {
+        type: "Point",
+        coordinates: point.coordinates,
+      },
+      properties: {
+        name: point.name,
+        type: "chokepoint",
+        status,
+        severity_level: severityLevel,
+        metrics: {
+          traffic_ratio: trafficRatio,
+          baseline,
+          current,
+          unit: point.baseline.metric === "ship_transits_per_day" ? "ships/day" : "Mt/month",
+          as_of: point.current.as_of,
+        },
+        region: point.region,
+        summary: point.summary,
+        source_url: point.current.source_url || point.baseline.source_url,
+        source_name: point.current.source_name || point.baseline.source_name,
+      },
+    };
+  });
+
+  return {
+    layer_id: "chokepoints",
+    layer_type: "point",
+    updated_at: chokepointsUpdatedAt(features),
+    legend: {
+      metric: "traffic_ratio",
+      unit: "ratio",
+      scale: "threshold",
+      min: 0,
+      max: 1.2,
+    },
+    features,
+    note: "Manual/semi-automated chokepoint baseline vs current traffic ratios for logistics stress monitoring.",
+  };
+}
