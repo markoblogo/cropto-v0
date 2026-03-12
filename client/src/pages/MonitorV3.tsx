@@ -395,7 +395,7 @@ type PodcastsWidgetResponse = {
 
 type DirectPredictionSort = "liquidity" | "volume" | "quality";
 type DirectPredictionRegion = "ALL" | "GLOBAL" | Country;
-type GeoLayerId = "markets" | "logistics" | "weather" | "risk";
+type GeoLayerId = "markets" | "logistics" | "weather" | "risk" | "food";
 type GeoPoint = {
   id: string;
   layer: GeoLayerId;
@@ -405,6 +405,44 @@ type GeoPoint = {
   intensity: number;
   label: string;
   value: string;
+};
+type MapLayerCountryMetric = {
+  code: string;
+  label: string;
+  value: number | null;
+  unit: string;
+  yoy_change: number | null;
+  mom_change: number | null;
+  severity: "low" | "medium" | "high";
+  source: "WFP" | "WB";
+};
+
+type MapLayerFeature = {
+  id: string;
+  geometry?: {
+    type?: string;
+    coordinates?: [number, number];
+  };
+  properties?: {
+    name?: string;
+    type?: string;
+    metrics?: MapLayerCountryMetric[];
+  };
+};
+
+type MapLayerResponse = {
+  layer_id: string;
+  layer_type: "country" | "point" | "region";
+  updated_at?: string;
+  legend?: {
+    metric?: string;
+    unit?: string;
+    scale?: string;
+    min?: number;
+    max?: number;
+  };
+  features?: MapLayerFeature[];
+  note?: string;
 };
 
 type GridWidget = {
@@ -1032,7 +1070,17 @@ const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: 
   logistics: { label: "Logistics", tone: "text-amber-300", stroke: "#f59e0b" },
   weather: { label: "Weather", tone: "text-emerald-300", stroke: "#34d399" },
   risk: { label: "Risk", tone: "text-rose-300", stroke: "#fb7185" },
+  food: { label: "Food", tone: "text-orange-300", stroke: "#f97316" },
 };
+
+function lonLatToMapXY(lon: number, lat: number): { x: number; y: number } {
+  const x = ((lon + 180) / 360) * 1000;
+  const y = ((90 - lat) / 180) * 460;
+  return {
+    x: clamp(x, 0, 1000),
+    y: clamp(y, 0, 460),
+  };
+}
 const KIND_TO_TOPIC: Record<string, Exclude<MonitorTopic, "all">> = {
   GLOBAL_SPOT_TABLE: "markets",
   CROP_PRICE_INDEX: "markets",
@@ -1773,6 +1821,7 @@ export default function MonitorV3Page() {
     logistics: true,
     weather: true,
     risk: true,
+    food: true,
   });
   const [geoZoom, setGeoZoom] = useState(1);
   const [geoPan, setGeoPan] = useState({ x: 0, y: 0 });
@@ -1972,6 +2021,15 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch(`/api/monitor/yield-food-security?country=${encodeURIComponent(country)}&crop=${encodeURIComponent(yieldCrop)}`);
       if (!response.ok) throw new Error("Failed to load yield & food security");
+      return response.json();
+    },
+  });
+  const foodMapLayerQuery = useQuery<MapLayerResponse>({
+    queryKey: ["monitor-v3-food-map-layer"],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const response = await fetch("/api/monitor/map-layer?layer=food_prices_wfp&commodities=wheat,maize,rice,oilseeds");
+      if (!response.ok) throw new Error("Failed to load food map layer");
       return response.json();
     },
   });
@@ -2267,6 +2325,21 @@ export default function MonitorV3Page() {
     const riskOnOff = globalIndicesQuery.data?.riskOnOff;
     const eurUsd = formatFxPair("EUR/USD", fxQuery.data?.rates);
     const usdBrl = formatFxPair("USD/BRL", fxQuery.data?.rates);
+    const foodMapFeatures = Array.isArray(foodMapLayerQuery.data?.features) ? foodMapLayerQuery.data.features : [];
+    const topFoodStressRows = foodMapFeatures
+      .map((feature) => {
+        const metrics = Array.isArray(feature?.properties?.metrics) ? feature.properties.metrics : [];
+        const strongest = [...metrics]
+          .filter((metric) => typeof metric?.yoy_change === "number")
+          .sort((a, b) => Math.abs(Number(b.yoy_change || 0)) - Math.abs(Number(a.yoy_change || 0)))[0] || metrics[0];
+        return {
+          country: String(feature?.properties?.name || feature?.id || "Country"),
+          metric: strongest,
+        };
+      })
+      .filter((row) => row.metric && typeof row.metric === "object")
+      .sort((a, b) => Math.abs(Number((b.metric as any).yoy_change || 0)) - Math.abs(Number((a.metric as any).yoy_change || 0)))
+      .slice(0, 8);
     const globalTrendSpx = globalIndicesTrendsQuery.data?.bySymbol?.SPX?.points?.map((point) => point.value) || [];
     const globalTrendIxic = globalIndicesTrendsQuery.data?.bySymbol?.IXIC?.points?.map((point) => point.value) || [];
     const matrixSeries = globalTrendSpx.length >= 2 && globalTrendIxic.length >= 2
@@ -2280,6 +2353,29 @@ export default function MonitorV3Page() {
       : undefined;
 
     const widgetsFromGlobalContext: GridWidget[] = [
+      {
+        id: "SYS_WFP_LOCAL_PRICE_STRESS",
+        title: "WFP Local Price Stress Map",
+        subtitle: "Country-level local food inflation (WFP/WB rows)",
+        status: topFoodStressRows.length > 0 ? "REFRESH" : "CONSTRAINED",
+        source: "WFP + WB local markets",
+        updatedAt: foodMapLayerQuery.data?.updated_at,
+        topic: "markets",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: topFoodStressRows.length > 0
+          ? topFoodStressRows.map((row) => {
+              const metric = row.metric as any;
+              const yoy = typeof metric?.yoy_change === "number" ? metric.yoy_change : null;
+              const value = typeof metric?.value === "number" ? `${metric.value.toFixed(2)} ${metric.unit || ""}`.trim() : "n/a";
+              return {
+                label: `${row.country} • ${metric?.label || "Food"}`,
+                value: `${value} • ${yoy != null ? `${yoy >= 0 ? "+" : ""}${(yoy * 100).toFixed(1)}% y/y` : "y/y n/a"} • ${String(metric?.source || "").toUpperCase()}`,
+                delta: yoy != null ? yoy * 100 : undefined,
+              };
+            })
+          : [{ label: "Layer state", value: "No country rows available for selected commodities" }],
+      },
       {
         id: "SYS_WORLD_CLOCK",
         title: "World Clock",
@@ -2771,7 +2867,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, country, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -3012,6 +3108,7 @@ export default function MonitorV3Page() {
     cgoWeightsQuery.dataUpdatedAt,
     binanceSnapshotQuery.dataUpdatedAt,
     binanceRiskTrendsQuery.dataUpdatedAt,
+    foodMapLayerQuery.dataUpdatedAt,
   ].join(":");
   const lastHealthRef = useRef<{ token: string; live: number; total: number } | null>(null);
   const [healthTrend, setHealthTrend] = useState<{ liveDelta: number; livePctDelta: number } | null>(null);
@@ -3280,8 +3377,38 @@ export default function MonitorV3Page() {
       });
     }
 
+    const foodFeatures = Array.isArray(foodMapLayerQuery.data?.features) ? foodMapLayerQuery.data.features : [];
+    foodFeatures.forEach((feature) => {
+      const featureId = String(feature?.id || "").toUpperCase() as Country;
+      if (!(featureId in COUNTRY_GEO_ANCHORS)) return;
+      const metrics = Array.isArray(feature?.properties?.metrics) ? feature.properties.metrics : [];
+      if (!metrics.length) return;
+      const strongest = [...metrics]
+        .filter((metric) => typeof metric?.yoy_change === "number")
+        .sort((a, b) => Math.abs(Number(b.yoy_change || 0)) - Math.abs(Number(a.yoy_change || 0)))[0] || metrics[0];
+      const yoy = typeof strongest?.yoy_change === "number" ? strongest.yoy_change : null;
+      const coords = feature?.geometry?.coordinates;
+      const anchor = COUNTRY_GEO_ANCHORS[featureId];
+      const mapped = Array.isArray(coords) && coords.length === 2
+        ? lonLatToMapXY(Number(coords[0]), Number(coords[1]))
+        : { x: anchor.x, y: anchor.y };
+      points.push({
+        id: `food-${featureId}`,
+        layer: "food",
+        country: featureId,
+        x: mapped.x + 18,
+        y: mapped.y + 14,
+        intensity: clamp(Math.abs(Number(yoy || 0)) * 2.2, 0.18, 1),
+        label: `${feature?.properties?.name || featureId} local food stress`,
+        value:
+          yoy != null
+            ? `${strongest?.label || "food"} ${yoy >= 0 ? "+" : ""}${(yoy * 100).toFixed(1)}% y/y`
+            : `${strongest?.label || "food"} n/a`,
+      });
+    });
+
     return points;
-  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices]);
+  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features]);
 
   const activeGeoPoints = useMemo(
     () => geoPoints.filter((point) => geoLayers[point.layer]),
@@ -3329,6 +3456,7 @@ export default function MonitorV3Page() {
         globalIndicesQuery.refetch(),
         globalIndicesTrendsQuery.refetch(),
         yieldFoodSecurityQuery.refetch(),
+        foodMapLayerQuery.refetch(),
         podcastsQuery.refetch(),
         podcastCatalogQuery.refetch(),
         selectedPodcastEpisodesQuery.refetch(),

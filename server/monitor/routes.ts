@@ -100,6 +100,7 @@ import { getGlobalIndicesSnapshot } from "./globalIndicesService";
 import { getGlobalIndexTrends, startGlobalIndicesScheduler } from "./globalIndicesPersistence";
 import { getYieldFoodSecuritySnapshot } from "./yieldFoodSecurityService";
 import { listPodcastCatalog, listPodcastEpisodes } from "./podcastsService";
+import { getFoodPricesMapLayer } from "./mapLayersService";
 import { fetchFpmaDiscoverySnapshot, getFpmaDiscoveryDebug, runFpmaDiscoveryResolutionTest } from "./grainWidgets/providers/fpmaDiscovery";
 import { probeDbnomicsCore10 } from "./grainWidgets/providers/dbNomicsCoreRegistry";
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
@@ -815,6 +816,37 @@ export function registerMonitorRoutes(app: Express): void {
         podcast: null,
         episodes: [],
         message,
+      });
+    }
+  });
+
+  app.get("/api/monitor/map-layer", async (req, res) => {
+    try {
+      const layer = String(req.query.layer || "food_prices_wfp").toLowerCase();
+      if (layer !== "food_prices_wfp") {
+        return res.status(400).json({
+          message: `Unsupported layer: ${layer}`,
+          supported: ["food_prices_wfp"],
+        });
+      }
+      const commodities = typeof req.query.commodities === "string" ? req.query.commodities : undefined;
+      const countries = typeof req.query.countries === "string" ? req.query.countries.split(",").map((row) => row.trim()).filter(Boolean) : undefined;
+      const forceRefresh = req.query.refresh === "1";
+      const payload = await getFoodPricesMapLayer({
+        grainWidgetsService,
+        forceRefresh,
+        commodities,
+        countries,
+      });
+      return res.json(payload);
+    } catch (error: any) {
+      return res.status(500).json({
+        layer_id: "food_prices_wfp",
+        layer_type: "country",
+        updated_at: new Date().toISOString(),
+        legend: { metric: "yoy_change", unit: "%", scale: "diverging", min: -0.5, max: 1.0 },
+        features: [],
+        message: error?.message || "Failed to load map layer",
       });
     }
   });
