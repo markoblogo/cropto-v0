@@ -695,15 +695,6 @@ const STATIC_VIDEO_SOURCES: VideoSource[] = [
     note: "Finance widget directory; link-out mode",
   },
   {
-    id: "oilprice-energy-widgets",
-    name: "OilPrice Energy Widgets",
-    category: "markets_tv",
-    status: "LIVE_EMBED",
-    mode: "iframe",
-    url: "https://www.oilpriceapi.com/widgets",
-    note: "Energy prices widget page (Brent/WTI/Gas) for finance context",
-  },
-  {
     id: "bullionvault-live-widgets",
     name: "BullionVault Metals Widgets",
     category: "markets_tv",
