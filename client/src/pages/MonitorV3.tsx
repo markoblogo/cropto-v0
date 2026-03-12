@@ -1830,6 +1830,7 @@ export default function MonitorV3Page() {
   const heroMapContainerRef = useRef<HTMLDivElement | null>(null);
   const heroMapRef = useRef<MapLibreMap | null>(null);
   const heroMapPopupRef = useRef<MapLibrePopup | null>(null);
+  const heroMapMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -3547,6 +3548,8 @@ export default function MonitorV3Page() {
 
     return () => {
       setGeoMapReady(false);
+      heroMapMarkersRef.current.forEach((marker) => marker.remove());
+      heroMapMarkersRef.current.clear();
       heroMapPopupRef.current?.remove();
       heroMapPopupRef.current = null;
       map.remove();
@@ -3574,6 +3577,66 @@ export default function MonitorV3Page() {
       map.off("idle", onIdle);
     };
   }, [activeGeoPointsGeoJson, geoMapReady]);
+
+  useEffect(() => {
+    const map = heroMapRef.current;
+    if (!map || !geoMapReady) return;
+    const registry = heroMapMarkersRef.current;
+    const activeIds = new Set(activeGeoPoints.map((point) => point.id));
+
+    activeGeoPoints.forEach((point) => {
+      const tone = GEO_LAYER_META[point.layer];
+      const markerSize = 8 + Math.round(point.intensity * 10);
+      let marker = registry.get(point.id);
+      if (!marker) {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.style.width = `${markerSize}px`;
+        el.style.height = `${markerSize}px`;
+        el.style.borderRadius = "999px";
+        el.style.border = "1px solid #0b1020";
+        el.style.background = tone.stroke;
+        el.style.boxShadow = `0 0 ${8 + Math.round(point.intensity * 14)}px ${tone.stroke}`;
+        el.style.opacity = "0.95";
+        el.style.cursor = "pointer";
+        el.style.pointerEvents = "auto";
+        el.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (!heroMapPopupRef.current) {
+            heroMapPopupRef.current = new maplibregl.Popup({
+              closeButton: false,
+              closeOnClick: true,
+              offset: 12,
+              className: "monitor-map-popup",
+            });
+          }
+          heroMapPopupRef.current
+            .setLngLat([point.lon, point.lat])
+            .setHTML(
+              `<div style="font-size:12px;line-height:1.2;"><div style="font-weight:600;color:#e2e8f0;">${point.label}</div><div style="color:#94a3b8;margin-top:2px;">${point.value}</div></div>`,
+            )
+            .addTo(map);
+        });
+        marker = new maplibregl.Marker({ element: el, anchor: "center" });
+        marker.setLngLat([point.lon, point.lat]).addTo(map);
+        registry.set(point.id, marker);
+      } else {
+        const el = marker.getElement() as HTMLButtonElement;
+        el.style.width = `${markerSize}px`;
+        el.style.height = `${markerSize}px`;
+        el.style.background = tone.stroke;
+        el.style.boxShadow = `0 0 ${8 + Math.round(point.intensity * 14)}px ${tone.stroke}`;
+        marker.setLngLat([point.lon, point.lat]);
+      }
+    });
+
+    Array.from(registry.keys()).forEach((id) => {
+      if (activeIds.has(id)) return;
+      registry.get(id)?.remove();
+      registry.delete(id);
+    });
+  }, [activeGeoPoints, geoMapReady]);
 
   useEffect(() => {
     const map = heroMapRef.current;
@@ -3992,6 +4055,9 @@ export default function MonitorV3Page() {
             <div className="relative h-[392px] overflow-hidden rounded border border-border bg-[#06090f]">
               {mapVideoSource ? (
                 <div className="relative h-full w-full bg-black">
+                  <div className="absolute left-2 top-2 z-20 rounded border border-cyan-500/60 bg-cyan-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-cyan-300">
+                    video on map
+                  </div>
                   {mapVideoSource.mode === "iframe" && mapVideoSource.url ? (
                     <iframe
                       src={mapVideoSource.url}
@@ -4155,6 +4221,16 @@ export default function MonitorV3Page() {
                         className="absolute inset-0 z-10"
                         aria-label={`Open ${source.name} on map`}
                       />
+                      <button
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          setMapVideoSourceId(source.id);
+                        }}
+                        className="absolute right-1 top-1 z-20 rounded border border-border bg-black/70 px-1 py-0 text-[9px] uppercase tracking-[0.08em] text-cyan-300"
+                      >
+                        map
+                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
@@ -4181,6 +4257,16 @@ export default function MonitorV3Page() {
                         className="absolute inset-0 z-10"
                         aria-label={`Open ${source.name} on map`}
                       />
+                      <button
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          setMapVideoSourceId(source.id);
+                        }}
+                        className="absolute right-1 top-1 z-20 rounded border border-border bg-black/70 px-1 py-0 text-[9px] uppercase tracking-[0.08em] text-cyan-300"
+                      >
+                        map
+                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
