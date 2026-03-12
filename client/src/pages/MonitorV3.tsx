@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Info, Maximize2, Minimize2, Moon, Pin, Plus, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
+import maplibregl, { type GeoJSONSource, type Map as MapLibreMap, type Popup as MapLibrePopup } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { cn } from "@/lib/utils";
 
 type MonitorRole = "all" | "farmer" | "trader" | "broker";
@@ -400,8 +402,8 @@ type GeoPoint = {
   id: string;
   layer: GeoLayerId;
   country: Country;
-  x: number;
-  y: number;
+  lon: number;
+  lat: number;
   intensity: number;
   label: string;
   value: string;
@@ -1056,23 +1058,23 @@ const COUNTRY_NEWS_HINTS: Record<Country, string[]> = {
   DE: ["germany", "german", "berlin", "hamburg"],
   RO: ["romania", "romanian", "bucharest", "constanta"],
 };
-const COUNTRY_GEO_ANCHORS: Record<Country, { x: number; y: number; label: string }> = {
-  US: { x: 195, y: 180, label: "US" },
-  UA: { x: 538, y: 127, label: "UA" },
-  BR: { x: 295, y: 285, label: "BR" },
-  AR: { x: 286, y: 355, label: "AR" },
-  FR: { x: 495, y: 135, label: "FR" },
-  DE: { x: 515, y: 120, label: "DE" },
-  RO: { x: 546, y: 137, label: "RO" },
+const COUNTRY_GEO_COORDS: Record<Country, { lon: number; lat: number; label: string }> = {
+  US: { lon: -98.58, lat: 39.82, label: "US" },
+  UA: { lon: 31.17, lat: 48.38, label: "UA" },
+  BR: { lon: -52.89, lat: -14.24, label: "BR" },
+  AR: { lon: -63.62, lat: -38.42, label: "AR" },
+  FR: { lon: 2.21, lat: 46.23, label: "FR" },
+  DE: { lon: 10.45, lat: 51.17, label: "DE" },
+  RO: { lon: 24.97, lat: 45.94, label: "RO" },
 };
-const FOOD_LAYER_OFFSETS: Record<Country, { x: number; y: number }> = {
-  US: { x: -10, y: 8 },
-  UA: { x: -18, y: 10 },
-  BR: { x: -22, y: 14 },
-  AR: { x: -12, y: 10 },
-  FR: { x: -10, y: 8 },
-  DE: { x: -10, y: 8 },
-  RO: { x: -16, y: 12 },
+const FOOD_LAYER_OFFSETS: Record<Country, { lon: number; lat: number }> = {
+  US: { lon: -1.0, lat: -0.5 },
+  UA: { lon: -1.1, lat: -0.7 },
+  BR: { lon: -1.5, lat: -1.1 },
+  AR: { lon: -0.8, lat: -0.7 },
+  FR: { lon: -0.6, lat: -0.5 },
+  DE: { lon: -0.6, lat: -0.5 },
+  RO: { lon: -1.0, lat: -0.7 },
 };
 const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: string }> = {
   markets: { label: "Markets", tone: "text-cyan-300", stroke: "#22d3ee" },
@@ -1823,11 +1825,10 @@ export default function MonitorV3Page() {
     risk: true,
     food: true,
   });
-  const [geoZoom, setGeoZoom] = useState(1);
-  const [geoPan, setGeoPan] = useState({ x: 0, y: 0 });
-  const [geoDragging, setGeoDragging] = useState(false);
-  const [geoHoverPointId, setGeoHoverPointId] = useState<string | null>(null);
-  const geoDragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const [geoZoom, setGeoZoom] = useState(1.7);
+  const heroMapContainerRef = useRef<HTMLDivElement | null>(null);
+  const heroMapRef = useRef<MapLibreMap | null>(null);
+  const heroMapPopupRef = useRef<MapLibrePopup | null>(null);
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -3297,16 +3298,16 @@ export default function MonitorV3Page() {
       if (isPolicy) bucket[matchCountry].policy += 1;
     });
 
-    (Object.keys(COUNTRY_GEO_ANCHORS) as Country[]).forEach((countryCode) => {
-      const anchor = COUNTRY_GEO_ANCHORS[countryCode];
+    (Object.keys(COUNTRY_GEO_COORDS) as Country[]).forEach((countryCode) => {
+      const anchor = COUNTRY_GEO_COORDS[countryCode];
       const regionCount = bucket[countryCode].logistics;
       if (regionCount > 0) {
         points.push({
           id: `logistics-${countryCode}`,
           layer: "logistics",
           country: countryCode,
-          x: anchor.x,
-          y: anchor.y,
+          lon: anchor.lon,
+          lat: anchor.lat,
           intensity: clamp(regionCount / 8, 0.15, 1),
           label: `${anchor.label} logistics`,
           value: `${regionCount} mentions`,
@@ -3318,8 +3319,8 @@ export default function MonitorV3Page() {
           id: `weather-${countryCode}`,
           layer: "weather",
           country: countryCode,
-          x: anchor.x + 12,
-          y: anchor.y - 10,
+          lon: anchor.lon + 1.4,
+          lat: anchor.lat - 0.8,
           intensity: clamp(weatherCount / 6, 0.15, 1),
           label: `${anchor.label} weather`,
           value: `${weatherCount} signals`,
@@ -3331,7 +3332,7 @@ export default function MonitorV3Page() {
     const regionToCountry: Record<string, Country> = { US: "US", EU: "DE", BR: "BR", AR: "AR", EM: "UA" };
     marketRows.forEach((row) => {
       const target = regionToCountry[row.region] || country;
-      const anchor = COUNTRY_GEO_ANCHORS[target];
+      const anchor = COUNTRY_GEO_COORDS[target];
       if (!anchor) return;
       const absDelta = Math.abs(Number(row.dayChangePct || 0));
       if (!Number.isFinite(absDelta)) return;
@@ -3339,8 +3340,8 @@ export default function MonitorV3Page() {
         id: `markets-${row.symbol}`,
         layer: "markets",
         country: target,
-        x: anchor.x - 10,
-        y: anchor.y + 10,
+        lon: anchor.lon - 1.1,
+        lat: anchor.lat - 1.0,
         intensity: clamp(absDelta / 2.5, 0.1, 1),
         label: `${row.symbol} market`,
         value: `${row.dayChangePct != null ? `${row.dayChangePct >= 0 ? "+" : ""}${row.dayChangePct.toFixed(2)}%` : "n/a"}`,
@@ -3351,26 +3352,26 @@ export default function MonitorV3Page() {
     const geoRisk = riskIndices.find((row) => row.key === "geopolitics_risk")?.value;
     const grainRisk = riskIndices.find((row) => row.key === "grain_risk")?.value;
     if (typeof geoRisk === "number") {
-      const ua = COUNTRY_GEO_ANCHORS.UA;
+      const ua = COUNTRY_GEO_COORDS.UA;
       points.push({
         id: "risk-ua",
         layer: "risk",
         country: "UA",
-        x: ua.x + 20,
-        y: ua.y - 12,
+        lon: ua.lon + 2.0,
+        lat: ua.lat - 1.0,
         intensity: clamp(geoRisk, 0.2, 1),
         label: "Geopolitics risk",
         value: `${(geoRisk * 100).toFixed(1)}%`,
       });
     }
     if (typeof grainRisk === "number") {
-      const br = COUNTRY_GEO_ANCHORS.BR;
+      const br = COUNTRY_GEO_COORDS.BR;
       points.push({
         id: "risk-br",
         layer: "risk",
         country: "BR",
-        x: br.x + 26,
-        y: br.y + 8,
+        lon: br.lon + 2.2,
+        lat: br.lat - 0.8,
         intensity: clamp(grainRisk, 0.2, 1),
         label: "Grain prediction risk",
         value: `${(grainRisk * 100).toFixed(1)}%`,
@@ -3380,21 +3381,24 @@ export default function MonitorV3Page() {
     const foodFeatures = Array.isArray(foodMapLayerQuery.data?.features) ? foodMapLayerQuery.data.features : [];
     foodFeatures.forEach((feature) => {
       const featureId = String(feature?.id || "").toUpperCase() as Country;
-      if (!(featureId in COUNTRY_GEO_ANCHORS)) return;
+      if (!(featureId in COUNTRY_GEO_COORDS)) return;
       const metrics = Array.isArray(feature?.properties?.metrics) ? feature.properties.metrics : [];
       if (!metrics.length) return;
       const strongest = [...metrics]
         .filter((metric) => typeof metric?.yoy_change === "number")
         .sort((a, b) => Math.abs(Number(b.yoy_change || 0)) - Math.abs(Number(a.yoy_change || 0)))[0] || metrics[0];
       const yoy = typeof strongest?.yoy_change === "number" ? strongest.yoy_change : null;
-      const anchor = COUNTRY_GEO_ANCHORS[featureId];
-      const offset = FOOD_LAYER_OFFSETS[featureId] || { x: -10, y: 8 };
+      const coords = feature?.geometry?.coordinates;
+      const anchor = COUNTRY_GEO_COORDS[featureId];
+      const offset = FOOD_LAYER_OFFSETS[featureId] || { lon: -1.0, lat: -0.5 };
+      const lon = Array.isArray(coords) && coords.length === 2 ? Number(coords[0]) : anchor.lon;
+      const lat = Array.isArray(coords) && coords.length === 2 ? Number(coords[1]) : anchor.lat;
       points.push({
         id: `food-${featureId}`,
         layer: "food",
         country: featureId,
-        x: anchor.x + offset.x,
-        y: anchor.y + offset.y,
+        lon: lon + offset.lon,
+        lat: lat + offset.lat,
         intensity: clamp(Math.abs(Number(yoy || 0)) * 2.2, 0.18, 1),
         label: `${feature?.properties?.name || featureId} local food stress`,
         value:
@@ -3411,6 +3415,155 @@ export default function MonitorV3Page() {
     () => geoPoints.filter((point) => geoLayers[point.layer]),
     [geoPoints, geoLayers],
   );
+  const activeGeoPointsGeoJson = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: activeGeoPoints.map((point) => ({
+        type: "Feature" as const,
+        geometry: {
+          type: "Point" as const,
+          coordinates: [point.lon, point.lat] as [number, number],
+        },
+        properties: {
+          id: point.id,
+          layer: point.layer,
+          country: point.country,
+          intensity: point.intensity,
+          label: point.label,
+          value: point.value,
+        },
+      })),
+    }),
+    [activeGeoPoints],
+  );
+
+  useEffect(() => {
+    if (!heroMapContainerRef.current) return;
+    if (heroMapRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: heroMapContainerRef.current,
+      style: "https://tiles.openfreemap.org/styles/liberty",
+      center: [8, 25],
+      zoom: 1.7,
+      minZoom: 1,
+      maxZoom: 8,
+      attributionControl: false,
+      dragRotate: false,
+      pitchWithRotate: false,
+    });
+    heroMapRef.current = map;
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.on("moveend", () => {
+      setGeoZoom(Number(map.getZoom().toFixed(1)));
+    });
+
+    map.on("load", () => {
+      map.addSource("monitor-points", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "monitor-points-glow",
+        type: "circle",
+        source: "monitor-points",
+        paint: {
+          "circle-color": [
+            "match",
+            ["get", "layer"],
+            "markets",
+            "#22d3ee",
+            "logistics",
+            "#f59e0b",
+            "weather",
+            "#34d399",
+            "risk",
+            "#fb7185",
+            "food",
+            "#f97316",
+            "#60a5fa",
+          ],
+          "circle-radius": ["+", 6, ["*", ["coalesce", ["get", "intensity"], 0.2], 18]],
+          "circle-opacity": 0.18,
+        },
+      });
+      map.addLayer({
+        id: "monitor-points-core",
+        type: "circle",
+        source: "monitor-points",
+        paint: {
+          "circle-color": [
+            "match",
+            ["get", "layer"],
+            "markets",
+            "#22d3ee",
+            "logistics",
+            "#f59e0b",
+            "weather",
+            "#34d399",
+            "risk",
+            "#fb7185",
+            "food",
+            "#f97316",
+            "#60a5fa",
+          ],
+          "circle-radius": ["+", 2, ["*", ["coalesce", ["get", "intensity"], 0.2], 5]],
+          "circle-opacity": 0.95,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "#0b1020",
+        },
+      });
+
+      map.on("mouseenter", "monitor-points-core", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "monitor-points-core", () => {
+        map.getCanvas().style.cursor = "";
+      });
+      map.on("click", "monitor-points-core", (event) => {
+        const feature = event.features?.[0];
+        if (!feature || !("properties" in feature)) return;
+        const props = feature.properties || {};
+        const coords = (feature.geometry as any)?.coordinates as [number, number] | undefined;
+        if (!coords) return;
+        if (!heroMapPopupRef.current) {
+          heroMapPopupRef.current = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: true,
+            offset: 12,
+            className: "monitor-map-popup",
+          });
+        }
+        heroMapPopupRef.current
+          .setLngLat(coords)
+          .setHTML(
+            `<div style="font-size:12px;line-height:1.2;"><div style="font-weight:600;color:#e2e8f0;">${String(props.label || "Point")}</div><div style="color:#94a3b8;margin-top:2px;">${String(props.value || "")}</div></div>`,
+          )
+          .addTo(map);
+      });
+    });
+
+    return () => {
+      heroMapPopupRef.current?.remove();
+      heroMapPopupRef.current = null;
+      map.remove();
+      heroMapRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = heroMapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    const source = map.getSource("monitor-points") as GeoJSONSource | undefined;
+    if (!source) return;
+    source.setData(activeGeoPointsGeoJson as any);
+  }, [activeGeoPointsGeoJson]);
+
+  useEffect(() => {
+    const map = heroMapRef.current;
+    if (!map || mapVideoSource) return;
+    map.resize();
+  }, [mapVideoSource]);
 
   const yieldFaoRows = yieldFoodSecurityQuery.data?.foodPrices?.faoRows || [];
   const yieldStressRows = yieldFoodSecurityQuery.data?.foodSecurity?.marketRows || [];
@@ -3802,8 +3955,9 @@ export default function MonitorV3Page() {
                 ))}
                 <button
                   onClick={() => {
-                    setGeoZoom(1);
-                    setGeoPan({ x: 0, y: 0 });
+                    const map = heroMapRef.current;
+                    if (!map) return;
+                    map.easeTo({ center: [8, 25], zoom: 1.7, duration: 500 });
                   }}
                   className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
                 >
@@ -3819,43 +3973,7 @@ export default function MonitorV3Page() {
                 ) : null}
               </div>
             </div>
-            <div
-              className={cn(
-                "relative h-[392px] overflow-hidden rounded border border-border bg-[#06090f]",
-                mapVideoSource ? "cursor-default" : geoDragging ? "cursor-grabbing" : "cursor-grab",
-              )}
-              onWheel={(event) => {
-                if (mapVideoSource) return;
-                event.preventDefault();
-                const delta = event.deltaY < 0 ? 0.1 : -0.1;
-                setGeoZoom((current) => clamp(Number((current + delta).toFixed(2)), 0.8, 2.4));
-              }}
-              onMouseDown={(event) => {
-                if (mapVideoSource) return;
-                setGeoDragging(true);
-                geoDragStartRef.current = { x: event.clientX, y: event.clientY, panX: geoPan.x, panY: geoPan.y };
-              }}
-              onMouseMove={(event) => {
-                if (mapVideoSource) return;
-                const start = geoDragStartRef.current;
-                if (!geoDragging || !start) return;
-                const dx = event.clientX - start.x;
-                const dy = event.clientY - start.y;
-                setGeoPan({
-                  x: clamp(start.panX + dx, -220, 220),
-                  y: clamp(start.panY + dy, -140, 140),
-                });
-              }}
-              onMouseUp={() => {
-                setGeoDragging(false);
-                geoDragStartRef.current = null;
-              }}
-              onMouseLeave={() => {
-                setGeoDragging(false);
-                geoDragStartRef.current = null;
-                setGeoHoverPointId(null);
-              }}
-            >
+            <div className="relative h-[392px] overflow-hidden rounded border border-border bg-[#06090f]">
               {mapVideoSource ? (
                 <div className="relative h-full w-full bg-black">
                   {mapVideoSource.mode === "iframe" && mapVideoSource.url ? (
@@ -3904,60 +4022,7 @@ export default function MonitorV3Page() {
                 </div>
               ) : (
                 <>
-                  <svg viewBox="0 0 1000 460" className="h-full w-full select-none">
-                    <defs>
-                      <radialGradient id="oceanGlow" cx="50%" cy="45%">
-                        <stop offset="0%" stopColor="#0f172a" />
-                        <stop offset="100%" stopColor="#020617" />
-                      </radialGradient>
-                      <filter id="mapBlur">
-                        <feGaussianBlur stdDeviation="0.5" />
-                      </filter>
-                    </defs>
-                    <rect x="0" y="0" width="1000" height="460" fill="url(#oceanGlow)" />
-                    <g transform={`translate(${geoPan.x} ${geoPan.y}) scale(${geoZoom}) translate(${(1 - geoZoom) * 500} ${(1 - geoZoom) * 230})`}>
-                      <image
-                        href="/maps/monitor-map.png"
-                        x="0"
-                        y="0"
-                        width="1000"
-                        height="460"
-                        preserveAspectRatio="xMidYMid slice"
-                        opacity="0.95"
-                      />
-                      <rect x="0" y="0" width="1000" height="460" fill="#020617" opacity="0.22" />
-                      <g stroke="#0b1220" strokeWidth="1" opacity="0.55">
-                        {Array.from({ length: 9 }).map((_, idx) => (
-                          <line key={`lat-${idx}`} x1="0" y1={idx * 58} x2="1000" y2={idx * 58} />
-                        ))}
-                        {Array.from({ length: 11 }).map((_, idx) => (
-                          <line key={`lon-${idx}`} x1={idx * 100} y1="0" x2={idx * 100} y2="460" />
-                        ))}
-                      </g>
-                      {activeGeoPoints.map((point) => {
-                        const meta = GEO_LAYER_META[point.layer];
-                        const isHover = geoHoverPointId === point.id;
-                        const radius = 4 + point.intensity * 14;
-                        return (
-                          <g
-                            key={point.id}
-                            onMouseEnter={() => setGeoHoverPointId(point.id)}
-                            onMouseLeave={() => setGeoHoverPointId(null)}
-                          >
-                            <circle cx={point.x} cy={point.y} r={radius + (isHover ? 4 : 0)} fill={meta.stroke} opacity={0.15 + point.intensity * 0.28} />
-                            <circle cx={point.x} cy={point.y} r={2.6 + point.intensity * 3.2} fill={meta.stroke} filter="url(#mapBlur)" />
-                            {isHover ? (
-                              <>
-                                <rect x={point.x + 10} y={point.y - 30} rx="4" ry="4" width="150" height="30" fill="#020617" stroke={meta.stroke} />
-                                <text x={point.x + 16} y={point.y - 18} fill="#e2e8f0" fontSize="10">{point.label}</text>
-                                <text x={point.x + 16} y={point.y - 8} fill={meta.stroke} fontSize="10">{point.value}</text>
-                              </>
-                            ) : null}
-                          </g>
-                        );
-                      })}
-                    </g>
-                  </svg>
+                  <div ref={heroMapContainerRef} className="h-full w-full" />
                   <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                     <span className="rounded border border-border bg-black/35 px-1.5 py-0.5">
                       zoom {geoZoom.toFixed(1)}x
@@ -3968,13 +4033,21 @@ export default function MonitorV3Page() {
                   </div>
                   <div className="absolute right-2 top-2 flex gap-1">
                     <button
-                      onClick={() => setGeoZoom((current) => clamp(Number((current - 0.1).toFixed(2)), 0.8, 2.4))}
+                      onClick={() => {
+                        const map = heroMapRef.current;
+                        if (!map) return;
+                        map.zoomOut({ duration: 200 });
+                      }}
                       className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
                     >
                       -
                     </button>
                     <button
-                      onClick={() => setGeoZoom((current) => clamp(Number((current + 0.1).toFixed(2)), 0.8, 2.4))}
+                      onClick={() => {
+                        const map = heroMapRef.current;
+                        if (!map) return;
+                        map.zoomIn({ duration: 200 });
+                      }}
                       className="rounded border border-border bg-black/35 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
                     >
                       +
@@ -3994,7 +4067,7 @@ export default function MonitorV3Page() {
                     ))}
                   </div>
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t border-border bg-black/45 px-2 py-1 text-[10px] text-muted-foreground">
-                    Internal geo layers engine: canvas/svg foundation active. GEOGLAM remains paused in hero until fresher layer sources are connected.
+                    Internal geo layers engine: maplibre foundation active. GEOGLAM remains paused in hero until fresher layer sources are connected.
                   </div>
                 </>
               )}
