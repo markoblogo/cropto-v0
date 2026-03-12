@@ -477,6 +477,22 @@ const VIDEO_TOPIC_OPTIONS: Array<{ id: VideoTopic; label: string }> = [
   { id: "finance", label: "Finance" },
 ];
 
+// These providers currently return non-public embed pages in iframe context.
+// Keep them as link-out only until a stable public embed URL is confirmed.
+const PREVIEW_BLOCKED_VIDEO_IDS = new Set<string>([
+  "windy-port-brest",
+  "windy-belfast-harbor",
+  "windy-port-la-nouvelle",
+  "windy-port-dielette",
+  "windy-saint-michel-port",
+  "windy-port-angeles-harbor",
+  "windy-newhaven-harbor",
+  "windy-port-morgat",
+  "windy-rieux-farm",
+  "windy-molletts-farm",
+  "windy-tora-farm-settlement",
+]);
+
 const STATIC_VIDEO_SOURCES: VideoSource[] = [
   {
     id: "portmiami-earthcam",
@@ -2609,9 +2625,22 @@ export default function MonitorV3Page() {
     }));
   }, []);
   const videoSources = useMemo<VideoSource[]>(() => [...STATIC_VIDEO_SOURCES, ...customHlsSources], [customHlsSources]);
-  const liveVideoSources = useMemo(
-    () => videoSources.filter((source) => (source.status === "LIVE_EMBED" || source.status === "LIVE_STREAM") && Boolean(source.url)),
+  const normalizedVideoSources = useMemo<VideoSource[]>(
+    () =>
+      videoSources.map((source) => {
+        if (!PREVIEW_BLOCKED_VIDEO_IDS.has(source.id)) return source;
+        return {
+          ...source,
+          status: "CONSTRAINED",
+          mode: "link",
+          note: "Non-public embed in iframe mode; open source link",
+        };
+      }),
     [videoSources],
+  );
+  const liveVideoSources = useMemo(
+    () => normalizedVideoSources.filter((source) => (source.status === "LIVE_EMBED" || source.status === "LIVE_STREAM") && Boolean(source.url)),
+    [normalizedVideoSources],
   );
   const videoSourcesByTopic = useMemo(
     () =>
@@ -2641,8 +2670,8 @@ export default function MonitorV3Page() {
     [liveVideoSources, mapVideoSourceId],
   );
   const pendingVideoSources = useMemo(
-    () => videoSources.filter((source) => source.status === "CONSTRAINED" || source.status === "CONTRACT_REQUIRED"),
-    [videoSources],
+    () => normalizedVideoSources.filter((source) => source.status === "CONSTRAINED" || source.status === "CONTRACT_REQUIRED"),
+    [normalizedVideoSources],
   );
 
   const geoPoints = useMemo<GeoPoint[]>(() => {
@@ -3399,7 +3428,7 @@ export default function MonitorV3Page() {
                         title={source.name}
                         loading="lazy"
                         allow="autoplay; fullscreen; picture-in-picture"
-                        className="h-full w-full"
+                        className="pointer-events-none h-full w-full"
                         referrerPolicy="no-referrer"
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
