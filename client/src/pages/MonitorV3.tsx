@@ -484,13 +484,6 @@ const PREVIEW_BLOCKED_VIDEO_IDS = new Set<string>([
   "windy-belfast-harbor",
   "windy-port-la-nouvelle",
   "windy-port-dielette",
-  "windy-saint-michel-port",
-  "windy-port-angeles-harbor",
-  "windy-newhaven-harbor",
-  "windy-port-morgat",
-  "windy-rieux-farm",
-  "windy-molletts-farm",
-  "windy-tora-farm-settlement",
 ]);
 
 const STATIC_VIDEO_SOURCES: VideoSource[] = [
