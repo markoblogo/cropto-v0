@@ -4221,16 +4221,6 @@ export default function MonitorV3Page() {
                         className="absolute inset-0 z-10"
                         aria-label={`Open ${source.name} on map`}
                       />
-                      <button
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          setMapVideoSourceId(source.id);
-                        }}
-                        className="absolute right-1 top-1 z-20 rounded border border-border bg-black/70 px-1 py-0 text-[9px] uppercase tracking-[0.08em] text-cyan-300"
-                      >
-                        map
-                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
@@ -4257,16 +4247,6 @@ export default function MonitorV3Page() {
                         className="absolute inset-0 z-10"
                         aria-label={`Open ${source.name} on map`}
                       />
-                      <button
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          setMapVideoSourceId(source.id);
-                        }}
-                        className="absolute right-1 top-1 z-20 rounded border border-border bg-black/70 px-1 py-0 text-[9px] uppercase tracking-[0.08em] text-cyan-300"
-                      >
-                        map
-                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
