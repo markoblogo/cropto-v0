@@ -1149,6 +1149,7 @@ export default function MonitorV3Page() {
   const [healthFilter, setHealthFilter] = useState<HealthFilter>(() => readJson<HealthFilter>(STORAGE_KEYS.healthFilter, "all"));
   const [pinDenseTop, setPinDenseTop] = useState<boolean>(() => readJson<boolean>(STORAGE_KEYS.pinDenseTop, true));
   const [showHealthDetails, setShowHealthDetails] = useState<boolean>(false);
+  const [showHealthPanel, setShowHealthPanel] = useState<boolean>(false);
   const [directPredictionSort, setDirectPredictionSort] = useState<DirectPredictionSort>(() =>
     readJson<DirectPredictionSort>(STORAGE_KEYS.directPredictionSort, "liquidity"),
   );
@@ -2717,6 +2718,12 @@ export default function MonitorV3Page() {
             >
               details {showHealthDetails ? "on" : "off"}
             </button>
+            <button
+              onClick={() => setShowHealthPanel(true)}
+              className="rounded border border-border px-1.5 py-0.5 text-muted-foreground hover:text-foreground"
+            >
+              panel
+            </button>
           </div>
           {showHealthDetails ? (
             <div className="mt-1.5 monitor-widget-scroll max-h-44 overflow-y-auto rounded border border-border bg-muted/10 p-1.5">
@@ -3589,6 +3596,97 @@ export default function MonitorV3Page() {
         </section>
       </main>
 
+      {showHealthPanel ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 p-0">
+          <aside className="h-full w-full max-w-lg overflow-y-auto border-l border-border bg-card p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-base font-semibold">Provider Health Panel</h3>
+              <button
+                onClick={() => setShowHealthPanel(false)}
+                className="rounded border border-border px-1.5 py-1 text-muted-foreground hover:text-foreground"
+              >
+                <X size={12} />
+              </button>
+            </div>
+            <div className="mb-2 flex flex-wrap items-center gap-1 text-[10px] uppercase tracking-[0.12em]">
+              <button
+                onClick={() => setHealthFilter("all")}
+                className={cn(
+                  "rounded border px-1.5 py-0.5",
+                  healthFilter === "all" ? "border-primary/70 bg-primary/15 text-primary" : "border-border text-muted-foreground",
+                )}
+              >
+                all {providerHealthRows.length}
+              </button>
+              <button
+                onClick={() => setHealthFilter("live")}
+                className={cn(
+                  "rounded border px-1.5 py-0.5",
+                  healthFilter === "live" ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300" : "border-emerald-500/40 text-emerald-300/80",
+                )}
+              >
+                live {providerHealthRows.filter((row) => row.state === "live").length}
+              </button>
+              <button
+                onClick={() => setHealthFilter("degraded")}
+                className={cn(
+                  "rounded border px-1.5 py-0.5",
+                  healthFilter === "degraded" ? "border-amber-500/60 bg-amber-500/10 text-amber-300" : "border-amber-500/40 text-amber-300/80",
+                )}
+              >
+                degraded {providerHealthRows.filter((row) => row.state === "degraded").length}
+              </button>
+              <button
+                onClick={() => setHealthFilter("empty")}
+                className={cn(
+                  "rounded border px-1.5 py-0.5",
+                  healthFilter === "empty" ? "border-red-500/60 bg-red-500/10 text-red-300" : "border-red-500/40 text-red-300/80",
+                )}
+              >
+                empty {providerHealthRows.filter((row) => row.state === "empty").length}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto] gap-2 border-b border-border px-1 pb-1 text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
+              <span>provider</span>
+              <span>state</span>
+              <span>mapped</span>
+              <span>error</span>
+              <span>fresh</span>
+            </div>
+            <div className="mt-1 space-y-1">
+              {(healthFilter === "all" ? providerHealthRows : providerHealthRows.filter((row) => row.state === healthFilter)).map((row) => (
+                <button
+                  key={`provider-health-panel-${row.providerId}`}
+                  onClick={() => {
+                    openProviderDebug(row.providerId);
+                    setShowHealthPanel(false);
+                  }}
+                  className="grid w-full grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto] items-center gap-2 rounded border border-border px-1.5 py-1 text-left text-[10px] hover:border-cyan-500/60 hover:bg-cyan-500/5"
+                >
+                  <span className="truncate font-medium">{row.providerId}</span>
+                  <span
+                    className={cn(
+                      "rounded border px-1 py-0 uppercase tracking-[0.1em]",
+                      row.state === "live"
+                        ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300"
+                        : row.state === "degraded"
+                          ? "border-amber-500/60 bg-amber-500/10 text-amber-300"
+                          : "border-red-500/60 bg-red-500/10 text-red-300",
+                    )}
+                  >
+                    {row.state}
+                  </span>
+                  <span>{row.mapped}</span>
+                  <span className="truncate">{row.errorKind}{row.httpStatus ? `:${row.httpStatus}` : ""}</span>
+                  <span>{formatAgeShort(row.lastFetchAt)}</span>
+                </button>
+              ))}
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
       {isAddWidgetOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-xl rounded border border-border bg-card p-3">
@@ -3743,6 +3841,12 @@ export default function MonitorV3Page() {
                     </div>
                   ) : (
                     <>
+                      {!widget ? (
+                        <div className="rounded border border-border bg-muted/10 p-2">
+                          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Provider target</div>
+                          <div className="mt-1 font-semibold">{providerId || "n/a"}</div>
+                        </div>
+                      ) : null}
                       <div className="grid grid-cols-2 gap-2">
                         <div className="rounded border border-border bg-muted/10 p-2">
                           <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Provider</div>
