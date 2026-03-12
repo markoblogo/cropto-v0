@@ -446,6 +446,8 @@ type GeoPoint = {
   chokepointStatus?: "normal" | "stressed" | "critical";
   chokepointRegion?: string;
   chokepointMode?: LogisticsEventMode;
+  weatherRegionId?: string;
+  weatherCrop?: string;
 };
 type MapLayerCountryMetric = {
   code: string;
@@ -480,6 +482,11 @@ type MapLayerFeature = {
     summary?: string;
     source_url?: string;
     source_name?: string;
+    region_id?: string;
+    crop?: string;
+    stress_score?: number;
+    stress_level?: "low" | "medium" | "high";
+    weather_event_count_7d?: number;
   };
 };
 
@@ -496,6 +503,26 @@ type MapLayerResponse = {
   };
   features?: MapLayerFeature[];
   note?: string;
+};
+
+type WeatherRiskDetailsResponse = {
+  region_id: string;
+  crop: string;
+  name: string;
+  stress_score: number;
+  stress_level: "low" | "medium" | "high";
+  metrics: {
+    rainfall_anomaly_30d: number;
+    temp_anomaly_30d_c: number;
+    soil_moisture_percentile: number;
+    ndvi_anomaly: number;
+    yield_deviation: number;
+  };
+  timeseries: {
+    rainfall_vs_norm: Array<{ date: string; actual: number; normal: number }>;
+    ndvi_vs_median: Array<{ date: string; actual: number; median: number }>;
+  };
+  news: Array<{ id: string; source: string; title: string; published_at: string; url?: string }>;
 };
 
 type GridWidget = {
@@ -1762,6 +1789,34 @@ function buildMiniSparkPoints(series: number[]) {
   return normalized.map((value, idx) => `${idx * (100 / Math.max(1, normalized.length - 1))},${100 - value}`).join(" ");
 }
 
+function buildPopupSparkPath(values: number[], width = 240, height = 48): string {
+  if (!Array.isArray(values) || values.length < 2) return "";
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const step = width / Math.max(1, values.length - 1);
+  return values
+    .map((value, idx) => {
+      const normalized = max === min ? 0.5 : (value - min) / (max - min);
+      const x = Number((idx * step).toFixed(2));
+      const y = Number((height - normalized * height).toFixed(2));
+      return `${idx === 0 ? "M" : "L"}${x},${y}`;
+    })
+    .join(" ");
+}
+
+function popupMetricLine(label: string, value: string) {
+  return `<div style="display:flex;justify-content:space-between;gap:8px;"><span style="color:#94a3b8;">${label}</span><span style="color:#e2e8f0;font-weight:600;">${value}</span></div>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function monitorCountryToPodcastRegion(country: Country): string {
   if (country === "US") return "North America";
   if (country === "BR" || country === "AR") return "South America";
@@ -1888,6 +1943,7 @@ export default function MonitorV3Page() {
   const heroMapRef = useRef<MapLibreMap | null>(null);
   const heroMapPopupRef = useRef<MapLibrePopup | null>(null);
   const heroMapMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
+  const weatherDetailsCacheRef = useRef<Map<string, WeatherRiskDetailsResponse>>(new Map());
 
   const [draft, setDraft] = useState<CustomWidgetDraft>({ title: "", subtitle: "", source: "", topic: "markets" });
   const [selectedMetric, setSelectedMetric] = useState<{
@@ -2106,6 +2162,16 @@ export default function MonitorV3Page() {
     queryFn: async () => {
       const response = await fetch("/api/monitor/map-layer?layer=food_prices_wfp&commodities=wheat,maize,rice,oilseeds");
       if (!response.ok) throw new Error("Failed to load food map layer");
+      return response.json();
+    },
+  });
+  const weatherRiskLayerQuery = useQuery<MapLayerResponse>({
+    queryKey: ["monitor-v3-weather-risk-layer", yieldCrop],
+    staleTime: 90_000,
+    queryFn: async () => {
+      const crop = String(yieldCrop || "ALL").toLowerCase();
+      const response = await fetch(`/api/monitor/map-layer?layer=weather_yield_risk&crop=${encodeURIComponent(crop)}`);
+      if (!response.ok) throw new Error("Failed to load weather yield risk layer");
       return response.json();
     },
   });
@@ -2473,6 +2539,7 @@ export default function MonitorV3Page() {
     const eurUsd = formatFxPair("EUR/USD", fxQuery.data?.rates);
     const usdBrl = formatFxPair("USD/BRL", fxQuery.data?.rates);
     const foodMapFeatures = Array.isArray(foodMapLayerQuery.data?.features) ? foodMapLayerQuery.data.features : [];
+    const weatherRiskFeatures = Array.isArray(weatherRiskLayerQuery.data?.features) ? weatherRiskLayerQuery.data.features : [];
     const chokepointsFeatures = Array.isArray(chokepointsLayerQuery.data?.features) ? chokepointsLayerQuery.data.features : [];
     const topFoodStressRows = foodMapFeatures
       .map((feature) => {
@@ -2507,6 +2574,23 @@ export default function MonitorV3Page() {
       })
       .sort((a, b) => (a.ratio ?? 0) - (b.ratio ?? 0))
       .slice(0, 6);
+    const weatherRiskRows = weatherRiskFeatures
+      .map((feature) => {
+        const props = feature?.properties || {};
+        const metrics = props && typeof props.metrics === "object" && !Array.isArray(props.metrics) ? props.metrics as any : null;
+        return {
+          name: String(props?.name || feature?.id || "Region"),
+          crop: String(props?.crop || "crop"),
+          stressScore: typeof props?.stress_score === "number" ? props.stress_score : null,
+          stressLevel: String(props?.stress_level || "medium"),
+          rainfall: typeof metrics?.rainfall_anomaly_30d === "number" ? metrics.rainfall_anomaly_30d : null,
+          temp: typeof metrics?.temp_anomaly_30d_c === "number" ? metrics.temp_anomaly_30d_c : null,
+          ndvi: typeof metrics?.ndvi_anomaly === "number" ? metrics.ndvi_anomaly : null,
+          yieldDeviation: typeof metrics?.yield_deviation === "number" ? metrics.yield_deviation : null,
+        };
+      })
+      .sort((a, b) => (b.stressScore ?? 0) - (a.stressScore ?? 0))
+      .slice(0, 8);
     const globalTrendSpx = globalIndicesTrendsQuery.data?.bySymbol?.SPX?.points?.map((point) => point.value) || [];
     const globalTrendIxic = globalIndicesTrendsQuery.data?.bySymbol?.IXIC?.points?.map((point) => point.value) || [];
     const matrixSeries = globalTrendSpx.length >= 2 && globalTrendIxic.length >= 2
@@ -2565,6 +2649,24 @@ export default function MonitorV3Page() {
               };
             })
           : [{ label: "Layer state", value: "No chokepoint rows available" }],
+      },
+      {
+        id: "SYS_WEATHER_YIELD_RISK",
+        title: "Weather Yield Risk",
+        subtitle: "Region x crop stress (weather -> yield)",
+        status: weatherRiskRows.length > 0 ? "REFRESH" : "CONSTRAINED",
+        source: "Weather risk layer",
+        updatedAt: weatherRiskLayerQuery.data?.updated_at,
+        topic: "weather",
+        roles: ["farmer", "trader", "broker"],
+        territory: "GLOBAL",
+        metrics: weatherRiskRows.length > 0
+          ? weatherRiskRows.map((row) => ({
+              label: `${row.name} • ${row.crop}`,
+              value: `stress ${row.stressScore ?? "n/a"} (${row.stressLevel}) • rain ${row.rainfall != null ? `${row.rainfall >= 0 ? "+" : ""}${Math.round(row.rainfall * 100)}%` : "n/a"} • ndvi ${row.ndvi != null ? `${row.ndvi >= 0 ? "+" : ""}${Math.round(row.ndvi * 100)}%` : "n/a"}`,
+              delta: row.yieldDeviation != null ? row.yieldDeviation * 100 : undefined,
+            }))
+          : [{ label: "Layer state", value: "No weather-risk rows available for selected crop" }],
       },
       {
         id: "SYS_WORLD_CLOCK",
@@ -3058,7 +3160,7 @@ export default function MonitorV3Page() {
       ...widgetsFromLogistics,
       ...widgetsFromIndices,
     ];
-  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, logisticsNewsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, chokepointsLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
+  }, [grainWidgetsQuery.data, grainMarketsQuery.data, logisticsQuery.data, logisticsNewsQuery.data, indicesQuery.data, fxQuery.data, newsQuery.data, podcastsQuery.data, clockZones, fxPairs, providerById, predictionMarketsQuery.data, predictionTrendsQuery.data, agroExpectationsQuery.data, agroCompositeTrendsQuery.data, cgoWeightsQuery.data, binanceSnapshotQuery.data, binanceRiskTrendsQuery.data, globalIndicesQuery.data, globalIndicesTrendsQuery.data, foodMapLayerQuery.data, chokepointsLayerQuery.data, weatherRiskLayerQuery.data, country, directPredictionSort, directPredictionRegion]);
 
   const allWidgets = useMemo(() => [...coreWidgets, ...customWidgets], [coreWidgets, customWidgets]);
   const widgetMap = useMemo(() => Object.fromEntries(allWidgets.map((w) => [w.id, w])), [allWidgets]);
@@ -3660,8 +3762,30 @@ export default function MonitorV3Page() {
       });
     });
 
+    const weatherRiskFeatures = Array.isArray(weatherRiskLayerQuery.data?.features) ? weatherRiskLayerQuery.data.features : [];
+    weatherRiskFeatures.forEach((feature) => {
+      const props = feature?.properties || {};
+      const coords = feature?.geometry?.coordinates;
+      if (!Array.isArray(coords) || coords.length !== 2) return;
+      const stressScore = typeof props?.stress_score === "number" ? props.stress_score : null;
+      const stressLevel = String(props?.stress_level || "medium");
+      const intensity = stressScore != null ? clamp(stressScore / 100, 0.12, 1) : 0.3;
+      points.push({
+        id: `weather-risk-${String(feature?.id || props?.region_id || "region")}`,
+        layer: "weather",
+        country: "GLOBAL",
+        lon: Number(coords[0]) + 0.4,
+        lat: Number(coords[1]) - 0.2,
+        intensity,
+        label: String(props?.name || "Weather region"),
+        value: stressScore != null ? `stress ${stressScore}/100 (${stressLevel})` : `stress ${stressLevel}`,
+        weatherRegionId: String(props?.region_id || ""),
+        weatherCrop: String(props?.crop || ""),
+      });
+    });
+
     return points;
-  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features, chokepointsLayerQuery.data?.features]);
+  }, [filteredFeed, filteredSignals, country, globalIndicesQuery.data?.rows, predictionMarketsQuery.data?.indices, foodMapLayerQuery.data?.features, chokepointsLayerQuery.data?.features, weatherRiskLayerQuery.data?.features]);
 
   const activeGeoPoints = useMemo(
     () =>
@@ -3692,6 +3816,8 @@ export default function MonitorV3Page() {
           chokepointStatus: point.chokepointStatus || "",
           chokepointRegion: point.chokepointRegion || "",
           chokepointMode: point.chokepointMode || "",
+          weatherRegionId: point.weatherRegionId || "",
+          weatherCrop: point.weatherCrop || "",
         },
       })),
     }),
@@ -3713,6 +3839,98 @@ export default function MonitorV3Page() {
     setLogisticsEventRegion(normalizedRegion);
     setLogisticsEventMode(normalizedMode);
     setTopic("logistics");
+  };
+
+  const openWeatherPopupWithDetails = async (args: {
+    map: MapLibreMap;
+    coords: [number, number];
+    label: string;
+    value: string;
+    regionId: string;
+    crop: string;
+  }) => {
+    const popup = heroMapPopupRef.current || new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: true,
+      offset: 12,
+      className: "monitor-map-popup",
+    });
+    heroMapPopupRef.current = popup;
+    popup
+      .setLngLat(args.coords)
+      .setHTML(
+        `<div style="width:280px;font-size:12px;line-height:1.25;">
+          <div style="font-weight:600;color:#e2e8f0;">${escapeHtml(args.label)}</div>
+          <div style="color:#94a3b8;margin-top:2px;">${escapeHtml(args.value)}</div>
+          <div style="margin-top:8px;color:#94a3b8;">Loading weather/yield details...</div>
+        </div>`,
+      )
+      .addTo(args.map);
+
+    const cacheKey = `${args.regionId}|${args.crop}`;
+    let payload = weatherDetailsCacheRef.current.get(cacheKey);
+    if (!payload) {
+      try {
+        const response = await fetch(
+          `/api/monitor/weather-yield-risk/details?region_id=${encodeURIComponent(args.regionId)}&crop=${encodeURIComponent(args.crop)}`,
+        );
+        if (!response.ok) throw new Error("details unavailable");
+        payload = (await response.json()) as WeatherRiskDetailsResponse;
+        weatherDetailsCacheRef.current.set(cacheKey, payload);
+      } catch {
+        popup.setHTML(
+          `<div style="width:280px;font-size:12px;line-height:1.25;">
+            <div style="font-weight:600;color:#e2e8f0;">${escapeHtml(args.label)}</div>
+            <div style="color:#94a3b8;margin-top:2px;">${escapeHtml(args.value)}</div>
+            <div style="margin-top:8px;color:#fca5a5;">Details temporarily unavailable.</div>
+          </div>`,
+        );
+        return;
+      }
+    }
+
+    const rainSeries = (payload?.timeseries?.rainfall_vs_norm || []).map((point) => Number(point.actual) - Number(point.normal));
+    const ndviSeries = (payload?.timeseries?.ndvi_vs_median || []).map((point) => Number(point.actual) - Number(point.median));
+    const rainPath = buildPopupSparkPath(rainSeries);
+    const ndviPath = buildPopupSparkPath(ndviSeries);
+    const newsRows = (payload.news || [])
+      .slice(0, 3)
+      .map((item) => {
+        const title = escapeHtml(item.title || "Weather update");
+        const source = escapeHtml(item.source || "Source");
+        const href = item.url ? ` href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer"` : "";
+        return `<a${href} style="display:block;text-decoration:none;color:#e2e8f0;border:1px solid rgba(148,163,184,0.25);border-radius:6px;padding:6px;margin-top:6px;">
+          <div style="font-size:11px;line-height:1.2;">${title}</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:4px;">${source} • ${escapeHtml(formatAgeShort(item.published_at))}</div>
+        </a>`;
+      })
+      .join("");
+    const metricsHtml = [
+      popupMetricLine("Rainfall vs norm (30d)", `${payload.metrics.rainfall_anomaly_30d >= 0 ? "+" : ""}${Math.round(payload.metrics.rainfall_anomaly_30d * 100)}%`),
+      popupMetricLine("Temp anomaly (30d)", `${payload.metrics.temp_anomaly_30d_c >= 0 ? "+" : ""}${payload.metrics.temp_anomaly_30d_c.toFixed(1)}C`),
+      popupMetricLine("Soil moisture pct", `${payload.metrics.soil_moisture_percentile}`),
+      popupMetricLine("NDVI anomaly", `${payload.metrics.ndvi_anomaly >= 0 ? "+" : ""}${Math.round(payload.metrics.ndvi_anomaly * 100)}%`),
+      popupMetricLine("Yield vs trend", `${payload.metrics.yield_deviation >= 0 ? "+" : ""}${Math.round(payload.metrics.yield_deviation * 100)}%`),
+    ].join("");
+    popup.setHTML(
+      `<div style="width:300px;font-size:12px;line-height:1.25;">
+        <div style="display:flex;justify-content:space-between;gap:8px;">
+          <div style="font-weight:700;color:#e2e8f0;">${escapeHtml(payload.name)}</div>
+          <div style="color:${payload.stress_level === "high" ? "#fca5a5" : payload.stress_level === "medium" ? "#fcd34d" : "#86efac"};font-weight:700;">${payload.stress_score}/100</div>
+        </div>
+        <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Rainfall vs norm</div>
+        <svg viewBox="0 0 240 48" style="width:100%;height:46px;background:rgba(2,6,23,0.55);border:1px solid rgba(148,163,184,0.25);border-radius:6px;">
+          <path d="${rainPath}" fill="none" stroke="#22d3ee" stroke-width="2" />
+        </svg>
+        <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">NDVI vs median</div>
+        <svg viewBox="0 0 240 48" style="width:100%;height:46px;background:rgba(2,6,23,0.55);border:1px solid rgba(148,163,184,0.25);border-radius:6px;">
+          <path d="${ndviPath}" fill="none" stroke="#34d399" stroke-width="2" />
+        </svg>
+        <div style="margin-top:8px;display:grid;gap:4px;">${metricsHtml}</div>
+        <div style="margin-top:8px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Weather & Crop Alerts</div>
+        ${newsRows || `<div style="margin-top:6px;color:#94a3b8;">No linked alerts in current window.</div>`}
+      </div>`,
+    );
   };
 
   useEffect(() => {
@@ -3813,6 +4031,21 @@ export default function MonitorV3Page() {
         }
         const coords = (feature.geometry as any)?.coordinates as [number, number] | undefined;
         if (!coords) return;
+        if (layer === "weather") {
+          const regionId = String((props as any).weatherRegionId || "");
+          const crop = String((props as any).weatherCrop || "");
+          if (regionId && crop) {
+            void openWeatherPopupWithDetails({
+              map,
+              coords,
+              label: String((props as any).label || "Weather region"),
+              value: String((props as any).value || ""),
+              regionId,
+              crop,
+            });
+            return;
+          }
+        }
         if (!heroMapPopupRef.current) {
           heroMapPopupRef.current = new maplibregl.Popup({
             closeButton: false,
@@ -3889,6 +4122,17 @@ export default function MonitorV3Page() {
           event.stopPropagation();
           if (point.layer === "chokepoints") {
             applyChokepointEventFilter(point.chokepointRegion, point.chokepointMode || "ocean");
+          }
+          if (point.layer === "weather" && point.weatherRegionId && point.weatherCrop) {
+            void openWeatherPopupWithDetails({
+              map,
+              coords: [point.lon, point.lat],
+              label: point.label,
+              value: point.value,
+              regionId: point.weatherRegionId,
+              crop: point.weatherCrop,
+            });
+            return;
           }
           if (!heroMapPopupRef.current) {
             heroMapPopupRef.current = new maplibregl.Popup({

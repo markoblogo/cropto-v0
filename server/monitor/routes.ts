@@ -106,6 +106,7 @@ import { probeDbnomicsCore10 } from "./grainWidgets/providers/dbNomicsCoreRegist
 import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./grainWidgets/providers/utils";
 import { buildMonitorTriageReport } from "./utils/triage";
 import type { MonitorNewsItem } from "./types";
+import { buildWeatherYieldRiskLayer, getWeatherYieldRiskDetails } from "./weatherYieldRiskService";
 
 function triageReportToMarkdown(report: any): string {
   const providers = Array.isArray(report?.providers) ? report.providers : [];
@@ -590,6 +591,46 @@ export function registerMonitorRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/monitor/weather-yield-risk", async (req, res) => {
+    try {
+      const threshold = resolveThreshold(typeof req.query.threshold === "string" ? req.query.threshold : undefined);
+      const { items } = await getMonitorNews(req.query.refresh === "1", { threshold });
+      const layer = buildWeatherYieldRiskLayer({
+        news: items,
+        crop: typeof req.query.crop === "string" ? req.query.crop : "all",
+      });
+      return res.json(layer);
+    } catch (error: any) {
+      return res.status(500).json({
+        layer_id: "weather_yield_risk",
+        layer_type: "region",
+        updated_at: new Date().toISOString(),
+        legend: { metric: "stress_score", unit: "index_0_100", scale: "sequential", min: 0, max: 100 },
+        features: [],
+        message: error?.message || "Failed to load weather yield risk layer",
+      });
+    }
+  });
+
+  app.get("/api/monitor/weather-yield-risk/details", async (req, res) => {
+    try {
+      const regionId = String(req.query.region_id || "").trim();
+      const crop = String(req.query.crop || "").trim();
+      if (!regionId || !crop) {
+        return res.status(400).json({ message: "region_id and crop are required" });
+      }
+      const threshold = resolveThreshold(typeof req.query.threshold === "string" ? req.query.threshold : undefined);
+      const { items } = await getMonitorNews(req.query.refresh === "1", { threshold });
+      const details = getWeatherYieldRiskDetails({ news: items, regionId, crop });
+      if (!details) {
+        return res.status(404).json({ message: "Region/crop not found" });
+      }
+      return res.json(details);
+    } catch (error: any) {
+      return res.status(500).json({ message: error?.message || "Failed to load weather yield risk details" });
+    }
+  });
+
   app.get("/api/monitor/logistics-news", async (req, res) => {
     try {
       const threshold = resolveThreshold(typeof req.query.threshold === "string" ? req.query.threshold : undefined);
@@ -974,14 +1015,23 @@ export function registerMonitorRoutes(app: Express): void {
   app.get("/api/monitor/map-layer", async (req, res) => {
     const layer = String(req.query.layer || "food_prices_wfp").toLowerCase();
     try {
-      if (layer !== "food_prices_wfp" && layer !== "chokepoints") {
+      if (layer !== "food_prices_wfp" && layer !== "chokepoints" && layer !== "weather_yield_risk") {
         return res.status(400).json({
           message: `Unsupported layer: ${layer}`,
-          supported: ["food_prices_wfp", "chokepoints"],
+          supported: ["food_prices_wfp", "chokepoints", "weather_yield_risk"],
         });
       }
       if (layer === "chokepoints") {
         const payload = await getChokepointsMapLayer();
+        return res.json(payload);
+      }
+      if (layer === "weather_yield_risk") {
+        const threshold = resolveThreshold(typeof req.query.threshold === "string" ? req.query.threshold : undefined);
+        const { items } = await getMonitorNews(req.query.refresh === "1", { threshold });
+        const payload = buildWeatherYieldRiskLayer({
+          news: items,
+          crop: typeof req.query.crop === "string" ? req.query.crop : "all",
+        });
         return res.json(payload);
       }
       const commodities = typeof req.query.commodities === "string" ? req.query.commodities : undefined;
@@ -1003,6 +1053,16 @@ export function registerMonitorRoutes(app: Express): void {
           legend: { metric: "traffic_ratio", unit: "ratio", scale: "threshold", min: 0, max: 1.2 },
           features: [],
           message: error?.message || "Failed to load chokepoints layer",
+        });
+      }
+      if (layer === "weather_yield_risk") {
+        return res.status(500).json({
+          layer_id: "weather_yield_risk",
+          layer_type: "region",
+          updated_at: new Date().toISOString(),
+          legend: { metric: "stress_score", unit: "index_0_100", scale: "sequential", min: 0, max: 100 },
+          features: [],
+          message: error?.message || "Failed to load weather yield risk layer",
         });
       }
       return res.status(500).json({
