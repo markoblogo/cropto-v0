@@ -3267,8 +3267,8 @@ export default function MonitorV3Page() {
   }, [selectedVideoChannel, videoSourcesByTopic]);
   const videoRailSlots = useMemo(() => prioritizedVideoSources.slice(0, 6), [prioritizedVideoSources]);
   const mapVideoSource = useMemo(
-    () => (mapVideoSourceId ? liveVideoSources.find((source) => source.id === mapVideoSourceId) || null : null),
-    [liveVideoSources, mapVideoSourceId],
+    () => (mapVideoSourceId ? normalizedVideoSources.find((source) => source.id === mapVideoSourceId) || null : null),
+    [normalizedVideoSources, mapVideoSourceId],
   );
   const pendingVideoSources = useMemo(
     () => normalizedVideoSources.filter((source) => source.status === "CONSTRAINED" || source.status === "CONTRACT_REQUIRED"),
@@ -3485,8 +3485,8 @@ export default function MonitorV3Page() {
             "#f97316",
             "#60a5fa",
           ],
-          "circle-radius": ["+", 6, ["*", ["coalesce", ["get", "intensity"], 0.2], 18]],
-          "circle-opacity": 0.18,
+          "circle-radius": ["+", 9, ["*", ["coalesce", ["get", "intensity"], 0.2], 22]],
+          "circle-opacity": 0.32,
         },
       });
       map.addLayer({
@@ -3509,7 +3509,7 @@ export default function MonitorV3Page() {
             "#f97316",
             "#60a5fa",
           ],
-          "circle-radius": ["+", 2, ["*", ["coalesce", ["get", "intensity"], 0.2], 5]],
+          "circle-radius": ["+", 3, ["*", ["coalesce", ["get", "intensity"], 0.2], 6]],
           "circle-opacity": 0.95,
           "circle-stroke-width": 1,
           "circle-stroke-color": "#0b1020",
@@ -3556,10 +3556,23 @@ export default function MonitorV3Page() {
 
   useEffect(() => {
     const map = heroMapRef.current;
-    if (!map || !geoMapReady || !map.isStyleLoaded()) return;
-    const source = map.getSource("monitor-points") as GeoJSONSource | undefined;
-    if (!source) return;
-    source.setData(activeGeoPointsGeoJson as any);
+    if (!map || !geoMapReady) return;
+    const apply = () => {
+      const source = map.getSource("monitor-points") as GeoJSONSource | undefined;
+      if (!source) return false;
+      source.setData(activeGeoPointsGeoJson as any);
+      return true;
+    };
+    if (apply()) return;
+    const onIdle = () => {
+      if (apply()) {
+        map.off("idle", onIdle);
+      }
+    };
+    map.on("idle", onIdle);
+    return () => {
+      map.off("idle", onIdle);
+    };
   }, [activeGeoPointsGeoJson, geoMapReady]);
 
   useEffect(() => {
@@ -4126,6 +4139,7 @@ export default function MonitorV3Page() {
                   return (
                     <div
                       key={source.id}
+                      onClick={() => setMapVideoSourceId(source.id)}
                       className="relative h-[120px] cursor-pointer overflow-hidden rounded border border-border bg-black/30 text-left"
                     >
                       <iframe
@@ -4151,10 +4165,11 @@ export default function MonitorV3Page() {
                   return (
                     <div
                       key={source.id}
+                      onClick={() => setMapVideoSourceId(source.id)}
                       className="relative h-[120px] cursor-pointer overflow-hidden rounded border border-border bg-black/30 text-left"
                     >
                       <video
-                        className="h-full w-full object-cover"
+                        className="pointer-events-none h-full w-full object-cover"
                         autoPlay
                         muted
                         playsInline
