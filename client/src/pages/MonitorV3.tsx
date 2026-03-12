@@ -1065,6 +1065,15 @@ const COUNTRY_GEO_ANCHORS: Record<Country, { x: number; y: number; label: string
   DE: { x: 515, y: 120, label: "DE" },
   RO: { x: 546, y: 137, label: "RO" },
 };
+const FOOD_LAYER_OFFSETS: Record<Country, { x: number; y: number }> = {
+  US: { x: -10, y: 8 },
+  UA: { x: -18, y: 10 },
+  BR: { x: -22, y: 14 },
+  AR: { x: -12, y: 10 },
+  FR: { x: -10, y: 8 },
+  DE: { x: -10, y: 8 },
+  RO: { x: -16, y: 12 },
+};
 const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: string }> = {
   markets: { label: "Markets", tone: "text-cyan-300", stroke: "#22d3ee" },
   logistics: { label: "Logistics", tone: "text-amber-300", stroke: "#f59e0b" },
@@ -1072,15 +1081,6 @@ const GEO_LAYER_META: Record<GeoLayerId, { label: string; tone: string; stroke: 
   risk: { label: "Risk", tone: "text-rose-300", stroke: "#fb7185" },
   food: { label: "Food", tone: "text-orange-300", stroke: "#f97316" },
 };
-
-function lonLatToMapXY(lon: number, lat: number): { x: number; y: number } {
-  const x = ((lon + 180) / 360) * 1000;
-  const y = ((90 - lat) / 180) * 460;
-  return {
-    x: clamp(x, 0, 1000),
-    y: clamp(y, 0, 460),
-  };
-}
 const KIND_TO_TOPIC: Record<string, Exclude<MonitorTopic, "all">> = {
   GLOBAL_SPOT_TABLE: "markets",
   CROP_PRICE_INDEX: "markets",
@@ -3387,17 +3387,14 @@ export default function MonitorV3Page() {
         .filter((metric) => typeof metric?.yoy_change === "number")
         .sort((a, b) => Math.abs(Number(b.yoy_change || 0)) - Math.abs(Number(a.yoy_change || 0)))[0] || metrics[0];
       const yoy = typeof strongest?.yoy_change === "number" ? strongest.yoy_change : null;
-      const coords = feature?.geometry?.coordinates;
       const anchor = COUNTRY_GEO_ANCHORS[featureId];
-      const mapped = Array.isArray(coords) && coords.length === 2
-        ? lonLatToMapXY(Number(coords[0]), Number(coords[1]))
-        : { x: anchor.x, y: anchor.y };
+      const offset = FOOD_LAYER_OFFSETS[featureId] || { x: -10, y: 8 };
       points.push({
         id: `food-${featureId}`,
         layer: "food",
         country: featureId,
-        x: mapped.x + 18,
-        y: mapped.y + 14,
+        x: anchor.x + offset.x,
+        y: anchor.y + offset.y,
         intensity: clamp(Math.abs(Number(yoy || 0)) * 2.2, 0.18, 1),
         label: `${feature?.properties?.name || featureId} local food stress`,
         value:
