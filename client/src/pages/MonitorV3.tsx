@@ -945,6 +945,16 @@ function widgetAutoPackScore(widget: GridWidget) {
   return score;
 }
 
+function widgetHeroPriorityScore(widget: GridWidget) {
+  const state = widgetDataState(widget);
+  let score = widgetAutoPackScore(widget);
+  if (state === "live") score += 60;
+  if (state === "degraded") score += 8;
+  if (state === "empty") score -= 36;
+  if (isIndexCardStale(widget)) score -= 42;
+  return score;
+}
+
 function cardTypeTone(cardType: CardType) {
   if (cardType === "quote") return "border-cyan-500/60 bg-cyan-500/10 text-cyan-300";
   if (cardType === "table") return "border-violet-500/60 bg-violet-500/10 text-violet-300";
@@ -2199,10 +2209,71 @@ export default function MonitorV3Page() {
     });
   }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, sortMode, heroPins, showOnlyLive, healthFilter, pinDenseTop]);
 
-  const heroPinnedWidgets = useMemo(
-    () => heroPins.map((id) => widgetMap[id]).filter((widget): widget is GridWidget => Boolean(widget)).slice(0, 4),
-    [heroPins, widgetMap],
-  );
+  const heroCandidateWidgets = useMemo(() => {
+    return groupedOrder
+      .map((id) => widgetMap[id])
+      .filter((widget): widget is GridWidget => Boolean(widget))
+      .filter((widget) => {
+        if (hiddenIds.includes(widget.id) && !showHidden) return false;
+        if (role !== "all" && !widget.roles.includes(role)) return false;
+        if (topic !== "all" && widget.topic !== topic) return false;
+        if (widget.territory !== "GLOBAL" && widget.territory !== country) return false;
+        if (showOnlyLive && widgetDataState(widget) !== "live") return false;
+        if (healthFilter !== "all" && widgetDataState(widget) !== healthFilter) return false;
+        return true;
+      });
+  }, [groupedOrder, widgetMap, hiddenIds, showHidden, role, topic, country, showOnlyLive, healthFilter]);
+
+  const heroPinnedWidgets = useMemo(() => {
+    const uniqueIds = Array.from(new Set(heroPins));
+    const pinned = uniqueIds.map((id) => widgetMap[id]).filter((widget): widget is GridWidget => Boolean(widget));
+    const byId = new Set<string>();
+    const livePool = heroCandidateWidgets
+      .filter((widget) => widgetDataState(widget) === "live")
+      .sort((a, b) => widgetHeroPriorityScore(b) - widgetHeroPriorityScore(a));
+    const usedPool = new Set<string>();
+    const resolved: GridWidget[] = [];
+
+    const takeBestByTopic = (targetTopic: MonitorTopic): GridWidget | null => {
+      for (const candidate of livePool) {
+        if (usedPool.has(candidate.id)) continue;
+        if (byId.has(candidate.id)) continue;
+        if (candidate.topic !== targetTopic) continue;
+        usedPool.add(candidate.id);
+        return candidate;
+      }
+      return null;
+    };
+    const takeBestAny = (): GridWidget | null => {
+      for (const candidate of livePool) {
+        if (usedPool.has(candidate.id)) continue;
+        if (byId.has(candidate.id)) continue;
+        usedPool.add(candidate.id);
+        return candidate;
+      }
+      return null;
+    };
+
+    for (const pinnedWidget of pinned) {
+      if (resolved.length >= 4) break;
+      const state = widgetDataState(pinnedWidget);
+      const needsReplacement = state !== "live" || isIndexCardStale(pinnedWidget);
+      const chosen = needsReplacement ? takeBestByTopic(pinnedWidget.topic) || takeBestAny() || pinnedWidget : pinnedWidget;
+      if (byId.has(chosen.id)) continue;
+      byId.add(chosen.id);
+      resolved.push(chosen);
+    }
+
+    while (resolved.length < 4) {
+      const fallback = takeBestAny();
+      if (!fallback) break;
+      if (byId.has(fallback.id)) continue;
+      byId.add(fallback.id);
+      resolved.push(fallback);
+    }
+
+    return resolved.sort((a, b) => widgetHeroPriorityScore(b) - widgetHeroPriorityScore(a)).slice(0, 4);
+  }, [heroPins, widgetMap, heroCandidateWidgets]);
 
   const healthCounts = useMemo(() => {
     return visibleWidgets.reduce(
@@ -3018,12 +3089,16 @@ export default function MonitorV3Page() {
                 </article>
               );
             }
+            const autoFilled = !heroPins.includes(widget.id);
             return (
               <article key={widget.id} className="rounded border border-border bg-card p-2">
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">{widget.title}</div>
-                    <div className="truncate text-[10px] text-muted-foreground">{widget.source}</div>
+                    <div className="truncate text-[10px] text-muted-foreground">
+                      {widget.source}
+                      {autoFilled ? " • auto" : ""}
+                    </div>
                   </div>
                   <button
                     onClick={() => setHeroPins((current) => current.filter((id) => id !== widget.id))}
