@@ -3402,16 +3402,6 @@ export default function MonitorV3Page() {
                         className="h-full w-full"
                         referrerPolicy="no-referrer"
                       />
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setMapVideoSourceId(source.id);
-                        }}
-                        className="absolute right-1 top-1 rounded border border-border bg-black/65 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
-                      >
-                        map
-                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
@@ -3427,23 +3417,12 @@ export default function MonitorV3Page() {
                     >
                       <video
                         className="h-full w-full object-cover"
-                        controls
                         autoPlay
                         muted
                         playsInline
                         preload="metadata"
                         src={source.url}
                       />
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setMapVideoSourceId(source.id);
-                        }}
-                        className="absolute right-1 top-1 rounded border border-border bg-black/65 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
-                      >
-                        map
-                      </button>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
                       </div>
@@ -3458,28 +3437,7 @@ export default function MonitorV3Page() {
                   >
                     <div className="line-clamp-2">{source.name}</div>
                     <div className="mt-0.5 text-[9px] text-muted-foreground/80">{source.note || "Preview available in map zone"}</div>
-                    <div className="absolute inset-x-1 bottom-1 flex gap-1">
-                      <button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setMapVideoSourceId(source.id);
-                        }}
-                        className="rounded border border-border bg-black/45 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
-                      >
-                        Open on map
-                      </button>
-                      {source.url ? (
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(event) => event.stopPropagation()}
-                          className="rounded border border-border bg-black/45 px-1 py-0 text-[9px] text-zinc-200 hover:text-white"
-                        >
-                          source
-                        </a>
-                      ) : null}
-                    </div>
+                    <div className="absolute inset-x-1 bottom-1 text-[9px] uppercase tracking-[0.1em] text-cyan-300/90">tap to open</div>
                   </div>
                 );
               })}
