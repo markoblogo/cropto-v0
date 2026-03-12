@@ -1826,6 +1826,7 @@ export default function MonitorV3Page() {
     food: true,
   });
   const [geoZoom, setGeoZoom] = useState(1.7);
+  const [geoMapReady, setGeoMapReady] = useState(false);
   const heroMapContainerRef = useRef<HTMLDivElement | null>(null);
   const heroMapRef = useRef<MapLibreMap | null>(null);
   const heroMapPopupRef = useRef<MapLibrePopup | null>(null);
@@ -3443,7 +3444,7 @@ export default function MonitorV3Page() {
 
     const map = new maplibregl.Map({
       container: heroMapContainerRef.current,
-      style: "https://tiles.openfreemap.org/styles/liberty",
+      style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
       center: [8, 25],
       zoom: 1.7,
       minZoom: 1,
@@ -3459,6 +3460,7 @@ export default function MonitorV3Page() {
     });
 
     map.on("load", () => {
+      setGeoMapReady(true);
       map.addSource("monitor-points", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -3544,6 +3546,7 @@ export default function MonitorV3Page() {
     });
 
     return () => {
+      setGeoMapReady(false);
       heroMapPopupRef.current?.remove();
       heroMapPopupRef.current = null;
       map.remove();
@@ -3553,11 +3556,11 @@ export default function MonitorV3Page() {
 
   useEffect(() => {
     const map = heroMapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map || !geoMapReady || !map.isStyleLoaded()) return;
     const source = map.getSource("monitor-points") as GeoJSONSource | undefined;
     if (!source) return;
     source.setData(activeGeoPointsGeoJson as any);
-  }, [activeGeoPointsGeoJson]);
+  }, [activeGeoPointsGeoJson, geoMapReady]);
 
   useEffect(() => {
     const map = heroMapRef.current;
@@ -4123,7 +4126,6 @@ export default function MonitorV3Page() {
                   return (
                     <div
                       key={source.id}
-                      onClick={() => setMapVideoSourceId(source.id)}
                       className="relative h-[120px] cursor-pointer overflow-hidden rounded border border-border bg-black/30 text-left"
                     >
                       <iframe
@@ -4133,6 +4135,11 @@ export default function MonitorV3Page() {
                         allow="autoplay; fullscreen; picture-in-picture"
                         className="pointer-events-none h-full w-full"
                         referrerPolicy="no-referrer"
+                      />
+                      <button
+                        onClick={() => setMapVideoSourceId(source.id)}
+                        className="absolute inset-0 z-10"
+                        aria-label={`Open ${source.name} on map`}
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
@@ -4144,7 +4151,6 @@ export default function MonitorV3Page() {
                   return (
                     <div
                       key={source.id}
-                      onClick={() => setMapVideoSourceId(source.id)}
                       className="relative h-[120px] cursor-pointer overflow-hidden rounded border border-border bg-black/30 text-left"
                     >
                       <video
@@ -4154,6 +4160,11 @@ export default function MonitorV3Page() {
                         playsInline
                         preload="metadata"
                         src={source.url}
+                      />
+                      <button
+                        onClick={() => setMapVideoSourceId(source.id)}
+                        className="absolute inset-0 z-10"
+                        aria-label={`Open ${source.name} on map`}
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[10px] text-zinc-200">
                         {source.name}
