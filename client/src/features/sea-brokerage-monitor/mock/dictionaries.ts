@@ -1,0 +1,139 @@
+import type {
+  Basis,
+  BrokerUser,
+  Commodity,
+  CommodityCode,
+  CountryOption,
+  PortOption,
+  SelectOption,
+} from "../types";
+
+export const brokers: BrokerUser[] = [
+  {
+    id: "broker-01",
+    authUserId: "broker-01",
+    brokerCode: "VL",
+    brokerName: "Vitaly Lavrov",
+    companyName: "Lavrov Brokerage",
+    displayName: "Vitaly Lavrov",
+    email: "vitaly@lavrovbrokerage.example",
+    role: "broker",
+    identityProvider: "cropto_auth",
+  },
+  {
+    id: "broker-02",
+    authUserId: "broker-02",
+    brokerCode: "SK",
+    brokerName: "Sergiy Kozhushkin",
+    companyName: "Southline Brokerage",
+    displayName: "Sergiy Kozhushkin",
+    email: "sergiy@southlinebrokerage.example",
+    role: "broker",
+    identityProvider: "cropto_auth",
+  },
+  {
+    id: "broker-03",
+    authUserId: "broker-03",
+    brokerCode: "DELTA",
+    brokerName: "Delta Freight",
+    companyName: "Delta Grain Movements",
+    displayName: "Mateo Rivas",
+    email: "mateo@deltafreight.example",
+    role: "broker",
+    identityProvider: "cropto_auth",
+  },
+  {
+    id: "broker-04",
+    authUserId: "broker-04",
+    brokerCode: "NORTH",
+    brokerName: "North Corridor",
+    companyName: "North Corridor Brokers",
+    displayName: "Iryna Holub",
+    email: "iryna@northcorridor.example",
+    role: "broker",
+    identityProvider: "cropto_auth",
+  },
+  {
+    id: "broker-05",
+    authUserId: "broker-05",
+    brokerCode: "BSC",
+    brokerName: "Black Sea Chartering",
+    companyName: "Black Sea Chartering LLC",
+    displayName: "Oleh Marchenko",
+    email: "oleh@blackseachartering.example",
+    role: "broker",
+    identityProvider: "cropto_auth",
+  },
+];
+
+export const commodityOptions: Commodity[] = [
+  { code: "corn", label: "Corn", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "wheat_115", label: "Wheat 11.5%", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "wheat_125", label: "Wheat 12.5%", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "barley", label: "Barley", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "sunflower", label: "Sunflower", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "soybean", label: "Soybean", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "rapeseed", label: "Rapeseed", group: "oilseeds", defaultVolumeUnit: "mt" },
+];
+
+export const basisOptions: SelectOption<Basis>[] = [
+  { value: "FOB", label: "FOB" },
+  { value: "CIF", label: "CIF" },
+  { value: "CPT", label: "CPT" },
+  { value: "DAP", label: "DAP" },
+  { value: "FCA", label: "FCA" },
+];
+
+export const countryOptions: CountryOption[] = [
+  { code: "UA", label: "Ukraine" },
+  { code: "EG", label: "Egypt" },
+  { code: "IL", label: "Israel" },
+  { code: "CY", label: "Cyprus" },
+  { code: "LB", label: "Lebanon" },
+  { code: "ES", label: "Spain" },
+  { code: "IT", label: "Italy" },
+  { code: "NL", label: "Netherlands" },
+  { code: "RO", label: "Romania" },
+  { code: "TR", label: "Turkey" },
+];
+
+export const portOptions: PortOption[] = [
+  { code: "pivdenny", label: "Pivdenny", countryCode: "UA" },
+  { code: "odesa", label: "Odesa", countryCode: "UA" },
+  { code: "chornomorsk", label: "Chornomorsk", countryCode: "UA" },
+  { code: "izmail", label: "Izmail", countryCode: "UA" },
+  { code: "marmara", label: "Marmara", countryCode: "TR" },
+  { code: "alexandria", label: "Alexandria", countryCode: "EG" },
+  { code: "ashdod", label: "Ashdod", countryCode: "IL" },
+  { code: "limassol", label: "Limassol", countryCode: "CY" },
+  { code: "beirut", label: "Beirut", countryCode: "LB" },
+  { code: "constanta", label: "Constanta", countryCode: "RO" },
+  { code: "izmir", label: "Izmir", countryCode: "TR" },
+  { code: "mersin", label: "Mersin", countryCode: "TR" },
+  { code: "ravenna", label: "Ravenna", countryCode: "IT" },
+  { code: "tarragona", label: "Tarragona", countryCode: "ES" },
+];
+
+export const commodityOptionMap: Record<CommodityCode, Commodity> = commodityOptions.reduce(
+  (acc, commodity) => {
+    acc[commodity.code] = commodity;
+    return acc;
+  },
+  {} as Record<CommodityCode, Commodity>,
+);
+
+export const brokerProfilesByAuthUserId: Record<string, BrokerUser> = {
+  [brokers[0].authUserId]: brokers[0],
+  [brokers[1].authUserId]: brokers[1],
+  [brokers[2].authUserId]: brokers[2],
+  [brokers[3].authUserId]: brokers[3],
+  [brokers[4].authUserId]: brokers[4],
+};
+
+export const brokerProfilesByEmail: Record<string, BrokerUser> = {
+  [brokers[0].email.toLowerCase()]: brokers[0],
+  [brokers[1].email.toLowerCase()]: brokers[1],
+  [brokers[2].email.toLowerCase()]: brokers[2],
+  [brokers[3].email.toLowerCase()]: brokers[3],
+  [brokers[4].email.toLowerCase()]: brokers[4],
+};

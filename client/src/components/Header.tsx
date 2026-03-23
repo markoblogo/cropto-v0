@@ -126,6 +126,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
     { to: "/partners-contracts", label: t("nav.partners"), testId: "button-nav-partners" },
     { to: "/onchain-tx", label: t("nav.transactions"), testId: "button-nav-transactions" },
     { to: "/feedback", label: t("nav.feedback"), testId: "button-nav-feedback" },
+    { to: "/spike-monitor", label: t("nav.spikeMonitor"), testId: "button-nav-spike-monitor" },
     { to: "/admin", label: t("nav.admin"), testId: "button-nav-admin", requiresAdmin: true },
     { to: "/admin/waitlist", label: t("nav.waitlist"), testId: "button-nav-admin-waitlist", requiresAdmin: true },
     { to: "/markets/chain", label: t("nav.chain"), testId: "button-nav-chain" },
@@ -144,6 +145,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
 
   const protectedPrefixes = ["/portfolio", "/wallet"];
   const requiresAuth = (to: string) => protectedPrefixes.some((prefix) => to.startsWith(prefix));
+  const isSeaBrokerageMonitorRoute = location.startsWith("/spike-monitor");
 
   const handleNavIntent = (to: string) => {
     if (!user && requiresAuth(to)) {
@@ -166,6 +168,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
           </Link>
 
           {/* Navigation - Hidden on mobile, shown on md+ */}
+          {!isSeaBrokerageMonitorRoute ? (
           <nav className="hidden md:flex items-center gap-0.5">
             {/* Primary Navigation */}
             {primaryNav.map((item) => {
@@ -291,44 +294,47 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>
+          ) : (
+            <div className="flex-1" />
+          )}
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1.5">
-            {/* Language Switcher */}
-            <FlagSwitcher />
             <ThemeToggle />
-            
-            {/* Mobile Menu Button */}
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="md:hidden"
-              data-testid="button-mobile-menu"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+
+            {!isSeaBrokerageMonitorRoute ? (
+              <>
+                <FlagSwitcher />
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="md:hidden"
+                  data-testid="button-mobile-menu"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
+              </>
+            ) : null}
 
             {user ? (
               <>
-                {/* Notifications */}
-                <NotificationsDropdown />
+                {!isSeaBrokerageMonitorRoute ? (
+                  <>
+                    <NotificationsDropdown />
+                    <Badge className={`${statusBadge.className} px-2 py-0.5 text-xs`} data-testid="badge-user-tier-status">
+                      {statusBadge.text}
+                    </Badge>
+                    <Badge
+                      variant="secondary"
+                      className="px-2.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap"
+                      data-testid="badge-demo-environment"
+                    >
+                      Demo environment
+                    </Badge>
+                  </>
+                ) : null}
 
-                {/* User Tier Status Badge */}
-                <Badge className={`${statusBadge.className} px-2 py-0.5 text-xs`} data-testid="badge-user-tier-status">
-                  {statusBadge.text}
-                </Badge>
-
-                {/* Demo environment badge (replaces Create Option) */}
-                <Badge
-                  variant="secondary"
-                  className="px-2.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap"
-                  data-testid="badge-demo-environment"
-                >
-                  Demo environment
-                </Badge>
-
-                {/* Logout Button */}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -341,24 +347,25 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               </>
             ) : (
               <>
-                {/* Login/Register Buttons */}
                 <Link href="/login">
                   <Button variant="outline" size="sm" data-testid="button-login">
                     {t('button.login')}
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="sm" data-testid="button-register">
-                    {t('button.register')}
-                  </Button>
-                </Link>
+                {!isSeaBrokerageMonitorRoute ? (
+                  <Link href="/register">
+                    <Button size="sm" data-testid="button-register">
+                      {t('button.register')}
+                    </Button>
+                  </Link>
+                ) : null}
               </>
             )}
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {isMobileMenuOpen && (
+        {!isSeaBrokerageMonitorRoute && isMobileMenuOpen && (
           <div className="md:hidden border-t bg-background">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-2">
               {/* Primary Navigation */}

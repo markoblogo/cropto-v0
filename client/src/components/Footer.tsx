@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -43,6 +43,7 @@ function FlagLink({ href, flag, ariaLabel }: { href: string; flag: string; ariaL
 
 export function Footer() {
   const { t } = useTranslation();
+  const [location] = useLocation();
   const debugSources = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugSources") === "1";
   const showBuildInfo = debugSources || !import.meta.env.PROD;
   const { data: versionInfo } = useQuery<{ gitSha: string; buildTime: string | null; env: string }>({
@@ -64,6 +65,36 @@ export function Footer() {
     { href: "/feedback", label: t("nav.feedback") },
     { href: "/markets/chain", label: t("nav.chain") },
   ];
+
+  const isSeaBrokerageMonitorRoute = location.startsWith("/spike-monitor");
+
+  if (isSeaBrokerageMonitorRoute) {
+    return (
+      <footer className="border-t border-border/70 bg-background/95">
+        <div className="container mx-auto flex flex-col gap-1.5 px-4 py-3 text-xs text-foreground/65 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/privacy" className="transition-colors hover:text-foreground">
+              {t("footer.privacyPolicy")}
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              {t("footer.termsOfUse")}
+            </Link>
+            <Link href="/risk-disclosure" className="transition-colors hover:text-foreground">
+              {t("footer.riskDisclosure")}
+            </Link>
+          </div>
+          <div className="text-right">
+            <p>© 2026 {t("site.title")}. {t("footer.allRightsReserved")}</p>
+            {showBuildInfo ? (
+              <p className="text-[11px]">
+                build: {versionInfo?.gitSha?.slice(0, 12) || "unknown"} · {versionInfo?.buildTime || "n/a"}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="border-t border-border/70 bg-muted/85">
