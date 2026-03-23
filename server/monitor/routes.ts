@@ -515,13 +515,26 @@ function quickTriageReport(providers: any[]) {
 }
 
 export function registerMonitorRoutes(app: Express): void {
-  logisticsIndicatorsService.start();
-  grainMarketsService.start();
-  grainWidgetsService.start();
-  startPredictionMarketsScheduler();
-  startAgroExpectationsScheduler();
-  startBinanceMarketScheduler();
-  startGlobalIndicesScheduler();
+  // Keep monitor routes available even if a background source or scheduler fails
+  // during boot. The web process should bind first and degrade gracefully rather
+  // than crash because one monitor worker cannot start.
+  const safeStart = (label: string, fn: () => void) => {
+    setTimeout(() => {
+      try {
+        fn();
+      } catch (error) {
+        console.error(`[MonitorBoot] Failed to start ${label}:`, error);
+      }
+    }, 0);
+  };
+
+  safeStart("logistics indicators service", () => logisticsIndicatorsService.start());
+  safeStart("grain markets service", () => grainMarketsService.start());
+  safeStart("grain widgets service", () => grainWidgetsService.start());
+  safeStart("prediction markets scheduler", () => startPredictionMarketsScheduler());
+  safeStart("agro expectations scheduler", () => startAgroExpectationsScheduler());
+  safeStart("binance market scheduler", () => startBinanceMarketScheduler());
+  safeStart("global indices scheduler", () => startGlobalIndicesScheduler());
 
   function resolveThreshold(raw?: string): number {
     const parsed = Number.parseInt(raw || "", 10);
