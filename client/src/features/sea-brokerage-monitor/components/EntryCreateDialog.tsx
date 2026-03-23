@@ -285,8 +285,8 @@ export function EntryCreateDialog({
       <DialogContent className="max-h-[92vh] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
         <DialogHeader>
           <DialogTitle>{entryType === "bid" ? "Create BID" : "Create OFFER"}</DialogTitle>
-          <DialogDescription className="text-sm">
-            Essential broker entry workflow with a normalized tape preview.
+          <DialogDescription className="text-xs sm:text-sm">
+            Compact broker entry workflow.
           </DialogDescription>
         </DialogHeader>
 
@@ -336,7 +336,7 @@ export function EntryCreateDialog({
         ) : null}
 
         <Form {...form}>
-          <form className="space-y-3.5" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-2.5 md:grid-cols-2">
               {entryType === "offer" ? (
                 <FormField
@@ -514,6 +514,19 @@ export function EntryCreateDialog({
                     </FormControl>
                     <FormMessage />
                   </FormItem>
+                  )}
+                />
+              <FormField
+                control={form.control}
+                name="periodEnd"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shipment / delivery to</FormLabel>
+                    <FormControl>
+                      <Input type="date" value={field.value ?? ""} onChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
             </div>
@@ -590,8 +603,8 @@ export function EntryCreateDialog({
                   <FormLabel>Other terms</FormLabel>
                   <FormControl>
                     <Textarea
-                      className="min-h-[72px] resize-y"
-                      placeholder="Optional terms, quality remarks, or execution notes"
+                      className="min-h-[64px] resize-y"
+                      placeholder="Optional terms or execution notes"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -601,17 +614,17 @@ export function EntryCreateDialog({
               )}
             />
 
-            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
-              <div className="mb-1.5 flex items-center justify-between gap-3">
-                <div className="text-sm font-medium">Canonical preview</div>
+            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+              <div className="mb-1 flex items-center justify-between gap-3">
+                <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Tape preview</div>
                 <Badge variant="outline">{entryType === "bid" ? "BID IDEA" : "OFFER IDEA"}</Badge>
               </div>
               <div className="text-sm leading-5 text-foreground">{canonicalPreview}</div>
             </div>
 
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs leading-4 text-muted-foreground">
-                Default workflow keeps only core brokerage fields. Price is captured as a single USD value.
+              <div className="text-[11px] leading-4 text-muted-foreground">
+                Single-price compact workflow.
               </div>
               <Button
                 type="submit"

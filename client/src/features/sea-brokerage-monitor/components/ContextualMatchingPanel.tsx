@@ -140,9 +140,9 @@ export function ContextualMatchingPanel({
   return (
     <>
       <Card className="border-border/70 bg-card/95 shadow-sm">
-        <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3.5 sm:py-2">
-          <div className="flex flex-wrap items-center gap-0.5 sm:gap-2">
-            <CardTitle className="mr-auto text-[11.5px] sm:text-sm">Best Current Matches</CardTitle>
+        <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3 sm:py-1.5">
+          <div className="flex flex-wrap items-center gap-0.5 sm:gap-1.5">
+            <CardTitle className="mr-auto text-[11.5px] sm:text-[13px]">Best Current Matches</CardTitle>
             <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
             </div>
@@ -150,7 +150,7 @@ export function ContextualMatchingPanel({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-5.5 px-1 text-[9.5px] sm:h-7 sm:px-3 sm:text-[11px]"
+                className="h-5.5 px-1 text-[9.5px] sm:h-6.5 sm:px-2 sm:text-[10px]"
                 onClick={() => setDetailEntry(selectedEntry)}
               >
                 <ExternalLink className="mr-0.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
@@ -158,7 +158,7 @@ export function ContextualMatchingPanel({
               </Button>
             ) : null}
           </div>
-          <div className="mt-0.5 grid gap-0.5 sm:mt-2 sm:grid-cols-3 sm:gap-2">
+          <div className="mt-0.5 grid gap-0.5 sm:mt-1 sm:grid-cols-3 sm:gap-1.5">
             <Select
               value={focus.commodity}
               onValueChange={(value) =>
@@ -168,7 +168,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-6 text-[10.5px] sm:h-8 sm:text-xs">
+              <SelectTrigger className="h-6 text-[10.5px] sm:h-7 sm:text-[11px]">
                 <SelectValue placeholder="Commodity focus" />
               </SelectTrigger>
               <SelectContent>
@@ -189,7 +189,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-6 text-[10.5px] sm:h-8 sm:text-xs">
+              <SelectTrigger className="h-6 text-[10.5px] sm:h-7 sm:text-[11px]">
                 <SelectValue placeholder="Basis focus" />
               </SelectTrigger>
               <SelectContent>
@@ -210,7 +210,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-6 text-[10.5px] sm:h-8 sm:text-xs">
+              <SelectTrigger className="h-6 text-[10.5px] sm:h-7 sm:text-[11px]">
                 <SelectValue placeholder="Delivery focus" />
               </SelectTrigger>
               <SelectContent>
@@ -245,7 +245,7 @@ export function ContextualMatchingPanel({
               </div>
             ) : null}
 
-            <ScrollArea className="h-[150px] sm:h-[175px] lg:h-[190px]">
+            <ScrollArea className="h-[142px] sm:h-[148px] lg:h-[158px]">
               <div className="divide-y divide-border/50">
                 {rollingSuggestions.map((suggestion) => {
                   const isRelated =
@@ -262,12 +262,12 @@ export function ContextualMatchingPanel({
                   return (
                     <div
                       key={suggestion.id}
-                      className={`px-2 py-0.5 sm:px-3.5 sm:py-1.5 ${
+                      className={`px-2 py-0.5 sm:px-3 sm:py-1 ${
                         isRelated ? "bg-muted/20" : ""
                       }`}
                     >
-                      <div className="flex flex-wrap items-center gap-x-1 gap-y-0 text-[9.5px] leading-3 sm:text-[11px] sm:leading-4">
-                        <Badge className={`h-4 px-1 py-0 text-[9px] ${confidenceTone(suggestion.confidenceLabel)}`}>
+                      <div className="flex flex-wrap items-center gap-x-1 gap-y-0 text-[9.5px] leading-3 sm:text-[10px] sm:leading-3">
+                        <Badge className={`h-4 px-1 py-0 text-[9px] sm:h-4.5 ${confidenceTone(suggestion.confidenceLabel)}`}>
                           {suggestion.confidenceLabel}
                         </Badge>
                         <span className="text-muted-foreground">
@@ -284,20 +284,20 @@ export function ContextualMatchingPanel({
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.bidEntry)}
-                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[12px] sm:leading-4"
+                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px] sm:leading-3.5"
                         >
                           Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
                         </button>
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.offerEntry)}
-                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[12px] sm:leading-4"
+                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px] sm:leading-3.5"
                         >
                           Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
                         </button>
                       </div>
 
-                      <div className="mt-px truncate text-[9.5px] leading-3 text-muted-foreground sm:text-[11px] sm:leading-4">
+                      <div className="mt-px truncate text-[9.5px] leading-3 text-muted-foreground sm:text-[10px] sm:leading-3">
                         {suggestion.reasons[0] ?? "Commercial fit found"}
                       </div>
 
