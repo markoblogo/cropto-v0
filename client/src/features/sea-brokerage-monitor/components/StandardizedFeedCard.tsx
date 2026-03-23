@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, Eye, FileSpreadsheet } from "lucide-react";
+import { Download, FileSpreadsheet } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,6 @@ import {
 import {
   formatEntryCommodityCompact,
   formatEntryDateTime,
-  formatEntryDestination,
   formatEntryDestinationCompact,
   formatEntryPeriodCompact,
   formatEntryPriceRange,
@@ -60,17 +59,17 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
 
   return (
     <>
-      <Card className="border-border/70 bg-card/95 shadow-sm">
+      <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="space-y-4 border-b border-border/60 pb-4">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+            <div className="min-w-0">
               <CardTitle className="text-lg">Broker Tape</CardTitle>
               <CardDescription>
                 Unified chronological tape of standardized BID and OFFER ideas.
               </CardDescription>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Badge variant="outline">{entries.length} visible</Badge>
               <Button variant="ghost" size="sm" onClick={() => exportEntriesToCsv(entries)} disabled={entries.length === 0}>
                 <Download className="mr-2 h-4 w-4" />
@@ -110,28 +109,14 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
                       key={entry.id}
                       type="button"
                       onClick={() => setSelectedEntry(entry)}
-                      className="w-full px-4 py-2.5 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full min-w-0 px-4 py-1.5 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="flex items-start gap-3">
                         <TapeTypeBadge type={entry.type} />
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium leading-5 text-foreground">
+                          <div className="truncate text-sm font-medium leading-5 text-foreground">
                             {entry.canonicalView}
                           </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground/80">
-                            <span>{formatEntryDateTime(entry.createdAt)}</span>
-                            <span>·</span>
-                            <span>{entry.brokerCode}</span>
-                            <span>·</span>
-                            <span>
-                              {formatEntryDestinationCompact(entry)}
-                            </span>
-                            <span>·</span>
-                            <span>{formatEntryPeriodCompact(entry)}</span>
-                          </div>
-                        </div>
-                        <div className="hidden shrink-0 text-muted-foreground lg:block">
-                          <Eye className="h-3.5 w-3.5" />
                         </div>
                       </div>
                     </button>
@@ -150,42 +135,69 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
             ) : (
               <ScrollArea className="h-[620px]">
                 <div className="p-3">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Broker</TableHead>
-                        <TableHead>Commodity</TableHead>
-                        <TableHead>Basis</TableHead>
-                        <TableHead>Destination</TableHead>
-                        <TableHead>Period</TableHead>
-                        <TableHead>Price</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {entries.map((entry) => (
-                        <TableRow
-                          key={entry.id}
-                          className="cursor-pointer"
-                          onClick={() => setSelectedEntry(entry)}
-                        >
-                          <TableCell>{formatEntryDateTime(entry.createdAt)}</TableCell>
-                          <TableCell>
-                            <TapeTypeBadge type={entry.type} />
-                          </TableCell>
-                          <TableCell>{entry.brokerCode}</TableCell>
-                          <TableCell>{formatEntryCommodityCompact(entry)}</TableCell>
-                          <TableCell>{entry.basis}</TableCell>
-                          <TableCell>{formatEntryDestinationCompact(entry)}</TableCell>
-                          <TableCell>{formatEntryPeriodCompact(entry)}</TableCell>
-                          <TableCell>
-                            {formatEntryPriceRange(entry)} {entry.currency}
-                          </TableCell>
+                  <div className="space-y-2 sm:hidden">
+                    {entries.map((entry) => (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        onClick={() => setSelectedEntry(entry)}
+                        className="w-full rounded-lg border border-border/60 px-3 py-2 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <div className="mb-1 flex items-center gap-2">
+                          <TapeTypeBadge type={entry.type} />
+                          <span className="text-xs text-muted-foreground">{entry.brokerCode}</span>
+                        </div>
+                        <div className="truncate text-sm font-medium text-foreground">
+                          {formatEntryCommodityCompact(entry)} {formatEntryPriceRange(entry)} {entry.currency}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {entry.basis} {formatEntryDestinationCompact(entry)} / {formatEntryPeriodCompact(entry)}
+                        </div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">
+                          {formatEntryDateTime(entry.createdAt)}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Broker</TableHead>
+                          <TableHead>Commodity</TableHead>
+                          <TableHead>Basis</TableHead>
+                          <TableHead>Destination</TableHead>
+                          <TableHead>Period</TableHead>
+                          <TableHead>Price</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {entries.map((entry) => (
+                          <TableRow
+                            key={entry.id}
+                            className="cursor-pointer"
+                            onClick={() => setSelectedEntry(entry)}
+                          >
+                            <TableCell>{formatEntryDateTime(entry.createdAt)}</TableCell>
+                            <TableCell>
+                              <TapeTypeBadge type={entry.type} />
+                            </TableCell>
+                            <TableCell>{entry.brokerCode}</TableCell>
+                            <TableCell>{formatEntryCommodityCompact(entry)}</TableCell>
+                            <TableCell>{entry.basis}</TableCell>
+                            <TableCell>{formatEntryDestinationCompact(entry)}</TableCell>
+                            <TableCell>{formatEntryPeriodCompact(entry)}</TableCell>
+                            <TableCell>
+                              {formatEntryPriceRange(entry)} {entry.currency}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </ScrollArea>
             )

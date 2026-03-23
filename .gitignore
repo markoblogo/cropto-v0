@@ -19,5 +19,13 @@ project.zip
 tmp/
 tmp/ingest_probe/
 logs/
+cache/
 *.dump
 *.sql
+
+# Local sibling/project clutter not part of Cropto app source
+public/books/
+public/deck/
+stoic-wisdom-series/
+toki-free-kit/
+toki-pona-translator/

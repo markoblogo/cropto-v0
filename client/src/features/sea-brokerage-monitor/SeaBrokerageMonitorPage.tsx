@@ -81,7 +81,7 @@ export function SeaBrokerageMonitorPage() {
 
   return (
     <MainLayout>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-0.5 pb-1 sm:gap-1">
+      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-0.5 overflow-x-hidden pb-1 sm:gap-1">
         <MonitorToolbar
           filters={filters}
           onFilterChange={updateFilter}
@@ -95,7 +95,7 @@ export function SeaBrokerageMonitorPage() {
           onAddSampleOffer={() => addSeaBrokerageMonitorSampleEntry("offer")}
         />
 
-        <section className="grid gap-0.5 xl:grid-cols-2 sm:gap-1">
+        <section className="grid min-w-0 gap-0.5 xl:grid-cols-2 sm:gap-1">
           <BrokerWorkspacePane
             title="Offers"
             emptyTitle="No visible offers"

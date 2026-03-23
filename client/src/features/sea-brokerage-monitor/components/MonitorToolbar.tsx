@@ -50,8 +50,8 @@ export function MonitorToolbar({
   return (
     <Collapsible>
       <Card className="border-border/70 bg-card/95 px-1.5 py-0.5 shadow-sm sm:px-2.5 sm:py-1.5">
-        <div className="flex flex-wrap items-center gap-0.5 sm:gap-1.5">
-          <div className="mr-0.5 text-[8.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:mr-1 sm:text-[11px] sm:tracking-[0.18em]">
+        <div className="flex min-w-0 flex-wrap items-center gap-0.5 sm:gap-1.5">
+          <div className="mr-0.5 min-w-0 text-[8.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:mr-1 sm:text-[11px] sm:tracking-[0.18em]">
             Sea Brokerage Monitor
           </div>
           <Button onClick={onCreateBid} size="sm" className="h-6 px-1.5 text-[9.5px] sm:h-7 sm:px-2.5 sm:text-xs">
@@ -75,7 +75,7 @@ export function MonitorToolbar({
                 onFilterChange("commodity", value as FeedFilterState["commodity"])
               }
             >
-              <SelectTrigger className="h-6 w-[104px] text-[10.5px] sm:h-7 sm:w-[132px] sm:text-[11px]">
+              <SelectTrigger className="h-6 min-w-0 flex-1 basis-[calc(50%-0.125rem)] text-[10.5px] sm:h-7 sm:w-[132px] sm:basis-auto sm:flex-none sm:text-[11px]">
                 <SelectValue placeholder="Commodity" />
               </SelectTrigger>
               <SelectContent>
@@ -94,7 +94,7 @@ export function MonitorToolbar({
                 onFilterChange("originCountry", value as FeedFilterState["originCountry"])
               }
             >
-              <SelectTrigger className="h-6 w-[100px] text-[10.5px] sm:h-7 sm:w-[126px] sm:text-[11px]">
+              <SelectTrigger className="h-6 min-w-0 flex-1 basis-[calc(50%-0.125rem)] text-[10.5px] sm:h-7 sm:w-[126px] sm:basis-auto sm:flex-none sm:text-[11px]">
                 <SelectValue placeholder="Origin" />
               </SelectTrigger>
               <SelectContent>
@@ -113,7 +113,7 @@ export function MonitorToolbar({
                 onFilterChange("basis", value as FeedFilterState["basis"])
               }
             >
-              <SelectTrigger className="h-6 w-[84px] text-[10.5px] sm:h-7 sm:w-[110px] sm:text-[11px]">
+              <SelectTrigger className="h-6 min-w-0 flex-1 basis-[calc(50%-0.125rem)] text-[10.5px] sm:h-7 sm:w-[110px] sm:basis-auto sm:flex-none sm:text-[11px]">
                 <SelectValue placeholder="Basis" />
               </SelectTrigger>
               <SelectContent>
@@ -132,7 +132,7 @@ export function MonitorToolbar({
                 onFilterChange("deliveryPlace", value as FeedFilterState["deliveryPlace"])
               }
             >
-              <SelectTrigger className="h-6 w-[118px] text-[10.5px] sm:h-7 sm:w-[168px] sm:text-[11px]">
+              <SelectTrigger className="h-6 min-w-0 basis-full text-[10.5px] sm:h-7 sm:w-[168px] sm:basis-auto sm:text-[11px]">
                 <SelectValue placeholder="Port / place" />
               </SelectTrigger>
               <SelectContent>
@@ -151,7 +151,7 @@ export function MonitorToolbar({
                 onFilterChange("brokerProfileId", value as FeedFilterState["brokerProfileId"])
               }
             >
-              <SelectTrigger className="h-6 w-[100px] text-[10.5px] sm:h-7 sm:w-[142px] sm:text-[11px]">
+              <SelectTrigger className="h-6 min-w-0 flex-1 basis-[calc(50%-0.125rem)] text-[10.5px] sm:h-7 sm:w-[142px] sm:basis-auto sm:flex-none sm:text-[11px]">
                 <SelectValue placeholder="Broker" />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +164,7 @@ export function MonitorToolbar({
               </SelectContent>
             </Select>
 
-            <div className="relative min-w-[118px] flex-1 xl:max-w-[220px]">
+            <div className="relative min-w-0 basis-full sm:flex-1 xl:max-w-[220px]">
               <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-2.5 sm:h-3.5 sm:w-3.5" />
               <Input
                 className="h-6 pl-6.5 text-[10.5px] sm:h-7 sm:pl-8 sm:text-xs"
@@ -176,7 +176,7 @@ export function MonitorToolbar({
           </div>
 
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="ml-auto h-6 px-1 text-[9.5px] text-muted-foreground sm:h-7 sm:px-1.5 sm:text-xs">
+            <Button variant="ghost" size="sm" className="h-6 px-1 text-[9.5px] text-muted-foreground sm:ml-auto sm:h-7 sm:px-1.5 sm:text-xs">
               Tools
               <ChevronDown className="ml-1.5 h-3.5 w-3.5 sm:ml-2 sm:h-4 sm:w-4" />
             </Button>
@@ -204,7 +204,7 @@ export function MonitorToolbar({
                     session.setSelectedDemoBrokerId(value === "none" ? null : value)
                   }
                 >
-                  <SelectTrigger className="w-[220px]">
+                  <SelectTrigger className="w-full sm:w-[220px]">
                     <SelectValue placeholder="Demo Telegram author" />
                   </SelectTrigger>
                   <SelectContent>

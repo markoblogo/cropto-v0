@@ -414,7 +414,7 @@ export function EntryCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
         <DialogHeader>
           <DialogTitle>{entryType === "bid" ? "Create BID" : "Create OFFER"}</DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">

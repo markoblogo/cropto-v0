@@ -25,7 +25,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1 rounded-xl border border-border/70 bg-muted/20 px-4 py-3">
       <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
-      <div className="text-sm text-foreground">{value}</div>
+      <div className="break-words text-sm text-foreground">{value}</div>
     </div>
   );
 }
@@ -39,7 +39,7 @@ interface EntryDetailSheetProps {
 export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-2xl">
+      <SheetContent side="right" className="w-full max-w-[100vw] overflow-x-hidden overflow-y-auto sm:max-w-2xl">
         {entry ? (
           <div className="space-y-6">
             <SheetHeader>

@@ -143,7 +143,7 @@ export function ContextualMatchingPanel({
     <>
       <Card className="border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3 sm:py-1.5">
-          <div className="flex flex-wrap items-center gap-0.5 sm:gap-1.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-0.5 sm:gap-1.5">
             <CardTitle className="mr-auto text-[11.5px] sm:text-[13px]">Best Current Matches</CardTitle>
             <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
@@ -160,7 +160,7 @@ export function ContextualMatchingPanel({
               </Button>
             ) : null}
           </div>
-          <div className="mt-0.5 grid gap-0.5 sm:mt-1 sm:grid-cols-3 sm:gap-1.5">
+          <div className="mt-0.5 grid min-w-0 gap-0.5 sm:mt-1 sm:grid-cols-3 sm:gap-1.5">
             <Select
               value={focus.commodity}
               onValueChange={(value) =>
@@ -242,8 +242,11 @@ export function ContextualMatchingPanel({
                 <span className="font-medium text-foreground">
                   {selectedEntry.type === "offer" ? "offer" : "bid"}
                 </span>
-                : {selectedEntry.brokerCode} / {formatEntryCommodityCompact(selectedEntry)} /{" "}
-                {formatEntryPriceRange(selectedEntry)} {selectedEntry.currency}
+                :{" "}
+                <span className="truncate align-bottom">
+                  {selectedEntry.brokerCode} / {formatEntryCommodityCompact(selectedEntry)} /{" "}
+                  {formatEntryPriceRange(selectedEntry)} {selectedEntry.currency}
+                </span>
               </div>
             ) : null}
 
@@ -264,7 +267,7 @@ export function ContextualMatchingPanel({
                   return (
                     <div
                       key={suggestion.id}
-                      className={`px-2 py-0.5 sm:px-3 sm:py-1 ${
+                      className={`min-w-0 px-2 py-0.5 sm:px-3 sm:py-0.75 ${
                         isRelated ? "bg-muted/20" : ""
                       }`}
                     >
@@ -282,24 +285,24 @@ export function ContextualMatchingPanel({
                         <span className="text-muted-foreground">{latestTimestamp}</span>
                       </div>
 
-                      <div className="mt-px grid gap-x-2 gap-y-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                      <div className="mt-px grid min-w-0 gap-x-2 gap-y-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.bidEntry)}
-                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px] sm:leading-3.5"
+                          className="min-w-0 truncate text-left text-[10px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:text-[10.5px] sm:leading-3.5"
                         >
                           Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
                         </button>
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.offerEntry)}
-                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px] sm:leading-3.5"
+                          className="min-w-0 truncate text-left text-[10px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:text-[10.5px] sm:leading-3.5"
                         >
                           Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
                         </button>
                       </div>
 
-                      <div className="mt-px truncate text-[9.5px] leading-3 text-muted-foreground sm:text-[10px] sm:leading-3">
+                      <div className="mt-px truncate text-[9px] leading-3 text-muted-foreground sm:text-[9.5px] sm:leading-3">
                         {suggestion.reasons[0] ?? "Commercial fit found"}
                       </div>
 
