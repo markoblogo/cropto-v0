@@ -3,67 +3,82 @@
 [![Node.js](https://img.shields.io/badge/node-22.x-brightgreen)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Cropto is an early-stage platform for commodity trading, market monitoring, and brokerage workflows.
+Cropto is an early-stage product for commodity trading, market monitoring, and brokerage workflows.
 
-This repository contains the current MVP codebase, including the main Cropto web app, supporting backend services, and emerging workflow surfaces such as Sea Brokerage Monitor.
+This repository contains the current Cropto MVP: the main web application, the supporting Node/Express backend, market-data ingestion paths, and the latest workflow modules such as Sea Brokerage Monitor.
 
-The project is currently in active prototype / staging mode: some modules are already interactive and reviewable, while other integrations and operational flows are still being refined.
+The project is currently in active prototype / staging mode. Parts of the product are already interactive and partner-reviewable, while some integrations and operational flows are still being hardened.
 
-## Project Overview
+## Why this repo matters
 
-Cropto is currently oriented around practical market workflows:
+Cropto is not just a landing page or a deck repo. The codebase now reflects a working product direction built around:
 
-- commodity and regional market monitoring
-- trading and portfolio-facing UI experiments
-- options/forward/spot workflow prototypes
-- broker-oriented structured entry and matching tooling
-- supporting admin, feedback, and partner/demo surfaces
+- commodity market monitoring
+- trading and risk workflow prototypes
+- broker-oriented operational surfaces
+- admin and partner operations
+- ingestion, monitoring, and deployment infrastructure behind those surfaces
 
-The repo includes both the React client and the Node/Express backend, along with database schema/migrations, ingestion jobs, and deployment configuration.
+## Product Areas
 
-### Current development status
+The current repository includes these visible product areas:
 
-- Active prototype/staging application
-- Product areas are at mixed maturity levels
-- Some flows are fully interactive in the client but still rely on mock/demo or non-persistent behavior
-- Railway deployment is documented and currently tied to the `release/demo` branch
+- **Market monitoring surfaces**  
+  Dashboard, market-data views, and monitor-style pages for commodity, logistics, weather, and related market signals.
 
-## Key Product Areas
-
-The following product areas are visibly implemented in the codebase today:
-
-- **Market dashboard and monitoring surfaces**  
-  Main dashboard, market-data views, and monitor workspaces for market signals, logistics, weather, and related indicators.
-
-- **Spot / options / forward trading flows**  
-  UI flows for options, forward-market and spot-trading scenarios, plus portfolio and wallet-related surfaces.
+- **Trading and risk workflow surfaces**  
+  Spot, options, forward-market, wallet, portfolio, and related workflow pages across the main app.
 
 - **Sea Brokerage Monitor**  
-  A dedicated broker workspace at `/spike-monitor` for structured bid/offer capture, compact offer/bid panes, and match discovery.
+  A broker workspace at `/spike-monitor` built for fast bid/offer entry, compact market scanning, and live matching.
 
-- **Market data ingestion and operational services**  
-  Backend ingestion, scheduling, and monitor services covering market dashboards, external data sources, Telegram scraping, and related runtime checks.
+- **Admin and operational tools**  
+  Feedback, reconciliation, audit, waitlist, partner, and contract-management routes.
 
-- **Auth/session and admin operations**  
-  Login/register, session-aware UI, admin pages, reconciliation, audit, waitlist, feedback, and partner/contract management surfaces.
+- **Data and ingestion backend**  
+  Background jobs, polling, normalization, monitoring services, and API routes that support the product surfaces.
 
-- **Partner/demo surfaces**  
-  `/deck` and related marketing/partner-facing presentation routes remain present in the repo, but they are no longer the only prominent product narrative.
+## Current Highlights
 
-## Current Feature Highlights
-
-- Region-aware market dashboard and market-data pages backed by API queries
-- Spot trading and options-style UI flows with portfolio and wallet summary surfaces
-- Monitor V3 workspace for market/logistics/news-style operational monitoring
-- Sea Brokerage Monitor dual-pane broker workspace:
-  - `OFFERS` and `BIDS` panes with internal scroll
+- Market dashboard and monitoring routes backed by API queries and ingestion services
+- Trading UI flows for spot, options, forward, portfolio, and wallet scenarios
+- Monitor workspace direction with richer operational modules and data services
+- Sea Brokerage Monitor workspace with:
+  - dual-pane `OFFERS` / `BIDS` layout
   - modal `Create BID` / `Create OFFER` flows
-  - structured entry validation
-  - seeded demo market entries for local/manual QA
-  - rolling best-current-match stream
-  - detail sheet, search/filtering, exports, and secondary archive/analytics views
-- Feature-local Telegram-oriented session placeholder for Sea Brokerage Monitor
-- Market/admin operational endpoints and deployment verification paths
+  - compact tape-style row presentation
+  - rolling `Best Current Matches`
+  - detail sheet, filtering, exports, and secondary views
+- Product-oriented route shells for demo/staging review
+- Shared frontend/backend schema and deployable build pipeline
+
+## Sea Brokerage Monitor
+
+Sea Brokerage Monitor is one of the clearest active product modules in this repo.
+
+### Purpose
+
+It is designed as a compact broker workspace for practical market work:
+
+- scan offers and bids quickly
+- create structured entries fast
+- surface likely matches without requiring heavy navigation
+
+### Current UX shape
+
+- compact top toolbar with global filters
+- dual-pane `OFFERS` / `BIDS` workspace
+- pane-level tools for broker/search filtering
+- compact tape rows optimized for scanning speed
+- rolling matching block visible in the main workspace
+- detail sheet for the full structured record
+
+### Current implementation status
+
+- client-side/local-state driven
+- seeded demo data for QA and partner walkthroughs
+- no backend persistence for brokerage entries yet
+- prepared for future integration with Telegram/session/relay flows, but not fully live end-to-end
 
 ## Repository Structure
 
@@ -71,34 +86,33 @@ High-level structure:
 
 ```text
 .
-├── client/          # React frontend (pages, components, feature modules, i18n)
-├── server/          # Express API, auth, ingestion jobs, monitor services, admin routes
-├── shared/          # Shared schema/types used across client and server
-├── db/              # Database scripts/helpers
-├── migrations/      # SQL and migration assets
-├── contracts/       # On-chain contract sources and related config
-├── scripts/         # Operational, ingestion, migration, and smoke scripts
-├── docs/            # Internal product, testing, deployment, and ops documentation
+├── client/          # React frontend (routes, shared UI, feature modules, i18n)
+├── server/          # Express API, auth, ingestion jobs, monitor services
+├── shared/          # Shared schema and types across client/server
+├── db/              # Database helpers
+├── migrations/      # SQL and schema migration assets
+├── contracts/       # Contract-related sources/config already present in repo
+├── scripts/         # Operational, ingestion, smoke, and utility scripts
+├── docs/            # Internal product, deploy, testing, and ops docs
 ├── public/          # Static assets and public files
-├── tests/           # Test helpers / smoke-related assets
-├── drizzle.config.ts
+├── tests/           # Repository tests and checks
 ├── railway.json
 └── package.json
 ```
 
 Notable frontend areas:
 
-- `client/src/pages` — route-level product surfaces
-- `client/src/components` — shared UI and page components
-- `client/src/features/sea-brokerage-monitor` — self-contained broker workspace feature module
-- `client/src/components/monitor` — monitor workspace components
+- `client/src/pages` - route-level product surfaces
+- `client/src/components` - shared UI and shared product blocks
+- `client/src/components/monitor` - monitor-oriented UI modules
+- `client/src/features/sea-brokerage-monitor` - self-contained brokerage workflow feature
 
 Notable backend areas:
 
-- `server/routes.ts` and related route files — API surface
-- `server/monitor/*` — monitor data/services
-- `server/jobs/*` and `server/jobsRunner.ts` — background polling/scheduling jobs
-- `server/auth.ts`, `server/authRoutes.ts` — auth/session APIs
+- `server/routes.ts` - main API surface
+- `server/monitor/*` - monitor services, providers, persistence, and routes
+- `server/jobs/*` and `server/jobsRunner.ts` - background jobs and polling
+- `server/ingestion/*` - ingestion scheduling and normalization
 
 ## Tech Stack
 
@@ -110,7 +124,7 @@ Notable backend areas:
 - TanStack Query
 - React Hook Form + Zod
 - Tailwind CSS
-- Radix UI / shadcn-style component primitives
+- Radix UI / shadcn-style primitives
 - Recharts
 - i18next
 - MapLibre GL
@@ -121,18 +135,18 @@ Notable backend areas:
 - Express
 - TypeScript
 - Drizzle ORM
-- PostgreSQL / Neon-style connection support
+- PostgreSQL-compatible database
 - Zod validation
 - Passport/local auth pieces
 - Supabase integration hooks
 - Nodemailer / Resend support
 
-### Other platform/tooling
+### Tooling and deployment
 
-- Railway deployment config (`railway.json`)
-- esbuild for server bundling in production build
-- Playwright installed during postinstall for smoke/browser workflows
-- Hardhat / ethers for on-chain-related development already present in the repo
+- Railway deployment config
+- esbuild server bundling in production build
+- Playwright installed during postinstall for smoke/browser checks
+- Hardhat / ethers already present for contract-related work
 
 ## Local Development
 
@@ -146,27 +160,22 @@ Notable backend areas:
 
 ```bash
 npm install
-```
-
-### Environment setup
-
-Use `.env.example` as the starting point:
-
-```bash
 cp .env.example .env
 ```
 
-At minimum, local development needs a working `DATABASE_URL`, `SESSION_SECRET`, and `JWT_SECRET`.
+At minimum, local development needs working values for:
+
+- `DATABASE_URL`
+- `SESSION_SECRET`
+- `JWT_SECRET`
 
 ### Database
-
-Push the current Drizzle schema to your database:
 
 ```bash
 npm run db:push
 ```
 
-Alternative migration-related commands also exist:
+Alternative migration commands:
 
 ```bash
 npm run db:migrate
@@ -175,19 +184,17 @@ npm run migrate
 
 ### Run the app
 
-Start the web app:
-
 ```bash
 npm run dev
 ```
 
-Start jobs/pollers separately when needed:
+Run jobs/pollers separately when needed:
 
 ```bash
 npm run dev:jobs
 ```
 
-Default local app URL is typically:
+Typical local app URL:
 
 - `http://127.0.0.1:5000`
 
@@ -198,7 +205,7 @@ npm run build
 npm run check
 ```
 
-Other useful repo scripts:
+Useful additional scripts:
 
 ```bash
 npm run e2e:smoke
@@ -209,108 +216,70 @@ npm run i18n:extract
 npm run i18n:check
 ```
 
-There is currently no single canonical lint script in `package.json`; `npm run check` is the primary repository-wide static type check.
-
 ## Environment and Configuration
 
-Relevant configuration is visible in `.env.example`. Current categories include:
+Relevant configuration is visible in `.env.example`.
 
-- **Core app**
-  - `DATABASE_URL`
-  - `SESSION_SECRET`
-  - `JWT_SECRET`
+Current categories include:
 
-- **Supabase**
-  - `SUPABASE_URL`
-  - `SUPABASE_SERVICE_ROLE_KEY`
+- **Core app**  
+  `DATABASE_URL`, `SESSION_SECRET`, `JWT_SECRET`
 
-- **On-chain / contracts**
-  - `DEPLOYER_PRIVATE_KEY`
-  - `POLYGON_AMOY_RPC_URL`
-  - contract addresses and chain settings
+- **Supabase**  
+  `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 
-- **Market data ingestion**
-  - polling toggles and source URLs
+- **On-chain / contracts**  
+  deployer keys, RPC URLs, and contract address settings
 
-- **Telegram ingestion**
-  - scraper/bot-related environment values
+- **Market data ingestion**  
+  polling toggles, provider settings, and scheduler flags
 
-Some environment values are optional depending on which product areas or background jobs you are exercising locally.
+- **Telegram / scraping / relay-adjacent flows**  
+  bot tokens, scraper toggles, and related job/runtime flags
 
-## Deployment / Preview / Hosting
+Not every variable is required for every route. Some are only needed for specific integrations or jobs.
 
-Deployment is not fully generic; the repo currently contains a concrete Railway-oriented path:
+## Deployment
 
-- `railway.json` defines Railway build/deploy configuration
-- `docs/deploy-runbook.md` documents the deploy flow
-- the runbook currently assumes the web service deploys from the `release/demo` branch
-- the documented live/staging verification target is `https://cropto.abvx.xyz`
+The repo contains a concrete Railway-oriented deploy path.
 
-Useful deployment notes:
+- `railway.json` defines the deployment shape
+- `docs/deploy-runbook.md` documents the current operational flow
+- staging/demo verification target is [cropto.abvx.xyz](https://cropto.abvx.xyz)
 
-- `npm run build` builds both the client bundle and bundled server entrypoints in `dist/`
-- `npm start` runs the built web service
-- `npm run start:jobs` runs the built jobs service
+Important current nuance:
 
-If your environment differs from the documented Railway setup, treat the runbook as project-specific guidance rather than a universal deployment recipe.
+- `main` is the current repository mainline
+- staging/deploy branch assumptions may still reference `release/demo` until infra is intentionally simplified
 
-## Sea Brokerage Monitor
+Useful production commands:
 
-Sea Brokerage Monitor is a dedicated broker workspace mounted at `/spike-monitor`.
+```bash
+npm run build
+npm start
+npm run start:jobs
+```
 
-### Purpose
+## Current Limitations
 
-It is designed as a compact operational tool for brokerage-style market work: capturing structured bids/offers, scanning current offers and bids separately, and surfacing likely matches quickly.
+Useful realities before building on top of this repo:
 
-### Current UX shape
-
-- compact top action/filter bar
-- modal `Create BID` / `Create OFFER` entry flow
-- dual-pane workspace:
-  - `OFFERS`
-  - `BIDS`
-- compact chronological rows with internal scroll in each pane
-- rolling `Best Current Matches` section visible in the main workspace
-- detail sheet for structured entry inspection
-- secondary views for feed/archive/analytics/export
-
-### Major implemented capabilities
-
-- strongly typed entry model
-- seeded demo dataset for manual QA
-- client-side filters and search
-- local in-memory store for entries and matching state
-- deterministic rule-based matching
-- CSV/XLSX export from filtered data
-- Telegram-oriented feature-local session placeholder
-- relay formatting stub prepared for later Telegram publishing
-
-### Current limitations
-
-- no backend persistence yet
-- no real Telegram auth backend yet
-- no real outbound Telegram relay transport yet
-- some flows remain prototype/demo-oriented even though the UI is polished
-
-## Current Limitations / Work in Progress
-
-Useful realities to know before building on top of this repo:
-
-- Product maturity is uneven across modules; some areas are closer to demo-grade than production-grade
-- Several workflows still rely on mock/demo data or local in-memory state
-- Sea Brokerage Monitor currently stores entries client-side only
-- Telegram session/relay behavior in Sea Brokerage Monitor is prepared but intentionally stubbed
-- Deployment and operational assumptions are still fairly project-specific
-- There is a mix of current surfaces and legacy/prototype surfaces in the same application
+- product maturity is uneven across modules
+- some UX flows are polished but still prototype-grade under the hood
+- some features still rely on mock/demo or local-state behavior
+- Sea Brokerage Monitor entries are not yet persisted through a full backend workflow
+- some Telegram/session/relay paths are prepared rather than fully productionized
+- deployment and operational assumptions are still somewhat project-specific
 
 ## Contribution / Working Notes
 
-This repository reads like an internal product codebase rather than a polished open-source package. Practical contributor guidance:
+This repo behaves more like an internal product codebase than a polished open-source package.
 
-- Treat the repo as a fast-moving staging/prototype environment
-- Prefer validating against real routes, scripts, and config before documenting or refactoring
-- Be careful with broad commits: the worktree may contain unrelated prototype or content changes
-- `release/demo` is the branch referenced by the current deploy runbook
-- When adding user-facing features, keep product claims honest: several integrations are intentionally prepared/stubbed rather than fully live
+Practical guidance:
 
-Additional project docs are indexed in [docs/README.md](./docs/README.md).
+- validate against real routes, scripts, and config before broad refactors
+- be careful with top-level content and historical artifacts; some are active, some are transitional
+- treat product claims conservatively when editing docs or shipping partner-facing copy
+- prefer keeping main operational paths understandable over adding parallel experimental layers
+
+Additional internal docs are indexed in [docs/README.md](docs/README.md).
