@@ -1,4 +1,4 @@
-import { getCountryAlpha3 } from "../mock/dictionaries";
+import { getCommodityCompactLabel, getCountryAlpha3 } from "../mock/dictionaries";
 import type { BrokerageEntry, FeedFilterState } from "../types";
 import { formatEntryChartDay } from "./entryFormatting.service";
 
@@ -38,6 +38,7 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       entry.originCountry,
       getCountryAlpha3(entry.originCountryCode ?? entry.originCountry),
       entry.commodityLabel,
+      getCommodityCompactLabel(entry.commodity, entry.commodityLabel),
       entry.paymentTerms,
       entry.destinationPort,
       entry.destinationCountry,

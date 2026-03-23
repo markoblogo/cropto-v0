@@ -44,6 +44,7 @@ import {
 } from "../services/seaBrokerageMonitor.service";
 import {
   buildCanonicalView,
+  normalizePeriodLabel,
 } from "../services/entryFormatting.service";
 import { publishEntryToTelegram } from "../services/telegramRelay.service";
 import type {
@@ -52,12 +53,22 @@ import type {
   Currency,
   EntryType,
   PeriodType,
+  SelectOption,
   TransportType,
   VolumeUnit,
 } from "../types";
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
 const volumeUnitOptions: Array<{ value: VolumeUnit; label: string }> = [{ value: "mt", label: "MT" }];
+type PeriodPreset = "spot" | "prompt" | "current_month_1h" | "current_month_2h" | "explicit_range";
+
+const periodPresetOptions: SelectOption<PeriodPreset>[] = [
+  { value: "spot", label: "SPOT" },
+  { value: "prompt", label: "PROMPT" },
+  { value: "current_month_1h", label: "1H current month" },
+  { value: "current_month_2h", label: "2H current month" },
+  { value: "explicit_range", label: "Explicit date range" },
+];
 const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
   { value: "handysize", label: "Handysize" },
   { value: "coaster", label: "Coaster" },
@@ -71,6 +82,7 @@ const entryFormSchema = z
   .object({
     sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
     buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
+    periodPreset: z.enum(["spot", "prompt", "current_month_1h", "current_month_2h", "explicit_range"]),
     commodity: z.string().min(1, "Commodity is required"),
     originCountry: z.string().min(1, "Origin is required"),
     quantityMt: z.coerce.number().positive("Quantity must be greater than 0"),
@@ -80,16 +92,41 @@ const entryFormSchema = z
       .max(25, "Tolerance must be 25% or lower"),
     basis: z.enum(["FOB", "CIF", "CPT", "DAP", "FCA"]),
     destinationPortCode: z.string().min(1, "Port / place is required"),
-    periodStart: z.string().min(1, "Shipment / delivery period from is required"),
-    periodEnd: z.string().min(1, "Shipment / delivery period to is required"),
+    periodStart: z.string().optional().default(""),
+    periodEnd: z.string().optional().default(""),
     price: z.coerce.number().nonnegative("Price must be 0 or greater"),
     paymentTerms: z.string().min(1, "Payment terms are required"),
     transportType: z.enum(["handysize", "coaster", "truck", "rail", "vessel", "mixed"]),
     note: z.string().max(500, "Note must be 500 characters or fewer").optional(),
   })
-  .refine((values) => values.periodEnd >= values.periodStart, {
-    path: ["periodEnd"],
-    message: "Shipment / delivery to must be on or after from",
+  .superRefine((values, ctx) => {
+    if (values.periodPreset !== "explicit_range") {
+      return;
+    }
+
+    if (!values.periodStart) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodStart"],
+        message: "Shipment / delivery period from is required",
+      });
+    }
+
+    if (!values.periodEnd) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodEnd"],
+        message: "Shipment / delivery period to is required",
+      });
+    }
+
+    if (values.periodStart && values.periodEnd && values.periodEnd < values.periodStart) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodEnd"],
+        message: "Shipment / delivery to must be on or after from",
+      });
+    }
   });
 
 type EntryFormValues = z.infer<typeof entryFormSchema>;
@@ -99,6 +136,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
   return {
     sellerName: "",
     buyerName: "",
+    periodPreset: "explicit_range",
     commodity: "corn",
     originCountry: "UA",
     quantityMt: entryType === "bid" ? 25000 : 20000,
@@ -127,7 +165,89 @@ function deriveVolumeRange(quantityMt: number, tolerancePct: number) {
 }
 
 function buildPeriodLabel(periodStart: string, periodEnd: string) {
-  return periodStart === periodEnd ? periodStart : `${periodStart} - ${periodEnd}`;
+  return normalizePeriodLabel({
+    periodType: "range",
+    periodStart,
+    periodEnd,
+  });
+}
+
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getMonthBoundaryDates(referenceDate = new Date()) {
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
+  const monthStart = new Date(year, month, 1);
+  const midMonth = new Date(year, month, 15);
+  const secondHalfStart = new Date(year, month, 16);
+  const monthEnd = new Date(year, month + 1, 0);
+
+  return {
+    firstHalfStart: formatDateInput(monthStart),
+    firstHalfEnd: formatDateInput(midMonth),
+    secondHalfStart: formatDateInput(secondHalfStart),
+    secondHalfEnd: formatDateInput(monthEnd),
+  };
+}
+
+function resolvePeriodValues(
+  preset: PeriodPreset,
+  periodStart: string,
+  periodEnd: string,
+): {
+  periodType: PeriodType;
+  periodLabel: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+} {
+  if (preset === "spot") {
+    return {
+      periodType: "spot",
+      periodLabel: "SPOT",
+      periodStart: null,
+      periodEnd: null,
+    };
+  }
+
+  if (preset === "prompt") {
+    return {
+      periodType: "prompt",
+      periodLabel: "PROMPT",
+      periodStart: null,
+      periodEnd: null,
+    };
+  }
+
+  if (preset === "current_month_1h" || preset === "current_month_2h") {
+    const boundaries = getMonthBoundaryDates();
+    const rangeStart =
+      preset === "current_month_1h" ? boundaries.firstHalfStart : boundaries.secondHalfStart;
+    const rangeEnd =
+      preset === "current_month_1h" ? boundaries.firstHalfEnd : boundaries.secondHalfEnd;
+
+    return {
+      periodType: "window",
+      periodLabel: normalizePeriodLabel({
+        periodType: "window",
+        periodStart: rangeStart,
+        periodEnd: rangeEnd,
+      }),
+      periodStart: rangeStart,
+      periodEnd: rangeEnd,
+    };
+  }
+
+  return {
+    periodType: "range",
+    periodLabel: buildPeriodLabel(periodStart, periodEnd),
+    periodStart,
+    periodEnd,
+  };
 }
 
 interface EntryCreateDialogProps {
@@ -166,6 +286,11 @@ export function EntryCreateDialog({
     const originCountry = getCountryLabel(values.originCountry);
     const destinationCountry = getCountryLabel(selectedPort?.countryCode);
     const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
+    const resolvedPeriod = resolvePeriodValues(
+      values.periodPreset,
+      values.periodStart,
+      values.periodEnd,
+    );
 
     return buildCanonicalView({
       id: "preview",
@@ -193,10 +318,10 @@ export function EntryCreateDialog({
       destinationPort: selectedPort?.label ?? values.destinationPortCode,
       destinationCountryCode: selectedPort?.countryCode ?? null,
       destinationCountry,
-      periodType: "range" as PeriodType,
-      periodLabel: buildPeriodLabel(values.periodStart, values.periodEnd),
-      periodStart: values.periodStart,
-      periodEnd: values.periodEnd,
+      periodType: resolvedPeriod.periodType,
+      periodLabel: resolvedPeriod.periodLabel,
+      periodStart: resolvedPeriod.periodStart,
+      periodEnd: resolvedPeriod.periodEnd,
       price: values.price,
       priceFrom: values.price,
       priceTo: values.price,
@@ -222,6 +347,11 @@ export function EntryCreateDialog({
       const { volumeFrom, volumeTo } = deriveVolumeRange(
         formValues.quantityMt,
         formValues.tolerancePct,
+      );
+      const resolvedPeriod = resolvePeriodValues(
+        formValues.periodPreset,
+        formValues.periodStart,
+        formValues.periodEnd,
       );
 
       const entry = createBrokerageEntry({
@@ -250,10 +380,10 @@ export function EntryCreateDialog({
         destinationPort: selectedPort?.label ?? formValues.destinationPortCode,
         destinationCountryCode: selectedPort?.countryCode ?? null,
         destinationCountry: getCountryLabel(selectedPort?.countryCode),
-        periodType: "range",
-        periodLabel: buildPeriodLabel(formValues.periodStart, formValues.periodEnd),
-        periodStart: formValues.periodStart,
-        periodEnd: formValues.periodEnd,
+        periodType: resolvedPeriod.periodType,
+        periodLabel: resolvedPeriod.periodLabel,
+        periodStart: resolvedPeriod.periodStart,
+        periodEnd: resolvedPeriod.periodEnd,
         price: formValues.price,
         priceFrom: formValues.price,
         priceTo: formValues.price,
@@ -505,6 +635,41 @@ export function EntryCreateDialog({
             <div className="grid gap-2.5 md:grid-cols-2">
               <FormField
                 control={form.control}
+                name="periodPreset"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Period</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Period preset" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {periodPresetOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {values.periodPreset === "explicit_range" ? (
+                <div className="hidden md:block" />
+              ) : (
+                <div className="flex items-end text-[11px] text-muted-foreground">
+                  {resolvePeriodValues(values.periodPreset, values.periodStart, values.periodEnd).periodLabel}
+                </div>
+              )}
+            </div>
+
+            {values.periodPreset === "explicit_range" ? (
+              <div className="grid gap-2.5 md:grid-cols-2">
+              <FormField
+                control={form.control}
                 name="periodStart"
                 render={({ field }) => (
                   <FormItem>
@@ -529,7 +694,8 @@ export function EntryCreateDialog({
                   </FormItem>
                 )}
               />
-            </div>
+              </div>
+            ) : null}
 
             <div className="grid gap-2.5 md:grid-cols-3">
               <FormField

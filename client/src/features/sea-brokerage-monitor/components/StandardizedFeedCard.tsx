@@ -21,8 +21,11 @@ import {
   buildFeedAnalyticsSeries,
 } from "../services/feedFilters.service";
 import {
+  formatEntryCommodityCompact,
   formatEntryDateTime,
   formatEntryDestination,
+  formatEntryDestinationCompact,
+  formatEntryPeriodCompact,
   formatEntryPriceRange,
 } from "../services/entryFormatting.service";
 import type { BrokerageEntry } from "../types";
@@ -121,10 +124,10 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
                             <span>{entry.brokerCode}</span>
                             <span>·</span>
                             <span>
-                              {entry.basis} {entry.destinationPort}
+                              {formatEntryDestinationCompact(entry)}
                             </span>
                             <span>·</span>
-                            <span>{entry.periodLabel}</span>
+                            <span>{formatEntryPeriodCompact(entry)}</span>
                           </div>
                         </div>
                         <div className="hidden shrink-0 text-muted-foreground lg:block">
@@ -172,10 +175,10 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
                             <TapeTypeBadge type={entry.type} />
                           </TableCell>
                           <TableCell>{entry.brokerCode}</TableCell>
-                          <TableCell>{entry.commodityLabel}</TableCell>
+                          <TableCell>{formatEntryCommodityCompact(entry)}</TableCell>
                           <TableCell>{entry.basis}</TableCell>
-                          <TableCell>{formatEntryDestination(entry)}</TableCell>
-                          <TableCell>{entry.periodLabel}</TableCell>
+                          <TableCell>{formatEntryDestinationCompact(entry)}</TableCell>
+                          <TableCell>{formatEntryPeriodCompact(entry)}</TableCell>
                           <TableCell>
                             {formatEntryPriceRange(entry)} {entry.currency}
                           </TableCell>

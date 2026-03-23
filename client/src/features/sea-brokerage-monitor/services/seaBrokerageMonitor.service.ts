@@ -1,5 +1,5 @@
 import { generateMatchSuggestions } from "./matchingEngine.service";
-import { buildCanonicalView } from "./entryFormatting.service";
+import { buildCanonicalView, normalizePeriodLabel } from "./entryFormatting.service";
 import { formatTelegramRelayMessage } from "./telegramRelay.service";
 import {
   seaBrokerageMonitorMockState,
@@ -187,7 +187,11 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
     destinationCountryCode: "UA",
     destinationCountry: getCountryLabel("UA"),
     periodType: "range",
-    periodLabel: "2026-03-24 - 2026-03-31",
+    periodLabel: normalizePeriodLabel({
+      periodType: "range",
+      periodStart: "2026-03-24",
+      periodEnd: "2026-03-31",
+    }),
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
     price: type === "bid" ? 228 : 226,

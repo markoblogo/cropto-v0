@@ -1,5 +1,7 @@
-import { getCountryAlpha3 } from "../mock/dictionaries";
+import { getCommodityCompactLabel, getCountryAlpha3 } from "../mock/dictionaries";
 import type { BrokerageEntry, Currency } from "../types";
+
+const COMPACT_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"] as const;
 
 export function formatEntryTimestampCompact(value: string) {
   const date = new Date(value);
@@ -139,22 +141,79 @@ export function formatEntryBrokerIdentityCompact(entry: BrokerageEntry) {
   return entry.brokerCode;
 }
 
+export function formatEntryCommodityCompact(entry: BrokerageEntry) {
+  return getCommodityCompactLabel(entry.commodity, entry.commodityLabel);
+}
+
+export function normalizePeriodLabel(input: {
+  periodType?: BrokerageEntry["periodType"] | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  periodLabel?: string | null;
+}) {
+  const rawLabel = (input.periodLabel ?? "").trim();
+  const normalizedRaw = rawLabel.toUpperCase();
+
+  if (input.periodType === "spot" || normalizedRaw === "SPOT") {
+    return "SPOT";
+  }
+
+  if (input.periodType === "prompt" || normalizedRaw === "PROMPT") {
+    return "PROMPT";
+  }
+
+  const start = parseDateInput(input.periodStart);
+  const end = parseDateInput(input.periodEnd);
+
+  if (start && end) {
+    if (isSameMonth(start, end)) {
+      const month = formatMonthCompact(start);
+      const lastDay = getMonthLastDay(start);
+
+      if (start.getDate() === 1 && end.getDate() === 15) {
+        return `1H ${month}`;
+      }
+
+      if (start.getDate() === 16 && end.getDate() === lastDay) {
+        return `2H ${month}`;
+      }
+
+      if (
+        (normalizedRaw.includes("LH") || normalizedRaw.includes("LAST")) &&
+        end.getDate() === lastDay
+      ) {
+        return `LH ${month}`;
+      }
+    }
+
+    return `${formatDayMonthCompact(start)} - ${formatDayMonthCompact(end)}`;
+  }
+
+  if (normalizedRaw.includes("1H")) {
+    const month = extractMonthFromRaw(normalizedRaw);
+    return month ? `1H ${month}` : "1H";
+  }
+
+  if (normalizedRaw.includes("2H")) {
+    const month = extractMonthFromRaw(normalizedRaw);
+    return month ? `2H ${month}` : "2H";
+  }
+
+  if (normalizedRaw.includes("LH") || normalizedRaw.includes("LAST")) {
+    const month = extractMonthFromRaw(normalizedRaw);
+    return month ? `LH ${month}` : "LH";
+  }
+
+  return normalizedRaw || "OPEN";
+}
+
 export function formatEntryPeriodCompact(entry: BrokerageEntry) {
-  if (entry.periodStart && entry.periodEnd) {
-    const start = formatShortDate(entry.periodStart);
-    const end = formatShortDate(entry.periodEnd);
-    return start === end ? start : `${start}-${end}`;
-  }
-
-  if (entry.periodStart) {
-    return `from ${formatShortDate(entry.periodStart)}`;
-  }
-
-  if (entry.periodEnd) {
-    return `to ${formatShortDate(entry.periodEnd)}`;
-  }
-
-  return entry.periodLabel;
+  return normalizePeriodLabel({
+    periodType: entry.periodType,
+    periodStart: entry.periodStart,
+    periodEnd: entry.periodEnd,
+    periodLabel: entry.periodLabel,
+  });
 }
 
 function formatShortDate(value: string) {
@@ -168,11 +227,38 @@ function formatShortDate(value: string) {
   return `${day}.${month}`;
 }
 
+function formatMonthCompact(date: Date) {
+  return COMPACT_MONTHS[date.getMonth()];
+}
+
+function formatDayMonthCompact(date: Date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${day} ${formatMonthCompact(date)}`;
+}
+
+function parseDateInput(value: string | null | undefined) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isSameMonth(left: Date, right: Date) {
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth();
+}
+
+function getMonthLastDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+}
+
+function extractMonthFromRaw(value: string) {
+  return COMPACT_MONTHS.find((month) => value.includes(month));
+}
+
 export function buildCanonicalView(entry: Omit<BrokerageEntry, "canonicalView">) {
   return [
     formatEntryTimestampCompact(entry.createdAt),
-    `${entry.brokerCode} (${entry.brokerName})`,
-    entry.commodityLabel.toUpperCase(),
+    formatEntryBrokerIdentityCompact(entry as BrokerageEntry),
+    formatEntryCommodityCompact(entry as BrokerageEntry),
     formatEntryQuantityCompact(entry as BrokerageEntry),
     formatEntryDeliveryCompact(entry as BrokerageEntry),
     formatEntryPeriodCompact(entry as BrokerageEntry),
@@ -184,7 +270,7 @@ export function buildCompactCanonicalView(entry: BrokerageEntry) {
   return [
     formatEntryTimestampCompact(entry.createdAt),
     formatEntryBrokerIdentityCompact(entry),
-    entry.commodityLabel.toUpperCase(),
+    formatEntryCommodityCompact(entry),
     formatEntryQuantityCompact(entry),
     formatEntryDeliveryCompact(entry),
     formatEntryPeriodCompact(entry),

@@ -68,13 +68,13 @@ export const brokers: BrokerUser[] = [
 ];
 
 export const commodityOptions: Commodity[] = [
-  { code: "corn", label: "Corn", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "wheat_115", label: "Wheat 11.5%", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "wheat_125", label: "Wheat 12.5%", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "barley", label: "Barley", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "sunflower", label: "Sunflower", group: "oilseeds", defaultVolumeUnit: "mt" },
-  { code: "soybean", label: "Soybean", group: "oilseeds", defaultVolumeUnit: "mt" },
-  { code: "rapeseed", label: "Rapeseed", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "corn", label: "Corn", compactLabel: "CORN", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "wheat_115", label: "Wheat 11.5%", compactLabel: "WHEAT 11.5", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "wheat_125", label: "Wheat 12.5%", compactLabel: "WHEAT 12.5", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "barley", label: "Barley", compactLabel: "BARLEY", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "sunflower", label: "Sunflower", compactLabel: "SUNFLOWER", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "soybean", label: "Soybean", compactLabel: "SOYBEAN", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "rapeseed", label: "Rapeseed", compactLabel: "RAPESEED", group: "oilseeds", defaultVolumeUnit: "mt" },
 ];
 
 export const basisOptions: SelectOption<Basis>[] = [
@@ -161,6 +161,26 @@ export function getCountryLabel(countryCode: string | null | undefined) {
     (country) => country.label.toLowerCase() === countryCode.toLowerCase(),
   );
   return byLabel?.label ?? countryCode;
+}
+
+export function getCommodityCompactLabel(
+  commodityCode: CommodityCode | string | null | undefined,
+  fallbackLabel?: string | null,
+) {
+  if (!commodityCode && !fallbackLabel) return "";
+
+  if (commodityCode && commodityOptionMap[commodityCode as CommodityCode]) {
+    return commodityOptionMap[commodityCode as CommodityCode].compactLabel;
+  }
+
+  if (fallbackLabel) {
+    const byLabel = commodityOptions.find(
+      (commodity) => commodity.label.toLowerCase() === fallbackLabel.toLowerCase(),
+    );
+    if (byLabel) return byLabel.compactLabel;
+  }
+
+  return (fallbackLabel ?? commodityCode ?? "").toUpperCase().replace("%", "").trim();
 }
 
 export function getCountryAlpha3(countryCode: string | null | undefined) {

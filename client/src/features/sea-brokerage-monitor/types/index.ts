@@ -33,6 +33,7 @@ export type TelegramRelayStatus = "queued" | "published" | "failed";
 export interface Commodity {
   code: CommodityCode;
   label: string;
+  compactLabel: string;
   group?: "grains" | "oilseeds";
   defaultVolumeUnit?: VolumeUnit;
 }

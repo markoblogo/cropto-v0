@@ -18,6 +18,7 @@ import { generateMatchSuggestions } from "../services/matchingEngine.service";
 import { countryOptions, getPortPlaceLabel, portOptions } from "../mock/dictionaries";
 import {
   buildCompactCanonicalView,
+  formatEntryCommodityCompact,
   formatEntryPriceRange,
   formatEntryTimestampCompact,
 } from "../services/entryFormatting.service";
@@ -240,7 +241,7 @@ export function ContextualMatchingPanel({
                 <span className="font-medium text-foreground">
                   {selectedEntry.type === "offer" ? "offer" : "bid"}
                 </span>
-                : {selectedEntry.brokerCode} / {selectedEntry.commodityLabel} /{" "}
+                : {selectedEntry.brokerCode} / {formatEntryCommodityCompact(selectedEntry)} /{" "}
                 {formatEntryPriceRange(selectedEntry)} {selectedEntry.currency}
               </div>
             ) : null}

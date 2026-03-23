@@ -1,8 +1,9 @@
 import * as XLSX from "xlsx";
 import type { BrokerageEntry } from "../types";
-import { getCountryAlpha3 } from "../mock/dictionaries";
+import { getCommodityCompactLabel, getCountryAlpha3 } from "../mock/dictionaries";
 import {
   formatEntryDateTime,
+  formatEntryPeriodCompact,
   formatEntryPriceRange,
   formatEntryVolumeRange,
 } from "./entryFormatting.service";
@@ -55,7 +56,7 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     "broker name": entry.brokerName,
     seller: entry.sellerName ?? "",
     buyer: entry.buyerName ?? "",
-    commodity: entry.commodityLabel,
+    commodity: getCommodityCompactLabel(entry.commodity, entry.commodityLabel),
     origin: getCountryAlpha3(entry.originCountryCode ?? entry.originCountry),
     "grade/spec": entry.gradeOrSpec,
     volume: formatEntryVolumeRange(entry),
@@ -67,7 +68,7 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     "delivery country": getCountryAlpha3(
       entry.destinationCountryCode ?? entry.destinationCountry,
     ),
-    "period label": entry.periodLabel,
+    "period label": formatEntryPeriodCompact(entry),
     price: formatEntryPriceRange(entry),
     currency: entry.currency,
     "transport type": entry.transportType,

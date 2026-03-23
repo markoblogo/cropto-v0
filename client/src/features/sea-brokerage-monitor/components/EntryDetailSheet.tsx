@@ -11,9 +11,11 @@ import {
 import type { BrokerageEntry } from "../types";
 import {
   formatEntryDateTime,
+  formatEntryCommodityCompact,
   formatEntryDestination,
   formatEntryDestinationCompact,
   formatEntryOriginCompact,
+  formatEntryPeriodCompact,
   formatEntryPriceRange,
   formatEntryVolumeRange,
 } from "../services/entryFormatting.service";
@@ -60,7 +62,10 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <DetailRow label="Commodity" value={entry.commodityLabel} />
+              <DetailRow
+                label="Commodity"
+                value={`${entry.commodityLabel} (${formatEntryCommodityCompact(entry)})`}
+              />
               <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
               <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
               <DetailRow
@@ -86,7 +91,7 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
                 label="Port / Place"
                 value={`${formatEntryDestination(entry)} (${formatEntryDestinationCompact(entry)})`}
               />
-              <DetailRow label="Shipment / Delivery" value={entry.periodLabel} />
+              <DetailRow label="Shipment / Delivery" value={formatEntryPeriodCompact(entry)} />
               <DetailRow label="Period Start" value={entry.periodStart ?? "Not set"} />
               <DetailRow label="Period End" value={entry.periodEnd ?? "Not set"} />
               <DetailRow label="Price" value={`${formatEntryPriceRange(entry)} ${entry.currency}`} />
