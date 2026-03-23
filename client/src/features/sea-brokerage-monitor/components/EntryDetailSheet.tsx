@@ -9,7 +9,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { BrokerageEntry } from "../types";
-import { formatEntryDateTime, formatEntryPriceRange, formatEntryVolumeRange } from "../services/entryFormatting.service";
+import {
+  formatEntryDateTime,
+  formatEntryDestination,
+  formatEntryPriceRange,
+  formatEntryVolumeRange,
+} from "../services/entryFormatting.service";
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -56,17 +61,24 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
               <DetailRow label="Commodity" value={entry.commodityLabel} />
               <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
               <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
-              <DetailRow label="Grade / Spec" value={entry.gradeOrSpec} />
-              <DetailRow label="Volume" value={formatEntryVolumeRange(entry)} />
-              <DetailRow label="Basis" value={entry.basis} />
-              <DetailRow label="Destination Port" value={entry.destinationPort} />
-              <DetailRow label="Destination Country" value={entry.destinationCountry} />
-              <DetailRow label="Period Type" value={entry.periodType} />
-              <DetailRow label="Period Label" value={entry.periodLabel} />
+              <DetailRow label="Origin" value={entry.originCountry ?? "Not set"} />
+              <DetailRow label="Quantity" value={formatEntryVolumeRange(entry)} />
+              <DetailRow
+                label="Tolerance"
+                value={
+                  entry.tolerancePct !== null && entry.tolerancePct !== undefined
+                    ? `+/- ${entry.tolerancePct}%`
+                    : "Not set"
+                }
+              />
+              <DetailRow label="Delivery Basis" value={entry.basis} />
+              <DetailRow label="Payment Terms" value={entry.paymentTerms ?? "Not set"} />
+              <DetailRow label="Port / Place" value={formatEntryDestination(entry)} />
+              <DetailRow label="Shipment / Delivery" value={entry.periodLabel} />
               <DetailRow label="Period Start" value={entry.periodStart ?? "Not set"} />
               <DetailRow label="Period End" value={entry.periodEnd ?? "Not set"} />
-              <DetailRow label="Price Range" value={`${formatEntryPriceRange(entry)} ${entry.currency}`} />
-              <DetailRow label="Transport Type" value={entry.transportType} />
+              <DetailRow label="Price" value={`${formatEntryPriceRange(entry)} ${entry.currency}`} />
+              <DetailRow label="Transport" value={entry.transportType} />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -105,6 +117,7 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
                 <DetailRow label="Company" value={entry.companyName} />
                 <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
                 <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
+                <DetailRow label="Origin" value={entry.originCountry ?? "Not set"} />
                 <DetailRow label="Broker ID" value={entry.brokerId} />
                 <DetailRow label="Entry ID" value={entry.id} />
               </div>
@@ -113,7 +126,7 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
             <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                Note
+                Other Terms
               </div>
               <div className="rounded-xl bg-background px-4 py-4 text-sm text-foreground shadow-sm">
                 {entry.note || "No note provided."}

@@ -6,8 +6,8 @@ export const defaultFeedFilters: FeedFilterState = {
   commodity: "all",
   basis: "all",
   brokerProfileId: "all",
-  destinationCountry: "all",
-  destinationPort: "all",
+  originCountry: "all",
+  deliveryPlace: "all",
   search: "",
   dateFrom: "",
   dateTo: "",
@@ -34,7 +34,11 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       entry.brokerName,
       entry.sellerName,
       entry.buyerName,
+      entry.originCountry,
       entry.commodityLabel,
+      entry.paymentTerms,
+      entry.destinationPort,
+      entry.destinationCountry,
       entry.note,
     ]
       .map(normalizeText)
@@ -48,8 +52,11 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       (filters.commodity === "all" || filters.commodity === entry.commodity) &&
       (filters.basis === "all" || filters.basis === entry.basis) &&
       (filters.brokerProfileId === "all" || filters.brokerProfileId === entry.brokerId) &&
-      (filters.destinationCountry === "all" || filters.destinationCountry === entry.destinationCountry) &&
-      (filters.destinationPort === "all" || filters.destinationPort === entry.destinationPort) &&
+      (filters.originCountry === "all" ||
+        filters.originCountry === (entry.originCountryCode ?? entry.originCountry)) &&
+      (filters.deliveryPlace === "all" ||
+        filters.deliveryPlace === (entry.destinationPortCode ?? entry.destinationPort) ||
+        filters.deliveryPlace === (entry.destinationCountryCode ?? entry.destinationCountry)) &&
       (!effectiveDateFrom || entryDate >= effectiveDateFrom) &&
       (!effectiveDateTo || entryDate <= effectiveDateTo)
     );

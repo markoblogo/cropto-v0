@@ -1,6 +1,10 @@
 import type { BrokerageEntry, MatchSuggestion } from "../types";
 
 function getMidPrice(entry: BrokerageEntry) {
+  if (entry.price !== null && entry.price !== undefined) {
+    return entry.price;
+  }
+
   if (entry.priceFrom !== null && entry.priceTo !== null) {
     return (entry.priceFrom + entry.priceTo) / 2;
   }

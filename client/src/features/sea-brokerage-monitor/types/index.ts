@@ -20,6 +20,7 @@ export type TransportType =
   | "mixed";
 
 export type Currency = "USD" | "EUR";
+export type PaymentTermCode = "CAD" | "CAFD";
 
 export type VolumeUnit = "mt";
 
@@ -70,19 +71,27 @@ export interface BrokerageEntry {
   companyName: string;
   sellerName?: string | null;
   buyerName?: string | null;
+  originCountry?: string | null;
+  originCountryCode?: string | null;
   commodity: CommodityCode;
   commodityLabel: string;
   gradeOrSpec: string;
+  quantityMt?: number | null;
+  tolerancePct?: number | null;
   volumeFrom: number;
   volumeTo: number;
   volumeUnit: VolumeUnit;
   basis: Basis;
+  paymentTerms?: string | null;
+  destinationPortCode?: string | null;
   destinationPort: string;
+  destinationCountryCode?: string | null;
   destinationCountry: string;
   periodType: PeriodType;
   periodLabel: string;
   periodStart: string | null;
   periodEnd: string | null;
+  price?: number | null;
   priceFrom: number | null;
   priceTo: number | null;
   currency: Currency;
@@ -116,8 +125,8 @@ export interface FeedFilterState {
   commodity: CommodityCode | "all";
   basis: Basis | "all";
   brokerProfileId: string | "all";
-  destinationCountry: string | "all";
-  destinationPort: string | "all";
+  originCountry: string | "all";
+  deliveryPlace: string | "all";
   search: string;
   dateFrom: string;
   dateTo: string;

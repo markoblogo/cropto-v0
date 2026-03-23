@@ -10,7 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { brokers, commodityOptions, countryOptions, portOptions } from "../mock/dictionaries";
+import {
+  brokers,
+  commodityOptions,
+  countryOptions,
+  getPortPlaceLabel,
+  portOptions,
+} from "../mock/dictionaries";
 import type { FeedFilterState } from "../types";
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
@@ -43,22 +49,22 @@ export function MonitorToolbar({
 }: MonitorToolbarProps) {
   return (
     <Collapsible>
-      <Card className="border-border/70 bg-card/95 px-3 py-2 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="mr-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <Card className="border-border/70 bg-card/95 px-2.5 py-1.5 shadow-sm sm:px-3 sm:py-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="mr-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:text-[11px] sm:tracking-[0.18em]">
             Sea Brokerage Monitor
           </div>
-          <Button onClick={onCreateBid} size="sm" className="h-8">
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={onCreateBid} size="sm" className="h-7 px-2.5 text-[11px] sm:h-8 sm:px-3 sm:text-sm">
+            <Plus className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
             Create BID
           </Button>
           <Button
             onClick={onCreateOffer}
             variant="secondary"
             size="sm"
-            className="h-8"
+            className="h-7 px-2.5 text-[11px] sm:h-8 sm:px-3 sm:text-sm"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
             Create OFFER
           </Button>
 
@@ -69,7 +75,7 @@ export function MonitorToolbar({
                 onFilterChange("commodity", value as FeedFilterState["commodity"])
               }
             >
-              <SelectTrigger className="h-8 w-[142px]">
+              <SelectTrigger className="h-7 w-[126px] text-xs sm:h-8 sm:w-[142px]">
                 <SelectValue placeholder="Commodity" />
               </SelectTrigger>
               <SelectContent>
@@ -83,16 +89,16 @@ export function MonitorToolbar({
             </Select>
 
             <Select
-              value={filters.destinationCountry}
+              value={filters.originCountry}
               onValueChange={(value) =>
-                onFilterChange("destinationCountry", value as FeedFilterState["destinationCountry"])
+                onFilterChange("originCountry", value as FeedFilterState["originCountry"])
               }
             >
-              <SelectTrigger className="h-8 w-[142px]">
-                <SelectValue placeholder="Country" />
+              <SelectTrigger className="h-7 w-[126px] text-xs sm:h-8 sm:w-[142px]">
+                <SelectValue placeholder="Origin" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All countries</SelectItem>
+                <SelectItem value="all">All origins</SelectItem>
                 {countryOptions.map((country) => (
                   <SelectItem key={country.code} value={country.code}>
                     {country.label}
@@ -102,19 +108,38 @@ export function MonitorToolbar({
             </Select>
 
             <Select
-              value={filters.destinationPort}
+              value={filters.basis}
               onValueChange={(value) =>
-                onFilterChange("destinationPort", value as FeedFilterState["destinationPort"])
+                onFilterChange("basis", value as FeedFilterState["basis"])
               }
             >
-              <SelectTrigger className="h-8 w-[142px]">
-                <SelectValue placeholder="Port" />
+              <SelectTrigger className="h-7 w-[118px] text-xs sm:h-8 sm:w-[142px]">
+                <SelectValue placeholder="Basis" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All ports</SelectItem>
+                <SelectItem value="all">All basis</SelectItem>
+                {["FOB", "CIF", "CPT", "DAP", "FCA"].map((basis) => (
+                  <SelectItem key={basis} value={basis}>
+                    {basis}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.deliveryPlace}
+              onValueChange={(value) =>
+                onFilterChange("deliveryPlace", value as FeedFilterState["deliveryPlace"])
+              }
+            >
+              <SelectTrigger className="h-7 w-[156px] text-xs sm:h-8 sm:w-[188px]">
+                <SelectValue placeholder="Port / place" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All delivery places</SelectItem>
                 {portOptions.map((port) => (
                   <SelectItem key={port.code} value={port.code}>
-                    {port.label}
+                    {getPortPlaceLabel(port.code)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -126,7 +151,7 @@ export function MonitorToolbar({
                 onFilterChange("brokerProfileId", value as FeedFilterState["brokerProfileId"])
               }
             >
-              <SelectTrigger className="h-8 w-[160px]">
+              <SelectTrigger className="h-7 w-[134px] text-xs sm:h-8 sm:w-[160px]">
                 <SelectValue placeholder="Broker" />
               </SelectTrigger>
               <SelectContent>
@@ -139,10 +164,10 @@ export function MonitorToolbar({
               </SelectContent>
             </Select>
 
-            <div className="relative min-w-[180px] flex-1 xl:max-w-[220px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div className="relative min-w-[150px] flex-1 xl:max-w-[220px]">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="h-8 pl-9"
+                className="h-7 pl-8 text-xs sm:h-8 sm:text-sm"
                 value={filters.search}
                 onChange={(event) => onFilterChange("search", event.target.value)}
                 placeholder="Search market"
@@ -151,13 +176,13 @@ export function MonitorToolbar({
           </div>
 
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="ml-auto h-8 text-muted-foreground">
+            <Button variant="ghost" size="sm" className="ml-auto h-7 px-2 text-[11px] text-muted-foreground sm:h-8 sm:text-sm">
               Tools
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="space-y-3 border-t border-border/60 pt-2.5">
+          <CollapsibleContent className="space-y-2.5 border-t border-border/60 pt-2">
             <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">
                 <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">

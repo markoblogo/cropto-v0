@@ -4,6 +4,7 @@ import type {
   Commodity,
   CommodityCode,
   CountryOption,
+  PaymentTermCode,
   PortOption,
   SelectOption,
 } from "../types";
@@ -84,8 +85,15 @@ export const basisOptions: SelectOption<Basis>[] = [
   { value: "FCA", label: "FCA" },
 ];
 
+export const paymentTermOptions: SelectOption<PaymentTermCode>[] = [
+  { value: "CAD", label: "CAD" },
+  { value: "CAFD", label: "CAFD" },
+];
+
 export const countryOptions: CountryOption[] = [
   { code: "UA", label: "Ukraine" },
+  { code: "MD", label: "Moldova" },
+  { code: "BG", label: "Bulgaria" },
   { code: "EG", label: "Egypt" },
   { code: "IL", label: "Israel" },
   { code: "CY", label: "Cyprus" },
@@ -102,6 +110,8 @@ export const portOptions: PortOption[] = [
   { code: "odesa", label: "Odesa", countryCode: "UA" },
   { code: "chornomorsk", label: "Chornomorsk", countryCode: "UA" },
   { code: "izmail", label: "Izmail", countryCode: "UA" },
+  { code: "giurgiulesti", label: "Giurgiulesti", countryCode: "MD" },
+  { code: "burgas", label: "Burgas", countryCode: "BG" },
   { code: "marmara", label: "Marmara", countryCode: "TR" },
   { code: "alexandria", label: "Alexandria", countryCode: "EG" },
   { code: "ashdod", label: "Ashdod", countryCode: "IL" },
@@ -121,6 +131,34 @@ export const commodityOptionMap: Record<CommodityCode, Commodity> = commodityOpt
   },
   {} as Record<CommodityCode, Commodity>,
 );
+
+export const countryOptionMap: Record<string, CountryOption> = countryOptions.reduce(
+  (acc, country) => {
+    acc[country.code] = country;
+    return acc;
+  },
+  {} as Record<string, CountryOption>,
+);
+
+export const portOptionMap: Record<string, PortOption> = portOptions.reduce(
+  (acc, port) => {
+    acc[port.code] = port;
+    return acc;
+  },
+  {} as Record<string, PortOption>,
+);
+
+export function getCountryLabel(countryCode: string | null | undefined) {
+  if (!countryCode) return "";
+  return countryOptionMap[countryCode]?.label ?? countryCode;
+}
+
+export function getPortPlaceLabel(portCode: string | null | undefined) {
+  if (!portCode) return "";
+  const port = portOptionMap[portCode];
+  if (!port) return portCode;
+  return `${port.label}, ${getCountryLabel(port.countryCode)}`;
+}
 
 export const brokerProfilesByAuthUserId: Record<string, BrokerUser> = {
   [brokers[0].authUserId]: brokers[0],

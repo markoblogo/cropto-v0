@@ -23,19 +23,27 @@ export interface CreateBrokerageEntryInput {
   type: "bid" | "offer";
   sellerName?: string | null;
   buyerName?: string | null;
+  originCountry?: string | null;
+  originCountryCode?: string | null;
   commodity: CommodityCode;
   commodityLabel: string;
   gradeOrSpec: string;
+  quantityMt?: number | null;
+  tolerancePct?: number | null;
   volumeFrom: number;
   volumeTo: number;
   volumeUnit: VolumeUnit;
   basis: Basis;
+  paymentTerms?: string | null;
+  destinationPortCode?: string | null;
   destinationPort: string;
+  destinationCountryCode?: string | null;
   destinationCountry: string;
   periodType: PeriodType;
   periodLabel: string;
   periodStart: string | null;
   periodEnd: string | null;
+  price?: number | null;
   priceFrom: number | null;
   priceTo: number | null;
   currency: Currency;
@@ -90,19 +98,27 @@ export function createBrokerageEntry(input: CreateBrokerageEntryInput): Brokerag
     companyName: createdBy.companyName,
     sellerName: input.sellerName ?? null,
     buyerName: input.buyerName ?? null,
+    originCountry: input.originCountry ?? null,
+    originCountryCode: input.originCountryCode ?? null,
     commodity: input.commodity,
     commodityLabel: input.commodityLabel,
     gradeOrSpec: input.gradeOrSpec,
+    quantityMt: input.quantityMt ?? null,
+    tolerancePct: input.tolerancePct ?? null,
     volumeFrom: input.volumeFrom,
     volumeTo: input.volumeTo,
     volumeUnit: input.volumeUnit,
     basis: input.basis,
+    paymentTerms: input.paymentTerms ?? null,
+    destinationPortCode: input.destinationPortCode ?? null,
     destinationPort: input.destinationPort,
+    destinationCountryCode: input.destinationCountryCode ?? null,
     destinationCountry: input.destinationCountry,
     periodType: input.periodType,
     periodLabel: input.periodLabel,
     periodStart: input.periodStart,
     periodEnd: input.periodEnd,
+    price: input.price ?? null,
     priceFrom: input.priceFrom,
     priceTo: input.priceTo,
     currency: input.currency,
@@ -155,20 +171,28 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
     commodity: "corn",
     sellerName: type === "offer" ? "Sample Seller Group" : null,
     buyerName: type === "bid" ? "Sample Buyer Group" : null,
+    originCountry: "Ukraine",
+    originCountryCode: "UA",
     commodityLabel: commodityOptionMap.corn.label,
-    gradeOrSpec: type === "bid" ? "Feed corn, sample bid" : "Feed corn, sample offer",
+    gradeOrSpec: "",
+    quantityMt: type === "bid" ? 13500 : 13250,
+    tolerancePct: 5,
     volumeFrom: type === "bid" ? 12000 : 12500,
     volumeTo: type === "bid" ? 15000 : 14500,
     volumeUnit: "mt",
     basis: "FOB",
+    paymentTerms: type === "bid" ? "CAD" : "CAFD",
+    destinationPortCode: "chornomorsk",
     destinationPort: "Chornomorsk",
+    destinationCountryCode: "UA",
     destinationCountry: "Egypt",
-    periodType: "prompt",
-    periodLabel: "prompt",
-    periodStart: null,
-    periodEnd: null,
-    priceFrom: type === "bid" ? 227 : 225,
-    priceTo: type === "bid" ? 229 : 227,
+    periodType: "range",
+    periodLabel: "2026-03-24 - 2026-03-31",
+    periodStart: "2026-03-24",
+    periodEnd: "2026-03-31",
+    price: type === "bid" ? 228 : 226,
+    priceFrom: type === "bid" ? 228 : 226,
+    priceTo: type === "bid" ? 228 : 226,
     currency: "USD",
     transportType: "vessel",
     note:

@@ -12,9 +12,7 @@ import {
 } from "@/components/ui/select";
 import { brokers } from "../mock/dictionaries";
 import {
-  formatEntryPriceRange,
-  formatEntryTimestampCompact,
-  formatEntryVolumeCompact,
+  buildCompactCanonicalView,
 } from "../services/entryFormatting.service";
 import { MonitorEmptyState } from "./MonitorEmptyState";
 import type { BrokerageEntry } from "../types";
@@ -47,9 +45,9 @@ export function BrokerWorkspacePane({
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="border-border/70 bg-card/95 shadow-sm">
-      <CardHeader className="border-b border-border/60 px-3.5 py-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle className="mr-auto text-sm uppercase tracking-[0.18em]">{title}</CardTitle>
+      <CardHeader className="border-b border-border/60 px-2.5 py-1.5 sm:px-3.5 sm:py-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <CardTitle className="mr-auto text-[13px] uppercase tracking-[0.16em] sm:text-sm sm:tracking-[0.18em]">{title}</CardTitle>
           <div className="text-[11px] text-muted-foreground">{entries.length} visible</div>
           <Select
             value={filters.brokerProfileId}
@@ -60,7 +58,7 @@ export function BrokerWorkspacePane({
               })
             }
           >
-            <SelectTrigger className="h-7 w-[150px]">
+            <SelectTrigger className="h-6.5 w-[126px] text-xs sm:h-7 sm:w-[150px] sm:text-sm">
               <SelectValue placeholder="Broker" />
             </SelectTrigger>
             <SelectContent>
@@ -73,10 +71,10 @@ export function BrokerWorkspacePane({
             </SelectContent>
           </Select>
 
-          <div className="relative min-w-[150px] flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative min-w-[132px] flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-3 sm:h-3.5 sm:w-3.5" />
             <Input
-              className="h-7 pl-8 text-sm"
+              className="h-6.5 pl-7 text-xs sm:h-7 sm:pl-8 sm:text-sm"
               value={filters.search}
               onChange={(event) =>
                 onFiltersChange({
@@ -92,15 +90,17 @@ export function BrokerWorkspacePane({
 
       <CardContent className="p-0">
         {entries.length === 0 ? (
-          <div className="p-5">
+          <div className="p-3.5 sm:p-5">
             <MonitorEmptyState title={emptyTitle} description={emptyDescription} />
           </div>
         ) : (
-          <ScrollArea className="h-[320px] lg:h-[330px] xl:h-[340px]">
+          <ScrollArea className="h-[270px] sm:h-[300px] lg:h-[330px] xl:h-[340px]">
             <div className="divide-y divide-border/50">
               {entries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
-                const volume = formatEntryVolumeCompact(entry.volumeFrom, entry.volumeTo);
+                const counterpartyLabel =
+                  entry.type === "offer" ? entry.sellerName : entry.buyerName;
+                const supportingMeta = [counterpartyLabel, entry.originCountry].filter(Boolean);
 
                 return (
                   <Button
@@ -108,43 +108,26 @@ export function BrokerWorkspacePane({
                     type="button"
                     variant="ghost"
                     onClick={() => onSelectEntry(entry)}
-                    className={`h-auto w-full justify-start rounded-none border-l-2 px-3 py-1.5 text-left ${
+                    className={`h-auto w-full justify-start rounded-none border-l-2 px-2.5 py-1 text-left sm:px-3 sm:py-1.5 ${
                       isSelected
                         ? "border-l-primary bg-muted/28"
                         : "border-l-transparent hover:bg-muted/16"
                     }`}
                   >
                     <div className="w-full min-w-0 space-y-0.5">
-                      <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[13px] leading-[18px] text-foreground">
-                        <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
-                          {formatEntryTimestampCompact(entry.createdAt)}
-                        </span>
-                        <span className="shrink-0 font-semibold">{entry.brokerCode}</span>
-                        <span className="min-w-0 truncate font-semibold tracking-[0.04em]">
-                          {entry.commodityLabel.toUpperCase()}
-                        </span>
-                        <span className="shrink-0 text-muted-foreground">/</span>
-                        <span className="shrink-0 font-medium">{volume}</span>
-                        <span className="shrink-0 text-muted-foreground">/</span>
-                        <span className="min-w-0 truncate">{entry.basis} {entry.destinationPort}</span>
-                        <span className="shrink-0 text-muted-foreground">/</span>
-                        <span className="shrink-0">{entry.periodLabel}</span>
-                        <span className="shrink-0 text-muted-foreground">/</span>
-                        <span className="shrink-0 font-semibold">
-                          {formatEntryPriceRange(entry)} {entry.currency}
-                        </span>
+                      <div className="truncate text-left text-[11px] font-medium leading-4 text-foreground sm:text-[13px] sm:leading-[18px]">
+                        {buildCompactCanonicalView(entry)}
                       </div>
-                      <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] leading-3.5 text-muted-foreground/65">
-                        <span className="truncate">{entry.brokerName}</span>
-                        <span>·</span>
-                        <span className="truncate">{entry.gradeOrSpec}</span>
-                        {entry.note ? (
-                          <>
-                            <span>·</span>
-                            <span className="truncate text-muted-foreground/55">{entry.note}</span>
-                          </>
-                        ) : null}
-                      </div>
+                      {supportingMeta.length > 0 ? (
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-3 text-muted-foreground/65 sm:text-[11px] sm:leading-3.5">
+                          {supportingMeta.map((item, index) => (
+                            <span key={`${entry.id}-${item}`} className="inline-flex min-w-0 items-center gap-1.5">
+                              {index > 0 ? <span>·</span> : null}
+                              <span className="truncate">{item}</span>
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   </Button>
                 );

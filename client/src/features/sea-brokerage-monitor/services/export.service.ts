@@ -14,11 +14,14 @@ interface ExportRow {
   seller: string;
   buyer: string;
   commodity: string;
+  origin: string;
   "grade/spec": string;
   volume: string;
+  tolerance: string;
   basis: string;
-  "destination port": string;
-  "destination country": string;
+  "payment terms": string;
+  "delivery place": string;
+  "delivery country": string;
   "period label": string;
   price: string;
   currency: string;
@@ -52,11 +55,15 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     seller: entry.sellerName ?? "",
     buyer: entry.buyerName ?? "",
     commodity: entry.commodityLabel,
+    origin: entry.originCountry ?? "",
     "grade/spec": entry.gradeOrSpec,
     volume: formatEntryVolumeRange(entry),
+    tolerance:
+      entry.tolerancePct !== null && entry.tolerancePct !== undefined ? `${entry.tolerancePct}%` : "",
     basis: entry.basis,
-    "destination port": entry.destinationPort,
-    "destination country": entry.destinationCountry,
+    "payment terms": entry.paymentTerms ?? "",
+    "delivery place": entry.destinationPort,
+    "delivery country": entry.destinationCountry,
     "period label": entry.periodLabel,
     price: formatEntryPriceRange(entry),
     currency: entry.currency,

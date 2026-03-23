@@ -21,7 +21,6 @@ import {
   filterBrokerageEntries,
 } from "./services/feedFilters.service";
 import type { BrokerageEntry, EntryType, FeedFilterState } from "./types";
-import { countryOptions, portOptions } from "./mock/dictionaries";
 
 const defaultPaneFilters: BrokerWorkspacePaneFilters = {
   brokerProfileId: "all",
@@ -38,30 +37,9 @@ export function SeaBrokerageMonitorPage() {
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
 
-  const countryLabelByCode = useMemo(
-    () => Object.fromEntries(countryOptions.map((country) => [country.code, country.label])),
-    [],
-  );
-
-  const normalizedFilters = useMemo<FeedFilterState>(
-    () => ({
-      ...filters,
-      destinationCountry:
-        filters.destinationCountry === "all"
-          ? "all"
-          : countryLabelByCode[filters.destinationCountry] ?? filters.destinationCountry,
-      destinationPort:
-        filters.destinationPort === "all"
-          ? "all"
-          : portOptions.find((port) => port.code === filters.destinationPort)?.label ??
-            filters.destinationPort,
-    }),
-    [countryLabelByCode, filters],
-  );
-
   const filteredEntries = useMemo(
-    () => filterBrokerageEntries(monitorState.standardizedFeed, normalizedFilters),
-    [monitorState.standardizedFeed, normalizedFilters],
+    () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
+    [monitorState.standardizedFeed, filters],
   );
 
   const offerEntries = useMemo(
