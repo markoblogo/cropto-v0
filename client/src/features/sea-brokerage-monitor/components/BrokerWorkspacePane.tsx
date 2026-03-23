@@ -13,6 +13,7 @@ import {
 import { brokers } from "../mock/dictionaries";
 import {
   buildCompactCanonicalView,
+  formatEntryOriginCompact,
 } from "../services/entryFormatting.service";
 import { MonitorEmptyState } from "./MonitorEmptyState";
 import type { BrokerageEntry } from "../types";
@@ -100,7 +101,10 @@ export function BrokerWorkspacePane({
                 const isSelected = entry.id === selectedEntryId;
                 const counterpartyLabel =
                   entry.type === "offer" ? entry.sellerName : entry.buyerName;
-                const supportingMeta = [counterpartyLabel, entry.originCountry].filter(Boolean);
+                const supportingMeta = [
+                  counterpartyLabel,
+                  entry.originCountry ? formatEntryOriginCompact(entry) : null,
+                ].filter(Boolean);
 
                 return (
                   <Button

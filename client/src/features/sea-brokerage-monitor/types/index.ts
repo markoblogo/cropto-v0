@@ -39,6 +39,7 @@ export interface Commodity {
 
 export interface CountryOption {
   code: string;
+  alpha3: string;
   label: string;
 }
 

@@ -12,6 +12,8 @@ import type { BrokerageEntry } from "../types";
 import {
   formatEntryDateTime,
   formatEntryDestination,
+  formatEntryDestinationCompact,
+  formatEntryOriginCompact,
   formatEntryPriceRange,
   formatEntryVolumeRange,
 } from "../services/entryFormatting.service";
@@ -61,7 +63,14 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
               <DetailRow label="Commodity" value={entry.commodityLabel} />
               <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
               <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
-              <DetailRow label="Origin" value={entry.originCountry ?? "Not set"} />
+              <DetailRow
+                label="Origin"
+                value={
+                  entry.originCountry
+                    ? `${entry.originCountry} (${formatEntryOriginCompact(entry)})`
+                    : "Not set"
+                }
+              />
               <DetailRow label="Quantity" value={formatEntryVolumeRange(entry)} />
               <DetailRow
                 label="Tolerance"
@@ -73,7 +82,10 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
               />
               <DetailRow label="Delivery Basis" value={entry.basis} />
               <DetailRow label="Payment Terms" value={entry.paymentTerms ?? "Not set"} />
-              <DetailRow label="Port / Place" value={formatEntryDestination(entry)} />
+              <DetailRow
+                label="Port / Place"
+                value={`${formatEntryDestination(entry)} (${formatEntryDestinationCompact(entry)})`}
+              />
               <DetailRow label="Shipment / Delivery" value={entry.periodLabel} />
               <DetailRow label="Period Start" value={entry.periodStart ?? "Not set"} />
               <DetailRow label="Period End" value={entry.periodEnd ?? "Not set"} />
@@ -117,7 +129,14 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
                 <DetailRow label="Company" value={entry.companyName} />
                 <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
                 <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
-                <DetailRow label="Origin" value={entry.originCountry ?? "Not set"} />
+                <DetailRow
+                  label="Origin"
+                  value={
+                    entry.originCountry
+                      ? `${entry.originCountry} (${formatEntryOriginCompact(entry)})`
+                      : "Not set"
+                  }
+                />
                 <DetailRow label="Broker ID" value={entry.brokerId} />
                 <DetailRow label="Entry ID" value={entry.id} />
               </div>

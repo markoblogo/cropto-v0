@@ -13,7 +13,7 @@ import {
   brokerProfilesByAuthUserId,
   brokers,
   commodityOptionMap,
-  countryOptions,
+  getCountryLabel,
   portOptions,
 } from "./dictionaries";
 
@@ -48,11 +48,6 @@ function getBrokerProfile(brokerProfileId: string) {
   }
 
   return brokerProfilesByAuthUserId[profile.authUserId] ?? profile;
-}
-
-function getCountryLabel(countryCode: string) {
-  const option = countryOptions.find((country) => country.code === countryCode);
-  return option?.label ?? countryCode;
 }
 
 function getPortLabel(portCode: string) {

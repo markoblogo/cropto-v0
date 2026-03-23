@@ -91,18 +91,18 @@ export const paymentTermOptions: SelectOption<PaymentTermCode>[] = [
 ];
 
 export const countryOptions: CountryOption[] = [
-  { code: "UA", label: "Ukraine" },
-  { code: "MD", label: "Moldova" },
-  { code: "BG", label: "Bulgaria" },
-  { code: "EG", label: "Egypt" },
-  { code: "IL", label: "Israel" },
-  { code: "CY", label: "Cyprus" },
-  { code: "LB", label: "Lebanon" },
-  { code: "ES", label: "Spain" },
-  { code: "IT", label: "Italy" },
-  { code: "NL", label: "Netherlands" },
-  { code: "RO", label: "Romania" },
-  { code: "TR", label: "Turkey" },
+  { code: "UA", alpha3: "UKR", label: "Ukraine" },
+  { code: "MD", alpha3: "MDA", label: "Moldova" },
+  { code: "BG", alpha3: "BGR", label: "Bulgaria" },
+  { code: "EG", alpha3: "EGY", label: "Egypt" },
+  { code: "IL", alpha3: "ISR", label: "Israel" },
+  { code: "CY", alpha3: "CYP", label: "Cyprus" },
+  { code: "LB", alpha3: "LBN", label: "Lebanon" },
+  { code: "ES", alpha3: "ESP", label: "Spain" },
+  { code: "IT", alpha3: "ITA", label: "Italy" },
+  { code: "NL", alpha3: "NLD", label: "Netherlands" },
+  { code: "RO", alpha3: "ROU", label: "Romania" },
+  { code: "TR", alpha3: "TUR", label: "Turkey" },
 ];
 
 export const portOptions: PortOption[] = [
@@ -150,7 +150,32 @@ export const portOptionMap: Record<string, PortOption> = portOptions.reduce(
 
 export function getCountryLabel(countryCode: string | null | undefined) {
   if (!countryCode) return "";
-  return countryOptionMap[countryCode]?.label ?? countryCode;
+  const normalized = countryCode.toUpperCase();
+  const byCode = countryOptionMap[normalized];
+  if (byCode) return byCode.label;
+
+  const byAlpha3 = countryOptions.find((country) => country.alpha3 === normalized);
+  if (byAlpha3) return byAlpha3.label;
+
+  const byLabel = countryOptions.find(
+    (country) => country.label.toLowerCase() === countryCode.toLowerCase(),
+  );
+  return byLabel?.label ?? countryCode;
+}
+
+export function getCountryAlpha3(countryCode: string | null | undefined) {
+  if (!countryCode) return "";
+  const normalized = countryCode.toUpperCase();
+  const byCode = countryOptionMap[normalized];
+  if (byCode) return byCode.alpha3;
+
+  const byAlpha3 = countryOptions.find((country) => country.alpha3 === normalized);
+  if (byAlpha3) return byAlpha3.alpha3;
+
+  const byLabel = countryOptions.find(
+    (country) => country.label.toLowerCase() === countryCode.toLowerCase(),
+  );
+  return byLabel?.alpha3 ?? countryCode;
 }
 
 export function getPortPlaceLabel(portCode: string | null | undefined) {
@@ -158,6 +183,13 @@ export function getPortPlaceLabel(portCode: string | null | undefined) {
   const port = portOptionMap[portCode];
   if (!port) return portCode;
   return `${port.label}, ${getCountryLabel(port.countryCode)}`;
+}
+
+export function getPortPlaceCompactLabel(portCode: string | null | undefined) {
+  if (!portCode) return "";
+  const port = portOptionMap[portCode];
+  if (!port) return portCode;
+  return `${port.label}, ${getCountryAlpha3(port.countryCode)}`;
 }
 
 export const brokerProfilesByAuthUserId: Record<string, BrokerUser> = {

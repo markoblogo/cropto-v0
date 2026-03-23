@@ -6,7 +6,7 @@ import {
   type SeaBrokerageMonitorSectionState,
 } from "../mock/seaBrokerageMonitor.mock";
 import { createSeaBrokerageMonitorDemoEntries } from "../mock/seedEntries";
-import { brokers, commodityOptionMap } from "../mock/dictionaries";
+import { brokers, commodityOptionMap, getCountryLabel } from "../mock/dictionaries";
 import type {
   Basis,
   BrokerageEntry,
@@ -185,7 +185,7 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
     destinationPortCode: "chornomorsk",
     destinationPort: "Chornomorsk",
     destinationCountryCode: "UA",
-    destinationCountry: "Egypt",
+    destinationCountry: getCountryLabel("UA"),
     periodType: "range",
     periodLabel: "2026-03-24 - 2026-03-31",
     periodStart: "2026-03-24",

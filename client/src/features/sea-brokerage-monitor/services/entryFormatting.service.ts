@@ -1,3 +1,4 @@
+import { getCountryAlpha3 } from "../mock/dictionaries";
 import type { BrokerageEntry, Currency } from "../types";
 
 export function formatEntryTimestampCompact(value: string) {
@@ -120,8 +121,18 @@ export function formatEntryDestination(entry: BrokerageEntry) {
   return `${entry.destinationPort}, ${entry.destinationCountry}`;
 }
 
+export function formatEntryDestinationCompact(entry: BrokerageEntry) {
+  return `${entry.destinationPort}, ${getCountryAlpha3(
+    entry.destinationCountryCode ?? entry.destinationCountry,
+  )}`;
+}
+
 export function formatEntryDeliveryCompact(entry: BrokerageEntry) {
-  return `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`;
+  return `${entry.basis} ${formatEntryDestinationCompact(entry)}`;
+}
+
+export function formatEntryOriginCompact(entry: BrokerageEntry) {
+  return getCountryAlpha3(entry.originCountryCode ?? entry.originCountry);
 }
 
 export function formatEntryBrokerIdentityCompact(entry: BrokerageEntry) {

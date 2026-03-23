@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import type { BrokerageEntry } from "../types";
+import { getCountryAlpha3 } from "../mock/dictionaries";
 import {
   formatEntryDateTime,
   formatEntryPriceRange,
@@ -55,7 +56,7 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     seller: entry.sellerName ?? "",
     buyer: entry.buyerName ?? "",
     commodity: entry.commodityLabel,
-    origin: entry.originCountry ?? "",
+    origin: getCountryAlpha3(entry.originCountryCode ?? entry.originCountry),
     "grade/spec": entry.gradeOrSpec,
     volume: formatEntryVolumeRange(entry),
     tolerance:
@@ -63,7 +64,9 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     basis: entry.basis,
     "payment terms": entry.paymentTerms ?? "",
     "delivery place": entry.destinationPort,
-    "delivery country": entry.destinationCountry,
+    "delivery country": getCountryAlpha3(
+      entry.destinationCountryCode ?? entry.destinationCountry,
+    ),
     "period label": entry.periodLabel,
     price: formatEntryPriceRange(entry),
     currency: entry.currency,
