@@ -81,7 +81,7 @@ export function SeaBrokerageMonitorPage() {
 
   return (
     <MainLayout>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 pb-1">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-1.5 pb-1 sm:gap-2">
         <MonitorToolbar
           filters={filters}
           onFilterChange={updateFilter}
@@ -95,7 +95,7 @@ export function SeaBrokerageMonitorPage() {
           onAddSampleOffer={() => addSeaBrokerageMonitorSampleEntry("offer")}
         />
 
-        <section className="grid gap-2 xl:grid-cols-2">
+        <section className="grid gap-1.5 xl:grid-cols-2 sm:gap-2">
           <BrokerWorkspacePane
             title="Offers"
             emptyTitle="No visible offers"
@@ -126,7 +126,7 @@ export function SeaBrokerageMonitorPage() {
         <Collapsible>
           <div className="flex justify-end">
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 text-muted-foreground">
+              <Button variant="ghost" size="sm" className="h-6.5 text-[11px] text-muted-foreground sm:h-7 sm:text-sm">
                 Secondary Views
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>

@@ -45,10 +45,10 @@ export function BrokerWorkspacePane({
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="border-border/70 bg-card/95 shadow-sm">
-      <CardHeader className="border-b border-border/60 px-2.5 py-1.5 sm:px-3.5 sm:py-2">
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <CardTitle className="mr-auto text-[13px] uppercase tracking-[0.16em] sm:text-sm sm:tracking-[0.18em]">{title}</CardTitle>
-          <div className="text-[11px] text-muted-foreground">{entries.length} visible</div>
+      <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3.5 sm:py-2">
+        <div className="flex flex-wrap items-center gap-0.5 sm:gap-2">
+          <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-sm sm:tracking-[0.18em]">{title}</CardTitle>
+          <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">{entries.length} visible</div>
           <Select
             value={filters.brokerProfileId}
             onValueChange={(value) =>
@@ -58,7 +58,7 @@ export function BrokerWorkspacePane({
               })
             }
           >
-            <SelectTrigger className="h-6.5 w-[126px] text-xs sm:h-7 sm:w-[150px] sm:text-sm">
+            <SelectTrigger className="h-5.5 w-[92px] text-[10px] sm:h-7 sm:w-[150px] sm:text-sm">
               <SelectValue placeholder="Broker" />
             </SelectTrigger>
             <SelectContent>
@@ -71,10 +71,10 @@ export function BrokerWorkspacePane({
             </SelectContent>
           </Select>
 
-          <div className="relative min-w-[132px] flex-1">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-3 sm:h-3.5 sm:w-3.5" />
+          <div className="relative min-w-[104px] flex-1">
+            <Search className="pointer-events-none absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-muted-foreground sm:left-3 sm:h-3.5 sm:w-3.5" />
             <Input
-              className="h-6.5 pl-7 text-xs sm:h-7 sm:pl-8 sm:text-sm"
+              className="h-5.5 pl-5.5 text-[10px] sm:h-7 sm:pl-8 sm:text-sm"
               value={filters.search}
               onChange={(event) =>
                 onFiltersChange({
@@ -90,11 +90,11 @@ export function BrokerWorkspacePane({
 
       <CardContent className="p-0">
         {entries.length === 0 ? (
-          <div className="p-3.5 sm:p-5">
+          <div className="p-3 sm:p-5">
             <MonitorEmptyState title={emptyTitle} description={emptyDescription} />
           </div>
         ) : (
-          <ScrollArea className="h-[270px] sm:h-[300px] lg:h-[330px] xl:h-[340px]">
+          <ScrollArea className="h-[250px] sm:h-[300px] lg:h-[330px] xl:h-[340px]">
             <div className="divide-y divide-border/50">
               {entries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
@@ -108,18 +108,18 @@ export function BrokerWorkspacePane({
                     type="button"
                     variant="ghost"
                     onClick={() => onSelectEntry(entry)}
-                    className={`h-auto w-full justify-start rounded-none border-l-2 px-2.5 py-1 text-left sm:px-3 sm:py-1.5 ${
+                    className={`h-auto w-full justify-start rounded-none border-l-2 px-2 py-0.5 text-left sm:px-3 sm:py-1.5 ${
                       isSelected
                         ? "border-l-primary bg-muted/28"
                         : "border-l-transparent hover:bg-muted/16"
                     }`}
                   >
-                    <div className="w-full min-w-0 space-y-0.5">
-                      <div className="truncate text-left text-[11px] font-medium leading-4 text-foreground sm:text-[13px] sm:leading-[18px]">
+                    <div className="w-full min-w-0 space-y-px">
+                      <div className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground sm:text-[13px] sm:leading-[18px]">
                         {buildCompactCanonicalView(entry)}
                       </div>
                       {supportingMeta.length > 0 ? (
-                        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-3 text-muted-foreground/65 sm:text-[11px] sm:leading-3.5">
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0 text-[9.5px] leading-3 text-muted-foreground/60 sm:text-[11px] sm:leading-3.5">
                           {supportingMeta.map((item, index) => (
                             <span key={`${entry.id}-${item}`} className="inline-flex min-w-0 items-center gap-1.5">
                               {index > 0 ? <span>·</span> : null}

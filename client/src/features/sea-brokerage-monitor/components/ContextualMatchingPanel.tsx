@@ -140,25 +140,25 @@ export function ContextualMatchingPanel({
   return (
     <>
       <Card className="border-border/70 bg-card/95 shadow-sm">
-        <CardHeader className="border-b border-border/60 px-2.5 py-1.5 sm:px-3.5 sm:py-2">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <CardTitle className="mr-auto text-[13px] sm:text-sm">Best Current Matches</CardTitle>
-            <div className="text-[11px] text-muted-foreground">
+        <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3.5 sm:py-2">
+          <div className="flex flex-wrap items-center gap-0.5 sm:gap-2">
+            <CardTitle className="mr-auto text-[11.5px] sm:text-sm">Best Current Matches</CardTitle>
+            <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
             </div>
             {selectedEntry ? (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-6.5 px-2 text-[11px] sm:h-7 sm:px-3"
+                className="h-5.5 px-1 text-[9.5px] sm:h-7 sm:px-3 sm:text-[11px]"
                 onClick={() => setDetailEntry(selectedEntry)}
               >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Open
+                <ExternalLink className="mr-0.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Open</span>
               </Button>
             ) : null}
           </div>
-          <div className="mt-1.5 grid gap-1.5 sm:mt-2 sm:grid-cols-3 sm:gap-2">
+          <div className="mt-0.5 grid gap-0.5 sm:mt-2 sm:grid-cols-3 sm:gap-2">
             <Select
               value={focus.commodity}
               onValueChange={(value) =>
@@ -168,7 +168,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-7 text-xs sm:h-8">
+              <SelectTrigger className="h-6 text-[10.5px] sm:h-8 sm:text-xs">
                 <SelectValue placeholder="Commodity focus" />
               </SelectTrigger>
               <SelectContent>
@@ -189,7 +189,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-7 text-xs sm:h-8">
+              <SelectTrigger className="h-6 text-[10.5px] sm:h-8 sm:text-xs">
                 <SelectValue placeholder="Basis focus" />
               </SelectTrigger>
               <SelectContent>
@@ -210,7 +210,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-7 text-xs sm:h-8">
+              <SelectTrigger className="h-6 text-[10.5px] sm:h-8 sm:text-xs">
                 <SelectValue placeholder="Delivery focus" />
               </SelectTrigger>
               <SelectContent>
@@ -226,7 +226,7 @@ export function ContextualMatchingPanel({
         </CardHeader>
 
         {rollingSuggestions.length === 0 ? (
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2.5 sm:p-4">
             <MonitorEmptyState
               title="No current matches"
               description="Create or reveal compatible offers and bids to populate the rolling matching stream."
@@ -235,7 +235,7 @@ export function ContextualMatchingPanel({
         ) : (
           <CardContent className="p-0">
             {selectedEntry ? (
-              <div className="border-b border-border/50 bg-muted/20 px-2.5 py-1 text-[10px] text-muted-foreground sm:px-3.5 sm:py-1.5 sm:text-[11px]">
+              <div className="border-b border-border/50 bg-muted/20 px-2 py-0.5 text-[9.5px] text-muted-foreground sm:px-3.5 sm:py-1.5 sm:text-[11px]">
                 Highlighting matches related to selected{" "}
                 <span className="font-medium text-foreground">
                   {selectedEntry.type === "offer" ? "offer" : "bid"}
@@ -245,7 +245,7 @@ export function ContextualMatchingPanel({
               </div>
             ) : null}
 
-            <ScrollArea className="h-[165px] sm:h-[175px] lg:h-[190px]">
+            <ScrollArea className="h-[150px] sm:h-[175px] lg:h-[190px]">
               <div className="divide-y divide-border/50">
                 {rollingSuggestions.map((suggestion) => {
                   const isRelated =
@@ -262,42 +262,42 @@ export function ContextualMatchingPanel({
                   return (
                     <div
                       key={suggestion.id}
-                      className={`px-2.5 py-1 sm:px-3.5 sm:py-1.5 ${
+                      className={`px-2 py-0.5 sm:px-3.5 sm:py-1.5 ${
                         isRelated ? "bg-muted/20" : ""
                       }`}
                     >
-                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-3.5 sm:text-[11px] sm:leading-4">
-                        <Badge className={`h-4.5 px-1 py-0 text-[10px] ${confidenceTone(suggestion.confidenceLabel)}`}>
+                      <div className="flex flex-wrap items-center gap-x-1 gap-y-0 text-[9.5px] leading-3 sm:text-[11px] sm:leading-4">
+                        <Badge className={`h-4 px-1 py-0 text-[9px] ${confidenceTone(suggestion.confidenceLabel)}`}>
                           {suggestion.confidenceLabel}
                         </Badge>
                         <span className="text-muted-foreground">
                           {suggestion.scoreLabel}
                         </span>
                         <span className="inline-flex items-center gap-1 text-muted-foreground">
-                          <Scale className="h-3.5 w-3.5" />
+                          <Scale className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                           {suggestion.priceDeltaLabel}
                         </span>
                         <span className="text-muted-foreground">{latestTimestamp}</span>
                       </div>
 
-                      <div className="mt-0.5 grid gap-x-2 gap-y-0.5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                      <div className="mt-px grid gap-x-2 gap-y-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.bidEntry)}
-                          className="truncate text-left text-[11px] font-medium leading-4 text-foreground transition-colors hover:text-primary sm:text-[12px]"
+                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[12px] sm:leading-4"
                         >
                           Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
                         </button>
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.offerEntry)}
-                          className="truncate text-left text-[11px] font-medium leading-4 text-foreground transition-colors hover:text-primary sm:text-[12px]"
+                          className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[12px] sm:leading-4"
                         >
                           Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
                         </button>
                       </div>
 
-                      <div className="mt-0.5 truncate text-[10px] leading-3.5 text-muted-foreground sm:text-[11px] sm:leading-4">
+                      <div className="mt-px truncate text-[9.5px] leading-3 text-muted-foreground sm:text-[11px] sm:leading-4">
                         {suggestion.reasons[0] ?? "Commercial fit found"}
                       </div>
 
@@ -311,7 +311,7 @@ export function ContextualMatchingPanel({
                           <CollapsibleTrigger asChild>
                             <button
                               type="button"
-                              className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+                              className="mt-px inline-flex items-center gap-1 text-[9.5px] text-muted-foreground transition-colors hover:text-foreground sm:text-[10px]"
                             >
                               More detail
                               <ChevronDown className="h-3.5 w-3.5" />
