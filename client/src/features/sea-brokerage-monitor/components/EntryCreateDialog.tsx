@@ -72,6 +72,8 @@ const periodTypeOptions: Array<{ value: PeriodType; label: string }> = [
 const entryFormSchema = z
   .object({
     commodity: z.string().min(1, "Commodity is required"),
+    sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
+    buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
     gradeOrSpec: z.string().min(1, "Grade / spec is required"),
     volumeFrom: z.coerce.number().positive("Volume from must be greater than 0"),
     volumeTo: z.coerce.number().positive("Volume to must be greater than 0"),
@@ -104,6 +106,8 @@ type TelegramSessionHook = ReturnType<typeof useSeaBrokerageTelegramSession>;
 function getDefaultValues(entryType: EntryType): EntryFormValues {
   return {
     commodity: "corn",
+    sellerName: "",
+    buyerName: "",
     gradeOrSpec: "",
     volumeFrom: entryType === "bid" ? 25000 : 20000,
     volumeTo: entryType === "bid" ? 25000 : 22000,
@@ -179,6 +183,9 @@ export function EntryCreateDialog({
       brokerCode: session.authorProfile.brokerCode,
       brokerName: session.authorProfile.brokerName,
       companyName: session.authorProfile.companyName,
+      sellerName:
+        entryType === "offer" && values.sellerName?.trim() ? values.sellerName.trim() : null,
+      buyerName: entryType === "bid" && values.buyerName?.trim() ? values.buyerName.trim() : null,
       commodity: values.commodity as BrokerageEntry["commodity"],
       commodityLabel: commodity?.label ?? values.commodity,
       gradeOrSpec: values.gradeOrSpec.trim(),
@@ -219,6 +226,14 @@ export function EntryCreateDialog({
 
       const entry = createBrokerageEntry({
         type: entryType,
+        sellerName:
+          entryType === "offer" && formValues.sellerName?.trim()
+            ? formValues.sellerName.trim()
+            : null,
+        buyerName:
+          entryType === "bid" && formValues.buyerName?.trim()
+            ? formValues.buyerName.trim()
+            : null,
         commodity: formValues.commodity as BrokerageEntry["commodity"],
         commodityLabel: commodity?.label ?? formValues.commodity,
         gradeOrSpec: formValues.gradeOrSpec.trim(),
@@ -353,6 +368,50 @@ export function EntryCreateDialog({
                 )}
               />
             </div>
+
+            {entryType === "offer" ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <FormField
+                  control={form.control}
+                  name="sellerName"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2 xl:col-span-2">
+                      <FormLabel>Seller / Seller name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Seller company or contact name"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : null}
+
+            {entryType === "bid" ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <FormField
+                  control={form.control}
+                  name="buyerName"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2 xl:col-span-2">
+                      <FormLabel>Buyer / Buyer name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Buyer company or contact name"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : null}
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
               <FormField

@@ -54,6 +54,8 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
 
             <div className="grid gap-3 sm:grid-cols-2">
               <DetailRow label="Commodity" value={entry.commodityLabel} />
+              <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
+              <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
               <DetailRow label="Grade / Spec" value={entry.gradeOrSpec} />
               <DetailRow label="Volume" value={formatEntryVolumeRange(entry)} />
               <DetailRow label="Basis" value={entry.basis} />
@@ -101,6 +103,8 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
               <div className="grid gap-3 sm:grid-cols-2">
                 <DetailRow label="Broker" value={`${entry.brokerCode} (${entry.brokerName})`} />
                 <DetailRow label="Company" value={entry.companyName} />
+                <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
+                <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
                 <DetailRow label="Broker ID" value={entry.brokerId} />
                 <DetailRow label="Entry ID" value={entry.id} />
               </div>

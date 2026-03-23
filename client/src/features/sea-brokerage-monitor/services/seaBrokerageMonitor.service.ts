@@ -21,6 +21,8 @@ import type {
 
 export interface CreateBrokerageEntryInput {
   type: "bid" | "offer";
+  sellerName?: string | null;
+  buyerName?: string | null;
   commodity: CommodityCode;
   commodityLabel: string;
   gradeOrSpec: string;
@@ -86,6 +88,8 @@ export function createBrokerageEntry(input: CreateBrokerageEntryInput): Brokerag
     brokerCode: createdBy.brokerCode,
     brokerName: createdBy.brokerName,
     companyName: createdBy.companyName,
+    sellerName: input.sellerName ?? null,
+    buyerName: input.buyerName ?? null,
     commodity: input.commodity,
     commodityLabel: input.commodityLabel,
     gradeOrSpec: input.gradeOrSpec,
@@ -149,6 +153,8 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
   return createBrokerageEntry({
     type,
     commodity: "corn",
+    sellerName: type === "offer" ? "Sample Seller Group" : null,
+    buyerName: type === "bid" ? "Sample Buyer Group" : null,
     commodityLabel: commodityOptionMap.corn.label,
     gradeOrSpec: type === "bid" ? "Feed corn, sample bid" : "Feed corn, sample offer",
     volumeFrom: type === "bid" ? 12000 : 12500,

@@ -32,6 +32,8 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
     const searchHaystack = [
       entry.canonicalView,
       entry.brokerName,
+      entry.sellerName,
+      entry.buyerName,
       entry.commodityLabel,
       entry.note,
     ]

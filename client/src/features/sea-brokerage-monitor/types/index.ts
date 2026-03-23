@@ -68,6 +68,8 @@ export interface BrokerageEntry {
   brokerCode: string;
   brokerName: string;
   companyName: string;
+  sellerName?: string | null;
+  buyerName?: string | null;
   commodity: CommodityCode;
   commodityLabel: string;
   gradeOrSpec: string;

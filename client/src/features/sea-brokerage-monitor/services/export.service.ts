@@ -11,6 +11,8 @@ interface ExportRow {
   type: string;
   "broker code": string;
   "broker name": string;
+  seller: string;
+  buyer: string;
   commodity: string;
   "grade/spec": string;
   volume: string;
@@ -47,6 +49,8 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     type: entry.type.toUpperCase(),
     "broker code": entry.brokerCode,
     "broker name": entry.brokerName,
+    seller: entry.sellerName ?? "",
+    buyer: entry.buyerName ?? "",
     commodity: entry.commodityLabel,
     "grade/spec": entry.gradeOrSpec,
     volume: formatEntryVolumeRange(entry),
