@@ -8,7 +8,14 @@ const CLAL_SOY_AR: ProviderDefinition = {
   commodityHint: "soybeans",
   basis: "Argentina soy index",
   url: "https://www.clal.it/mini_index.php?locale=en_US&section=storico_prezzi_giornalieri&prodotto=soia_argentina&valuta=ARS&unita=ton&year=2025",
-  parserSpec: { dateKeywords: ["storico", "giornalieri"], priceKeywords: ["ARS", "soia"] },
+  parserSpec: {
+    dateKeywords: ["storico", "giornalieri"],
+    priceKeywords: ["ARS", "soia"],
+    commodityKeywords: ["soia", "soy"],
+    currencyHint: "ARS",
+    unitHint: "qq100kg",
+    numberFormat: "thousands_dot_decimal_comma",
+  },
 };
 
 export async function fetchClalSoyAr(layer: SourceLayer): Promise<ProviderParseResult> {

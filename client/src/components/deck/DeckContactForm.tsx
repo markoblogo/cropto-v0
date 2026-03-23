@@ -1,0 +1,178 @@
+import { FormEvent, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { CONTACT_INTEREST_OPTIONS } from "@/components/deck/deck-content";
+
+type ContactFormState = {
+  fullName: string;
+  email: string;
+  organization: string;
+  interest: string;
+  message: string;
+};
+
+const INITIAL_FORM_STATE: ContactFormState = {
+  fullName: "",
+  email: "",
+  organization: "",
+  interest: CONTACT_INTEREST_OPTIONS[0],
+  message: "",
+};
+
+export function DeckContactForm() {
+  const [formState, setFormState] = useState<ContactFormState>(INITIAL_FORM_STATE);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const composedMessage = [
+        formState.message.trim(),
+        "",
+        "---",
+        `Organization: ${formState.organization.trim()}`,
+        `Interest: ${formState.interest}`,
+      ].join("\n");
+
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formState.fullName.trim(),
+          email: formState.email.trim(),
+          role: formState.interest,
+          message: composedMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || "Failed to submit contact request");
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to submit contact request");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSubmitted) {
+    return (
+      <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-primary/12 to-card shadow-md">
+        <CardHeader>
+          <CardTitle className="text-xl">Request received</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-base leading-7 text-foreground/82">
+            Thank you. Your message has been captured in this demo flow. A production contact endpoint can be connected
+            when ready.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFormState(INITIAL_FORM_STATE);
+              setIsSubmitted(false);
+              setSubmitError(null);
+            }}
+          >
+            Send another request
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/30 shadow-md transition-all duration-300 hover:border-primary/35 hover:shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-xl">Contact request</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Full name</Label>
+            <Input
+              id="fullName"
+              required
+              value={formState.fullName}
+              onChange={(event) => setFormState((current) => ({ ...current, fullName: event.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Work email</Label>
+            <Input
+              id="email"
+              type="email"
+              required
+              value={formState.email}
+              onChange={(event) => setFormState((current) => ({ ...current, email: event.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="organization">Organization</Label>
+            <Input
+              id="organization"
+              required
+              value={formState.organization}
+              onChange={(event) => setFormState((current) => ({ ...current, organization: event.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="interest">Interest</Label>
+            <select
+              id="interest"
+              className="flex min-h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              value={formState.interest}
+              onChange={(event) => setFormState((current) => ({ ...current, interest: event.target.value }))}
+            >
+              {CONTACT_INTEREST_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="message">Message</Label>
+            <Textarea
+              id="message"
+              rows={5}
+              required
+              value={formState.message}
+              onChange={(event) => setFormState((current) => ({ ...current, message: event.target.value }))}
+              placeholder="Share goals, timeline, and context for the conversation."
+            />
+          </div>
+
+          {submitError ? (
+            <div className="sm:col-span-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {submitError}
+            </div>
+          ) : null}
+
+          <div className="sm:col-span-2">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit request"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

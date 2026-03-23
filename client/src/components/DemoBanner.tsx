@@ -30,6 +30,7 @@ export default function DemoBanner() {
   // Hide on admin routes and auth pages (optional)
   if (
     location.startsWith("/admin") ||
+    location.startsWith("/spike-monitor") ||
     location === "/login" ||
     location === "/register"
   ) {
@@ -72,7 +73,6 @@ export default function DemoBanner() {
     </div>
   );
 }
-
 
 
 

@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import { useMarketDashboard } from "@/hooks/useMarketDashboard";
 import { Button } from "@/components/ui/button";
+import { commodityDisplayName } from "@shared/commodities";
 
 export default function MarketData() {
   const { t } = useTranslation();
@@ -111,6 +112,14 @@ export default function MarketData() {
     selectedRegion === "ua" ? "🇺🇦" : selectedRegion === "br" ? "🇧🇷" : selectedRegion === "ar" ? "🇦🇷" : "🇺🇸";
   const countryLabel = selectedRegion.toUpperCase();
   const marketHealth = marketDashboardData?.marketHealth?.[selectedRegion];
+  const selectedDataAlert =
+    selectedRegion === "br"
+      ? marketDashboardData?.dataAlerts?.br
+      : selectedRegion === "ar"
+        ? marketDashboardData?.dataAlerts?.ar
+        : selectedRegion === "us"
+          ? marketDashboardData?.dataAlerts?.us
+          : null;
   const marketHealthClass =
     marketHealth?.status === "OK"
       ? "bg-emerald-100 text-emerald-800"
@@ -126,7 +135,6 @@ export default function MarketData() {
     const c = commodity.toLowerCase();
     if (
       c.includes("corn") ||
-      c.includes("maize") ||
       c.includes("wheat") ||
       c.includes("barley")
     ) {
@@ -149,6 +157,20 @@ export default function MarketData() {
 
   const getSeriesStatus = (index: { country: string; commodity: string; basis: string }) =>
     seriesStatusByKey.get(`${index.country}:${index.commodity}:${index.basis}`) || "no_recent";
+
+  const getDisplayStatus = (index: {
+    country: string;
+    commodity: string;
+    basis: string;
+    priceStatus?: "fresh" | "stale" | "missing";
+    dataStatus?: "fresh" | "stale" | "no_recent";
+  }): "fresh" | "stale" | "no_recent" => {
+    if (index.priceStatus === "fresh" || index.priceStatus === "stale") return index.priceStatus;
+    if (index.priceStatus === "missing") return "no_recent";
+    if (index.dataStatus === "fresh" || index.dataStatus === "stale") return index.dataStatus;
+    if (index.dataStatus === "no_recent") return "no_recent";
+    return getSeriesStatus(index);
+  };
 
   const getStatusBadgeClass = (status: "fresh" | "stale" | "no_recent") => {
     if (status === "fresh") return "bg-emerald-100 text-emerald-800 border-emerald-200";
@@ -200,7 +222,9 @@ export default function MarketData() {
           </Alert>
         ) : regionalIndexes.length === 0 ? (
           <Alert>
-            <AlertDescription>{t("page.marketData.noIndexesForCountry", { country: selectedRegion.toUpperCase() })}</AlertDescription>
+            <AlertDescription>
+              {selectedDataAlert || t("page.marketData.noIndexesForCountry", { country: selectedRegion.toUpperCase() })}
+            </AlertDescription>
           </Alert>
         ) : (
           <div className="space-y-6">
@@ -219,13 +243,13 @@ export default function MarketData() {
                   <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
                     <CardHeader>
                       <CardTitle className="text-lg">
-                        {index.commodity}
+                        {commodityDisplayName(index.commodity)}
                         {index.grade ? ` (${index.grade})` : ""}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
                         <span>{index.basis}</span>
-                        <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
-                          {getSeriesStatus(index)}
+                        <Badge variant="outline" className={getStatusBadgeClass(getDisplayStatus(index))}>
+                          {getDisplayStatus(index)}
                         </Badge>
                       </CardDescription>
                     </CardHeader>
@@ -239,16 +263,20 @@ export default function MarketData() {
                         As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                        Fetched: {formatRelative(index.fetchedAt || index.asOf)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
                       </div>
+                      {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
+                        <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
+                      ) : null}
                       {debugSources ? (
                         <div className="text-xs text-muted-foreground space-y-0.5">
                           <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
                           <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
                           <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          <div>conversion: {index.conversionNotes || "n/a"}</div>
                         </div>
                       ) : null}
                     </CardContent>
@@ -264,13 +292,13 @@ export default function MarketData() {
                   <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
                     <CardHeader>
                       <CardTitle className="text-lg">
-                        {index.commodity}
+                        {commodityDisplayName(index.commodity)}
                         {index.grade ? ` (${index.grade})` : ""}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
                         <span>{index.basis}</span>
-                        <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
-                          {getSeriesStatus(index)}
+                        <Badge variant="outline" className={getStatusBadgeClass(getDisplayStatus(index))}>
+                          {getDisplayStatus(index)}
                         </Badge>
                       </CardDescription>
                     </CardHeader>
@@ -284,16 +312,20 @@ export default function MarketData() {
                         As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                        Fetched: {formatRelative(index.fetchedAt || index.asOf)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
                       </div>
+                      {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
+                        <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
+                      ) : null}
                       {debugSources ? (
                         <div className="text-xs text-muted-foreground space-y-0.5">
                           <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
                           <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
                           <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          <div>conversion: {index.conversionNotes || "n/a"}</div>
                         </div>
                       ) : null}
                     </CardContent>
@@ -310,13 +342,13 @@ export default function MarketData() {
                     <Card key={`${index.country}-${index.commodity}-${index.basis}`}>
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          {index.commodity}
+                          {commodityDisplayName(index.commodity)}
                           {index.grade ? ` (${index.grade})` : ""}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2">
                           <span>{index.basis}</span>
-                          <Badge variant="outline" className={getStatusBadgeClass(getSeriesStatus(index))}>
-                            {getSeriesStatus(index)}
+                          <Badge variant="outline" className={getStatusBadgeClass(getDisplayStatus(index))}>
+                            {getDisplayStatus(index)}
                           </Badge>
                         </CardDescription>
                       </CardHeader>
@@ -330,18 +362,22 @@ export default function MarketData() {
                           As of: {new Date(index.asOf).toISOString().slice(0, 10)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Fetched: {index.fetchedAt ? formatRelative(index.fetchedAt) : "n/a"}
+                          Fetched: {formatRelative(index.fetchedAt || index.asOf)}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           Source: {(index.provider || index.source) + (index.channel ? ` (${index.channel})` : "")}
                         </div>
-                        {debugSources ? (
-                          <div className="text-xs text-muted-foreground space-y-0.5">
-                            <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
-                            <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
-                            <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
-                          </div>
+                        {index.lastFetchStatus === "failed" && getDisplayStatus(index) !== "no_recent" ? (
+                          <div className="text-xs text-amber-700">Last fetch failed; showing latest successful price</div>
                         ) : null}
+                      {debugSources ? (
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          <div>raw={index.rawCommodity || index.commodity}; category={index.category || "other"}</div>
+                          <div>raw quote: {typeof index.rawPrice === "number" ? index.rawPrice : "n/a"} {index.rawUnit || index.rawCurrency || ""}</div>
+                          <div>fx: {typeof index.rawToUsdFxRate === "number" ? index.rawToUsdFxRate.toFixed(8) : "n/a"}</div>
+                          <div>conversion: {index.conversionNotes || "n/a"}</div>
+                        </div>
+                      ) : null}
                       </CardContent>
                     </Card>
                   ))}

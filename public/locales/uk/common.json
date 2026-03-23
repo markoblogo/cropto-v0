@@ -50,7 +50,8 @@
     "indexUS": "Індекс USA",
     "documentation": "Документація",
     "faqShort": "FAQ",
-    "aboutCropto": "Про Cropto"
+    "aboutCropto": "Про Cropto",
+    "spikeMonitor": "Sea Brokerage Monitor"
   },
   "button": {
     "createOption": "Створити опціон",

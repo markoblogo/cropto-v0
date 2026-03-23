@@ -162,6 +162,98 @@ export const appSettings = pgTable("app_settings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const macroPredictionMarkets = pgTable("macro_prediction_markets", {
+  id: text("id").primaryKey(),
+  source: text("source").notNull(), // kalshi | polymarket
+  marketType: text("market_type").notNull().default("binary"),
+  question: text("question").notNull(),
+  description: text("description"),
+  category: text("category").notNull().default("other"),
+  tags: text("tags"), // JSON array string
+  region: text("region").notNull().default("GLOBAL"),
+  impliedProbability: decimal("implied_probability", { precision: 10, scale: 6 }),
+  yesPrice: decimal("yes_price", { precision: 10, scale: 6 }),
+  noPrice: decimal("no_price", { precision: 10, scale: 6 }),
+  volume24h: decimal("volume_24h", { precision: 20, scale: 4 }),
+  openInterest: decimal("open_interest", { precision: 20, scale: 4 }),
+  liquidityScore: decimal("liquidity_score", { precision: 10, scale: 6 }),
+  orderbookSpreadBps: decimal("orderbook_spread_bps", { precision: 10, scale: 2 }),
+  qualityScore: decimal("quality_score", { precision: 10, scale: 6 }),
+  rawOutcomes: text("raw_outcomes"), // JSON outcomes snapshot
+  status: text("status").notNull().default("open"),
+  closeTime: timestamp("close_time"),
+  resolveTime: timestamp("resolve_time"),
+  raw: text("raw"),
+  scrapedAt: timestamp("scraped_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const macroRiskTimeseries = pgTable("macro_risk_timeseries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  source: text("source").notNull().default("prediction_markets"),
+  indexName: text("index_name").notNull(),
+  region: text("region").notNull().default("GLOBAL"),
+  value: decimal("value", { precision: 10, scale: 6 }).notNull(),
+  details: text("details"), // JSON object string
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const cgoWeights = pgTable("cgo_weights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  year: integer("year").notNull(),
+  region: text("region").notNull().default("GLOBAL"),
+  commodity: text("commodity").notNull(),
+  weight: decimal("weight", { precision: 12, scale: 8 }).notNull(),
+  source: text("source").notNull().default("seed"),
+  meta: text("meta"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const agroCompositeTimeseries = pgTable("agro_composite_timeseries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  source: text("source").notNull().default("agro_expectations"),
+  indexName: text("index_name").notNull(),
+  region: text("region").notNull().default("GLOBAL"),
+  value: decimal("value", { precision: 14, scale: 6 }).notNull(),
+  details: text("details"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const binanceMarketSnapshot = pgTable("binance_market_snapshot", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  venue: text("venue").notNull().default("binance"),
+  symbol: text("symbol").notNull(),
+  assetType: text("asset_type").notNull(),
+  underlying: text("underlying"),
+  price: decimal("price", { precision: 20, scale: 8 }),
+  priceChange24hPct: decimal("price_change_24h_pct", { precision: 12, scale: 6 }),
+  volume24h: decimal("volume_24h", { precision: 24, scale: 8 }),
+  openInterest: decimal("open_interest", { precision: 24, scale: 8 }),
+  impliedVolatility: decimal("implied_volatility", { precision: 12, scale: 6 }),
+  source: text("source").notNull(),
+  status: text("status").notNull().default("INDICATIVE"),
+  extra: text("extra"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const globalIndexSnapshot = pgTable("global_index_snapshot", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ts: timestamp("ts").notNull().defaultNow(),
+  provider: text("provider").notNull(),
+  symbol: text("symbol").notNull(),
+  name: text("name").notNull(),
+  region: text("region").notNull(),
+  value: decimal("value", { precision: 20, scale: 8 }),
+  dayChangePct: decimal("day_change_pct", { precision: 12, scale: 6 }),
+  source: text("source").notNull().default("eod"),
+  status: text("status").notNull().default("INDICATIVE"),
+  extra: text("extra"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const indexPrices = pgTable("index_prices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   commodity: text("commodity").notNull(),
@@ -537,6 +629,20 @@ export const insertIndexPriceSchema = createInsertSchema(indexPrices).omit({
   createdAt: true,
 });
 
+export const upsertMacroPredictionMarketSchema = createInsertSchema(macroPredictionMarkets).omit({
+  updatedAt: true,
+});
+
+export const insertMacroRiskTimeseriesSchema = createInsertSchema(macroRiskTimeseries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGlobalIndexSnapshotSchema = createInsertSchema(globalIndexSnapshot).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
   id: true,
   createdAt: true,
@@ -644,6 +750,12 @@ export type Feedback = typeof feedback.$inferSelect;
 export type InsertAnalyticsEvent = z.infer<typeof insertAnalyticsEventSchema>;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type AppSetting = typeof appSettings.$inferSelect;
+export type MacroPredictionMarket = typeof macroPredictionMarkets.$inferSelect;
+export type UpsertMacroPredictionMarket = z.infer<typeof upsertMacroPredictionMarketSchema>;
+export type MacroRiskTimeseries = typeof macroRiskTimeseries.$inferSelect;
+export type InsertMacroRiskTimeseries = z.infer<typeof insertMacroRiskTimeseriesSchema>;
+export type GlobalIndexSnapshot = typeof globalIndexSnapshot.$inferSelect;
+export type InsertGlobalIndexSnapshot = z.infer<typeof insertGlobalIndexSnapshotSchema>;
 export type InsertIndexPrice = z.infer<typeof insertIndexPriceSchema>;
 export type IndexPrice = typeof indexPrices.$inferSelect;
 export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;

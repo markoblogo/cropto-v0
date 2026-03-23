@@ -3,12 +3,72 @@ import type { IngestionMarket, MarketPricePoint, ProviderDefinition, SourceLayer
 import { fetchAndParseProvider } from "../sources/common";
 import { ensureIngestionTables, getPreviousMarketPrice, insertFetchAttempt, upsertMarketPrice, upsertSourceStatus } from "../storage/repository";
 import { applyUsdNormalization } from "../normalization/price";
+import { validateUsdPerTon } from "../normalization/priceSanity";
 import { getFxSnapshotOrFetch } from "./fxIngestionJob";
+import { db } from "../../db";
+import { sql } from "drizzle-orm";
 
 const INTERVAL_HOURS = Number.parseInt(process.env.MARKET_INGESTION_INTERVAL_HOURS || "24", 10);
 const ENABLED = process.env.ENABLE_MARKET_INGESTION !== "false";
 const DISABLE_PRIMARY = process.env.INGESTION_DISABLE_PRIMARY === "1";
 let timer: NodeJS.Timeout | null = null;
+
+type RuntimeState = {
+  enabled: boolean;
+  intervalHours: number;
+  schedulerRunning: boolean;
+  startedAt: string | null;
+  lastRunAt: string | null;
+  lastSuccessAt: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
+  lastUpserted: number;
+  lastFailedPrimaries: number;
+  disablePrimary: boolean;
+  disabledVendors: string[];
+};
+
+const runtimeState: RuntimeState = {
+  enabled: ENABLED,
+  intervalHours: INTERVAL_HOURS,
+  schedulerRunning: false,
+  startedAt: null,
+  lastRunAt: null,
+  lastSuccessAt: null,
+  lastErrorAt: null,
+  lastErrorMessage: null,
+  lastUpserted: 0,
+  lastFailedPrimaries: 0,
+  disablePrimary: DISABLE_PRIMARY,
+  disabledVendors: (process.env.INGESTION_DISABLE_VENDOR || "")
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean),
+};
+
+async function persistRuntimeState(extra?: Record<string, unknown>): Promise<void> {
+  try {
+    await db.execute(sql`
+      create table if not exists app_settings (
+        key text primary key,
+        value text not null,
+        updated_at timestamp not null default now()
+      )
+    `);
+    const payload = JSON.stringify({
+      ...runtimeState,
+      ...extra,
+      updatedAt: new Date().toISOString(),
+    });
+    await db.execute(sql`
+      insert into app_settings(key, value, updated_at)
+      values ('market_ingestion_runtime', ${payload}, now())
+      on conflict (key) do update set value = excluded.value, updated_at = now()
+    `);
+  } catch (error) {
+    console.warn("[MarketIngestion] failed to persist runtime state:", (error as Error)?.message || error);
+  }
+}
 
 function isFresh(asOf: string | null): boolean {
   if (!asOf) return false;
@@ -37,6 +97,15 @@ function validatePoint(point: MarketPricePoint): { ok: boolean; reasons: string[
   if (!point.priceUsdPerTon || !(point.priceUsdPerTon > 0)) {
     reasons.push("missing_price_usd_per_ton");
     needsReview = true;
+  }
+  const sanity = validateUsdPerTon(point);
+  if (!sanity.valid) {
+    reasons.push(`invalid:${sanity.invalidReason}`);
+    needsReview = true;
+    point.raw = {
+      ...(point.raw || {}),
+      invalidReason: sanity.invalidReason,
+    };
   }
 
   return { ok: reasons.length === 0, reasons, needsReview };
@@ -70,7 +139,7 @@ function pickDefinitions(provider: string, market: IngestionMarket, commodity: s
   if (defs.length <= 1) return defs;
 
   const byCommodity = defs.filter((d) => d.commodityHint.toLowerCase().includes(commodity));
-  return byCommodity.length > 0 ? byCommodity : defs;
+  return byCommodity;
 }
 
 async function tryProvider(
@@ -99,7 +168,8 @@ async function tryProvider(
       const result = await fetchAndParseProvider(def, layer);
       const normalizedPoints = result.points
         .slice(0, historyDays)
-        .map((p) => ({ ...p, commodity, basis: basis || p.basis }))
+        .filter((p) => p.commodity === commodity)
+        .map((p) => ({ ...p, basis: basis || p.basis }))
         .map((p) => applyUsdNormalization(p, fx));
 
       const validPoints = normalizedPoints.filter((p) => p.priceUsdPerTon && p.priceUsdPerTon > 0);
@@ -139,13 +209,24 @@ async function tryProvider(
       });
 
       if (validPoints.length > 0) {
+        const acceptedPoints: MarketPricePoint[] = [];
         for (const point of validPoints) {
           const validation = validatePoint(point);
           point.needsReview = point.needsReview || validation.needsReview;
-          if (!validation.ok) continue;
+          if (!validation.ok) {
+            point.raw = {
+              ...(point.raw || {}),
+              invalidReason: validation.reasons.join(","),
+            };
+            continue;
+          }
           await annotateAnomaly(point);
+          acceptedPoints.push(point);
         }
-        return { points: validPoints };
+        if (acceptedPoints.length > 0) {
+          return { points: acceptedPoints };
+        }
+        lastError = "all_points_invalid_after_validation";
       }
 
       lastError = `no_point:${result.notes.join(";")}`;
@@ -185,6 +266,8 @@ async function tryProvider(
 }
 
 export async function runMarketIngestionOnce(options?: { markets?: IngestionMarket[]; historyDays?: number }): Promise<{ upserted: number; failedPrimaries: number }> {
+  runtimeState.lastRunAt = new Date().toISOString();
+  await persistRuntimeState({ event: "tick_start" });
   await ensureIngestionTables();
   let upserted = 0;
   let failedPrimaries = 0;
@@ -217,26 +300,43 @@ export async function runMarketIngestionOnce(options?: { markets?: IngestionMark
     }
   }
 
-  console.log(`[MarketIngestion] completed upserted=${upserted} failedPrimaries=${failedPrimaries}`);
+  runtimeState.lastUpserted = upserted;
+  runtimeState.lastFailedPrimaries = failedPrimaries;
+  runtimeState.lastSuccessAt = new Date().toISOString();
+  runtimeState.lastErrorAt = null;
+  runtimeState.lastErrorMessage = null;
+  await persistRuntimeState({ event: "tick_success" });
+  console.log(`[MarketIngestion] tick completed upserted=${upserted} failedPrimaries=${failedPrimaries}`);
   return { upserted, failedPrimaries };
 }
 
 export function startMarketIngestionScheduler(): void {
   if (!ENABLED) {
+    runtimeState.lastErrorMessage = "ENABLE_MARKET_INGESTION=false";
+    void persistRuntimeState({ schedulerRunning: false, event: "disabled" });
     console.log("[MarketIngestion] disabled via ENABLE_MARKET_INGESTION=false");
     return;
   }
   if (timer) return;
 
   const intervalMs = Math.max(1, INTERVAL_HOURS) * 60 * 60 * 1000;
+  runtimeState.schedulerRunning = true;
+  runtimeState.startedAt = new Date().toISOString();
+  void persistRuntimeState({ event: "scheduler_started" });
   console.log(`[MarketIngestion] scheduler started interval=${INTERVAL_HOURS}h`);
 
   runMarketIngestionOnce().catch((error) => {
+    runtimeState.lastErrorAt = new Date().toISOString();
+    runtimeState.lastErrorMessage = error?.message || String(error);
+    void persistRuntimeState({ event: "tick_error" });
     console.error("[MarketIngestion] initial run failed:", error?.message || error);
   });
 
   timer = setInterval(() => {
     runMarketIngestionOnce().catch((error) => {
+      runtimeState.lastErrorAt = new Date().toISOString();
+      runtimeState.lastErrorMessage = error?.message || String(error);
+      void persistRuntimeState({ event: "tick_error" });
       console.error("[MarketIngestion] scheduled run failed:", error?.message || error);
     });
   }, intervalMs);
@@ -246,4 +346,19 @@ export function stopMarketIngestionScheduler(): void {
   if (!timer) return;
   clearInterval(timer);
   timer = null;
+  runtimeState.schedulerRunning = false;
+  void persistRuntimeState({ event: "scheduler_stopped" });
+}
+
+export function getMarketIngestionRuntimeState(): RuntimeState {
+  return {
+    ...runtimeState,
+    enabled: ENABLED,
+    intervalHours: INTERVAL_HOURS,
+    disablePrimary: DISABLE_PRIMARY,
+    disabledVendors: (process.env.INGESTION_DISABLE_VENDOR || "")
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean),
+  };
 }

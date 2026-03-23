@@ -18,12 +18,31 @@ interface ProcessError {
   error: string;
 }
 
+function isExpectedAutoSettleSkip(error: unknown): boolean {
+  const message = String((error as { message?: string })?.message || "");
+  return (
+    message.includes("Only filled options can be exercised") ||
+    message.includes("Only the buyer or issuer can exercise this option") ||
+    message.includes("missing ownership records")
+  );
+}
+
+function isTerminalExpiredOptionFailure(error: unknown): boolean {
+  const message = String((error as { message?: string })?.message || "");
+  return (
+    message.includes("missing ownership records") ||
+    message.includes("missing buyerId/issuerId") ||
+    message.includes("missing seller information")
+  );
+}
+
 export async function processDeadlines() {
   console.log('🕐 Starting deadline processing...');
   
   const results = {
     processedCount: 0,
     expiredMarginCalls: 0,
+    skippedOptions: 0,
     processedOptions: [] as ProcessedOption[],
     errors: [] as ProcessError[],
   };
@@ -77,6 +96,35 @@ export async function processDeadlines() {
 
     for (const option of expiredOptions) {
       try {
+        if (option.status === "OPEN") {
+          await storage.updateOption(option.id, {
+            status: "EXPIRED",
+            lastUpdated: new Date(),
+          });
+
+          results.processedOptions.push({
+            optionId: option.id,
+            status: "EXPIRED",
+            notificationsCreated: 0,
+          });
+          results.processedCount++;
+          console.log(`  ✅ Marked expired OPEN option ${option.id} as EXPIRED`);
+          continue;
+        }
+
+        if (option.status !== "FILLED") {
+          results.skippedOptions++;
+          console.warn(`  ⚠️ Skipping expired option ${option.id}: unsupported status ${option.status}`);
+          continue;
+        }
+
+        const exercisedBy = option.buyerId || option.issuerId;
+        if (!exercisedBy) {
+          results.skippedOptions++;
+          console.warn(`  ⚠️ Skipping expired FILLED option ${option.id}: missing buyerId/issuerId`);
+          continue;
+        }
+
         // Get current price for the underlying commodity
         let currentPricePerTon = 0;
         if (option.commodity) {
@@ -103,7 +151,7 @@ export async function processDeadlines() {
         // Auto-settle the option using the same exercise logic
         const settlement = await storage.exerciseOption(
           option.id,
-          "system",
+          exercisedBy,
           currentPricePerTon.toString()
         );
 
@@ -129,11 +177,25 @@ export async function processDeadlines() {
         results.processedCount++;
         console.log(`  ✅ Auto-settled option ${option.id}: ${finalStatus}, payout=${parseFloat(settlement.payout).toFixed(2)}`);
       } catch (error: any) {
-        console.error(`  ❌ Error auto-settling option ${option.id}:`, error);
-        results.errors.push({
-          optionId: option.id,
-          error: error?.message || 'Unknown error',
-        });
+        if (isTerminalExpiredOptionFailure(error)) {
+          await storage.updateOption(option.id, {
+            status: "DEFAULTED",
+            lastUpdated: new Date(),
+          });
+          results.skippedOptions++;
+          console.warn(
+            `  ⚠️ Marked expired option ${option.id} as DEFAULTED after terminal auto-settle failure: ${error?.message || "unknown error"}`,
+          );
+        } else if (isExpectedAutoSettleSkip(error)) {
+          results.skippedOptions++;
+          console.warn(`  ⚠️ Skipped auto-settle for option ${option.id}: ${error?.message || "business rule"}`);
+        } else {
+          console.error(`  ❌ Error auto-settling option ${option.id}:`, error);
+          results.errors.push({
+            optionId: option.id,
+            error: error?.message || 'Unknown error',
+          });
+        }
       }
     }
 
@@ -242,7 +304,7 @@ export async function processDeadlines() {
       }
     }
 
-    console.log(`✅ Deadline processing complete. Processed ${results.processedCount} items (${results.expiredMarginCalls} margin calls + ${expiredOptions.length} expired options)`);
+    console.log(`✅ Deadline processing complete. Processed ${results.processedCount} items, skipped ${results.skippedOptions} (${results.expiredMarginCalls} margin calls + ${expiredOptions.length} expired options)`);
     return results;
   } catch (error) {
     console.error('❌ Error in deadline processing:', error);

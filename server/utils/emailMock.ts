@@ -1,6 +1,7 @@
 import { writeFileSync, appendFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 interface EmailMessage {
   to: string;
@@ -11,12 +12,15 @@ interface EmailMessage {
 
 class EmailMockService {
   private logsDir: string;
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: any | null = null;
   private fromAddress: string | null = null;
+  private resend: Resend | null = null;
+  private resendFrom: string | null = null;
 
   constructor() {
     this.logsDir = join(process.cwd(), "logs");
     this.ensureLogsDir();
+    this.initResend();
     this.initTransporter();
   }
 
@@ -32,6 +36,11 @@ class EmailMockService {
   }
 
   private initTransporter() {
+    if (this.resend) {
+      console.log("[Email] Resend API is configured. SMTP transport will be used only as fallback.");
+      return;
+    }
+
     const host = process.env.SMTP_HOST;
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
@@ -55,9 +64,22 @@ class EmailMockService {
       port,
       secure,
       auth: { user, pass },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
     });
     this.fromAddress = from;
     console.log(`[Email] SMTP delivery enabled (${host}:${port}, secure=${secure}).`);
+  }
+
+  private initResend() {
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.RESEND_FROM || process.env.SMTP_FROM || "Cropto Deck <onboarding@resend.dev>";
+    if (!apiKey) return;
+
+    this.resend = new Resend(apiKey);
+    this.resendFrom = from;
+    console.log(`[Email] Resend API delivery enabled (from=${from}).`);
   }
 
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
@@ -87,8 +109,26 @@ ${"=".repeat(80)}
       timestamp,
     });
 
-    // Try real SMTP delivery first (if configured)
-    if (this.transporter && this.fromAddress) {
+    let delivered = false;
+
+    // Try Resend API first (if configured)
+    if (this.resend && this.resendFrom) {
+      try {
+        await this.resend.emails.send({
+          from: this.resendFrom,
+          to,
+          subject,
+          text: body,
+        });
+        console.log(`   ✓ Email delivered via Resend API to: ${to}`);
+        delivered = true;
+      } catch (resendError) {
+        console.error(`   ✗ Resend delivery failed for ${to}. Falling back to SMTP/log only.`, resendError);
+      }
+    }
+
+    // Try real SMTP delivery next (if configured)
+    if (!delivered && this.transporter && this.fromAddress) {
       try {
         await this.transporter.sendMail({
           from: this.fromAddress,
@@ -97,6 +137,7 @@ ${"=".repeat(80)}
           text: body,
         });
         console.log(`   ✓ Email delivered via SMTP to: ${to}`);
+        delivered = true;
       } catch (smtpError) {
         console.error(`   ✗ SMTP delivery failed for ${to}. Falling back to log only.`, smtpError);
       }

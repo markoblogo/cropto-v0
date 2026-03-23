@@ -50,7 +50,8 @@
     "indexUS": "Índice USA",
     "documentation": "Documentación",
     "faqShort": "FAQ",
-    "aboutCropto": "Sobre Cropto"
+    "aboutCropto": "Sobre Cropto",
+    "spikeMonitor": "Sea Brokerage Monitor"
   },
   "button": {
     "createOption": "Crear opción",

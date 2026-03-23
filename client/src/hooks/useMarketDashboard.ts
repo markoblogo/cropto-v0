@@ -29,6 +29,11 @@ export interface MarketIndexDto {
     | "synthetic_model";
   sourceTier?: "primary" | "secondary" | "synthetic" | "last_known";
   dataStatus?: "fresh" | "stale" | "no_recent";
+  priceStatus?: "fresh" | "stale" | "missing";
+  lastFetchStatus?: "ok" | "failed" | "unknown";
+  lastFetchError?: string | null;
+  needsReview?: boolean;
+  isMockData?: boolean;
   confidence?: "high" | "medium" | "low";
   freshnessDays?: number;
   isStale?: boolean;
@@ -45,6 +50,17 @@ export interface MarketIndexDto {
   rawCurrency?: string;
   rawToUsdFxRate?: number;
   conversionNotes?: string;
+  invalidReason?: string | null;
+  alternatives?: Array<{
+    provider: string;
+    source: string;
+    channel?: string;
+    asOf: string;
+    fetchedAt?: string;
+    priceStatus?: string;
+    lastFetchStatus?: string;
+    sourceTier?: string;
+  }>;
   // Optional IGC-specific fields
   dailyChange?: number; // alias for change24h (for backward compatibility)
   annualChange?: number;
@@ -109,6 +125,11 @@ export interface MarketDashboardResponse {
     br: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
     ar: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
     us: { status: "OK" | "WARN" | "FAIL"; lastSuccessfulUpdate: string | null; source: string | null };
+  };
+  dataAlerts?: {
+    br: string | null;
+    ar: string | null;
+    us: string | null;
   };
 }
 

@@ -268,7 +268,11 @@ export async function updateUserWallet(
     return {
       id: supabaseUser.id,
       email: supabaseUser.email,
-      passwordHash: supabaseUser.password_hash,
+      passwordHash:
+        (supabaseUser as any).password_hash ||
+        (supabaseUser as any).passwordHash ||
+        (supabaseUser as any).password ||
+        "",
       role: supabaseUser.role,
       createdAt: supabaseUser.created_at,
       walletAddress: supabaseUser.wallet_address,

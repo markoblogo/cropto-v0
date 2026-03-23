@@ -87,6 +87,11 @@ async function main() {
       '011_market_price_ingestion.sql',
       '012_ingestion_fx_and_identity.sql',
       '013_extend_user_role_broker.sql',
+      '014_prediction_markets.sql',
+      '015_prediction_markets_quality.sql',
+      '016_agro_expectations.sql',
+      '017_binance_market_snapshot.sql',
+      '018_global_index_snapshot.sql',
     ];
 
     let successCount = 0;

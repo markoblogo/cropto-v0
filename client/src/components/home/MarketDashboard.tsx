@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { commodityDisplayName } from "@shared/commodities";
+import { InvestorDeckCallout } from "@/components/home/InvestorDeckCallout";
 
 interface HistoryDataPoint {
   date: string;
@@ -34,7 +36,8 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
   const changeColor = changeValue > 0 ? "text-emerald-600" : changeValue < 0 ? "text-red-600" : "text-muted-foreground";
   const ChangeIcon = changeValue > 0 ? ArrowUp : changeValue < 0 ? ArrowDown : Minus;
 
-  const commodityLabel = item.grade ? `${item.commodity} (${item.grade})` : item.commodity;
+  const commodityName = commodityDisplayName(item.commodity);
+  const commodityLabel = item.grade ? `${commodityName} (${item.grade})` : commodityName;
   const isDebugSources = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugSources") === "1";
   const countryFlag = item.country === "UA" ? "🇺🇦" : item.country === "BR" ? "🇧🇷" : item.country === "AR" ? "🇦🇷" : "🇺🇸";
   const commoditySlug = item.commodity.toLowerCase().includes("corn") || item.commodity.toLowerCase().includes("maize")
@@ -94,8 +97,11 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
     .replace(/^Просмотреть\s+/i, "");
 
   const asOfText = item.asOf ? new Date(item.asOf).toISOString().slice(0, 10) : "n/a";
-  const fetchedText = item.fetchedAt ? formatRelative(item.fetchedAt) : "n/a";
-  const freshnessBadge = item.dataStatus === "fresh" ? "Fresh" : item.dataStatus === "stale" ? "Stale" : "Failed";
+  const fetchedValue = item.fetchedAt || item.asOf;
+  const fetchedText = fetchedValue ? formatRelative(fetchedValue) : "n/a";
+  const priceStatus = item.priceStatus || (item.dataStatus === "no_recent" ? "missing" : item.dataStatus) || "missing";
+  const freshnessBadge = priceStatus === "fresh" ? "Fresh" : priceStatus === "stale" ? "Stale" : "Failed";
+  const showLastFetchFailedWarning = item.lastFetchStatus === "failed" && priceStatus !== "missing";
 
   return (
     <Card className="flex flex-col rounded-xl shadow-sm">
@@ -143,6 +149,9 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               {freshnessBadge}
             </Badge>
           </div>
+          {showLastFetchFailedWarning ? (
+            <div className="text-[11px] text-amber-700">Last fetch failed; showing latest successful price</div>
+          ) : null}
           {isDebugSources ? (
             <div className="text-[11px] text-muted-foreground leading-tight">
               <div>normalized: {item.commodity}</div>
@@ -155,6 +164,10 @@ function MarketCard({ item }: { item: MarketIndexDto }) {
               ) : null}
               {typeof item.rawToUsdFxRate === "number" ? (
                 <div>fx: {item.rawCurrency || "N/A"} {"->"} USD = {item.rawToUsdFxRate.toFixed(8)}</div>
+              ) : null}
+              {item.conversionNotes ? <div>conversion: {item.conversionNotes}</div> : null}
+              {item.alternatives && item.alternatives.length > 0 ? (
+                <div>alternatives: {item.alternatives.length}</div>
               ) : null}
             </div>
           ) : null}
@@ -253,8 +266,8 @@ function MarketTab({
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {items.map((item, index) => (
-          <MarketCard key={`${item.country}-${item.commodity}-${index}`} item={item} />
+        {items.map((item) => (
+          <MarketCard key={item.seriesKey || `${item.country}-${item.commodity}-${item.basis}`} item={item} />
         ))}
       </div>
     </div>
@@ -271,6 +284,8 @@ export function MarketDashboard() {
   );
   const [selectedTab, setSelectedTab] = useState<MarketCountryTab>(computedDefaultTab);
   const selectedHealth = data?.marketHealth?.[selectedTab];
+  const selectedDataAlert =
+    selectedTab === "br" ? data?.dataAlerts?.br : selectedTab === "ar" ? data?.dataAlerts?.ar : selectedTab === "us" ? data?.dataAlerts?.us : null;
   const selectedHealthBadgeClass =
     selectedHealth?.status === "OK"
       ? "bg-emerald-100 text-emerald-800"
@@ -296,39 +311,64 @@ export function MarketDashboard() {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight mb-2">
-              {t('home.market.title')}
-            </h2>
-            <p className="text-muted-foreground">
-              {t('home.market.subtitle')}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setLocation("/arbitrage")}
-          >
-            <TrendingUp className="mr-2 h-4 w-4" />
-            {t('home.market.compareMarkets')}
-          </Button>
-        </div>
-        {selectedHealth ? (
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
-            <span>·</span>
-            <span>Source: {selectedHealth.source || "n/a"}</span>
-            <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
-          </div>
-        ) : null}
-
         <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as MarketCountryTab)} className="w-full">
-          <TabsList className="grid w-full max-w-lg grid-cols-4">
-            <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
-            <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
-            <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
-            <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
-          </TabsList>
+          <div className="mb-5 grid grid-cols-1 gap-3 lg:[grid-template-columns:minmax(0,1.7fr)_minmax(300px,380px)_auto] lg:items-start lg:gap-x-5 lg:gap-y-3 xl:[grid-template-columns:minmax(0,1.7fr)_minmax(320px,420px)_auto] xl:gap-x-6">
+            <div className="space-y-4 lg:col-start-1 lg:row-start-1">
+              <div>
+                <h2 className="mb-2 text-3xl font-bold tracking-tight">
+                  {t('home.market.title')}
+                </h2>
+                <p className="text-muted-foreground">
+                  {t('home.market.subtitle')}
+                </p>
+              </div>
+
+              {selectedHealth ? (
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>Last successful update: {selectedHealth.lastSuccessfulUpdate || "n/a"}</span>
+                  <span>·</span>
+                  <span>Source: {selectedHealth.source || "n/a"}</span>
+                  <Badge className={selectedHealthBadgeClass}>{selectedHealth.status}</Badge>
+                </div>
+              ) : null}
+
+            </div>
+
+            <div className="lg:col-start-2 lg:row-start-1 lg:self-start">
+              <InvestorDeckCallout />
+            </div>
+
+            <div className="flex flex-col gap-2 lg:col-start-3 lg:row-start-1 lg:self-start">
+              <Button
+                variant="outline"
+                className="w-full justify-center lg:w-auto"
+                onClick={() => setLocation("/arbitrage")}
+              >
+                <TrendingUp className="mr-2 h-4 w-4" />
+                {t('home.market.compareMarkets')}
+              </Button>
+              <Button
+                variant="default"
+                className="w-full justify-center lg:w-auto"
+                onClick={() => setLocation("/monitor")}
+              >
+                Open Monitor
+              </Button>
+            </div>
+
+            {selectedDataAlert ? (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 lg:col-start-1 lg:row-start-2">
+                {selectedDataAlert}
+              </div>
+            ) : null}
+
+            <TabsList className="grid w-full grid-cols-4 lg:col-start-1 lg:row-start-3 lg:max-w-xl">
+              <TabsTrigger value="ua">{t('home.market.tabs.ua')}</TabsTrigger>
+              <TabsTrigger value="br">{t('home.market.tabs.br')}</TabsTrigger>
+              <TabsTrigger value="ar">{t('home.market.tabs.ar')}</TabsTrigger>
+              <TabsTrigger value="us">{t('home.market.tabs.us')}</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="ua" className="mt-6">
             <MarketTab 

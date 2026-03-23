@@ -39,6 +39,10 @@ import NotFound from "@/pages/not-found";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import RiskDisclosure from "@/pages/RiskDisclosure";
+import DeckPage from "@/pages/Deck";
+import MonitorPage from "@/pages/Monitor";
+import MonitorV3Page from "@/pages/MonitorV3";
+import SpikeMonitorPage from "@/pages/SpikeMonitor";
 import { useEffect } from "react";
 
 function RedirectToEducation() {
@@ -93,6 +97,14 @@ function Router() {
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/risk-disclosure" component={RiskDisclosure} />
+      <Route path="/deck" component={DeckPage} />
+      <Route path="/deck/" component={DeckPage} />
+      <Route path="/monitor" component={MonitorV3Page} />
+      <Route path="/monitor/" component={MonitorV3Page} />
+      <Route path="/spike-monitor" component={SpikeMonitorPage} />
+      <Route path="/spike-monitor/" component={SpikeMonitorPage} />
+      <Route path="/monitor-legacy" component={MonitorPage} />
+      <Route path="/monitor-legacy/" component={MonitorPage} />
       <Route component={NotFound} />
     </Switch>
   );

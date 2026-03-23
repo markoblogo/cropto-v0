@@ -34,6 +34,8 @@ export type MarketPricePoint = {
     htmlSha?: string;
     payloadSha?: string;
     parser?: string;
+    rawTextSnippet?: string;
+    invalidReason?: string;
   };
 };
 
@@ -97,8 +99,12 @@ export type ProviderDefinition = {
   parserSpec?: {
     dateKeywords?: string[];
     priceKeywords?: string[];
+    commodityKeywords?: string[];
     dateRegex?: string;
     priceRegex?: string;
+    numberFormat?: "auto" | "thousands_dot_decimal_comma";
+    currencyHint?: "USD" | "ARS" | "BRL" | "EUR";
+    unitHint?: "t" | "kg" | "bu" | "cwt" | "bag60kg" | "qq100kg";
   };
 };
 

@@ -378,6 +378,48 @@
     @apply text-lg font-semibold mb-2 mt-4 text-foreground;
   }
 
+  /* Compact, visible card scrollbar for monitor widgets */
+  .monitor-widget-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
+  }
+
+  .monitor-widget-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .monitor-widget-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .monitor-widget-scroll::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: hsl(var(--muted-foreground) / 0.35);
+  }
+
+  .monitor-widget-scroll:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.55);
+  }
+
+  .monitor-map-popup .maplibregl-popup-content {
+    background: rgba(2, 8, 18, 0.96);
+    color: #e2e8f0;
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+    padding: 8px 10px;
+    overflow: hidden;
+    max-width: min(420px, 78vw);
+    max-height: min(62vh, 420px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .monitor-map-popup .maplibregl-popup-tip {
+    border-top-color: rgba(2, 8, 18, 0.96);
+    border-bottom-color: rgba(2, 8, 18, 0.96);
+  }
+
   .prose p {
     @apply mb-4 text-foreground leading-relaxed;
   }

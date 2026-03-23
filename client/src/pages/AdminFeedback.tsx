@@ -395,7 +395,9 @@ export default function AdminFeedback() {
                           <p>Last success: {fmt(source.lastSuccessAt)}</p>
                           <p>Latest asOf: {fmt(source.latestAsOf)}</p>
                           <p>Last rows: {source.lastRows ?? 0}</p>
-                          {sourceKey === "USDA_AMS" ? <p>MARS latest published: {fmt(source.lastPublishedDate)}</p> : null}
+                          {sourceKey === "USDA_AMS" && "lastPublishedDate" in source ? (
+                            <p>MARS latest published: {fmt(source.lastPublishedDate)}</p>
+                          ) : null}
                           {source.lastError ? <p className="text-destructive">Last error: {source.lastError}</p> : null}
                         </div>
                       </div>

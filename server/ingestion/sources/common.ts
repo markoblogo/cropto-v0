@@ -4,11 +4,12 @@ import type { MarketPricePoint, ProviderDefinition, ProviderParseResult, SourceL
 
 const DATE_RE = /\b(20\d{2}[-/.](0[1-9]|1[0-2])[-/.](0[1-9]|[12]\d|3[01]))\b/g;
 const DATE_RE_DMY = /\b([0-3]?\d)[/.]([01]?\d)[/.](20\d{2})\b/g;
+const DATE_RE_DMY_DASH = /\b([0-3]?\d)-([01]?\d)-(20\d{2})\b/g;
 const PRICE_RE = /(?:USD|US\$|ARS|BRL|EUR|R\$|\$)?\s*(-?\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,4})|\d+(?:[.,]\d{1,4}))/g;
 
 const LAST_REQUEST_BY_DOMAIN = new Map<string, number>();
 
-function parsePrice(raw: string): number | null {
+function parsePrice(raw: string, numberFormat: "auto" | "thousands_dot_decimal_comma" = "auto"): number | null {
   const cleaned = raw.replace(/\s/g, "");
   if (!cleaned) return null;
   const hasComma = cleaned.includes(",");
@@ -22,6 +23,10 @@ function parsePrice(raw: string): number | null {
     }
   } else if (hasComma && !hasDot) {
     normalized = cleaned.replace(/,/g, ".");
+  } else if (!hasComma && hasDot && numberFormat === "thousands_dot_decimal_comma") {
+    if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
+      normalized = cleaned.replace(/\./g, "");
+    }
   }
   const value = Number.parseFloat(normalized);
   if (!Number.isFinite(value) || value <= 0 || value > 1_000_000) return null;
@@ -37,6 +42,11 @@ function parseDates(content: string, customDateRegex?: string): string[] {
     if (Number.isFinite(ts)) out.add(candidate);
   }
   for (const m of content.matchAll(DATE_RE_DMY)) {
+    const iso = `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+    const ts = new Date(`${iso}T00:00:00.000Z`).getTime();
+    if (Number.isFinite(ts)) out.add(iso);
+  }
+  for (const m of content.matchAll(DATE_RE_DMY_DASH)) {
     const iso = `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
     const ts = new Date(`${iso}T00:00:00.000Z`).getTime();
     if (Number.isFinite(ts)) out.add(iso);
@@ -77,11 +87,24 @@ function confidence(args: { statusCode: number; hasPrice: boolean; hasDate: bool
   return Number(Math.min(score, 0.95).toFixed(2));
 }
 
-function inferRawUnit(body: string): string {
-  if (/USD\s*\/\s*bu|\busd\/bu\b|bushel/i.test(body)) return "USD/bu";
-  if (/\bARS\b/i.test(body)) return "ARS/t";
-  if (/\bBRL\b|R\$/i.test(body)) return "BRL/t";
-  return "USD/t";
+function inferRawCurrency(body: string, hint?: "USD" | "ARS" | "BRL" | "EUR"): "USD" | "ARS" | "BRL" | "EUR" | "UNKNOWN" {
+  if (hint) return hint;
+  if (/\bARS\b|argentine peso/i.test(body)) return "ARS";
+  if (/\bBRL\b|R\$/i.test(body)) return "BRL";
+  if (/\bEUR\b|€/i.test(body)) return "EUR";
+  if (/\bUSD\b|US\$|\$/i.test(body)) return "USD";
+  return "UNKNOWN";
+}
+
+function inferRawUnit(body: string, currency: string, hint?: "t" | "kg" | "bu" | "cwt" | "bag60kg" | "qq100kg"): string {
+  const normalizedHint = hint || null;
+  if (normalizedHint === "bu" || /USD\s*\/\s*bu|\busd\/bu\b|bushel/i.test(body)) return "USD/bu";
+  if (normalizedHint === "kg" || /\b\/\s*kg\b|\bper\s+kg\b/i.test(body)) return `${currency}/kg`;
+  if (normalizedHint === "cwt" || /\b\/\s*cwt\b|\bcentum\b|\bhundredweight\b/i.test(body)) return `${currency}/cwt`;
+  if (normalizedHint === "bag60kg" || /\b(bag|sack)\b.{0,8}\b60\s?kg\b/i.test(body)) return `${currency}/bag60kg`;
+  if (normalizedHint === "qq100kg" || /\bqq\b|\bquintal\b|\b100\s?kg\b/i.test(body)) return `${currency}/qq100kg`;
+  if (normalizedHint === "t" || /\b\/\s*t\b|\b\/\s*ton\b|\bper\s+ton\b|\bmetric\s+ton\b/i.test(body)) return `${currency}/t`;
+  return "UNKNOWN";
 }
 
 function extractFailureSnippet(body: string, keywords: string[] = []): string {
@@ -100,19 +123,79 @@ function sanitizeSnippet(input: string): string {
     .replace(/\b(authorization|token)\b\s*[:=]\s*["']?bearer\s+[A-Za-z0-9._\-+/=]+/gi, "$1=Bearer [redacted]");
 }
 
-function extractDatePricePairs(body: string, customPriceRegex?: string): Array<{ asOf: string; price: number }> {
+type PriceMatch = { value: number; index: number };
+
+function extractPriceMatches(
+  line: string,
+  priceRe: RegExp,
+  numberFormat: "auto" | "thousands_dot_decimal_comma"
+): PriceMatch[] {
+  const matches: PriceMatch[] = [];
+  for (const m of line.matchAll(priceRe)) {
+    const value = parsePrice(String(m[1] || m[0] || ""), numberFormat);
+    if (value == null || !Number.isFinite(value)) continue;
+    if (value <= 0.0001 || value >= 2_000_000) continue;
+    matches.push({ value, index: m.index ?? 0 });
+  }
+  return matches;
+}
+
+export function pickCommodityAwarePriceFromLine(
+  line: string,
+  commodityKeywords: string[],
+  priceRe: RegExp,
+  numberFormat: "auto" | "thousands_dot_decimal_comma" = "auto"
+): number | null {
+  const priceMatches = extractPriceMatches(line, priceRe, numberFormat);
+  if (priceMatches.length === 0) return null;
+  if (commodityKeywords.length === 0) return priceMatches[0].value;
+
+  const lower = line.toLowerCase();
+  const keywordPositions: number[] = [];
+  for (const keyword of commodityKeywords) {
+    let offset = 0;
+    while (offset < lower.length) {
+      const idx = lower.indexOf(keyword.toLowerCase(), offset);
+      if (idx === -1) break;
+      keywordPositions.push(idx);
+      offset = idx + keyword.length;
+    }
+  }
+  if (keywordPositions.length === 0) return null;
+
+  let best: { value: number; score: number } | null = null;
+  for (const kp of keywordPositions) {
+    for (const pm of priceMatches) {
+      // Prefer prices to the right of commodity label; penalize left-side matches.
+      const forwardPenalty = pm.index < kp ? 500 : 0;
+      const score = Math.abs(pm.index - kp) + forwardPenalty;
+      if (!best || score < best.score) {
+        best = { value: pm.value, score };
+      }
+    }
+  }
+  return best?.value ?? null;
+}
+
+function extractDatePricePairs(
+  body: string,
+  opts?: { customPriceRegex?: string; commodityKeywords?: string[]; numberFormat?: "auto" | "thousands_dot_decimal_comma" }
+): Array<{ asOf: string; price: number }> {
   const pairs: Array<{ asOf: string; price: number }> = [];
-  const priceRe = customPriceRegex ? new RegExp(customPriceRegex, "g") : PRICE_RE;
+  const priceRe = opts?.customPriceRegex ? new RegExp(opts.customPriceRegex, "g") : PRICE_RE;
+  const commodityKeywords = (opts?.commodityKeywords || []).map((k) => k.toLowerCase());
+  const numberFormat = opts?.numberFormat || "auto";
   const lines = body.split(/\n|<tr|<li|<p|<div/gi);
   for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    if (commodityKeywords.length > 0 && !commodityKeywords.some((kw) => lowerLine.includes(kw))) {
+      continue;
+    }
     const ds = parseDates(line);
     if (ds.length === 0) continue;
-    const prices = [...line.matchAll(priceRe)]
-      .map((m) => parsePrice(String(m[1] || m[0] || "")))
-      .filter((n): n is number => Number.isFinite(n))
-      .filter((n) => n > 5 && n < 5000);
-    if (prices.length === 0) continue;
-    pairs.push({ asOf: ds[0], price: prices[0] });
+    const chosen = pickCommodityAwarePriceFromLine(line, commodityKeywords, priceRe, numberFormat);
+    if (!Number.isFinite(chosen)) continue;
+    pairs.push({ asOf: ds[0], price: chosen as number });
   }
   const dedup = new Map<string, number>();
   for (const p of pairs) {
@@ -181,9 +264,9 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
   let body = await response.text();
   let dates = parseDates(body, def.parserSpec?.dateRegex);
   let prices = [...body.matchAll(def.parserSpec?.priceRegex ? new RegExp(def.parserSpec.priceRegex, "g") : PRICE_RE)]
-    .map((m) => parsePrice(String(m[1] || m[0] || "")))
+    .map((m) => parsePrice(String(m[1] || m[0] || ""), def.parserSpec?.numberFormat || "auto"))
     .filter((n): n is number => Number.isFinite(n))
-    .filter((n) => n > 5 && n < 5000);
+    .filter((n) => n > 0.0001 && n < 2_000_000);
 
   if ((prices.length === 0 || dates.length === 0) && process.env.INGEST_USE_PLAYWRIGHT === "true") {
     const rendered = await maybeRender(def.url);
@@ -191,22 +274,28 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
       body = rendered;
       dates = parseDates(body, def.parserSpec?.dateRegex);
       prices = [...body.matchAll(def.parserSpec?.priceRegex ? new RegExp(def.parserSpec.priceRegex, "g") : PRICE_RE)]
-        .map((m) => parsePrice(String(m[1] || m[0] || "")))
+        .map((m) => parsePrice(String(m[1] || m[0] || ""), def.parserSpec?.numberFormat || "auto"))
         .filter((n): n is number => Number.isFinite(n))
-        .filter((n) => n > 5 && n < 5000);
+        .filter((n) => n > 0.0001 && n < 2_000_000);
     }
   }
 
   const dedupPrices = [...new Set(prices)].slice(0, 120);
   const asOf = pickAsOfDate(dates);
   const hasHistory = new Set(dates).size >= 5;
-  const rawUnit = inferRawUnit(body);
+  const rawCurrency = inferRawCurrency(body, def.parserSpec?.currencyHint);
+  const rawUnit = inferRawUnit(body, rawCurrency, def.parserSpec?.unitHint);
+  const rawTextSnippet = sanitizeSnippet(body.slice(0, 700));
 
   const commodityNorm = normalizeCommodity(def.commodityHint);
   const points: MarketPricePoint[] = [];
 
   const historyLimit = Math.min(Math.max(Number.parseInt(process.env.INGEST_HISTORY_DAYS || "60", 10), 1), 730);
-  const pairs = extractDatePricePairs(body, def.parserSpec?.priceRegex).slice(0, historyLimit);
+  const pairs = extractDatePricePairs(body, {
+    customPriceRegex: def.parserSpec?.priceRegex,
+    commodityKeywords: def.parserSpec?.commodityKeywords,
+    numberFormat: def.parserSpec?.numberFormat,
+  }).slice(0, historyLimit);
 
   if (pairs.length > 0) {
     for (const pair of pairs) {
@@ -222,7 +311,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
         price: pair.price,
         priceRaw: pair.price,
         rawUnit,
-        rawCurrency: rawUnit.slice(0, 3).toUpperCase(),
+        rawCurrency,
         asOf: pair.asOf,
         fetchedAt: new Date().toISOString(),
         source: {
@@ -237,7 +326,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
             hasHistory,
           }),
         },
-        raw: { htmlSha, parser: "heuristic" },
+        raw: { htmlSha, parser: "heuristic", rawTextSnippet },
       });
     }
   } else if (asOf && dedupPrices.length > 0) {
@@ -254,7 +343,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
       price,
       priceRaw: price,
       rawUnit,
-      rawCurrency: rawUnit.slice(0, 3).toUpperCase(),
+      rawCurrency,
       asOf,
       fetchedAt: new Date().toISOString(),
       source: {
@@ -269,7 +358,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
           hasHistory,
         }),
       },
-      raw: { htmlSha, parser: "heuristic" },
+      raw: { htmlSha, parser: "heuristic", rawTextSnippet },
     });
   }
 

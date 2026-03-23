@@ -1,0 +1,2 @@
+Video playback on /deck is streamed from YouTube via Iframe Player API.
+Configure `CROPTO_DECK_VIDEO_SOURCE_URL` and `CROPTO_DECK_VIDEO_YOUTUBE_ID` in deck-content.ts.

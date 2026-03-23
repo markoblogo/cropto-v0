@@ -41,14 +41,14 @@ const ES_COUNTRIES = new Set([
   "CR", "PA", "DO", "GT", "SV", "HN", "NI", "PR", "CU", "GQ",
 ]);
 
-async function fetchCountryCode(url: string, pick: (data: unknown) => string) {
+async function fetchCountryCode(url: string, pick: (data: unknown) => string | undefined) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 2500);
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) return "";
     const data = await response.json();
-    return String(pick(data) || "").toUpperCase();
+    return String(pick(data) ?? "").toUpperCase();
   } catch {
     return "";
   } finally {

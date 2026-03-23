@@ -9,7 +9,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "corn",
     basis: "FOB Santos",
     url: "https://www.commodity3.com/instrument/YC20PPF6/corn-brazil-fob-santos",
-    parserSpec: { dateKeywords: ["santos"], priceKeywords: ["corn", "basis"] },
+    parserSpec: { dateKeywords: ["santos"], priceKeywords: ["corn", "basis"], currencyHint: "USD", unitHint: "t" },
   },
   BR_FOB_BASIS: {
     vendor: "COMMODITY3",
@@ -18,7 +18,7 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "corn",
     basis: "FOB basis",
     url: "https://www.commodity3.com/instrument/YC2BPPF7/corn-brazil-fob-basis",
-    parserSpec: { dateKeywords: ["basis"], priceKeywords: ["corn", "fob"] },
+    parserSpec: { dateKeywords: ["basis"], priceKeywords: ["corn", "fob"], currencyHint: "USD", unitHint: "t" },
   },
 };
 

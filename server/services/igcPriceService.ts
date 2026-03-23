@@ -144,7 +144,9 @@ function extractTableData(html: string, commodity: string): IgcPrice[] {
       if ($cells.length === 0) return;
 
       const cells: string[] = [];
-      $cells.each((j, cell) => cells.push($(cell).text().trim()));
+      $cells.each((j, cell) => {
+        cells.push($(cell).text().trim());
+      });
       if (cells.length === 0) return;
 
       const firstCell = cells[0];
@@ -225,7 +227,9 @@ function extractTableData(html: string, commodity: string): IgcPrice[] {
     $rows
       .first()
       .find("th, td")
-      .each((i, el) => headers.push($(el).text().trim()));
+      .each((i, el) => {
+        headers.push($(el).text().trim());
+      });
     processRows(headers, $rows.slice(1));
   });
 

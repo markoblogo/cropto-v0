@@ -1,0 +1,390 @@
+import * as cheerio from "cheerio";
+import { inflateSync } from "node:zlib";
+import {
+  DBNOMICS_API_BASE_URL,
+  DBNOMICS_TIMEOUT_MS,
+  ENABLE_IMF_PCPS_WIDGET,
+  IMF_PCPS_CACHE_TTL_MS,
+  IMF_PCPS_PAGE_URL,
+  IMF_PCPS_TABLE2_URL,
+  IMF_PCPS_TIMEOUT_MS,
+} from "../config";
+import type { GrainWidgetImfCommodityBenchmarks, GrainWidgetImfCommodityBenchmarkRow } from "../types";
+import type { GrainWidgetsProvider, GrainWidgetsProviderContext } from "./types";
+import { MockGrainWidgetsProvider } from "./mockGrainWidgetsProvider";
+import { deriveSeries, fetchBufferWithTimeout, fetchTextResponseWithTimeout, makeProviderError, parseNumber, redactSensitiveUrl } from "./utils";
+import { discoverOfficialPage, pickDiscoveredLinks } from "./lightweightDiscovery";
+
+type CacheEntry = { fetchedAt: number; widget: GrainWidgetImfCommodityBenchmarks };
+let cacheEntry: CacheEntry | null = null;
+
+const TARGETS = [
+  { commodity: "WHEAT" as const, label: "Wheat", aliases: ["wheat"] },
+  { commodity: "MAIZE" as const, label: "Maize (Corn)", aliases: ["maize", "corn"] },
+  { commodity: "SOYBEANS" as const, label: "Soybeans", aliases: ["soybeans", "soybean"] },
+];
+
+const DBNOMICS_PCPS_SERIES_BY_COMMODITY: Record<(typeof TARGETS)[number]["commodity"], string[]> = {
+  WHEAT: ["M.W00.PWHEAMT.IX"],
+  MAIZE: ["M.W00.PMAIZMT.IX"],
+  SOYBEANS: ["M.W00.PSOYB.IX"],
+};
+
+type DbnomicsSeriesDoc = {
+  period?: Array<string | number>;
+  value?: Array<number | string | null>;
+};
+
+function buildImfRow(target: (typeof TARGETS)[number], seriesValues: number[], extractionMode: string): GrainWidgetImfCommodityBenchmarkRow {
+  const current = seriesValues[seriesValues.length - 1];
+  const prev = seriesValues[seriesValues.length - 2];
+  return {
+    commodity: target.commodity,
+    label: target.label,
+    current,
+    unit: "USD index",
+    cadence: "monthly",
+    changeAbs: prev != null ? Number((current - prev).toFixed(4)) : undefined,
+    changePct: prev && prev !== 0 ? Number((((current - prev) / prev) * 100).toFixed(2)) : undefined,
+    series: seriesValues.map((value, index) => ({ ...deriveSeries(current, prev != null ? current - prev : undefined, seriesValues.length)[index], value })),
+    confidence: seriesValues.length >= 6 ? "HIGH" : "MED",
+    notes: [
+      "Parsed from IMF primary commodity prices monthly table",
+      `extraction_mode:${extractionMode}`,
+    ],
+  } satisfies GrainWidgetImfCommodityBenchmarkRow;
+}
+
+function toIsoFromPeriod(period: string | number): string {
+  const raw = String(period || "").trim();
+  if (/^\d{4}-\d{2}$/.test(raw)) return `${raw}-01T00:00:00.000Z`;
+  if (/^\d{4}$/.test(raw)) return `${raw}-01-01T00:00:00.000Z`;
+  const ts = Date.parse(raw);
+  return Number.isFinite(ts) ? new Date(ts).toISOString() : new Date().toISOString();
+}
+
+async function fetchDbnomicsSeries(seriesCode: string): Promise<{ doc?: DbnomicsSeriesDoc; sourceUrl: string; error?: string }> {
+  const sourceUrl = `${DBNOMICS_API_BASE_URL}/series/IMF/PCPS/${seriesCode}?observations=true`;
+  try {
+    const response = await fetchTextResponseWithTimeout(sourceUrl, DBNOMICS_TIMEOUT_MS);
+    const payload = JSON.parse(response.text);
+    const doc = payload?.series?.docs?.[0] as DbnomicsSeriesDoc | undefined;
+    if (!doc || !Array.isArray(doc.period) || !Array.isArray(doc.value)) {
+      return { sourceUrl, error: "dbnomics_series_shape_unexpected" };
+    }
+    return { sourceUrl, doc };
+  } catch (error: any) {
+    return { sourceUrl, error: error?.message || "dbnomics_fetch_failed" };
+  }
+}
+
+async function fetchRowsFromDbnomics(ctx: GrainWidgetsProviderContext) {
+  const rows: GrainWidgetImfCommodityBenchmarkRow[] = [];
+  const sourceUrlsUsed: string[] = [];
+  const warnings: string[] = [];
+
+  for (const target of TARGETS) {
+    const candidates = DBNOMICS_PCPS_SERIES_BY_COMMODITY[target.commodity] || [];
+    let selectedDoc: DbnomicsSeriesDoc | undefined;
+    let selectedSeries = "";
+
+    for (const seriesCode of candidates) {
+      const result = await fetchDbnomicsSeries(seriesCode);
+      sourceUrlsUsed.push(result.sourceUrl);
+      if (result.doc) {
+        selectedDoc = result.doc;
+        selectedSeries = seriesCode;
+        break;
+      }
+      if (result.error) warnings.push(`${target.commodity}:${seriesCode}:${result.error}`);
+    }
+
+    if (!selectedDoc) continue;
+
+    const tuples = selectedDoc.period
+      ?.map((period, idx) => ({ period, value: parseNumber(selectedDoc.value?.[idx]) }))
+      .filter((entry): entry is { period: string | number; value: number } => entry.value != null) || [];
+
+    if (tuples.length < 3) {
+      warnings.push(`${target.commodity}:${selectedSeries}:insufficient_points`);
+      continue;
+    }
+
+    const subset = tuples.slice(Math.max(0, tuples.length - Math.max(ctx.seriesPoints, 8)));
+    const row = buildImfRow(
+      target,
+      subset.map((item) => item.value),
+      "dbnomics_pcps",
+    );
+    row.series = subset.map((item) => ({ ts: toIsoFromPeriod(item.period), value: Number(item.value.toFixed(4)) }));
+    row.notes = [
+      "Source: DBnomics IMF/PCPS",
+      `series_code:${selectedSeries}`,
+      "Units: index (2016=100)",
+    ];
+    rows.push(row);
+  }
+
+  return { rows, sourceUrlsUsed, warnings };
+}
+
+function parseRowsFromStructuredText(text: string, extractionMode: string): GrainWidgetImfCommodityBenchmarkRow[] {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return TARGETS.flatMap((target) => {
+    const index = lines.findIndex((line) => target.aliases.some((alias) => line.toLowerCase() === alias.toLowerCase()));
+    if (index < 0) return [];
+    const numericWindow = lines
+      .slice(index + 1, index + 18)
+      .map((line) => parseNumber(line))
+      .filter((value): value is number => value != null)
+      .filter((value) => value >= 10 && value <= 10000)
+      .slice(0, 8);
+    if (numericWindow.length < 3) return [];
+    return [buildImfRow(target, numericWindow, extractionMode)];
+  });
+}
+
+function parseRowsFromLooseText(text: string, extractionMode: string): GrainWidgetImfCommodityBenchmarkRow[] {
+  return TARGETS.flatMap((target) => {
+    const normalized = text.replace(/\s+/g, " ");
+    const indices = target.aliases
+      .map((alias) => normalized.toLowerCase().indexOf(alias.toLowerCase()))
+      .filter((value) => value >= 0);
+    const index = indices[0];
+    if (index == null) return [];
+    const window = normalized.slice(index, index + 900);
+    const numbers = (window.match(/-?\d+(?:\.\d+)?/g) || [])
+      .map((value) => Number.parseFloat(value))
+      .filter(Number.isFinite)
+      .filter((value) => value >= 10 && value <= 10000)
+      .slice(0, 8);
+    if (numbers.length < 3) return [];
+    return [buildImfRow(target, numbers, extractionMode)];
+  });
+}
+
+function extractPdfReadableText(buffer: Buffer): string {
+  const latin = buffer.toString("latin1");
+  const chunks = latin.match(/\((?:\\.|[^()]){2,400}\)/g) || [];
+  const textParts = chunks
+    .map((chunk) =>
+      chunk
+        .slice(1, -1)
+        .replace(/\\\)/g, ")")
+        .replace(/\\\(/g, "(")
+        .replace(/\\n/g, " ")
+        .replace(/\\r/g, " ")
+        .replace(/\\t/g, " "),
+    )
+    .filter((chunk) => /wheat|maize|corn|soybean|sunflower|rapeseed/i.test(chunk) || /\d{2,4}(?:\.\d+)?/.test(chunk));
+  return textParts.join("\n");
+}
+
+function extractPdfTextFromFlateStreams(buffer: Buffer): string {
+  const source = buffer.toString("latin1");
+  const streams = [...source.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)];
+  const parts: string[] = [];
+  for (const match of streams) {
+    const raw = match[1];
+    if (!raw) continue;
+    try {
+      const inflated = inflateSync(Buffer.from(raw, "latin1")).toString("latin1");
+      const textParts = (inflated.match(/\((?:\\.|[^()]){1,400}\)/g) || [])
+        .map((chunk) =>
+          chunk
+            .slice(1, -1)
+            .replace(/\\\)/g, ")")
+            .replace(/\\\(/g, "(")
+            .replace(/\\n/g, " ")
+            .replace(/\\r/g, " ")
+            .replace(/\\t/g, " "),
+        )
+        .filter((chunk) => /wheat|maize|corn|soybean|sunflower|rapeseed|\d{2,4}(?:\.\d+)?/i.test(chunk));
+      if (textParts.length) parts.push(textParts.join("\n"));
+    } catch {
+      continue;
+    }
+  }
+  return parts.join("\n");
+}
+
+function extractAsciiRuns(buffer: Buffer): string {
+  const matches = buffer
+    .toString("latin1")
+    .match(/[A-Za-z0-9$%.,:/()'"\- ]{3,}/g) || [];
+  return matches
+    .map((chunk) => chunk.trim())
+    .filter((chunk) => chunk.length >= 3)
+    .join("\n");
+}
+
+function resolveImfTableUrl($: cheerio.CheerioAPI): string {
+  const hrefs = $("a[href]")
+    .map((_, el) => String($(el).attr("href") || "").trim())
+    .get();
+  const pdfHref = hrefs.find((href) => /table2\.pdf/i.test(href));
+  if (!pdfHref) return IMF_PCPS_TABLE2_URL;
+  return new URL(pdfHref, IMF_PCPS_PAGE_URL).toString();
+}
+
+function parseRowsFromHtmlTables($: cheerio.CheerioAPI): GrainWidgetImfCommodityBenchmarkRow[] {
+  const tableText = $("table").text();
+  if (!tableText.trim()) return [];
+  return parseRowsFromLooseText(tableText, "html_table");
+}
+
+export class ImfPcpsProvider implements GrainWidgetsProvider {
+  id = "imf-pcps";
+  kind = "IMF_COMMODITY_BENCHMARKS" as const;
+  enabled = ENABLE_IMF_PCPS_WIDGET;
+  private readonly fallback = new MockGrainWidgetsProvider({ kind: "IMF_COMMODITY_BENCHMARKS" as any });
+
+  async getWidget(ctx: GrainWidgetsProviderContext): Promise<GrainWidgetImfCommodityBenchmarks> {
+    const now = Date.now();
+    if (cacheEntry && now - cacheEntry.fetchedAt <= IMF_PCPS_CACHE_TTL_MS) {
+      return { ...cacheEntry.widget, updatedAt: ctx.now.toISOString(), notes: [...(cacheEntry.widget.notes || []), "cache_hit"] };
+    }
+
+    const dbnomics = await fetchRowsFromDbnomics(ctx);
+    if (dbnomics.rows.length >= 3) {
+      const widget: GrainWidgetImfCommodityBenchmarks = {
+        id: "grain-imf-commodity-benchmarks",
+        kind: "IMF_COMMODITY_BENCHMARKS",
+        title: "IMF Commodity Benchmarks",
+        subtitle: "Primary commodity price system",
+        status: "REFRESH",
+        sourceName: "IMF",
+        sourceAttribution: "Data: IMF/PCPS via DBnomics",
+        sourceUrl: redactSensitiveUrl(dbnomics.sourceUrlsUsed[0] || `${DBNOMICS_API_BASE_URL}/datasets/IMF/PCPS`),
+        updatedAt: ctx.now.toISOString(),
+        timeframe: ctx.timeframe,
+        territoryScope: "GLOBAL",
+        territory: { code: "GLOBAL", label: "Global" },
+        rows: dbnomics.rows,
+        summary: {
+          expectedCount: 4,
+          mappedCount: dbnomics.rows.length,
+          coverage: `${dbnomics.rows.length}/4`,
+          cadence: "monthly",
+        },
+        notes: [
+          "DBnomics IMF/PCPS monthly benchmark layer",
+          "Index units (2016=100)",
+          "Fallback chain: DBnomics -> IMF official parsing",
+        ],
+        debug: {
+          sourceUrlUsed: redactSensitiveUrl(dbnomics.sourceUrlsUsed[0] || `${DBNOMICS_API_BASE_URL}/datasets/IMF/PCPS`),
+          rowsParsed: dbnomics.rows.length,
+          warnings: dbnomics.warnings.length ? dbnomics.warnings : ["data_source:dbnomics_pcps"],
+        },
+      };
+      cacheEntry = { fetchedAt: now, widget };
+      return widget;
+    }
+
+    const page = await discoverOfficialPage(IMF_PCPS_PAGE_URL, IMF_PCPS_TIMEOUT_MS);
+    const $ = cheerio.load(page.html);
+    const updatedText = $.text().match(/Updated\s*:?\s*[A-Za-z]+\s+\d{1,2},\s*\d{4}|Updated:\s*[A-Za-z]+\s+\d{4}/i)?.[0];
+    const discoveredLinks = pickDiscoveredLinks(page, {
+      includePatterns: [/table2\.(pdf|xls|xlsx|csv)/i, /external-data\.(xls|xlsx|csv)/i, /\.csv(?:[?#].*)?$/i],
+      limit: 6,
+    });
+    const htmlRows = parseRowsFromHtmlTables($);
+    let extractionMode = "html_table";
+    let rows = htmlRows.filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+    let tableUrl = resolveImfTableUrl($);
+    if (!rows.length) {
+      tableUrl =
+        discoveredLinks.find((href) => /external-data\.(xls|xlsx|csv)/i.test(href))
+        || discoveredLinks.find((href) => /table2\.(xls|xlsx|csv)/i.test(href))
+        || discoveredLinks.find((href) => /table2\.pdf/i.test(href))
+        || resolveImfTableUrl($);
+    }
+    let binaryFinalUrl = tableUrl;
+    let binaryContentType: string | null = null;
+    if (!rows.length) {
+      const acceptHeader = /\.pdf(?:[?#].*)?$/i.test(tableUrl)
+        ? "application/pdf,text/plain,*/*"
+        : "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/octet-stream,*/*";
+      const tableBinary = await fetchBufferWithTimeout(tableUrl, IMF_PCPS_TIMEOUT_MS, { accept: acceptHeader });
+      binaryFinalUrl = tableBinary.finalUrl || tableUrl;
+      binaryContentType = tableBinary.contentType;
+      const extractedText = /\.pdf(?:[?#].*)?$/i.test(tableUrl)
+        ? [extractPdfTextFromFlateStreams(tableBinary.buffer), extractPdfReadableText(tableBinary.buffer)].filter(Boolean).join("\n")
+        : extractAsciiRuns(tableBinary.buffer);
+      extractionMode = /\.pdf(?:[?#].*)?$/i.test(tableUrl) ? "pdf_flate_stream" : "structured_binary_ascii";
+      rows = parseRowsFromStructuredText(extractedText, extractionMode)
+        .concat(parseRowsFromLooseText(extractedText, extractionMode))
+        .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+    }
+    if (!rows.length) {
+      const workbookUrl = discoveredLinks.find((href) => /external-data\.(xls|xlsx|csv)/i.test(href));
+      if (workbookUrl) {
+        const workbookBinary = await fetchBufferWithTimeout(workbookUrl, IMF_PCPS_TIMEOUT_MS, {
+          accept: "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/octet-stream,*/*",
+        });
+        const workbookText = extractAsciiRuns(workbookBinary.buffer);
+        extractionMode = "xls_ascii";
+        binaryFinalUrl = workbookBinary.finalUrl || workbookUrl;
+        binaryContentType = workbookBinary.contentType;
+        rows = parseRowsFromStructuredText(workbookText, extractionMode)
+          .concat(parseRowsFromLooseText(workbookText, extractionMode))
+          .filter((row, index, all) => all.findIndex((candidate) => candidate.commodity === row.commodity) === index);
+      }
+    }
+    if (!rows.length) {
+      throw makeProviderError("imf_pcps_rows_empty", {
+        errorKind: "EMPTY",
+        finalUrl: binaryFinalUrl,
+        contentType: binaryContentType,
+      });
+    }
+
+    const widget: GrainWidgetImfCommodityBenchmarks = {
+      id: "grain-imf-commodity-benchmarks",
+      kind: "IMF_COMMODITY_BENCHMARKS",
+      title: "IMF Commodity Benchmarks",
+      subtitle: "Primary commodity price system",
+      status: rows.length >= 3 ? "REFRESH" : "INDICATIVE",
+      sourceName: "IMF",
+      sourceAttribution: "Data: IMF primary commodity prices",
+      sourceUrl: redactSensitiveUrl(tableUrl),
+      updatedAt: ctx.now.toISOString(),
+      timeframe: ctx.timeframe,
+      territoryScope: "GLOBAL",
+      territory: { code: "GLOBAL", label: "Global" },
+      rows,
+      summary: {
+        expectedCount: 4,
+        mappedCount: rows.length,
+        coverage: `${rows.length}/4`,
+        cadence: "monthly",
+      },
+      notes: [
+        updatedText || "Monthly IMF commodity benchmarks",
+        "Parsed from IMF Table 2 PDF text layer",
+        "Benchmark layer; units kept explicit and conservative",
+      ],
+      debug: {
+        sourceUrlUsed: redactSensitiveUrl(binaryFinalUrl || tableUrl),
+        rowsParsed: rows.length,
+        warnings: [
+          `content_type:${binaryContentType || "unknown"}`,
+          `extraction_mode:${extractionMode}`,
+          `page_final_url:${page.finalUrl}`,
+          ...(discoveredLinks.length ? [`discovered_links:${discoveredLinks.join(" | ")}`] : []),
+          ...(rows.some((row) => row.confidence !== "HIGH") ? ["some_rows_not_high_confidence"] : []),
+        ],
+      },
+    };
+    cacheEntry = { fetchedAt: now, widget };
+    return widget;
+  }
+
+  mockFallback(reason: string, ctx: GrainWidgetsProviderContext) {
+    return this.fallback.mockFallback(reason, ctx) as any;
+  }
+}

@@ -45,6 +45,20 @@ Data is refreshed daily by the market ingestion job and may use fallback provide
 - If source does not expose full history, Cropto accumulates internal daily history in `market_prices`.
 - UI shows `As of`, `Fetched`, `Source`, and freshness badge.
 - Product display currency is canonical `USD/t`; raw quote and FX are shown only in `?debugSources=1`.
+- Unit conventions handled in normalization:
+  - `USD/bu` -> `USD/t` (commodity-specific bushel factors for corn/wheat/soybeans)
+  - `BRL/bag60kg` (`saca`) -> `BRL/t` -> `USD/t`
+  - `ARS/qq100kg` (quintal) -> `ARS/t` -> `USD/t`
+  - unknown/ambiguous unit or currency => `needsReview=true` and excluded from truth-series selection
+- Canonical commodities are enforced across ingestion/API/UI: `corn`, `wheat`, `soybeans`, `soymeal`, `sunflower`, `rapeseed`, `barley`, `rice` (+ detected grain/oilseed extensions).
+- Alias normalization examples:
+  - `corn == maize`
+  - `soy == soybean == soybeans == soya == soia`
+  - `canola == rapeseed`
+- Truth-series policy per market+commodity:
+  - exactly one selected row is exposed in normal UI (`primary -> fallback -> last_known`)
+  - no provider mixing on a single commodity card
+  - alternative provider rows are visible only in debug mode as `alternatives[]`
 - Failover simulation for verification: set `INGESTION_DISABLE_PRIMARY=1` (or `INGESTION_DISABLE_VENDOR=CLAL`) and confirm fallback source appears in UI.
 - Debug mode: append `?debugSources=1` to market pages.
 
