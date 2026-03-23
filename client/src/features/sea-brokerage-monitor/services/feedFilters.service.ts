@@ -1,4 +1,10 @@
-import { getCommodityCompactLabel, getCountryAlpha3 } from "../mock/dictionaries";
+import {
+  getCommodityCompactDisplay,
+  getCountryCompactDisplay,
+  getPortPlaceCompactDisplay,
+  getPaymentTermCompactDisplay,
+  getPaymentTermDisplayLabel,
+} from "./displayStandards";
 import type { BrokerageEntry, FeedFilterState } from "../types";
 import { formatEntryChartDay } from "./entryFormatting.service";
 
@@ -36,13 +42,16 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       entry.sellerName,
       entry.buyerName,
       entry.originCountry,
-      getCountryAlpha3(entry.originCountryCode ?? entry.originCountry),
+      getCountryCompactDisplay(entry.originCountryCode ?? entry.originCountry),
       entry.commodityLabel,
-      getCommodityCompactLabel(entry.commodity, entry.commodityLabel),
+      getCommodityCompactDisplay(entry.commodity, entry.commodityLabel),
       entry.paymentTerms,
+      getPaymentTermCompactDisplay(entry.paymentTerms),
+      getPaymentTermDisplayLabel(entry.paymentTerms),
       entry.destinationPort,
       entry.destinationCountry,
-      getCountryAlpha3(entry.destinationCountryCode ?? entry.destinationCountry),
+      getCountryCompactDisplay(entry.destinationCountryCode ?? entry.destinationCountry),
+      entry.destinationPortCode ? getPortPlaceCompactDisplay(entry.destinationPortCode) : null,
       entry.note,
     ]
       .map(normalizeText)

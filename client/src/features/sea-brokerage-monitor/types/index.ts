@@ -32,22 +32,32 @@ export type TelegramRelayStatus = "queued" | "published" | "failed";
 
 export interface Commodity {
   code: CommodityCode;
-  label: string;
-  compactLabel: string;
+  displayLabel: string;
+  compactDisplay: string;
   group?: "grains" | "oilseeds";
   defaultVolumeUnit?: VolumeUnit;
 }
 
 export interface CountryOption {
   code: string;
-  alpha3: string;
-  label: string;
+  displayLabel: string;
+  countryCodeAlpha3: string;
+  compactDisplay: string;
 }
 
 export interface PortOption {
   code: string;
-  label: string;
+  displayLabel: string;
   countryCode: string;
+  countryCodeAlpha3: string;
+  unlocode?: string;
+  compactDisplay: string;
+}
+
+export interface PaymentTermOption {
+  code: PaymentTermCode;
+  displayLabel: string;
+  compactDisplay: string;
 }
 
 export interface BrokerUser {

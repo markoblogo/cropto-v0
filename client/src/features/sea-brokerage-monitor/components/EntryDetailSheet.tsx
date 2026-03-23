@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { BrokerageEntry } from "../types";
+import { getPaymentTermDisplayLabel } from "../services/displayStandards";
 import {
   formatEntryDateTime,
   formatEntryCommodityCompact,
@@ -86,11 +87,19 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
                 }
               />
               <DetailRow label="Delivery Basis" value={entry.basis} />
-              <DetailRow label="Payment Terms" value={entry.paymentTerms ?? "Not set"} />
+              <DetailRow
+                label="Payment Terms"
+                value={
+                  entry.paymentTerms
+                    ? `${getPaymentTermDisplayLabel(entry.paymentTerms)} (${entry.paymentTerms})`
+                    : "Not set"
+                }
+              />
               <DetailRow
                 label="Port / Place"
                 value={`${formatEntryDestination(entry)} (${formatEntryDestinationCompact(entry)})`}
               />
+              <DetailRow label="Operational Location" value={formatEntryDestinationCompact(entry)} />
               <DetailRow label="Shipment / Delivery" value={formatEntryPeriodCompact(entry)} />
               <DetailRow label="Period Start" value={entry.periodStart ?? "Not set"} />
               <DetailRow label="Period End" value={entry.periodEnd ?? "Not set"} />

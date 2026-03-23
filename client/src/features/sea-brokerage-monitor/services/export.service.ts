@@ -1,8 +1,13 @@
 import * as XLSX from "xlsx";
 import type { BrokerageEntry } from "../types";
-import { getCommodityCompactLabel, getCountryAlpha3 } from "../mock/dictionaries";
+import {
+  getCommodityCompactDisplay,
+  getCountryCompactDisplay,
+  getPaymentTermCompactDisplay,
+} from "./displayStandards";
 import {
   formatEntryDateTime,
+  formatEntryDestinationCompact,
   formatEntryPeriodCompact,
   formatEntryPriceRange,
   formatEntryVolumeRange,
@@ -56,16 +61,16 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
     "broker name": entry.brokerName,
     seller: entry.sellerName ?? "",
     buyer: entry.buyerName ?? "",
-    commodity: getCommodityCompactLabel(entry.commodity, entry.commodityLabel),
-    origin: getCountryAlpha3(entry.originCountryCode ?? entry.originCountry),
+    commodity: getCommodityCompactDisplay(entry.commodity, entry.commodityLabel),
+    origin: getCountryCompactDisplay(entry.originCountryCode ?? entry.originCountry),
     "grade/spec": entry.gradeOrSpec,
     volume: formatEntryVolumeRange(entry),
     tolerance:
       entry.tolerancePct !== null && entry.tolerancePct !== undefined ? `${entry.tolerancePct}%` : "",
     basis: entry.basis,
-    "payment terms": entry.paymentTerms ?? "",
-    "delivery place": entry.destinationPort,
-    "delivery country": getCountryAlpha3(
+    "payment terms": getPaymentTermCompactDisplay(entry.paymentTerms),
+    "delivery place": formatEntryDestinationCompact(entry),
+    "delivery country": getCountryCompactDisplay(
       entry.destinationCountryCode ?? entry.destinationCountry,
     ),
     "period label": formatEntryPeriodCompact(entry),

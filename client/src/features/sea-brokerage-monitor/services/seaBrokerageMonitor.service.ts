@@ -1,12 +1,13 @@
 import { generateMatchSuggestions } from "./matchingEngine.service";
 import { buildCanonicalView, normalizePeriodLabel } from "./entryFormatting.service";
+import { getCountryDisplayLabel } from "./displayStandards";
 import { formatTelegramRelayMessage } from "./telegramRelay.service";
 import {
   seaBrokerageMonitorMockState,
   type SeaBrokerageMonitorSectionState,
 } from "../mock/seaBrokerageMonitor.mock";
 import { createSeaBrokerageMonitorDemoEntries } from "../mock/seedEntries";
-import { brokers, commodityOptionMap, getCountryLabel } from "../mock/dictionaries";
+import { brokers, commodityOptionMap } from "../mock/dictionaries";
 import type {
   Basis,
   BrokerageEntry,
@@ -173,7 +174,7 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
     buyerName: type === "bid" ? "Sample Buyer Group" : null,
     originCountry: "Ukraine",
     originCountryCode: "UA",
-    commodityLabel: commodityOptionMap.corn.label,
+    commodityLabel: commodityOptionMap.corn.displayLabel,
     gradeOrSpec: "",
     quantityMt: type === "bid" ? 13500 : 13250,
     tolerancePct: 5,
@@ -185,7 +186,7 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
     destinationPortCode: "chornomorsk",
     destinationPort: "Chornomorsk",
     destinationCountryCode: "UA",
-    destinationCountry: getCountryLabel("UA"),
+    destinationCountry: getCountryDisplayLabel("UA"),
     periodType: "range",
     periodLabel: normalizePeriodLabel({
       periodType: "range",

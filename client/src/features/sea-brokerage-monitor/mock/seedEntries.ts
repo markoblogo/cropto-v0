@@ -1,4 +1,5 @@
 import { buildCanonicalView, normalizePeriodLabel } from "../services/entryFormatting.service";
+import { getCountryDisplayLabel } from "../services/displayStandards";
 import { formatTelegramRelayMessage } from "../services/telegramRelay.service";
 import type {
   Basis,
@@ -13,7 +14,6 @@ import {
   brokerProfilesByAuthUserId,
   brokers,
   commodityOptionMap,
-  getCountryLabel,
   portOptions,
 } from "./dictionaries";
 
@@ -52,12 +52,12 @@ function getBrokerProfile(brokerProfileId: string) {
 
 function getPortLabel(portCode: string) {
   const option = portOptions.find((port) => port.code === portCode);
-  return option?.label ?? portCode;
+  return option?.displayLabel ?? portCode;
 }
 
 function createSeedEntry(definition: SeedEntryDefinition): BrokerageEntry {
   const createdBy = getBrokerProfile(definition.brokerProfileId);
-  const commodityLabel = commodityOptionMap[definition.commodity]?.label ?? definition.commodity;
+  const commodityLabel = commodityOptionMap[definition.commodity]?.displayLabel ?? definition.commodity;
 
   const baseEntry: Omit<BrokerageEntry, "canonicalView"> = {
     id: definition.id,
@@ -74,7 +74,7 @@ function createSeedEntry(definition: SeedEntryDefinition): BrokerageEntry {
     volumeUnit: "mt",
     basis: definition.basis,
     destinationPort: getPortLabel(definition.destinationPortCode),
-    destinationCountry: getCountryLabel(definition.destinationCountryCode),
+    destinationCountry: getCountryDisplayLabel(definition.destinationCountryCode),
     periodType: definition.periodType,
     periodLabel: normalizePeriodLabel({
       periodType: definition.periodType,

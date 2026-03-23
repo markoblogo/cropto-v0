@@ -15,13 +15,14 @@ import {
 import { EntryDetailSheet } from "./EntryDetailSheet";
 import { MonitorEmptyState } from "./MonitorEmptyState";
 import { generateMatchSuggestions } from "../services/matchingEngine.service";
-import { countryOptions, getPortPlaceLabel, portOptions } from "../mock/dictionaries";
+import { countryOptions, portOptions } from "../mock/dictionaries";
 import {
   buildCompactCanonicalView,
   formatEntryCommodityCompact,
   formatEntryPriceRange,
   formatEntryTimestampCompact,
 } from "../services/entryFormatting.service";
+import { getPortPlaceDisplayLabel } from "../services/displayStandards";
 import type { BrokerageEntry, MatchSuggestion } from "../types";
 
 interface ContextualMatchingPanelProps {
@@ -74,11 +75,11 @@ export function ContextualMatchingPanel({
     () => [
       ...countryOptions.map((country) => ({
         value: `country:${country.code}`,
-        label: country.label,
+        label: country.displayLabel,
       })),
       ...portOptions.map((port) => ({
         value: `port:${port.code}`,
-        label: getPortPlaceLabel(port.code),
+        label: getPortPlaceDisplayLabel(port.code),
       })),
     ],
     [],

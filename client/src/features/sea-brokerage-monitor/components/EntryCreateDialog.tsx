@@ -33,11 +33,13 @@ import {
   brokers,
   commodityOptions,
   countryOptions,
-  getCountryLabel,
-  getPortPlaceLabel,
   paymentTermOptions,
   portOptions,
 } from "../mock/dictionaries";
+import {
+  getCountryDisplayLabel,
+  getPortPlaceDisplayLabel,
+} from "../services/displayStandards";
 import {
   createBrokerageEntry,
   updateBrokerageEntryTelegramRelayStatus,
@@ -283,8 +285,8 @@ export function EntryCreateDialog({
 
     const commodity = commodityOptions.find((option) => option.code === values.commodity);
     const selectedPort = portOptions.find((option) => option.code === values.destinationPortCode);
-    const originCountry = getCountryLabel(values.originCountry);
-    const destinationCountry = getCountryLabel(selectedPort?.countryCode);
+    const originCountry = getCountryDisplayLabel(values.originCountry);
+    const destinationCountry = getCountryDisplayLabel(selectedPort?.countryCode);
     const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
     const resolvedPeriod = resolvePeriodValues(
       values.periodPreset,
@@ -305,7 +307,7 @@ export function EntryCreateDialog({
       originCountry,
       originCountryCode: values.originCountry,
       commodity: values.commodity as BrokerageEntry["commodity"],
-      commodityLabel: commodity?.label ?? values.commodity,
+      commodityLabel: commodity?.displayLabel ?? values.commodity,
       gradeOrSpec: "",
       quantityMt: values.quantityMt,
       tolerancePct: values.tolerancePct,
@@ -315,7 +317,7 @@ export function EntryCreateDialog({
       basis: values.basis as Basis,
       paymentTerms: values.paymentTerms,
       destinationPortCode: values.destinationPortCode,
-      destinationPort: selectedPort?.label ?? values.destinationPortCode,
+      destinationPort: selectedPort?.displayLabel ?? values.destinationPortCode,
       destinationCountryCode: selectedPort?.countryCode ?? null,
       destinationCountry,
       periodType: resolvedPeriod.periodType,
@@ -364,10 +366,10 @@ export function EntryCreateDialog({
           entryType === "bid" && formValues.buyerName?.trim()
             ? formValues.buyerName.trim()
             : null,
-        originCountry: getCountryLabel(formValues.originCountry),
+        originCountry: getCountryDisplayLabel(formValues.originCountry),
         originCountryCode: formValues.originCountry,
         commodity: formValues.commodity as BrokerageEntry["commodity"],
-        commodityLabel: commodity?.label ?? formValues.commodity,
+        commodityLabel: commodity?.displayLabel ?? formValues.commodity,
         gradeOrSpec: "",
         quantityMt: formValues.quantityMt,
         tolerancePct: formValues.tolerancePct,
@@ -377,9 +379,9 @@ export function EntryCreateDialog({
         basis: formValues.basis,
         paymentTerms: formValues.paymentTerms,
         destinationPortCode: formValues.destinationPortCode,
-        destinationPort: selectedPort?.label ?? formValues.destinationPortCode,
+        destinationPort: selectedPort?.displayLabel ?? formValues.destinationPortCode,
         destinationCountryCode: selectedPort?.countryCode ?? null,
-        destinationCountry: getCountryLabel(selectedPort?.countryCode),
+        destinationCountry: getCountryDisplayLabel(selectedPort?.countryCode),
         periodType: resolvedPeriod.periodType,
         periodLabel: resolvedPeriod.periodLabel,
         periodStart: resolvedPeriod.periodStart,
@@ -520,7 +522,7 @@ export function EntryCreateDialog({
                       <SelectContent>
                         {commodityOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
-                            {option.label}
+                            {option.displayLabel}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -544,7 +546,7 @@ export function EntryCreateDialog({
                       <SelectContent>
                         {countryOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
-                            {option.label}
+                            {option.displayLabel}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -621,7 +623,7 @@ export function EntryCreateDialog({
                       <SelectContent>
                         {portOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
-                            {getPortPlaceLabel(option.code)}
+                            {getPortPlaceDisplayLabel(option.code)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -725,8 +727,8 @@ export function EntryCreateDialog({
                       </FormControl>
                       <SelectContent>
                         {paymentTermOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                          <SelectItem key={option.code} value={option.code}>
+                            {option.displayLabel}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -14,9 +14,9 @@ import {
   brokers,
   commodityOptions,
   countryOptions,
-  getPortPlaceLabel,
   portOptions,
 } from "../mock/dictionaries";
+import { getPortPlaceDisplayLabel } from "../services/displayStandards";
 import type { FeedFilterState } from "../types";
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
@@ -82,7 +82,7 @@ export function MonitorToolbar({
                 <SelectItem value="all">All commodities</SelectItem>
                 {commodityOptions.map((option) => (
                   <SelectItem key={option.code} value={option.code}>
-                    {option.label}
+                    {option.displayLabel}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -101,7 +101,7 @@ export function MonitorToolbar({
                 <SelectItem value="all">All origins</SelectItem>
                 {countryOptions.map((country) => (
                   <SelectItem key={country.code} value={country.code}>
-                    {country.label}
+                    {country.displayLabel}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -139,7 +139,7 @@ export function MonitorToolbar({
                 <SelectItem value="all">All delivery places</SelectItem>
                 {portOptions.map((port) => (
                   <SelectItem key={port.code} value={port.code}>
-                    {getPortPlaceLabel(port.code)}
+                    {getPortPlaceDisplayLabel(port.code)}
                   </SelectItem>
                 ))}
               </SelectContent>

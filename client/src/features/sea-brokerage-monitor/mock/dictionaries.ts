@@ -5,6 +5,7 @@ import type {
   CommodityCode,
   CountryOption,
   PaymentTermCode,
+  PaymentTermOption,
   PortOption,
   SelectOption,
 } from "../types";
@@ -68,13 +69,13 @@ export const brokers: BrokerUser[] = [
 ];
 
 export const commodityOptions: Commodity[] = [
-  { code: "corn", label: "Corn", compactLabel: "CORN", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "wheat_115", label: "Wheat 11.5%", compactLabel: "WHEAT 11.5", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "wheat_125", label: "Wheat 12.5%", compactLabel: "WHEAT 12.5", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "barley", label: "Barley", compactLabel: "BARLEY", group: "grains", defaultVolumeUnit: "mt" },
-  { code: "sunflower", label: "Sunflower", compactLabel: "SUNFLOWER", group: "oilseeds", defaultVolumeUnit: "mt" },
-  { code: "soybean", label: "Soybean", compactLabel: "SOYBEAN", group: "oilseeds", defaultVolumeUnit: "mt" },
-  { code: "rapeseed", label: "Rapeseed", compactLabel: "RAPESEED", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "corn", displayLabel: "Corn", compactDisplay: "CORN", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "wheat_115", displayLabel: "Wheat 11.5%", compactDisplay: "WHEAT 11.5", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "wheat_125", displayLabel: "Wheat 12.5%", compactDisplay: "WHEAT 12.5", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "barley", displayLabel: "Barley", compactDisplay: "BARLEY", group: "grains", defaultVolumeUnit: "mt" },
+  { code: "sunflower", displayLabel: "Sunflower", compactDisplay: "SUNFLOWER", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "soybean", displayLabel: "Soybean", compactDisplay: "SOYBEAN", group: "oilseeds", defaultVolumeUnit: "mt" },
+  { code: "rapeseed", displayLabel: "Rapeseed", compactDisplay: "RAPESEED", group: "oilseeds", defaultVolumeUnit: "mt" },
 ];
 
 export const basisOptions: SelectOption<Basis>[] = [
@@ -85,43 +86,43 @@ export const basisOptions: SelectOption<Basis>[] = [
   { value: "FCA", label: "FCA" },
 ];
 
-export const paymentTermOptions: SelectOption<PaymentTermCode>[] = [
-  { value: "CAD", label: "CAD" },
-  { value: "CAFD", label: "CAFD" },
+export const paymentTermOptions: PaymentTermOption[] = [
+  { code: "CAD", displayLabel: "Cash against documents", compactDisplay: "CAD" },
+  { code: "CAFD", displayLabel: "Cash against final documents", compactDisplay: "CAFD" },
 ];
 
 export const countryOptions: CountryOption[] = [
-  { code: "UA", alpha3: "UKR", label: "Ukraine" },
-  { code: "MD", alpha3: "MDA", label: "Moldova" },
-  { code: "BG", alpha3: "BGR", label: "Bulgaria" },
-  { code: "EG", alpha3: "EGY", label: "Egypt" },
-  { code: "IL", alpha3: "ISR", label: "Israel" },
-  { code: "CY", alpha3: "CYP", label: "Cyprus" },
-  { code: "LB", alpha3: "LBN", label: "Lebanon" },
-  { code: "ES", alpha3: "ESP", label: "Spain" },
-  { code: "IT", alpha3: "ITA", label: "Italy" },
-  { code: "NL", alpha3: "NLD", label: "Netherlands" },
-  { code: "RO", alpha3: "ROU", label: "Romania" },
-  { code: "TR", alpha3: "TUR", label: "Turkey" },
+  { code: "UA", displayLabel: "Ukraine", countryCodeAlpha3: "UKR", compactDisplay: "UKR" },
+  { code: "MD", displayLabel: "Moldova", countryCodeAlpha3: "MDA", compactDisplay: "MDA" },
+  { code: "BG", displayLabel: "Bulgaria", countryCodeAlpha3: "BGR", compactDisplay: "BGR" },
+  { code: "EG", displayLabel: "Egypt", countryCodeAlpha3: "EGY", compactDisplay: "EGY" },
+  { code: "IL", displayLabel: "Israel", countryCodeAlpha3: "ISR", compactDisplay: "ISR" },
+  { code: "CY", displayLabel: "Cyprus", countryCodeAlpha3: "CYP", compactDisplay: "CYP" },
+  { code: "LB", displayLabel: "Lebanon", countryCodeAlpha3: "LBN", compactDisplay: "LBN" },
+  { code: "ES", displayLabel: "Spain", countryCodeAlpha3: "ESP", compactDisplay: "ESP" },
+  { code: "IT", displayLabel: "Italy", countryCodeAlpha3: "ITA", compactDisplay: "ITA" },
+  { code: "NL", displayLabel: "Netherlands", countryCodeAlpha3: "NLD", compactDisplay: "NLD" },
+  { code: "RO", displayLabel: "Romania", countryCodeAlpha3: "ROU", compactDisplay: "ROU" },
+  { code: "TR", displayLabel: "Turkey", countryCodeAlpha3: "TUR", compactDisplay: "TUR" },
 ];
 
 export const portOptions: PortOption[] = [
-  { code: "pivdenny", label: "Pivdenny", countryCode: "UA" },
-  { code: "odesa", label: "Odesa", countryCode: "UA" },
-  { code: "chornomorsk", label: "Chornomorsk", countryCode: "UA" },
-  { code: "izmail", label: "Izmail", countryCode: "UA" },
-  { code: "giurgiulesti", label: "Giurgiulesti", countryCode: "MD" },
-  { code: "burgas", label: "Burgas", countryCode: "BG" },
-  { code: "marmara", label: "Marmara", countryCode: "TR" },
-  { code: "alexandria", label: "Alexandria", countryCode: "EG" },
-  { code: "ashdod", label: "Ashdod", countryCode: "IL" },
-  { code: "limassol", label: "Limassol", countryCode: "CY" },
-  { code: "beirut", label: "Beirut", countryCode: "LB" },
-  { code: "constanta", label: "Constanta", countryCode: "RO" },
-  { code: "izmir", label: "Izmir", countryCode: "TR" },
-  { code: "mersin", label: "Mersin", countryCode: "TR" },
-  { code: "ravenna", label: "Ravenna", countryCode: "IT" },
-  { code: "tarragona", label: "Tarragona", countryCode: "ES" },
+  { code: "pivdenny", displayLabel: "Pivdenny", countryCode: "UA", countryCodeAlpha3: "UKR", unlocode: "UAYUZ", compactDisplay: "UAYUZ" },
+  { code: "odesa", displayLabel: "Odesa", countryCode: "UA", countryCodeAlpha3: "UKR", unlocode: "UAODS", compactDisplay: "UAODS" },
+  { code: "chornomorsk", displayLabel: "Chornomorsk", countryCode: "UA", countryCodeAlpha3: "UKR", compactDisplay: "CHORNOMORSK" },
+  { code: "izmail", displayLabel: "Izmail", countryCode: "UA", countryCodeAlpha3: "UKR", compactDisplay: "IZMAIL" },
+  { code: "giurgiulesti", displayLabel: "Giurgiulesti", countryCode: "MD", countryCodeAlpha3: "MDA", compactDisplay: "GIURGIULESTI" },
+  { code: "burgas", displayLabel: "Burgas", countryCode: "BG", countryCodeAlpha3: "BGR", compactDisplay: "BURGAS" },
+  { code: "marmara", displayLabel: "Marmara", countryCode: "TR", countryCodeAlpha3: "TUR", compactDisplay: "MARMARA" },
+  { code: "alexandria", displayLabel: "Alexandria", countryCode: "EG", countryCodeAlpha3: "EGY", compactDisplay: "ALEXANDRIA" },
+  { code: "ashdod", displayLabel: "Ashdod", countryCode: "IL", countryCodeAlpha3: "ISR", compactDisplay: "ASHDOD" },
+  { code: "limassol", displayLabel: "Limassol", countryCode: "CY", countryCodeAlpha3: "CYP", compactDisplay: "LIMASSOL" },
+  { code: "beirut", displayLabel: "Beirut", countryCode: "LB", countryCodeAlpha3: "LBN", compactDisplay: "BEIRUT" },
+  { code: "constanta", displayLabel: "Constanta", countryCode: "RO", countryCodeAlpha3: "ROU", compactDisplay: "CONSTANTA" },
+  { code: "izmir", displayLabel: "Izmir", countryCode: "TR", countryCodeAlpha3: "TUR", compactDisplay: "IZMIR" },
+  { code: "mersin", displayLabel: "Mersin", countryCode: "TR", countryCodeAlpha3: "TUR", compactDisplay: "MERSIN" },
+  { code: "ravenna", displayLabel: "Ravenna", countryCode: "IT", countryCodeAlpha3: "ITA", compactDisplay: "RAVENNA" },
+  { code: "tarragona", displayLabel: "Tarragona", countryCode: "ES", countryCodeAlpha3: "ESP", compactDisplay: "TARRAGONA" },
 ];
 
 export const commodityOptionMap: Record<CommodityCode, Commodity> = commodityOptions.reduce(
@@ -147,70 +148,6 @@ export const portOptionMap: Record<string, PortOption> = portOptions.reduce(
   },
   {} as Record<string, PortOption>,
 );
-
-export function getCountryLabel(countryCode: string | null | undefined) {
-  if (!countryCode) return "";
-  const normalized = countryCode.toUpperCase();
-  const byCode = countryOptionMap[normalized];
-  if (byCode) return byCode.label;
-
-  const byAlpha3 = countryOptions.find((country) => country.alpha3 === normalized);
-  if (byAlpha3) return byAlpha3.label;
-
-  const byLabel = countryOptions.find(
-    (country) => country.label.toLowerCase() === countryCode.toLowerCase(),
-  );
-  return byLabel?.label ?? countryCode;
-}
-
-export function getCommodityCompactLabel(
-  commodityCode: CommodityCode | string | null | undefined,
-  fallbackLabel?: string | null,
-) {
-  if (!commodityCode && !fallbackLabel) return "";
-
-  if (commodityCode && commodityOptionMap[commodityCode as CommodityCode]) {
-    return commodityOptionMap[commodityCode as CommodityCode].compactLabel;
-  }
-
-  if (fallbackLabel) {
-    const byLabel = commodityOptions.find(
-      (commodity) => commodity.label.toLowerCase() === fallbackLabel.toLowerCase(),
-    );
-    if (byLabel) return byLabel.compactLabel;
-  }
-
-  return (fallbackLabel ?? commodityCode ?? "").toUpperCase().replace("%", "").trim();
-}
-
-export function getCountryAlpha3(countryCode: string | null | undefined) {
-  if (!countryCode) return "";
-  const normalized = countryCode.toUpperCase();
-  const byCode = countryOptionMap[normalized];
-  if (byCode) return byCode.alpha3;
-
-  const byAlpha3 = countryOptions.find((country) => country.alpha3 === normalized);
-  if (byAlpha3) return byAlpha3.alpha3;
-
-  const byLabel = countryOptions.find(
-    (country) => country.label.toLowerCase() === countryCode.toLowerCase(),
-  );
-  return byLabel?.alpha3 ?? countryCode;
-}
-
-export function getPortPlaceLabel(portCode: string | null | undefined) {
-  if (!portCode) return "";
-  const port = portOptionMap[portCode];
-  if (!port) return portCode;
-  return `${port.label}, ${getCountryLabel(port.countryCode)}`;
-}
-
-export function getPortPlaceCompactLabel(portCode: string | null | undefined) {
-  if (!portCode) return "";
-  const port = portOptionMap[portCode];
-  if (!port) return portCode;
-  return `${port.label}, ${getCountryAlpha3(port.countryCode)}`;
-}
 
 export const brokerProfilesByAuthUserId: Record<string, BrokerUser> = {
   [brokers[0].authUserId]: brokers[0],
