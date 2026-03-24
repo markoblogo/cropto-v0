@@ -7590,6 +7590,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
           .sort((a, b) => b.score - a.score)
           .slice(0, 3);
+        console.info(
+          "[SeaBrokerage][MatchRelayCandidates]",
+          JSON.stringify({
+            entryId: updated.id,
+            entryType: updated.type,
+            candidates: relatedMatches.length,
+          }),
+        );
 
         for (const match of relatedMatches) {
           const key = matchNotifiedKey(match.bidEntry.id, match.offerEntry.id);
