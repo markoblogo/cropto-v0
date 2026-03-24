@@ -171,3 +171,48 @@ export async function signInSeaBrokerageMonitorWithTelegramMiniApp(initData: str
     };
   }>;
 }
+
+export async function requestSeaBrokerageTelegramLoginCode(telegramUsername: string) {
+  const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/code/request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ telegramUsername }),
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || "Telegram login code request failed";
+    throw new Error(text);
+  }
+}
+
+export async function verifySeaBrokerageTelegramLoginCode(
+  telegramUsername: string,
+  code: string,
+) {
+  const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/code/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ telegramUsername, code }),
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || "Telegram login code verification failed";
+    throw new Error(text);
+  }
+
+  return response.json() as Promise<{
+    token: string;
+    authorized: boolean;
+    profile: {
+      telegramUserId: string | null;
+      telegramUsername: string | null;
+      brokerCode: string;
+      brokerName: string;
+      companyName: string;
+      isActive: boolean;
+      source: "db" | "env";
+    };
+  }>;
+}

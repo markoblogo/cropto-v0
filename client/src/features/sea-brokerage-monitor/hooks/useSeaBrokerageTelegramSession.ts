@@ -5,7 +5,9 @@ import {
   clearSeaBrokerageMonitorToken,
   consumeTelegramWidgetUserFromUrl,
   getSeaBrokerageMonitorToken,
+  requestSeaBrokerageTelegramLoginCode,
   setSeaBrokerageMonitorToken,
+  verifySeaBrokerageTelegramLoginCode,
   signInSeaBrokerageMonitorWithTelegramMiniApp,
   signInSeaBrokerageMonitorWithTelegram,
   type TelegramWidgetUser,
@@ -147,6 +149,34 @@ export function useSeaBrokerageTelegramSession() {
     await authenticateWithTelegramMiniApp(initData);
   }
 
+  async function requestTelegramCodeLogin(telegramUsername: string) {
+    try {
+      setIsAuthenticating(true);
+      setAuthError(null);
+      await requestSeaBrokerageTelegramLoginCode(telegramUsername);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Failed to request Telegram login code");
+      throw error;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }
+
+  async function verifyTelegramCodeLogin(telegramUsername: string, code: string) {
+    try {
+      setIsAuthenticating(true);
+      setAuthError(null);
+      const result = await verifySeaBrokerageTelegramLoginCode(telegramUsername, code);
+      setMonitorToken(result.token);
+      return result;
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Failed to verify Telegram login code");
+      throw error;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }
+
   function logoutTelegramSession() {
     clearSeaBrokerageMonitorToken();
     setMonitorToken(null);
@@ -186,6 +216,8 @@ export function useSeaBrokerageTelegramSession() {
     authError,
     authenticateWithTelegram,
     authenticateFromTelegramWebApp,
+    requestTelegramCodeLogin,
+    verifyTelegramCodeLogin,
     logoutTelegramSession,
   };
 }

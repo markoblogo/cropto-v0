@@ -53,6 +53,7 @@ import { getRuntimeInfo } from "./runtimeInfo";
 import {
   publishSeaBrokerageEntryToTelegram,
   publishSeaBrokerageMatchToTelegram,
+  sendSeaBrokerageTelegramDirectMessage,
 } from "./services/seaBrokerageTelegramPublisher";
 import { generateSeaBrokerageMatchSuggestions } from "./services/seaBrokerageMatching";
 import {
@@ -67,6 +68,10 @@ import {
   type TelegramMiniAppLoginPayload,
   type TelegramLoginPayload,
 } from "./services/seaBrokerageTelegramAuth";
+import {
+  issueSeaBrokerageTelegramOtp,
+  verifySeaBrokerageTelegramOtp,
+} from "./services/seaBrokerageTelegramOtp";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -146,6 +151,15 @@ const seaBrokerageTelegramLoginSchema = z.object({
 
 const seaBrokerageTelegramMiniAppLoginSchema = z.object({
   initData: z.string().trim().min(1),
+});
+
+const seaBrokerageTelegramCodeRequestSchema = z.object({
+  telegramUsername: z.string().trim().min(2),
+});
+
+const seaBrokerageTelegramCodeVerifySchema = z.object({
+  telegramUsername: z.string().trim().min(2),
+  code: z.string().trim().regex(/^\d{6}$/),
 });
 
 function decimalToNumber(value: unknown) {
@@ -7454,6 +7468,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res
         .status(401)
         .json({ error: error?.message || "Failed to verify Telegram Mini App login" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/auth/telegram/code/request", async (req, res) => {
+    try {
+      const parsed = seaBrokerageTelegramCodeRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const telegramUsername = parsed.data.telegramUsername.trim().replace(/^@+/, "").toLowerCase();
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram({ telegramUsername });
+      if (!profile?.isActive) {
+        return res.status(404).json({ error: "Broker is not allowlisted for monitor publishing." });
+      }
+      if (!profile.telegramUserId) {
+        return res.status(400).json({ error: "Allowlist entry has no Telegram user id." });
+      }
+
+      const { code } = issueSeaBrokerageTelegramOtp(telegramUsername);
+      const dmResult = await sendSeaBrokerageTelegramDirectMessage(
+        profile.telegramUserId,
+        [
+          "Spike Monitor login code",
+          `Code: ${code}`,
+          "Valid for 10 minutes.",
+          "If this was not requested by you, ignore this message.",
+        ].join("\n"),
+      );
+
+      if (!dmResult.ok) {
+        return res.status(502).json({
+          error:
+            dmResult.error ||
+            "Failed to send login code in Telegram. Ensure broker started the bot chat first.",
+        });
+      }
+
+      return res.status(201).json({ ok: true });
+    } catch (error: any) {
+      console.error("Error requesting sea brokerage Telegram login code:", error);
+      return res.status(500).json({ error: "Failed to request Telegram login code" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/auth/telegram/code/verify", async (req, res) => {
+    try {
+      const parsed = seaBrokerageTelegramCodeVerifySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const telegramUsername = parsed.data.telegramUsername.trim().replace(/^@+/, "").toLowerCase();
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram({ telegramUsername });
+      if (!profile?.isActive) {
+        return res.status(404).json({ error: "Broker is not allowlisted for monitor publishing." });
+      }
+
+      const ok = verifySeaBrokerageTelegramOtp(telegramUsername, parsed.data.code);
+      if (!ok) {
+        return res.status(401).json({ error: "Invalid or expired Telegram login code." });
+      }
+
+      const token = signSeaBrokerageMonitorToken({
+        telegramUserId: profile.telegramUserId || `broker:${profile.brokerCode}`,
+        telegramUsername: profile.telegramUsername || telegramUsername,
+      });
+      return res.status(201).json({
+        token,
+        authorized: true,
+        profile,
+      });
+    } catch (error: any) {
+      console.error("Error verifying sea brokerage Telegram login code:", error);
+      return res.status(500).json({ error: "Failed to verify Telegram login code" });
     }
   });
 

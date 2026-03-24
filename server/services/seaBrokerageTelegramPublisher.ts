@@ -377,3 +377,44 @@ export async function publishSeaBrokerageMatchToTelegram(
   const targets = resolveSeaBrokerageRelayTargetsForMatch(match);
   return sendTelegramMessages(internalMessage, externalMessage, targets);
 }
+
+export async function sendSeaBrokerageTelegramDirectMessage(
+  chatId: string,
+  text: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    return { ok: false, error: "TELEGRAM_BOT_TOKEN is not configured" };
+  }
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true,
+      }),
+    });
+
+    const payload = (await response.json()) as {
+      ok?: boolean;
+      description?: string;
+    };
+
+    if (!response.ok || !payload.ok) {
+      return {
+        ok: false,
+        error: payload.description || `Telegram sendMessage failed with status ${response.status}`,
+      };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Unknown Telegram direct message error",
+    };
+  }
+}
