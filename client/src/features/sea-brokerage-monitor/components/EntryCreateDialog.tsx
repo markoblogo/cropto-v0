@@ -40,6 +40,7 @@ import {
   getCountryDisplayLabel,
   getPortPlaceDisplayLabel,
 } from "../services/displayStandards";
+import { buildSeaBrokerageTelegramHeaders } from "../services/monitorTelegramIdentity.service";
 import {
   buildCanonicalView,
   normalizePeriodLabel,
@@ -334,11 +335,6 @@ export function EntryCreateDialog({
   }, [entryType, session.authorProfile, values]);
 
   async function onSubmit(formValues: EntryFormValues) {
-    if (!session.workspaceUser) {
-      setSubmitMessage("Sign in before creating entries.");
-      return;
-    }
-
     if (!session.authorProfile || !session.canCreateEntries) {
       setSubmitMessage(
         "Author unavailable. Ask admin to add your account into Sea Brokerage broker allowlist.",
@@ -401,7 +397,9 @@ export function EntryCreateDialog({
         canonicalView: canonicalPreview,
       };
 
-      await apiRequest("POST", "/api/sea-brokerage-monitor/entries", payload);
+      await apiRequest("POST", "/api/sea-brokerage-monitor/entries", payload, {
+        headers: buildSeaBrokerageTelegramHeaders(session.telegramIdentity),
+      });
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
 
       form.reset(getDefaultValues(entryType));
@@ -428,7 +426,9 @@ export function EntryCreateDialog({
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Author Session</div>
           {session.authorProfile ? (
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">{session.sessionState === "demo_telegram" ? "Demo Telegram" : "Mapped session"}</Badge>
+              <Badge variant="secondary">
+                {session.sessionState === "demo_telegram" ? "Demo Telegram" : "Telegram session"}
+              </Badge>
               <span className="font-medium">{session.telegramHandle}</span>
               <span className="text-muted-foreground">
                 {session.authorProfile.brokerCode} / {session.authorProfile.companyName}

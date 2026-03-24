@@ -7,6 +7,11 @@ export type SeaBrokerageAuthUser = {
   role?: string | null;
 };
 
+export type SeaBrokerageTelegramIdentity = {
+  telegramUserId?: string | null;
+  telegramUsername?: string | null;
+};
+
 export type AuthorizedSeaBrokerageBroker = {
   authUserId: string | null;
   authEmail: string | null;
@@ -98,6 +103,17 @@ function matchAllowlistEntry(
   return false;
 }
 
+function matchAllowlistByTelegram(
+  entry: AuthorizedSeaBrokerageBroker,
+  telegramUserId: string | null,
+  telegramUsername: string | null,
+) {
+  if (!entry.isActive) return false;
+  if (telegramUserId && entry.telegramUserId && entry.telegramUserId === telegramUserId) return true;
+  if (telegramUsername && entry.telegramUsername && entry.telegramUsername === telegramUsername) return true;
+  return false;
+}
+
 export async function resolveAuthorizedSeaBrokerageBroker(
   user: SeaBrokerageAuthUser | null | undefined,
 ): Promise<AuthorizedSeaBrokerageBroker | null> {
@@ -125,6 +141,47 @@ export async function resolveAuthorizedSeaBrokerageBroker(
   return matchedEnv || null;
 }
 
+export async function resolveAuthorizedSeaBrokerageBrokerByTelegram(
+  identity: SeaBrokerageTelegramIdentity | null | undefined,
+): Promise<AuthorizedSeaBrokerageBroker | null> {
+  const telegramUserId = normalizeId(identity?.telegramUserId);
+  const telegramUsername = normalizeTelegramUsername(identity?.telegramUsername);
+
+  if (!telegramUserId && !telegramUsername) {
+    return null;
+  }
+
+  if (telegramUserId) {
+    const [byTelegramId] = await storage
+      .listSeaBrokerageBrokerAuth()
+      .then((rows) =>
+        rows.filter((row) => row.isActive && normalizeId(row.telegramUserId) === telegramUserId),
+      );
+    if (byTelegramId) {
+      return normalizeDbBroker(byTelegramId);
+    }
+  }
+
+  if (telegramUsername) {
+    const [byTelegramUsername] = await storage
+      .listSeaBrokerageBrokerAuth()
+      .then((rows) =>
+        rows.filter(
+          (row) => row.isActive && normalizeTelegramUsername(row.telegramUsername) === telegramUsername,
+        ),
+      );
+    if (byTelegramUsername) {
+      return normalizeDbBroker(byTelegramUsername);
+    }
+  }
+
+  const envAllowlist = parseEnvAllowlist();
+  const matchedEnv = envAllowlist.find((entry) =>
+    matchAllowlistByTelegram(entry, telegramUserId, telegramUsername),
+  );
+  return matchedEnv || null;
+}
+
 export async function listSeaBrokerageBrokerAllowlist(): Promise<AuthorizedSeaBrokerageBroker[]> {
   const dbEntries = (await storage.listSeaBrokerageBrokerAuth()).map(normalizeDbBroker);
   const envEntries = parseEnvAllowlist();
@@ -142,4 +199,3 @@ export async function listSeaBrokerageBrokerAllowlist(): Promise<AuthorizedSeaBr
 
   return Array.from(mergedByKey.values());
 }
-

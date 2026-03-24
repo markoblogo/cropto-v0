@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  buildSeaBrokerageTelegramHeaders,
+  getStoredMonitorTelegramIdentity,
+  setStoredMonitorTelegramIdentity,
+  type MonitorTelegramIdentity,
+} from "../services/monitorTelegramIdentity.service";
 import {
   getStoredDemoTelegramBrokerId,
   resolveSeaBrokerageTelegramSession,
   setStoredDemoTelegramBrokerId,
   type SeaBrokerageBrokerAuthProfile,
-  type WorkspaceAuthUser,
 } from "../services/telegramSession.service";
-
-interface AuthMeResponse {
-  user: WorkspaceAuthUser;
-}
 
 interface BrokerAuthMeResponse {
   authorized: boolean;
@@ -21,34 +22,47 @@ export function useSeaBrokerageTelegramSession() {
   const [selectedDemoBrokerId, setSelectedDemoBrokerIdState] = useState<string | null>(() =>
     getStoredDemoTelegramBrokerId(),
   );
-
-  const { data, isLoading } = useQuery<AuthMeResponse | null>({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-    enabled: !!localStorage.getItem("cropto_token"),
-  });
-
-  const { data: brokerAuthData } = useQuery<BrokerAuthMeResponse | null>({
-    queryKey: ["/api/sea-brokerage-monitor/broker-auth/me"],
-    retry: false,
-    enabled: !!data?.user,
-  });
+  const [identity, setIdentity] = useState<MonitorTelegramIdentity>(() =>
+    getStoredMonitorTelegramIdentity(),
+  );
 
   useEffect(() => {
     setStoredDemoTelegramBrokerId(selectedDemoBrokerId);
   }, [selectedDemoBrokerId]);
 
-  const session = resolveSeaBrokerageTelegramSession(
-    data?.user,
-    selectedDemoBrokerId,
-    brokerAuthData?.profile,
-  );
+  useEffect(() => {
+    setStoredMonitorTelegramIdentity(identity);
+  }, [identity]);
+
+  const headers = useMemo(() => buildSeaBrokerageTelegramHeaders(identity), [identity]);
+  const identityReady = Object.keys(headers).length > 0;
+
+  const { data: brokerAuthData, isFetching } = useQuery<BrokerAuthMeResponse | null>({
+    queryKey: ["/api/sea-brokerage-monitor/broker-auth/me", identity.telegramUserId, identity.telegramUsername],
+    retry: false,
+    enabled: identityReady,
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/broker-auth/me", {
+        method: "GET",
+        headers,
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to resolve monitor broker auth: ${response.status}`);
+      }
+      return response.json();
+    },
+  });
+
+  const session = resolveSeaBrokerageTelegramSession(identity, selectedDemoBrokerId, brokerAuthData?.profile);
 
   return {
     ...session,
-    workspaceUser: data?.user ?? null,
-    isLoading,
+    isLoading: isFetching,
     selectedDemoBrokerId,
     setSelectedDemoBrokerId: setSelectedDemoBrokerIdState,
+    telegramIdentity: identity,
+    setTelegramIdentity: setIdentity,
   };
 }
+

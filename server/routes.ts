@@ -53,7 +53,7 @@ import { getRuntimeInfo } from "./runtimeInfo";
 import { publishSeaBrokerageEntryToTelegram } from "./services/seaBrokerageTelegramPublisher";
 import {
   listSeaBrokerageBrokerAllowlist,
-  resolveAuthorizedSeaBrokerageBroker,
+  resolveAuthorizedSeaBrokerageBrokerByTelegram,
 } from "./services/seaBrokerageBrokerAccess";
 
 const STALE_MAX_AGE_DAYS = 7;
@@ -176,11 +176,21 @@ function mapSeaBrokerageEntryToClientShape(entry: SeaBrokerageEntryRow) {
       displayName: entry.brokerName,
       email: entry.brokerEmail ?? "",
       role: "broker",
-      identityProvider: "cropto_auth",
+      identityProvider: "telegram_future",
     },
     canonicalView: entry.canonicalView,
     telegramRelayStatus: entry.telegramRelayStatus,
     telegramRelayMessage: entry.telegramRelayMessage,
+  };
+}
+
+function readSeaBrokerageTelegramIdentityHeaders(req: AuthRequest) {
+  const telegramUserId = String(req.headers["x-sea-telegram-user-id"] || "").trim();
+  const telegramUsernameRaw = String(req.headers["x-sea-telegram-username"] || "").trim();
+  const telegramUsername = telegramUsernameRaw.replace(/^@+/, "");
+  return {
+    telegramUserId: telegramUserId || null,
+    telegramUsername: telegramUsername || null,
   };
 }
 
@@ -7346,16 +7356,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(
-    "/api/sea-brokerage-monitor/broker-auth/me",
-    authenticateToken,
-    async (req: AuthRequest, res) => {
+  app.get("/api/sea-brokerage-monitor/broker-auth/me", async (req: AuthRequest, res) => {
       try {
-        if (!req.user) {
-          return res.status(401).json({ error: "Unauthorized" });
-        }
-
-        const profile = await resolveAuthorizedSeaBrokerageBroker(req.user);
+        const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram(
+          readSeaBrokerageTelegramIdentityHeaders(req),
+        );
         return res.json({
           authorized: !!profile,
           profile,
@@ -7364,8 +7369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error resolving sea brokerage broker auth profile:", error);
         return res.status(500).json({ error: "Failed to resolve sea brokerage broker profile" });
       }
-    },
-  );
+    });
 
   app.get(
     "/api/sea-brokerage-monitor/broker-auth/list",
@@ -7433,17 +7437,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.post("/api/sea-brokerage-monitor/entries", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/sea-brokerage-monitor/entries", async (req: AuthRequest, res) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      const authorizedBroker = await resolveAuthorizedSeaBrokerageBroker(req.user);
+      const telegramIdentity = readSeaBrokerageTelegramIdentityHeaders(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
       if (!authorizedBroker) {
         return res.status(403).json({
           error:
-            "Broker is not authorized for monitor publishing yet. Ask an admin to add your account to the Telegram broker allowlist.",
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
         });
       }
 
@@ -7454,8 +7455,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const created = await storage.createSeaBrokerageEntry({
         ...parsed.data,
-        brokerUserId: req.user.id,
-        brokerEmail: req.user.email ?? null,
+        brokerUserId:
+          authorizedBroker.telegramUserId ||
+          authorizedBroker.telegramUsername ||
+          authorizedBroker.authUserId ||
+          `broker:${authorizedBroker.brokerCode.toLowerCase()}`,
+        brokerEmail: authorizedBroker.authEmail ?? null,
         brokerTelegramUserId: authorizedBroker.telegramUserId,
         brokerTelegramUsername: authorizedBroker.telegramUsername,
         brokerCode: authorizedBroker.brokerCode,

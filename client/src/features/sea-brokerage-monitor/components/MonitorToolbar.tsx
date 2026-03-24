@@ -205,8 +205,32 @@ export function MonitorToolbar({
                   </div>
                 ) : null}
               </div>
+              <div className="grid w-full gap-2 sm:max-w-[360px] sm:grid-cols-2">
+                <Input
+                  value={session.telegramIdentity.telegramUserId ?? ""}
+                  onChange={(event) =>
+                    session.setTelegramIdentity((prev) => ({
+                      ...prev,
+                      telegramUserId: event.target.value.trim() || null,
+                    }))
+                  }
+                  placeholder="Telegram user id"
+                />
+                <Input
+                  value={session.telegramIdentity.telegramUsername ?? ""}
+                  onChange={(event) =>
+                    session.setTelegramIdentity((prev) => ({
+                      ...prev,
+                      telegramUsername: event.target.value.replace(/^@+/, "").trim() || null,
+                    }))
+                  }
+                  placeholder="@username"
+                />
+              </div>
+            </div>
 
-              {session.isDemoSelectorEnabled ? (
+            {session.isDemoSelectorEnabled ? (
+              <div className="flex flex-wrap gap-2">
                 <Select
                   value={session.selectedDemoBrokerId ?? "none"}
                   onValueChange={(value) =>
@@ -225,11 +249,6 @@ export function MonitorToolbar({
                     ))}
                   </SelectContent>
                 </Select>
-              ) : null}
-            </div>
-
-            {session.isDemoSelectorEnabled ? (
-              <div className="flex flex-wrap gap-2">
                 <Button variant="ghost" size="sm" onClick={onAddSampleBid}>
                   <Plus className="mr-1 h-3.5 w-3.5" />
                   Sample BID

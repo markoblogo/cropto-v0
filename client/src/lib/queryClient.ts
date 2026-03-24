@@ -21,12 +21,16 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  options?: { headers?: Record<string, string> },
 ): Promise<Response> {
   const token = localStorage.getItem('cropto_token');
   const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+  if (options?.headers) {
+    Object.assign(headers, options.headers);
   }
 
   const res = await fetch(url, {
