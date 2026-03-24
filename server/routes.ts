@@ -50,7 +50,11 @@ import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingest
 import { providerDefinitionsFor } from "./ingestion/config";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
-import { publishSeaBrokerageEntryToTelegram } from "./services/seaBrokerageTelegramPublisher";
+import {
+  publishSeaBrokerageEntryToTelegram,
+  publishSeaBrokerageMatchToTelegram,
+} from "./services/seaBrokerageTelegramPublisher";
+import { generateSeaBrokerageMatchSuggestions } from "./services/seaBrokerageMatching";
 import {
   listSeaBrokerageBrokerAllowlist,
   resolveAuthorizedSeaBrokerageBrokerByTelegram,
@@ -214,6 +218,17 @@ function readSeaBrokerageTelegramIdentity(req: AuthRequest) {
   const fromToken = readSeaBrokerageMonitorIdentityFromToken(req);
   if (fromToken) return fromToken;
   return readSeaBrokerageTelegramIdentityHeaders(req);
+}
+
+function parseBooleanEnv(value: string | undefined, fallback: boolean) {
+  if (value === undefined) return fallback;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return fallback;
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
+
+function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
+  return `sea_brokerage_match_notified:${bidEntryId}:${offerEntryId}`;
 }
 
 async function getFeedbackAlertRecipients(): Promise<string[]> {
@@ -7560,6 +7575,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         telegramRelayMessage: relayResult.messageText,
         telegramMessageId: relayResult.messageId ?? null,
       });
+
+      const matchRelayEnabled = parseBooleanEnv(
+        process.env.SEA_BROKERAGE_TELEGRAM_MATCHES_ENABLED,
+        true,
+      );
+
+      if (matchRelayEnabled) {
+        const allEntries = await storage.listSeaBrokerageEntries();
+        const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries)
+          .filter(
+            (match) =>
+              match.bidEntry.id === updated.id || match.offerEntry.id === updated.id,
+          )
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+
+        for (const match of relatedMatches) {
+          const key = matchNotifiedKey(match.bidEntry.id, match.offerEntry.id);
+          const alreadyNotified = await storage.getAppSetting(key);
+          if (alreadyNotified?.value === "published") {
+            continue;
+          }
+
+          const matchRelayResult = await publishSeaBrokerageMatchToTelegram(match);
+          if (matchRelayResult.status === "published") {
+            await storage.upsertAppSetting(key, "published");
+          } else {
+            await storage.upsertAppSetting(
+              `${key}:last_error`,
+              matchRelayResult.error || "unknown_match_relay_error",
+            );
+          }
+        }
+      }
 
       res.status(201).json(mapSeaBrokerageEntryToClientShape(updated));
     } catch (error: any) {

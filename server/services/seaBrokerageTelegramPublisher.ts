@@ -1,4 +1,5 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
+import type { SeaBrokerageMatchSuggestion } from "./seaBrokerageMatching";
 
 type TelegramPublishResult = {
   status: "published" | "failed";
@@ -159,6 +160,66 @@ function formatStandardTelegramMessage(
   return lines.filter(Boolean).join("\n");
 }
 
+function formatTransportInline(value: string | null | undefined) {
+  return (value || "")
+    .replace(/[_\s-]+/g, " ")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+}
+
+function formatQuantityInline(entry: SeaBrokerageEntryRow) {
+  const quantity = entry.quantityMt ?? entry.volumeTo ?? entry.volumeFrom;
+  const quantityLabel = Number(quantity).toLocaleString("en-US").replace(/,/g, "'");
+  const tolerance = entry.tolerancePct ?? 0;
+  return tolerance > 0 ? `${quantityLabel} MT ${tolerance}%` : `${quantityLabel} MT`;
+}
+
+function formatPeriodInline(entry: SeaBrokerageEntryRow) {
+  return formatTelegramPeriod(entry);
+}
+
+function formatPriceInline(entry: SeaBrokerageEntryRow) {
+  return formatTelegramPrice(entry);
+}
+
+function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow, includeBroker = true) {
+  const brokerHandle = entry.brokerTelegramUsername
+    ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
+    : entry.brokerCode;
+  const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
+  const brokerPart = includeBroker ? ` ${brokerHandle}` : "";
+  return [
+    `${label}${brokerPart}`,
+    `${formatTelegramCommodity(entry)}, ${countryCode}`,
+    formatQuantityInline(entry),
+    `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
+    `${formatPeriodInline(entry)} @ ${formatPriceInline(entry)}`,
+    formatTransportInline(entry.transportType),
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function formatMatchMessage(
+  match: SeaBrokerageMatchSuggestion,
+  includeBrokerIdentity: boolean,
+) {
+  const confidence = match.confidenceLabel.toUpperCase();
+  const delta = match.priceDelta === null ? "N/A" : `${match.priceDelta.toFixed(2)} USD`;
+  const reason = match.reasons?.[0] || "Commercial overlap detected";
+
+  return [
+    "#match_idea 🤝",
+    "------------------------------",
+    formatMatchSideLine("BID", match.bidEntry, includeBrokerIdentity),
+    formatMatchSideLine("OFFER", match.offerEntry, includeBrokerIdentity),
+    `SCORE ${match.score}/100 | ${confidence} | Δ ${delta}`,
+    reason,
+    "------------------------------",
+  ].join("\n");
+}
+
 function parseBoolean(value: string | undefined, fallback: boolean) {
   if (value === undefined) return fallback;
   const normalized = value.trim().toLowerCase();
@@ -215,20 +276,16 @@ function resolveSeaBrokerageRelayTargets(entry: SeaBrokerageEntryRow): RelayTarg
   return Array.from(deduped.values());
 }
 
-export async function publishSeaBrokerageEntryToTelegram(
-  entry: SeaBrokerageEntryRow,
-  context?: PublishContext,
-): Promise<TelegramPublishResult> {
-  const brokerSignature = context?.brokerTelegramUsername
-    ? `@${context.brokerTelegramUsername.replace(/^@+/, "")}`
-    : entry.brokerTelegramUsername
-      ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
-      : null;
-  const internalMessage = formatStandardTelegramMessage(entry, brokerSignature, true);
-  const externalMessage = formatStandardTelegramMessage(entry, brokerSignature, false);
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const targets = resolveSeaBrokerageRelayTargets(entry);
+function resolveSeaBrokerageRelayTargetsForMatch(match: SeaBrokerageMatchSuggestion): RelayTarget[] {
+  return resolveSeaBrokerageRelayTargets(match.bidEntry);
+}
 
+async function sendTelegramMessages(
+  internalMessage: string,
+  externalMessage: string,
+  targets: RelayTarget[],
+): Promise<TelegramPublishResult> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
     return {
       status: "failed",
@@ -236,7 +293,6 @@ export async function publishSeaBrokerageEntryToTelegram(
       error: "TELEGRAM_BOT_TOKEN is not configured",
     };
   }
-
   if (targets.length === 0) {
     return {
       status: "failed",
@@ -296,4 +352,28 @@ export async function publishSeaBrokerageEntryToTelegram(
       error: error instanceof Error ? error.message : "Unknown Telegram relay error",
     };
   }
+}
+
+export async function publishSeaBrokerageEntryToTelegram(
+  entry: SeaBrokerageEntryRow,
+  context?: PublishContext,
+): Promise<TelegramPublishResult> {
+  const brokerSignature = context?.brokerTelegramUsername
+    ? `@${context.brokerTelegramUsername.replace(/^@+/, "")}`
+    : entry.brokerTelegramUsername
+      ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
+      : null;
+  const internalMessage = formatStandardTelegramMessage(entry, brokerSignature, true);
+  const externalMessage = formatStandardTelegramMessage(entry, brokerSignature, false);
+  const targets = resolveSeaBrokerageRelayTargets(entry);
+  return sendTelegramMessages(internalMessage, externalMessage, targets);
+}
+
+export async function publishSeaBrokerageMatchToTelegram(
+  match: SeaBrokerageMatchSuggestion,
+): Promise<TelegramPublishResult> {
+  const internalMessage = formatMatchMessage(match, true);
+  const externalMessage = formatMatchMessage(match, false);
+  const targets = resolveSeaBrokerageRelayTargetsForMatch(match);
+  return sendTelegramMessages(internalMessage, externalMessage, targets);
 }
