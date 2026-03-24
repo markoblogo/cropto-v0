@@ -284,7 +284,10 @@ export function SeaBrokerageMonitorPage() {
             <div className="space-y-3">
               <TelegramLoginWidget
                 botUsername={session.telegramBotUsername}
+                miniAppShortName={session.telegramMiniAppShortName}
                 onAuth={session.authenticateWithTelegram}
+                onUseTelegramWebApp={session.authenticateFromTelegramWebApp}
+                isAuthorizing={session.isLoading}
               />
             </div>
           )}

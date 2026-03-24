@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 import type { TelegramWidgetUser } from "../services/monitorAuth.service";
 
 declare global {
@@ -9,14 +11,40 @@ declare global {
 
 interface TelegramLoginWidgetProps {
   botUsername: string;
+  miniAppShortName?: string;
   onAuth: (user: TelegramWidgetUser) => void;
+  onUseTelegramWebApp?: () => void;
+  isAuthorizing?: boolean;
+}
+
+function isMobileViewport() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  );
+}
+
+function buildMiniAppOpenUrl(botUsername: string, miniAppShortName?: string) {
+  const username = botUsername.replace(/^@+/, "");
+  const shortName = String(miniAppShortName || "").trim();
+  if (!shortName) {
+    return `https://t.me/${username}`;
+  }
+  return `https://t.me/${username}/${shortName}?startapp=monitor_auth`;
 }
 
 export function TelegramLoginWidget({
   botUsername,
+  miniAppShortName,
   onAuth,
+  onUseTelegramWebApp,
+  isAuthorizing = false,
 }: TelegramLoginWidgetProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const mobile = isMobileViewport();
+  const hasTelegramWebAppContext =
+    typeof window !== "undefined" &&
+    Boolean((window as Window & { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp);
 
   useEffect(() => {
     if (!mountRef.current || !botUsername) return;
@@ -46,7 +74,40 @@ export function TelegramLoginWidget({
 
   return (
     <div className="space-y-2">
-      <div ref={mountRef} className="min-h-8 [&>iframe]:max-w-full" />
+      {mobile ? (
+        hasTelegramWebAppContext ? (
+          <Button
+            type="button"
+            className="h-9 w-full justify-center gap-2"
+            onClick={() => {
+              onUseTelegramWebApp?.();
+            }}
+            disabled={isAuthorizing}
+          >
+            <Send className="h-4 w-4" />
+            {isAuthorizing ? "Authorizing..." : "Use current Telegram session"}
+          </Button>
+        ) : (
+          <>
+            <Button
+              type="button"
+              className="h-9 w-full justify-center gap-2"
+              onClick={() => {
+                const url = buildMiniAppOpenUrl(botUsername, miniAppShortName);
+                window.location.href = url;
+              }}
+            >
+              <Send className="h-4 w-4" />
+              Continue in Telegram app
+            </Button>
+            <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+              Mobile sign-in is completed inside Telegram app.
+            </div>
+          </>
+        )
+      ) : (
+        <div ref={mountRef} className="min-h-8 [&>iframe]:max-w-full" />
+      )}
     </div>
   );
 }
