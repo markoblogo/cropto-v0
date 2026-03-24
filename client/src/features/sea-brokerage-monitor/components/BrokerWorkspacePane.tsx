@@ -79,9 +79,9 @@ export function BrokerWorkspacePane({
           </Select>
 
           <div className="relative min-w-0 w-full flex-1">
-            <Search className="pointer-events-none absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-muted-foreground sm:left-3 sm:h-3.5 sm:w-3.5" />
+            <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-3 sm:h-3.5 sm:w-3.5" />
             <Input
-              className="h-5.5 min-w-0 pr-2 pl-6.5 text-[10px] sm:h-6.5 sm:pr-3 sm:pl-9 sm:text-xs"
+              className="h-5.5 min-w-0 pr-2 pl-8 text-[10px] placeholder:text-[10px] sm:h-6.5 sm:pr-3 sm:pl-9 sm:text-xs sm:placeholder:text-xs"
               value={filters.search}
               onChange={(event) =>
                 onFiltersChange({
@@ -119,7 +119,7 @@ export function BrokerWorkspacePane({
                     }`}
                   >
                     <div className="w-full min-w-0 overflow-hidden">
-                      <div className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground sm:text-[11px] sm:leading-4">
+                      <div className="line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
                     </div>

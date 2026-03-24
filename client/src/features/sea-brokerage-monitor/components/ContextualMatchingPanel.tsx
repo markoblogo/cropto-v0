@@ -243,7 +243,7 @@ export function ContextualMatchingPanel({
                   {selectedEntry.type === "offer" ? "offer" : "bid"}
                 </span>
                 :{" "}
-                <span className="inline-block max-w-full truncate align-bottom">
+                <span className="inline-block max-w-full break-words align-bottom sm:truncate">
                   {selectedEntry.brokerCode} / {formatEntryCommodityCompact(selectedEntry)} /{" "}
                   {formatEntryPriceRange(selectedEntry)} {selectedEntry.currency}
                 </span>
@@ -289,20 +289,20 @@ export function ContextualMatchingPanel({
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.bidEntry)}
-                          className="min-w-0 truncate text-left text-[10px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:text-[10.5px] sm:leading-3.5"
+                          className="min-w-0 line-clamp-2 break-words text-left text-[9.5px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:truncate sm:text-[10.5px] sm:leading-3.5"
                         >
                           Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
                         </button>
                         <button
                           type="button"
                           onClick={() => setDetailEntry(suggestion.offerEntry)}
-                          className="min-w-0 truncate text-left text-[10px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:text-[10.5px] sm:leading-3.5"
+                          className="min-w-0 line-clamp-2 break-words text-left text-[9.5px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:truncate sm:text-[10.5px] sm:leading-3.5"
                         >
                           Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
                         </button>
                       </div>
 
-                      <div className="mt-px truncate text-[9px] leading-3 text-muted-foreground sm:text-[9.5px] sm:leading-3">
+                      <div className="mt-px line-clamp-2 break-words text-[9px] leading-3 text-muted-foreground sm:truncate sm:text-[9.5px] sm:leading-3">
                         {suggestion.reasons[0] ?? "Commercial fit found"}
                       </div>
 
