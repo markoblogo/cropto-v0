@@ -92,7 +92,7 @@ export function TelegramLoginWidget({
     };
   }, [botUsername, onAuth]);
 
-  const shouldRenderWidget = !mobile || hasTelegramWebAppContext;
+  const shouldRenderWidget = true;
 
   return (
     <div className="space-y-2">
