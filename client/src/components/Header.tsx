@@ -347,7 +347,7 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                       className="h-8 gap-1.5 px-2"
                     >
                       <Send className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline text-[11px]">{monitorHandle}</span>
+                      <span className="max-w-[120px] truncate text-[11px]">{monitorHandle}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
