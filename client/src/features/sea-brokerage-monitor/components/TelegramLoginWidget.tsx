@@ -28,9 +28,23 @@ function buildMiniAppOpenUrl(botUsername: string, miniAppShortName?: string) {
   const username = botUsername.replace(/^@+/, "");
   const shortName = String(miniAppShortName || "").trim();
   if (!shortName) {
-    return `https://t.me/${username}`;
+    return `https://t.me/${username}?startapp=monitor_auth`;
   }
   return `https://t.me/${username}/${shortName}?startapp=monitor_auth`;
+}
+
+function openTelegramMiniApp(botUsername: string, miniAppShortName?: string) {
+  const username = botUsername.replace(/^@+/, "");
+  const shortName = String(miniAppShortName || "").trim();
+  const deepLink = shortName
+    ? `tg://resolve?domain=${encodeURIComponent(username)}&appname=${encodeURIComponent(shortName)}&startapp=monitor_auth`
+    : `tg://resolve?domain=${encodeURIComponent(username)}&startapp=monitor_auth`;
+  const webLink = buildMiniAppOpenUrl(botUsername, miniAppShortName);
+
+  window.location.href = deepLink;
+  window.setTimeout(() => {
+    window.location.href = webLink;
+  }, 700);
 }
 
 export function TelegramLoginWidget({
@@ -93,8 +107,7 @@ export function TelegramLoginWidget({
               type="button"
               className="h-9 w-full justify-center gap-2"
               onClick={() => {
-                const url = buildMiniAppOpenUrl(botUsername, miniAppShortName);
-                window.location.href = url;
+                openTelegramMiniApp(botUsername, miniAppShortName);
               }}
             >
               <Send className="h-4 w-4" />
