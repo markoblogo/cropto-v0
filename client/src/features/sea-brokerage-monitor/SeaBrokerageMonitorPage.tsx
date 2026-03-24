@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronDown } from "lucide-react";
 import { BrokerWorkspacePane, type BrokerWorkspacePaneFilters } from "./components/BrokerWorkspacePane";
 import { ContextualMatchingPanel } from "./components/ContextualMatchingPanel";
 import { EntryCreateDialog } from "./components/EntryCreateDialog";
 import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
+import { TelegramLoginWidget } from "./components/TelegramLoginWidget";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
 import {
@@ -36,6 +38,7 @@ export function SeaBrokerageMonitorPage() {
     useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
+  const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
 
   const filteredEntries = useMemo(
     () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
@@ -78,6 +81,17 @@ export function SeaBrokerageMonitorPage() {
       setSelectedEntry(null);
     }
   }, [bidEntries, offerEntries, selectedEntry]);
+
+  useEffect(() => {
+    function handleOpenTelegramAuth() {
+      setTelegramAuthOpen(true);
+    }
+
+    window.addEventListener("sea-brokerage:open-telegram-auth", handleOpenTelegramAuth);
+    return () => {
+      window.removeEventListener("sea-brokerage:open-telegram-auth", handleOpenTelegramAuth);
+    };
+  }, []);
 
   return (
     <MainLayout>
@@ -154,6 +168,52 @@ export function SeaBrokerageMonitorPage() {
         entryType="offer"
         session={session}
       />
+
+      <Dialog open={telegramAuthOpen} onOpenChange={setTelegramAuthOpen}>
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-md">
+          <DialogHeader>
+            <DialogTitle>Telegram Sign-in</DialogTitle>
+            <DialogDescription>
+              Sign in with Telegram to create BID/OFFER entries in Sea Brokerage Monitor.
+            </DialogDescription>
+          </DialogHeader>
+
+          {session.monitorAuthToken && session.telegramHandle ? (
+            <div className="space-y-2">
+              <div className="rounded-md border border-emerald-300/70 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                Authorized as {session.telegramHandle}
+                {session.authorProfile ? ` · ${session.authorProfile.brokerCode}` : ""}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  session.logoutTelegramSession();
+                }}
+              >
+                Sign out Telegram
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <TelegramLoginWidget
+                botUsername={session.telegramBotUsername}
+                onAuth={session.authenticateWithTelegram}
+              />
+              <div className="text-xs text-muted-foreground">
+                If Telegram shows `Bot domain invalid`, set BotFather domain to `cropto.abvx.xyz`.
+              </div>
+            </div>
+          )}
+
+          {session.authError ? (
+            <div className="rounded-md border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              {session.authError}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, MoreHorizontal, X } from "lucide-react";
+import { Menu, LogOut, MoreHorizontal, Send, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -315,6 +315,21 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                   {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </Button>
               </>
+            ) : null}
+
+            {isSeaBrokerageMonitorRoute ? (
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="button-telegram-monitor-login"
+                className="h-8 gap-1.5 px-2"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("sea-brokerage:open-telegram-auth"));
+                }}
+              >
+                <Send className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline text-[11px]">Sign in to create entries</span>
+              </Button>
             ) : null}
 
             {user ? (
