@@ -112,7 +112,7 @@ export function BrokerWorkspacePane({
                     type="button"
                     variant="ghost"
                     onClick={() => onSelectEntry(entry)}
-                    className={`h-auto w-full min-w-0 justify-start rounded-none border-l-2 px-2 py-0.5 text-left sm:px-2.5 sm:py-0.75 ${
+                    className={`h-auto w-full min-w-0 items-start justify-start whitespace-normal rounded-none border-l-2 px-2 py-0.5 text-left sm:items-center sm:px-2.5 sm:py-0.75 sm:whitespace-nowrap ${
                       isSelected
                         ? "border-l-primary bg-muted/28"
                         : "border-l-transparent hover:bg-muted/16"
