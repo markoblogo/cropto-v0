@@ -16,6 +16,16 @@ export type MonitorTelegramIdentity = {
   telegramUsername: string | null;
 };
 
+const TELEGRAM_LOGIN_URL_FIELDS = [
+  "id",
+  "first_name",
+  "last_name",
+  "username",
+  "photo_url",
+  "auth_date",
+  "hash",
+] as const;
+
 export function getSeaBrokerageMonitorToken() {
   if (typeof window === "undefined") return null;
   const token = window.localStorage.getItem(MONITOR_AUTH_TOKEN_STORAGE_KEY);
@@ -66,6 +76,44 @@ export function getSeaBrokerageMonitorHandleFromToken(token: string | null | und
   } catch {
     return null;
   }
+}
+
+export function consumeTelegramWidgetUserFromUrl(): TelegramWidgetUser | null {
+  if (typeof window === "undefined") return null;
+  const url = new URL(window.location.href);
+  const params = url.searchParams;
+  const id = params.get("id");
+  const authDate = params.get("auth_date");
+  const hash = params.get("hash");
+
+  if (!id || !authDate || !hash) {
+    return null;
+  }
+
+  const user: TelegramWidgetUser = {
+    id: Number(id),
+    first_name: params.get("first_name") || undefined,
+    last_name: params.get("last_name") || undefined,
+    username: params.get("username") || undefined,
+    photo_url: params.get("photo_url") || undefined,
+    auth_date: Number(authDate),
+    hash,
+  };
+
+  let cleaned = false;
+  for (const key of TELEGRAM_LOGIN_URL_FIELDS) {
+    if (params.has(key)) {
+      params.delete(key);
+      cleaned = true;
+    }
+  }
+
+  if (cleaned) {
+    const nextUrl = `${url.pathname}${params.toString() ? `?${params.toString()}` : ""}${url.hash}`;
+    window.history.replaceState({}, document.title, nextUrl);
+  }
+
+  return Number.isFinite(user.id) && Number.isFinite(user.auth_date) ? user : null;
 }
 
 export async function signInSeaBrokerageMonitorWithTelegram(user: TelegramWidgetUser) {

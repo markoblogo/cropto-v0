@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   buildSeaBrokerageMonitorAuthHeaders,
   clearSeaBrokerageMonitorToken,
+  consumeTelegramWidgetUserFromUrl,
   getSeaBrokerageMonitorToken,
   setSeaBrokerageMonitorToken,
   signInSeaBrokerageMonitorWithTelegram,
@@ -30,6 +31,7 @@ interface BrokerAuthMeResponse {
 }
 
 const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME || "spikemoonbot";
+const TELEGRAM_BOT_ID = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_ID || "";
 
 export function useSeaBrokerageTelegramSession() {
   const [monitorToken, setMonitorToken] = useState<string | null>(() => getSeaBrokerageMonitorToken());
@@ -40,6 +42,14 @@ export function useSeaBrokerageTelegramSession() {
   useEffect(() => {
     setSeaBrokerageMonitorToken(monitorToken);
   }, [monitorToken]);
+
+  useEffect(() => {
+    if (monitorToken) return;
+    const user = consumeTelegramWidgetUserFromUrl();
+    if (!user) return;
+    void authenticateWithTelegram(user);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const headers = useMemo(() => buildSeaBrokerageMonitorAuthHeaders(monitorToken), [monitorToken]);
 
@@ -112,6 +122,7 @@ export function useSeaBrokerageTelegramSession() {
     monitorAuthToken: monitorToken,
     monitorAuthHeaders: headers,
     telegramBotUsername: TELEGRAM_BOT_USERNAME,
+    telegramBotId: TELEGRAM_BOT_ID,
     authError,
     authenticateWithTelegram,
     logoutTelegramSession,
