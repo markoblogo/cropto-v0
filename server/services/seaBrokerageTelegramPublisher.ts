@@ -33,7 +33,7 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
 
   if (direct !== null && direct !== undefined) {
     const compact = Number(direct);
-    return `@${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
+    return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
   }
 
   if (from !== null && from !== undefined && to !== null && to !== undefined && from !== to) {
@@ -41,16 +41,16 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
     const toCompact = Number(to);
     const left = Number.isInteger(fromCompact) ? `${fromCompact}` : fromCompact.toFixed(2);
     const right = Number.isInteger(toCompact) ? `${toCompact}` : toCompact.toFixed(2);
-    return `@${left}$ | ${right}$`;
+    return `${left}$ | ${right}$`;
   }
 
   const resolvedPrice = from ?? to;
   if (resolvedPrice === null || resolvedPrice === undefined) {
-    return "@ subject";
+    return "SUBJECT";
   }
 
   const compact = Number(resolvedPrice);
-  return `@${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
+  return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
 }
 
 function formatDateDotted(value: string) {
@@ -62,19 +62,31 @@ function formatDateDotted(value: string) {
   return `${day}.${month}.${year}`;
 }
 
-function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
-  if (entry.periodStart && entry.periodEnd) {
-    return `${formatDateDotted(entry.periodStart)}-${formatDateDotted(entry.periodEnd)}`;
-  }
-  return entry.periodLabel;
+function formatDateDottedShort(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}.${month}`;
 }
 
-function formatTelegramTransport(entry: SeaBrokerageEntryRow) {
-  return entry.transportType.replace(/_/g, " | ");
+function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
+  if (entry.periodStart && entry.periodEnd) {
+    return `${formatDateDottedShort(entry.periodStart)}-${formatDateDottedShort(entry.periodEnd)}`;
+  }
+  return entry.periodLabel.toUpperCase();
+}
+
+function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
+  return entry.transportType
+    .replace(/[_\s-]+/g, " ")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
 }
 
 function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {
-  return entry.commodityLabel.replace(/%/g, "").trim();
+  return entry.commodityLabel.replace(/%/g, "").trim().toUpperCase();
 }
 
 function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
@@ -90,48 +102,61 @@ function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) 
   return [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
 }
 
-function formatInternalTelegramMessage(entry: SeaBrokerageEntryRow, brokerSignature?: string | null) {
+function formatQuantityLine(entry: SeaBrokerageEntryRow) {
+  const quantity = entry.quantityMt ?? entry.volumeTo ?? entry.volumeFrom;
+  const tolerance = entry.tolerancePct ?? 0;
+  const quantityLabel = Number(quantity).toLocaleString("en-US").replace(/,/g, "'");
+  return tolerance > 0 ? `${quantityLabel} MT ${tolerance}%` : `${quantityLabel} MT`;
+}
+
+function resolveCountryCodeAlpha2(entry: SeaBrokerageEntryRow, value: string | null | undefined) {
+  const normalized = String(value || "").trim().toUpperCase();
+  if (/^[A-Z]{2}$/.test(normalized)) return normalized;
+  if (/^[A-Z]{3}$/.test(normalized)) {
+    if (normalized === "UKR") return "UA";
+    if (normalized === "ESP") return "ES";
+    if (normalized === "EGY") return "EG";
+    if (normalized === "TUR") return "TR";
+    if (normalized === "ROU") return "RO";
+    if (normalized === "MDA") return "MD";
+  }
+  const destination = String(entry.destinationCountry || "").trim().toUpperCase();
+  if (destination === "UKRAINE") return "UA";
+  if (destination === "SPAIN") return "ES";
+  if (destination === "EGYPT") return "EG";
+  if (destination === "TURKEY") return "TR";
+  if (destination === "ROMANIA") return "RO";
+  if (destination === "MOLDOVA") return "MD";
+  return normalized || "N/A";
+}
+
+function formatStandardTelegramMessage(
+  entry: SeaBrokerageEntryRow,
+  brokerSignature?: string | null,
+  includeBrokerSignature = true,
+) {
   const header = formatTelegramHeader(
     entry,
-    brokerSignature || entry.companyName || entry.brokerName || entry.brokerCode,
+    includeBrokerSignature
+      ? brokerSignature || entry.companyName || entry.brokerName || entry.brokerCode
+      : "BROKER DESK",
   );
-  const counterparty = formatTelegramCounterparty(entry);
-  const counterpartyLine =
-    entry.type === "bid"
-      ? counterparty
-        ? `Buyer: ${counterparty}`
-        : null
-      : counterparty
-        ? `Seller: ${counterparty}`
-        : null;
-  const termsLine = entry.paymentTerms?.trim() ? `Payment: ${entry.paymentTerms.trim()}` : null;
+  const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
 
   const lines = [
     header,
     "------------------------------",
+    formatTelegramTransportCode(entry),
     formatTelegramCommodity(entry),
-    `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`,
-    formatTelegramTransport(entry),
-    termsLine,
-    counterpartyLine,
-    `${formatTelegramPeriod(entry)} ${formatTelegramPrice(entry)}`,
-  ];
-
-  if (entry.note?.trim()) {
-    lines.push(entry.note.trim());
-  }
-
-  return lines.filter(Boolean).join("\n");
-}
-
-function formatExternalTelegramMessage(entry: SeaBrokerageEntryRow) {
-  const lines = [
-    formatTelegramHeader(entry, "BROKER DESK"),
+    `${formatTelegramCommodity(entry)}, ${countryCode}`,
+    formatQuantityLine(entry),
+    `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
+    formatTelegramPeriod(entry),
+    formatTelegramPrice(entry),
+    entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,
     "------------------------------",
-    formatTelegramCommodity(entry),
-    `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`,
-    `${formatTelegramPeriod(entry)} ${formatTelegramPrice(entry)}`,
   ];
+
   return lines.filter(Boolean).join("\n");
 }
 
@@ -200,8 +225,8 @@ export async function publishSeaBrokerageEntryToTelegram(
     : entry.brokerTelegramUsername
       ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
       : null;
-  const internalMessage = formatInternalTelegramMessage(entry, brokerSignature);
-  const externalMessage = formatExternalTelegramMessage(entry);
+  const internalMessage = formatStandardTelegramMessage(entry, brokerSignature, true);
+  const externalMessage = formatStandardTelegramMessage(entry, brokerSignature, false);
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const targets = resolveSeaBrokerageRelayTargets(entry);
 
@@ -273,4 +298,3 @@ export async function publishSeaBrokerageEntryToTelegram(
     };
   }
 }
-
