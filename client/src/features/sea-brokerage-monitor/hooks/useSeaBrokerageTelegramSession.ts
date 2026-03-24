@@ -3,9 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import {
   buildSeaBrokerageMonitorAuthHeaders,
   clearSeaBrokerageMonitorToken,
+  consumeTelegramMagicLinkTokenFromUrl,
   consumeTelegramWidgetUserFromUrl,
+  consumeSeaBrokerageTelegramMagicLink,
   getSeaBrokerageMonitorHandleFromToken,
   getSeaBrokerageMonitorToken,
+  requestSeaBrokerageTelegramMagicLink,
   requestSeaBrokerageTelegramLoginCode,
   setSeaBrokerageMonitorToken,
   verifySeaBrokerageTelegramLoginCode,
@@ -61,6 +64,12 @@ export function useSeaBrokerageTelegramSession() {
 
   useEffect(() => {
     if (monitorToken) return;
+
+    const magicLinkToken = consumeTelegramMagicLinkTokenFromUrl();
+    if (magicLinkToken) {
+      void authenticateWithTelegramMagicLink(magicLinkToken);
+      return;
+    }
 
     const tryMiniAppInitData = () => {
       const webApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
@@ -169,6 +178,24 @@ export function useSeaBrokerageTelegramSession() {
     }
   }
 
+  async function authenticateWithTelegramMagicLink(magicLinkToken: string) {
+    try {
+      setIsAuthenticating(true);
+      setAuthError(null);
+      const result = await consumeSeaBrokerageTelegramMagicLink(magicLinkToken);
+      setProfileSnapshot(result.profile);
+      setIdentitySnapshot({
+        telegramUserId: result.profile.telegramUserId,
+        telegramUsername: result.profile.telegramUsername,
+      });
+      setMonitorToken(result.token);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Telegram sign-in link authentication failed");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }
+
   async function authenticateFromTelegramWebApp() {
     const webApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
     const initData = String(webApp?.initData || "").trim();
@@ -206,6 +233,19 @@ export function useSeaBrokerageTelegramSession() {
       return result;
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : "Failed to verify Telegram login code");
+      throw error;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }
+
+  async function requestTelegramMagicLinkLogin(telegramUsername: string) {
+    try {
+      setIsAuthenticating(true);
+      setAuthError(null);
+      await requestSeaBrokerageTelegramMagicLink(telegramUsername);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Failed to request Telegram sign-in link");
       throw error;
     } finally {
       setIsAuthenticating(false);
@@ -267,6 +307,7 @@ export function useSeaBrokerageTelegramSession() {
     authError,
     authenticateWithTelegram,
     authenticateFromTelegramWebApp,
+    requestTelegramMagicLinkLogin,
     requestTelegramCodeLogin,
     verifyTelegramCodeLogin,
     logoutTelegramSession,

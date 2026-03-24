@@ -3,13 +3,13 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { BrokerWorkspacePane, type BrokerWorkspacePaneFilters } from "./components/BrokerWorkspacePane";
 import { ContextualMatchingPanel } from "./components/ContextualMatchingPanel";
 import { EntryCreateDialog } from "./components/EntryCreateDialog";
 import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
-import { TelegramLoginWidget } from "./components/TelegramLoginWidget";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
 import {
@@ -53,6 +53,8 @@ export function SeaBrokerageMonitorPage() {
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
+  const [telegramUsername, setTelegramUsername] = useState("");
+  const [magicLinkRequested, setMagicLinkRequested] = useState(false);
 
   const filteredEntries = useMemo(
     () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
@@ -175,8 +177,17 @@ export function SeaBrokerageMonitorPage() {
   useEffect(() => {
     if (session.monitorAuthToken && telegramAuthOpen) {
       setTelegramAuthOpen(false);
+      setTelegramUsername("");
+      setMagicLinkRequested(false);
     }
   }, [session.monitorAuthToken, telegramAuthOpen]);
+
+  async function handleRequestTelegramMagicLink() {
+    const normalized = telegramUsername.trim().replace(/^@+/, "");
+    if (!normalized) return;
+    await session.requestTelegramMagicLinkLogin(normalized);
+    setMagicLinkRequested(true);
+  }
 
   return (
     <MainLayout>
@@ -282,13 +293,31 @@ export function SeaBrokerageMonitorPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              <TelegramLoginWidget
-                botUsername={session.telegramBotUsername}
-                miniAppShortName={session.telegramMiniAppShortName}
-                onAuth={session.authenticateWithTelegram}
-                onUseTelegramWebApp={session.authenticateFromTelegramWebApp}
-                isAuthorizing={session.isLoading}
-              />
+              <div className="rounded-md border border-border/70 p-3">
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Sign in via Telegram link
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    value={telegramUsername}
+                    onChange={(event) => setTelegramUsername(event.target.value)}
+                    placeholder="@username"
+                  />
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={() => void handleRequestTelegramMagicLink()}
+                    disabled={session.isLoading || !telegramUsername.trim()}
+                  >
+                    Send sign-in link in Telegram
+                  </Button>
+                  {magicLinkRequested ? (
+                    <div className="text-[11px] text-muted-foreground">
+                      Link sent in Telegram DM. Open it from Telegram to complete sign-in automatically.
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
           )}
 

@@ -1,5 +1,6 @@
 const MONITOR_AUTH_TOKEN_STORAGE_KEY = "sea_brokerage_monitor.auth_token";
 const MONITOR_AUTH_CHANGED_EVENT = "sea-brokerage:monitor-auth-changed";
+const MONITOR_TELEGRAM_MAGIC_LINK_PARAM = "tg_monitor_login_token";
 
 export type TelegramWidgetUser = {
   id: number;
@@ -172,6 +173,18 @@ export function consumeTelegramWidgetUserFromUrl(): TelegramWidgetUser | null {
   return user;
 }
 
+export function consumeTelegramMagicLinkTokenFromUrl() {
+  if (typeof window === "undefined") return null;
+  const url = new URL(window.location.href);
+  const token = String(url.searchParams.get(MONITOR_TELEGRAM_MAGIC_LINK_PARAM) || "").trim();
+  if (!token) return null;
+
+  url.searchParams.delete(MONITOR_TELEGRAM_MAGIC_LINK_PARAM);
+  const nextUrl = `${url.pathname}${url.searchParams.toString() ? `?${url.searchParams.toString()}` : ""}${url.hash}`;
+  window.history.replaceState({}, document.title, nextUrl);
+  return token;
+}
+
 export async function signInSeaBrokerageMonitorWithTelegram(user: TelegramWidgetUser) {
   const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/login", {
     method: "POST",
@@ -244,6 +257,50 @@ export async function requestSeaBrokerageTelegramLoginCode(telegramUsername: str
     const text = (await response.text()) || "Telegram login code request failed";
     throw new Error(text);
   }
+}
+
+export async function requestSeaBrokerageTelegramMagicLink(telegramUsername: string) {
+  const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/link/request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ telegramUsername }),
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || "Telegram sign-in link request failed";
+    throw new Error(text);
+  }
+}
+
+export async function consumeSeaBrokerageTelegramMagicLink(token: string) {
+  const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/link/consume", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ token }),
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || "Telegram sign-in link verification failed";
+    throw new Error(text);
+  }
+
+  return response.json() as Promise<{
+    token: string;
+    authorized: boolean;
+    profile: {
+      authUserId: string | null;
+      authEmail: string | null;
+      telegramUserId: string | null;
+      telegramUsername: string | null;
+      brokerCode: string;
+      brokerName: string;
+      companyName: string;
+      isActive: boolean;
+      source: "db" | "env";
+    };
+  }>;
 }
 
 export async function verifySeaBrokerageTelegramLoginCode(

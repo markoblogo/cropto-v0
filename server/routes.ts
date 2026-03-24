@@ -69,6 +69,8 @@ import {
   type TelegramLoginPayload,
 } from "./services/seaBrokerageTelegramAuth";
 import {
+  consumeSeaBrokerageTelegramMagicLink,
+  issueSeaBrokerageTelegramMagicLink,
   issueSeaBrokerageTelegramOtp,
   verifySeaBrokerageTelegramOtp,
 } from "./services/seaBrokerageTelegramOtp";
@@ -160,6 +162,14 @@ const seaBrokerageTelegramCodeRequestSchema = z.object({
 const seaBrokerageTelegramCodeVerifySchema = z.object({
   telegramUsername: z.string().trim().min(2),
   code: z.string().trim().regex(/^\d{6}$/),
+});
+
+const seaBrokerageTelegramMagicLinkRequestSchema = z.object({
+  telegramUsername: z.string().trim().min(2),
+});
+
+const seaBrokerageTelegramMagicLinkConsumeSchema = z.object({
+  token: z.string().trim().min(16),
 });
 
 function decimalToNumber(value: unknown) {
@@ -7510,6 +7520,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error requesting sea brokerage Telegram login code:", error);
       return res.status(500).json({ error: "Failed to request Telegram login code" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/auth/telegram/link/request", async (req, res) => {
+    try {
+      const parsed = seaBrokerageTelegramMagicLinkRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const telegramUsername = parsed.data.telegramUsername.trim().replace(/^@+/, "").toLowerCase();
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram({ telegramUsername });
+      if (!profile?.isActive) {
+        return res.status(404).json({ error: "Broker is not allowlisted for monitor publishing." });
+      }
+      if (!profile.telegramUserId) {
+        return res.status(400).json({ error: "Allowlist entry has no Telegram user id." });
+      }
+
+      const { token } = issueSeaBrokerageTelegramMagicLink(telegramUsername);
+      const baseUrl =
+        (process.env.APP_BASE_URL || "").trim().replace(/\/+$/, "") ||
+        `${req.protocol}://${req.get("host") || "localhost:5173"}`;
+      const authLink = `${baseUrl}/spike-monitor?tg_monitor_login_token=${encodeURIComponent(token)}`;
+
+      const dmResult = await sendSeaBrokerageTelegramDirectMessage(
+        profile.telegramUserId,
+        [
+          "Spike Monitor sign-in",
+          "",
+          "Tap the link below to sign in:",
+          authLink,
+          "",
+          "Link is valid for 10 minutes and can be used once.",
+        ].join("\n"),
+      );
+
+      if (!dmResult.ok) {
+        return res.status(502).json({
+          error:
+            dmResult.error ||
+            "Failed to send Telegram sign-in link. Ensure broker started the bot chat first.",
+        });
+      }
+
+      return res.status(201).json({ ok: true });
+    } catch (error: any) {
+      console.error("Error requesting sea brokerage Telegram magic link:", error);
+      return res.status(500).json({ error: "Failed to request Telegram sign-in link" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/auth/telegram/link/consume", async (req, res) => {
+    try {
+      const parsed = seaBrokerageTelegramMagicLinkConsumeSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const consumed = consumeSeaBrokerageTelegramMagicLink(parsed.data.token);
+      if (!consumed?.username) {
+        return res.status(401).json({ error: "Invalid or expired sign-in link." });
+      }
+
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram({
+        telegramUsername: consumed.username,
+      });
+      if (!profile?.isActive) {
+        return res.status(404).json({ error: "Broker is not allowlisted for monitor publishing." });
+      }
+
+      const token = signSeaBrokerageMonitorToken({
+        telegramUserId: profile.telegramUserId || `broker:${profile.brokerCode}`,
+        telegramUsername: profile.telegramUsername || consumed.username,
+      });
+      return res.status(201).json({
+        token,
+        authorized: true,
+        profile,
+      });
+    } catch (error: any) {
+      console.error("Error consuming sea brokerage Telegram magic link:", error);
+      return res.status(500).json({ error: "Failed to complete Telegram sign-in" });
     }
   });
 
