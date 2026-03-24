@@ -15,6 +15,7 @@ import {
   spotPositions,
   partnerOrganizations,
   serviceContracts,
+  seaBrokerageEntries,
   commodityIndexPrices,
   type Option,
   type InsertOption,
@@ -38,6 +39,8 @@ import {
   type InsertPartnerOrganization,
   type ServiceContract,
   type InsertServiceContract,
+  type SeaBrokerageEntryRow,
+  type InsertSeaBrokerageEntry,
 } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and, lt, or, sql, gte, lte } from "drizzle-orm";
@@ -115,9 +118,34 @@ export interface IStorage {
   getServiceContractsByPartner(partnerId: string): Promise<ServiceContract[]>;
   createOrUpdateServiceContract(contract: InsertServiceContract, id?: string): Promise<ServiceContract>;
   getPartnerWithContracts(partnerId: string): Promise<{ partner: PartnerOrganization; contracts: ServiceContract[] } | undefined>;
+  listSeaBrokerageEntries(): Promise<SeaBrokerageEntryRow[]>;
+  createSeaBrokerageEntry(entry: InsertSeaBrokerageEntry): Promise<SeaBrokerageEntryRow>;
+  updateSeaBrokerageEntry(id: string, updates: Partial<SeaBrokerageEntryRow>): Promise<SeaBrokerageEntryRow>;
 }
 
 export class DatabaseStorage implements IStorage {
+  async listSeaBrokerageEntries(): Promise<SeaBrokerageEntryRow[]> {
+    return db.select().from(seaBrokerageEntries).orderBy(desc(seaBrokerageEntries.createdAt));
+  }
+
+  async createSeaBrokerageEntry(entry: InsertSeaBrokerageEntry): Promise<SeaBrokerageEntryRow> {
+    const [created] = await db.insert(seaBrokerageEntries).values(entry).returning();
+    return created;
+  }
+
+  async updateSeaBrokerageEntry(
+    id: string,
+    updates: Partial<SeaBrokerageEntryRow>,
+  ): Promise<SeaBrokerageEntryRow> {
+    const [updated] = await db
+      .update(seaBrokerageEntries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(seaBrokerageEntries.id, id))
+      .returning();
+
+    return updated;
+  }
+
   async listOptions(): Promise<Option[]> {
     const allOptions = await db
       .select({

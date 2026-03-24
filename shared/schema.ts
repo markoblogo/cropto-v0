@@ -486,6 +486,52 @@ export const forwardSpreads = pgTable("forward_spreads", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const seaBrokerageEntries = pgTable("sea_brokerage_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type", { enum: ["bid", "offer"] }).notNull(),
+  brokerUserId: text("broker_user_id").notNull(),
+  brokerEmail: text("broker_email"),
+  brokerCode: text("broker_code").notNull(),
+  brokerName: text("broker_name").notNull(),
+  companyName: text("company_name").notNull(),
+  sellerName: text("seller_name"),
+  buyerName: text("buyer_name"),
+  originCountry: text("origin_country"),
+  originCountryCode: text("origin_country_code"),
+  commodity: text("commodity").notNull(),
+  commodityLabel: text("commodity_label").notNull(),
+  gradeOrSpec: text("grade_or_spec").notNull().default(""),
+  quantityMt: integer("quantity_mt"),
+  tolerancePct: integer("tolerance_pct"),
+  volumeFrom: integer("volume_from").notNull(),
+  volumeTo: integer("volume_to").notNull(),
+  volumeUnit: text("volume_unit").notNull().default("mt"),
+  basis: text("basis").notNull(),
+  paymentTerms: text("payment_terms"),
+  destinationPortCode: text("destination_port_code"),
+  destinationPort: text("destination_port").notNull(),
+  destinationCountryCode: text("destination_country_code"),
+  destinationCountry: text("destination_country").notNull(),
+  periodType: text("period_type").notNull(),
+  periodLabel: text("period_label").notNull(),
+  periodStart: text("period_start"),
+  periodEnd: text("period_end"),
+  price: decimal("price", { precision: 18, scale: 4 }),
+  priceFrom: decimal("price_from", { precision: 18, scale: 4 }),
+  priceTo: decimal("price_to", { precision: 18, scale: 4 }),
+  currency: text("currency").notNull().default("USD"),
+  transportType: text("transport_type").notNull(),
+  note: text("note"),
+  canonicalView: text("canonical_view").notNull(),
+  telegramRelayStatus: text("telegram_relay_status", { enum: ["queued", "published", "failed"] })
+    .notNull()
+    .default("queued"),
+  telegramRelayMessage: text("telegram_relay_message"),
+  telegramMessageId: text("telegram_message_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const partnerOrganizations = pgTable("partner_organizations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -731,6 +777,12 @@ export const insertForwardSpreadSchema = createInsertSchema(forwardSpreads).omit
   updatedAt: true,
 });
 
+export const insertSeaBrokerageEntrySchema = createInsertSchema(seaBrokerageEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -786,6 +838,8 @@ export type InsertForwardSettlement = z.infer<typeof insertForwardSettlementSche
 export type ForwardSettlement = typeof forwardSettlements.$inferSelect;
 export type InsertForwardSpread = z.infer<typeof insertForwardSpreadSchema>;
 export type ForwardSpread = typeof forwardSpreads.$inferSelect;
+export type InsertSeaBrokerageEntry = z.infer<typeof insertSeaBrokerageEntrySchema>;
+export type SeaBrokerageEntryRow = typeof seaBrokerageEntries.$inferSelect;
 
 // Partner Organizations schemas
 export const insertPartnerOrganizationSchema = createInsertSchema(partnerOrganizations).omit({

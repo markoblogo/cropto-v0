@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, marketPrices, marketPriceSourceStatus, marketPriceFetchLog, type HealthUpdateResponse } from "@shared/schema";
+import { insertOptionSchema, insertFeedbackSchema, insertAnalyticsEventSchema, analyticsEvents, options, trades, settlements, indexPrices, marginCalls, transactions, indexes, commodityIndexPrices, insertCommodityIndexPriceSchema, platformFees, croptBalances, partnerOrganizations, serviceContracts, waitlistSignups, insertPartnerOrganizationSchema, insertServiceContractSchema, spotPositions, forwardOrders, forwardContracts, forwardSettlements, forwardSpreads, insertForwardOrderSchema, insertForwardSpreadSchema, marketPrices, marketPriceSourceStatus, marketPriceFetchLog, type HealthUpdateResponse, type SeaBrokerageEntryRow } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { eq, desc, gt, and, or, sql, asc, gte, lte, inArray } from "drizzle-orm";
@@ -50,6 +50,7 @@ import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingest
 import { providerDefinitionsFor } from "./ingestion/config";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
+import { publishSeaBrokerageEntryToTelegram } from "./services/seaBrokerageTelegramPublisher";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -72,6 +73,102 @@ const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
   indexUpdates: false,
   system: true,
 };
+
+const createSeaBrokerageEntryRequestSchema = z.object({
+  type: z.enum(["bid", "offer"]),
+  brokerCode: z.string().min(1),
+  brokerName: z.string().min(1),
+  companyName: z.string().min(1),
+  sellerName: z.string().trim().max(200).nullable().optional(),
+  buyerName: z.string().trim().max(200).nullable().optional(),
+  originCountry: z.string().trim().nullable().optional(),
+  originCountryCode: z.string().trim().nullable().optional(),
+  commodity: z.string().min(1),
+  commodityLabel: z.string().min(1),
+  gradeOrSpec: z.string().optional().default(""),
+  quantityMt: z.coerce.number().int().positive().nullable().optional(),
+  tolerancePct: z.coerce.number().int().min(0).max(25).nullable().optional(),
+  volumeFrom: z.coerce.number().int().positive(),
+  volumeTo: z.coerce.number().int().positive(),
+  volumeUnit: z.string().min(1),
+  basis: z.string().min(1),
+  paymentTerms: z.string().trim().nullable().optional(),
+  destinationPortCode: z.string().trim().nullable().optional(),
+  destinationPort: z.string().min(1),
+  destinationCountryCode: z.string().trim().nullable().optional(),
+  destinationCountry: z.string().min(1),
+  periodType: z.string().min(1),
+  periodLabel: z.string().min(1),
+  periodStart: z.string().trim().nullable().optional(),
+  periodEnd: z.string().trim().nullable().optional(),
+  price: z.coerce.number().nonnegative().nullable().optional(),
+  priceFrom: z.coerce.number().nonnegative().nullable(),
+  priceTo: z.coerce.number().nonnegative().nullable(),
+  currency: z.string().min(1),
+  transportType: z.string().min(1),
+  note: z.string().trim().max(500).nullable().optional(),
+  canonicalView: z.string().min(1),
+});
+
+function decimalToNumber(value: unknown) {
+  if (value === null || value === undefined) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function mapSeaBrokerageEntryToClientShape(entry: SeaBrokerageEntryRow) {
+  return {
+    id: entry.id,
+    type: entry.type,
+    brokerId: entry.brokerUserId,
+    brokerCode: entry.brokerCode,
+    brokerName: entry.brokerName,
+    companyName: entry.companyName,
+    sellerName: entry.sellerName,
+    buyerName: entry.buyerName,
+    originCountry: entry.originCountry,
+    originCountryCode: entry.originCountryCode,
+    commodity: entry.commodity,
+    commodityLabel: entry.commodityLabel,
+    gradeOrSpec: entry.gradeOrSpec,
+    quantityMt: entry.quantityMt,
+    tolerancePct: entry.tolerancePct,
+    volumeFrom: entry.volumeFrom,
+    volumeTo: entry.volumeTo,
+    volumeUnit: entry.volumeUnit,
+    basis: entry.basis,
+    paymentTerms: entry.paymentTerms,
+    destinationPortCode: entry.destinationPortCode,
+    destinationPort: entry.destinationPort,
+    destinationCountryCode: entry.destinationCountryCode,
+    destinationCountry: entry.destinationCountry,
+    periodType: entry.periodType,
+    periodLabel: entry.periodLabel,
+    periodStart: entry.periodStart,
+    periodEnd: entry.periodEnd,
+    price: decimalToNumber(entry.price),
+    priceFrom: decimalToNumber(entry.priceFrom),
+    priceTo: decimalToNumber(entry.priceTo),
+    currency: entry.currency,
+    transportType: entry.transportType,
+    note: entry.note,
+    createdAt: entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt),
+    createdBy: {
+      id: entry.brokerUserId,
+      authUserId: entry.brokerUserId,
+      brokerCode: entry.brokerCode,
+      brokerName: entry.brokerName,
+      companyName: entry.companyName,
+      displayName: entry.brokerName,
+      email: entry.brokerEmail ?? "",
+      role: "broker",
+      identityProvider: "cropto_auth",
+    },
+    canonicalView: entry.canonicalView,
+    telegramRelayStatus: entry.telegramRelayStatus,
+    telegramRelayMessage: entry.telegramRelayMessage,
+  };
+}
 
 async function getFeedbackAlertRecipients(): Promise<string[]> {
   const configured = process.env.FEEDBACK_ALERT_EMAILS || process.env.FEEDBACK_ALERT_EMAIL || "";
@@ -7220,6 +7317,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[ADMIN] Liquidation run failed", error);
       res.status(500).json({ error: "Failed to run liquidations" });
+    }
+  });
+
+  // ===== SEA BROKERAGE MONITOR =====
+
+  app.get("/api/sea-brokerage-monitor/entries", async (_req, res) => {
+    try {
+      const entries = await storage.listSeaBrokerageEntries();
+      res.json(entries.map(mapSeaBrokerageEntryToClientShape));
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage monitor entries:", error);
+      res.status(500).json({ error: "Failed to fetch sea brokerage monitor entries" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/entries", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const parsed = createSeaBrokerageEntryRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const created = await storage.createSeaBrokerageEntry({
+        ...parsed.data,
+        brokerUserId: req.user.id,
+        brokerEmail: req.user.email ?? null,
+        gradeOrSpec: parsed.data.gradeOrSpec ?? "",
+        price:
+          parsed.data.price === null || parsed.data.price === undefined
+            ? null
+            : String(parsed.data.price),
+        priceFrom:
+          parsed.data.priceFrom === null || parsed.data.priceFrom === undefined
+            ? null
+            : String(parsed.data.priceFrom),
+        priceTo:
+          parsed.data.priceTo === null || parsed.data.priceTo === undefined
+            ? null
+            : String(parsed.data.priceTo),
+        telegramRelayStatus: "queued",
+      });
+
+      const relayResult = await publishSeaBrokerageEntryToTelegram(created);
+      const updated = await storage.updateSeaBrokerageEntry(created.id, {
+        telegramRelayStatus: relayResult.status,
+        telegramRelayMessage: relayResult.messageText,
+        telegramMessageId: relayResult.messageId ?? null,
+      });
+
+      res.status(201).json(mapSeaBrokerageEntryToClientShape(updated));
+    } catch (error: any) {
+      console.error("Error creating sea brokerage monitor entry:", error);
+      res.status(500).json({ error: "Failed to create sea brokerage monitor entry" });
     }
   });
 

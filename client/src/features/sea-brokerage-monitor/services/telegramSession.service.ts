@@ -102,10 +102,10 @@ export function resolveSeaBrokerageTelegramSession(
     return {
       authorProfile: demoBrokerProfile,
       sessionState: "demo_telegram",
-      canCreateEntries: true,
+      canCreateEntries: false,
       isDemoSelectorEnabled: true,
-      statusLabel: "Demo Telegram session",
-      statusMessage: "Using a controlled local Telegram-style broker identity for manual testing.",
+      statusLabel: "Demo Telegram preview",
+      statusMessage: "Demo identity is available for preview only. Sign in with a mapped broker account to publish entries.",
       telegramHandle: buildTelegramHandle(demoBrokerProfile),
     };
   }

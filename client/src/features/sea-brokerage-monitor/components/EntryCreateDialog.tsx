@@ -41,14 +41,10 @@ import {
   getPortPlaceDisplayLabel,
 } from "../services/displayStandards";
 import {
-  createBrokerageEntry,
-  updateBrokerageEntryTelegramRelayStatus,
-} from "../services/seaBrokerageMonitor.service";
-import {
   buildCanonicalView,
   normalizePeriodLabel,
 } from "../services/entryFormatting.service";
-import { publishEntryToTelegram } from "../services/telegramRelay.service";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type {
   Basis,
   BrokerageEntry,
@@ -338,8 +334,13 @@ export function EntryCreateDialog({
   }, [entryType, session.authorProfile, values]);
 
   async function onSubmit(formValues: EntryFormValues) {
-    if (!session.authorProfile) {
-      setSubmitMessage("Author unavailable. Choose a Telegram session before creating entries.");
+    if (!session.workspaceUser) {
+      setSubmitMessage("Sign in with a mapped broker account before creating entries.");
+      return;
+    }
+
+    if (!session.authorProfile || !session.canCreateEntries) {
+      setSubmitMessage("Author unavailable. Sign in with a mapped broker account before creating entries.");
       return;
     }
 
@@ -356,7 +357,7 @@ export function EntryCreateDialog({
         formValues.periodEnd,
       );
 
-      const entry = createBrokerageEntry({
+      const payload = {
         type: entryType,
         sellerName:
           entryType === "offer" && formValues.sellerName?.trim()
@@ -392,15 +393,14 @@ export function EntryCreateDialog({
         currency: "USD",
         transportType: formValues.transportType,
         note: formValues.note?.trim() ? formValues.note.trim() : null,
-        createdBy: session.authorProfile,
-      });
+        brokerCode: session.authorProfile.brokerCode,
+        brokerName: session.authorProfile.brokerName,
+        companyName: session.authorProfile.companyName,
+        canonicalView: canonicalPreview,
+      };
 
-      try {
-        await publishEntryToTelegram(entry);
-        updateBrokerageEntryTelegramRelayStatus(entry.id, "queued");
-      } catch {
-        updateBrokerageEntryTelegramRelayStatus(entry.id, "failed");
-      }
+      await apiRequest("POST", "/api/sea-brokerage-monitor/entries", payload);
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
 
       form.reset(getDefaultValues(entryType));
       setSubmitMessage(null);
