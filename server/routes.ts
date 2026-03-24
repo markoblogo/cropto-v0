@@ -7586,10 +7586,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries)
           .filter(
             (match) =>
-              match.bidEntry.id === updated.id || match.offerEntry.id === updated.id,
+              (match.bidEntry.id === updated.id || match.offerEntry.id === updated.id) &&
+              match.score >= 75,
           )
           .sort((a, b) => b.score - a.score)
-          .slice(0, 3);
+          .slice(0, 1);
         console.info(
           "[SeaBrokerage][MatchRelayCandidates]",
           JSON.stringify({
