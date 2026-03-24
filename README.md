@@ -268,8 +268,8 @@ Useful realities before building on top of this repo:
 - product maturity is uneven across modules
 - some UX flows are polished but still prototype-grade under the hood
 - some features still rely on mock/demo or local-state behavior
-- Sea Brokerage Monitor now has backend persistence and server-side relay hooks, but Telegram identity/auth mapping is still transitional
-- some Telegram/session/relay paths are prepared rather than fully productionized
+- Sea Brokerage Monitor now has backend persistence, broker allowlist gating, and server-side Telegram relay paths (internal + external channels), while native Telegram OAuth login is still pending
+- some Telegram/session/relay paths are operational but still in staged hardening mode
 - deployment and operational assumptions are still somewhat project-specific
 
 ## Contribution / Working Notes

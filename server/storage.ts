@@ -16,6 +16,7 @@ import {
   partnerOrganizations,
   serviceContracts,
   seaBrokerageEntries,
+  seaBrokerageBrokerAuth,
   commodityIndexPrices,
   type Option,
   type InsertOption,
@@ -41,6 +42,8 @@ import {
   type InsertServiceContract,
   type SeaBrokerageEntryRow,
   type InsertSeaBrokerageEntry,
+  type SeaBrokerageBrokerAuthRow,
+  type InsertSeaBrokerageBrokerAuth,
 } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and, lt, or, sql, gte, lte } from "drizzle-orm";
@@ -121,9 +124,110 @@ export interface IStorage {
   listSeaBrokerageEntries(): Promise<SeaBrokerageEntryRow[]>;
   createSeaBrokerageEntry(entry: InsertSeaBrokerageEntry): Promise<SeaBrokerageEntryRow>;
   updateSeaBrokerageEntry(id: string, updates: Partial<SeaBrokerageEntryRow>): Promise<SeaBrokerageEntryRow>;
+  listSeaBrokerageBrokerAuth(): Promise<SeaBrokerageBrokerAuthRow[]>;
+  findSeaBrokerageBrokerAuthByAuthUserId(authUserId: string): Promise<SeaBrokerageBrokerAuthRow | undefined>;
+  findSeaBrokerageBrokerAuthByAuthEmail(authEmail: string): Promise<SeaBrokerageBrokerAuthRow | undefined>;
+  upsertSeaBrokerageBrokerAuth(entry: InsertSeaBrokerageBrokerAuth): Promise<SeaBrokerageBrokerAuthRow>;
 }
 
 export class DatabaseStorage implements IStorage {
+  async listSeaBrokerageBrokerAuth(): Promise<SeaBrokerageBrokerAuthRow[]> {
+    return db.select().from(seaBrokerageBrokerAuth).orderBy(desc(seaBrokerageBrokerAuth.updatedAt));
+  }
+
+  async findSeaBrokerageBrokerAuthByAuthUserId(
+    authUserId: string,
+  ): Promise<SeaBrokerageBrokerAuthRow | undefined> {
+    const normalized = String(authUserId || "").trim();
+    if (!normalized) return undefined;
+    const [row] = await db
+      .select()
+      .from(seaBrokerageBrokerAuth)
+      .where(eq(seaBrokerageBrokerAuth.authUserId, normalized))
+      .limit(1);
+    return row;
+  }
+
+  async findSeaBrokerageBrokerAuthByAuthEmail(
+    authEmail: string,
+  ): Promise<SeaBrokerageBrokerAuthRow | undefined> {
+    const normalized = String(authEmail || "").trim().toLowerCase();
+    if (!normalized) return undefined;
+    const [row] = await db
+      .select()
+      .from(seaBrokerageBrokerAuth)
+      .where(eq(seaBrokerageBrokerAuth.authEmail, normalized))
+      .limit(1);
+    return row;
+  }
+
+  async upsertSeaBrokerageBrokerAuth(
+    entry: InsertSeaBrokerageBrokerAuth,
+  ): Promise<SeaBrokerageBrokerAuthRow> {
+    const normalizedEmail = entry.authEmail?.trim().toLowerCase() || null;
+    const normalizedUsername = entry.telegramUsername?.trim().replace(/^@+/, "").toLowerCase() || null;
+    const normalizedUserId = entry.authUserId?.trim() || null;
+    const normalizedTelegramUserId = entry.telegramUserId?.trim() || null;
+
+    let existing: SeaBrokerageBrokerAuthRow | undefined;
+    if (normalizedUserId) {
+      existing = await this.findSeaBrokerageBrokerAuthByAuthUserId(normalizedUserId);
+    }
+    if (!existing && normalizedEmail) {
+      existing = await this.findSeaBrokerageBrokerAuthByAuthEmail(normalizedEmail);
+    }
+    if (!existing && normalizedTelegramUserId) {
+      const [byTelegramId] = await db
+        .select()
+        .from(seaBrokerageBrokerAuth)
+        .where(eq(seaBrokerageBrokerAuth.telegramUserId, normalizedTelegramUserId))
+        .limit(1);
+      existing = byTelegramId;
+    }
+    if (!existing && normalizedUsername) {
+      const [byTelegramUsername] = await db
+        .select()
+        .from(seaBrokerageBrokerAuth)
+        .where(eq(seaBrokerageBrokerAuth.telegramUsername, normalizedUsername))
+        .limit(1);
+      existing = byTelegramUsername;
+    }
+
+    if (existing) {
+      const [updated] = await db
+        .update(seaBrokerageBrokerAuth)
+        .set({
+          authUserId: normalizedUserId,
+          authEmail: normalizedEmail,
+          telegramUserId: normalizedTelegramUserId,
+          telegramUsername: normalizedUsername,
+          brokerCode: entry.brokerCode,
+          brokerName: entry.brokerName,
+          companyName: entry.companyName,
+          isActive: entry.isActive ?? true,
+          updatedAt: new Date(),
+        })
+        .where(eq(seaBrokerageBrokerAuth.id, existing.id))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db
+      .insert(seaBrokerageBrokerAuth)
+      .values({
+        authUserId: normalizedUserId,
+        authEmail: normalizedEmail,
+        telegramUserId: normalizedTelegramUserId,
+        telegramUsername: normalizedUsername,
+        brokerCode: entry.brokerCode,
+        brokerName: entry.brokerName,
+        companyName: entry.companyName,
+        isActive: entry.isActive ?? true,
+      })
+      .returning();
+    return created;
+  }
+
   async listSeaBrokerageEntries(): Promise<SeaBrokerageEntryRow[]> {
     return db.select().from(seaBrokerageEntries).orderBy(desc(seaBrokerageEntries.createdAt));
   }

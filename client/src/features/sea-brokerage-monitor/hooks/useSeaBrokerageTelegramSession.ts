@@ -4,11 +4,17 @@ import {
   getStoredDemoTelegramBrokerId,
   resolveSeaBrokerageTelegramSession,
   setStoredDemoTelegramBrokerId,
+  type SeaBrokerageBrokerAuthProfile,
   type WorkspaceAuthUser,
 } from "../services/telegramSession.service";
 
 interface AuthMeResponse {
   user: WorkspaceAuthUser;
+}
+
+interface BrokerAuthMeResponse {
+  authorized: boolean;
+  profile: SeaBrokerageBrokerAuthProfile | null;
 }
 
 export function useSeaBrokerageTelegramSession() {
@@ -22,11 +28,21 @@ export function useSeaBrokerageTelegramSession() {
     enabled: !!localStorage.getItem("cropto_token"),
   });
 
+  const { data: brokerAuthData } = useQuery<BrokerAuthMeResponse | null>({
+    queryKey: ["/api/sea-brokerage-monitor/broker-auth/me"],
+    retry: false,
+    enabled: !!data?.user,
+  });
+
   useEffect(() => {
     setStoredDemoTelegramBrokerId(selectedDemoBrokerId);
   }, [selectedDemoBrokerId]);
 
-  const session = resolveSeaBrokerageTelegramSession(data?.user, selectedDemoBrokerId);
+  const session = resolveSeaBrokerageTelegramSession(
+    data?.user,
+    selectedDemoBrokerId,
+    brokerAuthData?.profile,
+  );
 
   return {
     ...session,

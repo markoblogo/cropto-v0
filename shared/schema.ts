@@ -491,6 +491,8 @@ export const seaBrokerageEntries = pgTable("sea_brokerage_entries", {
   type: text("type", { enum: ["bid", "offer"] }).notNull(),
   brokerUserId: text("broker_user_id").notNull(),
   brokerEmail: text("broker_email"),
+  brokerTelegramUserId: text("broker_telegram_user_id"),
+  brokerTelegramUsername: text("broker_telegram_username"),
   brokerCode: text("broker_code").notNull(),
   brokerName: text("broker_name").notNull(),
   companyName: text("company_name").notNull(),
@@ -528,6 +530,20 @@ export const seaBrokerageEntries = pgTable("sea_brokerage_entries", {
     .default("queued"),
   telegramRelayMessage: text("telegram_relay_message"),
   telegramMessageId: text("telegram_message_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const seaBrokerageBrokerAuth = pgTable("sea_brokerage_broker_auth", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  authUserId: text("auth_user_id"),
+  authEmail: text("auth_email"),
+  telegramUserId: text("telegram_user_id"),
+  telegramUsername: text("telegram_username"),
+  brokerCode: text("broker_code").notNull(),
+  brokerName: text("broker_name").notNull(),
+  companyName: text("company_name").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -783,6 +799,12 @@ export const insertSeaBrokerageEntrySchema = createInsertSchema(seaBrokerageEntr
   updatedAt: true,
 });
 
+export const insertSeaBrokerageBrokerAuthSchema = createInsertSchema(seaBrokerageBrokerAuth).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertOption = z.infer<typeof insertOptionSchema>;
 export type Option = typeof options.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
@@ -840,6 +862,8 @@ export type InsertForwardSpread = z.infer<typeof insertForwardSpreadSchema>;
 export type ForwardSpread = typeof forwardSpreads.$inferSelect;
 export type InsertSeaBrokerageEntry = z.infer<typeof insertSeaBrokerageEntrySchema>;
 export type SeaBrokerageEntryRow = typeof seaBrokerageEntries.$inferSelect;
+export type InsertSeaBrokerageBrokerAuth = z.infer<typeof insertSeaBrokerageBrokerAuthSchema>;
+export type SeaBrokerageBrokerAuthRow = typeof seaBrokerageBrokerAuth.$inferSelect;
 
 // Partner Organizations schemas
 export const insertPartnerOrganizationSchema = createInsertSchema(partnerOrganizations).omit({

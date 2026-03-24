@@ -2,9 +2,9 @@
 
 Use this when enabling or verifying live Sea Brokerage Monitor publishing flow:
 
-- authenticated `Create BID` / `Create OFFER`
+- allowlist-gated broker `Create BID` / `Create OFFER`
 - backend persistence in `sea_brokerage_entries`
-- Telegram relay posting to broker chats
+- Telegram relay posting to internal/external chats
 
 ## 1) Branch and deploy target
 
@@ -16,7 +16,9 @@ Current deployment convention:
 Before rollout, verify what Railway service is tracking and deploy the branch containing:
 
 - `migrations/019_sea_brokerage_entries.sql`
+- `migrations/020_sea_brokerage_broker_auth.sql`
 - server routes `/api/sea-brokerage-monitor/entries`
+- server routes `/api/sea-brokerage-monitor/broker-auth/*`
 - `server/services/seaBrokerageTelegramPublisher.ts`
 
 ## 2) Required env on Railway web service
@@ -27,25 +29,36 @@ Set these on the **web** service:
 - `JWT_SECRET`
 - `SESSION_SECRET`
 - `TELEGRAM_BOT_TOKEN`
+- `SEA_BROKERAGE_TELEGRAM_INTERNAL_ENABLED=true`
+- `SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID` (or `..._CHAT_IDS`)
+
+Optional:
+
+- `SEA_BROKERAGE_TELEGRAM_INTERNAL_UA_CHAT_ID` (country-specific routing for UA-origin entries)
+- `SEA_BROKERAGE_TELEGRAM_EXTERNAL_ENABLED` (set `true` when public/group relay is ready)
+- `SEA_BROKERAGE_TELEGRAM_EXTERNAL_CHAT_ID` (or `..._CHAT_IDS`)
+- `SEA_BROKERAGE_BROKER_ALLOWLIST_JSON` (bootstrap allowlist without admin API)
+
+Legacy compatibility:
+
 - `SEA_BROKERAGE_TELEGRAM_CHAT_ID`
+- `SEA_BROKERAGE_TELEGRAM_CHAT_IDS`
+- `SEA_BROKERAGE_TELEGRAM_UA_CHAT_ID`
 
-Optional but recommended:
+## 3) Apply migrations 019 and 020
 
-- `SEA_BROKERAGE_TELEGRAM_CHAT_IDS` (comma-separated list)
-- `SEA_BROKERAGE_TELEGRAM_UA_CHAT_ID` (country-specific routing for UA-origin entries)
-
-## 3) Apply migration 019
-
-Apply DB migration before relying on monitor create flow:
+Apply DB migrations before relying on monitor create flow:
 
 ```bash
 psql "$DATABASE_URL" -f migrations/019_sea_brokerage_entries.sql
+psql "$DATABASE_URL" -f migrations/020_sea_brokerage_broker_auth.sql
 ```
 
 Quick table existence check:
 
 ```bash
 psql "$DATABASE_URL" -c "\d+ sea_brokerage_entries"
+psql "$DATABASE_URL" -c "\d+ sea_brokerage_broker_auth"
 ```
 
 ## 4) Deploy web service
@@ -115,17 +128,45 @@ Expected:
 
 - `201` JSON response
 - persisted entry appears in `GET /api/sea-brokerage-monitor/entries`
-- `telegramRelayStatus` returns `published` when bot + chat config are valid
+- `telegramRelayStatus` returns `published` when bot + relay targets are valid
 
-## 6) Telegram delivery checks
+## 6) Broker allowlist setup
+
+Create an allowlist entry (admin JWT required):
+
+```bash
+export ADMIN_TOKEN="<admin_jwt>"
+curl -sS -X POST https://cropto.abvx.xyz/api/sea-brokerage-monitor/broker-auth/upsert \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "authEmail":"broker@company.com",
+    "telegramUsername":"broker_handle",
+    "brokerCode":"SK",
+    "brokerName":"Sergiy Kozhushkin",
+    "companyName":"Southline Brokerage",
+    "isActive":true
+  }'
+```
+
+Verify current user authorization:
+
+```bash
+export TOKEN="<broker_jwt>"
+curl -sS https://cropto.abvx.xyz/api/sea-brokerage-monitor/broker-auth/me \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## 7) Telegram delivery checks
 
 If relay status is `failed`, verify:
 
 1. Bot token validity (`TELEGRAM_BOT_TOKEN`).
-2. Bot membership in target chat/group.
-3. Correct chat id (`SEA_BROKERAGE_TELEGRAM_CHAT_ID`).
-4. No Telegram API restrictions for that bot/chat.
+2. Bot membership in target chat/group(s).
+3. Correct internal/external chat ids.
+4. `SEA_BROKERAGE_TELEGRAM_EXTERNAL_ENABLED` is `false` until external target is ready.
+5. No Telegram API restrictions for that bot/chat.
 
-## 7) Common rollback-safe fallback
+## 8) Common rollback-safe fallback
 
 If Telegram relay is unstable, keep monitor persistence enabled and temporarily treat relay failures as non-blocking operational warnings while debugging bot/chat configuration.

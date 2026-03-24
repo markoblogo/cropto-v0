@@ -51,6 +51,10 @@ import { providerDefinitionsFor } from "./ingestion/config";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
 import { publishSeaBrokerageEntryToTelegram } from "./services/seaBrokerageTelegramPublisher";
+import {
+  listSeaBrokerageBrokerAllowlist,
+  resolveAuthorizedSeaBrokerageBroker,
+} from "./services/seaBrokerageBrokerAccess";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -76,9 +80,6 @@ const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
 
 const createSeaBrokerageEntryRequestSchema = z.object({
   type: z.enum(["bid", "offer"]),
-  brokerCode: z.string().min(1),
-  brokerName: z.string().min(1),
-  companyName: z.string().min(1),
   sellerName: z.string().trim().max(200).nullable().optional(),
   buyerName: z.string().trim().max(200).nullable().optional(),
   originCountry: z.string().trim().nullable().optional(),
@@ -110,6 +111,17 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   canonicalView: z.string().min(1),
 });
 
+const upsertSeaBrokerageBrokerAuthSchema = z.object({
+  authUserId: z.string().trim().nullable().optional(),
+  authEmail: z.string().trim().email().nullable().optional(),
+  telegramUserId: z.string().trim().nullable().optional(),
+  telegramUsername: z.string().trim().nullable().optional(),
+  brokerCode: z.string().trim().min(1),
+  brokerName: z.string().trim().min(1),
+  companyName: z.string().trim().min(1),
+  isActive: z.boolean().optional().default(true),
+});
+
 function decimalToNumber(value: unknown) {
   if (value === null || value === undefined) return null;
   const numeric = Number(value);
@@ -124,6 +136,8 @@ function mapSeaBrokerageEntryToClientShape(entry: SeaBrokerageEntryRow) {
     brokerCode: entry.brokerCode,
     brokerName: entry.brokerName,
     companyName: entry.companyName,
+    brokerTelegramUserId: entry.brokerTelegramUserId,
+    brokerTelegramUsername: entry.brokerTelegramUsername,
     sellerName: entry.sellerName,
     buyerName: entry.buyerName,
     originCountry: entry.originCountry,
@@ -7332,10 +7346,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get(
+    "/api/sea-brokerage-monitor/broker-auth/me",
+    authenticateToken,
+    async (req: AuthRequest, res) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const profile = await resolveAuthorizedSeaBrokerageBroker(req.user);
+        return res.json({
+          authorized: !!profile,
+          profile,
+        });
+      } catch (error: any) {
+        console.error("Error resolving sea brokerage broker auth profile:", error);
+        return res.status(500).json({ error: "Failed to resolve sea brokerage broker profile" });
+      }
+    },
+  );
+
+  app.get(
+    "/api/sea-brokerage-monitor/broker-auth/list",
+    authenticateToken,
+    async (req: AuthRequest, res) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        if (!hasAdminPermissions(req.user)) {
+          return res.status(403).json({ error: "Only admin users can view broker allowlist" });
+        }
+
+        const allowlist = await listSeaBrokerageBrokerAllowlist();
+        return res.json({ allowlist });
+      } catch (error: any) {
+        console.error("Error listing sea brokerage broker allowlist:", error);
+        return res.status(500).json({ error: "Failed to list broker allowlist" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/sea-brokerage-monitor/broker-auth/upsert",
+    authenticateToken,
+    async (req: AuthRequest, res) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        if (!hasAdminPermissions(req.user)) {
+          return res.status(403).json({ error: "Only admin users can update broker allowlist" });
+        }
+
+        const parsed = upsertSeaBrokerageBrokerAuthSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: fromZodError(parsed.error).message });
+        }
+
+        if (
+          !parsed.data.authUserId &&
+          !parsed.data.authEmail &&
+          !parsed.data.telegramUserId &&
+          !parsed.data.telegramUsername
+        ) {
+          return res.status(400).json({
+            error:
+              "Provide at least one identity binding (authUserId, authEmail, telegramUserId, or telegramUsername)",
+          });
+        }
+
+        const updated = await storage.upsertSeaBrokerageBrokerAuth({
+          ...parsed.data,
+          authUserId: parsed.data.authUserId ?? null,
+          authEmail: parsed.data.authEmail ?? null,
+          telegramUserId: parsed.data.telegramUserId ?? null,
+          telegramUsername: parsed.data.telegramUsername ?? null,
+        });
+
+        return res.status(201).json({ brokerAuth: updated });
+      } catch (error: any) {
+        console.error("Error upserting sea brokerage broker allowlist entry:", error);
+        return res.status(500).json({ error: "Failed to update broker allowlist" });
+      }
+    },
+  );
+
   app.post("/api/sea-brokerage-monitor/entries", authenticateToken, async (req: AuthRequest, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBroker(req.user);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Ask an admin to add your account to the Telegram broker allowlist.",
+        });
       }
 
       const parsed = createSeaBrokerageEntryRequestSchema.safeParse(req.body);
@@ -7347,6 +7456,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...parsed.data,
         brokerUserId: req.user.id,
         brokerEmail: req.user.email ?? null,
+        brokerTelegramUserId: authorizedBroker.telegramUserId,
+        brokerTelegramUsername: authorizedBroker.telegramUsername,
+        brokerCode: authorizedBroker.brokerCode,
+        brokerName: authorizedBroker.brokerName,
+        companyName: authorizedBroker.companyName,
         gradeOrSpec: parsed.data.gradeOrSpec ?? "",
         price:
           parsed.data.price === null || parsed.data.price === undefined
@@ -7363,7 +7477,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         telegramRelayStatus: "queued",
       });
 
-      const relayResult = await publishSeaBrokerageEntryToTelegram(created);
+      const relayResult = await publishSeaBrokerageEntryToTelegram(created, {
+        brokerTelegramUsername: authorizedBroker.telegramUsername,
+      });
       const updated = await storage.updateSeaBrokerageEntry(created.id, {
         telegramRelayStatus: relayResult.status,
         telegramRelayMessage: relayResult.messageText,

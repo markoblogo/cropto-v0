@@ -7,6 +7,17 @@ type TelegramPublishResult = {
   error?: string;
 };
 
+type PublishContext = {
+  brokerTelegramUsername?: string | null;
+};
+
+type RelayChannel = "internal" | "external";
+
+type RelayTarget = {
+  channel: RelayChannel;
+  chatId: string;
+};
+
 function countryFlagEmoji(countryCode: string | null | undefined) {
   const normalized = (countryCode || "").trim().toUpperCase();
   if (!/^[A-Z]{2}$/.test(normalized)) return "";
@@ -55,7 +66,6 @@ function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
   if (entry.periodStart && entry.periodEnd) {
     return `${formatDateDotted(entry.periodStart)}-${formatDateDotted(entry.periodEnd)}`;
   }
-
   return entry.periodLabel;
 }
 
@@ -71,17 +81,21 @@ function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
   if (entry.type === "bid") {
     return entry.buyerName?.trim() || null;
   }
-
   return entry.sellerName?.trim() || null;
 }
 
-export function formatSeaBrokerageTelegramMessage(entry: SeaBrokerageEntryRow) {
+function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) {
   const ideaTag = entry.type === "bid" ? "#bid_idea" : "#offer_idea";
-  const brokerLabel = entry.companyName || entry.brokerName || entry.brokerCode;
   const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
+  return [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
+}
+
+function formatInternalTelegramMessage(entry: SeaBrokerageEntryRow, brokerSignature?: string | null) {
+  const header = formatTelegramHeader(
+    entry,
+    brokerSignature || entry.companyName || entry.brokerName || entry.brokerCode,
+  );
   const counterparty = formatTelegramCounterparty(entry);
-  const header = [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
-  const transportLine = formatTelegramTransport(entry);
   const counterpartyLine =
     entry.type === "bid"
       ? counterparty
@@ -97,7 +111,7 @@ export function formatSeaBrokerageTelegramMessage(entry: SeaBrokerageEntryRow) {
     "------------------------------",
     formatTelegramCommodity(entry),
     `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`,
-    transportLine,
+    formatTelegramTransport(entry),
     termsLine,
     counterpartyLine,
     `${formatTelegramPeriod(entry)} ${formatTelegramPrice(entry)}`,
@@ -107,64 +121,119 @@ export function formatSeaBrokerageTelegramMessage(entry: SeaBrokerageEntryRow) {
     lines.push(entry.note.trim());
   }
 
-  return lines.filter((line) => !!line).join("\n");
+  return lines.filter(Boolean).join("\n");
 }
 
-function resolveSeaBrokerageChatIds(entry: SeaBrokerageEntryRow) {
-  const ids = new Set<string>();
-  const generic = process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID;
-  const multi = process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS;
-  const uaChat = process.env.SEA_BROKERAGE_TELEGRAM_UA_CHAT_ID;
+function formatExternalTelegramMessage(entry: SeaBrokerageEntryRow) {
+  const lines = [
+    formatTelegramHeader(entry, "BROKER DESK"),
+    "------------------------------",
+    formatTelegramCommodity(entry),
+    `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`,
+    `${formatTelegramPeriod(entry)} ${formatTelegramPrice(entry)}`,
+  ];
+  return lines.filter(Boolean).join("\n");
+}
 
-  if (generic) ids.add(generic);
-  if (multi) {
-    multi
+function parseBoolean(value: string | undefined, fallback: boolean) {
+  if (value === undefined) return fallback;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return fallback;
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
+
+function appendChatIds(targets: RelayTarget[], channel: RelayChannel, values: Array<string | undefined>) {
+  for (const raw of values) {
+    if (!raw) continue;
+    raw
       .split(",")
       .map((value) => value.trim())
       .filter(Boolean)
-      .forEach((value) => ids.add(value));
+      .forEach((chatId) => targets.push({ channel, chatId }));
   }
-  if (entry.originCountryCode?.toUpperCase() === "UA" && uaChat) {
-    ids.add(uaChat);
+}
+
+function resolveSeaBrokerageRelayTargets(entry: SeaBrokerageEntryRow): RelayTarget[] {
+  const targets: RelayTarget[] = [];
+  const internalEnabled = parseBoolean(process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_ENABLED, true);
+  const externalEnabled = parseBoolean(process.env.SEA_BROKERAGE_TELEGRAM_EXTERNAL_ENABLED, false);
+
+  if (internalEnabled) {
+    appendChatIds(targets, "internal", [
+      process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_IDS,
+      process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS,
+    ]);
+
+    if (entry.originCountryCode?.toUpperCase() === "UA") {
+      appendChatIds(targets, "internal", [
+        process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_UA_CHAT_ID,
+        process.env.SEA_BROKERAGE_TELEGRAM_UA_CHAT_ID,
+      ]);
+    }
   }
 
-  return Array.from(ids);
+  if (externalEnabled) {
+    appendChatIds(targets, "external", [
+      process.env.SEA_BROKERAGE_TELEGRAM_EXTERNAL_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_EXTERNAL_CHAT_IDS,
+    ]);
+  }
+
+  const deduped = new Map<string, RelayTarget>();
+  for (const target of targets) {
+    const key = `${target.channel}:${target.chatId}`;
+    if (!deduped.has(key)) {
+      deduped.set(key, target);
+    }
+  }
+  return Array.from(deduped.values());
 }
 
 export async function publishSeaBrokerageEntryToTelegram(
   entry: SeaBrokerageEntryRow,
+  context?: PublishContext,
 ): Promise<TelegramPublishResult> {
-  const messageText = formatSeaBrokerageTelegramMessage(entry);
+  const brokerSignature = context?.brokerTelegramUsername
+    ? `@${context.brokerTelegramUsername.replace(/^@+/, "")}`
+    : entry.brokerTelegramUsername
+      ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
+      : null;
+  const internalMessage = formatInternalTelegramMessage(entry, brokerSignature);
+  const externalMessage = formatExternalTelegramMessage(entry);
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatIds = resolveSeaBrokerageChatIds(entry);
+  const targets = resolveSeaBrokerageRelayTargets(entry);
 
   if (!botToken) {
     return {
       status: "failed",
-      messageText,
+      messageText: internalMessage,
       error: "TELEGRAM_BOT_TOKEN is not configured",
     };
   }
 
-  if (chatIds.length === 0) {
+  if (targets.length === 0) {
     return {
       status: "failed",
-      messageText,
-      error: "Sea brokerage Telegram chat id is not configured",
+      messageText: internalMessage,
+      error: "Sea brokerage Telegram relay targets are not configured",
     };
   }
 
   const apiBase = `https://api.telegram.org/bot${botToken}/sendMessage`;
   let firstMessageId: string | null = null;
+  const sentChannels: string[] = [];
 
   try {
-    for (const chatId of chatIds) {
+    for (const target of targets) {
+      const text = target.channel === "internal" ? internalMessage : externalMessage;
       const response = await fetch(apiBase, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: messageText,
+          chat_id: target.chatId,
+          text,
           disable_web_page_preview: true,
         }),
       });
@@ -178,26 +247,30 @@ export async function publishSeaBrokerageEntryToTelegram(
       if (!response.ok || !payload.ok) {
         return {
           status: "failed",
-          messageText,
-          error: payload.description || `Telegram sendMessage failed with status ${response.status}`,
+          messageText: `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}`,
+          error:
+            payload.description ||
+            `Telegram sendMessage failed (${target.channel}) with status ${response.status}`,
         };
       }
 
       if (!firstMessageId && payload.result?.message_id) {
         firstMessageId = String(payload.result.message_id);
       }
+      sentChannels.push(`${target.channel}:${target.chatId}`);
     }
 
     return {
       status: "published",
       messageId: firstMessageId,
-      messageText,
+      messageText: `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}\n\nsent:${sentChannels.join(",")}`,
     };
   } catch (error) {
     return {
       status: "failed",
-      messageText,
+      messageText: `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}`,
       error: error instanceof Error ? error.message : "Unknown Telegram relay error",
     };
   }
 }
+

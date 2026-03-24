@@ -19,6 +19,18 @@ export interface SeaBrokerageTelegramSession {
   telegramHandle: string | null;
 }
 
+export interface SeaBrokerageBrokerAuthProfile {
+  authUserId: string | null;
+  authEmail: string | null;
+  telegramUserId: string | null;
+  telegramUsername: string | null;
+  brokerCode: string;
+  brokerName: string;
+  companyName: string;
+  isActive: boolean;
+  source: "db" | "env";
+}
+
 function normalizeHandlePart(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 }
@@ -82,7 +94,34 @@ export function resolveDemoTelegramBroker(brokerId: string | null | undefined) {
 export function resolveSeaBrokerageTelegramSession(
   user: WorkspaceAuthUser | null | undefined,
   demoBrokerId?: string | null,
+  brokerAuthProfile?: SeaBrokerageBrokerAuthProfile | null,
 ): SeaBrokerageTelegramSession {
+  if (brokerAuthProfile?.isActive) {
+    const profile: BrokerUser = {
+      id: brokerAuthProfile.authUserId || `sea_brokerage_auth:${brokerAuthProfile.brokerCode}`,
+      authUserId: brokerAuthProfile.authUserId || "telegram_auth_pending",
+      brokerCode: brokerAuthProfile.brokerCode,
+      brokerName: brokerAuthProfile.brokerName,
+      companyName: brokerAuthProfile.companyName,
+      displayName: brokerAuthProfile.brokerName,
+      email: brokerAuthProfile.authEmail || "",
+      role: "broker",
+      identityProvider: "telegram_future",
+    };
+    return {
+      authorProfile: profile,
+      sessionState: "workspace_bridge",
+      canCreateEntries: true,
+      isDemoSelectorEnabled: isSeaBrokerageMonitorDemoSessionEnabled(),
+      statusLabel: "Telegram broker authorized",
+      statusMessage:
+        "Broker is authorized via monitor allowlist. Entry creation is enabled for Telegram relay publishing.",
+      telegramHandle: brokerAuthProfile.telegramUsername
+        ? `@${brokerAuthProfile.telegramUsername.replace(/^@+/, "")}`
+        : buildTelegramHandle(profile),
+    };
+  }
+
   const mappedWorkspaceProfile = resolveBrokerProfileFromWorkspaceUser(user);
   const demoBrokerProfile = resolveDemoTelegramBroker(demoBrokerId);
 
@@ -117,8 +156,8 @@ export function resolveSeaBrokerageTelegramSession(
     isDemoSelectorEnabled: isSeaBrokerageMonitorDemoSessionEnabled(),
     statusLabel: "Viewer mode",
     statusMessage: isSeaBrokerageMonitorDemoSessionEnabled()
-      ? "Author unavailable. Choose a demo Telegram identity to create entries."
-      : "Author unavailable until Telegram-based login is connected.",
+      ? "Author unavailable. Demo identity is preview-only; create requires broker allowlist authorization."
+      : "Author unavailable until broker allowlist authorization is connected.",
     telegramHandle: null,
   };
 }

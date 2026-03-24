@@ -335,12 +335,14 @@ export function EntryCreateDialog({
 
   async function onSubmit(formValues: EntryFormValues) {
     if (!session.workspaceUser) {
-      setSubmitMessage("Sign in with a mapped broker account before creating entries.");
+      setSubmitMessage("Sign in before creating entries.");
       return;
     }
 
     if (!session.authorProfile || !session.canCreateEntries) {
-      setSubmitMessage("Author unavailable. Sign in with a mapped broker account before creating entries.");
+      setSubmitMessage(
+        "Author unavailable. Ask admin to add your account into Sea Brokerage broker allowlist.",
+      );
       return;
     }
 

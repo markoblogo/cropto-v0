@@ -93,6 +93,7 @@ async function main() {
       '017_binance_market_snapshot.sql',
       '018_global_index_snapshot.sql',
       '019_sea_brokerage_entries.sql',
+      '020_sea_brokerage_broker_auth.sql',
     ];
 
     let successCount = 0;
