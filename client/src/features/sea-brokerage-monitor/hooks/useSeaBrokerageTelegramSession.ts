@@ -31,7 +31,7 @@ interface BrokerAuthMeResponse {
 }
 
 const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME || "spikemoonbot";
-const TELEGRAM_BOT_ID = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_ID || "";
+const TELEGRAM_BOT_ID = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_ID || "8799667536";
 
 export function useSeaBrokerageTelegramSession() {
   const [monitorToken, setMonitorToken] = useState<string | null>(() => getSeaBrokerageMonitorToken());
