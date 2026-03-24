@@ -7,6 +7,14 @@ type TelegramPublishResult = {
   error?: string;
 };
 
+function countryFlagEmoji(countryCode: string | null | undefined) {
+  const normalized = (countryCode || "").trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(normalized)) return "";
+  return Array.from(normalized)
+    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
+    .join("");
+}
+
 function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
   const resolvedPrice = entry.price ?? entry.priceFrom ?? entry.priceTo;
   if (resolvedPrice === null || resolvedPrice === undefined) {
@@ -26,18 +34,33 @@ function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
 }
 
 function formatTelegramTransport(entry: SeaBrokerageEntryRow) {
-  return entry.transportType.replace(/_/g, " ");
+  return entry.transportType.replace(/_/g, " | ");
+}
+
+function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {
+  return entry.commodityLabel.replace(/%/g, "").trim();
+}
+
+function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
+  if (entry.type === "bid") {
+    return entry.buyerName?.trim() || null;
+  }
+
+  return entry.sellerName?.trim() || null;
 }
 
 export function formatSeaBrokerageTelegramMessage(entry: SeaBrokerageEntryRow) {
   const ideaTag = entry.type === "bid" ? "#bid_idea" : "#offer_idea";
   const brokerLabel = entry.companyName || entry.brokerName || entry.brokerCode;
+  const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
+  const counterparty = formatTelegramCounterparty(entry);
+  const header = [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
   const lines = [
-    `${ideaTag} | ${brokerLabel}`,
+    header,
     "------------------------------",
-    entry.commodityLabel,
+    formatTelegramCommodity(entry),
     `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`,
-    formatTelegramTransport(entry),
+    [formatTelegramTransport(entry), counterparty].filter(Boolean).join(" | "),
     `${formatTelegramPeriod(entry)} ${formatTelegramPrice(entry)}`,
   ];
 

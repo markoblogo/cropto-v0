@@ -15,7 +15,7 @@ export function useSeaBrokerageMonitorState() {
     getSeaBrokerageMonitorState,
   );
 
-  const { data } = useQuery<BrokerageEntry[]>({
+  const { data, isError } = useQuery<BrokerageEntry[]>({
     queryKey: ["/api/sea-brokerage-monitor/entries"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/sea-brokerage-monitor/entries");
@@ -24,7 +24,7 @@ export function useSeaBrokerageMonitorState() {
   });
 
   return useMemo(() => {
-    if (!data || data.length === 0) {
+    if (isError || !data) {
       return localState;
     }
 

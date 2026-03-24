@@ -92,6 +92,7 @@ async function main() {
       '016_agro_expectations.sql',
       '017_binance_market_snapshot.sql',
       '018_global_index_snapshot.sql',
+      '019_sea_brokerage_entries.sql',
     ];
 
     let successCount = 0;
