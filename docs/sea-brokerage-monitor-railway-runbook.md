@@ -167,6 +167,12 @@ If relay status is `failed`, verify:
 4. `SEA_BROKERAGE_TELEGRAM_EXTERNAL_ENABLED` is `false` until external target is ready.
 5. No Telegram API restrictions for that bot/chat.
 
+Manual smoke:
+
+```bash
+npm run sea-brokerage:telegram:smoke -- --channel internal --chat-id -100XXXXXXXXXX
+```
+
 ## 8) Common rollback-safe fallback
 
 If Telegram relay is unstable, keep monitor persistence enabled and temporarily treat relay failures as non-blocking operational warnings while debugging bot/chat configuration.
