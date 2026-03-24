@@ -54,22 +54,24 @@ export function BrokerWorkspacePane({
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
       <CardHeader className="space-y-0.75 border-b border-border/60 px-1.5 py-0.75 sm:space-y-1 sm:px-3 sm:py-1.5">
         <div className="flex min-w-0 items-center gap-1">
-          <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
-            {title}
-          </CardTitle>
-          {createActionLabel && onCreateAction ? (
-            <Button
-              type="button"
-              size="sm"
-              variant={createActionVariant}
-              onClick={onCreateAction}
-              className="h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px]"
-            >
-              <Plus className="mr-1 h-3 w-3" />
-              {createActionLabel}
-            </Button>
-          ) : null}
-          <div className="shrink-0 text-[9.5px] text-muted-foreground sm:text-[11px]">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <CardTitle className="text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
+              {title}
+            </CardTitle>
+            {createActionLabel && onCreateAction ? (
+              <Button
+                type="button"
+                size="sm"
+                variant={createActionVariant}
+                onClick={onCreateAction}
+                className="h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px]"
+              >
+                <Plus className="mr-1 h-3 w-3" />
+                {createActionLabel}
+              </Button>
+            ) : null}
+          </div>
+          <div className="ml-auto shrink-0 text-[9.5px] text-muted-foreground sm:text-[11px]">
             {entries.length} visible
           </div>
         </div>
