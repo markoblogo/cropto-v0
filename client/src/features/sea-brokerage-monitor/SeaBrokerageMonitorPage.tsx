@@ -3,7 +3,6 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { BrokerWorkspacePane, type BrokerWorkspacePaneFilters } from "./components/BrokerWorkspacePane";
 import { ContextualMatchingPanel } from "./components/ContextualMatchingPanel";
@@ -54,9 +53,6 @@ export function SeaBrokerageMonitorPage() {
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
-  const [telegramCodeUsername, setTelegramCodeUsername] = useState("");
-  const [telegramCode, setTelegramCode] = useState("");
-  const [telegramCodeRequested, setTelegramCodeRequested] = useState(false);
 
   const filteredEntries = useMemo(
     () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
@@ -179,28 +175,8 @@ export function SeaBrokerageMonitorPage() {
   useEffect(() => {
     if (session.monitorAuthToken && telegramAuthOpen) {
       setTelegramAuthOpen(false);
-      setTelegramCode("");
-      setTelegramCodeRequested(false);
     }
   }, [session.monitorAuthToken, telegramAuthOpen]);
-
-  async function handleRequestTelegramCode() {
-    const normalized = telegramCodeUsername.trim().replace(/^@+/, "");
-    if (!normalized) return;
-    await session.requestTelegramCodeLogin(normalized);
-    setTelegramCodeRequested(true);
-  }
-
-  async function handleVerifyTelegramCode() {
-    const normalized = telegramCodeUsername.trim().replace(/^@+/, "");
-    const code = telegramCode.trim();
-    if (!normalized || !code) return;
-    await session.verifyTelegramCodeLogin(normalized, code);
-    setTelegramAuthOpen(false);
-    setTelegramCode("");
-    setTelegramCodeUsername("");
-    setTelegramCodeRequested(false);
-  }
 
   return (
     <MainLayout>
@@ -308,53 +284,8 @@ export function SeaBrokerageMonitorPage() {
             <div className="space-y-3">
               <TelegramLoginWidget
                 botUsername={session.telegramBotUsername}
-                botId={session.telegramBotId}
-                miniAppShortName={session.telegramMiniAppShortName}
                 onAuth={session.authenticateWithTelegram}
-                onUseTelegramWebApp={session.authenticateFromTelegramWebApp}
-                isAuthorizing={session.isLoading}
               />
-              <div className="rounded-md border border-border/70 p-3">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Telegram code login fallback
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    value={telegramCodeUsername}
-                    onChange={(event) => setTelegramCodeUsername(event.target.value)}
-                    placeholder="@username"
-                  />
-                  <div className="flex gap-2">
-                    <Input
-                      value={telegramCode}
-                      onChange={(event) => setTelegramCode(event.target.value)}
-                      placeholder="6-digit code"
-                      maxLength={6}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => void handleRequestTelegramCode()}
-                      disabled={session.isLoading || !telegramCodeUsername.trim()}
-                    >
-                      Send code
-                    </Button>
-                  </div>
-                  <Button
-                    type="button"
-                    className="w-full"
-                    onClick={() => void handleVerifyTelegramCode()}
-                    disabled={session.isLoading || !telegramCodeUsername.trim() || telegramCode.trim().length < 6}
-                  >
-                    Verify code and sign in
-                  </Button>
-                  {telegramCodeRequested ? (
-                    <div className="text-[11px] text-muted-foreground">
-                      Code sent in Telegram DM. If not received, make sure you started chat with the bot.
-                    </div>
-                  ) : null}
-                </div>
-              </div>
             </div>
           )}
 
