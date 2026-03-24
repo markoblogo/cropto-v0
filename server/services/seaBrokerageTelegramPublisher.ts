@@ -147,7 +147,6 @@ function formatStandardTelegramMessage(
     header,
     "------------------------------",
     formatTelegramTransportCode(entry),
-    formatTelegramCommodity(entry),
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
     formatQuantityLine(entry),
     `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
