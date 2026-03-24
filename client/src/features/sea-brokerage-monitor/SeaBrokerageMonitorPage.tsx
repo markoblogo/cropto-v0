@@ -196,6 +196,10 @@ export function SeaBrokerageMonitorPage() {
     const code = telegramCode.trim();
     if (!normalized || !code) return;
     await session.verifyTelegramCodeLogin(normalized, code);
+    setTelegramAuthOpen(false);
+    setTelegramCode("");
+    setTelegramCodeUsername("");
+    setTelegramCodeRequested(false);
   }
 
   return (

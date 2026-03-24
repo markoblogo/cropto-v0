@@ -4,6 +4,7 @@ import {
   buildSeaBrokerageMonitorAuthHeaders,
   clearSeaBrokerageMonitorToken,
   consumeTelegramWidgetUserFromUrl,
+  getSeaBrokerageMonitorHandleFromToken,
   getSeaBrokerageMonitorToken,
   requestSeaBrokerageTelegramLoginCode,
   setSeaBrokerageMonitorToken,
@@ -33,6 +34,8 @@ interface BrokerAuthMeResponse {
   };
 }
 
+type MonitorAuthProfile = BrokerAuthMeResponse["profile"];
+
 const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME || "spikemoonbot";
 const TELEGRAM_BOT_ID = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_ID || "8799667536";
 const TELEGRAM_MINI_APP_SHORT_NAME =
@@ -40,6 +43,14 @@ const TELEGRAM_MINI_APP_SHORT_NAME =
 
 export function useSeaBrokerageTelegramSession() {
   const [monitorToken, setMonitorToken] = useState<string | null>(() => getSeaBrokerageMonitorToken());
+  const [profileSnapshot, setProfileSnapshot] = useState<MonitorAuthProfile | null>(null);
+  const [identitySnapshot, setIdentitySnapshot] = useState<{
+    telegramUserId: string | null;
+    telegramUsername: string | null;
+  }>({
+    telegramUserId: null,
+    telegramUsername: null,
+  });
   const [selectedDemoBrokerId, setSelectedDemoBrokerId] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -113,11 +124,25 @@ export function useSeaBrokerageTelegramSession() {
     },
   });
 
+  useEffect(() => {
+    if (!data?.profile) return;
+    setProfileSnapshot(data.profile);
+    setIdentitySnapshot({
+      telegramUserId: data.identity.telegramUserId,
+      telegramUsername: data.identity.telegramUsername,
+    });
+  }, [data]);
+
   async function authenticateWithTelegram(user: TelegramWidgetUser) {
     try {
       setIsAuthenticating(true);
       setAuthError(null);
       const result = await signInSeaBrokerageMonitorWithTelegram(user);
+      setProfileSnapshot(result.profile);
+      setIdentitySnapshot({
+        telegramUserId: String(user.id),
+        telegramUsername: user.username || result.profile.telegramUsername || null,
+      });
       setMonitorToken(result.token);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : "Telegram authentication failed");
@@ -131,6 +156,11 @@ export function useSeaBrokerageTelegramSession() {
       setIsAuthenticating(true);
       setAuthError(null);
       const result = await signInSeaBrokerageMonitorWithTelegramMiniApp(initData);
+      setProfileSnapshot(result.profile);
+      setIdentitySnapshot({
+        telegramUserId: result.profile.telegramUserId,
+        telegramUsername: result.profile.telegramUsername,
+      });
       setMonitorToken(result.token);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : "Telegram Mini App authentication failed");
@@ -167,6 +197,11 @@ export function useSeaBrokerageTelegramSession() {
       setIsAuthenticating(true);
       setAuthError(null);
       const result = await verifySeaBrokerageTelegramLoginCode(telegramUsername, code);
+      setProfileSnapshot(result.profile);
+      setIdentitySnapshot({
+        telegramUserId: result.profile.telegramUserId,
+        telegramUsername: result.profile.telegramUsername || telegramUsername.replace(/^@+/, ""),
+      });
       setMonitorToken(result.token);
       return result;
     } catch (error) {
@@ -180,8 +215,24 @@ export function useSeaBrokerageTelegramSession() {
   function logoutTelegramSession() {
     clearSeaBrokerageMonitorToken();
     setMonitorToken(null);
+    setProfileSnapshot(null);
+    setIdentitySnapshot({
+      telegramUserId: null,
+      telegramUsername: null,
+    });
     setAuthError(null);
   }
+
+  const fallbackIdentity =
+    monitorToken && !data?.identity
+      ? {
+          telegramUserId: identitySnapshot.telegramUserId,
+          telegramUsername:
+            identitySnapshot.telegramUsername ||
+            getSeaBrokerageMonitorHandleFromToken(monitorToken)?.replace(/^@+/, "") ||
+            null,
+        }
+      : null;
 
   const session = resolveSeaBrokerageTelegramSession(
     data?.identity
@@ -189,12 +240,12 @@ export function useSeaBrokerageTelegramSession() {
           telegramUserId: data.identity.telegramUserId,
           telegramUsername: data.identity.telegramUsername,
         }
-      : {
+      : fallbackIdentity || {
           telegramUserId: null,
           telegramUsername: null,
         },
     selectedDemoBrokerId,
-    data?.profile ?? null,
+    data?.profile ?? profileSnapshot ?? null,
   );
 
   return {
@@ -207,7 +258,7 @@ export function useSeaBrokerageTelegramSession() {
           telegramUserId: data.identity.telegramUserId,
           telegramUsername: data.identity.telegramUsername,
         }
-      : { telegramUserId: null, telegramUsername: null },
+      : fallbackIdentity || { telegramUserId: null, telegramUsername: null },
     monitorAuthToken: monitorToken,
     monitorAuthHeaders: headers,
     telegramBotUsername: TELEGRAM_BOT_USERNAME,

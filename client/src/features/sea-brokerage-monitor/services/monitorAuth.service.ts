@@ -26,6 +26,54 @@ const TELEGRAM_LOGIN_URL_FIELDS = [
   "hash",
 ] as const;
 
+function normalizeTelegramWidgetUser(raw: Record<string, string | number | undefined | null>) {
+  const id = Number(raw.id);
+  const authDate = Number(raw.auth_date);
+  const hash = String(raw.hash || "").trim();
+  if (!Number.isFinite(id) || !Number.isFinite(authDate) || !hash) {
+    return null;
+  }
+
+  const user: TelegramWidgetUser = {
+    id,
+    first_name: raw.first_name ? String(raw.first_name) : undefined,
+    last_name: raw.last_name ? String(raw.last_name) : undefined,
+    username: raw.username ? String(raw.username) : undefined,
+    photo_url: raw.photo_url ? String(raw.photo_url) : undefined,
+    auth_date: authDate,
+    hash,
+  };
+  return user;
+}
+
+function readTelegramWidgetUserFromHash(hashValue: string) {
+  const rawHash = String(hashValue || "").replace(/^#+/, "").trim();
+  if (!rawHash) return null;
+
+  const params = new URLSearchParams(rawHash);
+  const tgAuthResult = params.get("tgAuthResult");
+  if (tgAuthResult) {
+    try {
+      const decoded = decodeURIComponent(tgAuthResult);
+      const parsed = JSON.parse(decoded) as Record<string, string | number | undefined | null>;
+      return normalizeTelegramWidgetUser(parsed);
+    } catch {
+      // no-op, try plain hash params below
+    }
+  }
+
+  const raw: Record<string, string | number | undefined | null> = {
+    id: params.get("id"),
+    first_name: params.get("first_name"),
+    last_name: params.get("last_name"),
+    username: params.get("username"),
+    photo_url: params.get("photo_url"),
+    auth_date: params.get("auth_date"),
+    hash: params.get("hash"),
+  };
+  return normalizeTelegramWidgetUser(raw);
+}
+
 export function getSeaBrokerageMonitorToken() {
   if (typeof window === "undefined") return null;
   const token = window.localStorage.getItem(MONITOR_AUTH_TOKEN_STORAGE_KEY);
@@ -82,28 +130,36 @@ export function consumeTelegramWidgetUserFromUrl(): TelegramWidgetUser | null {
   if (typeof window === "undefined") return null;
   const url = new URL(window.location.href);
   const params = url.searchParams;
-  const id = params.get("id");
-  const authDate = params.get("auth_date");
-  const hash = params.get("hash");
+  const queryUser = normalizeTelegramWidgetUser({
+    id: params.get("id"),
+    first_name: params.get("first_name"),
+    last_name: params.get("last_name"),
+    username: params.get("username"),
+    photo_url: params.get("photo_url"),
+    auth_date: params.get("auth_date"),
+    hash: params.get("hash"),
+  });
+  const hashUser = readTelegramWidgetUserFromHash(url.hash);
+  const user = queryUser || hashUser;
 
-  if (!id || !authDate || !hash) {
-    return null;
-  }
-
-  const user: TelegramWidgetUser = {
-    id: Number(id),
-    first_name: params.get("first_name") || undefined,
-    last_name: params.get("last_name") || undefined,
-    username: params.get("username") || undefined,
-    photo_url: params.get("photo_url") || undefined,
-    auth_date: Number(authDate),
-    hash,
-  };
+  if (!user) return null;
 
   let cleaned = false;
   for (const key of TELEGRAM_LOGIN_URL_FIELDS) {
     if (params.has(key)) {
       params.delete(key);
+      cleaned = true;
+    }
+  }
+  if (url.hash) {
+    const hashParams = new URLSearchParams(url.hash.replace(/^#+/, ""));
+    const hasTelegramHashPayload =
+      hashParams.has("id") ||
+      hashParams.has("auth_date") ||
+      hashParams.has("hash") ||
+      hashParams.has("tgAuthResult");
+    if (hasTelegramHashPayload) {
+      url.hash = "";
       cleaned = true;
     }
   }
@@ -113,7 +169,7 @@ export function consumeTelegramWidgetUserFromUrl(): TelegramWidgetUser | null {
     window.history.replaceState({}, document.title, nextUrl);
   }
 
-  return Number.isFinite(user.id) && Number.isFinite(user.auth_date) ? user : null;
+  return user;
 }
 
 export async function signInSeaBrokerageMonitorWithTelegram(user: TelegramWidgetUser) {
@@ -133,6 +189,8 @@ export async function signInSeaBrokerageMonitorWithTelegram(user: TelegramWidget
     token: string;
     authorized: boolean;
     profile: {
+      authUserId: string | null;
+      authEmail: string | null;
       telegramUserId: string | null;
       telegramUsername: string | null;
       brokerCode: string;
@@ -161,6 +219,8 @@ export async function signInSeaBrokerageMonitorWithTelegramMiniApp(initData: str
     token: string;
     authorized: boolean;
     profile: {
+      authUserId: string | null;
+      authEmail: string | null;
       telegramUserId: string | null;
       telegramUsername: string | null;
       brokerCode: string;
@@ -206,6 +266,8 @@ export async function verifySeaBrokerageTelegramLoginCode(
     token: string;
     authorized: boolean;
     profile: {
+      authUserId: string | null;
+      authEmail: string | null;
       telegramUserId: string | null;
       telegramUsername: string | null;
       brokerCode: string;
