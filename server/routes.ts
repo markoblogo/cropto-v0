@@ -7599,6 +7599,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           const matchRelayResult = await publishSeaBrokerageMatchToTelegram(match);
+          console.info(
+            "[SeaBrokerage][MatchRelay]",
+            JSON.stringify({
+              bidEntryId: match.bidEntry.id,
+              offerEntryId: match.offerEntry.id,
+              score: match.score,
+              status: matchRelayResult.status,
+              error: matchRelayResult.error || null,
+            }),
+          );
           if (matchRelayResult.status === "published") {
             await storage.upsertAppSetting(key, "published");
           } else {
