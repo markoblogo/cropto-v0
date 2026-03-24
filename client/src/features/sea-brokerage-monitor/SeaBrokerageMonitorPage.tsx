@@ -287,6 +287,8 @@ export function SeaBrokerageMonitorPage() {
                 botId={session.telegramBotId}
                 miniAppShortName={session.telegramMiniAppShortName}
                 onAuth={session.authenticateWithTelegram}
+                onUseTelegramWebApp={session.authenticateFromTelegramWebApp}
+                isAuthorizing={session.isLoading}
               />
             </div>
           )}

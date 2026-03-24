@@ -48,17 +48,44 @@ export function useSeaBrokerageTelegramSession() {
 
   useEffect(() => {
     if (monitorToken) return;
-    const webApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
-    const initData = String(webApp?.initData || "").trim();
-    if (initData) {
+
+    const tryMiniAppInitData = () => {
+      const webApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
+      const initData = String(webApp?.initData || "").trim();
+      if (!initData) return false;
       void authenticateWithTelegramMiniApp(initData);
+      return true;
+    };
+
+    if (tryMiniAppInitData()) return;
+
+    const user = consumeTelegramWidgetUserFromUrl();
+    if (user) {
+      void authenticateWithTelegram(user);
       return;
     }
-    const user = consumeTelegramWidgetUserFromUrl();
-    if (!user) return;
-    void authenticateWithTelegram(user);
+
+    // Telegram WebApp bridge can appear slightly after first render.
+    const startedAt = Date.now();
+    const poll = window.setInterval(() => {
+      if (monitorToken) {
+        window.clearInterval(poll);
+        return;
+      }
+      if (tryMiniAppInitData()) {
+        window.clearInterval(poll);
+        return;
+      }
+      if (Date.now() - startedAt > 8000) {
+        window.clearInterval(poll);
+      }
+    }, 350);
+
+    return () => {
+      window.clearInterval(poll);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [monitorToken]);
 
   const headers = useMemo(() => buildSeaBrokerageMonitorAuthHeaders(monitorToken), [monitorToken]);
 
@@ -110,6 +137,16 @@ export function useSeaBrokerageTelegramSession() {
     }
   }
 
+  async function authenticateFromTelegramWebApp() {
+    const webApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
+    const initData = String(webApp?.initData || "").trim();
+    if (!initData) {
+      setAuthError("Telegram WebApp session is not available yet. Open monitor from bot menu button.");
+      return;
+    }
+    await authenticateWithTelegramMiniApp(initData);
+  }
+
   function logoutTelegramSession() {
     clearSeaBrokerageMonitorToken();
     setMonitorToken(null);
@@ -148,6 +185,7 @@ export function useSeaBrokerageTelegramSession() {
     telegramMiniAppShortName: TELEGRAM_MINI_APP_SHORT_NAME,
     authError,
     authenticateWithTelegram,
+    authenticateFromTelegramWebApp,
     logoutTelegramSession,
   };
 }

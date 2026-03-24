@@ -14,6 +14,8 @@ interface TelegramLoginWidgetProps {
   botId?: string;
   miniAppShortName?: string;
   onAuth: (user: TelegramWidgetUser) => void;
+  onUseTelegramWebApp?: () => void;
+  isAuthorizing?: boolean;
 }
 
 function isMobileViewport() {
@@ -54,6 +56,8 @@ export function TelegramLoginWidget({
   botId,
   miniAppShortName: _miniAppShortName,
   onAuth,
+  onUseTelegramWebApp,
+  isAuthorizing = false,
 }: TelegramLoginWidgetProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const mobile = isMobileViewport();
@@ -110,6 +114,19 @@ export function TelegramLoginWidget({
           {" "}
           <span className="font-medium">Open Spike Monitor</span> (menu button). Sign-in will apply automatically.
         </div>
+      ) : null}
+      {mobile && hasTelegramWebAppContext ? (
+        <Button
+          type="button"
+          className="h-9 w-full justify-center gap-2"
+          disabled={isAuthorizing}
+          onClick={() => {
+            onUseTelegramWebApp?.();
+          }}
+        >
+          <Send className="h-4 w-4" />
+          {isAuthorizing ? "Authorizing..." : "Use Telegram session now"}
+        </Button>
       ) : null}
       {!mobile && telegramAppLoginUrl ? (
         <Button
