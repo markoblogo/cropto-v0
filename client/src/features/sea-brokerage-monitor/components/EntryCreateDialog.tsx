@@ -40,7 +40,7 @@ import {
   getCountryDisplayLabel,
   getPortPlaceDisplayLabel,
 } from "../services/displayStandards";
-import { buildSeaBrokerageTelegramHeaders } from "../services/monitorTelegramIdentity.service";
+import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
 import {
   buildCanonicalView,
   normalizePeriodLabel,
@@ -398,7 +398,7 @@ export function EntryCreateDialog({
       };
 
       await apiRequest("POST", "/api/sea-brokerage-monitor/entries", payload, {
-        headers: buildSeaBrokerageTelegramHeaders(session.telegramIdentity),
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
       });
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
 

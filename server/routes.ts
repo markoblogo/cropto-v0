@@ -55,6 +55,12 @@ import {
   listSeaBrokerageBrokerAllowlist,
   resolveAuthorizedSeaBrokerageBrokerByTelegram,
 } from "./services/seaBrokerageBrokerAccess";
+import {
+  readSeaBrokerageMonitorIdentityFromToken,
+  signSeaBrokerageMonitorToken,
+  verifyTelegramLoginPayload,
+  type TelegramLoginPayload,
+} from "./services/seaBrokerageTelegramAuth";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -120,6 +126,16 @@ const upsertSeaBrokerageBrokerAuthSchema = z.object({
   brokerName: z.string().trim().min(1),
   companyName: z.string().trim().min(1),
   isActive: z.boolean().optional().default(true),
+});
+
+const seaBrokerageTelegramLoginSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
+  username: z.string().optional(),
+  photo_url: z.string().optional(),
+  auth_date: z.union([z.string(), z.number()]),
+  hash: z.string().min(1),
 });
 
 function decimalToNumber(value: unknown) {
@@ -192,6 +208,12 @@ function readSeaBrokerageTelegramIdentityHeaders(req: AuthRequest) {
     telegramUserId: telegramUserId || null,
     telegramUsername: telegramUsername || null,
   };
+}
+
+function readSeaBrokerageTelegramIdentity(req: AuthRequest) {
+  const fromToken = readSeaBrokerageMonitorIdentityFromToken(req);
+  if (fromToken) return fromToken;
+  return readSeaBrokerageTelegramIdentityHeaders(req);
 }
 
 async function getFeedbackAlertRecipients(): Promise<string[]> {
@@ -7356,11 +7378,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/sea-brokerage-monitor/auth/telegram/login", async (req, res) => {
+    try {
+      const parsed = seaBrokerageTelegramLoginSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const identity = verifyTelegramLoginPayload(parsed.data as TelegramLoginPayload);
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram(identity);
+      if (!profile) {
+        return res.status(403).json({
+          error: "Telegram account is not allowlisted for monitor publishing.",
+        });
+      }
+
+      const token = signSeaBrokerageMonitorToken(identity);
+      return res.status(201).json({
+        token,
+        authorized: true,
+        profile,
+      });
+    } catch (error: any) {
+      console.error("Error during sea brokerage Telegram login:", error);
+      return res.status(401).json({ error: error?.message || "Failed to verify Telegram login" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/auth/telegram/me", async (req: AuthRequest, res) => {
+    try {
+      const identity = readSeaBrokerageMonitorIdentityFromToken(req);
+      if (!identity) {
+        return res.status(401).json({ error: "Monitor auth token required" });
+      }
+
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram(identity);
+      if (!profile) {
+        return res.status(403).json({ error: "Telegram account is not allowlisted." });
+      }
+
+      return res.json({
+        authenticated: true,
+        identity,
+        profile,
+      });
+    } catch (error: any) {
+      console.error("Error resolving sea brokerage Telegram monitor session:", error);
+      return res.status(500).json({ error: "Failed to resolve monitor session" });
+    }
+  });
+
   app.get("/api/sea-brokerage-monitor/broker-auth/me", async (req: AuthRequest, res) => {
       try {
-        const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram(
-          readSeaBrokerageTelegramIdentityHeaders(req),
-        );
+        const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram(readSeaBrokerageTelegramIdentity(req));
         return res.json({
           authorized: !!profile,
           profile,
@@ -7439,7 +7509,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/sea-brokerage-monitor/entries", async (req: AuthRequest, res) => {
     try {
-      const telegramIdentity = readSeaBrokerageTelegramIdentityHeaders(req);
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
       const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
       if (!authorizedBroker) {
         return res.status(403).json({

@@ -1,68 +1,121 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  buildSeaBrokerageTelegramHeaders,
-  getStoredMonitorTelegramIdentity,
-  setStoredMonitorTelegramIdentity,
-  type MonitorTelegramIdentity,
-} from "../services/monitorTelegramIdentity.service";
-import {
-  getStoredDemoTelegramBrokerId,
-  resolveSeaBrokerageTelegramSession,
-  setStoredDemoTelegramBrokerId,
-  type SeaBrokerageBrokerAuthProfile,
-} from "../services/telegramSession.service";
+  buildSeaBrokerageMonitorAuthHeaders,
+  clearSeaBrokerageMonitorToken,
+  getSeaBrokerageMonitorToken,
+  setSeaBrokerageMonitorToken,
+  signInSeaBrokerageMonitorWithTelegram,
+  type TelegramWidgetUser,
+} from "../services/monitorAuth.service";
+import { resolveSeaBrokerageTelegramSession } from "../services/telegramSession.service";
 
 interface BrokerAuthMeResponse {
-  authorized: boolean;
-  profile: SeaBrokerageBrokerAuthProfile | null;
+  authenticated: boolean;
+  identity: {
+    telegramUserId: string;
+    telegramUsername: string | null;
+  };
+  profile: {
+    authUserId: string | null;
+    authEmail: string | null;
+    telegramUserId: string | null;
+    telegramUsername: string | null;
+    brokerCode: string;
+    brokerName: string;
+    companyName: string;
+    isActive: boolean;
+    source: "db" | "env";
+  };
 }
 
+const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME || "spikemoonbot";
+
 export function useSeaBrokerageTelegramSession() {
-  const [selectedDemoBrokerId, setSelectedDemoBrokerIdState] = useState<string | null>(() =>
-    getStoredDemoTelegramBrokerId(),
-  );
-  const [identity, setIdentity] = useState<MonitorTelegramIdentity>(() =>
-    getStoredMonitorTelegramIdentity(),
-  );
+  const [monitorToken, setMonitorToken] = useState<string | null>(() => getSeaBrokerageMonitorToken());
+  const [selectedDemoBrokerId, setSelectedDemoBrokerId] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
-    setStoredDemoTelegramBrokerId(selectedDemoBrokerId);
-  }, [selectedDemoBrokerId]);
+    setSeaBrokerageMonitorToken(monitorToken);
+  }, [monitorToken]);
 
-  useEffect(() => {
-    setStoredMonitorTelegramIdentity(identity);
-  }, [identity]);
+  const headers = useMemo(() => buildSeaBrokerageMonitorAuthHeaders(monitorToken), [monitorToken]);
 
-  const headers = useMemo(() => buildSeaBrokerageTelegramHeaders(identity), [identity]);
-  const identityReady = Object.keys(headers).length > 0;
-
-  const { data: brokerAuthData, isFetching } = useQuery<BrokerAuthMeResponse | null>({
-    queryKey: ["/api/sea-brokerage-monitor/broker-auth/me", identity.telegramUserId, identity.telegramUsername],
+  const { data, isLoading, refetch } = useQuery<BrokerAuthMeResponse | null>({
+    queryKey: ["/api/sea-brokerage-monitor/auth/telegram/me", monitorToken],
+    enabled: !!monitorToken,
     retry: false,
-    enabled: identityReady,
     queryFn: async () => {
-      const response = await fetch("/api/sea-brokerage-monitor/broker-auth/me", {
+      const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/me", {
         method: "GET",
         headers,
         credentials: "include",
       });
+      if (response.status === 401 || response.status === 403) {
+        clearSeaBrokerageMonitorToken();
+        setMonitorToken(null);
+        return null;
+      }
       if (!response.ok) {
-        throw new Error(`Failed to resolve monitor broker auth: ${response.status}`);
+        throw new Error(`Failed to resolve monitor auth session: ${response.status}`);
       }
       return response.json();
     },
   });
 
-  const session = resolveSeaBrokerageTelegramSession(identity, selectedDemoBrokerId, brokerAuthData?.profile);
+  async function authenticateWithTelegram(user: TelegramWidgetUser) {
+    try {
+      setIsAuthenticating(true);
+      setAuthError(null);
+      const result = await signInSeaBrokerageMonitorWithTelegram(user);
+      setMonitorToken(result.token);
+      await refetch();
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Telegram authentication failed");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }
+
+  function logoutTelegramSession() {
+    clearSeaBrokerageMonitorToken();
+    setMonitorToken(null);
+    setAuthError(null);
+  }
+
+  const session = resolveSeaBrokerageTelegramSession(
+    data?.identity
+      ? {
+          telegramUserId: data.identity.telegramUserId,
+          telegramUsername: data.identity.telegramUsername,
+        }
+      : {
+          telegramUserId: null,
+          telegramUsername: null,
+        },
+    selectedDemoBrokerId,
+    data?.profile ?? null,
+  );
 
   return {
     ...session,
-    isLoading: isFetching,
+    isLoading: isLoading || isAuthenticating,
     selectedDemoBrokerId,
-    setSelectedDemoBrokerId: setSelectedDemoBrokerIdState,
-    telegramIdentity: identity,
-    setTelegramIdentity: setIdentity,
+    setSelectedDemoBrokerId,
+    telegramIdentity: data?.identity
+      ? {
+          telegramUserId: data.identity.telegramUserId,
+          telegramUsername: data.identity.telegramUsername,
+        }
+      : { telegramUserId: null, telegramUsername: null },
+    monitorAuthToken: monitorToken,
+    monitorAuthHeaders: headers,
+    telegramBotUsername: TELEGRAM_BOT_USERNAME,
+    authError,
+    authenticateWithTelegram,
+    logoutTelegramSession,
   };
 }
 

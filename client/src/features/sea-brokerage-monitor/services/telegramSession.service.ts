@@ -1,6 +1,6 @@
 import { brokers } from "../mock/dictionaries";
 import type { BrokerUser } from "../types";
-import type { MonitorTelegramIdentity } from "./monitorTelegramIdentity.service";
+import type { MonitorTelegramIdentity } from "./monitorAuth.service";
 
 const DEMO_TELEGRAM_BROKER_STORAGE_KEY = "sea_brokerage_monitor.demo_telegram_broker_id";
 
@@ -138,8 +138,7 @@ export function resolveSeaBrokerageTelegramSession(
     canCreateEntries: false,
     isDemoSelectorEnabled: isSeaBrokerageMonitorDemoSessionEnabled(),
     statusLabel: "Viewer mode",
-    statusMessage: "Set Telegram user id and username in monitor tools to enable broker authorization.",
+    statusMessage: "Sign in with Telegram to enable broker authorization.",
     telegramHandle: null,
   };
 }
-

@@ -29,6 +29,7 @@ Set these on the **web** service:
 - `JWT_SECRET`
 - `SESSION_SECRET`
 - `TELEGRAM_BOT_TOKEN`
+- `SEA_BROKERAGE_MONITOR_JWT_SECRET`
 - `SEA_BROKERAGE_TELEGRAM_INTERNAL_ENABLED=true`
 - `SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID` (or `..._CHAT_IDS`)
 
@@ -38,6 +39,7 @@ Optional:
 - `SEA_BROKERAGE_TELEGRAM_EXTERNAL_ENABLED` (set `true` when public/group relay is ready)
 - `SEA_BROKERAGE_TELEGRAM_EXTERNAL_CHAT_ID` (or `..._CHAT_IDS`)
 - `SEA_BROKERAGE_BROKER_ALLOWLIST_JSON` (bootstrap allowlist without admin API)
+- `VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME` (default is `spikemoonbot`)
 
 Legacy compatibility:
 

@@ -17,6 +17,7 @@ import {
   portOptions,
 } from "../mock/dictionaries";
 import { getPortPlaceDisplayLabel } from "../services/displayStandards";
+import { TelegramLoginWidget } from "./TelegramLoginWidget";
 import type { FeedFilterState } from "../types";
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
@@ -204,29 +205,29 @@ export function MonitorToolbar({
                 </div>
               ) : null}
             </div>
-            <Input
-              value={session.telegramIdentity.telegramUserId ?? ""}
-              onChange={(event) =>
-                session.setTelegramIdentity((prev) => ({
-                  ...prev,
-                  telegramUserId: event.target.value.trim() || null,
-                }))
-              }
-              placeholder="Telegram user id"
-              className="h-7 text-xs"
-            />
-            <Input
-              value={session.telegramIdentity.telegramUsername ?? ""}
-              onChange={(event) =>
-                session.setTelegramIdentity((prev) => ({
-                  ...prev,
-                  telegramUsername: event.target.value.replace(/^@+/, "").trim() || null,
-                }))
-              }
-              placeholder="@username"
-              className="h-7 text-xs"
-            />
+            <div className="sm:col-span-2 flex min-h-7 items-center justify-start sm:justify-end">
+              {session.monitorAuthToken ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={session.logoutTelegramSession}
+                >
+                  Sign out Telegram
+                </Button>
+              ) : (
+                <TelegramLoginWidget
+                  botUsername={session.telegramBotUsername}
+                  onAuth={session.authenticateWithTelegram}
+                />
+              )}
+            </div>
           </div>
+          {session.authError ? (
+            <div className="rounded-md border border-amber-300/70 bg-amber-50 px-2.5 py-1 text-xs text-amber-900">
+              {session.authError}
+            </div>
+          ) : null}
 
           <CollapsibleContent className="space-y-2 border-t border-border/60 pt-1.5 sm:space-y-2 sm:pt-1.5">
             {session.isDemoSelectorEnabled ? (
