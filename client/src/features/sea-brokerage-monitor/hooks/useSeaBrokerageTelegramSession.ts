@@ -43,7 +43,7 @@ export function useSeaBrokerageTelegramSession() {
 
   const headers = useMemo(() => buildSeaBrokerageMonitorAuthHeaders(monitorToken), [monitorToken]);
 
-  const { data, isLoading, refetch } = useQuery<BrokerAuthMeResponse | null>({
+  const { data, isLoading } = useQuery<BrokerAuthMeResponse | null>({
     queryKey: ["/api/sea-brokerage-monitor/auth/telegram/me", monitorToken],
     enabled: !!monitorToken,
     retry: false,
@@ -71,7 +71,6 @@ export function useSeaBrokerageTelegramSession() {
       setAuthError(null);
       const result = await signInSeaBrokerageMonitorWithTelegram(user);
       setMonitorToken(result.token);
-      await refetch();
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : "Telegram authentication failed");
     } finally {
@@ -118,4 +117,3 @@ export function useSeaBrokerageTelegramSession() {
     logoutTelegramSession,
   };
 }
-
