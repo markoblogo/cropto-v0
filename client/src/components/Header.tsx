@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import {
+  getSeaBrokerageMonitorAuthChangedEventName,
+  getSeaBrokerageMonitorHandleFromToken,
+  getSeaBrokerageMonitorToken,
+} from "@/features/sea-brokerage-monitor/services/monitorAuth.service";
 
 interface HeaderProps {
   onCreateOption: () => void;
@@ -38,6 +43,9 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<string>("/portfolio");
+  const [monitorHandle, setMonitorHandle] = useState<string | null>(() =>
+    getSeaBrokerageMonitorHandleFromToken(getSeaBrokerageMonitorToken()),
+  );
   const { toast } = useToast();
   const { t } = useTranslation();
   const userTier = useUserTier();
@@ -156,6 +164,17 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
     setLocation(to);
     setIsMobileMenuOpen(false);
   };
+
+  useEffect(() => {
+    const eventName = getSeaBrokerageMonitorAuthChangedEventName();
+    const refresh = () => {
+      setMonitorHandle(getSeaBrokerageMonitorHandleFromToken(getSeaBrokerageMonitorToken()));
+    };
+    window.addEventListener(eventName, refresh);
+    return () => {
+      window.removeEventListener(eventName, refresh);
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -328,7 +347,9 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
                 }}
               >
                 <Send className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline text-[11px]">Sign in to create entries</span>
+                <span className="hidden sm:inline text-[11px]">
+                  {monitorHandle || "Sign in to create entries"}
+                </span>
               </Button>
             ) : null}
 
