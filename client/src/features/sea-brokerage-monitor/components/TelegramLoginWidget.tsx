@@ -23,6 +23,19 @@ function isMobileViewport() {
   );
 }
 
+function openTelegramBotChat(botUsername: string) {
+  const username = botUsername.replace(/^@+/, "");
+  if (typeof window === "undefined") return;
+
+  const deepLink = `tg://resolve?domain=${username}`;
+  const webLink = `https://t.me/${username}`;
+
+  window.location.href = deepLink;
+  window.setTimeout(() => {
+    window.location.href = webLink;
+  }, 700);
+}
+
 function buildTelegramOauthUrl(botId: string) {
   if (typeof window === "undefined") return "";
   const origin = window.location.hostname;
@@ -36,26 +49,10 @@ function buildTelegramOauthUrl(botId: string) {
   return `https://oauth.telegram.org/auth?${params.toString()}`;
 }
 
-function buildTelegramMiniAppUrl(botUsername: string, miniAppShortName?: string) {
-  const username = botUsername.replace(/^@+/, "");
-  if (miniAppShortName) {
-    return `https://t.me/${username}/${miniAppShortName}?startapp=spike_monitor_auth`;
-  }
-  return `https://t.me/${username}?startapp=spike_monitor_auth`;
-}
-
-function buildTelegramDeepLink(botUsername: string, miniAppShortName?: string) {
-  const username = botUsername.replace(/^@+/, "");
-  if (miniAppShortName) {
-    return `tg://resolve?domain=${username}&appname=${miniAppShortName}&startapp=spike_monitor_auth`;
-  }
-  return `tg://resolve?domain=${username}&startapp=spike_monitor_auth`;
-}
-
 export function TelegramLoginWidget({
   botUsername,
   botId,
-  miniAppShortName,
+  miniAppShortName: _miniAppShortName,
   onAuth,
 }: TelegramLoginWidgetProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -64,8 +61,6 @@ export function TelegramLoginWidget({
     typeof window !== "undefined" &&
     Boolean((window as Window & { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp);
   const telegramAppLoginUrl = botId ? buildTelegramOauthUrl(botId) : "";
-  const telegramMiniAppUrl = buildTelegramMiniAppUrl(botUsername, miniAppShortName);
-  const telegramDeepLinkUrl = buildTelegramDeepLink(botUsername, miniAppShortName);
 
   useEffect(() => {
     if (!mountRef.current || !botUsername) return;
@@ -97,22 +92,26 @@ export function TelegramLoginWidget({
 
   return (
     <div className="space-y-2">
-      {mobile ? (
+      {mobile && !hasTelegramWebAppContext ? (
         <Button
           type="button"
           className="h-9 w-full justify-center gap-2"
           onClick={() => {
-            window.location.href = telegramDeepLinkUrl;
-            window.setTimeout(() => {
-              window.location.href = telegramMiniAppUrl;
-            }, 600);
+            openTelegramBotChat(botUsername);
           }}
         >
           <Send className="h-4 w-4" />
-          Open in Telegram app
+          Open bot chat in Telegram
         </Button>
       ) : null}
-      {mobile && telegramAppLoginUrl ? (
+      {mobile && !hasTelegramWebAppContext ? (
+        <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          In Telegram, open <span className="font-medium">@{botUsername.replace(/^@+/, "")}</span> and tap
+          {" "}
+          <span className="font-medium">Open Spike Monitor</span> (menu button). Sign-in will apply automatically.
+        </div>
+      ) : null}
+      {!mobile && telegramAppLoginUrl ? (
         <Button
           type="button"
           variant="outline"
