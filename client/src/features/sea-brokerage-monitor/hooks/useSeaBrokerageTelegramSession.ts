@@ -33,6 +33,7 @@ interface BrokerAuthMeResponse {
 
 const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME || "spikemoonbot";
 const TELEGRAM_BOT_ID = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_BOT_ID || "8799667536";
+const TELEGRAM_MINI_APP_SHORT_NAME = import.meta.env.VITE_SEA_BROKERAGE_TELEGRAM_MINI_APP_SHORT_NAME || "";
 
 export function useSeaBrokerageTelegramSession() {
   const [monitorToken, setMonitorToken] = useState<string | null>(() => getSeaBrokerageMonitorToken());
@@ -143,6 +144,7 @@ export function useSeaBrokerageTelegramSession() {
     monitorAuthHeaders: headers,
     telegramBotUsername: TELEGRAM_BOT_USERNAME,
     telegramBotId: TELEGRAM_BOT_ID,
+    telegramMiniAppShortName: TELEGRAM_MINI_APP_SHORT_NAME,
     authError,
     authenticateWithTelegram,
     logoutTelegramSession,

@@ -285,6 +285,7 @@ export function SeaBrokerageMonitorPage() {
               <TelegramLoginWidget
                 botUsername={session.telegramBotUsername}
                 botId={session.telegramBotId}
+                miniAppShortName={session.telegramMiniAppShortName}
                 onAuth={session.authenticateWithTelegram}
               />
             </div>

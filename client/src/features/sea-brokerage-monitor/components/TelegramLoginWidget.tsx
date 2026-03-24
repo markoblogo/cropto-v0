@@ -12,6 +12,7 @@ declare global {
 interface TelegramLoginWidgetProps {
   botUsername: string;
   botId?: string;
+  miniAppShortName?: string;
   onAuth: (user: TelegramWidgetUser) => void;
 }
 
@@ -35,19 +36,36 @@ function buildTelegramOauthUrl(botId: string) {
   return `https://oauth.telegram.org/auth?${params.toString()}`;
 }
 
-function buildTelegramMiniAppUrl(botUsername: string) {
+function buildTelegramMiniAppUrl(botUsername: string, miniAppShortName?: string) {
   const username = botUsername.replace(/^@+/, "");
+  if (miniAppShortName) {
+    return `https://t.me/${username}/${miniAppShortName}?startapp=spike_monitor_auth`;
+  }
   return `https://t.me/${username}?startapp=spike_monitor_auth`;
 }
 
-export function TelegramLoginWidget({ botUsername, botId, onAuth }: TelegramLoginWidgetProps) {
+function buildTelegramDeepLink(botUsername: string, miniAppShortName?: string) {
+  const username = botUsername.replace(/^@+/, "");
+  if (miniAppShortName) {
+    return `tg://resolve?domain=${username}&appname=${miniAppShortName}&startapp=spike_monitor_auth`;
+  }
+  return `tg://resolve?domain=${username}&startapp=spike_monitor_auth`;
+}
+
+export function TelegramLoginWidget({
+  botUsername,
+  botId,
+  miniAppShortName,
+  onAuth,
+}: TelegramLoginWidgetProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const mobile = isMobileViewport();
   const hasTelegramWebAppContext =
     typeof window !== "undefined" &&
     Boolean((window as Window & { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp);
   const telegramAppLoginUrl = botId ? buildTelegramOauthUrl(botId) : "";
-  const telegramMiniAppUrl = buildTelegramMiniAppUrl(botUsername);
+  const telegramMiniAppUrl = buildTelegramMiniAppUrl(botUsername, miniAppShortName);
+  const telegramDeepLinkUrl = buildTelegramDeepLink(botUsername, miniAppShortName);
 
   useEffect(() => {
     if (!mountRef.current || !botUsername) return;
@@ -84,7 +102,10 @@ export function TelegramLoginWidget({ botUsername, botId, onAuth }: TelegramLogi
           type="button"
           className="h-9 w-full justify-center gap-2"
           onClick={() => {
-            window.location.href = telegramMiniAppUrl;
+            window.location.href = telegramDeepLinkUrl;
+            window.setTimeout(() => {
+              window.location.href = telegramMiniAppUrl;
+            }, 600);
           }}
         >
           <Send className="h-4 w-4" />
