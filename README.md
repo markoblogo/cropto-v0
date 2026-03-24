@@ -245,6 +245,7 @@ The repo contains a concrete Railway-oriented deploy path.
 
 - `railway.json` defines the deployment shape
 - `docs/deploy-runbook.md` documents the current operational flow
+- `docs/sea-brokerage-monitor-railway-runbook.md` documents Sea Brokerage Monitor migration/env/relay rollout
 - staging/demo verification target is [cropto.abvx.xyz](https://cropto.abvx.xyz)
 
 Important current nuance:
@@ -267,7 +268,7 @@ Useful realities before building on top of this repo:
 - product maturity is uneven across modules
 - some UX flows are polished but still prototype-grade under the hood
 - some features still rely on mock/demo or local-state behavior
-- Sea Brokerage Monitor entries are not yet persisted through a full backend workflow
+- Sea Brokerage Monitor now has backend persistence and server-side relay hooks, but Telegram identity/auth mapping is still transitional
 - some Telegram/session/relay paths are prepared rather than fully productionized
 - deployment and operational assumptions are still somewhat project-specific
 

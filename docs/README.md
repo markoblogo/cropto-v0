@@ -21,6 +21,7 @@ Internal project documentation for the Cropto prototype.
 
 - [Monitoring](./monitoring.md) - Runtime monitoring and observability notes.
 - [Deploy runbook](./deploy-runbook.md) - Deployment process checklist.
+- [Sea Brokerage Monitor runbook](./sea-brokerage-monitor-railway-runbook.md) - Railway env + migration + relay checklist for `/spike-monitor`.
 - [Deploy verify](./deploy-verify.md) - Post-deploy verification steps.
 - [Deploy Cropt Amoy](./deploy-cropt-amoy.md) - Network-specific deployment notes.
 - [Smoke test portfolio](./smoke-test-portfolio.md) - Smoke-test procedure for portfolio flows.

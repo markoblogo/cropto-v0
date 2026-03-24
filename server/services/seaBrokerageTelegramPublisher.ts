@@ -16,7 +16,24 @@ function countryFlagEmoji(countryCode: string | null | undefined) {
 }
 
 function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
-  const resolvedPrice = entry.price ?? entry.priceFrom ?? entry.priceTo;
+  const direct = entry.price;
+  const from = entry.priceFrom;
+  const to = entry.priceTo;
+
+  if (direct !== null && direct !== undefined) {
+    const compact = Number(direct);
+    return `@${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
+  }
+
+  if (from !== null && from !== undefined && to !== null && to !== undefined && from !== to) {
+    const fromCompact = Number(from);
+    const toCompact = Number(to);
+    const left = Number.isInteger(fromCompact) ? `${fromCompact}` : fromCompact.toFixed(2);
+    const right = Number.isInteger(toCompact) ? `${toCompact}` : toCompact.toFixed(2);
+    return `@${left}$ | ${right}$`;
+  }
+
+  const resolvedPrice = from ?? to;
   if (resolvedPrice === null || resolvedPrice === undefined) {
     return "@ subject";
   }
@@ -25,9 +42,18 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
   return `@${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
 }
 
+function formatDateDotted(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}.${month}.${year}`;
+}
+
 function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
   if (entry.periodStart && entry.periodEnd) {
-    return `${entry.periodStart}-${entry.periodEnd}`;
+    return `${formatDateDotted(entry.periodStart)}-${formatDateDotted(entry.periodEnd)}`;
   }
 
   return entry.periodLabel;
@@ -55,12 +81,25 @@ export function formatSeaBrokerageTelegramMessage(entry: SeaBrokerageEntryRow) {
   const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
   const counterparty = formatTelegramCounterparty(entry);
   const header = [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
+  const transportLine = formatTelegramTransport(entry);
+  const counterpartyLine =
+    entry.type === "bid"
+      ? counterparty
+        ? `Buyer: ${counterparty}`
+        : null
+      : counterparty
+        ? `Seller: ${counterparty}`
+        : null;
+  const termsLine = entry.paymentTerms?.trim() ? `Payment: ${entry.paymentTerms.trim()}` : null;
+
   const lines = [
     header,
     "------------------------------",
     formatTelegramCommodity(entry),
     `${entry.basis} ${entry.destinationPort}, ${entry.destinationCountry}`,
-    [formatTelegramTransport(entry), counterparty].filter(Boolean).join(" | "),
+    transportLine,
+    termsLine,
+    counterpartyLine,
     `${formatTelegramPeriod(entry)} ${formatTelegramPrice(entry)}`,
   ];
 
@@ -68,7 +107,7 @@ export function formatSeaBrokerageTelegramMessage(entry: SeaBrokerageEntryRow) {
     lines.push(entry.note.trim());
   }
 
-  return lines.join("\n");
+  return lines.filter((line) => !!line).join("\n");
 }
 
 function resolveSeaBrokerageChatIds(entry: SeaBrokerageEntryRow) {
