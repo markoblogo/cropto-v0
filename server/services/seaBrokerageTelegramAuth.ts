@@ -17,6 +17,10 @@ export type SeaBrokerageTelegramIdentity = {
   telegramUsername: string | null;
 };
 
+export type TelegramMiniAppLoginPayload = {
+  initData: string;
+};
+
 type MonitorTokenPayload = {
   sub: string;
   telegramUserId: string;
@@ -94,6 +98,64 @@ export function verifyTelegramLoginPayload(payload: TelegramLoginPayload): SeaBr
   };
 }
 
+export function verifyTelegramMiniAppInitData(initDataRaw: string): SeaBrokerageTelegramIdentity {
+  const botToken = getTelegramBotToken();
+  const initData = String(initDataRaw || "").trim();
+  if (!initData) {
+    throw new Error("Telegram Mini App initData is missing");
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = String(params.get("hash") || "").trim();
+  if (!hash) {
+    throw new Error("Telegram Mini App hash is missing");
+  }
+
+  const authDate = Number(params.get("auth_date"));
+  if (!Number.isFinite(authDate)) {
+    throw new Error("Invalid Telegram Mini App auth_date");
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (now - authDate > TELEGRAM_AUTH_MAX_AGE_SECONDS) {
+    throw new Error("Telegram Mini App auth payload expired");
+  }
+
+  const dataCheckString = Array.from(params.entries())
+    .filter(([key, value]) => key !== "hash" && value !== undefined && value !== null && value !== "")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+
+  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
+  const computedHash = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+  if (computedHash !== hash) {
+    throw new Error("Invalid Telegram Mini App auth hash");
+  }
+
+  const userRaw = params.get("user");
+  if (!userRaw) {
+    throw new Error("Telegram Mini App user payload is missing");
+  }
+
+  let user: { id?: string | number; username?: string | null } = {};
+  try {
+    user = JSON.parse(userRaw);
+  } catch {
+    throw new Error("Invalid Telegram Mini App user payload");
+  }
+
+  const telegramUserId = normalizeTelegramUserId(user.id);
+  if (!telegramUserId) {
+    throw new Error("Telegram Mini App user id is missing");
+  }
+
+  return {
+    telegramUserId,
+    telegramUsername: normalizeUsername(user.username),
+  };
+}
+
 export function signSeaBrokerageMonitorToken(identity: SeaBrokerageTelegramIdentity) {
   return jwt.sign(
     {
@@ -130,4 +192,3 @@ export function readSeaBrokerageMonitorIdentityFromToken(
     return null;
   }
 }
-

@@ -143,3 +143,31 @@ export async function signInSeaBrokerageMonitorWithTelegram(user: TelegramWidget
     };
   }>;
 }
+
+export async function signInSeaBrokerageMonitorWithTelegramMiniApp(initData: string) {
+  const response = await fetch("/api/sea-brokerage-monitor/auth/telegram/miniapp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ initData }),
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || "Telegram Mini App login failed";
+    throw new Error(text);
+  }
+
+  return response.json() as Promise<{
+    token: string;
+    authorized: boolean;
+    profile: {
+      telegramUserId: string | null;
+      telegramUsername: string | null;
+      brokerCode: string;
+      brokerName: string;
+      companyName: string;
+      isActive: boolean;
+      source: "db" | "env";
+    };
+  }>;
+}

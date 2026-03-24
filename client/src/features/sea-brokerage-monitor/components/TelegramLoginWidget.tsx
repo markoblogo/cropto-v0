@@ -35,10 +35,19 @@ function buildTelegramOauthUrl(botId: string) {
   return `https://oauth.telegram.org/auth?${params.toString()}`;
 }
 
+function buildTelegramMiniAppUrl(botUsername: string) {
+  const username = botUsername.replace(/^@+/, "");
+  return `https://t.me/${username}?startapp=spike_monitor_auth`;
+}
+
 export function TelegramLoginWidget({ botUsername, botId, onAuth }: TelegramLoginWidgetProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const mobile = isMobileViewport();
+  const hasTelegramWebAppContext =
+    typeof window !== "undefined" &&
+    Boolean((window as Window & { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp);
   const telegramAppLoginUrl = botId ? buildTelegramOauthUrl(botId) : "";
+  const telegramMiniAppUrl = buildTelegramMiniAppUrl(botUsername);
 
   useEffect(() => {
     if (!mountRef.current || !botUsername) return;
@@ -66,21 +75,36 @@ export function TelegramLoginWidget({ botUsername, botId, onAuth }: TelegramLogi
     };
   }, [botUsername, onAuth]);
 
+  const shouldRenderWidget = !mobile || hasTelegramWebAppContext;
+
   return (
     <div className="space-y-2">
+      {mobile ? (
+        <Button
+          type="button"
+          className="h-9 w-full justify-center gap-2"
+          onClick={() => {
+            window.location.href = telegramMiniAppUrl;
+          }}
+        >
+          <Send className="h-4 w-4" />
+          Open in Telegram app
+        </Button>
+      ) : null}
       {mobile && telegramAppLoginUrl ? (
         <Button
           type="button"
+          variant="outline"
           className="h-9 w-full justify-center gap-2"
           onClick={() => {
             window.location.href = telegramAppLoginUrl;
           }}
         >
           <Send className="h-4 w-4" />
-          Continue in Telegram app
+          Web Telegram fallback
         </Button>
       ) : null}
-      <div ref={mountRef} className="min-h-8 [&>iframe]:max-w-full" />
+      {shouldRenderWidget ? <div ref={mountRef} className="min-h-8 [&>iframe]:max-w-full" /> : null}
     </div>
   );
 }

@@ -62,7 +62,9 @@ import {
 import {
   readSeaBrokerageMonitorIdentityFromToken,
   signSeaBrokerageMonitorToken,
+  verifyTelegramMiniAppInitData,
   verifyTelegramLoginPayload,
+  type TelegramMiniAppLoginPayload,
   type TelegramLoginPayload,
 } from "./services/seaBrokerageTelegramAuth";
 
@@ -140,6 +142,10 @@ const seaBrokerageTelegramLoginSchema = z.object({
   photo_url: z.string().optional(),
   auth_date: z.union([z.string(), z.number()]),
   hash: z.string().min(1),
+});
+
+const seaBrokerageTelegramMiniAppLoginSchema = z.object({
+  initData: z.string().trim().min(1),
 });
 
 function decimalToNumber(value: unknown) {
@@ -7417,6 +7423,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error during sea brokerage Telegram login:", error);
       return res.status(401).json({ error: error?.message || "Failed to verify Telegram login" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/auth/telegram/miniapp", async (req, res) => {
+    try {
+      const parsed = seaBrokerageTelegramMiniAppLoginSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const identity = verifyTelegramMiniAppInitData(
+        (parsed.data as TelegramMiniAppLoginPayload).initData,
+      );
+      const profile = await resolveAuthorizedSeaBrokerageBrokerByTelegram(identity);
+      if (!profile) {
+        return res.status(403).json({
+          error: "Telegram account is not allowlisted for monitor publishing.",
+        });
+      }
+
+      const token = signSeaBrokerageMonitorToken(identity);
+      return res.status(201).json({
+        token,
+        authorized: true,
+        profile,
+      });
+    } catch (error: any) {
+      console.error("Error during sea brokerage Telegram Mini App login:", error);
+      return res
+        .status(401)
+        .json({ error: error?.message || "Failed to verify Telegram Mini App login" });
     }
   });
 

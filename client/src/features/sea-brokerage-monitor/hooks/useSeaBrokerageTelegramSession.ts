@@ -6,6 +6,7 @@ import {
   consumeTelegramWidgetUserFromUrl,
   getSeaBrokerageMonitorToken,
   setSeaBrokerageMonitorToken,
+  signInSeaBrokerageMonitorWithTelegramMiniApp,
   signInSeaBrokerageMonitorWithTelegram,
   type TelegramWidgetUser,
 } from "../services/monitorAuth.service";
@@ -45,6 +46,12 @@ export function useSeaBrokerageTelegramSession() {
 
   useEffect(() => {
     if (monitorToken) return;
+    const webApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
+    const initData = String(webApp?.initData || "").trim();
+    if (initData) {
+      void authenticateWithTelegramMiniApp(initData);
+      return;
+    }
     const user = consumeTelegramWidgetUserFromUrl();
     if (!user) return;
     void authenticateWithTelegram(user);
@@ -83,6 +90,19 @@ export function useSeaBrokerageTelegramSession() {
       setMonitorToken(result.token);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : "Telegram authentication failed");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }
+
+  async function authenticateWithTelegramMiniApp(initData: string) {
+    try {
+      setIsAuthenticating(true);
+      setAuthError(null);
+      const result = await signInSeaBrokerageMonitorWithTelegramMiniApp(initData);
+      setMonitorToken(result.token);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Telegram Mini App authentication failed");
     } finally {
       setIsAuthenticating(false);
     }
