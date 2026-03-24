@@ -95,7 +95,7 @@ export function SeaBrokerageMonitorPage() {
           onAddSampleOffer={() => addSeaBrokerageMonitorSampleEntry("offer")}
         />
 
-        <section className="grid min-w-0 gap-0.5 xl:grid-cols-2 sm:gap-1">
+        <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
           <BrokerWorkspacePane
             title="Offers"
             emptyTitle="No visible offers"

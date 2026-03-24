@@ -44,7 +44,7 @@ export function BrokerWorkspacePane({
   onFiltersChange,
 }: BrokerWorkspacePaneProps) {
   return (
-    <Card className="border-border/70 bg-card/95 shadow-sm">
+    <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
       <CardHeader className="space-y-0.75 border-b border-border/60 px-1.5 py-0.75 sm:space-y-1 sm:px-3 sm:py-1.5">
         <div className="flex min-w-0 items-center gap-1">
           <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
@@ -55,7 +55,7 @@ export function BrokerWorkspacePane({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-wrap items-center gap-0.5 sm:gap-1.5">
+        <div className="grid min-w-0 grid-cols-[minmax(0,110px)_minmax(0,1fr)] gap-0.5 sm:flex sm:flex-wrap sm:items-center sm:gap-1.5">
           <Select
             value={filters.brokerProfileId}
             onValueChange={(value) =>
@@ -65,7 +65,7 @@ export function BrokerWorkspacePane({
               })
             }
           >
-            <SelectTrigger className="h-5.5 min-w-0 flex-1 basis-[calc(40%-0.125rem)] text-[10px] sm:h-6.5 sm:w-[132px] sm:basis-auto sm:flex-none sm:text-xs">
+            <SelectTrigger className="h-5.5 min-w-0 w-full text-[10px] sm:h-6.5 sm:w-[132px] sm:flex-none sm:text-xs">
               <SelectValue placeholder="Broker" />
             </SelectTrigger>
             <SelectContent>
@@ -78,10 +78,10 @@ export function BrokerWorkspacePane({
             </SelectContent>
           </Select>
 
-          <div className="relative min-w-0 basis-[calc(60%-0.125rem)] flex-1 sm:basis-auto">
+          <div className="relative min-w-0 w-full flex-1">
             <Search className="pointer-events-none absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-muted-foreground sm:left-3 sm:h-3.5 sm:w-3.5" />
             <Input
-              className="h-5.5 pl-5.5 text-[10px] sm:h-6.5 sm:pl-7.5 sm:text-xs"
+              className="h-5.5 min-w-0 pr-2 pl-6.5 text-[10px] sm:h-6.5 sm:pr-3 sm:pl-9 sm:text-xs"
               value={filters.search}
               onChange={(event) =>
                 onFiltersChange({
@@ -118,7 +118,7 @@ export function BrokerWorkspacePane({
                         : "border-l-transparent hover:bg-muted/16"
                     }`}
                   >
-                    <div className="w-full min-w-0">
+                    <div className="w-full min-w-0 overflow-hidden">
                       <div className="truncate text-left text-[10.5px] font-medium leading-3.5 text-foreground sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
