@@ -13,12 +13,6 @@ import { TelegramLoginWidget } from "./components/TelegramLoginWidget";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
 import {
-  addSeaBrokerageMonitorSampleEntry,
-  clearSeaBrokerageMonitorEntries,
-  resetSeaBrokerageMonitorDemoData,
-  reseedSeaBrokerageMonitorDemoData,
-} from "./services/seaBrokerageMonitor.service";
-import {
   defaultFeedFilters,
   filterBrokerageEntries,
 } from "./services/feedFilters.service";
@@ -28,6 +22,26 @@ const defaultPaneFilters: BrokerWorkspacePaneFilters = {
   brokerProfileId: "all",
   search: "",
 };
+
+function buildBrokerOptions(entries: BrokerageEntry[]) {
+  const byBroker = new Map<string, { code: string; name: string }>();
+  for (const entry of entries) {
+    if (!entry.brokerId) continue;
+    if (!byBroker.has(entry.brokerId)) {
+      byBroker.set(entry.brokerId, {
+        code: entry.brokerCode,
+        name: entry.brokerName,
+      });
+    }
+  }
+
+  return Array.from(byBroker.entries())
+    .map(([value, broker]) => ({
+      value,
+      label: `${broker.code} (${broker.name})`,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
 
 export function SeaBrokerageMonitorPage() {
   const monitorState = useSeaBrokerageMonitorState();
@@ -45,26 +59,57 @@ export function SeaBrokerageMonitorPage() {
     [monitorState.standardizedFeed, filters],
   );
 
-  const offerEntries = useMemo(
+  const globalBrokerOptions = useMemo(
+    () => buildBrokerOptions(monitorState.standardizedFeed),
+    [monitorState.standardizedFeed],
+  );
+
+  const offerEntriesBase = useMemo(
     () =>
       filterBrokerageEntries(filteredEntries, {
         ...defaultFeedFilters,
         entryType: "offer",
-        brokerProfileId: offerPaneFilters.brokerProfileId,
-        search: offerPaneFilters.search,
       }),
-    [filteredEntries, offerPaneFilters],
+    [filteredEntries],
   );
 
-  const bidEntries = useMemo(
+  const bidEntriesBase = useMemo(
     () =>
       filterBrokerageEntries(filteredEntries, {
         ...defaultFeedFilters,
         entryType: "bid",
+      }),
+    [filteredEntries],
+  );
+
+  const offerBrokerOptions = useMemo(
+    () => buildBrokerOptions(offerEntriesBase),
+    [offerEntriesBase],
+  );
+
+  const bidBrokerOptions = useMemo(
+    () => buildBrokerOptions(bidEntriesBase),
+    [bidEntriesBase],
+  );
+
+  const offerEntries = useMemo(
+    () =>
+      filterBrokerageEntries(offerEntriesBase, {
+        ...defaultFeedFilters,
+        brokerProfileId: offerPaneFilters.brokerProfileId,
+        search: offerPaneFilters.search,
+      }),
+    [offerEntriesBase, offerPaneFilters],
+  );
+
+  const bidEntries = useMemo(
+    () =>
+      filterBrokerageEntries(bidEntriesBase, {
+        ...defaultFeedFilters,
         brokerProfileId: bidPaneFilters.brokerProfileId,
         search: bidPaneFilters.search,
       }),
-    [bidPaneFilters, filteredEntries],
+    [bidEntriesBase, bidPaneFilters],
   );
 
   function updateFilter<K extends keyof FeedFilterState>(key: K, value: FeedFilterState[K]) {
@@ -87,11 +132,45 @@ export function SeaBrokerageMonitorPage() {
       setTelegramAuthOpen(true);
     }
 
+    function handleLogoutTelegramAuth() {
+      session.logoutTelegramSession();
+      setTelegramAuthOpen(false);
+    }
+
     window.addEventListener("sea-brokerage:open-telegram-auth", handleOpenTelegramAuth);
+    window.addEventListener("sea-brokerage:logout-telegram-auth", handleLogoutTelegramAuth);
     return () => {
       window.removeEventListener("sea-brokerage:open-telegram-auth", handleOpenTelegramAuth);
+      window.removeEventListener("sea-brokerage:logout-telegram-auth", handleLogoutTelegramAuth);
     };
-  }, []);
+  }, [session]);
+
+  useEffect(() => {
+    if (
+      filters.brokerProfileId !== "all" &&
+      !globalBrokerOptions.some((option) => option.value === filters.brokerProfileId)
+    ) {
+      setFilters((prev) => ({ ...prev, brokerProfileId: "all" }));
+    }
+  }, [filters.brokerProfileId, globalBrokerOptions]);
+
+  useEffect(() => {
+    if (
+      offerPaneFilters.brokerProfileId !== "all" &&
+      !offerBrokerOptions.some((option) => option.value === offerPaneFilters.brokerProfileId)
+    ) {
+      setOfferPaneFilters((prev) => ({ ...prev, brokerProfileId: "all" }));
+    }
+  }, [offerBrokerOptions, offerPaneFilters.brokerProfileId]);
+
+  useEffect(() => {
+    if (
+      bidPaneFilters.brokerProfileId !== "all" &&
+      !bidBrokerOptions.some((option) => option.value === bidPaneFilters.brokerProfileId)
+    ) {
+      setBidPaneFilters((prev) => ({ ...prev, brokerProfileId: "all" }));
+    }
+  }, [bidBrokerOptions, bidPaneFilters.brokerProfileId]);
 
   useEffect(() => {
     if (session.monitorAuthToken && telegramAuthOpen) {
@@ -105,36 +184,36 @@ export function SeaBrokerageMonitorPage() {
         <MonitorToolbar
           filters={filters}
           onFilterChange={updateFilter}
-          onCreateBid={() => setCreateDialogType("bid")}
-          onCreateOffer={() => setCreateDialogType("offer")}
-          session={session}
-          onResetDemo={resetSeaBrokerageMonitorDemoData}
-          onClearEntries={clearSeaBrokerageMonitorEntries}
-          onReseedDemo={reseedSeaBrokerageMonitorDemoData}
-          onAddSampleBid={() => addSeaBrokerageMonitorSampleEntry("bid")}
-          onAddSampleOffer={() => addSeaBrokerageMonitorSampleEntry("offer")}
+          brokerOptions={globalBrokerOptions}
         />
 
         <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
           <BrokerWorkspacePane
             title="Offers"
             emptyTitle="No visible offers"
-            emptyDescription="Adjust the offer-side filters, reseed demo data, or create a new OFFER."
+            emptyDescription="Adjust the offer-side filters or create a new OFFER."
             entries={offerEntries}
+            brokerOptions={offerBrokerOptions}
             selectedEntryId={selectedEntry?.type === "offer" ? selectedEntry.id : null}
             onSelectEntry={setSelectedEntry}
             filters={offerPaneFilters}
             onFiltersChange={setOfferPaneFilters}
+            createActionLabel="Create OFFER"
+            createActionVariant="secondary"
+            onCreateAction={() => setCreateDialogType("offer")}
           />
           <BrokerWorkspacePane
             title="Bids"
             emptyTitle="No visible bids"
-            emptyDescription="Adjust the bid-side filters, reseed demo data, or create a new BID."
+            emptyDescription="Adjust the bid-side filters or create a new BID."
             entries={bidEntries}
+            brokerOptions={bidBrokerOptions}
             selectedEntryId={selectedEntry?.type === "bid" ? selectedEntry.id : null}
             onSelectEntry={setSelectedEntry}
             filters={bidPaneFilters}
             onFiltersChange={setBidPaneFilters}
+            createActionLabel="Create BID"
+            onCreateAction={() => setCreateDialogType("bid")}
           />
         </section>
 

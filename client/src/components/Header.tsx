@@ -337,20 +337,44 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
             ) : null}
 
             {isSeaBrokerageMonitorRoute ? (
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="button-telegram-monitor-login"
-                className="h-8 gap-1.5 px-2"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent("sea-brokerage:open-telegram-auth"));
-                }}
-              >
-                <Send className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline text-[11px]">
-                  {monitorHandle || "Sign in to create entries"}
-                </span>
-              </Button>
+              monitorHandle ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="button-telegram-monitor-profile"
+                      className="h-8 gap-1.5 px-2"
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline text-[11px]">{monitorHandle}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent("sea-brokerage:logout-telegram-auth"));
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out Telegram
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="button-telegram-monitor-login"
+                  className="h-8 gap-1.5 px-2"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent("sea-brokerage:open-telegram-auth"));
+                  }}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline text-[11px]">Sign in to create entries</span>
+                </Button>
+              )
             ) : null}
 
             {user ? (

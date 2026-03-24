@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { brokers } from "../mock/dictionaries";
 import {
   buildCompactCanonicalView,
 } from "../services/entryFormatting.service";
@@ -27,10 +26,14 @@ interface BrokerWorkspacePaneProps {
   emptyTitle: string;
   emptyDescription: string;
   entries: BrokerageEntry[];
+  brokerOptions: Array<{ value: string; label: string }>;
   selectedEntryId: string | null;
   onSelectEntry: (entry: BrokerageEntry) => void;
   filters: BrokerWorkspacePaneFilters;
   onFiltersChange: (next: BrokerWorkspacePaneFilters) => void;
+  createActionLabel?: string;
+  onCreateAction?: () => void;
+  createActionVariant?: "default" | "secondary";
 }
 
 export function BrokerWorkspacePane({
@@ -38,10 +41,14 @@ export function BrokerWorkspacePane({
   emptyTitle,
   emptyDescription,
   entries,
+  brokerOptions,
   selectedEntryId,
   onSelectEntry,
   filters,
   onFiltersChange,
+  createActionLabel,
+  onCreateAction,
+  createActionVariant = "default",
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -50,6 +57,18 @@ export function BrokerWorkspacePane({
           <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
             {title}
           </CardTitle>
+          {createActionLabel && onCreateAction ? (
+            <Button
+              type="button"
+              size="sm"
+              variant={createActionVariant}
+              onClick={onCreateAction}
+              className="h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px]"
+            >
+              <Plus className="mr-1 h-3 w-3" />
+              {createActionLabel}
+            </Button>
+          ) : null}
           <div className="shrink-0 text-[9.5px] text-muted-foreground sm:text-[11px]">
             {entries.length} visible
           </div>
@@ -70,9 +89,9 @@ export function BrokerWorkspacePane({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All brokers</SelectItem>
-              {brokers.map((broker) => (
-                <SelectItem key={broker.id} value={broker.id}>
-                  {broker.brokerCode} ({broker.brokerName})
+              {brokerOptions.map((broker) => (
+                <SelectItem key={broker.value} value={broker.value}>
+                  {broker.label}
                 </SelectItem>
               ))}
             </SelectContent>
