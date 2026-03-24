@@ -347,11 +347,13 @@ export function Header({ onCreateOption: _onCreateOption, onOpenLogin: _onOpenLo
               </>
             ) : (
               <>
-                <Link href="/login">
-                  <Button variant="outline" size="sm" data-testid="button-login">
-                    {t('button.login')}
-                  </Button>
-                </Link>
+                {!isSeaBrokerageMonitorRoute ? (
+                  <Link href="/login">
+                    <Button variant="outline" size="sm" data-testid="button-login">
+                      {t('button.login')}
+                    </Button>
+                  </Link>
+                ) : null}
                 {!isSeaBrokerageMonitorRoute ? (
                   <Link href="/register">
                     <Button size="sm" data-testid="button-register">

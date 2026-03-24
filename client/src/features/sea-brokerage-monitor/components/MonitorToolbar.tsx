@@ -191,44 +191,44 @@ export function MonitorToolbar({
             </div>
           </div>
 
-          <CollapsibleContent className="space-y-2 border-t border-border/60 pt-1.5 sm:space-y-2 sm:pt-1.5">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-              <div className="space-y-1">
-                <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Telegram Session
+          <div className="grid min-w-0 gap-1 border-t border-border/60 pt-1.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,320px)_minmax(0,320px)] sm:gap-2">
+            <div className="min-w-0">
+              <div className="truncate text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">
+                Telegram Session
+              </div>
+              <div className="truncate text-[11px] text-muted-foreground sm:text-xs">{session.statusMessage}</div>
+              {session.telegramHandle ? (
+                <div className="truncate text-[10px] text-muted-foreground/80 sm:text-[11px]">
+                  {session.telegramHandle}
+                  {session.authorProfile ? ` · ${session.authorProfile.brokerCode}` : ""}
                 </div>
-                <div className="text-sm text-muted-foreground">{session.statusMessage}</div>
-                {session.telegramHandle ? (
-                  <div className="text-xs text-muted-foreground/80">
-                    {session.telegramHandle}
-                    {session.authorProfile ? ` · ${session.authorProfile.brokerCode}` : ""}
-                  </div>
-                ) : null}
-              </div>
-              <div className="grid w-full gap-2 sm:max-w-[360px] sm:grid-cols-2">
-                <Input
-                  value={session.telegramIdentity.telegramUserId ?? ""}
-                  onChange={(event) =>
-                    session.setTelegramIdentity((prev) => ({
-                      ...prev,
-                      telegramUserId: event.target.value.trim() || null,
-                    }))
-                  }
-                  placeholder="Telegram user id"
-                />
-                <Input
-                  value={session.telegramIdentity.telegramUsername ?? ""}
-                  onChange={(event) =>
-                    session.setTelegramIdentity((prev) => ({
-                      ...prev,
-                      telegramUsername: event.target.value.replace(/^@+/, "").trim() || null,
-                    }))
-                  }
-                  placeholder="@username"
-                />
-              </div>
+              ) : null}
             </div>
+            <Input
+              value={session.telegramIdentity.telegramUserId ?? ""}
+              onChange={(event) =>
+                session.setTelegramIdentity((prev) => ({
+                  ...prev,
+                  telegramUserId: event.target.value.trim() || null,
+                }))
+              }
+              placeholder="Telegram user id"
+              className="h-7 text-xs"
+            />
+            <Input
+              value={session.telegramIdentity.telegramUsername ?? ""}
+              onChange={(event) =>
+                session.setTelegramIdentity((prev) => ({
+                  ...prev,
+                  telegramUsername: event.target.value.replace(/^@+/, "").trim() || null,
+                }))
+              }
+              placeholder="@username"
+              className="h-7 text-xs"
+            />
+          </div>
 
+          <CollapsibleContent className="space-y-2 border-t border-border/60 pt-1.5 sm:space-y-2 sm:pt-1.5">
             {session.isDemoSelectorEnabled ? (
               <div className="flex flex-wrap gap-2">
                 <Select
