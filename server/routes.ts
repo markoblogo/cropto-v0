@@ -172,6 +172,23 @@ const seaBrokerageTelegramMagicLinkConsumeSchema = z.object({
   token: z.string().trim().min(16),
 });
 
+const seaBrokerageLocationCreateSchema = z.object({
+  displayLabel: z.string().trim().min(2).max(60),
+  countryCode: z.string().trim().length(2),
+  countryCodeAlpha3: z.string().trim().length(3),
+});
+
+type SeaBrokerageCustomLocation = {
+  code: string;
+  displayLabel: string;
+  countryCode: string;
+  countryCodeAlpha3: string;
+  compactDisplay: string;
+  unlocode?: string;
+};
+
+const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
+
 function decimalToNumber(value: unknown) {
   if (value === null || value === undefined) return null;
   const numeric = Number(value);
@@ -255,6 +272,51 @@ function parseBooleanEnv(value: string | undefined, fallback: boolean) {
   const normalized = value.trim().toLowerCase();
   if (!normalized) return fallback;
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
+
+function normalizeCityLabel(value: string) {
+  return String(value || "").trim().replace(/\s+/g, " ");
+}
+
+function slugifyLocationLabel(value: string) {
+  return normalizeCityLabel(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 42);
+}
+
+function buildCustomLocationCode(label: string, countryCode: string) {
+  const baseSlug = slugifyLocationLabel(label) || "custom_place";
+  return `custom_${baseSlug}_${countryCode.toLowerCase()}`;
+}
+
+async function readSeaBrokerageCustomLocations(): Promise<SeaBrokerageCustomLocation[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageCustomLocation[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.code === "string" &&
+          typeof item.displayLabel === "string" &&
+          typeof item.countryCode === "string" &&
+          typeof item.countryCodeAlpha3 === "string" &&
+          typeof item.compactDisplay === "string",
+      )
+      .map((item) => ({
+        code: String(item.code).trim(),
+        displayLabel: normalizeCityLabel(item.displayLabel),
+        countryCode: String(item.countryCode).trim().toUpperCase(),
+        countryCodeAlpha3: String(item.countryCodeAlpha3).trim().toUpperCase(),
+        compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+        unlocode: item.unlocode ? String(item.unlocode).trim().toUpperCase() : undefined,
+      }));
+  } catch {
+    return [];
+  }
 }
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
@@ -7659,6 +7721,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error resolving sea brokerage Telegram monitor session:", error);
       return res.status(500).json({ error: "Failed to resolve monitor session" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/locations", async (_req, res) => {
+    try {
+      const locations = await readSeaBrokerageCustomLocations();
+      return res.json({ locations });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage custom locations:", error);
+      return res.status(500).json({ error: "Failed to list custom locations" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/locations", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error: "Broker is not authorized to add custom locations.",
+        });
+      }
+
+      const parsed = seaBrokerageLocationCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const label = normalizeCityLabel(parsed.data.displayLabel);
+      if (!/^[A-Za-z][A-Za-z\s'-]{1,59}$/.test(label)) {
+        return res.status(400).json({
+          error: "City must be in English letters and can include spaces, apostrophe, or hyphen.",
+        });
+      }
+
+      const countryCode = parsed.data.countryCode.toUpperCase();
+      const countryCodeAlpha3 = parsed.data.countryCodeAlpha3.toUpperCase();
+      if (!/^[A-Z]{2}$/.test(countryCode) || !/^[A-Z]{3}$/.test(countryCodeAlpha3)) {
+        return res.status(400).json({ error: "Invalid country code format." });
+      }
+
+      const current = await readSeaBrokerageCustomLocations();
+      const duplicate = current.find(
+        (item) =>
+          item.countryCode === countryCode &&
+          item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+      );
+
+      if (duplicate) {
+        return res.status(200).json({ location: duplicate, duplicate: true });
+      }
+
+      const code = buildCustomLocationCode(label, countryCode);
+      const collision = current.find((item) => item.code === code);
+      const resolvedCode = collision ? `${code}_${createHash("md5").update(label + countryCode).digest("hex").slice(0, 4)}` : code;
+
+      const created: SeaBrokerageCustomLocation = {
+        code: resolvedCode,
+        displayLabel: label,
+        countryCode,
+        countryCodeAlpha3,
+        compactDisplay: label.toUpperCase(),
+      };
+
+      const next = [...current, created];
+      await storage.upsertAppSetting(
+        SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY,
+        JSON.stringify(next),
+      );
+
+      return res.status(201).json({ location: created, duplicate: false });
+    } catch (error: any) {
+      console.error("Error creating sea brokerage custom location:", error);
+      return res.status(500).json({ error: "Failed to create custom location" });
     }
   });
 

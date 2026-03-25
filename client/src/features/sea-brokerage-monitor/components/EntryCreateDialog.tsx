@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,49 +131,11 @@ const entryFormSchema = z
 
 type EntryFormValues = z.infer<typeof entryFormSchema>;
 type TelegramSessionHook = ReturnType<typeof useSeaBrokerageTelegramSession>;
-const CUSTOM_PORT_OPTIONS_STORAGE_KEY = "sea_brokerage_monitor.custom_port_options";
 
 function normalizeLocationCityInput(value: string) {
   return value
     .trim()
     .replace(/\s+/g, " ");
-}
-
-function slugifyLocation(city: string) {
-  return city
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 42);
-}
-
-function buildCustomPortCode(city: string, countryCode: string) {
-  const slug = slugifyLocation(city) || "custom_place";
-  return `custom_${slug}_${countryCode.toLowerCase()}`;
-}
-
-function readCustomPortOptions(): PortOption[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(CUSTOM_PORT_OPTIONS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as PortOption[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (item) =>
-        !!item &&
-        typeof item.code === "string" &&
-        typeof item.displayLabel === "string" &&
-        typeof item.countryCode === "string",
-    );
-  } catch {
-    return [];
-  }
-}
-
-function writeCustomPortOptions(options: PortOption[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(CUSTOM_PORT_OPTIONS_STORAGE_KEY, JSON.stringify(options));
 }
 
 function formatPortPlaceLabel(option: PortOption) {
@@ -311,30 +274,44 @@ export function EntryCreateDialog({
   session,
 }: EntryCreateDialogProps) {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const [customPortOptions, setCustomPortOptions] = useState<PortOption[]>(() => readCustomPortOptions());
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [newLocationCity, setNewLocationCity] = useState("");
   const [newLocationCountryCode, setNewLocationCountryCode] = useState("UA");
   const [locationEditorMessage, setLocationEditorMessage] = useState<string | null>(null);
+  const [isSavingLocation, setIsSavingLocation] = useState(false);
   const form = useForm<EntryFormValues>({
     resolver: zodResolver(entryFormSchema),
     defaultValues: getDefaultValues(entryType),
   });
 
   const values = form.watch();
+  const { data: sharedPortOptionsData = [] } = useQuery<PortOption[]>({
+    queryKey: ["/api/sea-brokerage-monitor/locations"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/locations");
+      if (!response.ok) {
+        throw new Error(`Failed to load custom locations (${response.status})`);
+      }
+      const payload = (await response.json()) as { locations?: PortOption[] };
+      return Array.isArray(payload.locations) ? payload.locations : [];
+    },
+    staleTime: 60_000,
+  });
+
   const allPortOptions = useMemo(() => {
     const byCode = new Map<string, PortOption>();
-    for (const option of [...portOptions, ...customPortOptions]) {
+    for (const option of [...portOptions, ...sharedPortOptionsData]) {
       byCode.set(option.code, option);
     }
     return Array.from(byCode.values());
-  }, [customPortOptions]);
+  }, [sharedPortOptionsData]);
 
   useEffect(() => {
     form.reset(getDefaultValues(entryType));
     setSubmitMessage(null);
     setIsAddingLocation(false);
     setLocationEditorMessage(null);
+    setIsSavingLocation(false);
   }, [entryType, form, open]);
 
   const canonicalPreview = useMemo(() => {
@@ -474,7 +451,7 @@ export function EntryCreateDialog({
     }
   }
 
-  function addCustomLocation() {
+  async function addCustomLocation() {
     const city = normalizeLocationCityInput(newLocationCity);
     const countryCode = newLocationCountryCode;
     const country = countryOptions.find((option) => option.code === countryCode);
@@ -501,21 +478,43 @@ export function EntryCreateDialog({
       return;
     }
 
-    const created: PortOption = {
-      code: buildCustomPortCode(city, countryCode),
-      displayLabel: city,
-      countryCode,
-      countryCodeAlpha3: country.countryCodeAlpha3,
-      compactDisplay: city.toUpperCase(),
-    };
-    const nextOptions = [...customPortOptions, created];
-    setCustomPortOptions(nextOptions);
-    writeCustomPortOptions(nextOptions);
-    form.setValue("destinationPortCode", created.code, { shouldValidate: true });
-    setNewLocationCity("");
-    setNewLocationCountryCode("UA");
-    setIsAddingLocation(false);
-    setLocationEditorMessage("Location added.");
+    try {
+      setIsSavingLocation(true);
+      const response = await fetch("/api/sea-brokerage-monitor/locations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+        },
+        body: JSON.stringify({
+          displayLabel: city,
+          countryCode,
+          countryCodeAlpha3: country.countryCodeAlpha3,
+        }),
+      });
+
+      if (!response.ok) {
+        const text = (await response.text()) || "Failed to add location";
+        throw new Error(text);
+      }
+
+      const payload = (await response.json()) as { location?: PortOption; duplicate?: boolean };
+      const location = payload.location;
+      if (!location) {
+        throw new Error("Invalid location payload.");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/locations"] });
+      form.setValue("destinationPortCode", location.code, { shouldValidate: true });
+      setNewLocationCity("");
+      setNewLocationCountryCode("UA");
+      setIsAddingLocation(false);
+      setLocationEditorMessage(payload.duplicate ? "Location already existed and was selected." : "Location added.");
+    } catch (error) {
+      setLocationEditorMessage(error instanceof Error ? error.message : "Failed to add location.");
+    } finally {
+      setIsSavingLocation(false);
+    }
   }
 
   return (
@@ -770,7 +769,7 @@ export function EntryCreateDialog({
                         </Select>
                         <div className="md:col-span-2">
                           <Button type="button" size="sm" onClick={addCustomLocation}>
-                            Save location
+                            {isSavingLocation ? "Saving..." : "Save location"}
                           </Button>
                         </div>
                       </div>
