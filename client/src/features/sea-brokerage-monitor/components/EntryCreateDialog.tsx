@@ -38,7 +38,6 @@ import {
 } from "../mock/dictionaries";
 import {
   getCountryDisplayLabel,
-  getPortPlaceDisplayLabel,
 } from "../services/displayStandards";
 import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
 import {
@@ -52,6 +51,7 @@ import type {
   Currency,
   EntryType,
   PeriodType,
+  PortOption,
   SelectOption,
   TransportType,
   VolumeUnit,
@@ -130,6 +130,54 @@ const entryFormSchema = z
 
 type EntryFormValues = z.infer<typeof entryFormSchema>;
 type TelegramSessionHook = ReturnType<typeof useSeaBrokerageTelegramSession>;
+const CUSTOM_PORT_OPTIONS_STORAGE_KEY = "sea_brokerage_monitor.custom_port_options";
+
+function normalizeLocationCityInput(value: string) {
+  return value
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function slugifyLocation(city: string) {
+  return city
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 42);
+}
+
+function buildCustomPortCode(city: string, countryCode: string) {
+  const slug = slugifyLocation(city) || "custom_place";
+  return `custom_${slug}_${countryCode.toLowerCase()}`;
+}
+
+function readCustomPortOptions(): PortOption[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_PORT_OPTIONS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as PortOption[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (item) =>
+        !!item &&
+        typeof item.code === "string" &&
+        typeof item.displayLabel === "string" &&
+        typeof item.countryCode === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeCustomPortOptions(options: PortOption[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CUSTOM_PORT_OPTIONS_STORAGE_KEY, JSON.stringify(options));
+}
+
+function formatPortPlaceLabel(option: PortOption) {
+  return `${option.displayLabel}, ${getCountryDisplayLabel(option.countryCode)}`;
+}
 
 function getDefaultValues(entryType: EntryType): EntryFormValues {
   return {
@@ -263,16 +311,30 @@ export function EntryCreateDialog({
   session,
 }: EntryCreateDialogProps) {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [customPortOptions, setCustomPortOptions] = useState<PortOption[]>(() => readCustomPortOptions());
+  const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [newLocationCity, setNewLocationCity] = useState("");
+  const [newLocationCountryCode, setNewLocationCountryCode] = useState("UA");
+  const [locationEditorMessage, setLocationEditorMessage] = useState<string | null>(null);
   const form = useForm<EntryFormValues>({
     resolver: zodResolver(entryFormSchema),
     defaultValues: getDefaultValues(entryType),
   });
 
   const values = form.watch();
+  const allPortOptions = useMemo(() => {
+    const byCode = new Map<string, PortOption>();
+    for (const option of [...portOptions, ...customPortOptions]) {
+      byCode.set(option.code, option);
+    }
+    return Array.from(byCode.values());
+  }, [customPortOptions]);
 
   useEffect(() => {
     form.reset(getDefaultValues(entryType));
     setSubmitMessage(null);
+    setIsAddingLocation(false);
+    setLocationEditorMessage(null);
   }, [entryType, form, open]);
 
   const canonicalPreview = useMemo(() => {
@@ -281,7 +343,7 @@ export function EntryCreateDialog({
     }
 
     const commodity = commodityOptions.find((option) => option.code === values.commodity);
-    const selectedPort = portOptions.find((option) => option.code === values.destinationPortCode);
+    const selectedPort = allPortOptions.find((option) => option.code === values.destinationPortCode);
     const originCountry = getCountryDisplayLabel(values.originCountry);
     const destinationCountry = getCountryDisplayLabel(selectedPort?.countryCode);
     const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
@@ -332,7 +394,7 @@ export function EntryCreateDialog({
       telegramRelayStatus: undefined,
       telegramRelayMessage: null,
     });
-  }, [entryType, session.authorProfile, values]);
+  }, [allPortOptions, entryType, session.authorProfile, values]);
 
   async function onSubmit(formValues: EntryFormValues) {
     if (!session.authorProfile || !session.canCreateEntries) {
@@ -344,7 +406,7 @@ export function EntryCreateDialog({
 
     try {
       const commodity = commodityOptions.find((option) => option.code === formValues.commodity);
-      const selectedPort = portOptions.find((option) => option.code === formValues.destinationPortCode);
+      const selectedPort = allPortOptions.find((option) => option.code === formValues.destinationPortCode);
       const { volumeFrom, volumeTo } = deriveVolumeRange(
         formValues.quantityMt,
         formValues.tolerancePct,
@@ -410,6 +472,50 @@ export function EntryCreateDialog({
         error instanceof Error ? error.message : "Failed to create the brokerage entry.",
       );
     }
+  }
+
+  function addCustomLocation() {
+    const city = normalizeLocationCityInput(newLocationCity);
+    const countryCode = newLocationCountryCode;
+    const country = countryOptions.find((option) => option.code === countryCode);
+
+    if (!country) {
+      setLocationEditorMessage("Select country from the list.");
+      return;
+    }
+
+    if (!/^[A-Za-z][A-Za-z\\s'\\-]{1,59}$/.test(city)) {
+      setLocationEditorMessage("Use English city name (letters, spaces, hyphen).");
+      return;
+    }
+
+    const existing = allPortOptions.find(
+      (option) =>
+        option.countryCode === countryCode &&
+        option.displayLabel.trim().toLowerCase() === city.toLowerCase(),
+    );
+    if (existing) {
+      form.setValue("destinationPortCode", existing.code, { shouldValidate: true });
+      setIsAddingLocation(false);
+      setLocationEditorMessage("Location already exists and has been selected.");
+      return;
+    }
+
+    const created: PortOption = {
+      code: buildCustomPortCode(city, countryCode),
+      displayLabel: city,
+      countryCode,
+      countryCodeAlpha3: country.countryCodeAlpha3,
+      compactDisplay: city.toUpperCase(),
+    };
+    const nextOptions = [...customPortOptions, created];
+    setCustomPortOptions(nextOptions);
+    writeCustomPortOptions(nextOptions);
+    form.setValue("destinationPortCode", created.code, { shouldValidate: true });
+    setNewLocationCity("");
+    setNewLocationCountryCode("UA");
+    setIsAddingLocation(false);
+    setLocationEditorMessage("Location added.");
   }
 
   return (
@@ -623,13 +729,55 @@ export function EntryCreateDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {portOptions.map((option) => (
+                        {allPortOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
-                            {getPortPlaceDisplayLabel(option.code)}
+                            {formatPortPlaceLabel(option)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsAddingLocation((prev) => !prev);
+                          setLocationEditorMessage(null);
+                        }}
+                      >
+                        {isAddingLocation ? "Cancel" : "Add location"}
+                      </Button>
+                    </div>
+                    {isAddingLocation ? (
+                      <div className="mt-2 grid gap-2 md:grid-cols-2">
+                        <Input
+                          placeholder="City in English (e.g. Chop)"
+                          value={newLocationCity}
+                          onChange={(event) => setNewLocationCity(event.target.value)}
+                        />
+                        <Select value={newLocationCountryCode} onValueChange={setNewLocationCountryCode}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {countryOptions.map((option) => (
+                              <SelectItem key={option.code} value={option.code}>
+                                {option.displayLabel}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="md:col-span-2">
+                          <Button type="button" size="sm" onClick={addCustomLocation}>
+                            Save location
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
+                    {locationEditorMessage ? (
+                      <div className="mt-1 text-[11px] text-muted-foreground">{locationEditorMessage}</div>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
