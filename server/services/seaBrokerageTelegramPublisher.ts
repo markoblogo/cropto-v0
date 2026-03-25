@@ -20,7 +20,21 @@ type RelayTarget = {
 };
 
 function countryFlagEmoji(countryCode: string | null | undefined) {
-  const normalized = (countryCode || "").trim().toUpperCase();
+  const normalizedRaw = (countryCode || "").trim().toUpperCase();
+  const normalized =
+    normalizedRaw === "UKR"
+      ? "UA"
+      : normalizedRaw === "EGY"
+        ? "EG"
+        : normalizedRaw === "ESP"
+          ? "ES"
+          : normalizedRaw === "TUR"
+            ? "TR"
+            : normalizedRaw === "ROU"
+              ? "RO"
+              : normalizedRaw === "MDA"
+                ? "MD"
+                : normalizedRaw;
   if (!/^[A-Z]{2}$/.test(normalized)) return "";
   return Array.from(normalized)
     .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
