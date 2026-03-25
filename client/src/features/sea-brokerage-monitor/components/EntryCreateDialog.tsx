@@ -60,6 +60,11 @@ import type {
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
 const volumeUnitOptions: Array<{ value: VolumeUnit; label: string }> = [{ value: "mt", label: "MT" }];
+const currencyOptions: Array<{ value: Currency; label: string }> = [
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "UAH", label: "UAH (₴)" },
+];
 type PeriodPreset = "spot" | "prompt" | "current_month_1h" | "current_month_2h" | "explicit_range";
 
 const periodPresetOptions: SelectOption<PeriodPreset>[] = [
@@ -94,6 +99,7 @@ const entryFormSchema = z
     destinationPortCode: z.string().min(1, "Port / place is required"),
     periodStart: z.string().optional().default(""),
     periodEnd: z.string().optional().default(""),
+    currency: z.enum(["USD", "EUR", "UAH"]),
     price: z.coerce.number().nonnegative("Price must be 0 or greater"),
     paymentTerms: z.string().min(1, "Payment terms are required"),
     transportType: z.enum(["handysize", "coaster", "truck", "rail", "vessel", "mixed"]),
@@ -155,6 +161,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     destinationPortCode: "odesa",
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
+    currency: "USD",
     price: entryType === "bid" ? 225 : 223,
     paymentTerms: entryType === "bid" ? "CAD" : "CAFD",
     transportType: "vessel",
@@ -363,7 +370,7 @@ export function EntryCreateDialog({
       price: values.price,
       priceFrom: values.price,
       priceTo: values.price,
-      currency: "USD" as Currency,
+      currency: values.currency as Currency,
       transportType: values.transportType as TransportType,
       note: values.note?.trim() ? values.note.trim() : null,
       createdAt: new Date().toISOString(),
@@ -427,7 +434,7 @@ export function EntryCreateDialog({
         price: formValues.price,
         priceFrom: formValues.price,
         priceTo: formValues.price,
-        currency: "USD",
+        currency: formValues.currency,
         transportType: formValues.transportType,
         note: formValues.note?.trim() ? formValues.note.trim() : null,
         brokerCode: session.authorProfile.brokerCode,
@@ -848,7 +855,31 @@ export function EntryCreateDialog({
               </div>
             ) : null}
 
-            <div className="grid gap-2.5 md:grid-cols-3">
+            <div className="grid gap-2.5 md:grid-cols-4">
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Currency</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Currency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {currencyOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="price"

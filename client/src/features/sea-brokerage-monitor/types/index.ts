@@ -19,7 +19,7 @@ export type TransportType =
   | "vessel"
   | "mixed";
 
-export type Currency = "USD" | "EUR";
+export type Currency = "USD" | "EUR" | "UAH";
 export type PaymentTermCode = "CAD" | "CAFD";
 
 export type VolumeUnit = "mt";

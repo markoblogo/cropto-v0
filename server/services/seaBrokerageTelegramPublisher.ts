@@ -28,13 +28,19 @@ function countryFlagEmoji(countryCode: string | null | undefined) {
 }
 
 function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
+  const currencySymbol =
+    String(entry.currency || "USD").toUpperCase() === "EUR"
+      ? "€"
+      : String(entry.currency || "USD").toUpperCase() === "UAH"
+        ? "₴"
+        : "$";
   const direct = entry.price;
   const from = entry.priceFrom;
   const to = entry.priceTo;
 
   if (direct !== null && direct !== undefined) {
     const compact = Number(direct);
-    return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
+    return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}${currencySymbol}`;
   }
 
   if (from !== null && from !== undefined && to !== null && to !== undefined && from !== to) {
@@ -42,7 +48,7 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
     const toCompact = Number(to);
     const left = Number.isInteger(fromCompact) ? `${fromCompact}` : fromCompact.toFixed(2);
     const right = Number.isInteger(toCompact) ? `${toCompact}` : toCompact.toFixed(2);
-    return `${left}$ | ${right}$`;
+    return `${left}${currencySymbol} | ${right}${currencySymbol}`;
   }
 
   const resolvedPrice = from ?? to;
@@ -51,7 +57,7 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
   }
 
   const compact = Number(resolvedPrice);
-  return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}$`;
+  return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}${currencySymbol}`;
 }
 
 function formatDateDotted(value: string) {

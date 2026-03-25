@@ -7,6 +7,12 @@ import {
 } from "./displayStandards";
 import type { BrokerageEntry, Currency } from "../types";
 
+function getCurrencySymbol(currency: Currency) {
+  if (currency === "EUR") return "€";
+  if (currency === "UAH") return "₴";
+  return "$";
+}
+
 export function formatEntryTimestampCompact(value: string) {
   return `${formatEntryDateCompact(value)} / ${formatEntryTimeCompact(value)}`;
 }
@@ -139,7 +145,7 @@ export function formatEntryPriceTape(entry: BrokerageEntry) {
     return "@ subject";
   }
 
-  const currencySymbol = entry.currency === "EUR" ? "EUR" : "$";
+  const currencySymbol = getCurrencySymbol(entry.currency);
 
   if (
     entry.price === null &&
