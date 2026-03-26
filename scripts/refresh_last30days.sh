@@ -183,6 +183,14 @@ run_window() {
     set -e
     if [[ $rc -eq 0 ]]; then
       input_files+=("$tmp_file")
+      for raw_name in raw_reddit_threads_enriched.json raw_x_posts.json raw_youtube_videos.json raw_hn_stories.json raw_bluesky_posts.json; do
+        local raw_src="$OUT_DIR/$raw_name"
+        if [[ -f "$raw_src" ]]; then
+          local raw_copy="$OUT_DIR/.${label}.topic${i}.${raw_name}"
+          cp "$raw_src" "$raw_copy"
+          input_files+=("$raw_copy")
+        fi
+      done
     else
       echo "[last30days] WARN: query failed for ${label} topic #$((i + 1))" >&2
       rm -f "$tmp_file"
