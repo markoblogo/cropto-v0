@@ -669,6 +669,19 @@ async function writeCachedAiSummary(days: number, payload: any): Promise<void> {
   await writeFile(file, JSON.stringify(payload, null, 2), "utf-8");
 }
 
+function hasAiText(block: Last30DaysAiSummaryBlock | null | undefined): boolean {
+  return Boolean(block?.text && String(block.text).trim().length > 0);
+}
+
+function sanitizeAiWarnings(warnings: string[] | undefined, hasContent: boolean): string[] {
+  const list = Array.isArray(warnings) ? warnings : [];
+  if (hasContent) return list;
+  if (list.some((w) => /nodename nor servname|enotfound|dns|openai_api_key is missing/i.test(String(w)))) {
+    return ["ai_summary_refresh_pending: showing fallback summary"];
+  }
+  return list;
+}
+
 export function registerMonitorRoutes(app: Express): void {
   // Keep monitor routes available even if a background source or scheduler fails
   // during boot. The web process should bind first and degrade gracefully rather
@@ -812,7 +825,12 @@ export function registerMonitorRoutes(app: Express): void {
       if (!refresh) {
         const cached = await readCachedAiSummary(days);
         if (cached) {
-          return res.json({ ...cached, mode: cached.mode || "precomputed" });
+          const hasContent = hasAiText(cached?.en) || hasAiText(cached?.uk);
+          return res.json({
+            ...cached,
+            warnings: sanitizeAiWarnings(cached?.warnings, hasContent),
+            mode: hasContent ? (cached.mode || "precomputed") : "fallback_only",
+          });
         }
         return res.json({
           generatedAt: new Date().toISOString(),
@@ -862,19 +880,22 @@ export function registerMonitorRoutes(app: Express): void {
       const uk = ukResult.status === "fulfilled" ? ukResult.value : null;
       if (enResult.status === "rejected") warnings.push(`en_summary_failed: ${String(enResult.reason?.message || enResult.reason)}`);
       if (ukResult.status === "rejected") warnings.push(`uk_summary_failed: ${String(ukResult.reason?.message || ukResult.reason)}`);
+      const hasContent = hasAiText(en) || hasAiText(uk);
 
       const payload = {
         generatedAt: new Date().toISOString(),
         filters: { days },
         sourceUpdatedAt: base.sourceUpdatedAt,
-        warnings,
+        warnings: sanitizeAiWarnings(warnings, hasContent),
         en,
         uk,
-        mode: "live_refresh",
+        mode: hasContent ? "live_refresh" : "fallback_only",
       };
-      await writeCachedAiSummary(days, payload).catch((error: any) => {
-        warnings.push(`cache_write_failed: ${String(error?.message || error)}`);
-      });
+      if (hasContent) {
+        await writeCachedAiSummary(days, payload).catch((error: any) => {
+          warnings.push(`cache_write_failed: ${String(error?.message || error)}`);
+        });
+      }
       return res.json(payload);
     } catch (error: any) {
       return res.status(500).json({
