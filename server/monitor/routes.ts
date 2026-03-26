@@ -562,7 +562,7 @@ export function registerMonitorRoutes(app: Express): void {
   app.get("/api/last30days/summary", async (req, res) => {
     try {
       const daysRaw = Number.parseInt(String(req.query.days || "30"), 10);
-      const days = Number.isFinite(daysRaw) ? Math.max(1, Math.min(365, daysRaw)) : 30;
+      const days = Number.isFinite(daysRaw) ? Math.max(1, Math.min(30, daysRaw)) : 30;
       const region = String(req.query.region || "all").toLowerCase();
       const lang = String(req.query.lang || "all").toLowerCase();
       const includeSources = req.query.includeSources === "1" || req.query.includeSources === "true";

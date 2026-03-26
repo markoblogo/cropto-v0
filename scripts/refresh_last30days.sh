@@ -3,20 +3,19 @@ set -euo pipefail
 
 # Refresh last30days JSON snapshots for multiple windows and keep latest.json in sync.
 #
-# Usage:
-#   LAST30DAYS_TOPIC="wheat corn soybeans sunflower rapeseed black sea logistics" \
-#   LAST30DAYS_SCRIPT_PATH="$HOME/.agents/skills/last30days/scripts/last30days.py" \
-#   ./scripts/refresh_last30days.sh
-#
 # Optional env:
 #   LAST30DAYS_OUTPUT_DIR    (default: artifacts/last30days)
-#   LAST30DAYS_TOPIC         (default: grain/oilseeds desk topic)
 #   LAST30DAYS_SCRIPT_PATH   (default: ~/.agents/skills/last30days/scripts/last30days.py)
+#   LAST30DAYS_TOPICS        (default: three grain/oilseeds themes, separated by "||")
+#   LAST30DAYS_SEARCH        (default: reddit,hn,youtube,web)
+#   LAST30DAYS_TIMEOUT       (default: 240)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${LAST30DAYS_OUTPUT_DIR:-$ROOT_DIR/artifacts/last30days}"
-TOPIC="${LAST30DAYS_TOPIC:-grain and oilseeds market wheat corn soybeans sunflower rapeseed black sea export logistics}"
 SCRIPT_PATH="${LAST30DAYS_SCRIPT_PATH:-$HOME/.agents/skills/last30days/scripts/last30days.py}"
+TOPICS_RAW="${LAST30DAYS_TOPICS:-${LAST30DAYS_TOPIC:-grain market wheat corn soybeans sunflower rapeseed black sea export||ukraine grain export corridor black sea logistics||europe oilseeds crush biodiesel rapeseed sunflower imports}}"
+SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,hn,youtube,web}"
+TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-240}"
 
 if [[ ! -f "$SCRIPT_PATH" ]]; then
   echo "ERROR: last30days script not found: $SCRIPT_PATH" >&2
@@ -26,21 +25,147 @@ fi
 
 mkdir -p "$OUT_DIR"
 
+split_topics() {
+  local raw="$1"
+  TOPICS=()
+  while IFS= read -r line; do
+    local topic
+    topic="$(echo "$line" | sed 's/^ *//; s/ *$//')"
+    [[ -n "$topic" ]] && TOPICS+=("$topic")
+  done < <(printf "%s" "$raw" | sed 's/||/\n/g')
+}
+
+run_query() {
+  local days="$1"
+  local topic="$2"
+  local out_file="$3"
+  python3 "$SCRIPT_PATH" "$topic" \
+    --days="$days" \
+    --emit=json \
+    --store \
+    --include-web \
+    --search "$SEARCH_SOURCES" \
+    --timeout "$TIMEOUT_SECS" > "$out_file"
+}
+
+write_empty_payload() {
+  local output_file="$1"
+  local window_label="$2"
+  cat > "$output_file" <<EOF
+{"generatedAt":"$(date -u +"%Y-%m-%dT%H:%M:%SZ")","window":"${window_label}","items":[]}
+EOF
+}
+
+merge_payloads() {
+  local output_file="$1"
+  shift
+  python3 - "$output_file" "$@" <<'PY'
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+def norm_date(item):
+    for key in ("published_at", "publishedAt", "date", "timestamp", "created_at"):
+        value = item.get(key)
+        if value:
+            return str(value)
+    return "1970-01-01T00:00:00Z"
+
+def extract_items(payload):
+    if isinstance(payload, list):
+        return payload
+    if not isinstance(payload, dict):
+        return []
+    for key in ("items", "feed", "results", "records"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+    data = payload.get("data")
+    if isinstance(data, dict):
+        for key in ("items", "feed", "results", "records"):
+            value = data.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+
+out_file = sys.argv[1]
+inputs = sys.argv[2:]
+items = []
+for path in inputs:
+    if not os.path.isfile(path):
+        continue
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except Exception:
+        continue
+    items.extend(extract_items(payload))
+
+seen = set()
+deduped = []
+for item in items:
+    if not isinstance(item, dict):
+        continue
+    key = (
+        str(item.get("id", "")) or "",
+        str(item.get("url", item.get("link", ""))) or "",
+        str(item.get("title", item.get("headline", item.get("text", "")))) or "",
+    )
+    if key in seen:
+        continue
+    seen.add(key)
+    deduped.append(item)
+
+deduped.sort(key=norm_date, reverse=True)
+result = {
+    "generatedAt": datetime.now(timezone.utc).isoformat(),
+    "items": deduped,
+    "meta": {"inputFiles": len(inputs), "itemCount": len(deduped)},
+}
+with open(out_file, "w", encoding="utf-8") as f:
+    json.dump(result, f, ensure_ascii=False, indent=2)
+PY
+}
+
+split_topics "$TOPICS_RAW"
+
 run_window() {
   local days="$1"
   local label="$2"
   local output_file="$OUT_DIR/${label}.json"
-  local tmp_file="$OUT_DIR/.${label}.tmp.json"
+  local input_files=()
+  local i=0
 
-  echo "[last30days] Running ${label} (${days}d)..."
-  python3 "$SCRIPT_PATH" "$TOPIC" --days="$days" --emit=json --store > "$tmp_file"
-  mv "$tmp_file" "$output_file"
+  echo "[last30days] Running ${label} (${days}d) across ${#TOPICS[@]} topics..."
+  for topic in "${TOPICS[@]}"; do
+    local tmp_file="$OUT_DIR/.${label}.topic${i}.json"
+    set +e
+    run_query "$days" "$topic" "$tmp_file"
+    local rc=$?
+    set -e
+    if [[ $rc -eq 0 ]]; then
+      input_files+=("$tmp_file")
+    else
+      echo "[last30days] WARN: query failed for ${label} topic #$((i + 1))" >&2
+      rm -f "$tmp_file"
+    fi
+    i=$((i + 1))
+  done
+
+  if [[ ${#input_files[@]} -eq 0 ]]; then
+    echo "[last30days] WARN: no successful queries for ${label}, writing empty payload" >&2
+    write_empty_payload "$output_file" "$label"
+    return
+  fi
+
+  merge_payloads "$output_file" "${input_files[@]}"
+  rm -f "${input_files[@]}"
 }
 
 run_window 1 "yesterday"
 run_window 7 "week"
 run_window 30 "month"
-run_window 365 "year"
 
 cp "$OUT_DIR/month.json" "$OUT_DIR/latest.json"
 

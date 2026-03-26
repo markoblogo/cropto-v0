@@ -43,7 +43,6 @@ const TIMEFRAME_OPTIONS = [
   { value: 1, label: "Yesterday" },
   { value: 7, label: "Week" },
   { value: 30, label: "Month" },
-  { value: 365, label: "Year" },
 ];
 
 const REGION_OPTIONS = [
