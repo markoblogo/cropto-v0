@@ -1,14 +1,77 @@
 {
-  "generatedAt": "2026-03-26T13:26:15.653488+00:00",
+  "generatedAt": "2026-03-26T14:05:56.845295+00:00",
   "filters": {
     "days": 1
   },
   "sourceUpdatedAt": "2026-03-26T13:06:28.084760+00:00",
-  "warnings": [
-    "en_failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>",
-    "uk_failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
-  ],
-  "en": null,
-  "uk": null,
+  "warnings": [],
+  "en": {
+    "language": "en",
+    "scope": "English + non-Ukraine markets",
+    "model": "gpt-4.1-mini",
+    "text": "General situation: Grain and oilseed markets remained neutral globally yesterday, with no significant bullish or bearish shifts. The overall market tone is mixed, reflecting ongoing selective trade flows and stable price conditions outside Ukraine. What changed vs previous comparable period: Compared to the previous day, market signals decreased slightly in volume from two to one report, maintaining a neutral impact with no directional bias. EU grain exports continue stronger than imports, especially for wheat and barley, while corn imports lag. Oilseed trade shows a shift with soyoil and rapeseed oil gaining share over sunflower oil. Actionable implications for trading/brokerage: Traders should monitor the evolving EU trade selectivity and oilseed basket shifts, focusing on wheat and barley export strength and potential opportunities in soyoil and rapeseed oil markets. The stable neutral market suggests limited short-term volatility, favoring cautious position adjustments. Key facts: • On 2026-03-26, only one neutral-impact report was recorded, down from two on 2026-03-25. • EU grain exports are stronger year-on-year, notably wheat and barley, while corn imports remain below last year’s pace. • Oilseed imports in the EU are softer overall, with soyoil and rapeseed oil increasing market share versus weaker sunflower oil. • Brazil’s corn FOB Santos price was 112.7 USD/ton as of 2026-03-12. • Brazil soybean and wheat prices stood at 662.9 USD/ton on 2026-03-14. • US spot prices for corn, soybeans, and wheat remained stable around 394.5 USD/ton as of early February 2026.",
+    "chart": {
+      "type": "bars",
+      "title": "Market Factors Impacting Grain & Oilseeds (2026-03-26)",
+      "points": [
+        {
+          "label": "Logistics Pressure",
+          "value": 3
+        },
+        {
+          "label": "Demand Pulse",
+          "value": 2
+        },
+        {
+          "label": "Price Pressure",
+          "value": 1
+        },
+        {
+          "label": "Execution Risk",
+          "value": 2
+        }
+      ]
+    },
+    "inputCounts": {
+      "last30days": 18,
+      "monitor": 13
+    }
+  },
+  "uk": {
+    "language": "uk",
+    "scope": "Ukraine market context",
+    "model": "gpt-4.1-mini",
+    "text": "Загальна ситуація на ринку зернових та олійних культур в Україні залишається стабільною, незважаючи на зовнішні виклики, зокрема війну та зростання цін на нафту. Закупівельні ціни на кукурудзу та пшеницю в Україні утримуються на рівні близько 214-215 доларів за тонну, що не змінилося в порівнянні з попереднім днем. Ціни на соняшник та сою також стабільні, відповідно 708 та 447 доларів за тонну. Водночас ціни на дизельне паливо в Україні наблизилися до середньоєвропейських, що створює додатковий тиск на аграріїв через зростання витрат на логістику. Порівняно з попереднім днем, суттєвих змін у ціновій динаміці не зафіксовано. \n\nЩо змінилося: порівняно з 25 березня 2026 року, кількість інформаційних повідомлень про ринок зерна та олійних культур не змінилася, а середній вплив новин залишився нейтральним. Ціни на зернові та олійні культури стабільні, незважаючи на зростання цін на нафту, що могло б підтримати вартість енергетичних культур. \n\nПрактичні наслідки для трейдингу та брокерських операцій: збереження стабільності цін на зернові культури дає змогу утримувати позиції без значних ризиків волатильності. Однак підвищення цін на дизельне паливо вимагає уваги до витрат на логістику та можливого впливу на маржинальність експорту. Рекомендується моніторити подальші зміни цін на нафту та паливо, оскільки вони можуть вплинути на аграрний сектор найближчим часом.\n\nКлючові факти:\n- Закупівельна ціна кукурудзи в Україні 26 березня 2026 року – 214 дол./т, стабільна порівняно з 25 березня.\n- Закупівельна ціна пшениці – 215 дол./т, без змін за добу.\n- Ціна соняшнику – 708 дол./т, сої – 447 дол./т, стабільні.\n- Ціни на дизельне паливо в Україні наблизилися до середньоєвропейських рівнів (станом на 26 березня).\n- Зростання цін на нафту за місяць склало близько 50%, що поки не відобразилося на закупівельних цінах зернових.\n- Кількість інформаційних повідомлень про ринок зерна 26 березня не змінилася порівняно з 25 березня, середній вплив – нейтральний.",
+    "chart": {
+      "type": "bars",
+      "title": "Фактори впливу на ринок зернових в Україні (26 березня 2026)",
+      "points": [
+        {
+          "label": "Логістичний тиск",
+          "value": 7
+        },
+        {
+          "label": "Попит аграріїв",
+          "value": 5
+        },
+        {
+          "label": "Ціновий тиск на паливо",
+          "value": 8
+        },
+        {
+          "label": "Вплив війни",
+          "value": 6
+        },
+        {
+          "label": "Стабільність закупівельних цін",
+          "value": 9
+        }
+      ]
+    },
+    "inputCounts": {
+      "last30days": 24,
+      "monitor": 5
+    }
+  },
   "mode": "precomputed"
 }

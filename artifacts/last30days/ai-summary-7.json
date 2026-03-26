@@ -1,14 +1,97 @@
 {
-  "generatedAt": "2026-03-26T13:26:15.654740+00:00",
+  "generatedAt": "2026-03-26T14:06:19.251176+00:00",
   "filters": {
     "days": 7
   },
   "sourceUpdatedAt": "2026-03-26T13:08:01.462843+00:00",
-  "warnings": [
-    "en_failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>",
-    "uk_failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
-  ],
-  "en": null,
-  "uk": null,
+  "warnings": [],
+  "en": {
+    "language": "en",
+    "scope": "English + non-Ukraine markets",
+    "model": "gpt-4.1-mini",
+    "text": "General situation: Global grain and oilseed markets remain neutral with no significant bullish or bearish shifts observed in the past week. Corn futures reached their highest levels since last June, yet world cash markets are stagnant, reflecting a lack of strong price momentum. Wheat markets show frustration due to the absence of US weakness despite recent EU and Argentine purchases, while protein meal markets continue to defy bearish expectations. What changed vs previous comparable period: The volume of market reports doubled from 2 to 4 in the current week, maintaining a neutral impact with no change in market sentiment balance. There is a continued lack of volatility or directional signals compared to the prior week. Actionable implications for trading/brokerage: Traders should maintain a cautious stance given the neutral signals and stagnant cash markets. Opportunities may arise from regional supply-demand shifts, such as Indian export dynamics and EU/Argentine purchasing patterns, but broad market moves are unlikely in the short term. Monitoring corn futures and protein meal developments is advised for early indications of trend changes. Key facts: - Four neutral-impact reports published from March 20 to March 26, up from two in the previous week. - Corn futures hit highest levels since June 2025 as of March 20. - Wheat markets show no US price weakness despite EU and Argentine buying as of March 20. - Protein meal markets continue rallying, frustrating bearish expectations as of March 20. - Rising grain export inspections noted on March 25, indicating active global trade but no price impact. - No bullish or bearish signals recorded in the week ending March 26, with average impact remaining zero.",
+    "chart": {
+      "type": "weekly_bars",
+      "title": "Market Report Volume (Mar 20-26, 2026)",
+      "points": [
+        {
+          "label": "Mar 20",
+          "value": 1
+        },
+        {
+          "label": "Mar 21",
+          "value": 0
+        },
+        {
+          "label": "Mar 22",
+          "value": 0
+        },
+        {
+          "label": "Mar 23",
+          "value": 0
+        },
+        {
+          "label": "Mar 24",
+          "value": 0
+        },
+        {
+          "label": "Mar 25",
+          "value": 2
+        },
+        {
+          "label": "Mar 26",
+          "value": 1
+        }
+      ]
+    },
+    "inputCounts": {
+      "last30days": 17,
+      "monitor": 13
+    }
+  },
+  "uk": {
+    "language": "uk",
+    "scope": "Ukraine market context",
+    "model": "gpt-4.1-mini",
+    "text": "Загальна ситуація на українському ринку зернових і олійних залишається нейтральною, без суттєвих цінових коливань. За останній тиждень (16-22 березня 2026) кількість інформаційних повідомлень зросла у порівнянні з попереднім тижнем (3 проти 1), але всі вони мають нейтральний характер без впливу на ринок. Основна увага зосереджена на логістичних питаннях, зокрема пошкодженні зернових суден в Одеському порту через російські атаки, що створює ризики для експорту. Порти на Дунаї та альтернативні маршрути залишаються пріоритетом для забезпечення експорту. Ціни на основні культури (кукурудза, пшениця, соняшник, соя) стабільні, без значних змін. Відсутність позитивних чи негативних сигналів свідчить про тимчасову стабілізацію ринку. \n\nЩо змінилося у порівнянні з попереднім тижнем: збільшилася кількість новин, але без зміни тональності; зберігаються загрози логістики через військові дії; ціни на зернові та олійні залишаються на стабільному рівні. \n\nТоргівельні та брокерські рекомендації: зберігати обережність у зв’язку з ризиками логістики, слідкувати за розвитком ситуації в портах Одещини та на Дунаї; можливі короткострокові коливання через військові інциденти, але фундаментально ринок стабільний. Рекомендується підтримувати позиції в основних культурах, особливо соняшнику, враховуючи дефіцит олії через втрати внаслідок війни. \n\nКлючові факти:\n- За період 16-22 березня зафіксовано 3 нейтральні повідомлення проти 1 тижнем раніше.\n- Ціна кукурудзи CPT Одеса 25 березня – 214 грн/т.\n- Ціна пшениці CPT Одеса 25 березня – 215 грн/т.\n- Ціна соняшнику CPT Одеса 25 березня – 708 грн/т.\n- Внаслідок російських атак 20 березня пошкоджено 2 зернові судна та зерновий бункер в Одеському порту.\n- Україна активізує модернізацію портів на Дунаї та розвиває альтернативні логістичні маршрути для експорту зерна.",
+    "chart": {
+      "type": "bars",
+      "title": "Кількість новин за тиждень (16-22 березня 2026)",
+      "points": [
+        {
+          "label": "16 березня",
+          "value": 1
+        },
+        {
+          "label": "17 березня",
+          "value": 2
+        },
+        {
+          "label": "18 березня",
+          "value": 0
+        },
+        {
+          "label": "19 березня",
+          "value": 0
+        },
+        {
+          "label": "20 березня",
+          "value": 2
+        },
+        {
+          "label": "21 березня",
+          "value": 0
+        },
+        {
+          "label": "22 березня",
+          "value": 0
+        }
+      ]
+    },
+    "inputCounts": {
+      "last30days": 20,
+      "monitor": 5
+    }
+  },
   "mode": "precomputed"
 }
