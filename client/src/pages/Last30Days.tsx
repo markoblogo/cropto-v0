@@ -36,6 +36,11 @@ type Last30DaysAiSummaryBlock = {
   scope: string;
   model: string;
   text: string;
+  chart?: {
+    type?: "bars" | "line" | "weekly_bars";
+    title?: string;
+    points?: Array<{ label: string; value: number }>;
+  } | null;
   inputCounts: {
     last30days: number;
     monitor: number;
@@ -191,6 +196,41 @@ function TrendSparkline({ values }: { values: number[] }) {
   );
 }
 
+function AIPeriodChart({
+  chart,
+  fallbackValues,
+}: {
+  chart?: { type?: "bars" | "line" | "weekly_bars"; title?: string; points?: Array<{ label: string; value: number }> } | null;
+  fallbackValues: number[];
+}) {
+  const points = Array.isArray(chart?.points) ? chart!.points!.filter((p) => Number.isFinite(p?.value)) : [];
+  if (!points.length) {
+    return <TrendSparkline values={fallbackValues} />;
+  }
+
+  if (chart?.type === "line") {
+    return <TrendSparkline values={points.map((p) => Number(p.value || 0))} />;
+  }
+
+  const max = Math.max(...points.map((p) => Number(p.value || 0)), 1);
+  return (
+    <div className="space-y-2">
+      {points.slice(0, 8).map((point) => {
+        const width = Math.max(8, Math.round((Number(point.value || 0) / max) * 100));
+        return (
+          <div key={point.label} className="grid grid-cols-[52px_1fr_30px] items-center gap-2 text-xs text-slate-300">
+            <span className="truncate">{point.label}</span>
+            <div className="h-2 rounded bg-slate-800">
+              <div className="h-2 rounded bg-cyan-400" style={{ width: `${width}%` }} />
+            </div>
+            <span className="text-right font-mono">{Number(point.value || 0).toFixed(0)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function DistributionPanel({
   entries,
   mode,
@@ -327,12 +367,18 @@ function SummaryCard({
   title,
   summary,
   trend,
+  aiChart,
   filename,
   summaryMode,
 }: {
   title: string;
   summary: string;
   trend: number[];
+  aiChart?: {
+    type?: "bars" | "line" | "weekly_bars";
+    title?: string;
+    points?: Array<{ label: string; value: number }>;
+  } | null;
   filename: string;
   summaryMode: string;
 }) {
@@ -360,8 +406,8 @@ function SummaryCard({
           {summary}
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-          <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">Trend</p>
-          <TrendSparkline values={trend} />
+          <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{aiChart?.title || "Trend"}</p>
+          <AIPeriodChart chart={aiChart} fallbackValues={trend} />
         </div>
       </div>
     </div>
@@ -544,8 +590,22 @@ export default function Last30DaysPage() {
         </section>
 
         <section className="mb-4 grid gap-3">
-          <SummaryCard title={`Summary EN - ${periodLabel}`} summary={enSummary} trend={enTrend} filename={`summary-en-${days}d.txt`} summaryMode={enMode} />
-          <SummaryCard title={`Summary UK - ${periodLabel}`} summary={ukSummary} trend={ukTrend} filename={`summary-uk-${days}d.txt`} summaryMode={ukMode} />
+          <SummaryCard
+            title={`Summary EN - ${periodLabel}`}
+            summary={enSummary}
+            trend={enTrend}
+            aiChart={aiSummaryQuery.data?.en?.chart}
+            filename={`summary-en-${days}d.txt`}
+            summaryMode={enMode}
+          />
+          <SummaryCard
+            title={`Summary UK - ${periodLabel}`}
+            summary={ukSummary}
+            trend={ukTrend}
+            aiChart={aiSummaryQuery.data?.uk?.chart}
+            filename={`summary-uk-${days}d.txt`}
+            summaryMode={ukMode}
+          />
         </section>
 
         <section className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">

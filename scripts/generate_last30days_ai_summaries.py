@@ -5,7 +5,7 @@ import re
 import sys
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 
@@ -15,6 +15,10 @@ MODEL = os.environ.get("LAST30DAYS_AI_MODEL", "gpt-4.1-mini").strip()
 MONITOR_CONTEXT_URL = os.environ.get(
     "LAST30DAYS_MONITOR_CONTEXT_URL",
     "https://cropto.abvx.xyz/api/market-dashboard?debugSources=1",
+).strip()
+MONITOR_NEWS_URL = os.environ.get(
+    "LAST30DAYS_MONITOR_NEWS_URL",
+    "https://cropto.abvx.xyz/api/monitor/news?time=7d",
 ).strip()
 
 WINDOWS = [
@@ -33,6 +37,16 @@ def read_json(path: Path):
     except Exception:
         return None
 
+def parse_iso_date(value: str):
+    raw = (value or "").strip()
+    if not raw:
+        return None
+    try:
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        return datetime.fromisoformat(raw).date()
+    except Exception:
+        return None
 
 def infer_language(text: str) -> str:
     lower = (text or "").lower()
@@ -105,6 +119,26 @@ def fetch_monitor_context():
     except Exception:
         return {}
 
+def fetch_monitor_news():
+    if not MONITOR_NEWS_URL:
+        return []
+    req = urllib.request.Request(
+        MONITOR_NEWS_URL,
+        headers={
+            "accept": "application/json",
+            "user-agent": "CroptoLast30DaysAIGenerator/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            if resp.status < 200 or resp.status >= 300:
+                return []
+            payload = json.loads(resp.read().decode("utf-8"))
+            feed = payload.get("feed") if isinstance(payload, dict) else None
+            return feed if isinstance(feed, list) else []
+    except Exception:
+        return []
+
 
 def market_dashboard_lines(payload, scope):
     rows = []
@@ -148,6 +182,100 @@ def build_last30_lines(items, scope):
         )
     return selected, lines
 
+def scope_filter(items, scope):
+    selected = []
+    for row in items:
+        is_uk = row["language"] == "uk" or row["region"] == "ukraine"
+        if scope == "en" and is_uk:
+            continue
+        if scope == "uk" and not is_uk:
+            continue
+        selected.append(row)
+    return selected
+
+def build_period_comparison_metrics(all_items, scope, days):
+    scoped = scope_filter(all_items, scope)
+    by_day = {}
+    for row in scoped:
+        d = parse_iso_date(row["date"])
+        if not d:
+            continue
+        bucket = by_day.setdefault(d.isoformat(), {"count": 0, "impact_sum": 0.0, "bullish": 0, "bearish": 0})
+        bucket["count"] += 1
+        bucket["impact_sum"] += float(row.get("impact") or 0.0)
+        if row.get("signal") == "bullish":
+            bucket["bullish"] += 1
+        if row.get("signal") == "bearish":
+            bucket["bearish"] += 1
+
+    if not by_day:
+        return {"notes": "No temporal metrics available."}
+
+    latest_day = max(by_day.keys())
+    latest_date = datetime.fromisoformat(latest_day).date()
+
+    def aggregate(start_date, end_date):
+        out = {"count": 0, "impact_sum": 0.0, "bullish": 0, "bearish": 0, "days": 0}
+        d = start_date
+        while d <= end_date:
+            key = d.isoformat()
+            row = by_day.get(key)
+            if row:
+                out["count"] += row["count"]
+                out["impact_sum"] += row["impact_sum"]
+                out["bullish"] += row["bullish"]
+                out["bearish"] += row["bearish"]
+            out["days"] += 1
+            d += timedelta(days=1)
+        out["avg_impact"] = round(out["impact_sum"] / max(out["count"], 1), 2)
+        out["balance"] = out["bullish"] - out["bearish"]
+        return out
+
+    if days == 1:
+        current = aggregate(latest_date, latest_date)
+        prev = aggregate(latest_date - timedelta(days=1), latest_date - timedelta(days=1))
+        return {"latest_day": latest_day, "current": current, "previous_day": prev, "comparison": "day_vs_prev_day"}
+    if days == 7:
+        current = aggregate(latest_date - timedelta(days=6), latest_date)
+        prev = aggregate(latest_date - timedelta(days=13), latest_date - timedelta(days=7))
+        return {"latest_day": latest_day, "current": current, "previous_week": prev, "comparison": "week_vs_prev_week"}
+
+    current = aggregate(latest_date - timedelta(days=29), latest_date)
+    prev = aggregate(latest_date - timedelta(days=59), latest_date - timedelta(days=30))
+    regime_recent = aggregate(latest_date - timedelta(days=14), latest_date)
+    regime_early = aggregate(latest_date - timedelta(days=29), latest_date - timedelta(days=15))
+    return {
+        "latest_day": latest_day,
+        "current": current,
+        "previous_month_if_available": prev,
+        "intra_month_regime": {"early_15d": regime_early, "recent_15d": regime_recent},
+        "comparison": "month_vs_prev_month_or_regime",
+    }
+
+def build_spike_lines(news_items, scope, days):
+    if days == 1:
+        return []
+    out = []
+    for row in news_items:
+        if not isinstance(row, dict):
+            continue
+        source = str(row.get("source_name") or row.get("source") or "").lower()
+        title = str(row.get("title") or "").strip()
+        summary = str(row.get("summary") or "").strip()
+        lang = str(row.get("lang") or "").lower()
+        if "spike" not in source and "spike" not in title.lower() and "spike" not in summary.lower():
+            continue
+        if scope == "uk" and not (lang == "uk" or re.search(r"[іїєґ]|[а-яё]", title.lower() + " " + summary.lower())):
+            continue
+        if scope == "en" and (lang == "uk" or re.search(r"[іїєґ]|[а-яё]", title.lower() + " " + summary.lower())):
+            continue
+        published = str(row.get("published_at") or "")[:10]
+        line = f"[{published}] {title}"
+        if summary:
+            line += f" | {summary[:160]}"
+        out.append(line)
+    return out[:8]
+
 
 def extract_text(payload):
     if isinstance(payload, dict) and isinstance(payload.get("output_text"), str) and payload["output_text"].strip():
@@ -164,12 +292,38 @@ def extract_text(payload):
                     chunks.append(part["text"])
     return "\n".join(chunks).strip()
 
+def extract_json_object(text: str):
+    raw = (text or "").strip()
+    if not raw:
+        return None
+    fenced = re.search(r"```json\s*([\s\S]+?)```", raw, re.IGNORECASE)
+    candidate = fenced.group(1).strip() if fenced else raw
+    try:
+        return json.loads(candidate)
+    except Exception:
+        pass
+    start = candidate.find("{")
+    end = candidate.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        try:
+            return json.loads(candidate[start : end + 1])
+        except Exception:
+            return None
+    return None
 
-def call_openai(language, period_label, scope_label, last30_lines, monitor_lines):
+
+def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, spike_lines, days):
     system_prompt = (
         "You are an agricultural market analyst. Write in Ukrainian. Keep it practical and concise."
         if language == "uk"
         else "You are an agricultural market analyst. Write in English. Keep it practical and concise."
+    )
+    chart_hint = (
+        "For 1-day period use compact category bars (not line trend)."
+        if days == 1
+        else "For 7-day period use day-by-day values."
+        if days == 7
+        else "For 30-day period use 4 weekly buckets."
     )
     user_prompt = "\n".join(
         [
@@ -177,6 +331,7 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             f"Scope: {scope_label}.",
             "",
             "Use BOTH datasets below when building conclusions.",
+            "Temporal comparison is mandatory; explicitly mention what changed vs previous comparable period.",
             "",
             "Last30Days feed:",
             "\n".join(last30_lines) if last30_lines else "No records.",
@@ -184,11 +339,22 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             "Market dashboard context:",
             "\n".join(monitor_lines) if monitor_lines else "No records.",
             "",
+            "Temporal metrics:",
+            json.dumps(period_metrics, ensure_ascii=False),
+            "",
+            "Spike weekly notes (if available):",
+            "\n".join(spike_lines) if spike_lines else "No spike weekly notes in scope.",
+            "",
             "Output format requirements:",
             "1) Start with one short paragraph: current market situation and directional tone.",
             "2) Then a 'Key facts' section with 4-6 bullets.",
             "3) Focus on implications for grains/oilseeds trading and brokerage decisions.",
             "4) Do not repeat raw dashboard metrics.",
+            "5) Build period-specific narrative: yesterday must emphasize yesterday events and change vs previous day; week must summarize this week dynamics and compare to previous week; month must summarize 30d and compare to previous month or, if unavailable, early-vs-late month regime.",
+            "",
+            "Return STRICT JSON with this schema:",
+            '{ "summary": "text", "chart": { "type": "bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ] } }',
+            f"Chart rule: {chart_hint}",
         ]
     )
 
@@ -213,10 +379,14 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
     )
     with urllib.request.urlopen(req, timeout=120) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
-    return extract_text(payload)
+    text = extract_text(payload)
+    parsed = extract_json_object(text)
+    if isinstance(parsed, dict) and isinstance(parsed.get("summary"), str):
+        return parsed
+    return {"summary": text, "chart": None}
 
 
-def write_window(window_name, days, period_label, monitor_payload):
+def write_window(window_name, days, period_label, monitor_payload, monitor_news_payload, all_items_month):
     src = read_json(OUT_DIR / f"{window_name}.json")
     if src is None:
         return False, f"{window_name}.json missing"
@@ -225,18 +395,44 @@ def write_window(window_name, days, period_label, monitor_payload):
     uk_items, uk_lines = build_last30_lines(items, "uk")
     en_monitor_lines = market_dashboard_lines(monitor_payload, "en")
     uk_monitor_lines = market_dashboard_lines(monitor_payload, "uk")
+    en_metrics = build_period_comparison_metrics(all_items_month, "en", days)
+    uk_metrics = build_period_comparison_metrics(all_items_month, "uk", days)
+    en_spike_lines = build_spike_lines(monitor_news_payload, "en", days)
+    uk_spike_lines = build_spike_lines(monitor_news_payload, "uk", days)
 
     warnings = []
-    en_text = ""
-    uk_text = ""
+    en_payload = None
+    uk_payload = None
     try:
-        en_text = call_openai("en", period_label, "English + non-Ukraine markets", en_lines, en_monitor_lines)
+        en_payload = call_openai(
+            "en",
+            period_label,
+            "English + non-Ukraine markets",
+            en_lines,
+            en_monitor_lines,
+            en_metrics,
+            en_spike_lines,
+            days,
+        )
     except Exception as error:
         warnings.append(f"en_failed: {error}")
     try:
-        uk_text = call_openai("uk", period_label, "Ukraine market context", uk_lines, uk_monitor_lines)
+        uk_payload = call_openai(
+            "uk",
+            period_label,
+            "Ukraine market context",
+            uk_lines,
+            uk_monitor_lines,
+            uk_metrics,
+            uk_spike_lines,
+            days,
+        )
     except Exception as error:
         warnings.append(f"uk_failed: {error}")
+
+    if not (en_payload and str(en_payload.get("summary", "")).strip()) and not (uk_payload and str(uk_payload.get("summary", "")).strip()):
+        # Keep previously generated file intact if fresh generation failed for both languages.
+        return True, f"{window_name}: skipped overwrite (no fresh AI summaries)"
 
     payload = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
@@ -248,10 +444,11 @@ def write_window(window_name, days, period_label, monitor_payload):
                 "language": "en",
                 "scope": "English + non-Ukraine markets",
                 "model": MODEL,
-                "text": en_text,
+                "text": str(en_payload.get("summary", "")).strip(),
+                "chart": en_payload.get("chart"),
                 "inputCounts": {"last30days": len(en_items), "monitor": len(en_monitor_lines)},
             }
-            if en_text
+            if en_payload and str(en_payload.get("summary", "")).strip()
             else None
         ),
         "uk": (
@@ -259,10 +456,11 @@ def write_window(window_name, days, period_label, monitor_payload):
                 "language": "uk",
                 "scope": "Ukraine market context",
                 "model": MODEL,
-                "text": uk_text,
+                "text": str(uk_payload.get("summary", "")).strip(),
+                "chart": uk_payload.get("chart"),
                 "inputCounts": {"last30days": len(uk_items), "monitor": len(uk_monitor_lines)},
             }
-            if uk_text
+            if uk_payload and str(uk_payload.get("summary", "")).strip()
             else None
         ),
         "mode": "precomputed",
@@ -279,9 +477,19 @@ def main():
         return 1
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     monitor_payload = fetch_monitor_context()
+    monitor_news_payload = fetch_monitor_news()
+    month_src = read_json(OUT_DIR / "month.json")
+    all_items_month = normalize_items(month_src or {})
     ok = True
     for window_name, days, period_label in WINDOWS:
-        success, message = write_window(window_name, days, period_label, monitor_payload)
+        success, message = write_window(
+            window_name,
+            days,
+            period_label,
+            monitor_payload,
+            monitor_news_payload,
+            all_items_month,
+        )
         if success:
             print(f"[ai-summary] generated {message}")
         else:
