@@ -107,6 +107,45 @@ function formatDate(value: string) {
   return date.toISOString().slice(0, 10);
 }
 
+function extractHostnameLabel(url: string) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    return host || "source";
+  } catch {
+    return "source";
+  }
+}
+
+function normalizeFeedTitle(item: Last30DaysRecord) {
+  const raw = String(item.title || "")
+    .replace(/\r/g, " ")
+    .replace(/\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const withoutUrls = raw.replace(/https?:\/\/\S+/gi, "").replace(/\s+/g, " ").trim();
+  const replacementCount = (withoutUrls.match(/�/g) || []).length;
+  const cleaned = withoutUrls.replace(/�+/g, " ").replace(/\s+/g, " ").trim();
+
+  if (replacementCount >= 6 || (cleaned.length > 0 && replacementCount / Math.max(withoutUrls.length, 1) > 0.12)) {
+    return `Headline unavailable • ${extractHostnameLabel(item.url)}`;
+  }
+
+  if (!cleaned) {
+    return `Headline unavailable • ${extractHostnameLabel(item.url)}`;
+  }
+
+  if (normalizeSource(item.source) === "x") {
+    const compact = cleaned
+      .replace(/^@\w+\s+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return compact;
+  }
+
+  return cleaned;
+}
+
 function normalizeSource(source: string) {
   const val = String(source || "web").toLowerCase();
   if (val.includes("reddit")) return "reddit";
@@ -1247,7 +1286,14 @@ export default function Last30DaysPage() {
                             {formatSignal(item.signal)}
                           </td>
                           <td className="px-2 py-2 font-mono">{item.impact.toFixed(2)}</td>
-                          <td className="px-2 py-2 text-sm text-slate-200">{item.title}</td>
+                          <td className="px-2 py-2 text-sm text-slate-200">
+                            <div
+                              className="line-clamp-2 max-w-[900px] leading-6 text-slate-200"
+                              title={normalizeFeedTitle(item)}
+                            >
+                              {normalizeFeedTitle(item)}
+                            </div>
+                          </td>
                           <td className="px-2 py-2">
                             <a href={item.url || "#"} target="_blank" rel="noreferrer" className="text-xs text-sky-300 hover:text-sky-200">
                               {normalizeSource(item.source)}
