@@ -159,36 +159,80 @@ function normalizeSource(source: string) {
 
 function sourceBadgeMeta(source: string) {
   const normalized = normalizeSource(source);
-  const meta: Record<string, { label: string; className: string }> = {
+  const meta: Record<string, { className: string }> = {
     web: {
-      label: "WEB",
       className: "border-slate-700 bg-slate-900 text-sky-300",
     },
     x: {
-      label: "X",
       className: "border-slate-700 bg-slate-900 text-slate-100",
     },
     bluesky: {
-      label: "BSKY",
       className: "border-sky-900/70 bg-sky-950/60 text-sky-300",
     },
     reddit: {
-      label: "RDT",
       className: "border-orange-900/70 bg-orange-950/40 text-orange-300",
     },
     youtube: {
-      label: "YT",
       className: "border-rose-900/70 bg-rose-950/40 text-rose-300",
     },
     hn: {
-      label: "HN",
       className: "border-amber-900/70 bg-amber-950/40 text-amber-300",
     },
   };
   return meta[normalized] || {
-    label: normalized.toUpperCase(),
     className: "border-slate-700 bg-slate-900 text-slate-300",
   };
+}
+
+function SourceBadgeIcon({ source }: { source: string }) {
+  const normalized = normalizeSource(source);
+  const cls = "h-3.5 w-3.5 fill-current";
+
+  if (normalized === "x") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={cls}>
+        <path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.26l-4.9-7.39L5.58 22H2.47l7.24-8.28L1.9 2h6.42l4.43 6.81L18.9 2Zm-1.1 18h1.72L7.38 3.9H5.53L17.8 20Z" />
+      </svg>
+    );
+  }
+
+  if (normalized === "reddit") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={cls}>
+        <path d="M14.46 15.91c-.78.78-2.06.84-2.46.84s-1.68-.06-2.46-.84a.5.5 0 1 0-.71.71c.88.88 2.24 1.13 3.17 1.13s2.29-.25 3.17-1.13a.5.5 0 1 0-.71-.71ZM9 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm6-2a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm8-1.5a2.5 2.5 0 0 0-4.12-1.9 11.03 11.03 0 0 0-5.84-1.6l1-4.67 3.24.7a1.95 1.95 0 1 0 .2-.98l-3.85-.83a.5.5 0 0 0-.59.39l-1.14 5.33a11.3 11.3 0 0 0-6.07 1.66A2.5 2.5 0 1 0 3.5 14c0 3.59 3.81 6.5 8.5 6.5s8.5-2.91 8.5-6.5a2.47 2.47 0 0 0-.46-1.46A2.5 2.5 0 0 0 23 9.5Z" />
+      </svg>
+    );
+  }
+
+  if (normalized === "youtube") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={cls}>
+        <path d="M21.58 7.19a2.98 2.98 0 0 0-2.1-2.11C17.63 4.5 12 4.5 12 4.5s-5.63 0-7.48.58a2.98 2.98 0 0 0-2.1 2.11A31.84 31.84 0 0 0 2 12a31.84 31.84 0 0 0 .42 4.81 2.98 2.98 0 0 0 2.1 2.11C6.37 19.5 12 19.5 12 19.5s5.63 0 7.48-.58a2.98 2.98 0 0 0 2.1-2.11A31.84 31.84 0 0 0 22 12a31.84 31.84 0 0 0-.42-4.81ZM10 15.46V8.54L16 12l-6 3.46Z" />
+      </svg>
+    );
+  }
+
+  if (normalized === "bluesky") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={cls}>
+        <path d="M12 10.56c1.42-2.76 5.3-7.04 8.9-8.56.52-.22 1.1.17 1.08.73-.09 2.7-.97 9.29-5.24 12.45 2.44-.28 4.64.42 5.84 1.92.22.28.08.69-.27.79-1.47.44-5.18 1.12-8.56-2.42-.03-.03-.07-.02-.09.01l-.86 1.62a.9.9 0 0 1-1.58 0l-.86-1.62c-.02-.03-.06-.04-.09-.01-3.38 3.54-7.09 2.86-8.56 2.42-.35-.1-.49-.51-.27-.79 1.2-1.5 3.4-2.2 5.84-1.92C3.99 12.02 3.11 5.43 3.02 2.73 3 2.17 3.58 1.78 4.1 2c3.6 1.52 7.48 5.8 8.9 8.56Z" />
+      </svg>
+    );
+  }
+
+  if (normalized === "hn") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={cls}>
+        <path d="M5 3h3.2l3.12 5.6L14.52 3h3.16l-4.68 8.06V21h-2v-9.94L5 3Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={cls}>
+      <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm6.92 9h-3.03a15.48 15.48 0 0 0-1.18-5.01A8.03 8.03 0 0 1 18.92 11ZM12 4.04c.99 1.21 1.83 3.38 2.06 6.96H9.94C10.17 7.42 11.01 5.25 12 4.04ZM9.29 5.99A15.48 15.48 0 0 0 8.11 11H5.08a8.03 8.03 0 0 1 4.21-5.01ZM5.08 13h3.03a15.48 15.48 0 0 0 1.18 5.01A8.03 8.03 0 0 1 5.08 13Zm6.92 6.96c-.99-1.21-1.83-3.38-2.06-6.96h4.12c-.23 3.58-1.07 5.75-2.06 6.96Zm2.71-1.95A15.48 15.48 0 0 0 15.89 13h3.03a8.03 8.03 0 0 1-4.21 5.01Z" />
+    </svg>
+  );
 }
 
 function shortLegendLabel(mode: "sources" | "commodities" | "regions" | "languages", label: string): string {
@@ -1342,9 +1386,10 @@ export default function Last30DaysPage() {
                               href={item.url || "#"}
                               target="_blank"
                               rel="noreferrer"
-                              className={`inline-flex min-w-[48px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-cyan-400 ${sourceBadgeMeta(item.source).className}`}
+                              aria-label={normalizeSource(item.source)}
+                              className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition-colors hover:border-cyan-400 ${sourceBadgeMeta(item.source).className}`}
                             >
-                              {sourceBadgeMeta(item.source).label}
+                              <SourceBadgeIcon source={item.source} />
                             </a>
                           </td>
                         </tr>
