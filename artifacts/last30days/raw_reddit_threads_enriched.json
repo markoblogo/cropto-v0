@@ -1,48 +1,75 @@
 [
   {
-    "id": "R2",
+    "id": "R4",
     "title": "Sunflower oil prices fall as Ukraine ships stock to India",
     "url": "https://www.reddit.com/r/worldnews/comments/14997mm",
     "subreddit": "worldnews",
     "date": "2023-06-14",
-    "why_relevant": "Directly about Ukraine sunflower oil exports and shipment logistics to India.",
-    "relevance": 0.93
+    "why_relevant": "News thread about Ukraine shipping sunflower oil stock internationally, which is relevant to logistics and trade flows.",
+    "relevance": 0.91
   },
   {
     "id": "R1",
-    "title": "Sunflower Oil \u2018Vanishes\u2019 as Ukraine War Grinds On",
-    "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
-    "subreddit": "autotldr",
-    "date": "2022-04-30",
-    "why_relevant": "Discusses how the Ukraine war disrupted sunflower oil supply chains and logistics, including U.K. shortages.",
-    "relevance": 0.95
+    "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
+    "url": "https://www.reddit.com/r/UkraineRussiaReport/comments/1pvw1c1/ua_pov_the_scenery_at_one_of_ukraines_largest/",
+    "subreddit": "UkraineRussiaReport",
+    "date": "2025-12-26",
+    "why_relevant": "Discusses sunflower oil storage facilities in Ukraine and military/logistics implications around those facilities.",
+    "relevance": 0.94
   },
   {
-    "id": "R5",
+    "id": "R3",
     "title": "Buy Ukraine sunflower oil!",
     "url": "https://www.reddit.com/r/BuyFromEU/comments/1iwgyi2",
     "subreddit": "BuyFromEU",
     "date": "2025-02-23",
-    "why_relevant": "Conversation about buying sunflower oil from Ukraine and supply/regulatory logistics in the EU.",
-    "relevance": 0.84
+    "why_relevant": "Directly about buying sunflower oil from Ukraine, including sourcing and EU-market logistics considerations.",
+    "relevance": 0.86
   },
   {
-    "id": "R4",
-    "title": "Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
-    "url": "https://www.reddit.com/r/ValueInvesting/comments/1km0ka0",
-    "subreddit": "ValueInvesting",
-    "date": "2025-05-13",
-    "why_relevant": "Mentions Ukraine sunflower oil production and export logistics via Danube terminals during wartime.",
-    "relevance": 0.89
-  },
-  {
-    "id": "R3",
+    "id": "R5",
     "title": "Sunflower oil prices fall as Ukraine ships stock to India",
     "url": "https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy",
     "subreddit": "GeopoliticsIndia",
     "date": "2023-06-14",
-    "why_relevant": "Same core discussion about Ukraine moving sunflower oil stocks through export logistics.",
-    "relevance": 0.92
+    "why_relevant": "Same topic as the Worldnews thread, focused on Ukraine sunflower oil shipments and global logistics impacts.",
+    "relevance": 0.89
+  },
+  {
+    "id": "R2",
+    "title": "Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
+    "url": "https://www.reddit.com/r/ValueInvesting/comments/1km0ka0",
+    "subreddit": "ValueInvesting",
+    "date": "2025-05-13",
+    "why_relevant": "Mentions Ukraine sunflower seed oil production and export logistics through ports and river terminals.",
+    "relevance": 0.9
+  },
+  {
+    "id": "R10",
+    "title": "Sunfloweer Oil \ud83c\udf3b - wholesale price reduction",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-09-12",
+    "why_relevant": "Wholesale sunflower oil post that explicitly states Ukraine origin and logistics/shipping terms.",
+    "relevance": 0.79
+  },
+  {
+    "id": "R8",
+    "title": "100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-10-11",
+    "why_relevant": "Includes Ukraine origin and logistics points like FOB Lviv, Kaunas, and Gdansk.",
+    "relevance": 0.8
+  },
+  {
+    "id": "R6",
+    "title": "Sunflower Oil \u2018Vanishes\u2019 as Ukraine War Grinds On",
+    "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
+    "subreddit": "autotldr",
+    "date": "2022-04-30",
+    "why_relevant": "Discusses sunflower oil shortages and supply-chain disruption caused by the war in Ukraine.",
+    "relevance": 0.9
   },
   {
     "id": "R7",
@@ -50,43 +77,16 @@
     "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
     "subreddit": "u_lt10plimited",
     "date": "2022-02-10",
-    "why_relevant": "Commercial post about sunflower oil sourcing from Ukraine and bulk supply logistics.",
-    "relevance": 0.8
-  },
-  {
-    "id": "R6",
-    "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
-    "url": "https://www.reddit.com/r/UkraineRussiaReport/comments/1pvw1c1/ua_pov_the_scenery_at_one_of_ukraines_largest/",
-    "subreddit": "UkraineRussiaReport",
-    "date": "2025-12-26",
-    "why_relevant": "Discusses Ukraine\u2019s sunflower oil storage and its role in logistics and wartime infrastructure.",
-    "relevance": 0.88
-  },
-  {
-    "id": "R8",
-    "title": "Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f",
-    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
-    "subreddit": "u_Sunflower-Oil-Offers",
-    "date": "2022-10-20",
-    "why_relevant": "Bulk sunflower oil offer from Ukraine with FOB logistics details.",
-    "relevance": 0.79
-  },
-  {
-    "id": "R10",
-    "title": "Sunfloweer Oil \ud83c\udf3b  price \u2794 \ud83d\udd3bMassive Reduction\ud83d\udd3b \ud83d\udca5 New PRICE OFFER -14%! \ud83d\udca5 1000 liters cost ONLY 1.510\u20ac \ud83d\udca5",
-    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
-    "subreddit": "u_Sunflower-Oil-Offers",
-    "date": "2022-09-12",
-    "why_relevant": "Bulk sunflower oil post mentioning Ukraine origin and logistics costs.",
+    "why_relevant": "Supplier post about sunflower oil sourced from Ukraine, with production and distribution details.",
     "relevance": 0.78
   },
   {
     "id": "R9",
-    "title": "100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.",
-    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
+    "title": "Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
     "subreddit": "u_Sunflower-Oil-Offers",
-    "date": "2022-10-11",
-    "why_relevant": "Includes Ukraine origin and transport/FOB logistics for sunflower oil shipments.",
-    "relevance": 0.79
+    "date": "2022-10-20",
+    "why_relevant": "Commercial thread about sunflower oil from Ukraine with FOB and transport locations.",
+    "relevance": 0.8
   }
 ]
