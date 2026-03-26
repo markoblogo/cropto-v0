@@ -72,12 +72,13 @@ function normalizeSource(source: string) {
   return val;
 }
 
-function buildDistribution(items: Last30DaysRecord[], mode: "sources" | "commodities" | "regions"): Array<[string, number]> {
+function buildDistribution(items: Last30DaysRecord[], mode: "sources" | "commodities" | "regions" | "languages"): Array<[string, number]> {
   const map = items.reduce<Record<string, number>>((acc, item) => {
     let key = "mixed";
     if (mode === "sources") key = normalizeSource(item.source || "web");
     if (mode === "commodities") key = (item.commodity || "mixed").toLowerCase();
     if (mode === "regions") key = formatRegion(item.region || "global");
+    if (mode === "languages") key = (item.language || "en").toUpperCase();
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
@@ -148,18 +149,14 @@ function DistributionPanel({ title, entries }: { title: string; entries: Array<[
             </div>
           </div>
           <div className="space-y-2">
-            {trimmed.map(([label, value], idx) => {
-              const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-              return (
-                <div key={label} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
-                    <span className="capitalize">{label}</span>
-                  </div>
-                  <span className="font-mono text-slate-200">{value} - {pct}%</span>
+            {trimmed.map(([label], idx) => (
+              <div key={label} className="flex items-center text-sm">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                  <span className="capitalize">{label}</span>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -182,8 +179,6 @@ function makeAnalyticSummary(items: Last30DaysRecord[], periodLabel: string, lan
     { bullish: 0, bearish: 0, neutral: 0 },
   );
 
-  const avgImpact = (items.reduce((acc, item) => acc + Number(item.impact || 0), 0) / Math.max(items.length, 1)).toFixed(2);
-
   const commodityTop = Object.entries(
     items.reduce<Record<string, number>>((acc, item) => {
       const key = (item.commodity || "mixed").toLowerCase();
@@ -196,36 +191,36 @@ function makeAnalyticSummary(items: Last30DaysRecord[], periodLabel: string, lan
     .map(([name, count]) => `${name} (${count})`)
     .join(", ");
 
-  const sourceTop = Object.entries(
+  const regionTop = Object.entries(
     items.reduce<Record<string, number>>((acc, item) => {
-      const key = normalizeSource(item.source || "web");
+      const key = formatRegion(item.region || "global");
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {}),
   )
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([name, count]) => `${name} (${count})`)
+    .slice(0, 2)
+    .map(([name]) => name)
     .join(", ");
 
   const keyHeadlines = items
-    .slice(0, 5)
-    .map((item, idx) => `${idx + 1}. ${item.title} [${normalizeSource(item.source)}]`)
+    .slice(0, 4)
+    .map((item, idx) => `${idx + 1}. ${item.title}`)
     .join("\n");
 
+  const flowText =
+    signal.bullish > signal.bearish
+      ? "Market tone is mildly constructive with more upside-oriented triggers than downside pressure."
+      : signal.bearish > signal.bullish
+        ? "Market tone is cautious, with downside risks slightly dominating the current flow."
+        : "Market tone is balanced, with no strong directional dominance in the signal flow.";
+
   return [
-    `Period: ${periodLabel}`,
-    `Language scope: ${languageLabel}`,
-    `Coverage: ${items.length} signals`,
-    `Signal mix: bullish ${signal.bullish}, bearish ${signal.bearish}, neutral ${signal.neutral}`,
-    `Average impact: ${avgImpact}`,
-    `Top commodities: ${commodityTop || "n/a"}`,
-    `Top source channels: ${sourceTop || "n/a"}`,
+    `General situation (${periodLabel.toLowerCase()}, ${languageLabel}):`,
+    flowText,
+    `Attention is concentrated around ${commodityTop || "mixed commodities"}${regionTop ? `, with most pressure points in ${regionTop}.` : "."}`,
     "",
-    "Interpretation:",
-    `The flow is ${signal.bullish > signal.bearish ? "slightly constructive" : signal.bearish > signal.bullish ? "cautious-to-negative" : "balanced"} for ${periodLabel.toLowerCase()}, with risk concentrated around the top commodity cluster and the highest-impact headlines above.`,
-    "",
-    "Key headlines:",
+    "Key facts:",
     keyHeadlines,
   ].join("\n");
 }
@@ -299,8 +294,7 @@ function SummaryCard({
 
 export default function Last30DaysPage() {
   const [days, setDays] = useState<number>(30);
-  const [analyticsTab, setAnalyticsTab] = useState<"sources" | "commodities" | "regions">("sources");
-  const [analyticsLang, setAnalyticsLang] = useState<"en" | "uk">("en");
+  const [analyticsTab, setAnalyticsTab] = useState<"sources" | "commodities" | "regions" | "languages">("sources");
 
   const [feedOpen, setFeedOpen] = useState<boolean>(false);
   const [feedRegion, setFeedRegion] = useState<string>("all");
@@ -328,8 +322,7 @@ export default function Last30DaysPage() {
   const data = summaryQuery.data;
   const activeItems = data?.items || [];
 
-  const infographicItems = useMemo(() => activeItems.filter((item) => item.language === analyticsLang), [activeItems, analyticsLang]);
-  const infographicEntries = useMemo(() => buildDistribution(infographicItems, analyticsTab), [infographicItems, analyticsTab]);
+  const infographicEntries = useMemo(() => buildDistribution(activeItems, analyticsTab), [activeItems, analyticsTab]);
 
   const periodLabel = TIMEFRAME_OPTIONS.find((x) => x.value === days)?.label || `${days} days`;
 
@@ -395,36 +388,12 @@ export default function Last30DaysPage() {
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
               <p className="mt-2 text-sm text-slate-300">Priority mode: synthesized analytics first, raw feed second.</p>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(["sources", "commodities", "regions"] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setAnalyticsTab(tab)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
-                  >
-                    {tab[0].toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setAnalyticsLang("en")}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${analyticsLang === "en" ? "border-emerald-300 bg-emerald-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => setAnalyticsLang("uk")}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${analyticsLang === "uk" ? "border-emerald-300 bg-emerald-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
-                >
-                  UK
-                </button>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 {TIMEFRAME_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setDays(option.value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
+                    className={`rounded-full border px-3 py-2 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
                   >
                     {option.label}
                   </button>
@@ -432,10 +401,25 @@ export default function Last30DaysPage() {
               </div>
             </div>
 
-            <DistributionPanel
-              title={`Distribution - ${analyticsTab[0].toUpperCase() + analyticsTab.slice(1)} - ${analyticsLang.toUpperCase()}`}
-              entries={infographicEntries}
-            />
+            <div className="grid gap-3 md:grid-cols-[120px_1fr] md:items-center">
+              <div className="grid gap-2">
+                {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setAnalyticsTab(tab)}
+                    className={`rounded-xl border px-3 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
+                  >
+                    {tab === "languages" ? "Language" : tab[0].toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <div className="pl-2 md:pl-5">
+                <DistributionPanel
+                  title={`Distribution - ${analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}`}
+                  entries={infographicEntries}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
