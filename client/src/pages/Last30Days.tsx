@@ -68,6 +68,13 @@ const REGION_LABELS: Record<string, string> = {
   global: "Global",
 };
 
+function marketCountryToRegion(country: string): string {
+  const normalized = String(country || "").toUpperCase();
+  if (normalized === "UA") return "ukraine";
+  if (normalized === "FR" || normalized === "DE" || normalized === "RO") return "europe";
+  return "global";
+}
+
 function formatRegion(value: string) {
   return REGION_LABELS[value] || value.replaceAll("_", " ");
 }
@@ -184,6 +191,20 @@ export default function Last30DaysPage() {
     return Array.from(list).filter(Boolean).sort((a, b) => a.localeCompare(b));
   }, [dashboardSourcesQuery.data]);
 
+  const dashboardRows = useMemo(() => {
+    const dashboard = dashboardSourcesQuery.data;
+    if (!dashboard) return [] as Array<{ commodity: string; region: string; source: string; asOf: string }>;
+    const grouped = [dashboard.ua || [], dashboard.br || [], dashboard.ar || [], dashboard.us || []].flat();
+    return grouped
+      .map((row) => ({
+        commodity: String(row.commodity || "mixed").toLowerCase(),
+        region: marketCountryToRegion(row.country || ""),
+        source: String(row.provider || row.source || "market-dashboard"),
+        asOf: row.asOf || new Date().toISOString(),
+      }))
+      .filter((row) => row.commodity && (region === "all" || row.region === region));
+  }, [dashboardSourcesQuery.data, region]);
+
   const data = summaryQuery.data;
   const activeItems = data?.items || [];
   const signalBalancePct =
@@ -262,6 +283,28 @@ export default function Last30DaysPage() {
     .map(([key, value]) => [formatRegion(key), value] as [string, number])
     .sort((a, b) => b[1] - a[1]);
   const activeCoverageCount = activeItems.length;
+  const last30CommoditySet = new Set(activeItems.map((item) => item.commodity.toLowerCase()));
+  const monitorCommoditySet = new Set(dashboardRows.map((row) => row.commodity.toLowerCase()));
+  const commodityContextMatch = Array.from(last30CommoditySet).filter((commodity) => monitorCommoditySet.has(commodity)).length;
+  const commodityContextPct = last30CommoditySet.size
+    ? Math.round((commodityContextMatch / last30CommoditySet.size) * 100)
+    : 0;
+  const last30SourceSet = new Set(activeItems.map((item) => item.source.trim().toUpperCase()));
+  const monitorSourceSet = new Set(sourceChips.map((chip) => chip.trim().toUpperCase()));
+  const sharedSourceCount = Array.from(last30SourceSet).filter((source) => monitorSourceSet.has(source)).length;
+  const monitorFreshnessMedianDays = Math.round(
+    median(
+      dashboardRows.map((row) => {
+        const ts = Date.parse(row.asOf);
+        if (Number.isNaN(ts)) return 999;
+        return (Date.now() - ts) / (1000 * 60 * 60 * 24);
+      }),
+    ),
+  );
+  const freshnessDeltaDays =
+    Number.isFinite(monitorFreshnessMedianDays) && Number.isFinite(freshnessMedianDays)
+      ? monitorFreshnessMedianDays - freshnessMedianDays
+      : 0;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -380,6 +423,30 @@ export default function Last30DaysPage() {
           </div>
         </section>
 
+        <section className="mb-4 grid gap-3 lg:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Context Match</p>
+            <p className="mt-2 text-3xl font-semibold">{commodityContextPct}%</p>
+            <p className="mt-1 text-xs text-slate-400">
+              {commodityContextMatch}/{last30CommoditySet.size || 0} last30 commodities confirmed in monitor pricing
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Source Overlap</p>
+            <p className="mt-2 text-3xl font-semibold">{sharedSourceCount}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Shared provider/source labels between last30days and monitor context
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Freshness Delta</p>
+            <p className="mt-2 text-3xl font-semibold">{freshnessDeltaDays > 0 ? "+" : ""}{freshnessDeltaDays}d</p>
+            <p className="mt-1 text-xs text-slate-400">
+              monitor median age minus last30 median age (negative is better for monitor)
+            </p>
+          </div>
+        </section>
+
         <section className="mb-4 grid gap-3 lg:grid-cols-2">
           <EntriesBars title="Commodity Share" entries={commodityEntries} />
           <EntriesBars title="Regional Heat (Impact >= 4)" entries={regionEntries} />
@@ -389,8 +456,7 @@ export default function Last30DaysPage() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold">Source Context</h3>
             <p className="text-xs text-slate-400">
-              market-dashboard: connected
-              {" · "}
+              market-dashboard: context-only (no feed duplication) ·
               last30days file: {data?.sourceFile ? "connected" : "not configured"}
               {data?.sourceUpdatedAt ? ` · updated ${formatDate(data.sourceUpdatedAt)}` : ""}
             </p>
