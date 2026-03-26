@@ -195,13 +195,13 @@ function DistributionPanel({
   }
 
   return (
-    <div className="grid min-h-[198px] gap-4 md:grid-cols-[248px_112px] md:items-center">
-      <div className="flex justify-center">
+    <div className="grid min-h-[182px] gap-4 md:grid-cols-[236px_112px] md:items-start">
+      <div className="flex justify-center pt-0">
         <div className="relative h-[214px] w-[214px] rounded-full" style={{ background: conic }}>
           <div className="absolute inset-7 rounded-full bg-slate-950/95" />
         </div>
       </div>
-      <div className="max-h-[190px] space-y-4 overflow-y-auto pr-1">
+      <div className="max-h-[168px] space-y-4 overflow-y-auto pr-1 pt-2">
         {trimmed.map(([label], idx) => (
           <div key={label} className="flex items-center text-sm">
             <div className="flex items-center gap-2 text-slate-300">
@@ -432,7 +432,7 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
-        <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 px-5 py-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
+        <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 px-5 py-4 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
           <div className="grid items-start gap-10 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="pr-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">Cropto / Last30Days</p>
@@ -455,7 +455,7 @@ export default function Last30DaysPage() {
               </div>
             </div>
 
-            <div className="pt-1 lg:border-l lg:border-slate-800/70 lg:pl-10">
+            <div className="pt-0 lg:border-l lg:border-slate-800/70 lg:pl-10">
               <div className="grid gap-4 md:grid-cols-[92px_1fr] md:items-start">
                 <div>
                   <div className="mb-2">
@@ -476,7 +476,7 @@ export default function Last30DaysPage() {
                     ))}
                   </div>
                 </div>
-                <div className="pt-0">
+                <div className="-mt-2">
                   <DistributionPanel entries={infographicEntries} mode={analyticsTab} />
                 </div>
               </div>
