@@ -76,13 +76,6 @@ function formatSignal(value: string) {
   return value.toUpperCase();
 }
 
-function marketCountryToRegion(country: string): string {
-  const normalized = String(country || "").toUpperCase();
-  if (normalized === "UA") return "ukraine";
-  if (normalized === "FR" || normalized === "DE" || normalized === "RO") return "europe";
-  return "global";
-}
-
 function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "n/a";
@@ -93,6 +86,14 @@ function pickSignalTone(score: number) {
   if (score > 35) return "Bullish";
   if (score < -35) return "Bearish";
   return "Neutral";
+}
+
+function median(numbers: number[]): number {
+  if (numbers.length === 0) return 0;
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) return (sorted[middle - 1] + sorted[middle]) / 2;
+  return sorted[middle];
 }
 
 function EntriesBars({
@@ -183,43 +184,8 @@ export default function Last30DaysPage() {
     return Array.from(list).filter(Boolean).sort((a, b) => a.localeCompare(b));
   }, [dashboardSourcesQuery.data]);
 
-  const dashboardRows = useMemo(() => {
-    const dashboard = dashboardSourcesQuery.data;
-    if (!dashboard) return [] as Array<{
-      id: string;
-      publishedAt: string;
-      commodity: string;
-      region: string;
-      language: string;
-      signal: "bullish" | "bearish" | "neutral";
-      impact: number;
-      title: string;
-      source: string;
-      url: string;
-    }>;
-    const grouped = [dashboard.ua || [], dashboard.br || [], dashboard.ar || [], dashboard.us || []].flat();
-    return grouped
-      .map((row, idx) => {
-        const regionValue = marketCountryToRegion(row.country || "");
-        return {
-          id: `market-${idx + 1}-${row.country || "na"}-${row.commodity || "mix"}`,
-          publishedAt: row.asOf || new Date().toISOString(),
-          commodity: String(row.commodity || "mixed").toLowerCase(),
-          region: regionValue,
-          language: regionValue === "ukraine" ? "uk" : "en",
-          signal: "neutral" as const,
-          impact: Number(row.price || 0) > 0 ? 3.2 : 2.4,
-          title: `${String(row.commodity || "commodity")} ${String(row.basis || "market")} = ${Number(row.price || 0).toFixed(2)} USD`,
-          source: String(row.provider || row.source || "market-dashboard"),
-          url: "/monitor",
-        };
-      })
-      .filter((item) => item.commodity && (region === "all" || item.region === region) && (lang === "all" || item.language === lang))
-      .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
-  }, [dashboardSourcesQuery.data, lang, region]);
-
   const data = summaryQuery.data;
-  const activeItems = (data?.items?.length || 0) > 0 ? data?.items || [] : dashboardRows;
+  const activeItems = data?.items || [];
   const signalBalancePct =
     activeItems.length === 0
       ? 0
@@ -248,6 +214,43 @@ export default function Last30DaysPage() {
     }, {}),
   ).sort((a, b) => b[1] - a[1]);
   const topCommodity = commodityEntries[0]?.[0] || data?.summary.topCommodity || "n/a";
+  const sourceDiversity = new Set(activeItems.map((item) => item.source)).size;
+  const freshnessMedianDays = Math.round(
+    median(
+      activeItems.map((item) => {
+        const ts = Date.parse(item.publishedAt);
+        if (Number.isNaN(ts)) return 999;
+        return (Date.now() - ts) / (1000 * 60 * 60 * 24);
+      }),
+    ),
+  );
+  const narrativesCount = new Set(
+    activeItems
+      .flatMap((item) =>
+        item.title
+          .toLowerCase()
+          .split(/[^a-zа-яіїєґ0-9]+/i)
+          .filter((token) => token.length >= 5),
+      )
+      .filter(
+        (token) =>
+          ![
+            "about",
+            "their",
+            "there",
+            "after",
+            "before",
+            "grain",
+            "market",
+            "price",
+            "rates",
+            "wheat",
+            "corn",
+            "soybeans",
+          ].includes(token),
+      )
+      .slice(0, 40),
+  ).size;
   const regionEntries = Object.entries(
     activeItems
       .filter((item) => item.impact >= 3)
@@ -259,8 +262,6 @@ export default function Last30DaysPage() {
     .map(([key, value]) => [formatRegion(key), value] as [string, number])
     .sort((a, b) => b[1] - a[1]);
   const activeCoverageCount = activeItems.length;
-  const summaryCoverageCount = data?.summary.coverageCount ?? 0;
-  const usingDashboardFallback = summaryCoverageCount === 0 && dashboardRows.length > 0;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -273,7 +274,7 @@ export default function Last30DaysPage() {
               </p>
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
               <p className="mt-2 max-w-3xl text-sm text-slate-300">
-                Live panel connected to `api/market-dashboard`, with optional enrichment from `last30days --emit=json --store`.
+                Live panel for fresh `last30days` intelligence. Market dashboard sources are shown only as context, not as feed data.
               </p>
             </div>
             <div className="grid gap-3">
@@ -333,13 +334,13 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
-        {data?.warnings?.length && !usingDashboardFallback && activeItems.length === 0 ? (
+        {data?.warnings?.length && activeItems.length === 0 ? (
           <div className="mb-4 rounded-xl border border-amber-700/60 bg-amber-950/40 p-3 text-xs text-amber-200">
             {data.warnings.join(" ")}
           </div>
         ) : null}
 
-        <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
           <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
             <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Coverage</p>
             <p className="mt-2 text-3xl font-semibold">{activeCoverageCount}</p>
@@ -365,6 +366,18 @@ export default function Last30DaysPage() {
             <p className="mt-2 text-3xl font-semibold capitalize">{topCommodity}</p>
             <p className="mt-1 text-xs text-slate-400">Dominant topic in current scope</p>
           </div>
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Source Diversity</p>
+            <p className="mt-2 text-3xl font-semibold">{sourceDiversity}</p>
+            <p className="mt-1 text-xs text-slate-400">Unique last30days sources</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Narratives</p>
+            <p className="mt-2 text-3xl font-semibold">{narrativesCount}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Median freshness {Number.isFinite(freshnessMedianDays) ? `${freshnessMedianDays}d` : "n/a"}
+            </p>
+          </div>
         </section>
 
         <section className="mb-4 grid gap-3 lg:grid-cols-2">
@@ -377,7 +390,6 @@ export default function Last30DaysPage() {
             <h3 className="text-sm font-semibold">Source Context</h3>
             <p className="text-xs text-slate-400">
               market-dashboard: connected
-              {usingDashboardFallback ? " · last30days fallback active" : ""}
               {" · "}
               last30days file: {data?.sourceFile ? "connected" : "not configured"}
               {data?.sourceUpdatedAt ? ` · updated ${formatDate(data.sourceUpdatedAt)}` : ""}
