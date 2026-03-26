@@ -1,88 +1,40 @@
 {
-  "topic": "grain and oilseeds market wheat corn soybeans sunflower rapeseed black sea export logistics",
+  "topic": "sunflower oil ukraine logistics",
   "range": {
     "from": "2026-02-24",
     "to": "2026-03-26"
   },
-  "generated_at": "2026-03-26T09:42:31.202847+00:00",
+  "generated_at": "2026-03-26T09:47:53.789573+00:00",
   "mode": "reddit-web",
   "openai_model_used": "gpt-5.4-mini",
   "xai_model_used": null,
-  "reddit": [],
+  "reddit": [
+    {
+      "id": "R14",
+      "title": "Sunflowers from Ukraine?",
+      "url": "https://www.reddit.com/r/AskUkraine/comments/1s0nq7o/sunflowers_from_ukraine/",
+      "subreddit": "AskUkraine",
+      "date": "2026-03-22",
+      "date_confidence": "high",
+      "engagement": null,
+      "top_comments": [],
+      "comment_insights": [],
+      "relevance": 0.42,
+      "why_relevant": "About obtaining sunflowers from Ukraine; loosely related to Ukraine agricultural supply and logistics, though not oil-specific.",
+      "subs": {
+        "relevance": 42,
+        "recency": 86,
+        "engagement": 50
+      },
+      "score": 52
+    }
+  ],
   "x": [],
   "web": [
     {
-      "id": "W3",
-      "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
-      "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
-      "source_domain": "fastmarkets.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W15",
-      "title": "AgroPortal Bulgaria | LinkedIn",
-      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W5",
-      "title": "Andreea Grosu - Execution Officer at Grain Resources Black Sea SRL | LinkedIn",
-      "url": "https://www.linkedin.com/in/andreea-grosu-16989a55",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W6",
-      "title": "BLACK SEA GRAIN.KYIV-2026 -",
-      "url": "https://uga.ua/en/calendar/black-sea-grain-kyiv-2026-3/",
-      "source_domain": "uga.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W12",
-      "title": "Black Sea Cereal Company | LinkedIn",
-      "url": "https://www.linkedin.com/company/black-sea-cereal-company",
+      "id": "W10",
+      "title": "ITO Global Logistics Ukraine",
+      "url": "https://www.linkedin.com/company/ukrin-ltd",
       "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
@@ -98,9 +50,9 @@
     },
     {
       "id": "W14",
-      "title": "Black Sea Oilseed Markets 2026: Tight Balances, Weather Risks ...",
-      "url": "https://ukragroconsult.com/en/news/black-sea-oilseed-markets-2026-tight-balances-weather-risks-and-strategic-repricing/",
-      "source_domain": "ukragroconsult.com",
+      "title": "Logistical problems limit grain and sunflower oil exports from Ukraine",
+      "url": "https://www.tridge.com/news/logistical-problems-limit-grain-and-sunflowe-qxqfsm",
+      "source_domain": "tridge.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -114,77 +66,9 @@
       "score": 3
     },
     {
-      "id": "W11",
-      "title": "Black Sea Regional Analysis - World Perspectives",
-      "url": "https://worldperspectives.com/articles/black-sea-regional-analysis-03252026",
-      "source_domain": "worldperspectives.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W2",
-      "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
-      "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
-      "source_domain": "millermagazine.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W9",
-      "title": "GLOBAL TRADE WAR TO BOOST EXPORTS FROM BLACK SEA REGION | Miller Magazine",
-      "url": "https://millermagazine.com/blog/global-trade-war-to-boost-exports-from-black-sea-region-2872",
-      "source_domain": "millermagazine.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W13",
-      "title": "Global grain trends and transformations discussed at Black Sea ...",
-      "url": "https://ukragroconsult.com/en/news/global-grain-trends-and-transformations-discussed-at-black-sea-grain-conference/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W10",
-      "title": "MarGen Group    MA-Management SA | LinkedIn",
-      "url": "https://www.linkedin.com/company/margen-ma-management-sa",
+      "id": "W6",
+      "title": "OLIMPUS OIL | LinkedIn",
+      "url": "https://www.linkedin.com/company/olimpus-oil",
       "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
@@ -199,10 +83,44 @@
       "score": 3
     },
     {
-      "id": "W7",
-      "title": "Weekly Analysis 16.03.2026 - 20.03.2026 - Grains Prices",
-      "url": "https://grainsprices.com/article/19550",
-      "source_domain": "grainsprices.com",
+      "id": "W13",
+      "title": "Potoky, LLC (Oil Extraction Plant) | LinkedIn",
+      "url": "https://www.linkedin.com/company/potoky",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W11",
+      "title": "SUNFLOWER LOGISTICS CO.,LTD | LinkedIn",
+      "url": "https://www.linkedin.com/company/sunflower-logistics-co-ltd",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W5",
+      "title": "Strikes on Ukraine's vegetable oil drive prices to multi-year highs",
+      "url": "https://www.fastmarkets.com/insights/strikes-on-ukraines-vegetable-oil-drive-prices-to-multi-year-highs/",
+      "source_domain": "fastmarkets.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -217,9 +135,43 @@
     },
     {
       "id": "W8",
-      "title": "[PDF] Current state of the Black Sea grain and oilseed markets",
-      "url": "https://agmanager.info/sites/default/files/pdf/Broyaka_Ukraine_11-05-25.pdf",
-      "source_domain": "agmanager.info",
+      "title": "Sunflower Market Update 2026: Raw Material Prices, Oil Values and ...",
+      "url": "https://voez.com.ua/en/%25F0%259F%258C%25BBsunflower-market-update-2026-raw-material-prices-oil-values-and-processing-margins/",
+      "source_domain": "voez.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W15",
+      "title": "Ukraine maintains leadership in sunflower oil supplies to the EU",
+      "url": "https://ukragroconsult.com/en/news/ukraine-maintains-leadership-in-sunflower-oil-supplies-to-the-eu/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W2",
+      "title": "Ukraine remains leading sunflower oil supplier to EU",
+      "url": "https://www.ofimagazine.com/news/ukraine-remains-leading-sunflower-oil-supplier-to-eu",
+      "source_domain": "ofimagazine.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -234,9 +186,77 @@
     },
     {
       "id": "W4",
-      "title": "[PDF] Grains and Oilseeds Outlook | USDA",
-      "url": "https://www.usda.gov/sites/default/files/documents/2026AOF-grains-oilseeds-outlook.pdf",
-      "source_domain": "usda.gov",
+      "title": "Ukraine remains leading sunflower oil supplier to EU - Odessa Journal",
+      "url": "https://odessa-journal.com/ukraine-remains-leading-sunflower-oil-supplier-to-eu",
+      "source_domain": "odessa-journal.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W12",
+      "title": "Ukraine supplied about 92% of sunflower oil imports to the EU",
+      "url": "https://en.usm.media/ukraine-supplied-about-92-of-sunflower-oil-imports-to-the-eu/",
+      "source_domain": "en.usm.media",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W9",
+      "title": "Ukraine supplies most of the EU\u2019s sunflower oil imports | Biofuels International Magazine",
+      "url": "https://biofuels-news.com/news/ukraine-supplies-most-of-the-eus-sunflower-oil-imports/",
+      "source_domain": "biofuels-news.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W7",
+      "title": "Ukraine's Dominance in EU Sunflower Oil Supply (2025 ...",
+      "url": "https://agroreview.com/en/newsen/crops/ukraine-maintains-leadership-sunflower-oil/",
+      "source_domain": "agroreview.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W3",
+      "title": "Ukraine. Sunflower market on the turn of 2026 - UkrAgroConsult",
+      "url": "https://ukragroconsult.com/en/news/ukraine-sunflower-market-on-the-turn-of-2026/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -259,7 +279,7 @@
   "polymarket": [],
   "best_practices": [],
   "prompt_pack": [],
-  "context_snippet_md": "# Context: grain and oilseeds market wheat corn soybeans sunflower rapeseed black sea export logistics (Last 30 Days)\n\n*Generated: 2026-03-26 | Sources: reddit-web*\n\n## Key Sources\n\n- [Web] A Black Sea wheat and corn price outlook for 2026 ...\n- [Web] AgroPortal Bulgaria | LinkedIn...\n- [Web] Andreea Grosu - Execution Officer at Grain Resourc...\n- [Web] BLACK SEA GRAIN.KYIV-2026 -...\n- [Web] Black Sea Cereal Company | LinkedIn...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "context_snippet_md": "# Context: sunflower oil ukraine logistics (Last 30 Days)\n\n*Generated: 2026-03-26 | Sources: reddit-web*\n\n## Key Sources\n\n- [Reddit] Sunflowers from Ukraine?\n- [Web] ITO Global Logistics Ukraine...\n- [Web] Logistical problems limit grain and sunflower oil ...\n- [Web] OLIMPUS OIL | LinkedIn...\n- [Web] Potoky, LLC (Oil Extraction Plant) | LinkedIn...\n- [Web] SUNFLOWER LOGISTICS CO.,LTD | LinkedIn...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
   "x_error": "API error: HTTP 422: Unprocessable Entity",
   "bluesky_error": "Bluesky search failed: HTTP 403: Forbidden"
 }
