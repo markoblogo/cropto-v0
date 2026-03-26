@@ -48,8 +48,7 @@ jobs:
       - name: Refresh snapshots
         env:
           LAST30DAYS_OUTPUT_DIR: artifacts/last30days
-          LAST30DAYS_TOPIC: grain and oilseeds market wheat corn soybeans sunflower rapeseed black sea export logistics
-          SCRAPECREATORS_API_KEY: ${{ secrets.SCRAPECREATORS_API_KEY }}
+          LAST30DAYS_TOPICS: wheat prices black sea export||corn market outlook usda tenders||soybean meal crush margins||sunflower oil ukraine logistics
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
           CT0: ${{ secrets.CT0 }}
