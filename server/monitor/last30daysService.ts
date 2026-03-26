@@ -303,10 +303,28 @@ function isRelevantXTitle(title: string): boolean {
   return true;
 }
 
+function isRelevantBlueskyTitle(title: string): boolean {
+  const text = normalizeHeadline(title);
+  if (!text) return false;
+  const positiveHits = countPatternHits(text, X_MARKET_POSITIVE_PATTERNS);
+  const strongHits = countPatternHits(text, X_MARKET_STRONG_PATTERNS);
+  const contextHits = countPatternHits(text, X_MARKET_CONTEXT_PATTERNS);
+  const noiseHits = countPatternHits(text, X_MARKET_NOISE_PATTERNS);
+  const hasUrl = /https?:\/\//i.test(text);
+
+  if (contextHits < 2) return false;
+  if (text.length < 56) return false;
+  if (noiseHits > 0 && positiveHits <= noiseHits + 1) return false;
+  if (strongHits > 0) return true;
+  if (positiveHits >= 3 && hasUrl) return true;
+  return false;
+}
+
 function filterSourceNoise(items: Last30DaysRecord[]): Last30DaysRecord[] {
   return items.filter((item) => {
-    if (item.source !== "x") return true;
-    return isRelevantXTitle(item.title);
+    if (item.source === "x") return isRelevantXTitle(item.title);
+    if (item.source === "bluesky") return isRelevantBlueskyTitle(item.title);
+    return true;
   });
 }
 

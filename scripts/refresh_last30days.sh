@@ -17,7 +17,9 @@ SCRIPT_PATH="${LAST30DAYS_SCRIPT_PATH:-$HOME/.agents/skills/last30days/scripts/l
 TOPICS_RAW="${LAST30DAYS_TOPICS:-${LAST30DAYS_TOPIC:-grain market wheat corn soybeans sunflower rapeseed black sea export||ukraine grain export corridor black sea logistics||europe oilseeds crush biodiesel rapeseed sunflower imports}}"
 TOPICS_UK_RAW="${LAST30DAYS_TOPICS_UK:-ціни на пшеницю чорноморський експорт||україна зерновий коридор дунай порти логістика||соняшникова олія ріпак соя європа ринок}"
 SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
+ORIGINAL_SEARCH_SOURCES="$SEARCH_SOURCES"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-240}"
+BLUESKY_PUBLIC_FALLBACK=0
 
 if [[ ! -f "$SCRIPT_PATH" ]]; then
   echo "ERROR: last30days script not found: $SCRIPT_PATH" >&2
@@ -74,7 +76,7 @@ PY
 }
 
 configure_bluesky() {
-  if [[ ",$SEARCH_SOURCES," != *",bluesky,"* ]]; then
+  if [[ ",$ORIGINAL_SEARCH_SOURCES," != *",bluesky,"* ]]; then
     return
   fi
 
@@ -84,7 +86,8 @@ configure_bluesky() {
   export BSKY_HANDLE="$handle"
 
   if [[ -z "$handle" || -z "$password" ]]; then
-    echo "[last30days] WARN: bluesky credentials are missing, disabling bluesky source for this run." >&2
+    echo "[last30days] WARN: bluesky credentials are missing, switching to public Bluesky fallback for this run." >&2
+    BLUESKY_PUBLIC_FALLBACK=1
     SEARCH_SOURCES="$(strip_source_from_search "bluesky" "$SEARCH_SOURCES")"
     return
   fi
@@ -98,8 +101,16 @@ configure_bluesky() {
     sleep 2
   done
 
-  echo "[last30days] WARN: bluesky auth preflight failed (403/invalid creds), disabling bluesky source for this run." >&2
+  echo "[last30days] WARN: bluesky auth preflight failed (403/invalid creds), switching to public Bluesky fallback for this run." >&2
+  BLUESKY_PUBLIC_FALLBACK=1
   SEARCH_SOURCES="$(strip_source_from_search "bluesky" "$SEARCH_SOURCES")"
+}
+
+run_bluesky_public_query() {
+  local days="$1"
+  local topic="$2"
+  local out_file="$3"
+  python3 "$ROOT_DIR/scripts/fetch_bluesky_public.py" "$topic" --days="$days" --limit=25 > "$out_file"
 }
 
 run_query() {
@@ -251,6 +262,7 @@ run_window() {
   for topic in "${TOPICS[@]}"; do
     local tmp_file="$OUT_DIR/.${label}.topic${i}.json"
     local err_file="$OUT_DIR/.${label}.topic${i}.err.log"
+    local bluesky_tmp="$OUT_DIR/.${label}.topic${i}.bluesky.json"
     set +e
     run_query "$days" "$topic" "$tmp_file" "$err_file"
     local rc=$?
@@ -273,6 +285,19 @@ run_window() {
       echo "[last30days] WARN: query failed for ${label} topic #$((i + 1))" >&2
       rm -f "$tmp_file"
     fi
+
+    if [[ ",$ORIGINAL_SEARCH_SOURCES," == *",bluesky,"* ]]; then
+      set +e
+      run_bluesky_public_query "$days" "$topic" "$bluesky_tmp"
+      local bluesky_rc=$?
+      set -e
+      if [[ $bluesky_rc -eq 0 && -s "$bluesky_tmp" ]]; then
+        input_files+=("$bluesky_tmp")
+      else
+        rm -f "$bluesky_tmp"
+      fi
+    fi
+
     rm -f "$err_file"
     i=$((i + 1))
   done

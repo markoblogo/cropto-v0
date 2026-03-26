@@ -28,7 +28,7 @@ BSKY_HANDLE=your.handle
 BSKY_APP_PASSWORD=xxxx-xxxx-xxxx
 ```
 
-`refresh_last30days.sh` now validates Bluesky auth (with retries) and auto-disables `bluesky` for the current run if auth fails (to avoid full-run degradation).
+`refresh_last30days.sh` now validates Bluesky auth (with retries). If auth fails, the script switches to a public Bluesky search fallback so the source remains partially available instead of dropping out entirely.
 
 ## Refresh snapshots manually
 
