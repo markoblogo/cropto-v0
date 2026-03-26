@@ -202,9 +202,162 @@ function TrendSparkline({ values }: { values: number[] }) {
   );
 }
 
+type SummarySection = {
+  heading: string;
+  body: string[];
+};
+
+type PriceQuote = {
+  commodity: string;
+  value: number;
+  currency: string;
+  region: string;
+  title: string;
+  publishedAt: string;
+};
+
+function formatCommodityLabel(value: string) {
+  const map: Record<string, string> = {
+    corn: "Corn",
+    wheat: "Wheat",
+    soybeans: "Soybeans",
+    soybean: "Soybeans",
+    sunflower: "Sunflower",
+    rapeseed: "Rapeseed",
+    barley: "Barley",
+    rice: "Rice",
+    mixed: "Mixed",
+  };
+  return map[String(value || "mixed").toLowerCase()] || value;
+}
+
+function extractPriceQuotes(items: Last30DaysRecord[]): PriceQuote[] {
+  const byCommodity = new Map<string, PriceQuote>();
+  const sorted = [...items].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+  for (const item of sorted) {
+    const text = `${item.title} ${item.source}`.replace(/,/g, "");
+    const priceMatch = text.match(/(\d+(?:\.\d+)?)\s*(usd|eur|uah)/i);
+    if (!priceMatch) continue;
+    const commodity = String(item.commodity || "mixed").toLowerCase();
+    if (byCommodity.has(commodity)) continue;
+    byCommodity.set(commodity, {
+      commodity,
+      value: Number(priceMatch[1]),
+      currency: String(priceMatch[2] || "USD").toUpperCase(),
+      region: formatRegion(item.region || "global"),
+      title: item.title,
+      publishedAt: item.publishedAt,
+    });
+  }
+  return Array.from(byCommodity.values()).slice(0, 5);
+}
+
+function splitSummaryIntoSections(text: string): SummarySection[] {
+  const normalized = String(text || "")
+    .replace(/\r/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (!normalized) return [];
+
+  const headingPatterns = [
+    "General situation:",
+    "What changed vs previous comparable period:",
+    "Actionable implications for trading/brokerage:",
+    "Key facts:",
+    "Загальна ситуація:",
+    "Що змінилося:",
+    "Що змінилося у порівнянні з попереднім тижнем:",
+    "Практичні наслідки для трейдингу та брокерських операцій:",
+    "Торгівельні та брокерські рекомендації:",
+    "Імплікації для торгівлі:",
+    "Ключові факти:",
+  ];
+
+  let decorated = normalized;
+  for (const pattern of headingPatterns) {
+    const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    decorated = decorated.replace(new RegExp(`\\s*${escaped}`, "g"), `\n\n${pattern}`);
+  }
+
+  decorated = decorated
+    .replace(/\s+(Порівняно з попереднім днем[, ]|Порівняно з попереднім тижнем[, ]|Порівняно з попереднім місяцем[, ])/g, "\n\n$1")
+    .replace(/\s+(Для трейдерів[^.]*\.)/g, "\n\n$1")
+    .replace(/\s+(Рекомендується[^.]*\.)/g, "\n\n$1")
+    .replace(/\s+(Compared to the previous day[^.]*\.)/g, "\n\n$1")
+    .replace(/\s+(Traders should[^.]*\.)/g, "\n\n$1")
+    .replace(/\s+[•\-]\s+/g, "\n- ")
+    .trim();
+
+  const blocks = decorated
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  const sections: SummarySection[] = [];
+  let current: SummarySection | null = null;
+
+  for (const block of blocks) {
+    const headingMatch = block.match(
+      /^(General situation:|What changed vs previous comparable period:|Actionable implications for trading\/brokerage:|Key facts:|Загальна ситуація:|Що змінилося:?|Що змінилося у порівнянні з попереднім тижнем:|Практичні наслідки для трейдингу та брокерських операцій:|Торгівельні та брокерські рекомендації:|Імплікації для торгівлі:|Ключові факти:)\s*/i,
+    );
+    if (headingMatch) {
+      const heading = headingMatch[1].trim();
+      const rest = block.slice(headingMatch[0].length).trim();
+      current = { heading, body: rest ? [rest] : [] };
+      sections.push(current);
+      continue;
+    }
+    if (!current) {
+      current = { heading: "Summary", body: [block] };
+      sections.push(current);
+    } else {
+      current.body.push(block);
+    }
+  }
+
+  return sections;
+}
+
+function DeskSnapshot({ items, language }: { items: Last30DaysRecord[]; language: "en" | "uk" }) {
+  const quotes = extractPriceQuotes(items);
+  if (!quotes.length) {
+    return (
+      <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+        <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{language === "uk" ? "Desk Snapshot" : "Desk Snapshot"}</p>
+        <p className="text-sm text-slate-400">{language === "uk" ? "Недостатньо цінових точок у поточному зрізі." : "Not enough price points in current scope."}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+      <p className="mb-3 text-xs uppercase tracking-[0.12em] text-slate-400">Desk Snapshot</p>
+      <div className="space-y-2.5">
+        {quotes.map((quote) => (
+          <div key={`${quote.commodity}-${quote.currency}`} className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-slate-100">{formatCommodityLabel(quote.commodity)}</span>
+              <span className="text-sm font-mono text-cyan-300">
+                {quote.value.toFixed(quote.value % 1 === 0 ? 0 : 1)} {quote.currency}
+              </span>
+            </div>
+            <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-slate-400">
+              <span>{quote.region}</span>
+              <span>{formatDate(quote.publishedAt)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AIPeriodChart({
   chart,
   fallbackValues,
+  items,
+  language,
+  days,
 }: {
   chart?:
     | {
@@ -215,7 +368,14 @@ function AIPeriodChart({
       }
     | null;
   fallbackValues: number[];
+  items: Last30DaysRecord[];
+  language: "en" | "uk";
+  days: number;
 }) {
+  if (days === 1) {
+    return <DeskSnapshot items={items} language={language} />;
+  }
+
   const points = Array.isArray(chart?.points) ? chart!.points!.filter((p) => Number.isFinite(p?.value)) : [];
   const series = Array.isArray(chart?.series)
     ? chart.series
@@ -234,55 +394,71 @@ function AIPeriodChart({
     const min = Math.min(...flatValues, 0);
     const range = Math.max(max - min, 1);
     return (
-      <div className="space-y-2">
-        <svg viewBox={`0 0 ${width} ${height}`} className="h-28 w-full">
-          {series.slice(0, 4).map((s, idx) => {
-            const color = PIE_COLORS[idx % PIE_COLORS.length];
-            const poly = s.points
-              .map((p, i) => {
-                const x = (i / Math.max(s.points.length - 1, 1)) * width;
-                const y = height - ((Number(p.value || 0) - min) / range) * (height - 8) - 4;
-                return `${x},${y}`;
-              })
-              .join(" ");
-            return <polyline key={s.name} fill="none" stroke={color} strokeWidth="2.1" points={poly} />;
-          })}
-        </svg>
-        <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
-          {series.slice(0, 4).map((s, idx) => (
-            <span key={s.name} className="inline-flex items-center gap-1 rounded border border-slate-700 px-1.5 py-0.5">
-              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
-              {s.name}
-            </span>
-          ))}
+      <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+        <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{chart?.title || "Price Overlay"}</p>
+        <div className="space-y-2">
+          <svg viewBox={`0 0 ${width} ${height}`} className="h-28 w-full">
+            {series.slice(0, 4).map((s, idx) => {
+              const color = PIE_COLORS[idx % PIE_COLORS.length];
+              const poly = s.points
+                .map((p, i) => {
+                  const x = (i / Math.max(s.points.length - 1, 1)) * width;
+                  const y = height - ((Number(p.value || 0) - min) / range) * (height - 8) - 4;
+                  return `${x},${y}`;
+                })
+                .join(" ");
+              return <polyline key={s.name} fill="none" stroke={color} strokeWidth="2.1" points={poly} />;
+            })}
+          </svg>
+          <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
+            {series.slice(0, 4).map((s, idx) => (
+              <span key={s.name} className="inline-flex items-center gap-1 rounded border border-slate-700 px-1.5 py-0.5">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                {s.name}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   if (!points.length) {
-    return <TrendSparkline values={fallbackValues} />;
+    return (
+      <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+        <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{chart?.title || "Trend"}</p>
+        <TrendSparkline values={fallbackValues} />
+      </div>
+    );
   }
 
   if (chart?.type === "line") {
-    return <TrendSparkline values={points.map((p) => Number(p.value || 0))} />;
+    return (
+      <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+        <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{chart?.title || "Trend"}</p>
+        <TrendSparkline values={points.map((p) => Number(p.value || 0))} />
+      </div>
+    );
   }
 
   const max = Math.max(...points.map((p) => Number(p.value || 0)), 1);
   return (
-    <div className="space-y-2">
-      {points.slice(0, 8).map((point) => {
-        const width = Math.max(8, Math.round((Number(point.value || 0) / max) * 100));
-        return (
-          <div key={point.label} className="grid grid-cols-[52px_1fr_30px] items-center gap-2 text-xs text-slate-300">
-            <span className="truncate">{point.label}</span>
-            <div className="h-2 rounded bg-slate-800">
-              <div className="h-2 rounded bg-cyan-400" style={{ width: `${width}%` }} />
+    <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+      <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{chart?.title || "Market View"}</p>
+      <div className="space-y-2">
+        {points.slice(0, 8).map((point) => {
+          const width = Math.max(8, Math.round((Number(point.value || 0) / max) * 100));
+          return (
+            <div key={point.label} className="grid grid-cols-[52px_1fr_30px] items-center gap-2 text-xs text-slate-300">
+              <span className="truncate">{point.label}</span>
+              <div className="h-2 rounded bg-slate-800">
+                <div className="h-2 rounded bg-cyan-400" style={{ width: `${width}%` }} />
+              </div>
+              <span className="text-right font-mono">{Number(point.value || 0).toFixed(0)}</span>
             </div>
-            <span className="text-right font-mono">{Number(point.value || 0).toFixed(0)}</span>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -437,6 +613,9 @@ function SummaryCard({
   trend,
   aiChart,
   filename,
+  items,
+  language,
+  days,
 }: {
   title: string;
   summary: string;
@@ -448,7 +627,11 @@ function SummaryCard({
     series?: Array<{ name: string; points: Array<{ label: string; value: number }> }>;
   } | null;
   filename: string;
+  items: Last30DaysRecord[];
+  language: "en" | "uk";
+  days: number;
 }) {
+  const sections = splitSummaryIntoSections(summary);
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -466,13 +649,40 @@ function SummaryCard({
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_240px]">
-        <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-200 whitespace-pre-wrap select-text">
-          {summary}
+        <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-200 select-text">
+          <div className="space-y-4">
+            {(sections.length ? sections : [{ heading: "", body: [summary] }]).map((section, idx) => (
+              <div key={`${section.heading}-${idx}`} className="space-y-2">
+                {section.heading ? <p className="text-sm font-semibold text-slate-100">{section.heading}</p> : null}
+                {section.body.map((paragraph, bodyIdx) => {
+                  const lines = paragraph
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean);
+                  const bulletLines = lines.filter((line) => line.startsWith("- "));
+                  if (bulletLines.length === lines.length && bulletLines.length > 0) {
+                    return (
+                      <div key={bodyIdx} className="space-y-1.5">
+                        {bulletLines.map((line) => (
+                          <div key={line} className="flex gap-2 text-slate-200">
+                            <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                            <span>{line.slice(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return (
+                    <p key={bodyIdx} className="leading-6 text-slate-200">
+                      {paragraph}
+                    </p>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-          <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{aiChart?.title || "Trend"}</p>
-          <AIPeriodChart chart={aiChart} fallbackValues={trend} />
-        </div>
+        <AIPeriodChart chart={aiChart} fallbackValues={trend} items={items} language={language} days={days} />
       </div>
     </div>
   );
@@ -686,6 +896,9 @@ export default function Last30DaysPage() {
             trend={enTrend}
             aiChart={aiSummaryQuery.data?.en?.chart}
             filename={`summary-en-${days}d.txt`}
+            items={enItems}
+            language="en"
+            days={days}
           />
           <SummaryCard
             title={`Summary UK - ${periodLabel}`}
@@ -693,6 +906,9 @@ export default function Last30DaysPage() {
             trend={ukTrend}
             aiChart={aiSummaryQuery.data?.uk?.chart}
             filename={`summary-uk-${days}d.txt`}
+            items={ukItems}
+            language="uk"
+            days={days}
           />
         </section>
 
