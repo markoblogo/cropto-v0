@@ -102,42 +102,70 @@ function median(numbers: number[]): number {
   return sorted[middle];
 }
 
-function EntriesBars({
+const PIE_COLORS = [
+  "#22d3ee",
+  "#34d399",
+  "#f59e0b",
+  "#60a5fa",
+  "#f472b6",
+  "#a78bfa",
+];
+
+function DistributionPanel({
   title,
   entries,
 }: {
   title: string;
   entries: Array<[string, number]>;
 }) {
-  const max = entries[0]?.[1] || 1;
+  const trimmed = entries.slice(0, 6);
+  const total = trimmed.reduce((acc, [, value]) => acc + value, 0);
+  const conicStops: string[] = [];
+  let cursor = 0;
+  trimmed.forEach(([, value], idx) => {
+    const pct = total > 0 ? (value / total) * 100 : 0;
+    const next = cursor + pct;
+    conicStops.push(`${PIE_COLORS[idx % PIE_COLORS.length]} ${cursor}% ${next}%`);
+    cursor = next;
+  });
+  const conic = conicStops.length ? `conic-gradient(${conicStops.join(", ")})` : "conic-gradient(#1e293b 0 100%)";
+
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-      <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
-      </div>
-      <div className="space-y-3">
-        {entries.length === 0 ? (
-          <div className="text-sm text-slate-400">No records for current filters.</div>
-        ) : (
-          entries.map(([label, value]) => {
-            const width = Math.max(6, Math.round((value / max) * 100));
-            return (
-              <div key={label} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span>{label}</span>
-                  <span className="font-mono">{value}</span>
+      <h3 className="mb-3 text-sm font-semibold text-slate-100">{title}</h3>
+      {trimmed.length === 0 ? (
+        <div className="text-sm text-slate-400">No records for current filters.</div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-[140px_1fr] md:items-center">
+          <div className="flex justify-center">
+            <div
+              className="relative h-28 w-28 rounded-full"
+              style={{ background: conic }}
+            >
+              <div className="absolute inset-4 rounded-full bg-slate-950/95" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            {trimmed.map(([label, value], idx) => {
+              const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+              return (
+                <div key={label} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+                    />
+                    <span className="capitalize">{label}</span>
+                  </div>
+                  <span className="font-mono text-slate-200">
+                    {value} · {pct}%
+                  </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
-                    style={{ width: `${width}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -146,6 +174,7 @@ export default function Last30DaysPage() {
   const [days, setDays] = useState<number>(30);
   const [region, setRegion] = useState<string>("all");
   const [lang, setLang] = useState<string>("all");
+  const [analyticsTab, setAnalyticsTab] = useState<"sources" | "commodities" | "regions">("sources");
 
   const summaryQuery = useQuery<Last30DaysResponse>({
     queryKey: ["/api/last30days/summary", days, region, lang],
@@ -233,6 +262,13 @@ export default function Last30DaysPage() {
       return acc;
     }, {}),
   ).sort((a, b) => b[1] - a[1]);
+  const sourceEntries = Object.entries(
+    activeItems.reduce<Record<string, number>>((acc, item) => {
+      const key = (item.source || "web").toLowerCase();
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b[1] - a[1]);
   const topCommodity = commodityEntries[0]?.[0] || data?.summary.topCommodity || "n/a";
   const sourceDiversity = new Set(activeItems.map((item) => item.source)).size;
   const freshnessMedianDays = Math.round(
@@ -244,40 +280,11 @@ export default function Last30DaysPage() {
       }),
     ),
   );
-  const narrativesCount = new Set(
-    activeItems
-      .flatMap((item) =>
-        item.title
-          .toLowerCase()
-          .split(/[^a-zа-яіїєґ0-9]+/i)
-          .filter((token) => token.length >= 5),
-      )
-      .filter(
-        (token) =>
-          ![
-            "about",
-            "their",
-            "there",
-            "after",
-            "before",
-            "grain",
-            "market",
-            "price",
-            "rates",
-            "wheat",
-            "corn",
-            "soybeans",
-          ].includes(token),
-      )
-      .slice(0, 40),
-  ).size;
   const regionEntries = Object.entries(
-    activeItems
-      .filter((item) => item.impact >= 3)
-      .reduce<Record<string, number>>((acc, item) => {
-        acc[item.region] = (acc[item.region] || 0) + 1;
-        return acc;
-      }, {}),
+    activeItems.reduce<Record<string, number>>((acc, item) => {
+      acc[item.region] = (acc[item.region] || 0) + 1;
+      return acc;
+    }, {}),
   )
     .map(([key, value]) => [formatRegion(key), value] as [string, number])
     .sort((a, b) => b[1] - a[1]);
@@ -288,9 +295,6 @@ export default function Last30DaysPage() {
   const commodityContextPct = last30CommoditySet.size
     ? Math.round((commodityContextMatch / last30CommoditySet.size) * 100)
     : 0;
-  const last30SourceSet = new Set(activeItems.map((item) => item.source.trim().toUpperCase()));
-  const monitorSourceSet = new Set(sourceChips.map((chip) => chip.trim().toUpperCase()));
-  const sharedSourceCount = Array.from(last30SourceSet).filter((source) => monitorSourceSet.has(source)).length;
   const monitorFreshnessMedianDays = Math.round(
     median(
       dashboardRows.map((row) => {
@@ -382,7 +386,7 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
-        <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
             <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Coverage</p>
             <p className="mt-2 text-3xl font-semibold">{activeCoverageCount}</p>
@@ -408,47 +412,64 @@ export default function Last30DaysPage() {
             <p className="mt-2 text-3xl font-semibold capitalize">{topCommodity}</p>
             <p className="mt-1 text-xs text-slate-400">Dominant topic in current scope</p>
           </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Source Diversity</p>
-            <p className="mt-2 text-3xl font-semibold">{sourceDiversity}</p>
-            <p className="mt-1 text-xs text-slate-400">Unique last30days sources</p>
-          </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Narratives</p>
-            <p className="mt-2 text-3xl font-semibold">{narrativesCount}</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Median freshness {Number.isFinite(freshnessMedianDays) ? `${freshnessMedianDays}d` : "n/a"}
-            </p>
-          </div>
         </section>
 
-        <section className="mb-4 grid gap-3 lg:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Context Match</p>
-            <p className="mt-2 text-3xl font-semibold">{commodityContextPct}%</p>
-            <p className="mt-1 text-xs text-slate-400">
-              {commodityContextMatch}/{last30CommoditySet.size || 0} last30 commodities confirmed in monitor pricing
-            </p>
+        <section className="mb-4 rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold">Analytics Switchboard</h3>
+              <p className="text-xs text-slate-400">
+                One block for source/commodity/region distributions and context metrics.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "sources", label: "Sources" },
+                { value: "commodities", label: "Commodities" },
+                { value: "regions", label: "Regions" },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setAnalyticsTab(tab.value as "sources" | "commodities" | "regions")}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    analyticsTab === tab.value
+                      ? "border-cyan-300 bg-cyan-300 text-slate-900"
+                      : "border-slate-700 bg-slate-950 text-slate-300"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Source Overlap</p>
-            <p className="mt-2 text-3xl font-semibold">{sharedSourceCount}</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Shared provider/source labels between last30days and monitor context
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Freshness Delta</p>
-            <p className="mt-2 text-3xl font-semibold">{freshnessDeltaDays > 0 ? "+" : ""}{freshnessDeltaDays}d</p>
-            <p className="mt-1 text-xs text-slate-400">
-              monitor median age minus last30 median age (negative is better for monitor)
-            </p>
-          </div>
-        </section>
 
-        <section className="mb-4 grid gap-3 lg:grid-cols-2">
-          <EntriesBars title="Commodity Share" entries={commodityEntries} />
-          <EntriesBars title="Regional Heat (Impact >= 4)" entries={regionEntries} />
+          <div className="mb-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Source Diversity</p>
+              <p className="mt-1 text-2xl font-semibold">{sourceDiversity}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Context Match</p>
+              <p className="mt-1 text-2xl font-semibold">{commodityContextPct}%</p>
+            </div>
+            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Freshness Delta</p>
+              <p className="mt-1 text-2xl font-semibold">
+                {freshnessDeltaDays > 0 ? "+" : ""}
+                {freshnessDeltaDays}d
+              </p>
+            </div>
+          </div>
+
+          {analyticsTab === "sources" ? (
+            <DistributionPanel title="Source Share" entries={sourceEntries} />
+          ) : null}
+          {analyticsTab === "commodities" ? (
+            <DistributionPanel title="Commodity Share" entries={commodityEntries} />
+          ) : null}
+          {analyticsTab === "regions" ? (
+            <DistributionPanel title="Regional Share" entries={regionEntries} />
+          ) : null}
         </section>
 
         <section className="mb-4 rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
