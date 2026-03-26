@@ -1,8 +1,1037 @@
 {
-  "generatedAt": "2026-03-26T09:46:45.264020+00:00",
-  "items": [],
+  "generatedAt": "2026-03-26T09:51:46.717852+00:00",
+  "items": [
+    {
+      "id": "R8",
+      "title": "📊 📈 Financial Market Update - Tuesday, March 24, 2026 - Top 4 Stories You Need to Know",
+      "url": "https://www.reddit.com/r/financialbooklet/comments/1s27exl/financial_market_update_tuesday_march_24_2026_top/",
+      "subreddit": "financialbooklet",
+      "date": "2026-03-24",
+      "date_confidence": "high",
+      "engagement": null,
+      "top_comments": [],
+      "comment_insights": [],
+      "relevance": 0.88,
+      "why_relevant": "Contains a corn market item about price moves and trader reaction to geopolitical developments.",
+      "subs": {
+        "relevance": 88,
+        "recency": 93,
+        "engagement": 50
+      },
+      "score": 74,
+      "source": "reddit"
+    },
+    {
+      "id": "W5",
+      "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
+      "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Agricultural Futures - Total Grain Marketing",
+      "url": "https://www.totalgrainmarketing.com/grain-marketing/barchart-futures?j1_module=futureDetail&popup=1&0=news&j1_storyID=640216&j1_symbol=KEH26&j1_selected=news",
+      "source_domain": "totalgrainmarketing.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "AgroPortal Bulgaria | LinkedIn",
+      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "Black Sea Cereal Company | LinkedIn",
+      "url": "https://www.linkedin.com/company/black-sea-cereal-company",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Black Sea Regional Analysis - World Perspectives",
+      "url": "https://worldperspectives.com/articles/black-sea-regional-analysis-03252026",
+      "source_domain": "worldperspectives.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "Black Sea Regional Analysis - World Perspectives",
+      "url": "https://www.worldperspectives.com/index.php/articles/black-sea-regional-analysis-03252026",
+      "source_domain": "worldperspectives.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
+      "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
+      "source_domain": "millermagazine.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Black Sea wheat prices rise 2.5% amid Middle East conflict",
+      "url": "https://logos-pres.md/en/news/black-sea-wheat-price-up-2-5-since-the-start-of-the-war-in-the-middle-east/",
+      "source_domain": "logos-pres.md",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "Export prices FOB on 17-03-2026",
+      "url": "https://agridata.ec.europa.eu/Reports/Cereals_Dashboard.pdf",
+      "source_domain": "agridata.ec.europa.eu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Ukrainian Wheat Prices Steady as Black Sea Exports Remain ...",
+      "url": "https://commodity-board.com/ukrainian-wheat-prices-steady-as-black-sea-exports-remain-competitive/",
+      "source_domain": "commodity-board.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Weekly Analysis 16.03.2026 - 20.03.2026 - Grains Prices",
+      "url": "https://grainsprices.com/article/19550",
+      "source_domain": "grainsprices.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Weekly Price Report March 13, 2026",
+      "url": "https://uswheat.org/wp-content/uploads/2026/03/PR-260313.pdf",
+      "source_domain": "uswheat.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "Wheat Index FOB Black Sea region Historical Data (WHFOB) - Investing.com",
+      "url": "https://www.investing.com/indices/wheat-fob-black-sea-index-historical-data",
+      "source_domain": "investing.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Wheat price commentary: Futures rally on tight Black Sea supply, steady premiums - Fastmarkets",
+      "url": "https://www.fastmarkets.com/insights/wheat-price-commentary-futures-rally-on-tight-black-sea-supply-steady-premiums/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Ag Market Outlook, Feb 2026 with Chad Hart, Iowa State ... - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DwAq7DEZMFnY",
+      "source_domain": "youtube.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Economic Outlook - 2026: Q1 - National Corn Growers Association",
+      "url": "https://ncga.com/stay-informed/media/the-corn-economy/article/2026/01/economic-outlook-2026-q1",
+      "source_domain": "ncga.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "Grains and Oilseeds Outlook | USDA",
+      "url": "https://www.usda.gov/sites/default/files/documents/2026AOF-grains-oilseeds-outlook.pdf",
+      "source_domain": "usda.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Here's USDA's preliminary look at 2026 corn, soybean, wheat acres and balance sheets - Pro Farmer",
+      "url": "https://www.profarmer.com/news/agriculture-news/heres-usdas-preliminary-look-2026-corn-soybean-wheat-acres-and-balance-sheets",
+      "source_domain": "profarmer.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "Record-Breaking US Corn Exports: USDA Forecasts 3.3 Billion ...",
+      "url": "http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-23-record-breaking-us-corn-exports-usda-forecasts-33-billion-bushels-amid-energy-surge&ved=2ahUKEwj1p-eBpL2TAxWm0ckDHd9rCggQFnoECA8QAg&usg=AOvVaw3chGUSrLGA-I-KRTOkKMoW",
+      "source_domain": "google.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Risk Management Options for 2026: Corn, Soybeans and Wheat | Market Intel | American Farm Bureau Federation",
+      "url": "https://www.fb.org/market-intel/risk-management-options-for-2026-corn-soybeans-and-wheat",
+      "source_domain": "fb.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "The Corn Market in 2026: A Tale of Two Balance Sheets",
+      "url": "https://www.dtnpf.com/agriculture/web/ag/news/business-inputs/article/2026/03/04/corn-market-2026-tale-two-balance",
+      "source_domain": "dtnpf.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "US farmers to sow more soybeans in 2026, less corn, USDA says | Reuters",
+      "url": "https://www.reuters.com/world/us/us-farmers-sow-more-soybeans-2026-less-corn-usda-says-2026-02-19/",
+      "source_domain": "reuters.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "USDA Ag Outlook: Farm Economy 'Making Progress' in 2026, But Headwinds Persist - AgWeb",
+      "url": "https://www.agweb.com/news/policy/ag-economy/usda-ag-outlook-farm-economy-making-progress-2026-headwinds-persist",
+      "source_domain": "agweb.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "USDA Predicts Brighter Picture For Ag After 2026 - AgWeb",
+      "url": "https://www.agweb.com/markets/usda-predicts-better-days-farming-are-way",
+      "source_domain": "agweb.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "USDA predicts reduced corn production for 2026-‘27 | Ethanol Producer Magazine",
+      "url": "https://ethanolproducer.com/articles/usda-predicts-reduced-corn-production-for-2026-27",
+      "source_domain": "ethanolproducer.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "USDA projects corn acres to drop 4.8M in 2026 as farmers shift",
+      "url": "https://www.farmprogress.com/marketing/could-corn-cut-almost-5-million-acres-usda-thinks-so-",
+      "source_domain": "farmprogress.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "[PDF] Feed Outlook: February 2026 - Economic Research Service",
+      "url": "https://ers.usda.gov/sites/default/files/_laserfiche/outlooks/113812/FDS-26B.pdf%3Fv%3D10180",
+      "source_domain": "ers.usda.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "[PDF] Feed Outlook: January 2026 - Economic Research Service",
+      "url": "https://ers.usda.gov/sites/default/files/_laserfiche/outlooks/113683/FDS-26A.pdf%3Fv%3D32048",
+      "source_domain": "ers.usda.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "2026 Corn, Soybean, and Wheat Outlook | CAES Field Report",
+      "url": "https://fieldreport.caes.uga.edu/publications/AP130-4-06/2026-corn-soybean-wheat-forecast/",
+      "source_domain": "fieldreport.caes.uga.edu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "AGRILAND FS > Barchart > Future Detail",
+      "url": "https://www.agrilandfs.com/Barchart/Future-Detail?j1_module=futureDetail&popup=1&0=news&j1_storyID=36866340&j1_symbol=ZSK26&j1_selected=news",
+      "source_domain": "agrilandfs.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "As Biofuel Policy Clouds Soybean Crush Outlook, Capacity Expansion in Kansas Offers Bright Spot - RFD",
+      "url": "https://www.rfdtv.com/biofuel-policy-uncertainty-hits-soybeans-kansas-crush-offers-bright-spot",
+      "source_domain": "rfdtv.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "OILEX - International Multi Oil Extraction Company | LinkedIn",
+      "url": "https://www.linkedin.com/company/oilex-international-oil-extraction-company",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Soybean Crushing Company & Derivatives | LinkedIn",
+      "url": "https://www.linkedin.com/company/soybean-crushing-company-&-derivatives",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Soybean Futures Calendar - CME Group",
+      "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.calendar.html?redirect=/soybeans&videoId=6385978871112",
+      "source_domain": "cmegroup.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Soybean Meal Futures Quotes - CME Group",
+      "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean-meal.html",
+      "source_domain": "cmegroup.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Soybean Meal March 2026 Options Quotes - Markets - Farms.com",
+      "url": "https://m.farms.com/markets/market-s?page=optqte&sym=zmh26&mode=d",
+      "source_domain": "m.farms.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Soybean Meal May '26 Futures Technical Analysis - Barchart.com",
+      "url": "https://www.barchart.com/futures/quotes/ZM*0/technical-analysis",
+      "source_domain": "barchart.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Soybean Meal Micro Mar '26 Futures Contract Specifications - Barchart.com",
+      "url": "https://www.barchart.com/futures/quotes/SMH26/profile",
+      "source_domain": "barchart.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Soybean/Corn Price Ratio Supports Shift to Soybeans",
+      "url": "https://www.dtnpf.com/agriculture/web/ag/news/article/2026/03/24/soybeancorn-price-ratio-supports",
+      "source_domain": "dtnpf.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Technical Analysis of Soybean Meal Futures (CBOT:ZM1!) — TradingView",
+      "url": "https://www.tradingview.com/symbols/CBOT-ZM1!/technicals/",
+      "source_domain": "tradingview.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "US Soybean Meal Futures Technical Analysis - Investing.com",
+      "url": "https://www.investing.com/commodities/us-soybean-meal-technical",
+      "source_domain": "investing.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "User | chroniclejournal.com - Glut in the Heartland: US Soybean Stocks Hit Six-Year High as Brazilian Competition Stifles Exports",
+      "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-25-glut-in-the-heartland-us-soybean-stocks-hit-six-year-high-as-brazilian-competition-stifles-exports",
+      "source_domain": "markets.chroniclejournal.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "AGRARIAN CENTER SUNFLOWER OIL - Ukraine | LinkedIn",
+      "url": "https://www.linkedin.com/company/agrarian-center",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "ITO Global Logistics Ukraine",
+      "url": "https://www.linkedin.com/company/ukrin-ltd",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Logistical problems limit grain and sunflower oil exports from Ukraine",
+      "url": "https://www.tridge.com/news/logistical-problems-limit-grain-and-sunflowe-qxqfsm",
+      "source_domain": "tridge.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "OLIMPUS OIL | LinkedIn",
+      "url": "https://www.linkedin.com/company/olimpus-oil",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Oliyatorg OÜ Group of Companies | LinkedIn",
+      "url": "https://www.linkedin.com/company/oliyatorg-holding",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Potoky, LLC (Oil Extraction Plant) | LinkedIn",
+      "url": "https://www.linkedin.com/company/potoky",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Strikes on Ukraine's vegetable oil drive prices to multi-year highs",
+      "url": "https://www.fastmarkets.com/insights/strikes-on-ukraines-vegetable-oil-drive-prices-to-multi-year-highs/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Sunflower oil exports from Ukraine through ports have ...",
+      "url": "https://ukragroconsult.com/en/news/sunflower-oil-exports-from-ukraine-through-ports-have-almost-stopped-after-a-series-of-attacks/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "Sunseed prices in Ukraine reached 31000 UAH/t, but they ...",
+      "url": "https://ukragroconsult.com/en/news/sunseed-prices-in-ukraine-reached-31000-uah-t-but-they-are-limited-by-the-stabilization-of-sunflower-oil-prices/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "Ukraine remains largest exporter of sunflower oil to Europe, with minor shares held by two other countries | Ukrainian Agrarian Confederation",
+      "url": "https://agroconf.org/en/content/ukraine-remains-largest-exporter-sunflower-oil-europe-minor-shares-held-two-other-countries",
+      "source_domain": "agroconf.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Ukraine remains leading sunflower oil supplier to EU",
+      "url": "https://www.ofimagazine.com/news/ukraine-remains-leading-sunflower-oil-supplier-to-eu",
+      "source_domain": "ofimagazine.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Ukraine remains leading sunflower oil supplier to EU",
+      "url": "https://odessa-journal.com/ukraine-remains-leading-sunflower-oil-supplier-to-eu",
+      "source_domain": "odessa-journal.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Ukraine supplies most of the EU’s sunflower oil imports | Biofuels International Magazine",
+      "url": "https://biofuels-news.com/news/ukraine-supplies-most-of-the-eus-sunflower-oil-imports/",
+      "source_domain": "biofuels-news.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "Ukraine's Dominance in EU Sunflower Oil Supply (2025 ...",
+      "url": "https://agroreview.com/en/newsen/crops/ukraine-maintains-leadership-sunflower-oil/",
+      "source_domain": "agroreview.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    }
+  ],
   "meta": {
     "inputFiles": 4,
-    "itemCount": 0
+    "itemCount": 57
   }
 }

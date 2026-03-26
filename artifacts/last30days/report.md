@@ -1,6 +1,6 @@
 # sunflower oil ukraine logistics - Last 30 Days Research Report
 
-**Generated:** 2026-03-26T09:47:53.789573+00:00
+**Generated:** 2026-03-26T09:52:54.019605+00:00
 **Date Range:** 2026-02-24 to 2026-03-26
 **Mode:** reddit-web
 
@@ -8,19 +8,29 @@
 
 - **OpenAI:** gpt-5.4-mini
 
-## Reddit Threads
-
-### R14: Sunflowers from Ukraine?
-
-- **Subreddit:** r/AskUkraine
-- **URL:** https://www.reddit.com/r/AskUkraine/comments/1s0nq7o/sunflowers_from_ukraine/
-- **Date:** 2026-03-22 (confidence: high)
-- **Score:** 52/100
-- **Relevance:** About obtaining sunflowers from Ukraine; loosely related to Ukraine agricultural supply and logistics, though not oil-specific.
-
 ## Web Results
 
-### W10: ITO Global Logistics Ukraine
+### W6: 2026 will not bring a significant increase in the price of sunflower oil ...
+
+- **Source:** ukragroconsult.com
+- **URL:** https://ukragroconsult.com/en/news/2026-will-not-bring-a-significant-increase-in-the-price-of-sunflower-oil-in-ukraine/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W10: AGRARIAN CENTER SUNFLOWER OIL - Ukraine | LinkedIn
+
+- **Source:** linkedin.com
+- **URL:** https://www.linkedin.com/company/agrarian-center
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: ITO Global Logistics Ukraine
 
 - **Source:** linkedin.com
 - **URL:** https://www.linkedin.com/company/ukrin-ltd
@@ -30,17 +40,17 @@
 
 > 
 
-### W14: Logistical problems limit grain and sunflower oil exports from Ukraine
+### W8: Import Sunflower Oil From Ukraine 2026: Market Insights
 
-- **Source:** tridge.com
-- **URL:** https://www.tridge.com/news/logistical-problems-limit-grain-and-sunflowe-qxqfsm
+- **Source:** deepbeez.com
+- **URL:** https://deepbeez.com/trade-flow/import-sunflower-oil-from-ukraine
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W6: OLIMPUS OIL | LinkedIn
+### W7: OLIMPUS OIL | LinkedIn
 
 - **Source:** linkedin.com
 - **URL:** https://www.linkedin.com/company/olimpus-oil
@@ -50,7 +60,17 @@
 
 > 
 
-### W13: Potoky, LLC (Oil Extraction Plant) | LinkedIn
+### W13: Oliyatorg OÜ Group of Companies | LinkedIn
+
+- **Source:** linkedin.com
+- **URL:** https://www.linkedin.com/company/oliyatorg-holding
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W9: Potoky, LLC (Oil Extraction Plant) | LinkedIn
 
 - **Source:** linkedin.com
 - **URL:** https://www.linkedin.com/company/potoky
@@ -60,17 +80,17 @@
 
 > 
 
-### W11: SUNFLOWER LOGISTICS CO.,LTD | LinkedIn
+### W15: QP Foods UK Supplies Sunflower Oil from Ukraine
 
-- **Source:** linkedin.com
-- **URL:** https://www.linkedin.com/company/sunflower-logistics-co-ltd
+- **Source:** en.interfax.com.ua
+- **URL:** https://en.interfax.com.ua/news/press-release/1153594.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W5: Strikes on Ukraine's vegetable oil drive prices to multi-year highs
+### W4: Strikes on Ukraine's vegetable oil drive prices to multi-year highs
 
 - **Source:** fastmarkets.com
 - **URL:** https://www.fastmarkets.com/insights/strikes-on-ukraines-vegetable-oil-drive-prices-to-multi-year-highs/
@@ -80,27 +100,27 @@
 
 > 
 
-### W8: Sunflower Market Update 2026: Raw Material Prices, Oil Values and ...
+### W14: Sunflower Oil: Ukraine's Leading Export in 2025/26 Year - AgroReview
 
-- **Source:** voez.com.ua
-- **URL:** https://voez.com.ua/en/%25F0%259F%258C%25BBsunflower-market-update-2026-raw-material-prices-oil-values-and-processing-margins/
+- **Source:** agroreview.com
+- **URL:** https://agroreview.com/en/newsen/crops/sunflower-oil-remains-ukraines-main/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W15: Ukraine maintains leadership in sunflower oil supplies to the EU
+### W11: Ukraine remains largest exporter of sunflower oil to Europe, with minor shares held by two other countries | Ukrainian Agrarian Confederation
 
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/en/news/ukraine-maintains-leadership-in-sunflower-oil-supplies-to-the-eu/
+- **Source:** agroconf.org
+- **URL:** https://agroconf.org/en/content/ukraine-remains-largest-exporter-sunflower-oil-europe-minor-shares-held-two-other-countries
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W2: Ukraine remains leading sunflower oil supplier to EU
+### W3: Ukraine remains leading sunflower oil supplier to EU
 
 - **Source:** ofimagazine.com
 - **URL:** https://www.ofimagazine.com/news/ukraine-remains-leading-sunflower-oil-supplier-to-eu
@@ -110,7 +130,7 @@
 
 > 
 
-### W4: Ukraine remains leading sunflower oil supplier to EU - Odessa Journal
+### W5: Ukraine remains leading sunflower oil supplier to EU
 
 - **Source:** odessa-journal.com
 - **URL:** https://odessa-journal.com/ukraine-remains-leading-sunflower-oil-supplier-to-eu
@@ -120,40 +140,10 @@
 
 > 
 
-### W12: Ukraine supplied about 92% of sunflower oil imports to the EU
-
-- **Source:** en.usm.media
-- **URL:** https://en.usm.media/ukraine-supplied-about-92-of-sunflower-oil-imports-to-the-eu/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W9: Ukraine supplies most of the EU’s sunflower oil imports | Biofuels International Magazine
+### W2: Ukraine supplies most of the EU’s sunflower oil imports | Biofuels International Magazine
 
 - **Source:** biofuels-news.com
 - **URL:** https://biofuels-news.com/news/ukraine-supplies-most-of-the-eus-sunflower-oil-imports/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W7: Ukraine's Dominance in EU Sunflower Oil Supply (2025 ...
-
-- **Source:** agroreview.com
-- **URL:** https://agroreview.com/en/newsen/crops/ukraine-maintains-leadership-sunflower-oil/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W3: Ukraine. Sunflower market on the turn of 2026 - UkrAgroConsult
-
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/en/news/ukraine-sunflower-market-on-the-turn-of-2026/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
