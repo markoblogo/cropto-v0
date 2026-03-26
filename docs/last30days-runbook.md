@@ -14,6 +14,22 @@ LAST30DAYS_SQLITE_PATH=/absolute/path/to/last30days.sqlite
 
 If JSON is missing/empty and SQLite is configured, API falls back to SQLite reads.
 
+For bilingual ingestion topics (EN + UKR):
+
+```bash
+LAST30DAYS_TOPICS="wheat prices black sea export||corn market outlook usda tenders"
+LAST30DAYS_TOPICS_UK="ціни на пшеницю чорноморський експорт||кукурудза ринок прогноз тендери"
+```
+
+For Bluesky source:
+
+```bash
+BSKY_HANDLE=your.handle
+BSKY_APP_PASSWORD=xxxx-xxxx-xxxx
+```
+
+`refresh_last30days.sh` now validates Bluesky auth (with retries) and auto-disables `bluesky` for the current run if auth fails (to avoid full-run degradation).
+
 ## Refresh snapshots manually
 
 ```bash

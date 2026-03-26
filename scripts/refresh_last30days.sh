@@ -6,7 +6,8 @@ set -euo pipefail
 # Optional env:
 #   LAST30DAYS_OUTPUT_DIR    (default: artifacts/last30days)
 #   LAST30DAYS_SCRIPT_PATH   (default: ~/.agents/skills/last30days/scripts/last30days.py)
-#   LAST30DAYS_TOPICS        (default: three grain/oilseeds themes, separated by "||")
+#   LAST30DAYS_TOPICS        (default: EN grain/oilseeds themes, separated by "||")
+#   LAST30DAYS_TOPICS_UK     (default: UKR grain/oilseeds themes, separated by "||")
 #   LAST30DAYS_SEARCH        (default: reddit,x,bluesky,hn,youtube,web)
 #   LAST30DAYS_TIMEOUT       (default: 240)
 
@@ -14,6 +15,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${LAST30DAYS_OUTPUT_DIR:-$ROOT_DIR/artifacts/last30days}"
 SCRIPT_PATH="${LAST30DAYS_SCRIPT_PATH:-$HOME/.agents/skills/last30days/scripts/last30days.py}"
 TOPICS_RAW="${LAST30DAYS_TOPICS:-${LAST30DAYS_TOPIC:-grain market wheat corn soybeans sunflower rapeseed black sea export||ukraine grain export corridor black sea logistics||europe oilseeds crush biodiesel rapeseed sunflower imports}}"
+TOPICS_UK_RAW="${LAST30DAYS_TOPICS_UK:-ціни на пшеницю чорноморський експорт||україна зерновий коридор дунай порти логістика||соняшникова олія ріпак соя європа ринок}"
 SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-240}"
 
@@ -34,6 +36,70 @@ split_topics() {
     [[ -n "$topic" ]] && filtered+=("$topic")
   done
   TOPICS=("${filtered[@]}")
+}
+
+strip_source_from_search() {
+  local source="$1"
+  local csv="$2"
+  local updated
+  updated="$(printf "%s" "$csv" | sed -E "s/(^|,)$source(,|$)/,/g; s/,+/,/g; s/^,//; s/,$//")"
+  printf "%s" "$updated"
+}
+
+check_bluesky_auth() {
+  python3 - "$1" "$2" <<'PY'
+import json
+import sys
+import urllib.request
+import urllib.error
+
+handle = sys.argv[1].strip()
+password = sys.argv[2].strip()
+if not handle or not password:
+    raise SystemExit(1)
+
+url = "https://bsky.social/xrpc/com.atproto.server.createSession"
+payload = json.dumps({"identifier": handle, "password": password}).encode("utf-8")
+req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+try:
+    with urllib.request.urlopen(req, timeout=12) as resp:
+        if 200 <= resp.status < 300:
+            raise SystemExit(0)
+except urllib.error.HTTPError:
+    pass
+except Exception:
+    pass
+raise SystemExit(1)
+PY
+}
+
+configure_bluesky() {
+  if [[ ",$SEARCH_SOURCES," != *",bluesky,"* ]]; then
+    return
+  fi
+
+  local handle="${BSKY_HANDLE:-}"
+  local password="${BSKY_APP_PASSWORD:-}"
+  handle="$(printf "%s" "$handle" | sed 's/^@//; s/^ *//; s/ *$//')"
+  export BSKY_HANDLE="$handle"
+
+  if [[ -z "$handle" || -z "$password" ]]; then
+    echo "[last30days] WARN: bluesky credentials are missing, disabling bluesky source for this run." >&2
+    SEARCH_SOURCES="$(strip_source_from_search "bluesky" "$SEARCH_SOURCES")"
+    return
+  fi
+
+  local attempt
+  for attempt in 1 2; do
+    if check_bluesky_auth "$handle" "$password"; then
+      echo "[last30days] Bluesky auth preflight OK."
+      return
+    fi
+    sleep 2
+  done
+
+  echo "[last30days] WARN: bluesky auth preflight failed (403/invalid creds), disabling bluesky source for this run." >&2
+  SEARCH_SOURCES="$(strip_source_from_search "bluesky" "$SEARCH_SOURCES")"
 }
 
 run_query() {
@@ -165,7 +231,13 @@ with open(out_file, "w", encoding="utf-8") as f:
 PY
 }
 
-split_topics "$TOPICS_RAW"
+configure_bluesky
+
+COMBINED_TOPICS_RAW="$TOPICS_RAW"
+if [[ -n "${TOPICS_UK_RAW// }" ]]; then
+  COMBINED_TOPICS_RAW="${COMBINED_TOPICS_RAW}||${TOPICS_UK_RAW}"
+fi
+split_topics "$COMBINED_TOPICS_RAW"
 
 run_window() {
   local days="$1"

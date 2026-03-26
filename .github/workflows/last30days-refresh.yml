@@ -49,6 +49,7 @@ jobs:
         env:
           LAST30DAYS_OUTPUT_DIR: artifacts/last30days
           LAST30DAYS_TOPICS: wheat prices black sea export||corn market outlook usda tenders||soybean meal crush margins||sunflower oil ukraine logistics
+          LAST30DAYS_TOPICS_UK: ціни на пшеницю чорноморський експорт||кукурудза ринок прогноз тендери||соєвий шрот маржа переробки||соняшникова олія логістика україна
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
           CT0: ${{ secrets.CT0 }}
