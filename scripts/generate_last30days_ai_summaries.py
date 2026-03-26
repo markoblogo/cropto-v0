@@ -5,6 +5,7 @@ import re
 import sys
 import urllib.request
 import urllib.error
+from collections import Counter
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -45,6 +46,17 @@ def parse_iso_date(value: str):
         if raw.endswith("Z"):
             raw = raw[:-1] + "+00:00"
         return datetime.fromisoformat(raw).date()
+    except Exception:
+        return None
+
+def parse_iso_datetime(value: str):
+    raw = (value or "").strip()
+    if not raw:
+        return None
+    try:
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        return datetime.fromisoformat(raw)
     except Exception:
         return None
 
@@ -174,11 +186,12 @@ def build_last30_lines(items, scope):
         if scope == "uk" and not is_uk:
             continue
         selected.append(row)
+    selected.sort(key=lambda x: parse_iso_datetime(x.get("date", "")) or datetime(1970, 1, 1), reverse=True)
     selected = selected[:24]
     lines = []
     for i, row in enumerate(selected):
         lines.append(
-            f"{i + 1}. [{row['date'][:10]}] {row['commodity'].upper()} | {row['region']} | {row['signal']} | impact {row['impact']:.1f} | {row['title']}"
+            f"{i + 1}. [{row['date'][:10]}] {row['commodity'].upper()} | {row['region']} | {row['signal']} | impact {row['impact']:.1f} | {row['title']} [{row['source']}]"
         )
     return selected, lines
 
@@ -252,6 +265,90 @@ def build_period_comparison_metrics(all_items, scope, days):
         "comparison": "month_vs_prev_month_or_regime",
     }
 
+def top_headlines(rows, limit=6):
+    ranked = sorted(rows, key=lambda r: float(r.get("impact") or 0), reverse=True)[:limit]
+    out = []
+    for row in ranked:
+        out.append(
+            {
+                "date": str(row.get("date") or "")[:10],
+                "commodity": str(row.get("commodity") or "mixed"),
+                "signal": str(row.get("signal") or "neutral"),
+                "impact": round(float(row.get("impact") or 0), 2),
+                "title": str(row.get("title") or ""),
+                "source": str(row.get("source") or "web"),
+            }
+        )
+    return out
+
+def build_fact_pack(period_items, all_items_scope, days):
+    if not period_items:
+        return {"window": {}, "changes": {}, "headlines": [], "note": "No records in period scope."}
+
+    dates = [parse_iso_date(str(r.get("date") or "")) for r in period_items]
+    dates = [d for d in dates if d]
+    latest_date = max(dates) if dates else datetime.now(timezone.utc).date()
+    if days == 1:
+        start = latest_date
+    elif days == 7:
+        start = latest_date - timedelta(days=6)
+    else:
+        start = latest_date - timedelta(days=29)
+
+    current_rows = []
+    prev_rows = []
+    prev_start = start - timedelta(days=days)
+    prev_end = start - timedelta(days=1)
+    for row in all_items_scope:
+        d = parse_iso_date(str(row.get("date") or ""))
+        if not d:
+            continue
+        if start <= d <= latest_date:
+            current_rows.append(row)
+        if prev_start <= d <= prev_end:
+            prev_rows.append(row)
+
+    current_count = len(current_rows)
+    prev_count = len(prev_rows)
+    current_impact = round(sum(float(r.get("impact") or 0) for r in current_rows) / max(current_count, 1), 2)
+    prev_impact = round(sum(float(r.get("impact") or 0) for r in prev_rows) / max(prev_count, 1), 2)
+
+    curr_sig = Counter(str(r.get("signal") or "neutral") for r in current_rows)
+    prev_sig = Counter(str(r.get("signal") or "neutral") for r in prev_rows)
+    curr_com = Counter(str(r.get("commodity") or "mixed") for r in current_rows)
+    prev_com = Counter(str(r.get("commodity") or "mixed") for r in prev_rows)
+    curr_reg = Counter(str(r.get("region") or "global") for r in current_rows)
+
+    movers = []
+    for key in set(curr_com.keys()).union(prev_com.keys()):
+        diff = curr_com.get(key, 0) - prev_com.get(key, 0)
+        movers.append({"commodity": key, "delta_count": diff, "current": curr_com.get(key, 0), "previous": prev_com.get(key, 0)})
+    movers.sort(key=lambda x: abs(x["delta_count"]), reverse=True)
+
+    return {
+        "window": {
+            "from": start.isoformat(),
+            "to": latest_date.isoformat(),
+            "records": current_count,
+            "avg_impact": current_impact,
+            "top_commodities": curr_com.most_common(5),
+            "top_regions": curr_reg.most_common(4),
+            "signal_mix": {
+                "bullish": curr_sig.get("bullish", 0),
+                "bearish": curr_sig.get("bearish", 0),
+                "neutral": curr_sig.get("neutral", 0),
+            },
+        },
+        "changes": {
+            "comparison_window": {"from": prev_start.isoformat(), "to": prev_end.isoformat(), "records": prev_count, "avg_impact": prev_impact},
+            "delta_records": current_count - prev_count,
+            "delta_avg_impact": round(current_impact - prev_impact, 2),
+            "delta_signal_balance": (curr_sig.get("bullish", 0) - curr_sig.get("bearish", 0)) - (prev_sig.get("bullish", 0) - prev_sig.get("bearish", 0)),
+            "commodity_movers": movers[:6],
+        },
+        "headlines": top_headlines(current_rows, limit=8),
+    }
+
 def build_spike_lines(news_items, scope, days):
     if days == 1:
         return []
@@ -269,7 +366,14 @@ def build_spike_lines(news_items, scope, days):
             continue
         if scope == "en" and (lang == "uk" or re.search(r"[іїєґ]|[а-яё]", title.lower() + " " + summary.lower())):
             continue
-        published = str(row.get("published_at") or "")[:10]
+        published_raw = str(row.get("published_at") or "")
+        published = published_raw[:10]
+        if published:
+            pdate = parse_iso_date(published_raw) or parse_iso_date(published)
+            if pdate:
+                max_age = 10 if days == 7 else 40
+                if (datetime.now(timezone.utc).date() - pdate).days > max_age:
+                    continue
         line = f"[{published}] {title}"
         if summary:
             line += f" | {summary[:160]}"
@@ -312,59 +416,14 @@ def extract_json_object(text: str):
     return None
 
 
-def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, spike_lines, days):
-    system_prompt = (
-        "You are an agricultural market analyst. Write in Ukrainian. Keep it practical and concise."
-        if language == "uk"
-        else "You are an agricultural market analyst. Write in English. Keep it practical and concise."
-    )
-    chart_hint = (
-        "For 1-day period use compact category bars (not line trend)."
-        if days == 1
-        else "For 7-day period use day-by-day values."
-        if days == 7
-        else "For 30-day period use 4 weekly buckets."
-    )
-    user_prompt = "\n".join(
-        [
-            f"Time window: {period_label}.",
-            f"Scope: {scope_label}.",
-            "",
-            "Use BOTH datasets below when building conclusions.",
-            "Temporal comparison is mandatory; explicitly mention what changed vs previous comparable period.",
-            "",
-            "Last30Days feed:",
-            "\n".join(last30_lines) if last30_lines else "No records.",
-            "",
-            "Market dashboard context:",
-            "\n".join(monitor_lines) if monitor_lines else "No records.",
-            "",
-            "Temporal metrics:",
-            json.dumps(period_metrics, ensure_ascii=False),
-            "",
-            "Spike weekly notes (if available):",
-            "\n".join(spike_lines) if spike_lines else "No spike weekly notes in scope.",
-            "",
-            "Output format requirements:",
-            "1) Start with one short paragraph: current market situation and directional tone.",
-            "2) Then a 'Key facts' section with 4-6 bullets.",
-            "3) Focus on implications for grains/oilseeds trading and brokerage decisions.",
-            "4) Do not repeat raw dashboard metrics.",
-            "5) Build period-specific narrative: yesterday must emphasize yesterday events and change vs previous day; week must summarize this week dynamics and compare to previous week; month must summarize 30d and compare to previous month or, if unavailable, early-vs-late month regime.",
-            "",
-            "Return STRICT JSON with this schema:",
-            '{ "summary": "text", "chart": { "type": "bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ] } }',
-            f"Chart rule: {chart_hint}",
-        ]
-    )
-
+def _call_openai_once(system_prompt, user_prompt):
     req = urllib.request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(
             {
                 "model": MODEL,
-                "temperature": 0.2,
-                "max_output_tokens": 700,
+                "temperature": 0.15,
+                "max_output_tokens": 900,
                 "input": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
@@ -385,6 +444,87 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
         return parsed
     return {"summary": text, "chart": None}
 
+def summary_too_generic(text):
+    plain = (text or "").strip().lower()
+    if not plain:
+        return True
+    generic_markers = [
+        "remains broadly neutral",
+        "mixed signals",
+        "cautious approach",
+        "maintaining flexibility",
+    ]
+    has_numbers = bool(re.search(r"\d", plain))
+    marker_hits = sum(1 for marker in generic_markers if marker in plain)
+    return (not has_numbers) or marker_hits >= 2
+
+def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, days):
+    system_prompt = (
+        "You are a senior grains & oilseeds analyst. Write in Ukrainian."
+        if language == "uk"
+        else "You are a senior grains & oilseeds analyst. Write in English."
+    )
+    chart_hint = (
+        "For Yesterday: output 3-5 category bars (for example: logistics pressure, demand pulse, price pressure, execution risk). No line chart."
+        if days == 1
+        else "For Week: output exactly 7 points day-by-day from window start to window end."
+        if days == 7
+        else "For 30 Days: output exactly 4 weekly buckets (W1..W4)."
+    )
+    user_prompt = "\n".join(
+        [
+            f"Time window: {period_label}.",
+            f"Scope: {scope_label}.",
+            "",
+            "Use BOTH datasets below when building conclusions.",
+            "Temporal comparison is mandatory; explicitly mention what changed vs previous comparable period.",
+            "",
+            "Last30Days feed:",
+            "\n".join(last30_lines) if last30_lines else "No records.",
+            "",
+            "Market dashboard context:",
+            "\n".join(monitor_lines) if monitor_lines else "No records.",
+            "",
+            "Temporal metrics:",
+            json.dumps(period_metrics, ensure_ascii=False),
+            "",
+            "Period fact pack (must be referenced directly):",
+            json.dumps(fact_pack, ensure_ascii=False),
+            "",
+            "Spike weekly notes (if available):",
+            "\n".join(spike_lines) if spike_lines else "No spike weekly notes in scope.",
+            "",
+            "Output format requirements:",
+            "1) Produce concise analyst note in this exact structure: 'General situation', 'What changed vs previous comparable period', 'Actionable implications for trading/brokerage', 'Key facts'.",
+            "2) In 'Key facts' provide 4-6 bullets with concrete numbers and dates from supplied data (not generic phrases).",
+            "3) Do not repeat dashboard labels and do not list source names in every bullet.",
+            "4) Build period-specific logic strictly: yesterday => yesterday events + vs previous day; week => week dynamics + vs previous week; month => 30d regime + vs previous month if available, else early-vs-late month.",
+            "5) If Spike weekly note exists (especially for UK and week/month), integrate 1-2 concrete operational insights from it.",
+            "6) Keep total summary length 900-1400 characters.",
+            "",
+            "Return STRICT JSON with this schema:",
+            '{ "summary": "text", "chart": { "type": "bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ] } }',
+            f"Chart rule: {chart_hint}",
+        ]
+    )
+
+    parsed = _call_openai_once(system_prompt, user_prompt)
+    summary = str(parsed.get("summary") or "").strip()
+    if summary_too_generic(summary):
+        retry_prompt = "\n".join(
+            [
+                user_prompt,
+                "",
+                "Previous draft was too generic. Rewrite with tighter factual grounding.",
+                "Mandatory: include at least 4 numeric values and at least 2 explicit dates from window/context.",
+                "Mandatory: explicitly describe one change versus previous comparable period.",
+            ]
+        )
+        retried = _call_openai_once(system_prompt, retry_prompt)
+        if str(retried.get("summary") or "").strip():
+            return retried
+    return parsed
+
 
 def write_window(window_name, days, period_label, monitor_payload, monitor_news_payload, all_items_month):
     src = read_json(OUT_DIR / f"{window_name}.json")
@@ -395,8 +535,12 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
     uk_items, uk_lines = build_last30_lines(items, "uk")
     en_monitor_lines = market_dashboard_lines(monitor_payload, "en")
     uk_monitor_lines = market_dashboard_lines(monitor_payload, "uk")
+    en_scope_all = scope_filter(all_items_month, "en")
+    uk_scope_all = scope_filter(all_items_month, "uk")
     en_metrics = build_period_comparison_metrics(all_items_month, "en", days)
     uk_metrics = build_period_comparison_metrics(all_items_month, "uk", days)
+    en_fact_pack = build_fact_pack(en_items, en_scope_all, days)
+    uk_fact_pack = build_fact_pack(uk_items, uk_scope_all, days)
     en_spike_lines = build_spike_lines(monitor_news_payload, "en", days)
     uk_spike_lines = build_spike_lines(monitor_news_payload, "uk", days)
 
@@ -411,6 +555,7 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
             en_lines,
             en_monitor_lines,
             en_metrics,
+            en_fact_pack,
             en_spike_lines,
             days,
         )
@@ -424,6 +569,7 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
             uk_lines,
             uk_monitor_lines,
             uk_metrics,
+            uk_fact_pack,
             uk_spike_lines,
             days,
         )
