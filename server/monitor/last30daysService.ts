@@ -38,6 +38,74 @@ function normalizeText(value: unknown): string {
   return String(value || "").trim();
 }
 
+function normalizeHeadline(value: unknown): string {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .replace(/^\s*[-–—:]+\s*/g, "")
+    .trim();
+}
+
+function normalizeUrl(value: unknown): string {
+  const raw = normalizeText(value);
+  if (!raw || raw === "#") return "#";
+  try {
+    const parsed = new URL(raw);
+    const dropParams = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref", "s"];
+    for (const key of dropParams) parsed.searchParams.delete(key);
+    parsed.hash = "";
+    parsed.hostname = parsed.hostname.toLowerCase();
+    parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+    return parsed.toString();
+  } catch {
+    return raw;
+  }
+}
+
+function inferSourceFromUrl(url: string): string {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host.includes("reddit.com")) return "reddit";
+    if (host.includes("x.com") || host.includes("twitter.com")) return "x";
+    if (host.includes("youtube.com") || host.includes("youtu.be")) return "youtube";
+    if (host.includes("news.ycombinator.com")) return "hn";
+    if (host.includes("bsky.app")) return "bluesky";
+    return "web";
+  } catch {
+    return "last30days";
+  }
+}
+
+function normalizeSource(sourceRaw: string, url: string): string {
+  const source = sourceRaw.toLowerCase().trim();
+  if (!source || source === "?" || source === "last30days") return inferSourceFromUrl(url);
+  if (source.includes("reddit")) return "reddit";
+  if (source === "x" || source.includes("twitter")) return "x";
+  if (source.includes("youtube")) return "youtube";
+  if (source.includes("hackernews") || source === "hn") return "hn";
+  if (source.includes("bluesky")) return "bluesky";
+  if (source.includes("web")) return "web";
+  return source;
+}
+
+function dedupeLast30Items(items: Last30DaysRecord[]): Last30DaysRecord[] {
+  const byKey = new Map<string, Last30DaysRecord>();
+  for (const item of items) {
+    const titleKey = normalizeHeadline(item.title).toLowerCase();
+    const key = item.url !== "#" ? `url:${item.url}` : `title:${titleKey}`;
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, item);
+      continue;
+    }
+    const existingTs = Date.parse(existing.publishedAt);
+    const nextTs = Date.parse(item.publishedAt);
+    if (Number.isFinite(nextTs) && (!Number.isFinite(existingTs) || nextTs > existingTs)) {
+      byKey.set(key, item);
+    }
+  }
+  return Array.from(byKey.values()).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+}
+
 function inferCommodity(text: string): string {
   const lower = text.toLowerCase();
   if (/\bwheat\b/.test(lower)) return "wheat";
@@ -273,12 +341,13 @@ export async function loadLast30DaysSummary(): Promise<Last30DaysSummary> {
     };
   }
 
-  const items: Last30DaysRecord[] = rawItems.map((item: any, idx: number) => {
-    const title = normalizeText(item?.title || item?.headline || item?.text || item?.summary || `Signal ${idx + 1}`);
+  const normalizedItems: Last30DaysRecord[] = rawItems.map((item: any, idx: number) => {
+    const title = normalizeHeadline(item?.title || item?.headline || item?.text || item?.summary || `Signal ${idx + 1}`);
     const body = normalizeText(item?.summary || item?.content || item?.description);
     const merged = `${title} ${body}`.trim();
-    const source = normalizeText(item?.source || item?.source_name || item?.publisher || "last30days");
-    const url = normalizeText(item?.url || item?.link || item?.source_url || "#") || "#";
+    const sourceRaw = normalizeText(item?.source || item?.source_name || item?.publisher || "last30days");
+    const url = normalizeUrl(item?.url || item?.link || item?.source_url || "#");
+    const source = normalizeSource(sourceRaw, url);
     return {
       id: normalizeText(item?.id || item?.uuid || `${source}-${idx + 1}`),
       title,
@@ -292,6 +361,7 @@ export async function loadLast30DaysSummary(): Promise<Last30DaysSummary> {
       impact: inferImpact(item, merged),
     };
   });
+  const items = dedupeLast30Items(normalizedItems);
 
   return {
     generatedAt: new Date().toISOString(),
