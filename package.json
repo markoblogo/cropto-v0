@@ -25,6 +25,7 @@
     "monitor:activation-report": "node --import tsx scripts/monitor_activation_report.ts",
     "monitor:triage": "node --import tsx scripts/monitor_triage.ts",
     "sea-brokerage:telegram:smoke": "tsx scripts/sea_brokerage_telegram_smoke.ts",
+    "last30days:refresh": "bash scripts/refresh_last30days.sh",
     "fpma:discovery:smoke": "node --import tsx scripts/fpma_discovery_smoke.ts",
     "ingest:backfill": "tsx scripts/ingest_backfill.ts",
     "e2e:smoke": "tsx scripts/e2e_smoke.ts",

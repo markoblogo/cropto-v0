@@ -43,6 +43,7 @@ import DeckPage from "@/pages/Deck";
 import MonitorPage from "@/pages/Monitor";
 import MonitorV3Page from "@/pages/MonitorV3";
 import SpikeMonitorPage from "@/pages/SpikeMonitor";
+import Last30DaysPage from "@/pages/Last30Days";
 import { useEffect } from "react";
 
 function RedirectToEducation() {
@@ -103,6 +104,8 @@ function Router() {
       <Route path="/monitor/" component={MonitorV3Page} />
       <Route path="/spike-monitor" component={SpikeMonitorPage} />
       <Route path="/spike-monitor/" component={SpikeMonitorPage} />
+      <Route path="/last30days" component={Last30DaysPage} />
+      <Route path="/last30days/" component={Last30DaysPage} />
       <Route path="/monitor-legacy" component={MonitorPage} />
       <Route path="/monitor-legacy/" component={MonitorPage} />
       <Route component={NotFound} />
