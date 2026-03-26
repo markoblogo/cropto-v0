@@ -31,6 +31,26 @@ type Last30DaysResponse = {
   items: Last30DaysRecord[];
 };
 
+type Last30DaysAiSummaryBlock = {
+  language: "en" | "uk";
+  scope: string;
+  model: string;
+  text: string;
+  inputCounts: {
+    last30days: number;
+    monitor: number;
+  };
+};
+
+type Last30DaysAiResponse = {
+  generatedAt: string;
+  filters: { days: number };
+  sourceUpdatedAt: string | null;
+  warnings?: string[];
+  en: Last30DaysAiSummaryBlock | null;
+  uk: Last30DaysAiSummaryBlock | null;
+};
+
 const TIMEFRAME_OPTIONS = [
   { value: 1, label: "Yesterday" },
   { value: 7, label: "Week" },
@@ -370,6 +390,22 @@ export default function Last30DaysPage() {
     refetchOnWindowFocus: true,
   });
 
+  const aiSummaryQuery = useQuery({
+    queryKey: ["/api/last30days/ai-summary", days],
+    queryFn: async () => {
+      const query = new URLSearchParams({ days: String(days) });
+      const response = await fetch(`/api/last30days/ai-summary?${query.toString()}`);
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || "Failed to load AI summaries");
+      }
+      return (await response.json()) as Last30DaysAiResponse;
+    },
+    staleTime: 10 * 60_000,
+    refetchInterval: 15 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+
   const data = summaryQuery.data;
   const activeItems = data?.items || [];
 
@@ -380,8 +416,10 @@ export default function Last30DaysPage() {
   const enItems = useMemo(() => activeItems.filter((item) => item.language === "en"), [activeItems]);
   const ukItems = useMemo(() => activeItems.filter((item) => item.language === "uk"), [activeItems]);
 
-  const enSummary = useMemo(() => makeAnalyticSummary(enItems, periodLabel, "EN"), [enItems, periodLabel]);
-  const ukSummary = useMemo(() => makeAnalyticSummary(ukItems, periodLabel, "UK"), [ukItems, periodLabel]);
+  const enSummaryFallback = useMemo(() => makeAnalyticSummary(enItems, periodLabel, "EN"), [enItems, periodLabel]);
+  const ukSummaryFallback = useMemo(() => makeAnalyticSummary(ukItems, periodLabel, "UK"), [ukItems, periodLabel]);
+  const enSummary = aiSummaryQuery.data?.en?.text?.trim() || enSummaryFallback;
+  const ukSummary = aiSummaryQuery.data?.uk?.text?.trim() || ukSummaryFallback;
 
   const enTrend = useMemo(() => buildDailyTrend(enItems, days), [enItems, days]);
   const ukTrend = useMemo(() => buildDailyTrend(ukItems, days), [ukItems, days]);
@@ -429,6 +467,12 @@ export default function Last30DaysPage() {
         {data?.warnings?.length ? (
           <div className="mb-4 rounded-xl border border-amber-700/60 bg-amber-950/40 p-3 text-xs text-amber-200">
             {data.warnings.join(" ")}
+          </div>
+        ) : null}
+
+        {aiSummaryQuery.data?.warnings?.length ? (
+          <div className="mb-4 rounded-xl border border-amber-700/60 bg-amber-950/40 p-3 text-xs text-amber-200">
+            {aiSummaryQuery.data.warnings.join(" ")}
           </div>
         ) : null}
 

@@ -515,6 +515,141 @@ function quickTriageReport(providers: any[]) {
   };
 }
 
+type Last30DaysAiSummaryBlock = {
+  language: "en" | "uk";
+  scope: string;
+  model: string;
+  text: string;
+  inputCounts: {
+    last30days: number;
+    monitor: number;
+  };
+};
+
+function isUkraineScopedMonitorItem(item: MonitorNewsItem): boolean {
+  const text = `${item.title || ""} ${item.summary || ""}`.toLowerCase();
+  return (
+    item.region_tags.some((tag) => String(tag).toLowerCase().includes("ukraine")) ||
+    /\bukraine\b|\bua\b|\bodesa\b|\bodessa\b/.test(text)
+  );
+}
+
+function buildLast30Context(items: Last30DaysRecord[], limit = 18): string {
+  return items
+    .slice(0, limit)
+    .map((item, idx) => {
+      const date = item.publishedAt.slice(0, 10);
+      return `${idx + 1}. [${date}] ${item.commodity.toUpperCase()} | ${item.region} | ${item.signal} | impact ${item.impact.toFixed(1)} | ${item.title}`;
+    })
+    .join("\n");
+}
+
+function buildMonitorContext(items: MonitorNewsItem[], limit = 14): string {
+  return items
+    .sort((a, b) => Date.parse(b.published_at) - Date.parse(a.published_at))
+    .slice(0, limit)
+    .map((item, idx) => {
+      const date = item.published_at.slice(0, 10);
+      const regions = item.region_tags.slice(0, 2).join(",");
+      return `${idx + 1}. [${date}] score ${item.relevance_score} | ${regions || "global"} | ${item.title}`;
+    })
+    .join("\n");
+}
+
+function extractResponseText(payload: any): string {
+  if (typeof payload?.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
+  const out = Array.isArray(payload?.output) ? payload.output : [];
+  const chunks: string[] = [];
+  for (const item of out) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+    for (const part of content) {
+      if (typeof part?.text === "string") chunks.push(part.text);
+    }
+  }
+  return chunks.join("\n").trim();
+}
+
+async function generateLast30AiSummary(params: {
+  language: "en" | "uk";
+  periodLabel: string;
+  scopeDescription: string;
+  last30Items: Last30DaysRecord[];
+  monitorItems: MonitorNewsItem[];
+}): Promise<Last30DaysAiSummaryBlock> {
+  const apiKey = process.env.OPENAI_API_KEY || "";
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is missing");
+  }
+
+  const model = process.env.LAST30DAYS_AI_MODEL || "gpt-4.1-mini";
+  const last30Context = buildLast30Context(params.last30Items);
+  const monitorContext = buildMonitorContext(params.monitorItems);
+
+  const systemPrompt =
+    params.language === "uk"
+      ? "You are an agricultural market analyst. Write in Ukrainian. Keep it practical and concise."
+      : "You are an agricultural market analyst. Write in English. Keep it practical and concise.";
+
+  const userPrompt = [
+    `Time window: ${params.periodLabel}.`,
+    `Scope: ${params.scopeDescription}.`,
+    "",
+    "Use BOTH datasets below when building conclusions.",
+    "",
+    "Last30Days feed:",
+    last30Context || "No last30days records.",
+    "",
+    "Monitor context feed:",
+    monitorContext || "No monitor records.",
+    "",
+    "Output format requirements:",
+    "1) Start with one short paragraph: current market situation and directional tone.",
+    "2) Then a 'Key facts' section with 4-6 bullets.",
+    "3) Focus on implications for grains/oilseeds trading and brokerage decisions.",
+    "4) Do not repeat raw dashboards metrics (coverage, risk index, etc).",
+    "5) Do not mention missing data unless critical.",
+  ].join("\n");
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      max_output_tokens: 700,
+      input: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`OpenAI request failed: HTTP ${response.status} ${text.slice(0, 240)}`);
+  }
+
+  const payload = await response.json();
+  const text = extractResponseText(payload);
+  if (!text) {
+    throw new Error("OpenAI response did not contain summary text");
+  }
+
+  return {
+    language: params.language,
+    scope: params.scopeDescription,
+    model,
+    text,
+    inputCounts: {
+      last30days: params.last30Items.length,
+      monitor: params.monitorItems.length,
+    },
+  };
+}
+
 export function registerMonitorRoutes(app: Express): void {
   // Keep monitor routes available even if a background source or scheduler fails
   // during boot. The web process should bind first and degrade gracefully rather
@@ -642,6 +777,70 @@ export function registerMonitorRoutes(app: Express): void {
         },
         items: [],
         message: error?.message || "Failed to build last30days summary",
+      });
+    }
+  });
+
+  app.get("/api/last30days/ai-summary", async (req, res) => {
+    try {
+      const daysRaw = Number.parseInt(String(req.query.days || "30"), 10);
+      const days = Number.isFinite(daysRaw) ? Math.max(1, Math.min(30, daysRaw)) : 30;
+      const periodLabel = days === 1 ? "Yesterday" : days === 7 ? "Week" : "30 Days";
+      const minTs = Date.now() - days * 24 * 60 * 60 * 1000;
+      const warnings: string[] = [];
+
+      const base = await loadLast30DaysSummary();
+      const scopedLast30 = base.items
+        .filter((item) => Date.parse(item.publishedAt) >= minTs)
+        .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+
+      const enLast30 = scopedLast30.filter((item) => item.language === "en" && item.region !== "ukraine");
+      const ukLast30 = scopedLast30.filter((item) => item.language === "uk" || item.region === "ukraine");
+
+      const { items: monitorItems } = await getMonitorNews(false, { threshold: MONITOR_RELEVANCE_THRESHOLD });
+      const scopedMonitor = monitorItems.filter((item) => {
+        const ts = Date.parse(item.published_at);
+        return Number.isFinite(ts) ? ts >= minTs : true;
+      });
+      const enMonitor = scopedMonitor.filter((item) => !isUkraineScopedMonitorItem(item));
+      const ukMonitor = scopedMonitor.filter((item) => isUkraineScopedMonitorItem(item));
+
+      const [enResult, ukResult] = await Promise.allSettled([
+        generateLast30AiSummary({
+          language: "en",
+          periodLabel,
+          scopeDescription: "English language + non-Ukraine markets",
+          last30Items: enLast30,
+          monitorItems: enMonitor,
+        }),
+        generateLast30AiSummary({
+          language: "uk",
+          periodLabel,
+          scopeDescription: "Ukraine market context",
+          last30Items: ukLast30,
+          monitorItems: ukMonitor,
+        }),
+      ]);
+
+      const en = enResult.status === "fulfilled" ? enResult.value : null;
+      const uk = ukResult.status === "fulfilled" ? ukResult.value : null;
+      if (enResult.status === "rejected") warnings.push(`en_summary_failed: ${String(enResult.reason?.message || enResult.reason)}`);
+      if (ukResult.status === "rejected") warnings.push(`uk_summary_failed: ${String(ukResult.reason?.message || ukResult.reason)}`);
+
+      return res.json({
+        generatedAt: new Date().toISOString(),
+        filters: { days },
+        sourceUpdatedAt: base.sourceUpdatedAt,
+        warnings,
+        en,
+        uk,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        warnings: [error?.message || "Failed to generate AI summaries"],
+        en: null,
+        uk: null,
       });
     }
   });
