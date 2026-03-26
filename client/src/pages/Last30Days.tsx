@@ -110,6 +110,16 @@ function shortLegendLabel(mode: "sources" | "commodities" | "regions" | "languag
   return map[normalized] || label.slice(0, 3).toUpperCase();
 }
 
+function shortModeLabel(mode: "sources" | "commodities" | "regions" | "languages"): string {
+  const map = {
+    sources: "SRC",
+    commodities: "CMD",
+    regions: "REG",
+    languages: "LAN",
+  } as const;
+  return map[mode];
+}
+
 function buildDistribution(items: Last30DaysRecord[], mode: "sources" | "commodities" | "regions" | "languages"): Array<[string, number]> {
   const map = items.reduce<Record<string, number>>((acc, item) => {
     let key = "mixed";
@@ -185,17 +195,17 @@ function DistributionPanel({
   }
 
   return (
-    <div className="grid min-h-[220px] gap-5 md:grid-cols-[320px_150px] md:items-center">
+    <div className="grid min-h-[198px] gap-4 md:grid-cols-[248px_112px] md:items-center">
       <div className="flex justify-center">
-        <div className="relative h-[246px] w-[246px] rounded-full" style={{ background: conic }}>
-          <div className="absolute inset-8 rounded-full bg-slate-950/95" />
+        <div className="relative h-[214px] w-[214px] rounded-full" style={{ background: conic }}>
+          <div className="absolute inset-7 rounded-full bg-slate-950/95" />
         </div>
       </div>
-      <div className="max-h-[220px] space-y-5 overflow-y-auto pr-1">
+      <div className="max-h-[190px] space-y-4 overflow-y-auto pr-1">
         {trimmed.map(([label], idx) => (
-          <div key={label} className="flex items-center text-base">
+          <div key={label} className="flex items-center text-sm">
             <div className="flex items-center gap-2 text-slate-300">
-              <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
               <span>{shortLegendLabel(mode, label)}</span>
             </div>
           </div>
@@ -445,23 +455,23 @@ export default function Last30DaysPage() {
               </div>
             </div>
 
-            <div className="lg:border-l lg:border-slate-800/70 lg:pl-10">
-              <div className="grid gap-5 md:grid-cols-[128px_1fr] md:items-start">
+            <div className="pt-1 lg:border-l lg:border-slate-800/70 lg:pl-10">
+              <div className="grid gap-4 md:grid-cols-[92px_1fr] md:items-start">
                 <div>
-                  <div className="mb-3">
+                  <div className="mb-2">
                     <p className="text-sm font-semibold text-slate-100">Distribution</p>
-                    <p className="mt-1 text-2xl font-semibold text-slate-100">
-                      {analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}
+                    <p className="mt-1 text-xl font-semibold text-slate-100">
+                      {shortModeLabel(analyticsTab)}
                     </p>
                   </div>
-                  <div className="grid gap-2.5">
+                  <div className="grid gap-2">
                     {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setAnalyticsTab(tab)}
-                        className={`rounded-xl border px-2 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
+                        className={`w-[86px] rounded-xl border px-2 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
                       >
-                        {tab === "languages" ? "Language" : tab[0].toUpperCase() + tab.slice(1)}
+                        {shortModeLabel(tab)}
                       </button>
                     ))}
                   </div>
