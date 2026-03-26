@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight, Copy, Download, Printer } from "lucide-react";
 
 type Last30DaysRecord = {
   id: string;
@@ -31,48 +31,21 @@ type Last30DaysResponse = {
   items: Last30DaysRecord[];
 };
 
-type MarketDashboardResponse = {
-  ua?: Array<{ commodity?: string; country?: string; basis?: string; price?: number; asOf?: string; source?: string; provider?: string }>;
-  br?: Array<{ commodity?: string; country?: string; basis?: string; price?: number; asOf?: string; source?: string; provider?: string }>;
-  ar?: Array<{ commodity?: string; country?: string; basis?: string; price?: number; asOf?: string; source?: string; provider?: string }>;
-  us?: Array<{ commodity?: string; country?: string; basis?: string; price?: number; asOf?: string; source?: string; provider?: string }>;
-  debugSources?: Array<{ provider?: string; source?: string; sourceLayer?: string }>;
-};
-
 const TIMEFRAME_OPTIONS = [
   { value: 1, label: "Yesterday" },
   { value: 7, label: "Week" },
-  { value: 30, label: "Month" },
-];
-
-const REGION_OPTIONS = [
-  { value: "all", label: "Global" },
-  { value: "ukraine", label: "Ukraine" },
-  { value: "europe", label: "Europe" },
-  { value: "black_sea", label: "Black Sea" },
-];
-
-const LANGUAGE_OPTIONS = [
-  { value: "all", label: "All languages" },
-  { value: "en", label: "English" },
-  { value: "uk", label: "Ukrainian" },
-  { value: "fr", label: "French" },
+  { value: 30, label: "30 Days" },
 ];
 
 const REGION_LABELS: Record<string, string> = {
   all: "Global",
+  global: "Global",
   ukraine: "Ukraine",
   europe: "Europe",
   black_sea: "Black Sea",
-  global: "Global",
 };
 
-function marketCountryToRegion(country: string): string {
-  const normalized = String(country || "").toUpperCase();
-  if (normalized === "UA") return "ukraine";
-  if (normalized === "FR" || normalized === "DE" || normalized === "RO") return "europe";
-  return "global";
-}
+const PIE_COLORS = ["#22d3ee", "#34d399", "#f59e0b", "#60a5fa", "#f472b6", "#a78bfa"];
 
 function formatRegion(value: string) {
   return REGION_LABELS[value] || value.replaceAll("_", " ");
@@ -88,60 +61,89 @@ function formatDate(value: string) {
   return date.toISOString().slice(0, 10);
 }
 
-function pickSignalTone(score: number) {
-  if (score > 35) return "Bullish";
-  if (score < -35) return "Bearish";
-  return "Neutral";
+function normalizeSource(source: string) {
+  const val = String(source || "web").toLowerCase();
+  if (val.includes("reddit")) return "reddit";
+  if (val.includes("youtube")) return "youtube";
+  if (val === "x" || val.includes("twitter")) return "x";
+  if (val.includes("bluesky")) return "bluesky";
+  if (val.includes("hn") || val.includes("hacker")) return "hn";
+  if (val.includes("web")) return "web";
+  return val;
 }
 
-function median(numbers: number[]): number {
-  if (numbers.length === 0) return 0;
-  const sorted = [...numbers].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 0) return (sorted[middle - 1] + sorted[middle]) / 2;
-  return sorted[middle];
+function buildDistribution(items: Last30DaysRecord[], mode: "sources" | "commodities" | "regions"): Array<[string, number]> {
+  const map = items.reduce<Record<string, number>>((acc, item) => {
+    let key = "mixed";
+    if (mode === "sources") key = normalizeSource(item.source || "web");
+    if (mode === "commodities") key = (item.commodity || "mixed").toLowerCase();
+    if (mode === "regions") key = formatRegion(item.region || "global");
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  return Object.entries(map).sort((a, b) => b[1] - a[1]);
 }
 
-const PIE_COLORS = [
-  "#22d3ee",
-  "#34d399",
-  "#f59e0b",
-  "#60a5fa",
-  "#f472b6",
-  "#a78bfa",
-];
+function buildDailyTrend(items: Last30DaysRecord[], days: number): number[] {
+  const now = new Date();
+  const dayKeys: string[] = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date(now);
+    d.setUTCDate(now.getUTCDate() - i);
+    dayKeys.push(d.toISOString().slice(0, 10));
+  }
+  const counts = new Map<string, number>();
+  dayKeys.forEach((key) => counts.set(key, 0));
+  for (const item of items) {
+    const key = formatDate(item.publishedAt);
+    if (counts.has(key)) counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return dayKeys.map((key) => counts.get(key) || 0);
+}
 
-function DistributionPanel({
-  title,
-  entries,
-}: {
-  title: string;
-  entries: Array<[string, number]>;
-}) {
+function TrendSparkline({ values }: { values: number[] }) {
+  const width = 220;
+  const height = 88;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = Math.max(max - min, 1);
+  const points = values
+    .map((value, idx) => {
+      const x = (idx / Math.max(values.length - 1, 1)) * width;
+      const y = height - ((value - min) / range) * (height - 8) - 4;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-24 w-full">
+      <polyline fill="none" stroke="#22d3ee" strokeWidth="2.5" points={points} />
+    </svg>
+  );
+}
+
+function DistributionPanel({ title, entries }: { title: string; entries: Array<[string, number]> }) {
   const trimmed = entries.slice(0, 6);
   const total = trimmed.reduce((acc, [, value]) => acc + value, 0);
-  const conicStops: string[] = [];
+  const stops: string[] = [];
   let cursor = 0;
-  trimmed.forEach(([, value], idx) => {
-    const pct = total > 0 ? (value / total) * 100 : 0;
+  for (let i = 0; i < trimmed.length; i += 1) {
+    const pct = total > 0 ? (trimmed[i][1] / total) * 100 : 0;
     const next = cursor + pct;
-    conicStops.push(`${PIE_COLORS[idx % PIE_COLORS.length]} ${cursor}% ${next}%`);
+    stops.push(`${PIE_COLORS[i % PIE_COLORS.length]} ${cursor}% ${next}%`);
     cursor = next;
-  });
-  const conic = conicStops.length ? `conic-gradient(${conicStops.join(", ")})` : "conic-gradient(#1e293b 0 100%)";
+  }
+  const conic = stops.length ? `conic-gradient(${stops.join(", ")})` : "conic-gradient(#1e293b 0 100%)";
 
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
       <h3 className="mb-3 text-sm font-semibold text-slate-100">{title}</h3>
       {trimmed.length === 0 ? (
-        <div className="text-sm text-slate-400">No records for current filters.</div>
+        <div className="text-sm text-slate-400">No records for current scope.</div>
       ) : (
         <div className="grid gap-4 md:grid-cols-[140px_1fr] md:items-center">
           <div className="flex justify-center">
-            <div
-              className="relative h-28 w-28 rounded-full"
-              style={{ background: conic }}
-            >
+            <div className="relative h-28 w-28 rounded-full" style={{ background: conic }}>
               <div className="absolute inset-4 rounded-full bg-slate-950/95" />
             </div>
           </div>
@@ -151,15 +153,10 @@ function DistributionPanel({
               return (
                 <div key={label} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 text-slate-300">
-                    <span
-                      className="inline-block h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
-                    />
+                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
                     <span className="capitalize">{label}</span>
                   </div>
-                  <span className="font-mono text-slate-200">
-                    {value} · {pct}%
-                  </span>
+                  <span className="font-mono text-slate-200">{value} - {pct}%</span>
                 </div>
               );
             })}
@@ -170,209 +167,214 @@ function DistributionPanel({
   );
 }
 
+function makeAnalyticSummary(items: Last30DaysRecord[], periodLabel: string, languageLabel: "EN" | "UK") {
+  if (items.length === 0) {
+    return `No ${languageLabel} records found for ${periodLabel.toLowerCase()} in the selected scope.`;
+  }
+
+  const signal = items.reduce(
+    (acc, item) => {
+      if (item.signal === "bullish") acc.bullish += 1;
+      if (item.signal === "bearish") acc.bearish += 1;
+      if (item.signal === "neutral") acc.neutral += 1;
+      return acc;
+    },
+    { bullish: 0, bearish: 0, neutral: 0 },
+  );
+
+  const avgImpact = (items.reduce((acc, item) => acc + Number(item.impact || 0), 0) / Math.max(items.length, 1)).toFixed(2);
+
+  const commodityTop = Object.entries(
+    items.reduce<Record<string, number>>((acc, item) => {
+      const key = (item.commodity || "mixed").toLowerCase();
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {}),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name, count]) => `${name} (${count})`)
+    .join(", ");
+
+  const sourceTop = Object.entries(
+    items.reduce<Record<string, number>>((acc, item) => {
+      const key = normalizeSource(item.source || "web");
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {}),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name, count]) => `${name} (${count})`)
+    .join(", ");
+
+  const keyHeadlines = items
+    .slice(0, 5)
+    .map((item, idx) => `${idx + 1}. ${item.title} [${normalizeSource(item.source)}]`)
+    .join("\n");
+
+  return [
+    `Period: ${periodLabel}`,
+    `Language scope: ${languageLabel}`,
+    `Coverage: ${items.length} signals`,
+    `Signal mix: bullish ${signal.bullish}, bearish ${signal.bearish}, neutral ${signal.neutral}`,
+    `Average impact: ${avgImpact}`,
+    `Top commodities: ${commodityTop || "n/a"}`,
+    `Top source channels: ${sourceTop || "n/a"}`,
+    "",
+    "Interpretation:",
+    `The flow is ${signal.bullish > signal.bearish ? "slightly constructive" : signal.bearish > signal.bullish ? "cautious-to-negative" : "balanced"} for ${periodLabel.toLowerCase()}, with risk concentrated around the top commodity cluster and the highest-impact headlines above.`,
+    "",
+    "Key headlines:",
+    keyHeadlines,
+  ].join("\n");
+}
+
+function downloadText(filename: string, text: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const href = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = href;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(href);
+}
+
+function printText(title: string, text: string) {
+  const win = window.open("", "_blank", "noopener,noreferrer,width=960,height=720");
+  if (!win) return;
+  const doc = win.document;
+  doc.title = title;
+  doc.head.innerHTML = '<style>body{font-family:Arial,sans-serif;padding:24px;line-height:1.45;}pre{white-space:pre-wrap;}</style>';
+  doc.body.innerHTML = "";
+  const h2 = doc.createElement("h2");
+  h2.textContent = title;
+  const pre = doc.createElement("pre");
+  pre.textContent = text;
+  doc.body.appendChild(h2);
+  doc.body.appendChild(pre);
+  win.focus();
+  win.print();
+}
+
+function SummaryCard({
+  title,
+  summary,
+  trend,
+  filename,
+}: {
+  title: string;
+  summary: string;
+  trend: number[];
+  filename: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigator.clipboard.writeText(summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
+            <Copy className="mr-1 inline h-3 w-3" />Copy
+          </button>
+          <button onClick={() => downloadText(filename, summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
+            <Download className="mr-1 inline h-3 w-3" />TXT
+          </button>
+          <button onClick={() => printText(title, summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
+            <Printer className="mr-1 inline h-3 w-3" />Print
+          </button>
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[1fr_240px]">
+        <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-200 whitespace-pre-wrap select-text">
+          {summary}
+        </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+          <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">Trend</p>
+          <TrendSparkline values={trend} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Last30DaysPage() {
   const [days, setDays] = useState<number>(30);
-  const [region, setRegion] = useState<string>("all");
-  const [lang, setLang] = useState<string>("all");
   const [analyticsTab, setAnalyticsTab] = useState<"sources" | "commodities" | "regions">("sources");
+  const [analyticsLang, setAnalyticsLang] = useState<"en" | "uk">("en");
 
-  const summaryQuery = useQuery<Last30DaysResponse>({
-    queryKey: ["/api/last30days/summary", days, region, lang],
+  const [feedOpen, setFeedOpen] = useState<boolean>(false);
+  const [feedRegion, setFeedRegion] = useState<string>("all");
+  const [feedLang, setFeedLang] = useState<string>("all");
+  const [feedCommodity, setFeedCommodity] = useState<string>("all");
+  const [feedSource, setFeedSource] = useState<string>("all");
+  const [feedSearch, setFeedSearch] = useState<string>("");
+
+  const summaryQuery = useQuery({
+    queryKey: ["/api/last30days/summary", days],
     queryFn: async () => {
-      const query = new URLSearchParams({
-        days: String(days),
-        region,
-        lang,
-      });
+      const query = new URLSearchParams({ days: String(days), region: "all", lang: "all" });
       const response = await fetch(`/api/last30days/summary?${query.toString()}`);
       if (!response.ok) {
         const text = await response.text();
         throw new Error(text || "Failed to load last30days summary");
       }
-      return response.json();
+      return (await response.json()) as Last30DaysResponse;
     },
     staleTime: 45_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
   });
 
-  const dashboardSourcesQuery = useQuery<MarketDashboardResponse>({
-    queryKey: ["/api/market-dashboard", "debugSources=1"],
-    queryFn: async () => {
-      const response = await fetch("/api/market-dashboard?debugSources=1");
-      if (!response.ok) return {};
-      return response.json();
-    },
-    staleTime: 60_000,
-    refetchInterval: 90_000,
-  });
-
-  const sourceChips = useMemo(() => {
-    const dashboard = dashboardSourcesQuery.data;
-    if (!dashboard) return [] as string[];
-    const list = new Set<string>();
-    for (const row of dashboard.ua || []) list.add((row.provider || row.source || "").toUpperCase());
-    for (const row of dashboard.br || []) list.add((row.provider || row.source || "").toUpperCase());
-    for (const row of dashboard.ar || []) list.add((row.provider || row.source || "").toUpperCase());
-    for (const row of dashboard.us || []) list.add((row.provider || row.source || "").toUpperCase());
-    for (const row of dashboard.debugSources || []) list.add((row.provider || row.source || "").toUpperCase());
-    return Array.from(list).filter(Boolean).sort((a, b) => a.localeCompare(b));
-  }, [dashboardSourcesQuery.data]);
-
-  const dashboardRows = useMemo(() => {
-    const dashboard = dashboardSourcesQuery.data;
-    if (!dashboard) return [] as Array<{ commodity: string; region: string; source: string; asOf: string }>;
-    const grouped = [dashboard.ua || [], dashboard.br || [], dashboard.ar || [], dashboard.us || []].flat();
-    return grouped
-      .map((row) => ({
-        commodity: String(row.commodity || "mixed").toLowerCase(),
-        region: marketCountryToRegion(row.country || ""),
-        source: String(row.provider || row.source || "market-dashboard"),
-        asOf: row.asOf || new Date().toISOString(),
-      }))
-      .filter((row) => row.commodity && (region === "all" || row.region === region));
-  }, [dashboardSourcesQuery.data, region]);
-
   const data = summaryQuery.data;
   const activeItems = data?.items || [];
-  const signalBalancePct =
-    activeItems.length === 0
-      ? 0
-      : Math.round(
-          (activeItems.reduce((acc, item) => {
-            if (item.signal === "bullish") return acc + 1;
-            if (item.signal === "bearish") return acc - 1;
-            return acc;
-          }, 0) /
-            activeItems.length) *
-            100,
-        );
-  const riskIndex =
-    activeItems.length === 0
-      ? 0
-      : Number(
-          (
-            activeItems.reduce((acc, item) => acc + Number(item.impact || 0), 0) /
-            activeItems.length
-          ).toFixed(2),
-        );
-  const commodityEntries = Object.entries(
-    activeItems.reduce<Record<string, number>>((acc, item) => {
-      acc[item.commodity] = (acc[item.commodity] || 0) + 1;
-      return acc;
-    }, {}),
-  ).sort((a, b) => b[1] - a[1]);
-  const sourceEntries = Object.entries(
-    activeItems.reduce<Record<string, number>>((acc, item) => {
-      const key = (item.source || "web").toLowerCase();
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {}),
-  ).sort((a, b) => b[1] - a[1]);
-  const topCommodity = commodityEntries[0]?.[0] || data?.summary.topCommodity || "n/a";
-  const sourceDiversity = new Set(activeItems.map((item) => item.source)).size;
-  const freshnessMedianDays = Math.round(
-    median(
-      activeItems.map((item) => {
-        const ts = Date.parse(item.publishedAt);
-        if (Number.isNaN(ts)) return 999;
-        return (Date.now() - ts) / (1000 * 60 * 60 * 24);
-      }),
-    ),
+
+  const infographicItems = useMemo(() => activeItems.filter((item) => item.language === analyticsLang), [activeItems, analyticsLang]);
+  const infographicEntries = useMemo(() => buildDistribution(infographicItems, analyticsTab), [infographicItems, analyticsTab]);
+
+  const periodLabel = TIMEFRAME_OPTIONS.find((x) => x.value === days)?.label || `${days} days`;
+
+  const enItems = useMemo(() => activeItems.filter((item) => item.language === "en"), [activeItems]);
+  const ukItems = useMemo(() => activeItems.filter((item) => item.language === "uk"), [activeItems]);
+
+  const enSummary = useMemo(() => makeAnalyticSummary(enItems, periodLabel, "EN"), [enItems, periodLabel]);
+  const ukSummary = useMemo(() => makeAnalyticSummary(ukItems, periodLabel, "UK"), [ukItems, periodLabel]);
+
+  const enTrend = useMemo(() => buildDailyTrend(enItems, days), [enItems, days]);
+  const ukTrend = useMemo(() => buildDailyTrend(ukItems, days), [ukItems, days]);
+
+  const feedRegions = useMemo(
+    () => ["all", ...Array.from(new Set(activeItems.map((item) => item.region || "global"))).sort((a, b) => a.localeCompare(b))],
+    [activeItems],
   );
-  const regionEntries = Object.entries(
-    activeItems.reduce<Record<string, number>>((acc, item) => {
-      acc[item.region] = (acc[item.region] || 0) + 1;
-      return acc;
-    }, {}),
-  )
-    .map(([key, value]) => [formatRegion(key), value] as [string, number])
-    .sort((a, b) => b[1] - a[1]);
-  const activeCoverageCount = activeItems.length;
-  const last30CommoditySet = new Set(activeItems.map((item) => item.commodity.toLowerCase()));
-  const monitorCommoditySet = new Set(dashboardRows.map((row) => row.commodity.toLowerCase()));
-  const commodityContextMatch = Array.from(last30CommoditySet).filter((commodity) => monitorCommoditySet.has(commodity)).length;
-  const commodityContextPct = last30CommoditySet.size
-    ? Math.round((commodityContextMatch / last30CommoditySet.size) * 100)
-    : 0;
-  const monitorFreshnessMedianDays = Math.round(
-    median(
-      dashboardRows.map((row) => {
-        const ts = Date.parse(row.asOf);
-        if (Number.isNaN(ts)) return 999;
-        return (Date.now() - ts) / (1000 * 60 * 60 * 24);
-      }),
-    ),
+  const feedLangs = useMemo(
+    () => ["all", ...Array.from(new Set(activeItems.map((item) => item.language || "en"))).sort((a, b) => a.localeCompare(b))],
+    [activeItems],
   );
-  const freshnessDeltaDays =
-    Number.isFinite(monitorFreshnessMedianDays) && Number.isFinite(freshnessMedianDays)
-      ? monitorFreshnessMedianDays - freshnessMedianDays
-      : 0;
+  const feedCommodities = useMemo(
+    () => ["all", ...Array.from(new Set(activeItems.map((item) => (item.commodity || "mixed").toLowerCase()))).sort((a, b) => a.localeCompare(b))],
+    [activeItems],
+  );
+  const feedSources = useMemo(
+    () => ["all", ...Array.from(new Set(activeItems.map((item) => normalizeSource(item.source || "web")))).sort((a, b) => a.localeCompare(b))],
+    [activeItems],
+  );
+
+  const filteredFeed = useMemo(
+    () =>
+      activeItems.filter((item) => {
+        const regionOk = feedRegion === "all" || item.region === feedRegion;
+        const langOk = feedLang === "all" || item.language === feedLang;
+        const commodityOk = feedCommodity === "all" || item.commodity.toLowerCase() === feedCommodity;
+        const sourceOk = feedSource === "all" || normalizeSource(item.source) === feedSource;
+        const searchOk = !feedSearch.trim() || `${item.title} ${item.source} ${item.commodity} ${item.region}`.toLowerCase().includes(feedSearch.toLowerCase());
+        return regionOk && langOk && commodityOk && sourceOk && searchOk;
+      }),
+    [activeItems, feedRegion, feedLang, feedCommodity, feedSource, feedSearch],
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
-          <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">
-                Cropto / Last30Days
-              </p>
-              <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
-              <p className="mt-2 max-w-3xl text-sm text-slate-300">
-                Live panel for fresh `last30days` intelligence. Market dashboard sources are shown only as context, not as feed data.
-              </p>
-            </div>
-            <div className="grid gap-3">
-              <div className="flex flex-wrap gap-2">
-                {TIMEFRAME_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setDays(option.value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                      days === option.value
-                        ? "border-amber-300 bg-amber-300 text-slate-900"
-                        : "border-slate-700 bg-slate-900 text-slate-300"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="text-xs text-slate-300">
-                  Region
-                  <select
-                    value={region}
-                    onChange={(event) => setRegion(event.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100"
-                  >
-                    {REGION_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="text-xs text-slate-300">
-                  Language
-                  <select
-                    value={lang}
-                    onChange={(event) => setLang(event.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100"
-                  >
-                    {LANGUAGE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {summaryQuery.error ? (
           <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-700/60 bg-rose-950/40 p-3 text-sm text-rose-200">
             <AlertTriangle className="mt-0.5 h-4 w-4" />
@@ -380,182 +382,151 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
-        {data?.warnings?.length && activeItems.length === 0 ? (
+        {data?.warnings?.length ? (
           <div className="mb-4 rounded-xl border border-amber-700/60 bg-amber-950/40 p-3 text-xs text-amber-200">
             {data.warnings.join(" ")}
           </div>
         ) : null}
 
-        <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Coverage</p>
-            <p className="mt-2 text-3xl font-semibold">{activeCoverageCount}</p>
-            <p className="mt-1 text-xs text-slate-400">
-              {TIMEFRAME_OPTIONS.find((option) => option.value === days)?.label} · {formatRegion(region)}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Signal Balance</p>
-            <p className="mt-2 text-3xl font-semibold">
-              {signalBalancePct > 0 ? "+" : ""}
-              {signalBalancePct}%
-            </p>
-            <p className="mt-1 text-xs text-slate-400">{pickSignalTone(signalBalancePct)} flow</p>
-          </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Risk Index</p>
-            <p className="mt-2 text-3xl font-semibold">{riskIndex.toFixed(2)}</p>
-            <p className="mt-1 text-xs text-slate-400">Average impact score</p>
-          </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Top Commodity</p>
-            <p className="mt-2 text-3xl font-semibold capitalize">{topCommodity}</p>
-            <p className="mt-1 text-xs text-slate-400">Dominant topic in current scope</p>
-          </div>
-        </section>
-
-        <section className="mb-4 rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
+          <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
             <div>
-              <h3 className="text-sm font-semibold">Analytics Switchboard</h3>
-              <p className="text-xs text-slate-400">
-                One block for source/commodity/region distributions and context metrics.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: "sources", label: "Sources" },
-                { value: "commodities", label: "Commodities" },
-                { value: "regions", label: "Regions" },
-              ].map((tab) => (
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">Cropto / Last30Days</p>
+              <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
+              <p className="mt-2 text-sm text-slate-300">Priority mode: synthesized analytics first, raw feed second.</p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {(["sources", "commodities", "regions"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setAnalyticsTab(tab)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
+                  >
+                    {tab[0].toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
                 <button
-                  key={tab.value}
-                  onClick={() => setAnalyticsTab(tab.value as "sources" | "commodities" | "regions")}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                    analyticsTab === tab.value
-                      ? "border-cyan-300 bg-cyan-300 text-slate-900"
-                      : "border-slate-700 bg-slate-950 text-slate-300"
-                  }`}
+                  onClick={() => setAnalyticsLang("en")}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${analyticsLang === "en" ? "border-emerald-300 bg-emerald-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
                 >
-                  {tab.label}
+                  EN
                 </button>
-              ))}
-            </div>
-          </div>
+                <button
+                  onClick={() => setAnalyticsLang("uk")}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${analyticsLang === "uk" ? "border-emerald-300 bg-emerald-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
+                >
+                  UK
+                </button>
+              </div>
 
-          <div className="mb-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Source Diversity</p>
-              <p className="mt-1 text-2xl font-semibold">{sourceDiversity}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {TIMEFRAME_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setDays(option.value)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Context Match</p>
-              <p className="mt-1 text-2xl font-semibold">{commodityContextPct}%</p>
-            </div>
-            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Freshness Delta</p>
-              <p className="mt-1 text-2xl font-semibold">
-                {freshnessDeltaDays > 0 ? "+" : ""}
-                {freshnessDeltaDays}d
-              </p>
-            </div>
-          </div>
 
-          {analyticsTab === "sources" ? (
-            <DistributionPanel title="Source Share" entries={sourceEntries} />
-          ) : null}
-          {analyticsTab === "commodities" ? (
-            <DistributionPanel title="Commodity Share" entries={commodityEntries} />
-          ) : null}
-          {analyticsTab === "regions" ? (
-            <DistributionPanel title="Regional Share" entries={regionEntries} />
-          ) : null}
+            <DistributionPanel
+              title={`Distribution - ${analyticsTab[0].toUpperCase() + analyticsTab.slice(1)} - ${analyticsLang.toUpperCase()}`}
+              entries={infographicEntries}
+            />
+          </div>
         </section>
 
-        <section className="mb-4 rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold">Source Context</h3>
-            <p className="text-xs text-slate-400">
-              market-dashboard: context-only (no feed duplication) ·
-              last30days file: {data?.sourceFile ? "connected" : "not configured"}
-              {data?.sourceUpdatedAt ? ` · updated ${formatDate(data.sourceUpdatedAt)}` : ""}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {sourceChips.length === 0 ? (
-              <span className="text-xs text-slate-400">No monitor sources available</span>
-            ) : (
-              sourceChips.map((source) => (
-                <span key={source} className="rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 text-[11px] text-slate-300">
-                  {source}
-                </span>
-              ))
-            )}
-          </div>
+        <section className="mb-4 grid gap-3">
+          <SummaryCard title={`Summary EN - ${periodLabel}`} summary={enSummary} trend={enTrend} filename={`summary-en-${days}d.txt`} />
+          <SummaryCard title={`Summary UK - ${periodLabel}`} summary={ukSummary} trend={ukTrend} filename={`summary-uk-${days}d.txt`} />
         </section>
 
         <section className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Market Signal Feed</h3>
-            <p className="text-xs text-slate-400">{activeItems.length} records</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-slate-800 text-left text-[11px] uppercase tracking-[0.12em] text-slate-400">
-                  <th className="px-2 py-2">Date</th>
-                  <th className="px-2 py-2">Commodity</th>
-                  <th className="px-2 py-2">Region</th>
-                  <th className="px-2 py-2">Lang</th>
-                  <th className="px-2 py-2">Signal</th>
-                  <th className="px-2 py-2">Impact</th>
-                  <th className="px-2 py-2">Headline</th>
-                  <th className="px-2 py-2">Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeItems.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-2 py-5 text-center text-sm text-slate-400">
-                      No records in this filter scope.
-                    </td>
-                  </tr>
-                ) : (
-                  activeItems.map((item) => (
-                    <tr key={item.id} className="border-b border-slate-800/70 align-top text-slate-200">
-                      <td className="px-2 py-2 text-xs text-slate-400">{formatDate(item.publishedAt)}</td>
-                      <td className="px-2 py-2 capitalize">{item.commodity}</td>
-                      <td className="px-2 py-2">{formatRegion(item.region)}</td>
-                      <td className="px-2 py-2 uppercase">{item.language}</td>
-                      <td
-                        className={`px-2 py-2 font-semibold ${
-                          item.signal === "bullish"
-                            ? "text-emerald-400"
-                            : item.signal === "bearish"
-                              ? "text-rose-400"
-                              : "text-amber-300"
-                        }`}
-                      >
-                        {formatSignal(item.signal)}
-                      </td>
-                      <td className="px-2 py-2 font-mono">{item.impact.toFixed(2)}</td>
-                      <td className="px-2 py-2 text-sm text-slate-200">{item.title}</td>
-                      <td className="px-2 py-2">
-                        <a
-                          href={item.url || "#"}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-sky-300 hover:text-sky-200"
-                        >
-                          {item.source}
-                        </a>
-                      </td>
+          <button
+            onClick={() => setFeedOpen((prev) => !prev)}
+            className="mb-3 flex w-full items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-left"
+          >
+            <span className="text-sm font-semibold">Market Signal Feed</span>
+            <span className="text-xs text-slate-400">
+              {filteredFeed.length} records {feedOpen ? <ChevronDown className="ml-1 inline h-4 w-4" /> : <ChevronRight className="ml-1 inline h-4 w-4" />}
+            </span>
+          </button>
+
+          {feedOpen ? (
+            <>
+              <div className="mb-3 grid gap-2 md:grid-cols-5">
+                <label className="text-xs text-slate-300">Region
+                  <select value={feedRegion} onChange={(e) => setFeedRegion(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100">
+                    {feedRegions.map((opt) => <option key={opt} value={opt}>{formatRegion(opt)}</option>)}
+                  </select>
+                </label>
+                <label className="text-xs text-slate-300">Language
+                  <select value={feedLang} onChange={(e) => setFeedLang(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100">
+                    {feedLangs.map((opt) => <option key={opt} value={opt}>{opt.toUpperCase()}</option>)}
+                  </select>
+                </label>
+                <label className="text-xs text-slate-300">Commodity
+                  <select value={feedCommodity} onChange={(e) => setFeedCommodity(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100">
+                    {feedCommodities.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </label>
+                <label className="text-xs text-slate-300">Source
+                  <select value={feedSource} onChange={(e) => setFeedSource(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100">
+                    {feedSources.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </label>
+                <label className="text-xs text-slate-300">Search
+                  <input value={feedSearch} onChange={(e) => setFeedSearch(e.target.value)} placeholder="headline/source" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100" />
+                </label>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[980px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-left text-[11px] uppercase tracking-[0.12em] text-slate-400">
+                      <th className="px-2 py-2">Date</th>
+                      <th className="px-2 py-2">Commodity</th>
+                      <th className="px-2 py-2">Region</th>
+                      <th className="px-2 py-2">Lang</th>
+                      <th className="px-2 py-2">Signal</th>
+                      <th className="px-2 py-2">Impact</th>
+                      <th className="px-2 py-2">Headline</th>
+                      <th className="px-2 py-2">Source</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {filteredFeed.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-2 py-5 text-center text-sm text-slate-400">No records in this filter scope.</td>
+                      </tr>
+                    ) : (
+                      filteredFeed.map((item) => (
+                        <tr key={item.id} className="border-b border-slate-800/70 align-top text-slate-200">
+                          <td className="px-2 py-2 text-xs text-slate-400">{formatDate(item.publishedAt)}</td>
+                          <td className="px-2 py-2 capitalize">{item.commodity}</td>
+                          <td className="px-2 py-2">{formatRegion(item.region)}</td>
+                          <td className="px-2 py-2 uppercase">{item.language}</td>
+                          <td className={`px-2 py-2 font-semibold ${item.signal === "bullish" ? "text-emerald-400" : item.signal === "bearish" ? "text-rose-400" : "text-amber-300"}`}>
+                            {formatSignal(item.signal)}
+                          </td>
+                          <td className="px-2 py-2 font-mono">{item.impact.toFixed(2)}</td>
+                          <td className="px-2 py-2 text-sm text-slate-200">{item.title}</td>
+                          <td className="px-2 py-2">
+                            <a href={item.url || "#"} target="_blank" rel="noreferrer" className="text-xs text-sky-300 hover:text-sky-200">
+                              {normalizeSource(item.source)}
+                            </a>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
         </section>
       </div>
     </div>
