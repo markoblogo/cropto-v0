@@ -1,6 +1,6 @@
 # соняшникова олія ріпак соя європа ринок - Last 30 Days Research Report
 
-**Generated:** 2026-03-26T13:09:53.472924+00:00
+**Generated:** 2026-03-26T16:14:23.950377+00:00
 **Date Range:** 2026-02-24 to 2026-03-26
 **Mode:** all
 
@@ -44,140 +44,130 @@
 
 ## Web Results
 
-### W5: Fat-and-Oil Industry-2025», яка відбудеться 30 жовтня в ...
+### W4: DOI: http://doi.org/10.32702/2307-2105.2023.1.32 УДК ...
 
-- **Source:** instagram.com
-- **URL:** https://www.instagram.com/p/DOMSWhRDJnI/
+- **Source:** nayka.com.ua
+- **URL:** https://www.nayka.com.ua/index.php/ee/article/download/1034/1044/2969
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W12: Pavlo Koval added a new photo.
+### W9: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
+
+- **Source:** ec.europa.eu
+- **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: SPIKE BROKERS
+
+- **Source:** t.me
+- **URL:** https://t.me/s/spike_brokers?before=799
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W3: SPIKE BROKERS – Telegram
+
+- **Source:** t.me
+- **URL:** https://t.me/s/spike_brokers
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W8: Transformation of Ukraine's Agricultural Exports under the influence ...
+
+- **Source:** economics.net.ua
+- **URL:** https://economics.net.ua/files/archive/2025/No6/119.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W5: Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua
+
+- **Source:** agroportal.ua
+- **URL:** https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W10: Дипломна робота
+
+- **Source:** ela.kpi.ua
+- **URL:** https://ela.kpi.ua/bitstreams/fbbbcaa7-7751-4374-9d39-adcba72fb0a8/download
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W11: Кустов Віталій Петрович
+
+- **Source:** biotechuniv.edu.ua
+- **URL:** https://biotechuniv.edu.ua/wp-content/uploads/2022/10/Dis-Kustov.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W13: Маркетинговий потенціал інновацій у олійно-жировому ...
+
+- **Source:** repository.vsau.org
+- **URL:** http://repository.vsau.org/getfile.php/25315.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W6: Основним ринком збуту українських органічних продуктів залишається Європа, яка купує 93% товарів - Висоцький
+
+- **Source:** agravery.com
+- **URL:** https://agravery.com/uk/posts/show/osnovnim-rinkom-zbutu-ukrainskih-organicnih-produktiv-zalisaetsa-evropa-aka-kupue-93-tovariv-visockij
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W7: Соціоекономічний розвиток сільського господарства і села
+
+- **Source:** ief.org.ua
+- **URL:** https://ief.org.ua/files/publication/472/-rozvytok-silskoho-hospodarstva.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W14: сучасний стан та перспективи розвитку органічного ...
+
+- **Source:** eip.org.ua
+- **URL:** http://eip.org.ua/docs/EP_22_1_160_uk.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W2: 🟡 У січні 2026 року було експортовано 5,0 млн т ...
 
 - **Source:** facebook.com
-- **URL:** https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225148737304815/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W6: [PDF] Actual-problems-of-practice-and-science-and-methods-of-their ...
-
-- **Source:** eu-conf.com
-- **URL:** https://eu-conf.com/wp-content/uploads/2022/01/Actual-problems-of-practice-and-science-and-methods-of-their-solution.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W9: [PDF] КВАЛІФІКАЦІЙНА БАКАЛАВРСЬКА РОБОТА
-
-- **Source:** ir.kneu.edu.ua
-- **URL:** https://ir.kneu.edu.ua/bitstreams/a30dec50-2398-446d-8d82-a6fe1b1749d5/download
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: [PDF] Управління розвитком соціально-економічних систем - НУБіП
-
-- **Source:** nubip.edu.ua
-- **URL:** https://nubip.edu.ua/sites/default/files/u295/materiali_konferenciyi_hntusg_08-09.11.2018_1.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W8: Експортне мито на ріпак та сою обійшлося фермерам у ...
-
-- **Source:** open4business.com.ua
-- **URL:** https://open4business.com.ua/eksportne-myto-na-ripak-ta-soyu-obijshlosya-fermeram-u-200-mln-zbytkiv-acc/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W14: Експортне мито на сою та ріпак уже завдало 17 млрд ...
-
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/eksportne-mito-na-soyu-ta-ripak-uzhe-zavdalo-17-mlrd-grn-zbitkiv-agrariyam-ukrajini
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W2: Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу
-
-- **Source:** propozitsiya.com
-- **URL:** https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W11: Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com
-
-- **Source:** latifundist.com
-- **URL:** https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W10: Попит на рослинні олії змінює баланс світового ринку ...
-
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W15: Ріпакова та соєва олії витісняють соняшникову з ...
-
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/ripakova-ta-soyeva-oliji-vitisnyayut-sonyashnikovu-z-klyuchovih-rinkiv
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W4: Світові ринки: ріпак витіснив соняшникову олію з енергетичної ...
-
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/mir/svitovi-rinki-ripak-vitisniv-sonyashnikovu-oliyu-z-energetichnoji-sferi-i-vishtovhuye-z-harchovoji
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W7: Україна скорочує експорт ріпаку: Європі загрожує ...
-
-- **Source:** delo.ua
-- **URL:** https://delo.ua/news/ukrayina-skorocuje-eksport-ripaku-jevropi-zagrozuje-deficit-sirovini-462279/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W3: пальма» та соя, а соняшникова олія втрачає позиції. ...
-
-- **Source:** ukr.net
-- **URL:** https://www.ukr.net/news/details/world/116561582.html
+- **URL:** https://www.facebook.com/UkrainianAgribusinessClub/posts/-%D1%83-%D1%81%D1%96%D1%87%D0%BD%D1%96-2026-%D1%80%D0%BE%D0%BA%D1%83-%D0%B1%D1%83%D0%BB%D0%BE-%D0%B5%D0%BA%D1%81%D0%BF%D0%BE%D1%80%D1%82%D0%BE%D0%B2%D0%B0%D0%BD%D0%BE-50-%D0%BC%D0%BB%D0%BD-%D1%82-%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%86%D1%96%D1%97-%D0%B0%D0%BF%D0%BA-%D1%89%D0%BE-%D0%BD%D0%B0-08-%D0%BC%D0%B5%D0%BD%D1%88%D0%B5-%D0%B0%D0%BD%D0%B0%D0%BB%D0%BE/1310266614465940/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
