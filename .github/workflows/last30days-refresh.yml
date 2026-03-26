@@ -1,0 +1,77 @@
+name: Last30Days Refresh
+
+on:
+  schedule:
+    # Every 3 hours
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release/demo
+        uses: actions/checkout@v4
+        with:
+          ref: release/demo
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install runtime helpers
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install yt-dlp
+
+      - name: Clone last30days skill
+        run: |
+          mkdir -p "$HOME/.agents/skills"
+          rm -rf "$HOME/.agents/skills/last30days"
+          git clone https://github.com/mvanhorn/last30days-skill.git "$HOME/.agents/skills/last30days"
+
+      - name: Refresh snapshots
+        env:
+          LAST30DAYS_OUTPUT_DIR: artifacts/last30days
+          LAST30DAYS_TOPIC: grain and oilseeds market wheat corn soybeans sunflower rapeseed black sea export logistics
+          SCRAPECREATORS_API_KEY: ${{ secrets.SCRAPECREATORS_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+          CT0: ${{ secrets.CT0 }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          PARALLEL_API_KEY: ${{ secrets.PARALLEL_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ ! -f "$HOME/.agents/skills/last30days/scripts/last30days.py" ]; then
+            echo "last30days.py not found"
+            exit 1
+          fi
+          export LAST30DAYS_SCRIPT_PATH="$HOME/.agents/skills/last30days/scripts/last30days.py"
+          bash scripts/refresh_last30days.sh
+
+      - name: Commit and push snapshots
+        run: |
+          if git diff --quiet -- artifacts/last30days; then
+            echo "No snapshot changes"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artifacts/last30days
+          git commit -m "chore(data): refresh last30days snapshots"
+          git push origin HEAD:release/demo
