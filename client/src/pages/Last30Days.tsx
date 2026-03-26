@@ -328,16 +328,21 @@ function SummaryCard({
   summary,
   trend,
   filename,
+  summaryMode,
 }: {
   title: string;
   summary: string;
   trend: number[];
   filename: string;
+  summaryMode: string;
 }) {
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">{title}</h3>
+        <div>
+          <h3 className="text-sm font-semibold">{title}</h3>
+          <p className="mt-1 text-[11px] uppercase tracking-[0.12em] text-slate-400">{summaryMode}</p>
+        </div>
         <div className="flex items-center gap-2">
           <button onClick={() => navigator.clipboard.writeText(summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
             <Copy className="mr-1 inline h-3 w-3" />Copy
@@ -418,8 +423,12 @@ export default function Last30DaysPage() {
 
   const enSummaryFallback = useMemo(() => makeAnalyticSummary(enItems, periodLabel, "EN"), [enItems, periodLabel]);
   const ukSummaryFallback = useMemo(() => makeAnalyticSummary(ukItems, periodLabel, "UK"), [ukItems, periodLabel]);
-  const enSummary = aiSummaryQuery.data?.en?.text?.trim() || enSummaryFallback;
-  const ukSummary = aiSummaryQuery.data?.uk?.text?.trim() || ukSummaryFallback;
+  const enAi = aiSummaryQuery.data?.en?.text?.trim() || "";
+  const ukAi = aiSummaryQuery.data?.uk?.text?.trim() || "";
+  const enSummary = enAi || enSummaryFallback;
+  const ukSummary = ukAi || ukSummaryFallback;
+  const enMode = enAi ? `AI (${aiSummaryQuery.data?.en?.model || "model"})` : "Fallback (rule-based)";
+  const ukMode = ukAi ? `AI (${aiSummaryQuery.data?.uk?.model || "model"})` : "Fallback (rule-based)";
 
   const enTrend = useMemo(() => buildDailyTrend(enItems, days), [enItems, days]);
   const ukTrend = useMemo(() => buildDailyTrend(ukItems, days), [ukItems, days]);
@@ -476,6 +485,12 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
+        {aiSummaryQuery.error ? (
+          <div className="mb-4 rounded-xl border border-rose-700/60 bg-rose-950/40 p-3 text-xs text-rose-200">
+            AI summary request failed: {(aiSummaryQuery.error as Error).message}
+          </div>
+        ) : null}
+
         <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 px-5 py-4 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
           <div className="grid items-start gap-10 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="pr-2">
@@ -529,8 +544,8 @@ export default function Last30DaysPage() {
         </section>
 
         <section className="mb-4 grid gap-3">
-          <SummaryCard title={`Summary EN - ${periodLabel}`} summary={enSummary} trend={enTrend} filename={`summary-en-${days}d.txt`} />
-          <SummaryCard title={`Summary UK - ${periodLabel}`} summary={ukSummary} trend={ukTrend} filename={`summary-uk-${days}d.txt`} />
+          <SummaryCard title={`Summary EN - ${periodLabel}`} summary={enSummary} trend={enTrend} filename={`summary-en-${days}d.txt`} summaryMode={enMode} />
+          <SummaryCard title={`Summary UK - ${periodLabel}`} summary={ukSummary} trend={ukTrend} filename={`summary-uk-${days}d.txt`} summaryMode={ukMode} />
         </section>
 
         <section className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
