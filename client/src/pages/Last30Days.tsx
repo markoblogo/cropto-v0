@@ -185,13 +185,13 @@ function DistributionPanel({
   }
 
   return (
-    <div className="grid min-h-[260px] gap-6 md:grid-cols-[250px_1fr] md:items-center">
+    <div className="grid min-h-[220px] gap-5 md:grid-cols-[320px_150px] md:items-center">
       <div className="flex justify-center">
-        <div className="relative h-60 w-60 rounded-full" style={{ background: conic }}>
+        <div className="relative h-[246px] w-[246px] rounded-full" style={{ background: conic }}>
           <div className="absolute inset-8 rounded-full bg-slate-950/95" />
         </div>
       </div>
-      <div className="max-h-[232px] space-y-3 overflow-y-auto pr-1">
+      <div className="max-h-[220px] space-y-5 overflow-y-auto pr-1">
         {trimmed.map(([label], idx) => (
           <div key={label} className="flex items-center text-base">
             <div className="flex items-center gap-2 text-slate-300">
@@ -422,7 +422,7 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
-        <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
+        <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 px-5 py-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
           <div className="grid items-start gap-10 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="pr-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">Cropto / Last30Days</p>
@@ -446,15 +446,15 @@ export default function Last30DaysPage() {
             </div>
 
             <div className="lg:border-l lg:border-slate-800/70 lg:pl-10">
-              <div className="grid gap-5 md:grid-cols-[126px_1fr] md:items-start">
+              <div className="grid gap-5 md:grid-cols-[128px_1fr] md:items-start">
                 <div>
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <p className="text-sm font-semibold text-slate-100">Distribution</p>
                     <p className="mt-1 text-2xl font-semibold text-slate-100">
                       {analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}
                     </p>
                   </div>
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
                       <button
                         key={tab}
@@ -466,7 +466,7 @@ export default function Last30DaysPage() {
                     ))}
                   </div>
                 </div>
-                <div className="pt-1">
+                <div className="pt-0">
                   <DistributionPanel entries={infographicEntries} mode={analyticsTab} />
                 </div>
               </div>
