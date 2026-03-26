@@ -123,7 +123,7 @@ function TrendSparkline({ values }: { values: number[] }) {
   );
 }
 
-function DistributionPanel({ title, entries }: { title: string; entries: Array<[string, number]> }) {
+function DistributionPanel({ entries }: { entries: Array<[string, number]> }) {
   const trimmed = entries.slice(0, 6);
   const total = trimmed.reduce((acc, [, value]) => acc + value, 0);
   const stops: string[] = [];
@@ -137,18 +137,17 @@ function DistributionPanel({ title, entries }: { title: string; entries: Array<[
   const conic = stops.length ? `conic-gradient(${stops.join(", ")})` : "conic-gradient(#1e293b 0 100%)";
 
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-      <h3 className="mb-3 text-sm font-semibold text-slate-100">{title}</h3>
+    <div className="min-h-[252px] rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
       {trimmed.length === 0 ? (
         <div className="text-sm text-slate-400">No records for current scope.</div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-[140px_1fr] md:items-center">
+        <div className="grid gap-4 md:grid-cols-[190px_1fr] md:items-center">
           <div className="flex justify-center">
-            <div className="relative h-28 w-28 rounded-full" style={{ background: conic }}>
-              <div className="absolute inset-4 rounded-full bg-slate-950/95" />
+            <div className="relative h-40 w-40 rounded-full" style={{ background: conic }}>
+              <div className="absolute inset-5 rounded-full bg-slate-950/95" />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="max-h-[176px] space-y-2 overflow-y-auto pr-1">
             {trimmed.map(([label], idx) => (
               <div key={label} className="flex items-center text-sm">
                 <div className="flex items-center gap-2 text-slate-300">
@@ -387,8 +386,11 @@ export default function Last30DaysPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">Cropto / Last30Days</p>
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
               <p className="mt-2 text-sm text-slate-300">Priority mode: synthesized analytics first, raw feed second.</p>
+              <p className="mt-2 max-w-2xl text-sm text-slate-400">
+                This panel is built for fast interpretation: tight period focus, visual distribution context, and narrative summary first.
+              </p>
 
-              <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="mt-4 grid max-w-[760px] grid-cols-3 gap-3">
                 {TIMEFRAME_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -401,8 +403,12 @@ export default function Last30DaysPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-[120px_1fr] md:items-center">
-              <div className="grid gap-2">
+            <div className="rounded-2xl border border-slate-800/70 bg-slate-900/55 p-4">
+              <h3 className="mb-3 text-sm font-semibold text-slate-100">
+                Distribution - {analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}
+              </h3>
+              <div className="grid gap-3 md:grid-cols-[150px_1fr] md:items-start">
+                <div className="grid gap-2">
                 {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
                   <button
                     key={tab}
@@ -413,12 +419,10 @@ export default function Last30DaysPage() {
                   </button>
                 ))}
               </div>
-              <div className="pl-2 md:pl-5">
-                <DistributionPanel
-                  title={`Distribution - ${analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}`}
-                  entries={infographicEntries}
-                />
+              <div className="pl-1 md:pl-3">
+                <DistributionPanel entries={infographicEntries} />
               </div>
+            </div>
             </div>
           </div>
         </section>
