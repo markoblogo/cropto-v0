@@ -62,6 +62,21 @@ type Last30DaysAiResponse = {
   };
 };
 
+type MarketDashboardRow = {
+  commodity?: string;
+  price?: number;
+  basis?: string;
+  source?: string;
+  asOf?: string;
+};
+
+type MarketDashboardResponse = {
+  ua?: MarketDashboardRow[];
+  us?: MarketDashboardRow[];
+  ar?: MarketDashboardRow[];
+  br?: MarketDashboardRow[];
+};
+
 const TIMEFRAME_OPTIONS = [
   { value: 1, label: "Yesterday" },
   { value: 7, label: "Week" },
@@ -214,8 +229,15 @@ type PriceQuote = {
   value: number;
   currency: string;
   region: string;
+  basis?: string;
   title: string;
   publishedAt: string;
+};
+
+type PulseDriver = {
+  label: string;
+  score: number;
+  note: string;
 };
 
 function formatCommodityLabel(value: string) {
@@ -247,11 +269,85 @@ function extractPriceQuotes(items: Last30DaysRecord[]): PriceQuote[] {
       value: Number(priceMatch[1]),
       currency: String(priceMatch[2] || "USD").toUpperCase(),
       region: formatRegion(item.region || "global"),
+      basis: undefined,
       title: item.title,
       publishedAt: item.publishedAt,
     });
   }
   return Array.from(byCommodity.values()).slice(0, 5);
+}
+
+function buildDashboardQuotes(payload: MarketDashboardResponse | undefined, language: "en" | "uk"): PriceQuote[] {
+  const regions = language === "uk" ? [{ key: "ua", label: "Ukraine" as const }] : [{ key: "us", label: "US" as const }, { key: "ar", label: "Argentina" as const }, { key: "br", label: "Brazil" as const }];
+  const out: PriceQuote[] = [];
+  for (const region of regions) {
+    const rows = (payload?.[region.key as keyof MarketDashboardResponse] || []) as MarketDashboardRow[];
+    for (const row of rows) {
+      if (!row || !Number.isFinite(row.price)) continue;
+      out.push({
+        commodity: String(row.commodity || "mixed").toLowerCase(),
+        value: Number(row.price || 0),
+        currency: "USD",
+        region: region.label,
+        basis: String(row.basis || "").trim(),
+        title: `${row.commodity || "Commodity"} ${row.basis || ""}`.trim(),
+        publishedAt: String(row.asOf || ""),
+      });
+    }
+  }
+  const seen = new Set<string>();
+  return out.filter((quote) => {
+    const key = `${quote.region}:${quote.commodity}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 5);
+}
+
+function buildPulseDrivers(items: Last30DaysRecord[], language: "en" | "uk"): PulseDriver[] {
+  const buckets = [
+    {
+      key: "logistics",
+      label: language === "uk" ? "Логістика" : "Logistics",
+      patterns: /\blogistics\b|\bport\b|\bfreight\b|\bshipment\b|\bexport\b|\bodesa\b|\bodessa\b|\bдуна[йю]\b|\bпорт/i,
+      note: language === "uk" ? "Маршрути та виконання" : "Routes and execution",
+    },
+    {
+      key: "pricing",
+      label: language === "uk" ? "Ціни" : "Pricing",
+      patterns: /\bprice\b|\bpriced\b|\bcpt\b|\bfob\b|\bfca\b|\busd\b|\beur\b|ціна|ціни|котирув/i,
+      note: language === "uk" ? "Рівні та базиси" : "Levels and basis",
+    },
+    {
+      key: "demand",
+      label: language === "uk" ? "Попит" : "Demand",
+      patterns: /\bdemand\b|\bimport\b|\bbuying\b|\btender\b|попит|імпорт|закуп/i,
+      note: language === "uk" ? "Покупець та споживання" : "Buyer and consumption",
+    },
+    {
+      key: "policy",
+      label: language === "uk" ? "Політика" : "Policy",
+      patterns: /\bpolicy\b|\bquota\b|\bsanction\b|\bregulation\b|мито|квот|санкц|регул/i,
+      note: language === "uk" ? "Регуляторний фон" : "Regulatory backdrop",
+    },
+    {
+      key: "risk",
+      label: language === "uk" ? "Ризик" : "Risk",
+      patterns: /\brisk\b|\battack\b|\bwar\b|\bdisruption\b|ризик|атак|війн|загроз/i,
+      note: language === "uk" ? "Події та волатильність" : "Events and volatility",
+    },
+  ];
+
+  const scored = buckets.map((bucket) => {
+    const matches = items.filter((item) => bucket.patterns.test(item.title));
+    const score = matches.reduce((acc, item) => acc + Math.max(1, item.impact || 0), 0);
+    return { label: bucket.label, score, note: bucket.note };
+  });
+
+  return scored
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
 }
 
 function splitSummaryIntoSections(text: string): SummarySection[] {
@@ -421,35 +517,72 @@ function splitSummaryIntoSections(text: string): SummarySection[] {
   return sections;
 }
 
-function DeskSnapshot({ items, language }: { items: Last30DaysRecord[]; language: "en" | "uk" }) {
-  const quotes = extractPriceQuotes(items);
-  if (!quotes.length) {
+function DeskSnapshotPulse({
+  items,
+  language,
+  dashboardQuotes,
+}: {
+  items: Last30DaysRecord[];
+  language: "en" | "uk";
+  dashboardQuotes: PriceQuote[];
+}) {
+  const quotes = dashboardQuotes.length ? dashboardQuotes : extractPriceQuotes(items);
+  const drivers = buildPulseDrivers(items, language);
+  if (!quotes.length && !drivers.length) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-        <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{language === "uk" ? "Desk Snapshot" : "Desk Snapshot"}</p>
-        <p className="text-sm text-slate-400">{language === "uk" ? "Недостатньо цінових точок у поточному зрізі." : "Not enough price points in current scope."}</p>
+        <p className="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{language === "uk" ? "Desk Snapshot + Pulse" : "Desk Snapshot + Pulse"}</p>
+        <p className="text-sm text-slate-400">{language === "uk" ? "Недостатньо денних ринкових опорних точок." : "Not enough daily market anchors in current scope."}</p>
       </div>
     );
   }
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-      <p className="mb-3 text-xs uppercase tracking-[0.12em] text-slate-400">Desk Snapshot</p>
-      <div className="space-y-2.5">
-        {quotes.map((quote) => (
-          <div key={`${quote.commodity}-${quote.currency}`} className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold text-slate-100">{formatCommodityLabel(quote.commodity)}</span>
-              <span className="text-sm font-mono text-cyan-300">
-                {quote.value.toFixed(quote.value % 1 === 0 ? 0 : 1)} {quote.currency}
-              </span>
-            </div>
-            <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-slate-400">
-              <span>{quote.region}</span>
-              <span>{formatDate(quote.publishedAt)}</span>
-            </div>
+      <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr]">
+        <div>
+          <p className="mb-3 text-xs uppercase tracking-[0.12em] text-slate-400">Desk Snapshot</p>
+          <div className="space-y-2.5">
+            {quotes.slice(0, 5).map((quote) => (
+              <div key={`${quote.region}-${quote.commodity}-${quote.currency}`} className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-slate-100">{formatCommodityLabel(quote.commodity)}</span>
+                  <span className="text-sm font-mono text-cyan-300">
+                    {quote.value.toFixed(quote.value % 1 === 0 ? 0 : 1)} {quote.currency}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-slate-400">
+                  <span>{quote.basis ? `${quote.region} • ${quote.basis}` : quote.region}</span>
+                  <span>{formatDate(quote.publishedAt)}</span>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+        <div>
+          <p className="mb-3 text-xs uppercase tracking-[0.12em] text-slate-400">Pulse</p>
+          <div className="space-y-3">
+            {drivers.length ? drivers.map((driver, idx) => {
+              const max = Math.max(...drivers.map((entry) => entry.score), 1);
+              return (
+                <div key={driver.label} className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-slate-100">{driver.label}</span>
+                    <span className="text-xs font-mono text-slate-300">{driver.score.toFixed(0)}</span>
+                  </div>
+                  <div className="mt-2 h-2 rounded bg-slate-800">
+                    <div className="h-2 rounded" style={{ width: `${Math.max(12, Math.round((driver.score / max) * 100))}%`, backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                  </div>
+                  <p className="mt-2 text-[11px] text-slate-400">{driver.note}</p>
+                </div>
+              );
+            }) : (
+              <div className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2 text-sm text-slate-400">
+                {language === "uk" ? "Драйвери дня ще не выделяются явно." : "Daily drivers are not strongly differentiated yet."}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -461,6 +594,7 @@ function AIPeriodChart({
   items,
   language,
   days,
+  dashboardQuotes,
 }: {
   chart?:
     | {
@@ -474,9 +608,10 @@ function AIPeriodChart({
   items: Last30DaysRecord[];
   language: "en" | "uk";
   days: number;
+  dashboardQuotes: PriceQuote[];
 }) {
   if (days === 1) {
-    return <DeskSnapshot items={items} language={language} />;
+    return <DeskSnapshotPulse items={items} language={language} dashboardQuotes={dashboardQuotes} />;
   }
 
   const points = Array.isArray(chart?.points) ? chart!.points!.filter((p) => Number.isFinite(p?.value)) : [];
@@ -719,6 +854,7 @@ function SummaryCard({
   items,
   language,
   days,
+  dashboardQuotes,
 }: {
   title: string;
   summary: string;
@@ -733,11 +869,12 @@ function SummaryCard({
   items: Last30DaysRecord[];
   language: "en" | "uk";
   days: number;
+  dashboardQuotes: PriceQuote[];
 }) {
   const sections = splitSummaryIntoSections(summary);
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3 flex items-center gap-3">
         <h3 className="text-sm font-semibold">{title}</h3>
         <div className="flex items-center gap-2">
           <button onClick={() => navigator.clipboard.writeText(summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
@@ -751,7 +888,7 @@ function SummaryCard({
           </button>
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_240px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-200 select-text">
           <div className="space-y-4">
             {(sections.length ? sections : [{ heading: "", body: [summary] }]).map((section, idx) => (
@@ -785,7 +922,7 @@ function SummaryCard({
             ))}
           </div>
         </div>
-        <AIPeriodChart chart={aiChart} fallbackValues={trend} items={items} language={language} days={days} />
+        <AIPeriodChart chart={aiChart} fallbackValues={trend} items={items} language={language} days={days} dashboardQuotes={dashboardQuotes} />
       </div>
     </div>
   );
@@ -829,6 +966,17 @@ export default function Last30DaysPage() {
     refetchOnWindowFocus: false,
   });
 
+  const marketDashboardQuery = useQuery({
+    queryKey: ["/api/market-dashboard", "last30days"],
+    queryFn: async () => {
+      const response = await fetch("/api/market-dashboard");
+      if (!response.ok) throw new Error("Failed to load market dashboard context");
+      return (await response.json()) as MarketDashboardResponse;
+    },
+    staleTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+
   const aiSummaryQuery = useQuery({
     queryKey: ["/api/last30days/ai-summary", days],
     queryFn: async () => {
@@ -864,6 +1012,8 @@ export default function Last30DaysPage() {
 
   const enTrend = useMemo(() => buildDailyTrend(enItems, days), [enItems, days]);
   const ukTrend = useMemo(() => buildDailyTrend(ukItems, days), [ukItems, days]);
+  const enDashboardQuotes = useMemo(() => buildDashboardQuotes(marketDashboardQuery.data, "en"), [marketDashboardQuery.data]);
+  const ukDashboardQuotes = useMemo(() => buildDashboardQuotes(marketDashboardQuery.data, "uk"), [marketDashboardQuery.data]);
 
   const feedRegions = useMemo(
     () => ["all", ...Array.from(new Set(activeItems.map((item) => item.region || "global"))).sort((a, b) => a.localeCompare(b))],
@@ -895,19 +1045,21 @@ export default function Last30DaysPage() {
     [activeItems, feedRegion, feedLang, feedCommodity, feedSource, feedSearch],
   );
 
+  const historyDays = capabilityQuery.data?.historyDays || 0;
   const timeframeOptions = useMemo(
     () =>
-      TIMEFRAME_OPTIONS.filter(
-        (option) =>
-          option.value === 1 ||
-          (option.value === 7 && Boolean(capabilityQuery.data?.windowsReady?.week)) ||
-          (option.value === 30 && Boolean(capabilityQuery.data?.windowsReady?.month)),
-      ),
-    [capabilityQuery.data],
+      TIMEFRAME_OPTIONS.map((option) => {
+        const required = option.value === 7 ? 7 : option.value === 30 ? 30 : 1;
+        const ready = option.value === 1 || (option.value === 7 ? Boolean(capabilityQuery.data?.windowsReady?.week) : Boolean(capabilityQuery.data?.windowsReady?.month));
+        const progress = option.value === 1 ? 1 : Math.max(0, Math.min(1, historyDays / required));
+        return { ...option, required, ready, progress, progressLabel: option.value === 1 ? "Live" : `${Math.min(historyDays, required)}/${required}` };
+      }),
+    [capabilityQuery.data, historyDays],
   );
 
   useEffect(() => {
-    if (!timeframeOptions.some((option) => option.value === days)) {
+    const current = timeframeOptions.find((option) => option.value === days);
+    if (current && !current.ready && current.value !== 1) {
       setDays(1);
     }
   }, [days, timeframeOptions]);
@@ -954,10 +1106,19 @@ export default function Last30DaysPage() {
                 {timeframeOptions.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setDays(option.value)}
-                    className={`w-[180px] rounded-full border px-3 py-2.5 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
+                    onClick={() => {
+                      if (option.ready) setDays(option.value);
+                    }}
+                    className={`relative overflow-hidden w-[180px] rounded-full border px-3 py-2.5 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : option.ready ? "border-slate-700 bg-slate-900 text-slate-300" : "border-slate-800 bg-slate-950 text-slate-400"}`}
+                    disabled={!option.ready}
                   >
-                    {option.label}
+                    {!option.ready ? (
+                      <span className="absolute inset-y-0 left-0 rounded-full bg-cyan-400/15" style={{ width: `${Math.max(10, Math.round(option.progress * 100))}%` }} />
+                    ) : null}
+                    <span className="relative flex items-center justify-between gap-2">
+                      <span>{option.label}</span>
+                      {option.value !== 1 ? <span className="text-[10px] uppercase tracking-[0.08em]">{option.progressLabel}</span> : null}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -1002,6 +1163,7 @@ export default function Last30DaysPage() {
             items={enItems}
             language="en"
             days={days}
+            dashboardQuotes={enDashboardQuotes}
           />
           <SummaryCard
             title={`Summary UK - ${periodLabel}`}
@@ -1012,6 +1174,7 @@ export default function Last30DaysPage() {
             items={ukItems}
             language="uk"
             days={days}
+            dashboardQuotes={ukDashboardQuotes}
           />
         </section>
 
