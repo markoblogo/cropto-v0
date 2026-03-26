@@ -72,6 +72,44 @@ function normalizeSource(source: string) {
   return val;
 }
 
+function shortLegendLabel(mode: "sources" | "commodities" | "regions" | "languages", label: string): string {
+  const normalized = label.toLowerCase();
+  if (mode === "languages") return label.toUpperCase();
+  if (mode === "sources") {
+    const map: Record<string, string> = {
+      web: "WEB",
+      reddit: "RDT",
+      x: "X",
+      bluesky: "BSKY",
+      youtube: "YT",
+      hn: "HN",
+    };
+    return map[normalized] || label.toUpperCase();
+  }
+  if (mode === "regions") {
+    const map: Record<string, string> = {
+      global: "GBL",
+      ukraine: "UKR",
+      europe: "EUR",
+      black_sea: "BLS",
+      "black sea": "BLS",
+    };
+    return map[normalized] || label.slice(0, 3).toUpperCase();
+  }
+  const map: Record<string, string> = {
+    mixed: "MIX",
+    wheat: "WHT",
+    soybeans: "SYB",
+    corn: "CRN",
+    oilseeds: "OIL",
+    sunflower: "SFL",
+    rapeseed: "RPS",
+    barley: "BRL",
+    rice: "RCE",
+  };
+  return map[normalized] || label.slice(0, 3).toUpperCase();
+}
+
 function buildDistribution(items: Last30DaysRecord[], mode: "sources" | "commodities" | "regions" | "languages"): Array<[string, number]> {
   const map = items.reduce<Record<string, number>>((acc, item) => {
     let key = "mixed";
@@ -123,7 +161,13 @@ function TrendSparkline({ values }: { values: number[] }) {
   );
 }
 
-function DistributionPanel({ entries }: { entries: Array<[string, number]> }) {
+function DistributionPanel({
+  entries,
+  mode,
+}: {
+  entries: Array<[string, number]>;
+  mode: "sources" | "commodities" | "regions" | "languages";
+}) {
   const trimmed = entries.slice(0, 6);
   const total = trimmed.reduce((acc, [, value]) => acc + value, 0);
   const stops: string[] = [];
@@ -137,14 +181,14 @@ function DistributionPanel({ entries }: { entries: Array<[string, number]> }) {
   const conic = stops.length ? `conic-gradient(${stops.join(", ")})` : "conic-gradient(#1e293b 0 100%)";
 
   return (
-    <div className="min-h-[252px] rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
+    <div className="h-[246px] rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
       {trimmed.length === 0 ? (
         <div className="text-sm text-slate-400">No records for current scope.</div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-[190px_1fr] md:items-center">
+        <div className="grid h-full gap-4 md:grid-cols-[184px_1fr] md:items-center">
           <div className="flex justify-center">
-            <div className="relative h-40 w-40 rounded-full" style={{ background: conic }}>
-              <div className="absolute inset-5 rounded-full bg-slate-950/95" />
+            <div className="relative h-44 w-44 rounded-full" style={{ background: conic }}>
+              <div className="absolute inset-6 rounded-full bg-slate-950/95" />
             </div>
           </div>
           <div className="max-h-[176px] space-y-2 overflow-y-auto pr-1">
@@ -152,7 +196,7 @@ function DistributionPanel({ entries }: { entries: Array<[string, number]> }) {
               <div key={label} className="flex items-center text-sm">
                 <div className="flex items-center gap-2 text-slate-300">
                   <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
-                  <span className="capitalize">{label}</span>
+                  <span>{shortLegendLabel(mode, label)}</span>
                 </div>
               </div>
             ))}
@@ -381,7 +425,7 @@ export default function Last30DaysPage() {
         ) : null}
 
         <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
-          <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+          <div className="grid items-start gap-8 lg:grid-cols-[1.18fr_0.82fr]">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">Cropto / Last30Days</p>
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
@@ -390,12 +434,12 @@ export default function Last30DaysPage() {
                 This panel is built for fast interpretation: tight period focus, visual distribution context, and narrative summary first.
               </p>
 
-              <div className="mt-4 grid max-w-[760px] grid-cols-3 gap-3">
+              <div className="mt-5 flex max-w-[660px] items-center gap-5">
                 {TIMEFRAME_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setDays(option.value)}
-                    className={`rounded-full border px-3 py-2 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
+                    className={`w-[190px] rounded-full border px-3 py-2 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
                   >
                     {option.label}
                   </button>
@@ -404,23 +448,23 @@ export default function Last30DaysPage() {
             </div>
 
             <div className="rounded-2xl border border-slate-800/70 bg-slate-900/55 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-slate-100">
+              <h3 className="mb-2 text-sm font-semibold text-slate-100">
                 Distribution - {analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}
               </h3>
-              <div className="grid gap-3 md:grid-cols-[150px_1fr] md:items-start">
+              <div className="grid gap-3 md:grid-cols-[118px_1fr] md:items-start">
                 <div className="grid gap-2">
                 {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setAnalyticsTab(tab)}
-                    className={`rounded-xl border px-3 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
+                    className={`rounded-xl border px-2 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
                   >
                     {tab === "languages" ? "Language" : tab[0].toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
               </div>
-              <div className="pl-1 md:pl-3">
-                <DistributionPanel entries={infographicEntries} />
+              <div className="pl-0 md:pl-1">
+                <DistributionPanel entries={infographicEntries} mode={analyticsTab} />
               </div>
             </div>
             </div>
