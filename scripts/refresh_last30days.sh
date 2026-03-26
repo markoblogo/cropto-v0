@@ -27,12 +27,13 @@ mkdir -p "$OUT_DIR"
 
 split_topics() {
   local raw="$1"
-  TOPICS=()
-  while IFS= read -r line; do
-    local topic
-    topic="$(echo "$line" | sed 's/^ *//; s/ *$//')"
-    [[ -n "$topic" ]] && TOPICS+=("$topic")
-  done < <(printf "%s" "$raw" | sed 's/||/\n/g')
+  mapfile -t TOPICS < <(printf "%s\n" "$raw" | sed 's/||/\n/g; s/^ *//; s/ *$//')
+  local filtered=()
+  local topic
+  for topic in "${TOPICS[@]}"; do
+    [[ -n "$topic" ]] && filtered+=("$topic")
+  done
+  TOPICS=("${filtered[@]}")
 }
 
 run_query() {
