@@ -333,7 +333,7 @@ export default function Last30DaysPage() {
           </div>
         ) : null}
 
-        {data?.warnings?.length ? (
+        {data?.warnings?.length && !usingDashboardFallback && activeItems.length === 0 ? (
           <div className="mb-4 rounded-xl border border-amber-700/60 bg-amber-950/40 p-3 text-xs text-amber-200">
             {data.warnings.join(" ")}
           </div>
