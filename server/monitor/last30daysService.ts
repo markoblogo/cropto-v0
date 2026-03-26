@@ -75,9 +75,18 @@ function inferSourceFromUrl(url: string): string {
   }
 }
 
-function normalizeSource(sourceRaw: string, url: string): string {
+function normalizeSource(sourceRaw: string, url: string, title: string): string {
   const source = sourceRaw.toLowerCase().trim();
-  if (!source || source === "?" || source === "last30days") return inferSourceFromUrl(url);
+  if (!source || source === "?" || source === "last30days") {
+    if (url && url !== "#") return inferSourceFromUrl(url);
+    const titleLower = title.toLowerCase();
+    if (titleLower.includes("reddit") || /\br\/[a-z0-9_]+/i.test(titleLower)) return "reddit";
+    if (titleLower.includes("x.com") || titleLower.includes("twitter") || titleLower.startsWith("@")) return "x";
+    if (titleLower.includes("youtube") || titleLower.includes("youtu.be")) return "youtube";
+    if (titleLower.includes("hacker news") || titleLower.includes("news.ycombinator.com")) return "hn";
+    if (titleLower.includes("bluesky") || titleLower.includes("bsky.app")) return "bluesky";
+    return "web";
+  }
   if (source.includes("reddit")) return "reddit";
   if (source === "x" || source.includes("twitter")) return "x";
   if (source.includes("youtube")) return "youtube";
@@ -347,7 +356,7 @@ export async function loadLast30DaysSummary(): Promise<Last30DaysSummary> {
     const merged = `${title} ${body}`.trim();
     const sourceRaw = normalizeText(item?.source || item?.source_name || item?.publisher || "last30days");
     const url = normalizeUrl(item?.url || item?.link || item?.source_url || "#");
-    const source = normalizeSource(sourceRaw, url);
+    const source = normalizeSource(sourceRaw, url, title);
     return {
       id: normalizeText(item?.id || item?.uuid || `${source}-${idx + 1}`),
       title,
