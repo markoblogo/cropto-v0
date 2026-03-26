@@ -406,8 +406,8 @@ export default function Last30DaysPage() {
       }
       return (await response.json()) as Last30DaysAiResponse;
     },
-    staleTime: 10 * 60_000,
-    refetchInterval: 15 * 60_000,
+    staleTime: 24 * 60 * 60_000,
+    refetchInterval: false,
     refetchOnWindowFocus: false,
   });
 

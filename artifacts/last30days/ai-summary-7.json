@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-03-26T13:26:15.654740+00:00",
+  "filters": {
+    "days": 7
+  },
+  "sourceUpdatedAt": "2026-03-26T13:08:01.462843+00:00",
+  "warnings": [
+    "en_failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "uk_failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+  ],
+  "en": null,
+  "uk": null,
+  "mode": "precomputed"
+}

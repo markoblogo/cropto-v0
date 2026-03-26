@@ -67,6 +67,15 @@ jobs:
           export LAST30DAYS_SCRIPT_PATH="$HOME/.agents/skills/last30days/scripts/last30days.py"
           bash scripts/refresh_last30days.sh
 
+      - name: Generate precomputed AI summaries
+        env:
+          LAST30DAYS_OUTPUT_DIR: artifacts/last30days
+          LAST30DAYS_MONITOR_CONTEXT_URL: https://cropto.abvx.xyz/api/market-dashboard?debugSources=1
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LAST30DAYS_AI_MODEL: gpt-4.1-mini
+        run: |
+          python3 scripts/generate_last30days_ai_summaries.py
+
       - name: Commit and push snapshots
         run: |
           if [ -z "$(git status --porcelain -- artifacts/last30days)" ]; then

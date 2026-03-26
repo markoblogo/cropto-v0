@@ -1,5 +1,7 @@
 import type { Express } from "express";
+import { readFile, writeFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
+import path from "node:path";
 import { latestFxSnapshot } from "../ingestion/storage/fxRepository";
 import {
   MONITOR_FEATURE_FLAGS,
@@ -650,6 +652,23 @@ async function generateLast30AiSummary(params: {
   };
 }
 
+async function readCachedAiSummary(days: number): Promise<any | null> {
+  const dir = process.env.LAST30DAYS_OUTPUT_DIR || path.resolve(process.cwd(), "artifacts/last30days");
+  const file = path.join(dir, `ai-summary-${days}.json`);
+  try {
+    const content = await readFile(file, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+async function writeCachedAiSummary(days: number, payload: any): Promise<void> {
+  const dir = process.env.LAST30DAYS_OUTPUT_DIR || path.resolve(process.cwd(), "artifacts/last30days");
+  const file = path.join(dir, `ai-summary-${days}.json`);
+  await writeFile(file, JSON.stringify(payload, null, 2), "utf-8");
+}
+
 export function registerMonitorRoutes(app: Express): void {
   // Keep monitor routes available even if a background source or scheduler fails
   // during boot. The web process should bind first and degrade gracefully rather
@@ -785,9 +804,26 @@ export function registerMonitorRoutes(app: Express): void {
     try {
       const daysRaw = Number.parseInt(String(req.query.days || "30"), 10);
       const days = Number.isFinite(daysRaw) ? Math.max(1, Math.min(30, daysRaw)) : 30;
+      const refresh = req.query.refresh === "1" || req.query.refresh === "true";
       const periodLabel = days === 1 ? "Yesterday" : days === 7 ? "Week" : "30 Days";
       const minTs = Date.now() - days * 24 * 60 * 60 * 1000;
       const warnings: string[] = [];
+
+      if (!refresh) {
+        const cached = await readCachedAiSummary(days);
+        if (cached) {
+          return res.json({ ...cached, mode: cached.mode || "precomputed" });
+        }
+        return res.json({
+          generatedAt: new Date().toISOString(),
+          filters: { days },
+          sourceUpdatedAt: null,
+          warnings: ["precomputed_ai_summary_missing: run scheduled refresh/generator"],
+          en: null,
+          uk: null,
+          mode: "fallback_only",
+        });
+      }
 
       const base = await loadLast30DaysSummary();
       const scopedLast30 = base.items
@@ -827,14 +863,19 @@ export function registerMonitorRoutes(app: Express): void {
       if (enResult.status === "rejected") warnings.push(`en_summary_failed: ${String(enResult.reason?.message || enResult.reason)}`);
       if (ukResult.status === "rejected") warnings.push(`uk_summary_failed: ${String(ukResult.reason?.message || ukResult.reason)}`);
 
-      return res.json({
+      const payload = {
         generatedAt: new Date().toISOString(),
         filters: { days },
         sourceUpdatedAt: base.sourceUpdatedAt,
         warnings,
         en,
         uk,
+        mode: "live_refresh",
+      };
+      await writeCachedAiSummary(days, payload).catch((error: any) => {
+        warnings.push(`cache_write_failed: ${String(error?.message || error)}`);
       });
+      return res.json(payload);
     } catch (error: any) {
       return res.status(500).json({
         generatedAt: new Date().toISOString(),
