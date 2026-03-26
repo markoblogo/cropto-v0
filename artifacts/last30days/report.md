@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-26T10:33:47.355390+00:00
+**Generated:** 2026-03-26T10:42:57.715559+00:00
 **Date Range:** 2026-02-24 to 2026-03-26
 **Mode:** all
 
@@ -106,7 +106,7 @@
 
 > 
 
-### W4: India May Import 50 KT of Ukrainian Sunflower Oil by End of August — Sandeep Bajoria — Latifundist.com
+### W5: India May Import 50 KT of Ukrainian Sunflower Oil by End of August — Sandeep Bajoria — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/en/interview/635-sandip-badzhoria-50-tis-t-sonyashnikovoyi-oliyi-mozhut-buti-vidpravleni-z-ukrayini-vzhe-u-serpni
@@ -116,7 +116,7 @@
 
 > 
 
-### W5: USDA збільшило прогноз виробництва та експорту соняшникової ...
+### W4: USDA збільшило прогноз виробництва та експорту соняшникової олії з України — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/news/ukraina/usda-zbilshilo-prognoz-virobnictva-ta-eksportu-sonyashnikovoji-oliji-z-ukrajini
@@ -126,7 +126,7 @@
 
 > 
 
-### W14: [PDF] СУЧАСНІ ВИКЛИКИ У РОЗВИТКУ МІСТ ТА РЕГІОНІВ УКРАЇНИ
+### W13: [PDF] СУЧАСНІ ВИКЛИКИ У РОЗВИТКУ МІСТ ТА РЕГІОНІВ УКРАЇНИ
 
 - **Source:** dpu.edu.ua
 - **URL:** https://dpu.edu.ua/images/Documents/UNIVERSITET/FAKULTETI%20INSTITUTI/Fakultet%20podatkovoi%20spravi%20obliku%20ta%20auditu/Kafedra%20ekonomicnoi%20politiki%20ta%20stalogo%20rozvitku/OP%20Ekonomika%20mista%20ta%20regionu%20Magistr/Zbirniki%20tez/2022_Zbirnik_tez_Vseukrainskoi_naukovo_prakticnoi_konferencii_Stalij_rozvitok_mist_ta_regioniv_Ukraini.pdf
@@ -136,7 +136,7 @@
 
 > 
 
-### W8: НАТУРАЛЬНА СОНЯШНИКОВА ОЛІЯ нерафінована ... - TikTok
+### W9: НАТУРАЛЬНА СОНЯШНИКОВА ОЛІЯ нерафінована ... - TikTok
 
 - **Source:** tiktok.com
 - **URL:** https://www.tiktok.com/%40zernozbud/video/7467485535406198021
@@ -146,7 +146,7 @@
 
 > 
 
-### W9: На продовольчому ринку назріває новий ціновий ...
+### W8: На продовольчому ринку назріває новий ціновий ...
 
 - **Source:** facebook.com
 - **URL:** https://www.facebook.com/proagro.ic/posts/%D0%BD%D0%B0-%D0%BF%D1%80%D0%BE%D0%B4%D0%BE%D0%B2%D0%BE%D0%BB%D1%8C%D1%87%D0%BE%D0%BC%D1%83-%D1%80%D0%B8%D0%BD%D0%BA%D1%83-%D0%BD%D0%B0%D0%B7%D1%80%D1%96%D0%B2%D0%B0%D1%94-%D0%BD%D0%BE%D0%B2%D0%B8%D0%B9-%D1%86%D1%96%D0%BD%D0%BE%D0%B2%D0%B8%D0%B9-%D1%81%D1%82%D1%80%D0%B8%D0%B1%D0%BE%D0%BA-%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0-%D0%BE%D0%BB%D1%96%D1%8F-%D0%BE%D0%B4%D0%B8%D0%BD-%D1%96%D0%B7-%D0%BA/1178840130955944/
@@ -156,7 +156,7 @@
 
 > 
 
-### W11: Рапсовое масло вошло в топ-8 агропродукции, которую экспортирует Украина — AgroPortal.ua
+### W10: Рапсовое масло вошло в топ-8 агропродукции, которую экспортирует Украина — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/news/ukraina/ripakova-oliya-uviyshla-do-top-8-agroprodukciji-yaku-eksportuye-ukrajina
@@ -166,7 +166,7 @@
 
 > 
 
-### W6: Ринок соняшникової олії на порозі великих глобальних змін
+### W7: Ринок соняшникової олії на порозі великих глобальних змін
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/
@@ -176,7 +176,7 @@
 
 > 
 
-### W12: Соняшник 2022. Посіви. Залишки. Переробні можливості. Умови зберігання під час війни — Latifundist.com
+### W11: Соняшник 2022. Посіви. Залишки. Переробні можливості. Умови зберігання під час війни — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/spetsproekt/963-olijni-v-umovah-vijni-posiv-zalishki-pererobka-umovi-zberigannya
@@ -196,7 +196,7 @@
 
 > 
 
-### W13: Соняшникова олія: чому її варто полюбити | TikTok
+### W14: Соняшникова олія: чому її варто полюбити | TikTok
 
 - **Source:** tiktok.com
 - **URL:** https://www.tiktok.com/%40klopotenko_chef/video/7596329272290168076
@@ -206,7 +206,7 @@
 
 > 
 
-### W10: Соняшникова олія: якість та ціни
+### W12: Соняшникова олія: якість та ціни
 
 - **Source:** tiktok.com
 - **URL:** https://www.tiktok.com/@dostupno_smachno/video/7547033339488636165
@@ -226,7 +226,7 @@
 
 > 
 
-### W7: 📊 According to APK-Inform preliminary data, in April of this year ...
+### W6: 📊 According to APK-Inform preliminary data, in April of this year ...
 
 - **Source:** instagram.com
 - **URL:** https://www.instagram.com/p/C68tSGDoCSe/

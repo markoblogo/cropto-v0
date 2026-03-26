@@ -1,13 +1,13 @@
 {
-  "id": "resp_0b39b5f5e9a087050069c50b78393481958fed1731761bae01",
+  "id": "resp_04143187568f78e70069c50d9fb8888194853bd8d8768125a0",
   "object": "response",
-  "created_at": 1774521208,
+  "created_at": 1774521759,
   "status": "completed",
   "background": false,
   "billing": {
     "payer": "developer"
   },
-  "completed_at": 1774521209,
+  "completed_at": 1774521761,
   "error": null,
   "frequency_penalty": 0.0,
   "incomplete_details": null,
@@ -17,7 +17,7 @@
   "model": "gpt-5.4-mini-2026-03-17",
   "output": [
     {
-      "id": "ws_0b39b5f5e9a087050069c50b7894ec8195abe596f240164934",
+      "id": "ws_04143187568f78e70069c50da047708194bf6033fcf3d1332b",
       "type": "web_search_call",
       "status": "completed",
       "action": {
@@ -72,16 +72,12 @@
           {
             "type": "url",
             "url": "https://www.business.reddit.com/blog/max-campaigns"
-          },
-          {
-            "type": "url",
-            "url": "https://www.business.reddit.com/agency/industries-technology"
           }
         ]
       }
     },
     {
-      "id": "msg_0b39b5f5e9a087050069c50b797ce481959db68af4c05a9845",
+      "id": "msg_04143187568f78e70069c50da12fb48194ace26703cafc705d",
       "type": "message",
       "status": "completed",
       "content": [
@@ -89,7 +85,7 @@
           "type": "output_text",
           "annotations": [],
           "logprobs": [],
-          "text": "```json\n{\n  \"items\": []\n}\n```"
+          "text": "{\n  \"items\": []\n}"
         }
       ],
       "phase": "final_answer",
@@ -138,15 +134,15 @@
   "top_p": 0.98,
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 8800,
+    "input_tokens": 8730,
     "input_tokens_details": {
-      "cached_tokens": 4096
+      "cached_tokens": 4608
     },
-    "output_tokens": 89,
+    "output_tokens": 85,
     "output_tokens_details": {
       "reasoning_tokens": 74
     },
-    "total_tokens": 8889
+    "total_tokens": 8815
   },
   "user": null,
   "metadata": {}
