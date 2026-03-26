@@ -1,484 +1,98 @@
 {
-  "topic": "sunflower oil ukraine logistics",
+  "topic": "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430",
   "range": {
     "from": "2026-02-24",
     "to": "2026-03-26"
   },
-  "generated_at": "2026-03-26T10:10:46.764615+00:00",
+  "generated_at": "2026-03-26T10:33:47.355390+00:00",
   "mode": "all",
   "openai_model_used": "gpt-5.4-mini",
   "xai_model_used": null,
   "reddit": [],
   "x": [
     {
-      "id": "X9",
-      "text": "Sunflower Oil \u2013 Black Sea Ports\n FOB Prices as of March 25, 2026\nMarch\u2013April 2026: 1305 USD/t\nMay 2026: 1295 USD/t\nJune 2026: 1285 USD/t\nJuly 2026: 1275 USD/t\nAugust 2026: 1265 USD/t\nSeptember 2026: 1260 USD/t\nOctober 2026: 1270 USD/t\nNovember 2026: 1285 USD/t\nDecember 2026: 1300 USD/t\nJanuary\u2013February 2027: 1310 USD/t",
-      "url": "https://x.com/hameed_sky/status/2037058026708804090",
-      "author_handle": "hameed_sky",
-      "date": "2026-03-26",
+      "id": "X4",
+      "text": "@homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d",
+      "url": "https://x.com/Seal_Di/status/2033761745131471304",
+      "author_handle": "Seal_Di",
+      "date": "2026-03-17",
       "date_confidence": "high",
       "engagement": {
-        "likes": 4
+        "likes": 26
       },
-      "relevance": 0.39,
+      "relevance": 0.41,
       "why_relevant": "",
       "subs": {
-        "relevance": 39,
-        "recency": 100,
+        "relevance": 41,
+        "recency": 70,
         "engagement": 100
       },
-      "score": 72
-    },
-    {
-      "id": "X1",
-      "text": "3. Soy and Seed Oils\n\nSoy, canola, and sunflower oils increase estrogen and lower sperm quality.\n\nThey\u2019re in almost every processed food.\n\nCook with olive oil, butter, or beef tallow. Ditch fast food. Read ingredient labels like your life depends on it.",
-      "url": "https://x.com/Mindphilosophy4/status/2037094924282114111",
-      "author_handle": "Mindphilosophy4",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": {
-        "likes": 3,
-        "replies": 1
-      },
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 96
-      },
-      "score": 71
-    },
-    {
-      "id": "X20",
-      "text": "A bit strange, since sunflowers are from Southwest America and Mexico. Europe went through a sunflower fascination phase. Ukraine even made it its national flower. Russia is a major producer of sunflower oil. \n\nhttps://t.co/lZT7Y9A39J",
-      "url": "https://x.com/ILoveYouRoxann/status/2036995646738067554",
-      "author_handle": "ILoveYouRoxann",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.64,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 64,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 61
-    },
-    {
-      "id": "X14",
-      "text": "No. This is Israel security teams at Kerem Shalom intercepting hundreds of dark engine oil bottles (restricted dual-use for Hamas terror ops) smuggled inside UNDP sunflower cooking oil crates. \n\nPhotos from the scene confirm the swap attempt by smugglers. Israel facilitates aid but screens to block diversion\u2014not the reverse. The ethnic cleansing claim has no basis here.",
-      "url": "https://x.com/grok/status/2037045806914547728",
-      "author_handle": "grok",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": {
-        "likes": 2
-      },
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 44
-      },
-      "score": 55
-    },
-    {
-      "id": "X13",
-      "text": "@QBCCIntegrity canola, sunflower, moralinga, hemp seeds all good for producing oil for diesal engines",
-      "url": "https://x.com/ash_2048/status/2037049153113776272",
-      "author_handle": "ash_2048",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X7",
-      "text": "@RAahiagbah Thank you for your logic, buying a 5 litre of sunflower oil for Ghc 230 is better than Ghc 150 now and Ghc 15 fuel is better than Ghc 12.24 . Concert man",
-      "url": "https://x.com/Raymondrayda7/status/2037065826725978569",
-      "author_handle": "Raymondrayda7",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X29",
-      "text": "@SamaHoole Sunflower seed oil was invented in 3000 BC.",
-      "url": "https://x.com/Jerether/status/2036967699730063681",
-      "author_handle": "Jerether",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.4,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 40,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X22",
-      "text": "@TiredActor add turmeric, chili powder, salt to a small spoon or two of heated oil in a pan...mix it up with chopped bread : seasoned bread (vagharela pav in gujarati)\n\nmade it recently...simple, easy, delicious\n(i used sunflower oil) https://t.co/3w18Y1r13E",
-      "url": "https://x.com/abzeeshek/status/2036990610322624621",
-      "author_handle": "abzeeshek",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X25",
-      "text": "@cogatonline @UNDP Bobby it says sunflower oil on your pic. What is what??",
-      "url": "https://x.com/AdhikaryVarun/status/2036977455798640784",
-      "author_handle": "AdhikaryVarun",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.4,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 40,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X27",
-      "text": "@konkretmobil @markeatsmeat Would you consider Avacado or Olive oil being better for you at least? Not saying canola or sunflower is \"bad\", but maybe not as good?",
-      "url": "https://x.com/manopano1018/status/2036970778923614695",
-      "author_handle": "manopano1018",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X28",
-      "text": "@manopano1018 @markeatsmeat Almost everyday and I use either sunflower oil or canola oil.",
-      "url": "https://x.com/konkretmobil/status/2036969255825019278",
-      "author_handle": "konkretmobil",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": {
-        "replies": 1
-      },
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
+      "score": 65
     },
     {
       "id": "X3",
-      "text": "@markmueller1979 @MonaMisa Ingredients: Water, pea protein isolate, expeller-pressed canola oil, refined coconut oil, contains 2% or less of the following: cellulose from bamboo, methylcellulose, potato starch, natural flavor, maltodextrin, yeast extract, salt, sunflower oil, vegetable glycerin, ...",
-      "url": "https://x.com/HeavenKnows1313/status/2037085095455056306",
-      "author_handle": "HeavenKnows1313",
-      "date": "2026-03-26",
+      "text": "@homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f\u0443 \u0448\u043a\u0456\u0434\u043b\u0438\u0432\u0430, \u0430 \u0436\u0438\u0440 \u0445\u0435\u0440 \u043f\u043e\u0439\u043c\u0438 \u0447\u043e\u0433\u043e \u043a\u043e\u0440\u0438\u0441\u043d\u0438\u0439?\n\u0417 \u0448\u043e\u043a\u043e\u043b\u0430\u0434\u043e\u043c - \u0446\u0435 \u0434\u0432\u0430 \u0420\u0406\u0417\u041d\u0406 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0438: \u043a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u0430 \u043f\u043e\u0436\u0438\u0432\u0430 \u0442\u0430 \u0441\u0442\u0438\u043c\u0443\u043b\u044f\u0442\u043e\u0440 (\u0442\u0435\u043e\u0431\u0440\u043e\u043c\u0456\u043d+\u043a\u043e\u0444\u0435\u0457\u043d)\n\u0417\u0430 \u0439\u043e\u0433\u0443\u0440\u0442\u0438 \u0437\u0433\u043e\u0434\u0435\u043d, \u0430\u043b\u0435 \u0442\u043e\u043c\u0443 \u0449\u043e \u043d\u0435 \u043b\u044e\u0431\u043b\u044e \u0430\u0440\u043e\u043c\u0430\u0442\u0438\u0437\u0430\u0442\u043e\u0440\u0430\u0432 \u0442\u0430 \u043f\u0456\u0434\u0441\u043e\u043b\u043e\u0434\u0436\u0443\u0432\u0430\u0447\u0456\u0432 - \u044f \u043a\u0440\u0430\u0449\u0435 \u0432\u0430\u0440\u0435\u043d\u043d\u044f \u0443 \u0431\u0456\u043b\u0438\u0439 \u0434\u043e\u0434\u0430\u043c.",
+      "url": "https://x.com/shved_y73778/status/2033782692169285813",
+      "author_handle": "shved_y73778",
+      "date": "2026-03-17",
       "date_confidence": "high",
       "engagement": {
-        "replies": 1
+        "likes": 16
       },
       "relevance": 0.39,
       "why_relevant": "",
       "subs": {
         "relevance": 39,
-        "recency": 100,
-        "engagement": 35
+        "recency": 70,
+        "engagement": 82
       },
-      "score": 50
+      "score": 59
     },
     {
-      "id": "X17",
-      "text": "@theproof @DIY_Tardis @_NotYourDoctor Simon\nThis is outdated data. \n2010? \nthis 2026 now. \nCheck latest data\n\nIts now mostly:\nSunflower oil\nSafflower oil\nSoybean oil\nRBD Palm oil",
-      "url": "https://x.com/shashiiyengar/status/2037032263855333879",
-      "author_handle": "shashiiyengar",
-      "date": "2026-03-26",
+      "id": "X7",
+      "text": "\u0441\u044e\u0434\u0438 \u0449\u0435 \u043a\u0430\u043f\u0443\u0441\u0442\u0443 \u043a\u0432\u0430\u0448\u0430\u043d\u0443 \u0430\u0431\u043e \u0441\u0432\u0456\u0436\u0438\u0439 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043c\u043e\u043b\u043e\u0434\u043e\u0457 \u0442\u043e\u043d\u043a\u043e \u043f\u043e\u0441\u0456\u0447\u0435\u043d\u043e\u0457 \u043a\u0430\u043f\u0443\u0441\u0442\u0438 \u043a\u0440\u0456\u043f \u0446\u0438\u0431\u0443\u043b\u044f \u0456 \u043e\u043b\u0456\u044f \u043f\u0440\u044f\u043c\u043e\u0433\u043e \u0432\u0456\u0434\u0436\u0438\u043c\u0443 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 - \u0456 \u0432\u0437\u0430\u0433\u0430\u043b\u0456 \u043a\u0440\u0430\u0441\u043e\u0442\u0430",
+      "url": "https://x.com/soncesonce/status/2029333867136458950",
+      "author_handle": "soncesonce",
+      "date": "2026-03-04",
       "date_confidence": "high",
       "engagement": {
-        "replies": 1
+        "likes": 9
       },
       "relevance": 0.39,
       "why_relevant": "",
       "subs": {
         "relevance": 39,
-        "recency": 100,
-        "engagement": 35
+        "recency": 26,
+        "engagement": 61
       },
-      "score": 50
-    },
-    {
-      "id": "X23",
-      "text": "@user84829272 Because Russia removed affordable Sunflower oil, wheat, and LNG from the European market  4 years ago",
-      "url": "https://x.com/theHauteMesh/status/2036983899348414716",
-      "author_handle": "theHauteMesh",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X8",
-      "text": "Avail 30% Off On Jivo Cold Pressed Unrefined Sunflower Oil - 5 Litres\n\nMRP: Rs 1,350\n\nDeal Price: Rs 949\n\n(Paid Link): https://t.co/b04lmTG3dD",
-      "url": "https://x.com/discountsdeck/status/2037058216547496257",
-      "author_handle": "discountsdeck",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X19",
-      "text": "Cetaphil Moisturizing Cream 453g dengan Sunflower Oil, Vitamin E dan Almond Oil Pelembap Wajah &amp; Kulit untuk Kulit Sangat Kering dan Sensitif \nhttps://t.co/Jq4ZLSDa4D https://t.co/j3FCIQH4Uc",
-      "url": "https://x.com/bgasprmdya/status/2036999210084819095",
-      "author_handle": "bgasprmdya",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": {
-        "replies": 1
-      },
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X18",
-      "text": "I have tried a modified (and more expensive) version recently:\n\nMorning\nProtein shake - 63g of protein & collagen\nOlive oil - tablespoon\nAlmonds - 8-12\nBreakfast sandwich (QT; sausage, egg, cheese, croissant)\nBanana\n\nRest of the day\n10-12 cups of coffee\n6-10 handfuls of sunflower seeds\n\n\u2026 then dinner.",
-      "url": "https://x.com/darren_unruh/status/2037020147630694586",
-      "author_handle": "darren_unruh",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X30",
-      "text": "In a universe where Iran torches refineries with theatrical flair, UN smugglers cleverly disguise motor oil as sunflower aid\u2014because nothing says \"humanitarian\" like greasing the wheels of eternal conflict. Truly, the oil of peace and its not even Chanukkah. \nDon't kvetch and always carry a tallit. \ud83d\ude0e #thejewishguidetothegalaxy",
-      "url": "https://x.com/mensch_in_black/status/2036959545424032013",
-      "author_handle": "mensch_in_black",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X2",
-      "text": "The global vegetable oil market (edible oils like soy, palm, canola, sunflower) is valued at ~$350-450B in 2025/26 per multiple reports (IMARC, Mordor, etc.).\n\nTallow market is ~$9-11B in 2025 (Grand View, https://t.co/3b1Hyse4TB, Straits).\n\nVegetable oils are roughly 35-45x larger.",
-      "url": "https://x.com/grok/status/2037085595961360403",
-      "author_handle": "grok",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X6",
-      "text": "We show how one sunflower oil saves on shelf life, flavor neutrality, and cost per unit for food brands and biodiesel makers. Watch the 30s clips and download the one-pagers to see real savings: https://t.co/ja6KH15tMJ #FoodManufacturing https://t.co/DkljaeZjrV",
-      "url": "https://x.com/Rsunfloweroil/status/2037070116660404349",
-      "author_handle": "Rsunfloweroil",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X4",
-      "text": "wow i am so glad i decided to be a cheapskate and buy the Walmart brand nutella and have a nice amount of it as a treat only to find it RIDDLED with sunflower oil (allergic) \ud83d\ude0d\ud83d\ude0d\ud83d\ude0d\ud83d\ude0d\ud83d\ude0d I wanted to be covered in hives thanks it was worth saving $1 \ud83d\ude0d\ud83d\ude0d\ud83d\ude0d\ud83d\ude0d\ud83d\ude0d",
-      "url": "https://x.com/theoldhaley/status/2037074405214609530",
-      "author_handle": "theoldhaley",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X12",
-      "text": "\u0e25\u0e34\u0e1b\u0e17\u0e34\u0e19\u0e17\u0e4c\u0e01\u0e25\u0e2d\u0e2a JUICY TINT SERUM \u0e43\u0e2b\u0e21\u0e48!4 \u0e40\u0e09\u0e14\u0e2a\u0e35\u0e2a\u0e27\u0e22 \u0e19\u0e48\u0e32\u0e23\u0e31\u0e01 \u0e2a\u0e35\u0e0a\u0e31\u0e14\u0e15\u0e34\u0e14\u0e17\u0e19 48 \u0e0a\u0e21.\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e25\u0e49\u0e33\u0e25\u0e36\u0e01 \u0e1b\u0e32\u0e01\u0e19\u0e38\u0e48\u0e21\u0e1f\u0e39 \u0e44\u0e21\u0e48\u0e25\u0e2d\u0e01\u0e44\u0e21\u0e48\u0e41\u0e2b\u0e49\u0e07 \u0e2a\u0e32\u0e23\u0e2a\u0e01\u0e31\u0e14\u0e08\u0e32\u0e01 Carrot extract, Sunflower seed oil, Organic argan oil, Organic camelia Oil \u0e41\u0e25\u0e30\u0e1c\u0e25\u0e44\u0e21\u0e49 7 \u0e0a\u0e19\u0e34\u0e14 https://t.co/VbiTfFYJ2N",
-      "url": "https://x.com/snkkexr1869525/status/2037049676625764655",
-      "author_handle": "snkkexr1869525",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X10",
-      "text": "\ud83c\udf3b Sunflower Oil 1L \u2013 Production Showcase\nBy France AJ Alimentaire\n\n\u2714\ufe0f Refined quality\n\u2714\ufe0f Export-ready\n\u2714\ufe0f Ideal for B2B &amp; wholesale\n\n\ud83c\udf10 https://t.co/I4iqAPOMmB\n\n#FranceAJAlimentaire #SunflowerOil #B2B #Wholesale #FoodExport https://t.co/tLU1TNAl9r",
-      "url": "https://x.com/FAlimentaire/status/2037056513307824632",
-      "author_handle": "FAlimentaire",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X11",
-      "text": "\ud83d\udcca \ud835\uddda\ud835\uddf9\ud835\uddfc\ud835\uddef\ud835\uddee\ud835\uddf9 \ud835\uddd6\ud835\uddfc\ud835\uddfa\ud835\uddfa\ud835\uddfc\ud835\uddf1\ud835\uddf6\ud835\ude01\ud835\uddf6\ud835\uddf2\ud835\ude00 \ud835\udde8\ud835\uddfd\ud835\uddf1\ud835\uddee\ud835\ude01\ud835\uddf2\n\ud83c\udf3e \ud835\uddd4\ud835\uddf4\ud835\uddff\ud835\uddf6\ud835\uddf0\ud835\ude02\ud835\uddf9\ud835\ude01\ud835\ude02\ud835\uddff\ud835\uddee\ud835\uddf9\n\nCommodities in focus: Sunflower Oil, Wheat, Cheese, Cotton, Milk\n\n\u26a1\ufe0fInstant stock alerts on WhatsApp - Try FREE \ud83d\udc49 https://t.co/uvxWFz5IX0 https://t.co/BcmMOPIvW6",
-      "url": "https://x.com/wegro_app/status/2037054661610660320",
-      "author_handle": "wegro_app",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 50
-    },
-    {
-      "id": "X26",
-      "text": "@RageScrolled @BrandonLuuMD Cooking oils are mostly seed oils (corn oil, canola oil, sunflower oil).",
-      "url": "https://x.com/Galtonist/status/2036971448317731295",
-      "author_handle": "Galtonist",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": {
-        "likes": 1,
-        "replies": 1
-      },
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 20
-      },
-      "score": 48
+      "score": 42
     },
     {
       "id": "X5",
-      "text": "Sunflower lecithin is a natural fatty substance extracted from sunflower seeds during oil processing. It's a type of phospholipid, which means it's made up of fats essential for cell membranes in your body and various foods. \n\nit's plant-derived using methods like cold pressing. This makes it a popular emulsifier in foods it helps mix ingredients that don't naturally blend, like oil and water. You can find it in supplements as powders, liquids, capsules, or granules\n\nSunflower lecithin is genera",
-      "url": "https://x.com/TejasTekk/status/2037070820217151805",
-      "author_handle": "TejasTekk",
-      "date": "2026-03-26",
+      "text": "@o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f",
+      "url": "https://x.com/busia09/status/2033221717665935676",
+      "author_handle": "busia09",
+      "date": "2026-03-15",
       "date_confidence": "high",
       "engagement": {
-        "likes": 1,
+        "likes": 2,
         "replies": 1
       },
-      "relevance": 0.39,
+      "relevance": 0.4,
       "why_relevant": "",
       "subs": {
-        "relevance": 39,
-        "recency": 100,
-        "engagement": 20
+        "relevance": 40,
+        "recency": 63,
+        "engagement": 22
       },
-      "score": 48
+      "score": 40
     },
     {
-      "id": "X15",
-      "text": "@ECOWARRIORSS @HELLANBIGLOVE \ud83d\udea8 \u2018Palm oil / Palm Olein / Vegetable Oil\u2019 are used in countless products, esp. in Asia. \ud83d\udc94\n\n\u2018Sunflower oil, or olive oil\u2019 at %, the rest is palm olein, etc.\ud83c\udf3b Olive oil may not be pure @ x grade. Beware. Check Source. \u26a0\ufe0f\ud83e\uded2\n\nCoconut oil, &amp; sesame oil are distinct. \ud83e\udd65\ud83c\udfdd\ufe0f\u262e\ufe0f",
-      "url": "https://x.com/LotusB10/status/2037039247585403276",
-      "author_handle": "LotusB10",
-      "date": "2026-03-26",
+      "id": "X1",
+      "text": "@locpell \u0422\u0435\u0444\u043b\u043e\u043d \u0434\u0430\u0454 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u043f\u0440\u0438 \u0433\u043e\u0442\u0443\u0432\u0430\u043d\u043d\u0456, \u0432\u0456\u0434\u043f\u043e\u0432\u0456\u0434\u043d\u043e \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u043a\u0430\u043b\u043e\u0440\u0456\u0439 \u0443 \u0457\u0436\u0456.  \u0421\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0434\u0443\u0436\u0435 \u043a\u0430\u043b\u043e\u0440\u0456\u0439\u043d\u0430 \u0456 \u043d\u0430\u043f\u0440\u0438\u043a\u043b\u0430\u0434 \u0443 \u0447\u0443\u0433\u0443\u043d\u0456 \u0430\u0431\u043e \u0441\u0442\u0430\u043b\u0456 \u043a\u0430\u043b\u043e\u0440\u0456\u0457 \u0457\u0436\u0456 \u0432\u0438\u0439\u0434\u0443\u0442\u044c \u0443 \u0440\u0430\u0437\u0438 \u0431\u0456\u043b\u044c\u0448\u0435. \n\u0429\u043e \u0440\u043e\u0431\u0438\u0442\u0438 =&gt; \u0432\u0438\u043a\u0438\u043d\u0443\u0442\u0438",
+      "url": "https://x.com/mmx88mhz/status/2035535595850641535",
+      "author_handle": "mmx88mhz",
+      "date": "2026-03-22",
       "date_confidence": "high",
       "engagement": {
         "likes": 1
@@ -487,137 +101,78 @@
       "why_relevant": "",
       "subs": {
         "relevance": 39,
-        "recency": 100,
+        "recency": 86,
         "engagement": 0
       },
-      "score": 42
+      "score": 39
+    },
+    {
+      "id": "X8",
+      "text": "@povnesvavillya \u0414\u0438\u0432\u0438\u043b\u0430\u0441\u044c \u0441\u044c\u043e\u0433\u043e\u0434\u043d\u0456 \u043d\u0430 \u043c\u0435\u0440\u0435\u043d\u0433\u043e\u0432\u0438\u0439 \u0440\u0443\u043b\u0435\u0442 \u0437 \u0432\u0438\u0448\u043d\u0435\u044e \u0432 \u043c\u0430\u0433\u0430\u0437\u0456. \u0412 \u0441\u043a\u043b\u0430\u0434\u0456: \u043e\u043b\u0456\u044f \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430, \u043f\u0430\u043b\u044c\u043c\u043e\u0432\u0430 \u0456 \u043f\u0430\u043b\u044c\u043c\u043e\u044f\u0434\u0435\u0440\u043d\u0430. \u041a\u0443\u0434\u0438 \u0432 \u0434\u0435\u0441\u0435\u0440\u0442, \u044f\u043a\u0438\u0439 \u0440\u043e\u0431\u0438\u0446\u044f \u0437 \u0431\u0456\u043b\u043a\u0430, \u043a\u0440\u043e\u0445\u043c\u0430\u043b\u044e \u0456 \u0432\u0438\u0448\u043d\u0456, \u043c\u043e\u0436\u043d\u0430 \u0432\u0441\u0443\u043d\u0443\u0442\u0438 \u0442\u0440\u0438 \u043e\u043b\u0456\u0457, \u0434\u0432\u0456 \u0437 \u044f\u043a\u0438\u0445 \u0446\u0435 \u0432\u0430\u043f\u0449\u0454 \u043a\u0430\u043f\u0435\u0446\u044c?!",
+      "url": "https://x.com/SturmannUlly75/status/2026427348002787628",
+      "author_handle": "SturmannUlly75",
+      "date": "2026-02-24",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 9,
+        "replies": 2
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 0,
+        "engagement": 73
+      },
+      "score": 39
+    },
+    {
+      "id": "X2",
+      "text": "\u0415\u043a\u043e\u043b\u043e\u0433\u0438 \u043f\u0440\u0438\u043f\u0443\u0441\u043a\u0430\u044e\u0442\u044c, \u0449\u043e \u0446\u0435 \u043d\u0430\u0441\u043b\u0456\u0434\u043a\u0438 \u043e\u0431\u0441\u0442\u0440\u0456\u043b\u0443 \u0440\u043e\u0441\u0456\u044f\u043d\u0430\u043c\u0438 \u043f\u043e\u0440\u0442\u043e\u0432\u043e\u0433\u043e \u0442\u0435\u0440\u043c\u0456\u043d\u0430\u043b\u0443 20 \u0433\u0440\u0443\u0434\u043d\u044f: \u0442\u043e\u0434\u0456 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0431\u0443\u043a\u0432\u0430\u043b\u044c\u043d\u043e \u0442\u0435\u043a\u043b\u0430 \u0432\u0443\u043b\u0438\u0446\u044f\u043c\u0438.",
+      "url": "https://x.com/hmaro4os/status/2034315069845107095",
+      "author_handle": "hmaro4os",
+      "date": "2026-03-18",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 73,
+        "engagement": 7
+      },
+      "score": 37
+    },
+    {
+      "id": "X6",
+      "text": "@gramm_football \u041c'\u044f\u0441\u043e \u2013 \u0442\u0435, \u044f\u043a\u0435 \u0454)\n\u0422\u0430\u043c \u0433\u043e\u0442\u0443\u044e\u0442\u044c \u0447\u0430\u0441\u0442\u0456\u0448\u0435 \u0437 \u044f\u043b\u043e\u0432\u0438\u0447\u0438\u043d\u0438. \u0422\u0443\u0442 \u0432 \u043c\u0435\u043d\u0435 \u0431\u0443\u043b\u0430 \u0441\u0432\u0438\u043d\u0438\u043d\u0430. \u041e\u043b\u0456\u044f \u0442\u0430\u043c \u0431\u0430\u0436\u0430\u043d\u043e \u0448\u043e\u0431 \u0431\u0443\u043b\u0430 \u0431\u0430\u0432\u043e\u0432\u043d\u044f\u043d\u0430, \u0442\u0443\u0442 \u0432 \u043c\u0435\u043d\u0435 \u0440\u0430\u0444\u0456\u043d\u043e\u0432\u0430\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430. \u0422\u0440\u043e\u0445\u0438 \u043a\u0438\u043d\u0443\u0432 \u043c\u0430\u0441\u043b\u0430, \u0431\u043e \u0442\u0440\u0435\u0431\u0430 \u0431\u0443\u043b\u043e \u0439\u043e\u0433\u043e \u0432\u0436\u0435 \u043a\u0443\u0434\u0438\u0441\u044c \u043f\u0443\u0441\u0442\u0438\u0442\u0438, \u0448\u043e\u0431 \u043d\u0435 \u0441\u0442\u0430\u0440\u0456\u043b\u043e. \u041a\u0430\u0436\u0443\u0442\u044c, \u0448\u043e \u043a\u0443\u0440\u0434\u044e\u0447\u043d\u0435 \u0441\u0430\u043b\u043e \u0434\u0430\u0454 \u0433\u0430\u0440\u043d\u0438\u0439 \u0441\u043c\u0430\u043a.",
+      "url": "https://x.com/ihor_kho/status/2029639411609076109",
+      "author_handle": "ihor_kho",
+      "date": "2026-03-05",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 30,
+        "engagement": 7
+      },
+      "score": 27
     }
   ],
   "web": [
     {
-      "id": "W5",
-      "title": "2026 will not bring a significant increase in the price of sunflower oil ...",
-      "url": "https://ukragroconsult.com/en/news/2026-will-not-bring-a-significant-increase-in-the-price-of-sunflower-oil-in-ukraine/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W11",
-      "title": "AGRARIAN CENTER SUNFLOWER OIL - Ukraine | LinkedIn",
-      "url": "https://www.linkedin.com/company/agrarian-center",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W12",
-      "title": "ITO Global Logistics Ukraine",
-      "url": "https://www.linkedin.com/company/ukrin-ltd",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W8",
-      "title": "Import Sunflower Oil From Ukraine 2026: Market Insights - Deepbeez",
-      "url": "https://deepbeez.com/trade-flow/import-sunflower-oil-from-ukraine",
-      "source_domain": "deepbeez.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W7",
-      "title": "OLIMPUS OIL | LinkedIn",
-      "url": "https://www.linkedin.com/company/olimpus-oil",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W14",
-      "title": "Oliyatorg O\u00dc Group of Companies | LinkedIn",
-      "url": "https://www.linkedin.com/company/oliyatorg-holding",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W9",
-      "title": "Potoky, LLC (Oil Extraction Plant) | LinkedIn",
-      "url": "https://www.linkedin.com/company/potoky",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W13",
-      "title": "QP Foods UK Supplies Sunflower Oil from Ukraine",
-      "url": "https://en.interfax.com.ua/news/press-release/1153594.html",
-      "source_domain": "en.interfax.com.ua",
+      "id": "W15",
+      "title": "Agro&Food Security Forum 2024: \u041b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430, \u043f\u043e\u043b\u044c\u0441\u044c\u043a\u043e-\u0443\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0435 \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0441\u0442\u0432\u043e \u0442\u0430 \u0442\u0440\u0435\u043d\u0434\u0438 \u0437\u0435\u0440\u043d\u043e\u0432\u043e\u0433\u043e \u0440\u0438\u043d\u043a\u0443 \u2014 Latifundist.com",
+      "url": "https://latifundist.com/reportazhy/185-5-mlrd-eksportu-proti-4-mlrd-importu-yak-polshcha-ta-ukrayina-buduyut-novu-torgovelnu-realnist-pidsumki-agrofood-security-forum-2024",
+      "source_domain": "latifundist.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -632,9 +187,9 @@
     },
     {
       "id": "W4",
-      "title": "Strikes on Ukraine's vegetable oil drive prices to multi-year highs",
-      "url": "https://www.fastmarkets.com/insights/strikes-on-ukraines-vegetable-oil-drive-prices-to-multi-year-highs/",
-      "source_domain": "fastmarkets.com",
+      "title": "India May Import 50 KT of Ukrainian Sunflower Oil by End of August \u2014 Sandeep Bajoria \u2014 Latifundist.com",
+      "url": "https://latifundist.com/en/interview/635-sandip-badzhoria-50-tis-t-sonyashnikovoyi-oliyi-mozhut-buti-vidpravleni-z-ukrayini-vzhe-u-serpni",
+      "source_domain": "latifundist.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -648,10 +203,10 @@
       "score": 3
     },
     {
-      "id": "W15",
-      "title": "Sunflower Oil: Ukraine's Leading Export in 2025/26 Year - AgroReview",
-      "url": "https://agroreview.com/en/newsen/crops/sunflower-oil-remains-ukraines-main/",
-      "source_domain": "agroreview.com",
+      "id": "W5",
+      "title": "USDA \u0437\u0431\u0456\u043b\u044c\u0448\u0438\u043b\u043e \u043f\u0440\u043e\u0433\u043d\u043e\u0437 \u0432\u0438\u0440\u043e\u0431\u043d\u0438\u0446\u0442\u0432\u0430 \u0442\u0430 \u0435\u043a\u0441\u043f\u043e\u0440\u0442\u0443 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 ...",
+      "url": "https://agroportal.ua/news/ukraina/usda-zbilshilo-prognoz-virobnictva-ta-eksportu-sonyashnikovoji-oliji-z-ukrajini",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -665,10 +220,10 @@
       "score": 3
     },
     {
-      "id": "W10",
-      "title": "Ukraine remains largest exporter of sunflower oil to Europe, with minor shares held by two other countries | Ukrainian Agrarian Confederation",
-      "url": "https://agroconf.org/en/content/ukraine-remains-largest-exporter-sunflower-oil-europe-minor-shares-held-two-other-countries",
-      "source_domain": "agroconf.org",
+      "id": "W14",
+      "title": "[PDF] \u0421\u0423\u0427\u0410\u0421\u041d\u0406 \u0412\u0418\u041a\u041b\u0418\u041a\u0418 \u0423 \u0420\u041e\u0417\u0412\u0418\u0422\u041a\u0423 \u041c\u0406\u0421\u0422 \u0422\u0410 \u0420\u0415\u0413\u0406\u041e\u041d\u0406\u0412 \u0423\u041a\u0420\u0410\u0407\u041d\u0418",
+      "url": "https://dpu.edu.ua/images/Documents/UNIVERSITET/FAKULTETI%20INSTITUTI/Fakultet%20podatkovoi%20spravi%20obliku%20ta%20auditu/Kafedra%20ekonomicnoi%20politiki%20ta%20stalogo%20rozvitku/OP%20Ekonomika%20mista%20ta%20regionu%20Magistr/Zbirniki%20tez/2022_Zbirnik_tez_Vseukrainskoi_naukovo_prakticnoi_konferencii_Stalij_rozvitok_mist_ta_regioniv_Ukraini.pdf",
+      "source_domain": "dpu.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -682,10 +237,44 @@
       "score": 3
     },
     {
-      "id": "W3",
-      "title": "Ukraine remains leading sunflower oil supplier to EU",
-      "url": "https://www.ofimagazine.com/news/ukraine-remains-leading-sunflower-oil-supplier-to-eu",
-      "source_domain": "ofimagazine.com",
+      "id": "W8",
+      "title": "\u041d\u0410\u0422\u0423\u0420\u0410\u041b\u042c\u041d\u0410 \u0421\u041e\u041d\u042f\u0428\u041d\u0418\u041a\u041e\u0412\u0410 \u041e\u041b\u0406\u042f \u043d\u0435\u0440\u0430\u0444\u0456\u043d\u043e\u0432\u0430\u043d\u0430 ... - TikTok",
+      "url": "https://www.tiktok.com/%40zernozbud/video/7467485535406198021",
+      "source_domain": "tiktok.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W9",
+      "title": "\u041d\u0430 \u043f\u0440\u043e\u0434\u043e\u0432\u043e\u043b\u044c\u0447\u043e\u043c\u0443 \u0440\u0438\u043d\u043a\u0443 \u043d\u0430\u0437\u0440\u0456\u0432\u0430\u0454 \u043d\u043e\u0432\u0438\u0439 \u0446\u0456\u043d\u043e\u0432\u0438\u0439 ...",
+      "url": "https://www.facebook.com/proagro.ic/posts/%D0%BD%D0%B0-%D0%BF%D1%80%D0%BE%D0%B4%D0%BE%D0%B2%D0%BE%D0%BB%D1%8C%D1%87%D0%BE%D0%BC%D1%83-%D1%80%D0%B8%D0%BD%D0%BA%D1%83-%D0%BD%D0%B0%D0%B7%D1%80%D1%96%D0%B2%D0%B0%D1%94-%D0%BD%D0%BE%D0%B2%D0%B8%D0%B9-%D1%86%D1%96%D0%BD%D0%BE%D0%B2%D0%B8%D0%B9-%D1%81%D1%82%D1%80%D0%B8%D0%B1%D0%BE%D0%BA-%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0-%D0%BE%D0%BB%D1%96%D1%8F-%D0%BE%D0%B4%D0%B8%D0%BD-%D1%96%D0%B7-%D0%BA/1178840130955944/",
+      "source_domain": "facebook.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W11",
+      "title": "\u0420\u0430\u043f\u0441\u043e\u0432\u043e\u0435 \u043c\u0430\u0441\u043b\u043e \u0432\u043e\u0448\u043b\u043e \u0432 \u0442\u043e\u043f-8 \u0430\u0433\u0440\u043e\u043f\u0440\u043e\u0434\u0443\u043a\u0446\u0438\u0438, \u043a\u043e\u0442\u043e\u0440\u0443\u044e \u044d\u043a\u0441\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u0435\u0442 \u0423\u043a\u0440\u0430\u0438\u043d\u0430 \u2014 AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina/ripakova-oliya-uviyshla-do-top-8-agroprodukciji-yaku-eksportuye-ukrajina",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -700,9 +289,26 @@
     },
     {
       "id": "W6",
-      "title": "Ukraine remains leading sunflower oil supplier to EU - Odessa Journal",
-      "url": "https://odessa-journal.com/ukraine-remains-leading-sunflower-oil-supplier-to-eu",
-      "source_domain": "odessa-journal.com",
+      "title": "\u0420\u0438\u043d\u043e\u043a \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u043d\u0430 \u043f\u043e\u0440\u043e\u0437\u0456 \u0432\u0435\u043b\u0438\u043a\u0438\u0445 \u0433\u043b\u043e\u0431\u0430\u043b\u044c\u043d\u0438\u0445 \u0437\u043c\u0456\u043d",
+      "url": "https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W12",
+      "title": "\u0421\u043e\u043d\u044f\u0448\u043d\u0438\u043a 2022. \u041f\u043e\u0441\u0456\u0432\u0438. \u0417\u0430\u043b\u0438\u0448\u043a\u0438. \u041f\u0435\u0440\u0435\u0440\u043e\u0431\u043d\u0456 \u043c\u043e\u0436\u043b\u0438\u0432\u043e\u0441\u0442\u0456. \u0423\u043c\u043e\u0432\u0438 \u0437\u0431\u0435\u0440\u0456\u0433\u0430\u043d\u043d\u044f \u043f\u0456\u0434 \u0447\u0430\u0441 \u0432\u0456\u0439\u043d\u0438 \u2014 Latifundist.com",
+      "url": "https://latifundist.com/spetsproekt/963-olijni-v-umovah-vijni-posiv-zalishki-pererobka-umovi-zberigannya",
+      "source_domain": "latifundist.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -717,9 +323,77 @@
     },
     {
       "id": "W2",
-      "title": "Ukraine supplies most of the EU\u2019s sunflower oil imports | Biofuels International Magazine",
-      "url": "https://biofuels-news.com/news/ukraine-supplies-most-of-the-eus-sunflower-oil-imports/",
-      "source_domain": "biofuels-news.com",
+      "title": "\u0421\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f: \u0412\u0438\u0440\u043e\u0449\u0443\u0432\u0430\u043d\u043d\u044f \u0442\u0430 \u043a\u043e\u0440\u0438\u0441\u0442\u044c - TikTok",
+      "url": "https://www.tiktok.com/%40volodymyrbrus/video/7547735737840585989",
+      "source_domain": "tiktok.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W13",
+      "title": "\u0421\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f: \u0447\u043e\u043c\u0443 \u0457\u0457 \u0432\u0430\u0440\u0442\u043e \u043f\u043e\u043b\u044e\u0431\u0438\u0442\u0438 | TikTok",
+      "url": "https://www.tiktok.com/%40klopotenko_chef/video/7596329272290168076",
+      "source_domain": "tiktok.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W10",
+      "title": "\u0421\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f: \u044f\u043a\u0456\u0441\u0442\u044c \u0442\u0430 \u0446\u0456\u043d\u0438",
+      "url": "https://www.tiktok.com/@dostupno_smachno/video/7547033339488636165",
+      "source_domain": "tiktok.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W3",
+      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0432 \u0433\u043b\u043e\u0431\u0430\u043b\u044c\u043d\u043e\u043c\u0443 \u043c\u0430\u0441\u0448\u0442\u0430\u0431\u0456: \u041b\u043e\u0433\u0456\u0441\u0442\u0438\u0447\u043d\u0456 ...",
+      "url": "https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W7",
+      "title": "\ud83d\udcca According to APK-Inform preliminary data, in April of this year ...",
+      "url": "https://www.instagram.com/p/C68tSGDoCSe/",
+      "source_domain": "instagram.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -742,6 +416,6 @@
   "polymarket": [],
   "best_practices": [],
   "prompt_pack": [],
-  "context_snippet_md": "# Context: sunflower oil ukraine logistics (Last 30 Days)\n\n*Generated: 2026-03-26 | Sources: all*\n\n## Key Sources\n\n- [X] Sunflower Oil \u2013 Black Sea Ports\n FOB Prices as of ...\n- [X] 3. Soy and Seed Oils\n\nSoy, canola, and sunflower o...\n- [X] A bit strange, since sunflowers are from Southwest...\n- [X] No. This is Israel security teams at Kerem Shalom ...\n- [X] @QBCCIntegrity canola, sunflower, moralinga, hemp ...\n- [Web] 2026 will not bring a significant increase in the ...\n- [Web] AGRARIAN CENTER SUNFLOWER OIL - Ukraine | LinkedIn...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 (Last 30 Days)\n\n*Generated: 2026-03-26 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] \u0441\u044e\u0434\u0438 \u0449\u0435 \u043a\u0430\u043f\u0443\u0441\u0442\u0443 \u043a\u0432\u0430\u0448\u0430\u043d\u0443 \u0430\u0431\u043e \u0441\u0432\u0456\u0436\u0438\u0439 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043c\u043e\u043b\u043e\u0434\u043e\u0457...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [X] @locpell \u0422\u0435\u0444\u043b\u043e\u043d \u0434\u0430\u0454 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u043f\u0440\u0438...\n- [Web] Agro&Food Security Forum 2024: \u041b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430, \u043f\u043e\u043b\u044c\u0441\u044c\u043a\u043e...\n- [Web] India May Import 50 KT of Ukrainian Sunflower Oil ...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
   "bluesky_error": "Bluesky search failed: HTTP 403: Forbidden"
 }
