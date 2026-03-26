@@ -761,7 +761,7 @@ export function registerMonitorRoutes(app: Express): void {
       const lang = String(req.query.lang || "all").toLowerCase();
       const includeSources = req.query.includeSources === "1" || req.query.includeSources === "true";
 
-      const base = await loadLast30DaysSummary();
+      const base = await loadLast30DaysSummary(days as 1 | 7 | 30);
       const minTs = Date.now() - days * 24 * 60 * 60 * 1000;
 
       const filtered = base.items
@@ -874,7 +874,7 @@ export function registerMonitorRoutes(app: Express): void {
         });
       }
 
-      const base = await loadLast30DaysSummary();
+      const base = await loadLast30DaysSummary(days as 1 | 7 | 30);
       const scopedLast30 = base.items
         .filter((item) => Date.parse(item.publishedAt) >= minTs)
         .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));

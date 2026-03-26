@@ -18,12 +18,29 @@ export type Last30DaysRecord = {
   impact: number;
 };
 
+type Last30DaysWindow = 1 | 7 | 30;
+
 type Last30DaysSummary = {
   generatedAt: string;
   sourceFile: string | null;
   sourceUpdatedAt: string | null;
   warnings: string[];
   items: Last30DaysRecord[];
+};
+
+const WINDOW_JSON_PATHS: Record<Last30DaysWindow, string[]> = {
+  1: [
+    path.resolve(process.cwd(), "artifacts/last30days/yesterday.json"),
+  ],
+  7: [
+    path.resolve(process.cwd(), "artifacts/last30days/week.json"),
+  ],
+  30: [
+    process.env.LAST30DAYS_JSON_PATH || "",
+    path.resolve(process.cwd(), "artifacts/last30days/month.json"),
+    path.resolve(process.cwd(), "artifacts/last30days/latest.json"),
+    path.resolve(process.cwd(), "artifacts/last30days/last30days.json"),
+  ].filter(Boolean),
 };
 
 const DEFAULT_PATHS = [
@@ -113,6 +130,184 @@ function dedupeLast30Items(items: Last30DaysRecord[]): Last30DaysRecord[] {
     }
   }
   return Array.from(byKey.values()).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+}
+
+const X_MARKET_POSITIVE_PATTERNS = [
+  /\bgrain(s)?\b/i,
+  /\boilseed(s)?\b/i,
+  /\bwheat\b/i,
+  /\bcorn\b/i,
+  /\bmaize\b/i,
+  /\bsoy(bean|beans)?\b/i,
+  /\brapeseed\b/i,
+  /\bcanola\b/i,
+  /\bsunflower\b/i,
+  /\bbarley\b/i,
+  /\bmeal\b/i,
+  /\bcrush\b/i,
+  /\bexport(s|ed)?\b/i,
+  /\bimport(s|ed)?\b/i,
+  /\btender(s)?\b/i,
+  /\bport(s)?\b/i,
+  /\blogistics?\b/i,
+  /\bfreight\b/i,
+  /\bvessel(s)?\b/i,
+  /\bshipment(s)?\b/i,
+  /\bblack sea\b/i,
+  /\bdanube\b/i,
+  /\bodesa\b/i,
+  /\bodessa\b/i,
+  /\bfutures?\b/i,
+  /\bcbot\b/i,
+  /\bmatif\b/i,
+  /\bbasis\b/i,
+  /\bcpt\b/i,
+  /\bfob\b/i,
+  /\bfca\b/i,
+  /\busd(?:\/t| per ton|\/ton)?\b/i,
+  /\beur(?:\/t| per ton|\/ton)?\b/i,
+  /\buah(?:\/t| per ton|\/ton)?\b/i,
+  /\bton(ne)?s?\b/i,
+  /пшениц/i,
+  /кукурудз/i,
+  /зерн/i,
+  /олійн/i,
+  /соняшн/i,
+  /ріпак/i,
+  /соя|соєв/i,
+  /шрот/i,
+  /експорт/i,
+  /імпорт/i,
+  /тендер/i,
+  /порт/i,
+  /одес/i,
+  /чорномор/i,
+  /дуна[йю]/i,
+  /логіст/i,
+  /фрахт/i,
+  /базис/i,
+  /врожай/i,
+  /посів/i,
+  /котир/i,
+  /\bцпт\b/i,
+  /\bфоб\b/i,
+  /\bфца\b/i,
+];
+
+const X_MARKET_STRONG_PATTERNS = [
+  /\bcpt\b/i,
+  /\bfob\b/i,
+  /\bfca\b/i,
+  /\bcbot\b/i,
+  /\bmatif\b/i,
+  /\bexport(s|ed)?\b/i,
+  /\bimport(s|ed)?\b/i,
+  /\btender(s)?\b/i,
+  /\bport(s)?\b/i,
+  /\blogistics?\b/i,
+  /\bvessel(s)?\b/i,
+  /\bbasis\b/i,
+  /\bgrain association\b/i,
+  /\bglobal grain\b/i,
+  /\bgrain market\b/i,
+  /експорт/i,
+  /імпорт/i,
+  /тендер/i,
+  /порт/i,
+  /логіст/i,
+  /фрахт/i,
+  /базис/i,
+  /зернов(ий|ого|ому)/i,
+];
+
+const X_MARKET_CONTEXT_PATTERNS = [
+  /\bgrain(s)?\b/i,
+  /\boilseed(s)?\b/i,
+  /\bwheat\b/i,
+  /\bcorn\b/i,
+  /\bmaize\b/i,
+  /\bsoy(bean|beans)?\b/i,
+  /\brapeseed\b/i,
+  /\bcanola\b/i,
+  /\bsunflower\b/i,
+  /\bbarley\b/i,
+  /\bmeal\b/i,
+  /\bcrush\b/i,
+  /\bagri(culture|cultural)?\b/i,
+  /\bfarm(er|ing)?\b/i,
+  /\bharvest\b/i,
+  /\bcrop(s)?\b/i,
+  /пшениц/i,
+  /кукурудз/i,
+  /зерн/i,
+  /олійн/i,
+  /соняшн/i,
+  /ріпак/i,
+  /соя|соєв/i,
+  /шрот/i,
+  /аграр/i,
+  /фермер/i,
+  /врожай/i,
+  /посів/i,
+  /елеватор/i,
+];
+
+const X_MARKET_NOISE_PATTERNS = [
+  /\brecipe\b/i,
+  /\bcook(ing)?\b/i,
+  /\bcalor/i,
+  /\byogurt\b/i,
+  /\bdessert\b/i,
+  /\bsalad\b/i,
+  /\bapartment\b/i,
+  /\brent\b/i,
+  /\bservice(s)?\b/i,
+  /тефлон/i,
+  /калор/i,
+  /йогурт/i,
+  /десерт/i,
+  /салат/i,
+  /орен(д|д[ау])/i,
+  /житл/i,
+  /послуг/i,
+  /готув/i,
+  /сковор/i,
+  /меренг/i,
+  /варенн/i,
+  /шоколад/i,
+];
+
+function countPatternHits(text: string, patterns: RegExp[]): number {
+  return patterns.filter((pattern) => pattern.test(text)).length;
+}
+
+function isRelevantXTitle(title: string): boolean {
+  const text = normalizeHeadline(title);
+  if (!text) return false;
+  const positiveHits = countPatternHits(text, X_MARKET_POSITIVE_PATTERNS);
+  const strongHits = countPatternHits(text, X_MARKET_STRONG_PATTERNS);
+  const contextHits = countPatternHits(text, X_MARKET_CONTEXT_PATTERNS);
+  const noiseHits = countPatternHits(text, X_MARKET_NOISE_PATTERNS);
+  const isReplyStyle = text.startsWith("@");
+  const hasUrl = /https?:\/\//i.test(text);
+  const hasCommodityOnly = /\b(sunflower|soy|soybean|wheat|corn|grain|oilseed)\b/i.test(text) || /соняшн|соя|пшениц|кукурудз|зерн|олійн/i.test(text);
+
+  if (contextHits === 0) return false;
+  if (text.length < 48) return false;
+  if (contextHits < 2) return false;
+  if (isReplyStyle && !hasUrl) return false;
+  if (strongHits > 0 && contextHits > 0) return true;
+  if (positiveHits < 2) return false;
+  if (noiseHits > 0 && positiveHits <= noiseHits + 1) return false;
+  if (hasCommodityOnly && noiseHits > 0 && strongHits === 0) return false;
+  return true;
+}
+
+function filterSourceNoise(items: Last30DaysRecord[]): Last30DaysRecord[] {
+  return items.filter((item) => {
+    if (item.source !== "x") return true;
+    return isRelevantXTitle(item.title);
+  });
 }
 
 function inferCommodity(text: string): string {
@@ -240,8 +435,9 @@ async function findLatestJsonInDir(dirPath: string): Promise<string | null> {
   }
 }
 
-async function resolveSourcePath(): Promise<string | null> {
-  for (const candidate of DEFAULT_PATHS) {
+async function resolveSourcePath(windowDays: Last30DaysWindow = 30): Promise<string | null> {
+  const candidates = [...(WINDOW_JSON_PATHS[windowDays] || []), ...DEFAULT_PATHS];
+  for (const candidate of candidates) {
     try {
       const st = await stat(candidate);
       if (st.isFile()) return candidate;
@@ -311,9 +507,9 @@ print(json.dumps(out, ensure_ascii=False))
   }
 }
 
-export async function loadLast30DaysSummary(): Promise<Last30DaysSummary> {
+export async function loadLast30DaysSummary(windowDays: Last30DaysWindow = 30): Promise<Last30DaysSummary> {
   const warnings: string[] = [];
-  const sourcePath = await resolveSourcePath();
+  const sourcePath = await resolveSourcePath(windowDays);
   let sourceStat: { mtimeMs: number } | null = null;
   let rawItems: any[] = [];
   let resolvedSource = sourcePath;
@@ -374,7 +570,7 @@ export async function loadLast30DaysSummary(): Promise<Last30DaysSummary> {
       impact: inferImpact(item, merged),
     };
   });
-  const items = dedupeLast30Items(normalizedItems);
+  const items = dedupeLast30Items(filterSourceNoise(normalizedItems));
 
   return {
     generatedAt: new Date().toISOString(),
