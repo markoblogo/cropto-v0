@@ -1,6 +1,6 @@
 # соняшникова олія ріпак соя європа ринок - Last 30 Days Research Report
 
-**Generated:** 2026-03-26T16:14:23.950377+00:00
+**Generated:** 2026-03-26T19:03:54.005887+00:00
 **Date Range:** 2026-02-24 to 2026-03-26
 **Mode:** all
 
@@ -54,20 +54,10 @@
 
 > 
 
-### W9: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
+### W10: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
 
 - **Source:** ec.europa.eu
 - **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W12: SPIKE BROKERS
-
-- **Source:** t.me
-- **URL:** https://t.me/s/spike_brokers?before=799
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -78,6 +68,16 @@
 
 - **Source:** t.me
 - **URL:** https://t.me/s/spike_brokers
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: SPIKE BROKERS – Telegram
+
+- **Source:** t.me
+- **URL:** https://t.me/s/spike_brokers?before=799
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -104,7 +104,7 @@
 
 > 
 
-### W10: Дипломна робота
+### W9: Дипломна робота
 
 - **Source:** ela.kpi.ua
 - **URL:** https://ela.kpi.ua/bitstreams/fbbbcaa7-7751-4374-9d39-adcba72fb0a8/download
@@ -134,7 +134,7 @@
 
 > 
 
-### W6: Основним ринком збуту українських органічних продуктів залишається Європа, яка купує 93% товарів - Висоцький
+### W7: Основним ринком збуту українських органічних продуктів залишається Європа, яка купує 93% товарів - Висоцький
 
 - **Source:** agravery.com
 - **URL:** https://agravery.com/uk/posts/show/osnovnim-rinkom-zbutu-ukrainskih-organicnih-produktiv-zalisaetsa-evropa-aka-kupue-93-tovariv-visockij
@@ -144,7 +144,7 @@
 
 > 
 
-### W7: Соціоекономічний розвиток сільського господарства і села
+### W6: Соціоекономічний розвиток сільського господарства і села
 
 - **Source:** ief.org.ua
 - **URL:** https://ief.org.ua/files/publication/472/-rozvytok-silskoho-hospodarstva.pdf

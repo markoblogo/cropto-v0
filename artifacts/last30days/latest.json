@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-26T16:14:24.009787+00:00",
+  "generatedAt": "2026-03-26T19:03:54.148903+00:00",
   "items": [
     {
       "id": "R1",
@@ -210,43 +210,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "AgroPortal Bulgaria | LinkedIn",
-      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
-      "title": "Andreea Grosu - Execution Officer at Grain Resources Black Sea SRL | LinkedIn",
-      "url": "https://www.linkedin.com/in/andreea-grosu-16989a55",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
+      "id": "W8",
       "title": "Balkans & Black Sea Grain 2026 | ISTANBUL, TURKEY – BBS Grain 2026",
       "url": "https://bbsgrain.com/",
       "source_domain": "bbsgrain.com",
@@ -264,7 +228,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W9",
       "title": "Black Sea Cereal Company | LinkedIn",
       "url": "https://www.linkedin.com/company/black-sea-cereal-company",
       "source_domain": "linkedin.com",
@@ -282,7 +246,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W7",
       "title": "Black Sea Grain Market Analysis",
       "url": "https://grainsprices.com/article/19274",
       "source_domain": "grainsprices.com",
@@ -300,7 +264,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W10",
       "title": "Black Sea Oilseed Markets 2026: Tight Balances, Weather Risks ...",
       "url": "https://ukragroconsult.com/en/news/black-sea-oilseed-markets-2026-tight-balances-weather-risks-and-strategic-repricing/",
       "source_domain": "ukragroconsult.com",
@@ -336,7 +300,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W6",
       "title": "Black Sea may hold back world wheat supplies into 2026 - Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
@@ -372,6 +336,24 @@
       "source": "web"
     },
     {
+      "id": "W11",
+      "title": "Dobrita Adrian - Commodity Trader | \nExperienced Agribusiness professional in Romania and in the Black Sea region | LinkedIn",
+      "url": "https://www.linkedin.com/in/dobrita-adrian-30559394",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W4",
       "title": "Global Grain Market: Daily Recap 23.03.2026",
       "url": "https://grainsprices.com/article/19552",
@@ -390,7 +372,25 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W5",
+      "title": "Lamprakis Lazos - Managing Director-Black Sea Division AMEROPA \nMember of the Board of Directors of Ameropa Grains and Chimpex | LinkedIn",
+      "url": "https://linkedin.com/in/lamprakis-lazos-7baa6a2a5",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
       "title": "MarGen Group    MA-Management SA | LinkedIn",
       "url": "https://www.linkedin.com/company/margen-ma-management-sa",
       "source_domain": "linkedin.com",
@@ -408,7 +408,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
+      "id": "W14",
       "title": "Turkey Grain Market-2026: Trade Flows, Price Dynamics & Black Sea Competition",
       "url": "https://ukragroconsult.com/en/news/turkey-grain-market-2026-trade-flows-price-dynamics-black-sea-competition/",
       "source_domain": "ukragroconsult.com",
@@ -426,7 +426,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W15",
       "title": "Weekly Analysis 16.03.2026 - 20.03.2026 - Grains Prices",
       "url": "https://grainsprices.com/article/19550",
       "source_domain": "grainsprices.com",
@@ -444,10 +444,28 @@
       "source": "web"
     },
     {
+      "id": "W5",
+      "title": "Єврокомісія та Україна узгодили подальші кроки для ...",
+      "url": "https://cfts.org.ua/news/2026/01/26/evrokomisiya_ta_ukrana_uzgodili_podalshi_kroki_dlya_rozvitku_logistiki_na_duna_85676",
+      "source_domain": "cfts.org.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W9",
-      "title": "GAFTA та українське зерно. Чи вважається форс-мажором блокада портів росією? — Latifundist.com",
-      "url": "https://latifundist.com/blog/read/3009-zernovij-koridor-vso-a-vashe-zerno-zastryaglo-v-portah-chi-ye-tse-fors-mazhorom",
-      "source_domain": "latifundist.com",
+      "title": "Європейська Комісія та Україна обговорили рішення для ...",
+      "url": "https://usm.media/yevropejska-komisiya-ta-ukrayina-obgovorili-rishennya-dlya-rozvitku-logistiki-na-dunayi/",
+      "source_domain": "usm.media",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -463,9 +481,9 @@
     },
     {
       "id": "W15",
-      "title": "«Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com",
-      "url": "https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu",
-      "source_domain": "latifundist.com",
+      "title": "Європейська Комісія та Україна узгодили подальші ...",
+      "url": "https://mahala.com.ua/novyny/yevropeyska-komisiia-ta-ukraina-uzghodyly-podalshi-kroky-dlia-rozvytku-lohistyky-na-dunai-shcho-planuietsia/",
+      "source_domain": "mahala.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -480,25 +498,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Альтернатива зерновому коридору. Чи зможе Дунай \"витягнути ...",
-      "url": "https://www.ukr.net/news/details/economics/97442404.html",
-      "source_domain": "ukr.net",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
+      "id": "W8",
       "title": "Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів",
       "url": "https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv",
       "source_domain": "ndu.kr.ua",
@@ -516,7 +516,43 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W13",
+      "title": "В межах ініціативи Україна–ЄС \"Шляхи солідарності\" обговорили розвиток логістики на Дунаї",
+      "url": "https://interfax.com.ua/news/general/1151816.html",
+      "source_domain": "interfax.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Дунай залишається найбільш недооціненим ...",
+      "url": "https://bessarabiainform.com/2026/02/dunaj-zalyshayetsya-najbilsh-nedootsinenym-strategichnym-resursom-ukrayiny-dumka/",
+      "source_domain": "bessarabiainform.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
       "title": "Експорт через Дунай і морський коридор: чи прискориться ...",
       "url": "https://zastup.org.ua/eksport-cherez-dunaj/",
       "source_domain": "zastup.org.ua",
@@ -534,43 +570,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "Зернова логістика на Дунаї у 2022 та перспективи 2023 року — Elevatorist.com",
-      "url": "https://elevatorist.com/blog/read/839-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-1",
-      "source_domain": "elevatorist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Коридор «Україна – порти Румунії та Болгарії» перетворюється ...",
-      "url": "https://landlord.ua/news/korydor-ukrayina-porty-rumuniyi-ta-bolgariyi-peretvoryuyetsya-na-odyn-iz-globalnyh-rynkiv-torgivli/",
-      "source_domain": "landlord.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W10",
       "title": "Наступного року порти Дунаю мають обробити не ...",
       "url": "https://www.railinsider.com.ua/nastupnogo-roku-porty-dunayu-mayut-obrobyty-ne-menshe-15-mln-t-vantazhiv-minrozvytku/",
       "source_domain": "railinsider.com.ua",
@@ -588,28 +588,10 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Панель \"Логістика зерна в турбулентні часи\" - YouTube",
-      "url": "https://www.youtube.com/watch?v=3EHy4d6UpXE",
-      "source_domain": "youtube.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
-      "title": "Перспективи української річкової логістики",
-      "url": "https://carryland.com.ua/blog/view/perspektivi-ukrayinskoyi-richkovoyi-logistiki-a197/",
-      "source_domain": "carryland.com.ua",
+      "id": "W12",
+      "title": "Порт як зброя: що дає Україні румунський контроль над ...",
+      "url": "https://resurgamhub.org/ua/analytics/europe/eu/the-port-as-a-weapon-what-ukraine-gains-from-romanian-control-over-giurgiulesti",
+      "source_domain": "resurgamhub.org",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -643,24 +625,6 @@
     },
     {
       "id": "W3",
-      "title": "Україна запускає масштабну модернізацію портів на ...",
-      "url": "https://agroelita.info/ukraina-zapuskaie-masshtabnu-modernizatsiiu-portiv-na-dunai-z-harantiieiu-vantazhopotoku-i-tysiachamy-robochykh-mists/",
-      "source_domain": "agroelita.info",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
       "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
       "source_domain": "agrotimes.ua",
@@ -678,10 +642,46 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "Як працює зерновий коридор після розірвання зернової угоди",
-      "url": "https://www.youtube.com/watch?v=fdQu8cGqjEY",
-      "source_domain": "youtube.com",
+      "id": "W6",
+      "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
+      "url": "https://www.mexc.co/uk-UA/news/579191",
+      "source_domain": "mexc.co",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
+      "url": "https://a7d.com.ua/novini/64650-ukrajina-ta-yes-uzgodili-plan-rozvitku-logistiki-na-dunaji.html",
+      "source_domain": "a7d.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Україна і країни ЄС посилюють співпрацю для стабільної ...",
+      "url": "https://e-land.ua/news/item/ukrayina-i-krayiny-yes-posylyuyut-spivpratsyu-dlia-stabilnoyi-roboty-dunaiskoyi-lohistyky",
+      "source_domain": "e-land.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -714,7 +714,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W10",
       "title": "SELECTED PAPERS EUROPEAN DIMENSIONS OF ...",
       "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
       "source_domain": "ec.europa.eu",
@@ -732,9 +732,9 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "SPIKE BROKERS",
-      "url": "https://t.me/s/spike_brokers?before=799",
+      "id": "W3",
+      "title": "SPIKE BROKERS – Telegram",
+      "url": "https://t.me/s/spike_brokers",
       "source_domain": "t.me",
       "snippet": "",
       "date": null,
@@ -750,9 +750,9 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W12",
       "title": "SPIKE BROKERS – Telegram",
-      "url": "https://t.me/s/spike_brokers",
+      "url": "https://t.me/s/spike_brokers?before=799",
       "source_domain": "t.me",
       "snippet": "",
       "date": null,
@@ -804,7 +804,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W9",
       "title": "Дипломна робота",
       "url": "https://ela.kpi.ua/bitstreams/fbbbcaa7-7751-4374-9d39-adcba72fb0a8/download",
       "source_domain": "ela.kpi.ua",
@@ -858,7 +858,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W7",
       "title": "Основним ринком збуту українських органічних продуктів залишається Європа, яка купує 93% товарів - Висоцький",
       "url": "https://agravery.com/uk/posts/show/osnovnim-rinkom-zbutu-ukrainskih-organicnih-produktiv-zalisaetsa-evropa-aka-kupue-93-tovariv-visockij",
       "source_domain": "agravery.com",
@@ -876,7 +876,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W6",
       "title": "Соціоекономічний розвиток сільського господарства і села",
       "url": "https://ief.org.ua/files/publication/472/-rozvytok-silskoho-hospodarstva.pdf",
       "source_domain": "ief.org.ua",

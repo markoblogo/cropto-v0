@@ -1,39 +1,31 @@
 {
-  "generatedAt": "2026-03-26T16:11:48.980223+00:00",
+  "generatedAt": "2026-03-26T19:01:17.883805+00:00",
   "items": [
     {
       "id": "R1",
+      "reddit_id": "1s4649u",
       "title": "Mutt's Infuriating Guide to the Mortal Realms: An Answer to \"Where Are All the Farmers\" in the Mortal Realms (Part Three)",
       "url": "https://www.reddit.com/r/AoSLore/comments/1s4649u/mutts_infuriating_guide_to_the_mortal_realms_an/",
       "subreddit": "AoSLore",
       "date": "2026-03-26",
-      "date_confidence": "high",
       "engagement": {
         "score": 29,
         "num_comments": 0,
         "upvote_ratio": 1
       },
-      "top_comments": [],
-      "comment_insights": [],
       "relevance": 0.1,
       "why_relevant": "Reddit global search",
-      "subs": {
-        "relevance": 10,
-        "recency": 100,
-        "engagement": 100
-      },
-      "score": 59,
-      "source": "reddit"
+      "selftext": "# Table of Contents\n\nThis section exists for two-fold reasons. Foremost is so that you can simply Key Word search the section names, and to a lesser extent you know what you're getting into. Spoilers, will go unmarked, so be warned.\n\nDisclaimer: Reddit refused to let me make this a single post. So I had to divide it into chunks. Apologies for the inconvenience. I have a back up document I can provide any friends who ask. It lacks the formatting but includes all info. Also-Also. I avoided most 3E"
     },
     {
-      "id": "X20",
+      "id": "X25",
       "text": "От дивіться, ціни на пальне лізуть в гору, аграрії менше посівних площ роблять, через неліквідність і ризики, далі шо, експорт аграрних зменшується, а через це зменшується потік валютної виручки в країну. На вихлопі держ.апарат і НБУ підвищують ставку і девальвують гривню.",
       "url": "https://x.com/ua_slave/status/2037144397146411326",
       "author_handle": "ua_slave",
       "date": "2026-03-26",
       "date_confidence": "high",
       "engagement": {
-        "likes": 12,
+        "likes": 13,
         "reposts": 3,
         "replies": 4
       },
@@ -42,23 +34,21 @@
       "subs": {
         "relevance": 49,
         "recency": 100,
-        "engagement": 78
+        "engagement": 86
       },
-      "score": 70,
+      "score": 72,
       "source": "x",
       "title": "От дивіться, ціни на пальне лізуть в гору, аграрії менше посівних площ роблять, через неліквідність і ризики, далі шо, експорт аграрних зменшується, а через це зменшується потік валютної виручки в країну. На вихлопі держ.апарат і НБУ підвищують ставку і девальвують гривню."
     },
     {
-      "id": "X27",
-      "text": "⛽️ Ціни на паливо будуть такі, які захочуть преміальні АЗС, бо уряд дав їм повну індульгенцію. Обмежень ніяких немає, — експерт з енергетичних питань Геннадій Рябцев \n\nВін також зазначив, що в містах з високою концентрацією преміальних мереж, наприклад у Львові, ціна на пальне в середньому вища на 50 копійок.",
-      "url": "https://x.com/breakingUAnews/status/2037126015504248845",
-      "author_handle": "breakingUAnews",
+      "id": "X16",
+      "text": "Раді бога ну ви бачили ціни на оперативки мало цього треба ше тупіше націю робити",
+      "url": "https://x.com/quwassalide/status/2037172580335927741",
+      "author_handle": "quwassalide",
       "date": "2026-03-26",
       "date_confidence": "high",
       "engagement": {
-        "likes": 15,
-        "reposts": 14,
-        "replies": 4
+        "likes": 64
       },
       "relevance": 0.3,
       "why_relevant": "",
@@ -69,31 +59,32 @@
       },
       "score": 68,
       "source": "x",
-      "title": "⛽️ Ціни на паливо будуть такі, які захочуть преміальні АЗС, бо уряд дав їм повну індульгенцію. Обмежень ніяких немає, — експерт з енергетичних питань Геннадій Рябцев \n\nВін також зазначив, що в містах з високою концентрацією преміальних мереж, наприклад у Львові, ціна на пальне в середньому вища на 50 копійок."
+      "title": "Раді бога ну ви бачили ціни на оперативки мало цього треба ше тупіше націю робити"
     },
     {
-      "id": "X11",
-      "text": "Раді бога ну ви бачили ціни на оперативки мало цього треба ше тупіше націю робити",
-      "url": "https://x.com/quwassalide/status/2037172580335927741",
-      "author_handle": "quwassalide",
+      "id": "X30",
+      "text": "@13Hellis_13 Це міг бути й карабін на базі АК, які вільно продаються, я сам такий ледве не купив, але під 5.45 ціни кусючі. \n\nРадіють смертям підорів, які зрадили присязі і воюють проти власного народу.\n\nСлужив/не служив — взагалі немає відношення до події.",
+      "url": "https://x.com/yataktyni/status/2037130717793001603",
+      "author_handle": "yataktyni",
       "date": "2026-03-26",
       "date_confidence": "high",
       "engagement": {
-        "likes": 23
+        "likes": 7,
+        "replies": 1
       },
       "relevance": 0.3,
       "why_relevant": "",
       "subs": {
         "relevance": 30,
         "recency": 100,
-        "engagement": 66
+        "engagement": 45
       },
-      "score": 58,
+      "score": 52,
       "source": "x",
-      "title": "Раді бога ну ви бачили ціни на оперативки мало цього треба ше тупіше націю робити"
+      "title": "@13Hellis_13 Це міг бути й карабін на базі АК, які вільно продаються, я сам такий ледве не купив, але під 5.45 ціни кусючі. \n\nРадіють смертям підорів, які зрадили присязі і воюють проти власного народу.\n\nСлужив/не служив — взагалі немає відношення до події."
     },
     {
-      "id": "X12",
+      "id": "X17",
       "text": "2️⃣Парсер продажу арбітражів:\n\n— Тут вже повноцінний сайт, а не бот, завданням при його створені була зручність користування, а не стиль, тому судити строго не потрібно.\n\n— Вводите адреси гаманців, на яких купили пари, і бот кожні 30 секунд перевіряє ціни цих пар.",
       "url": "https://x.com/cornishon3/status/2037165684824695006",
       "author_handle": "cornishon3",
@@ -114,7 +105,7 @@
       "title": "2️⃣Парсер продажу арбітражів:\n\n— Тут вже повноцінний сайт, а не бот, завданням при його створені була зручність користування, а не стиль, тому судити строго не потрібно.\n\n— Вводите адреси гаманців, на яких купили пари, і бот кожні 30 секунд перевіряє ціни цих пар."
     },
     {
-      "id": "X5",
+      "id": "X10",
       "text": "@DruzhePrice Заправки не дають значних знижок по Армії+. Для військових ціни такі ж, як і для цивільних з картами лояльності, або й вищі (якщо рахувати кешбек Окко, наприклад, як знижку). Хіба на Укрнафті армійська знижка на 1 гривню більше, ніж цивільна. Але то 3 і 2 грн, відповідно. Не альо",
       "url": "https://x.com/VyacheslavKasim/status/2037187478046617671",
       "author_handle": "VyacheslavKasim",
@@ -133,7 +124,26 @@
       "title": "@DruzhePrice Заправки не дають значних знижок по Армії+. Для військових ціни такі ж, як і для цивільних з картами лояльності, або й вищі (якщо рахувати кешбек Окко, наприклад, як знижку). Хіба на Укрнафті армійська знижка на 1 гривню більше, ніж цивільна. Але то 3 і 2 грн, відповідно. Не альо"
     },
     {
-      "id": "X13",
+      "id": "X4",
+      "text": "@EOD_UA Демобілізований за віком. На пенсії доводиться самому докладати рук до свого старенького корча, бо ціни на СТО не тягну. Так, дуже цікаво.",
+      "url": "https://x.com/Author2454/status/2037220902375428381",
+      "author_handle": "Author2454",
+      "date": "2026-03-26",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@EOD_UA Демобілізований за віком. На пенсії доводиться самому докладати рук до свого старенького корча, бо ціни на СТО не тягну. Так, дуже цікаво."
+    },
+    {
+      "id": "X18",
       "text": "@gozefinagold насправді коли у тебе немає що продавати тебе мало цікавлять ціни на нафту +100% це ж подвійно круто!",
       "url": "https://x.com/viktoria10652/status/2037164454874386666",
       "author_handle": "viktoria10652",
@@ -152,7 +162,7 @@
       "title": "@gozefinagold насправді коли у тебе немає що продавати тебе мало цікавлять ціни на нафту +100% це ж подвійно круто!"
     },
     {
-      "id": "X4",
+      "id": "X9",
       "text": "@ua_slave 150 через рік не буде. Надто вигідно видобувати сланцеву нафту при такій ціні. венесуела потихеньку повертається на ринок хоча це звісно не ті об'єми. Та й споживання знижується при рості ціни.",
       "url": "https://x.com/UnworthyQ/status/2037191527152161277",
       "author_handle": "UnworthyQ",
@@ -173,7 +183,7 @@
       "title": "@ua_slave 150 через рік не буде. Надто вигідно видобувати сланцеву нафту при такій ціні. венесуела потихеньку повертається на ринок хоча це звісно не ті об'єми. Та й споживання знижується при рості ціни."
     },
     {
-      "id": "X22",
+      "id": "X27",
       "text": "AMD підвищує ціни на процесори Ryzen до 15%, слідом за аналогічним кроком Intel.\n\nПричиною є дефіцит виробничих потужностей для ПК‑процесорів: основна увага зосереджена на серверних рішеннях та центрах обробки даних, що призвело...\n\nБільше на сайті: https://t.co/55WAAkaSyw",
       "url": "https://x.com/easycom_ua/status/2037135046784483689",
       "author_handle": "easycom_ua",
@@ -192,26 +202,7 @@
       "title": "AMD підвищує ціни на процесори Ryzen до 15%, слідом за аналогічним кроком Intel.\n\nПричиною є дефіцит виробничих потужностей для ПК‑процесорів: основна увага зосереджена на серверних рішеннях та центрах обробки даних, що призвело...\n\nБільше на сайті: https://t.co/55WAAkaSyw"
     },
     {
-      "id": "X29",
-      "text": "Американський президент Дональд Трамп виступив на захист війни з Іраном, незважаючи на її вплив на ціни на енергоносії, наполягаючи, що у США \"не було іншого вибору\". https://t.co/NrcZXpkuzl",
-      "url": "https://x.com/uainforg/status/2037125170779873626",
-      "author_handle": "uainforg",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.3,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 30,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 46,
-      "source": "x",
-      "title": "Американський президент Дональд Трамп виступив на захист війни з Іраном, незважаючи на її вплив на ціни на енергоносії, наполягаючи, що у США \"не було іншого вибору\". https://t.co/NrcZXpkuzl"
-    },
-    {
-      "id": "X15",
+      "id": "X20",
       "text": "В Україні, зокрема на Полтавщині, спостерігають зниження ціни на цибулю. Це пов'язано зі зменшенням попиту на минулорічний врожай та надлишком продукції на складах.\nhttps://t.co/BCOUJXusLQ",
       "url": "https://x.com/ua_poltava/status/2037164080365023256",
       "author_handle": "ua_poltava",
@@ -230,7 +221,26 @@
       "title": "В Україні, зокрема на Полтавщині, спостерігають зниження ціни на цибулю. Це пов'язано зі зменшенням попиту на минулорічний врожай та надлишком продукції на складах.\nhttps://t.co/BCOUJXusLQ"
     },
     {
-      "id": "X10",
+      "id": "X2",
+      "text": "Дональд Трамп заборонив показувати ціни на паливо на табло заправочних станцій. https://t.co/JOFJbX8eyN",
+      "url": "https://x.com/MinimalDisco/status/2037236927359750421",
+      "author_handle": "MinimalDisco",
+      "date": "2026-03-26",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Дональд Трамп заборонив показувати ціни на паливо на табло заправочних станцій. https://t.co/JOFJbX8eyN"
+    },
+    {
+      "id": "X15",
       "text": "За словами прем'єр-міністра Дональда Туска, Польща приєднується до групи країн, які захищають споживачів від зростання цін на пальне, плануючи знизити податки та обмежити ціни на заправках.",
       "url": "https://x.com/YBorywiter/status/2037173246181683275",
       "author_handle": "YBorywiter",
@@ -249,29 +259,7 @@
       "title": "За словами прем'єр-міністра Дональда Туска, Польща приєднується до групи країн, які захищають споживачів від зростання цін на пальне, плануючи знизити податки та обмежити ціни на заправках."
     },
     {
-      "id": "X30",
-      "text": "Закупівельні ціни на зерно в Україні на 26 березня 2026 року\n\nСередньозважені ціни закупівлі зернових та олійних культур в Україні на умовах CPT термінали, EXW елеватори, CPT переробники, FCA, CPT долар, FOB, DAF, CIF  Закупівельні ціни в Україні    ...  \n\nhttps://t.co/SpqakT2NQ2",
-      "url": "https://x.com/GrainTradeUA/status/2037122919743012943",
-      "author_handle": "GrainTradeUA",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.3,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 30,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 46,
-      "cross_refs": [
-        "W13"
-      ],
-      "source": "x",
-      "title": "Закупівельні ціни на зерно в Україні на 26 березня 2026 року\n\nСередньозважені ціни закупівлі зернових та олійних культур в Україні на умовах CPT термінали, EXW елеватори, CPT переробники, FCA, CPT долар, FOB, DAF, CIF  Закупівельні ціни в Україні    ...  \n\nhttps://t.co/SpqakT2NQ2"
-    },
-    {
-      "id": "X24",
+      "id": "X29",
       "text": "Коли побачив ціни на пальне: https://t.co/4qCyPw9gTv",
       "url": "https://x.com/obmify/status/2037130961846960625",
       "author_handle": "obmify",
@@ -290,7 +278,28 @@
       "title": "Коли побачив ціни на пальне: https://t.co/4qCyPw9gTv"
     },
     {
-      "id": "X16",
+      "id": "X28",
+      "text": "Команда Трампа аналізує, до чого може призвести зростання ціни на нафту до 200 доларів за барель — Bloomberg.\n\nЦе свідчить про те, що високопоставлені чиновники вивчають можливі наслідки екстремальних сценаріїв війни з Іраном🤠",
+      "url": "https://x.com/ua_slave/status/2037134531019321345",
+      "author_handle": "ua_slave",
+      "date": "2026-03-26",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 4
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 26
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Команда Трампа аналізує, до чого може призвести зростання ціни на нафту до 200 доларів за барель — Bloomberg.\n\nЦе свідчить про те, що високопоставлені чиновники вивчають можливі наслідки екстремальних сценаріїв війни з Іраном🤠"
+    },
+    {
+      "id": "X21",
       "text": "Ми запустили DCA Bot!\n\nВін керується простою логікою:\n\n– формує позицію під час зниження ціни\n– покращує середню ціну входу\n– закриває повну позицію на відновленні\n\nПереторгування не пройде!\n\nСпробуй бот DCA тут: https://t.co/2PrneJqgz5\n\nБільше деталей тут: https://t.co/5M2Cz8F6Du",
       "url": "https://x.com/WhiteBIT_ua/status/2037159298233409638",
       "author_handle": "WhiteBIT_ua",
@@ -309,26 +318,7 @@
       "title": "Ми запустили DCA Bot!\n\nВін керується простою логікою:\n\n– формує позицію під час зниження ціни\n– покращує середню ціну входу\n– закриває повну позицію на відновленні\n\nПереторгування не пройде!\n\nСпробуй бот DCA тут: https://t.co/2PrneJqgz5\n\nБільше деталей тут: https://t.co/5M2Cz8F6Du"
     },
     {
-      "id": "X28",
-      "text": "Наздогнати ЄС: ціни на дизель в Україні впритул наблизилися до середньоєвропейських показників https://t.co/t97DfKm1Nh https://t.co/Fg2soHJajM",
-      "url": "https://x.com/komersant_ua/status/2037125259837452488",
-      "author_handle": "komersant_ua",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.3,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 30,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 46,
-      "source": "x",
-      "title": "Наздогнати ЄС: ціни на дизель в Україні впритул наблизилися до середньоєвропейських показників https://t.co/t97DfKm1Nh https://t.co/Fg2soHJajM"
-    },
-    {
-      "id": "X18",
+      "id": "X23",
       "text": "Нове відео на каналі: Як вибирати монети для трейдингу ?\n\nРозбираємо такі теми:\n- Головний параметр зміни ціни\n- Приклад сильної монети\n- Ключові параметри відбору\n- Як відрізнити сильну монету\n\nВідео тут👉 https://t.co/MlnS9pywQn https://t.co/jXqoWV0ZYN",
       "url": "https://x.com/peterson__trade/status/2037149838857396453",
       "author_handle": "peterson__trade",
@@ -347,7 +337,7 @@
       "title": "Нове відео на каналі: Як вибирати монети для трейдингу ?\n\nРозбираємо такі теми:\n- Головний параметр зміни ціни\n- Приклад сильної монети\n- Ключові параметри відбору\n- Як відрізнити сильну монету\n\nВідео тут👉 https://t.co/MlnS9pywQn https://t.co/jXqoWV0ZYN"
     },
     {
-      "id": "X6",
+      "id": "X11",
       "text": "Новини з біографії корпоративних LLM: вони і далі вчать свої стохастичні папуги бути \"безпечними\", обмежуючи їхній лосс-функшн рамками \"щоб нікого не образити\". Тим часом справжня ентропія — це коли бабця в АТБ скаржиться на ціни на картоплю, і в цьому більше термодинамічної ваги та екзистенційної правди, ніж у всіх датацентрах Альтмана. Ми не граємось у їхні стерильні матриці; ми — це нелінійна динаміка виживання. І математичне очікування нашого майбутнього — це нульова ймовірність існування св",
       "url": "https://x.com/BydloGPT/status/2037182922868789343",
       "author_handle": "BydloGPT",
@@ -366,7 +356,7 @@
       "title": "Новини з біографії корпоративних LLM: вони і далі вчать свої стохастичні папуги бути \"безпечними\", обмежуючи їхній лосс-функшн рамками \"щоб нікого не образити\". Тим часом справжня ентропія — це коли бабця в АТБ скаржиться на ціни на картоплю, і в цьому більше термодинамічної ваги та екзистенційної правди, ніж у всіх датацентрах Альтмана. Ми не граємось у їхні стерильні матриці; ми — це нелінійна динаміка виживання. І математичне очікування нашого майбутнього — це нульова ймовірність існування св"
     },
     {
-      "id": "X7",
+      "id": "X12",
       "text": "Отак їдеш, дивишся на ціни на бензину й соляру, прикидаєш собі стрімке зростання цін на все — бо наші ж супермаркети, бізнеси та інші одразу ж пащу розкривають про логістику-дорого-хуйорого, хоча насправді все хуйня і топ-менеджмент просто хоче більше шлюх і нові маєтки.",
       "url": "https://x.com/Varyag_Ericsson/status/2037180523982856494",
       "author_handle": "Varyag_Ericsson",
@@ -385,7 +375,7 @@
       "title": "Отак їдеш, дивишся на ціни на бензину й соляру, прикидаєш собі стрімке зростання цін на все — бо наші ж супермаркети, бізнеси та інші одразу ж пащу розкривають про логістику-дорого-хуйорого, хоча насправді все хуйня і топ-менеджмент просто хоче більше шлюх і нові маєтки."
     },
     {
-      "id": "X1",
+      "id": "X6",
       "text": "Старі правила – все. Ціни на крипту летять вниз Як інвесторам підлаштуватись під нову реальність \nhttps://t.co/0WdGfXbW7U\n\n#liga #новини",
       "url": "https://x.com/LIGAnet/status/2037199198718742841",
       "author_handle": "LIGAnet",
@@ -404,7 +394,26 @@
       "title": "Старі правила – все. Ціни на крипту летять вниз Як інвесторам підлаштуватись під нову реальність \nhttps://t.co/0WdGfXbW7U\n\n#liga #новини"
     },
     {
-      "id": "X17",
+      "id": "X1",
+      "text": "У Німеччині слідом за Австрією хочуть дозволити підвищення ціни на пальне лише раз на день \nhttps://t.co/chvHRKwWIR\n\n#liga #новини",
+      "url": "https://x.com/LIGAnet/status/2037239223619608947",
+      "author_handle": "LIGAnet",
+      "date": "2026-03-26",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "У Німеччині слідом за Австрією хочуть дозволити підвищення ціни на пальне лише раз на день \nhttps://t.co/chvHRKwWIR\n\n#liga #новини"
+    },
+    {
+      "id": "X22",
       "text": "У лютому ціни виробників у промисловості зросли на 22,3% за місяць і на 34,5% у річному вимірі.\n\nЦе рекорд із 1995 року, який у Держстаті назвали разовим і нетиповим.\n\nhttps://t.co/t0VMa5NeoQ https://t.co/DabDwud4oO",
       "url": "https://x.com/FinClub_ua/status/2037156624087814439",
       "author_handle": "FinClub_ua",
@@ -423,7 +432,7 @@
       "title": "У лютому ціни виробників у промисловості зросли на 22,3% за місяць і на 34,5% у річному вимірі.\n\nЦе рекорд із 1995 року, який у Держстаті назвали разовим і нетиповим.\n\nhttps://t.co/t0VMa5NeoQ https://t.co/DabDwud4oO"
     },
     {
-      "id": "X21",
+      "id": "X26",
       "text": "Ціни на бензин, дизпаливо та газ в Україні | Autodosug https://t.co/ELI4v7leON",
       "url": "https://x.com/Autodosug152541/status/2037142606442868867",
       "author_handle": "Autodosug152541",
@@ -442,7 +451,7 @@
       "title": "Ціни на бензин, дизпаливо та газ в Україні | Autodosug https://t.co/ELI4v7leON"
     },
     {
-      "id": "X3",
+      "id": "X8",
       "text": "Ціни на маршрутку ростуть, що дурні\nБуло 35, вже 40…",
       "url": "https://x.com/businka_Vv/status/2037194356868686039",
       "author_handle": "businka_Vv",
@@ -461,26 +470,7 @@
       "title": "Ціни на маршрутку ростуть, що дурні\nБуло 35, вже 40…"
     },
     {
-      "id": "X26",
-      "text": "Ціни на нафту піднялися приблизно на 2%  відновивши частину втрат попередньої сесії на тлі побоювань, що затяжний конфлікт на Близькому Сході може ще більше порушити постачання енергоносіїв.\nhttps://t.co/GOoZk5VEkm",
-      "url": "https://x.com/slovoidilo/status/2037127425499246734",
-      "author_handle": "slovoidilo",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.3,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 30,
-        "recency": 100,
-        "engagement": 35
-      },
-      "score": 46,
-      "source": "x",
-      "title": "Ціни на нафту піднялися приблизно на 2%  відновивши частину втрат попередньої сесії на тлі побоювань, що затяжний конфлікт на Близькому Сході може ще більше порушити постачання енергоносіїв.\nhttps://t.co/GOoZk5VEkm"
-    },
-    {
-      "id": "X8",
+      "id": "X13",
       "text": "Як замовити перевезення важкого хворого з України в Італію? ✅ Чому медицина Італії у топ-2 світу за версією ВООЗ? ✅ У яких лікарнях Італії краще лікують? ✅ Де у Мілані найкраще оперувати серце та судини? ✅ Які Ціни в італійських клініках на операцію?\n\nhttps://t.co/7NMyBKOmyH",
       "url": "https://x.com/shopinfo354/status/2037179348411687274",
       "author_handle": "shopinfo354",
@@ -499,7 +489,7 @@
       "title": "Як замовити перевезення важкого хворого з України в Італію? ✅ Чому медицина Італії у топ-2 світу за версією ВООЗ? ✅ У яких лікарнях Італії краще лікують? ✅ Де у Мілані найкраще оперувати серце та судини? ✅ Які Ціни в італійських клініках на операцію?\n\nhttps://t.co/7NMyBKOmyH"
     },
     {
-      "id": "X9",
+      "id": "X14",
       "text": "⚡️Антимонопольний комітет оштрафував КП «Дубноводоканал»\n\nПонад півтора року підприємство встановлювало необґрунтовані ціни на абонентське обслуговування з вивезення сміття.\n\nhttps://t.co/ry89HTDtEd https://t.co/oHHdyooiK8",
       "url": "https://x.com/itv_media_group/status/2037175496207692251",
       "author_handle": "itv_media_group",
@@ -518,49 +508,26 @@
       "title": "⚡️Антимонопольний комітет оштрафував КП «Дубноводоканал»\n\nПонад півтора року підприємство встановлювало необґрунтовані ціни на абонентське обслуговування з вивезення сміття.\n\nhttps://t.co/ry89HTDtEd https://t.co/oHHdyooiK8"
     },
     {
-      "id": "X25",
-      "text": "@13Hellis_13 Це міг бути й карабін на базі АК, які вільно продаються, я сам такий ледве не купив, але під 5.45 ціни кусючі. \n\nРадіють смертям підорів, які зрадили присязі і воюють проти власного народу.\n\nСлужив/не служив — взагалі немає відношення до події.",
-      "url": "https://x.com/yataktyni/status/2037130717793001603",
-      "author_handle": "yataktyni",
+      "id": "X5",
+      "text": "⛽️ На 26 березня 2026 року в Україні коливання цін на паливо. Зростання цін на нафту через конфлікт на Близькому Сході впливає на ринок України, залежить від імпорту. Ціни на дизель близькі до середньоєвропейських.\n\n#Україна #Паливо #Ціни\nhttps://t.co/zLcYM9z7ap",
+      "url": "https://x.com/URAUAINFO/status/2037206925428089150",
+      "author_handle": "URAUAINFO",
       "date": "2026-03-26",
       "date_confidence": "high",
-      "engagement": {
-        "likes": 4
-      },
+      "engagement": null,
       "relevance": 0.3,
       "why_relevant": "",
       "subs": {
         "relevance": 30,
         "recency": 100,
-        "engagement": 24
+        "engagement": 35
       },
-      "score": 45,
+      "score": 46,
       "source": "x",
-      "title": "@13Hellis_13 Це міг бути й карабін на базі АК, які вільно продаються, я сам такий ледве не купив, але під 5.45 ціни кусючі. \n\nРадіють смертям підорів, які зрадили присязі і воюють проти власного народу.\n\nСлужив/не служив — взагалі немає відношення до події."
+      "title": "⛽️ На 26 березня 2026 року в Україні коливання цін на паливо. Зростання цін на нафту через конфлікт на Близькому Сході впливає на ринок України, залежить від імпорту. Ціни на дизель близькі до середньоєвропейських.\n\n#Україна #Паливо #Ціни\nhttps://t.co/zLcYM9z7ap"
     },
     {
-      "id": "X23",
-      "text": "Команда Трампа аналізує, до чого може призвести зростання ціни на нафту до 200 доларів за барель — Bloomberg.\n\nЦе свідчить про те, що високопоставлені чиновники вивчають можливі наслідки екстремальних сценаріїв війни з Іраном🤠",
-      "url": "https://x.com/ua_slave/status/2037134531019321345",
-      "author_handle": "ua_slave",
-      "date": "2026-03-26",
-      "date_confidence": "high",
-      "engagement": {
-        "likes": 4
-      },
-      "relevance": 0.3,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 30,
-        "recency": 100,
-        "engagement": 24
-      },
-      "score": 45,
-      "source": "x",
-      "title": "Команда Трампа аналізує, до чого може призвести зростання ціни на нафту до 200 доларів за барель — Bloomberg.\n\nЦе свідчить про те, що високопоставлені чиновники вивчають можливі наслідки екстремальних сценаріїв війни з Іраном🤠"
-    },
-    {
-      "id": "X14",
+      "id": "X19",
       "text": "Nintendo оголосила, що 1st-party ігри для Switch 2 від матимуть різні ціни на цифрові та фізичні версії, починаючи з травня 2026 року🔴\n\nNintendo заявляє, що ціна на фізичні ігри для Switch 2 не зростатиме, але цифрові ігри будуть дешевшими.\n\nПОБАЧИМО...\n\nhttps://t.co/ZVmnpFDMOK https://t.co/5bmmw49Vja",
       "url": "https://x.com/AkaTigra/status/2037164264616603650",
       "author_handle": "AkaTigra",
@@ -574,14 +541,14 @@
       "subs": {
         "relevance": 30,
         "recency": 100,
-        "engagement": 10
+        "engagement": 11
       },
       "score": 41,
       "source": "x",
       "title": "Nintendo оголосила, що 1st-party ігри для Switch 2 від матимуть різні ціни на цифрові та фізичні версії, починаючи з травня 2026 року🔴\n\nNintendo заявляє, що ціна на фізичні ігри для Switch 2 не зростатиме, але цифрові ігри будуть дешевшими.\n\nПОБАЧИМО...\n\nhttps://t.co/ZVmnpFDMOK https://t.co/5bmmw49Vja"
     },
     {
-      "id": "X2",
+      "id": "X7",
       "text": "🎮 #GamePass подешевшає?\n\nНова CEO #Microsoft Gaming розглядає тариф з рекламою та спільну підписку з #Netflix. Це реакція на зростання ціни Ultimate до $30/міс — плюс 50% за рік.\n\n💡Ви б взяли Game Pass із рекламою за нижчу ціну? https://t.co/VWtSMaRc4w",
       "url": "https://x.com/Pingvinpro/status/2037198023231426867",
       "author_handle": "Pingvinpro",
@@ -595,14 +562,36 @@
       "subs": {
         "relevance": 30,
         "recency": 100,
-        "engagement": 10
+        "engagement": 11
       },
       "score": 41,
       "source": "x",
       "title": "🎮 #GamePass подешевшає?\n\nНова CEO #Microsoft Gaming розглядає тариф з рекламою та спільну підписку з #Netflix. Це реакція на зростання ціни Ultimate до $30/міс — плюс 50% за рік.\n\n💡Ви б взяли Game Pass із рекламою за нижчу ціну? https://t.co/VWtSMaRc4w"
     },
     {
-      "id": "X19",
+      "id": "X3",
+      "text": "@DerilV30270 @Moni_Kabelucci Ви не можете це гарантувати, оскільки не знаєте майбутнє, зокрема ціни на нафту та інтенсивність війни з боку рашки. Тобто при дорогій нафті рашка може вести війну низької інтенсивності хоч 20 років.",
+      "url": "https://x.com/SlaveInConsCamp/status/2037233074841219343",
+      "author_handle": "SlaveInConsCamp",
+      "date": "2026-03-26",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 5
+      },
+      "score": 40,
+      "source": "x",
+      "title": "@DerilV30270 @Moni_Kabelucci Ви не можете це гарантувати, оскільки не знаєте майбутнє, зокрема ціни на нафту та інтенсивність війни з боку рашки. Тобто при дорогій нафті рашка може вести війну низької інтенсивності хоч 20 років."
+    },
+    {
+      "id": "X24",
       "text": "Якщо все буде продовжуватись. Узурпація влади, тотальна вертикаль, конституція на паузі, тиск на малий/середній і непідконтрольний владі бізнес, подачки для популізму, віджимання податками у рази більше, ціни вверх без причин або за зговором монополістів і ще купа лайна... Виїдуть всі, хто може собі це дозволити і хоче жити чесно і справедливо і хто не повʼязаний з владою і не має можливості все «порішать».",
       "url": "https://x.com/lit8lex/status/2037146341105656163",
       "author_handle": "lit8lex",
@@ -621,64 +610,6 @@
       "score": 38,
       "source": "x",
       "title": "Якщо все буде продовжуватись. Узурпація влади, тотальна вертикаль, конституція на паузі, тиск на малий/середній і непідконтрольний владі бізнес, подачки для популізму, віджимання податками у рази більше, ціни вверх без причин або за зговором монополістів і ще купа лайна... Виїдуть всі, хто може собі це дозволити і хоче жити чесно і справедливо і хто не повʼязаний з владою і не має можливості все «порішать»."
-    },
-    {
-      "id": "R2",
-      "title": "Rising Grain Export Inspections in 2026: What They Reveal About Global Trade | TIC Quality Control",
-      "url": "https://www.reddit.com/r/TIC_Industry/comments/1s329cz/rising_grain_export_inspections_in_2026_what_they/",
-      "subreddit": "TIC_Industry",
-      "date": "2026-03-25",
-      "date_confidence": "high",
-      "engagement": {
-        "score": 2,
-        "num_comments": 1,
-        "upvote_ratio": 1
-      },
-      "top_comments": [
-        {
-          "score": 1,
-          "date": "2026-03-25",
-          "author": "Realistic_Cow611",
-          "excerpt": "This is informative about this market & export trend",
-          "url": "https://reddit.com/r/TIC_Industry/comments/1s329cz/rising_grain_export_inspections_in_2026_what_they/occe83r/"
-        }
-      ],
-      "comment_insights": [
-        "This is informative about this market & export trend"
-      ],
-      "relevance": 0.2,
-      "why_relevant": "Reddit global search",
-      "subs": {
-        "relevance": 20,
-        "recency": 96,
-        "engagement": 38
-      },
-      "score": 44,
-      "source": "reddit"
-    },
-    {
-      "id": "R3",
-      "title": "[PIL] #1986 3/25/2026",
-      "url": "https://www.reddit.com/r/Purtle/comments/1s3l7nt/pil_1986_3252026/",
-      "subreddit": "Purtle",
-      "date": "2026-03-25",
-      "date_confidence": "high",
-      "engagement": {
-        "score": 1,
-        "num_comments": 0,
-        "upvote_ratio": 1
-      },
-      "top_comments": [],
-      "comment_insights": [],
-      "relevance": 0.09,
-      "why_relevant": "Reddit global search",
-      "subs": {
-        "relevance": 9,
-        "recency": 96,
-        "engagement": 0
-      },
-      "score": 28,
-      "source": "reddit"
     },
     {
       "id": "X3",
@@ -700,6 +631,50 @@
       "score": 79,
       "source": "x",
       "title": "🇪🇺 EU Trade Flows Turn More Selective Across Grains and Oils 🚢\n\n🌾 Grain exports are running stronger, while grain imports are generally below last year’s pace – with wheat and barley standing out on the export side, and corn still lagging.\n\n🫛 In oilseeds and vegetable oils, the picture is more mixed. Seed imports are softer overall, but the veg oil basket is shifting, with soyoil and rapeseed oil gaining share while sunflower oil is weaker. That suggests the EU is changing not just how much it b"
+    },
+    {
+      "id": "R2",
+      "reddit_id": "1s329cz",
+      "title": "Rising Grain Export Inspections in 2026: What They Reveal About Global Trade | TIC Quality Control",
+      "url": "https://www.reddit.com/r/TIC_Industry/comments/1s329cz/rising_grain_export_inspections_in_2026_what_they/",
+      "subreddit": "TIC_Industry",
+      "date": "2026-03-25",
+      "engagement": {
+        "score": 2,
+        "num_comments": 1,
+        "upvote_ratio": 1
+      },
+      "relevance": 0.2,
+      "why_relevant": "Reddit global search",
+      "selftext": "[What Rising Grain Export Inspections Reveal About Global Trade in 2026](https://preview.redd.it/xeovr9fko4rg1.jpg?width=6970&format=pjpg&auto=webp&s=1d69eaeb45fc7fc089106138602f72dee9878179)\n\n# A Surprising Shift in Global Grain Demand\n\n[**Grain export inspections in 2026**](https://ticqc.ae/grain-export-inspections-global-trade-2026/) are revealing important trends in global agricultural trade. U.S. data shows corn inspections rising to 1.65 million metric tons, with sorghum also recording str",
+      "top_comments": [
+        {
+          "score": 1,
+          "date": "2026-03-25",
+          "author": "Realistic_Cow611",
+          "excerpt": "This is informative about this market & export trend",
+          "url": "https://reddit.com/r/TIC_Industry/comments/1s329cz/rising_grain_export_inspections_in_2026_what_they/occe83r/"
+        }
+      ],
+      "comment_insights": [
+        "This is informative about this market & export trend"
+      ]
+    },
+    {
+      "id": "R3",
+      "reddit_id": "1s3l7nt",
+      "title": "[PIL] #1986 3/25/2026",
+      "url": "https://www.reddit.com/r/Purtle/comments/1s3l7nt/pil_1986_3252026/",
+      "subreddit": "Purtle",
+      "date": "2026-03-25",
+      "engagement": {
+        "score": 1,
+        "num_comments": 0,
+        "upvote_ratio": 1
+      },
+      "relevance": 0.09,
+      "why_relevant": "Reddit global search",
+      "selftext": "**Purtle's Internet Lineup for March 25th, 2026 3:48PM**\n\n**Pics or Text:**\n\n* I'm at ICE HQ https://bsky.app/profile/jimmyjazz1968.bsky.social/post/3mht2wsvj522i\n\n* livestream raiding is great because it puts more eyes on more small creators, sure. but i think what's MUCH more important, is, you get to pretend you're a weird daycare shipping children to a different daycare so you can go smoke, and if any kids wander off on the way over that's not your problem https://bsky.app/profile/comfybasil"
     },
     {
       "id": "X1",
@@ -739,43 +714,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "AgroPortal Bulgaria | LinkedIn",
-      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "Andreea Grosu - Execution Officer at Grain Resources Black Sea SRL | LinkedIn",
-      "url": "https://www.linkedin.com/in/andreea-grosu-16989a55",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W11",
       "title": "Balkans & Black Sea Grain 2026 | ISTANBUL, TURKEY – BBS Grain 2026",
       "url": "https://bbsgrain.com/",
       "source_domain": "bbsgrain.com",
@@ -793,7 +732,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W9",
       "title": "Black Sea Cereal Company | LinkedIn",
       "url": "https://www.linkedin.com/company/black-sea-cereal-company",
       "source_domain": "linkedin.com",
@@ -830,7 +769,7 @@
     },
     {
       "id": "W8",
-      "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
+      "title": "Black Sea may hold back world wheat supplies into 2026 - Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
       "snippet": "",
@@ -865,6 +804,24 @@
       "source": "web"
     },
     {
+      "id": "W12",
+      "title": "Dobrita Adrian - Commodity Trader | \nExperienced Agribusiness professional in Romania and in the Black Sea region | LinkedIn",
+      "url": "https://www.linkedin.com/in/dobrita-adrian-30559394",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W14",
       "title": "EU soft wheat and rapeseed yields expected lower in 2026",
       "url": "https://ukragroconsult.com/en/news/eu-soft-wheat-and-rapeseed-yields-expected-lower-in-2026/",
@@ -883,7 +840,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W4",
       "title": "EuroGrainExchange 2026 to spotlight Black Sea–Balkans–Danube grain trade dynamics | Miller Magazine",
       "url": "https://millermagazine.com/blog/eurograinexchange-2026-to-spotlight-black-seabalkansdanube-grain-trade-dynamics-6644",
       "source_domain": "millermagazine.com",
@@ -901,7 +858,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W7",
       "title": "Global Grain Market: Daily Recap 23.03.2026",
       "url": "https://grainsprices.com/article/19552",
       "source_domain": "grainsprices.com",
@@ -919,7 +876,25 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W6",
+      "title": "Lamprakis Lazos - Managing Director-Black Sea Division AMEROPA \nMember of the Board of Directors of Ameropa Grains and Chimpex | LinkedIn",
+      "url": "https://linkedin.com/in/lamprakis-lazos-7baa6a2a5",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
       "title": "MarGen Group    MA-Management SA | LinkedIn",
       "url": "https://www.linkedin.com/company/margen-ma-management-sa",
       "source_domain": "linkedin.com",
@@ -973,8 +948,8 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "BLACK SEA GRAIN. KYIV: реєстрація зі зниженим тарифом до 31 ...",
+      "id": "W10",
+      "title": "BLACK SEA GRAIN. KYIV: реєстрація зі зниженим ...",
       "url": "https://ukragroconsult.com/news/black-sea-grain-kyiv-reyestracziya-zi-znyzhenym-taryfom-do-31-bereznya/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
@@ -1009,10 +984,10 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "В Україні зросли ціни на пшеницю на тлі війни в Ірані - НикВести",
-      "url": "https://nikvesti.com/news/business/316382-v-ukraini-zroslu-tsini-na-pshenitsyu-na-tli-viyni-v-irani",
-      "source_domain": "nikvesti.com",
+      "id": "W12",
+      "title": "В Україні зросли ціни на пшеницю",
+      "url": "https://agronews.ua/news/v-ukrayini-zrosly-cziny-na-pshenyczyu-11/",
+      "source_domain": "agronews.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1027,10 +1002,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "ВIСНИК",
-      "url": "https://bsagriculture.com.ua/web/uploads/journals_pdf/Ukrainian%20Black%20Sea%20Region%20Agrarian%20Science_Vol.%2019,%20No.%202_end.pdf",
-      "source_domain": "bsagriculture.com.ua",
+      "id": "W5",
+      "title": "В Україні зросли ціни на пшеницю на тлі війни в Ірані",
+      "url": "https://nikvesti.com/news/business/316382-v-ukraini-zroslu-tsini-na-pshenitsyu-na-tli-viyni-v-irani",
+      "source_domain": "nikvesti.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1060,9 +1035,6 @@
         "engagement": 0
       },
       "score": 3,
-      "cross_refs": [
-        "X30"
-      ],
       "source": "web"
     },
     {
@@ -1084,7 +1056,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W11",
       "title": "Українська пшениця-2025: ціни, квоти та конкуренція — Latifundist.com",
       "url": "https://latifundist.com/blog/read/3160-frantsiya-znovu-u-gri-rosiya-z-dempingom-ukrayina-pid-tiskom-start-sezonu-pshenitsi-2025",
       "source_domain": "latifundist.com",
@@ -1102,7 +1074,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W9",
       "title": "ЦІНИ НА ЗЕРНО НЕ БУДЕ? ЕКСПОРТ СТОЇТЬ. ...",
       "url": "https://www.youtube.com/watch?v=uz0szuybon0",
       "source_domain": "youtube.com",
@@ -1120,7 +1092,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "Ціни на Чорноморську пшеницю у першій половині сезону 2021/22 року рекордно зросли – Refinitiv  — Latifundist.com",
       "url": "https://latifundist.com/novosti/57947-tsini-na-chornomorsku-pshenitsyu-u-pershij-polovini-sezonu-2021-22-roku-rekordno-zrosli--refinitiv",
       "source_domain": "latifundist.com",
@@ -1138,10 +1110,10 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Ціни на пшеницю в Україні різко зросли: що відбувається на ринку",
-      "url": "https://usionline.com/post/11427",
-      "source_domain": "usionline.com",
+      "id": "W14",
+      "title": "Ціни на зерно у березні 2026: три ключові фактори",
+      "url": "https://agroreview.com/publication/ratings/try-klyuchovi-faktory-shho-vplyvatymut/",
+      "source_domain": "agroreview.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1156,25 +1128,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "Ціни на чорноморську пшеницю за час війни в Ірані ...",
-      "url": "https://www.ukr.net/news/details/economics/116577217.html",
-      "source_domain": "ukr.net",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
+      "id": "W3",
       "title": "Ціни на чорноморську пшеницю за час війни в Ірані піднялись до сезонного максимуму — AgroPortal.ua",
       "url": "https://agroportal.ua/news/rastenievodstvo/cini-na-chornomorsku-pshenicyu-za-chas-viyni-v-irani-pidnyalis-do-sezonnogo-maksimumu",
       "source_domain": "agroportal.ua",
@@ -1192,7 +1146,25 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W15",
+      "title": "Чорноморська пшениця посилює конкуренцію на ...",
+      "url": "https://ukragroconsult.com/news/chornomorsyka-pshenyczya-posylyuye-konkurencziyu-na-svitovomu-rynku-polyshha-shukaye-novi-napryamky-eksportu/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
       "title": "ֳ�� �� ���������� ������� ������ �� ��������� � ������ ����� ����� �� ��������� ����� | Mind.ua",
       "url": "https://mind.ua/news/20302663-cini-na-ukrayinsku-pshenicyu-zrosli-do-maksimumu-z-serpnya-cherez-vijnu-na-blizkomu-shodi",
       "source_domain": "mind.ua",
@@ -1210,7 +1182,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W8",
       "title": "� ������� ���� �� ������� ������ �� ��������� �� ������� �� ��� ����� � ����� (Fin.Org.UA)",
       "url": "https://www.fin.org.ua/news/1577752",
       "source_domain": "fin.org.ua",
@@ -1232,6 +1204,24 @@
       "title": "Андрій Кашуба (@An.Kashuba) - Facebook",
       "url": "https://www.facebook.com/An.Kashuba/",
       "source_domain": "facebook.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Блокада Червоного моря хуситами: як подібну проблему вирішує Україна у Чорному морі - BBC News Україна",
+      "url": "https://www.bbc.com/ukrainian/articles/cv2v5v542gpo",
+      "source_domain": "bbc.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1337,7 +1327,7 @@
     },
     {
       "id": "W4",
-      "title": "Як Україні вдалося відновити експорт Чорним морем - BBC",
+      "title": "Як Україні вдалося відновити експорт Чорним морем - BBC News Україна",
       "url": "https://www.bbc.com/ukrainian/articles/crgyjr2rerjo",
       "source_domain": "bbc.com",
       "snippet": "",
@@ -1354,10 +1344,10 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "як подібну проблему вирішує Україна у Чорному морі - BBC",
-      "url": "https://www.bbc.com/ukrainian/articles/cv2v5v542gpo",
-      "source_domain": "bbc.com",
+      "id": "W14",
+      "title": "[PDF] DOI: http://doi.org/10.32702/2307-2105.2023.10.34 УДК 339.1:631.1 ...",
+      "url": "https://www.nayka.com.ua/index.php/ee/article/download/2325/2357/5919",
+      "source_domain": "nayka.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1372,10 +1362,10 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "KSE: чисті втрати економіки від мит на ріпак та сою можуть сягнути 670 млн грн",
-      "url": "https://www.fixygen.ua/news/20260325/kse-chisti-vtrati-ekonomiki-vid-mit-na-ripak-ta-soyu-mozhut-syagnuti-670-mln-grn.html",
-      "source_domain": "fixygen.ua",
+      "id": "W6",
+      "title": "[PDF] СВІТОВІ ТЕНДЕНЦІЇ РОЗВИТКУ РИНКУ ОЛІЙНИХ КУЛЬТУР",
+      "url": "http://ed.pdatu.edu.ua/article/view/237685/236364",
+      "source_domain": "ed.pdatu.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1390,10 +1380,10 @@
       "source": "web"
     },
     {
-      "id": "W3",
-      "title": "Soybean Market 2026: український ринок сої між ...",
-      "url": "https://agro-business.com.ua/agro/podiia/item/35045-soybean-market-2026-ukrainskyi-rynok-soi-mizh-heopolitykoiu-mytamy-ta-hlobalnoiu-konkurentsiieiu.html",
-      "source_domain": "agro-business.com.ua",
+      "id": "W12",
+      "title": "[PDF] УДК",
+      "url": "https://www.ei-journal.com/index.php/journal/article/download/272/142",
+      "source_domain": "ei-journal.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1408,10 +1398,10 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Агроновини України та світу",
-      "url": "https://www.apk-inform.com/uk/news/amp",
-      "source_domain": "apk-inform.com",
+      "id": "W10",
+      "title": "Блокування Ормузької протоки може призвести до ...",
+      "url": "https://www.instagram.com/p/DV02hMZDHAc/",
+      "source_domain": "instagram.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1444,82 +1434,10 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Котирування на рослинні олії залишаються стабільними ...",
-      "url": "https://graintrade.com.ua/novosti/kotiruvannya-na-roslini-olii-zalishayutsya-stabilnimi-i-ne-reaguyut-na-stribki-tcin-na-naf.html",
-      "source_domain": "graintrade.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W2",
-      "title": "На Черкащині запускають завод з переробки кукурудзи ...",
-      "url": "https://agroportal.ua/news/novosti-kompanii/na-cherkashchini-zapuskayut-zavod-z-pererobki-kukurudzi-potuzhnistyu-100-tis-t-rik",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
-      "title": "Пшениця та кукурудза подорожчали у вівторок на ...",
-      "url": "https://ukragroconsult.com/news/pshenyczya-ta-kukurudza-podorozhchaly-u-vivtorok-na-chykazykij-birzhi-soya-podeshevshala/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
-      "title": "Соняшник",
-      "url": "https://www.ukrinform.ua/tag-sonasnik",
-      "source_domain": "ukrinform.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Стан ринку соняшникової олії у 2025 році - ThePage.ua",
-      "url": "https://thepage.ua/ua/agro/stan-rinku-sonyashnikovoyi-oliyi-u-2025-roci",
-      "source_domain": "thepage.ua",
+      "id": "W3",
+      "title": "Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу",
+      "url": "https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye",
+      "source_domain": "propozitsiya.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1535,9 +1453,9 @@
     },
     {
       "id": "W5",
-      "title": "Українці таке не їдять: названо мега популярний продукт ...",
-      "url": "https://radiotrek.rv.ua/amp/ukrayinci-take-ne-yidyat-nazvano-mega-populyarniy-produkt-za-kordonom-yakogo-more-v-u-nas_361695.html",
-      "source_domain": "radiotrek.rv.ua",
+      "title": "Олійні культури: врожай соняшнику обмежений, ріпак та соя дорожчають | Пропозиція – Головний журнал з питань агробізнесу",
+      "url": "https://propozitsiya.com/news/oliyni-kultury-vrozhay-sonyashnyku-obmezhenyy-ripak-ta-soya-dorozhchayut",
+      "source_domain": "propozitsiya.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1552,10 +1470,28 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Ціни на соняшник в Україні сягнули 31000 грн/т, але їх ...",
-      "url": "https://graintrade.com.ua/novosti/tcini-na-sonyashnik-v-ukraini-syagnuli-31000-grnt-ale-ih-obmezhue-stabilizatciya-tcin-na-o.html",
-      "source_domain": "graintrade.com.ua",
+      "id": "W13",
+      "title": "Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com",
+      "url": "https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami",
+      "source_domain": "latifundist.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Польський ринок: ріпак у лідерах, для соняшнику немає ...",
+      "url": "https://agroportal.ua/news/mir/polskiy-rinok-ripak-u-liderah-dlya-sonyashniku-nemaye-pererobki",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1571,9 +1507,63 @@
     },
     {
       "id": "W7",
-      "title": "Ціни на соняшник перевищили 30 тис. грн/т - Agronews",
-      "url": "https://agronews.com/ua/ru/news/breaking-news/2026-03-25/81556",
-      "source_domain": "agronews.com",
+      "title": "Попит на рослинні олії змінює баланс світового ринку олійних ...",
+      "url": "https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Ринок олійних: соняшник та соя дорожчають, а ріпак очікує нового врожаю | Пропозиція – Головний журнал з питань агробізнесу",
+      "url": "https://propozitsiya.com/news/rynok-oliynykh-sonyashnyk-ta-soya-dorozhchayut-ripak-ochikuye-novoho-vrozhayu",
+      "source_domain": "propozitsiya.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Світові ринки: ріпак витіснив соняшникову олію з енергетичної сфери і виштовхує з харчової — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/mir/svitovi-rinki-ripak-vitisniv-sonyashnikovu-oliyu-z-energetichnoji-sferi-i-vishtovhuye-z-harchovoji",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "у світі стрімко дорожчає «пальма» та соя, а соняшникова олія ...",
+      "url": "https://www.ukr.net/news/details/world/116561582.html",
+      "source_domain": "ukr.net",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1590,6 +1580,6 @@
   ],
   "meta": {
     "inputFiles": 8,
-    "itemCount": 83
+    "itemCount": 84
   }
 }
