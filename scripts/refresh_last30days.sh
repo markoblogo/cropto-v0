@@ -88,6 +88,42 @@ def extract_items(payload):
             value = data.get(key)
             if isinstance(value, list):
                 return value
+    # last30days report-style JSON keeps source arrays on top-level keys.
+    source_keys = (
+        "reddit",
+        "x",
+        "youtube",
+        "hackernews",
+        "bluesky",
+        "truthsocial",
+        "polymarket",
+        "web",
+        "instagram",
+        "tiktok",
+    )
+    merged = []
+    for source_key in source_keys:
+        value = payload.get(source_key)
+        if not isinstance(value, list):
+            continue
+        for row in value:
+            if not isinstance(row, dict):
+                continue
+            mapped = dict(row)
+            mapped.setdefault("source", source_key)
+            mapped.setdefault("title", row.get("title") or row.get("text") or row.get("post") or source_key)
+            mapped.setdefault("url", row.get("url") or row.get("link") or "")
+            mapped.setdefault(
+                "date",
+                row.get("date")
+                or row.get("created_at")
+                or row.get("published_at")
+                or row.get("timestamp")
+                or "",
+            )
+            merged.append(mapped)
+    if merged:
+        return merged
     return []
 
 out_file = sys.argv[1]
