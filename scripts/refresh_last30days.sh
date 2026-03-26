@@ -7,14 +7,14 @@ set -euo pipefail
 #   LAST30DAYS_OUTPUT_DIR    (default: artifacts/last30days)
 #   LAST30DAYS_SCRIPT_PATH   (default: ~/.agents/skills/last30days/scripts/last30days.py)
 #   LAST30DAYS_TOPICS        (default: three grain/oilseeds themes, separated by "||")
-#   LAST30DAYS_SEARCH        (default: reddit,hn,youtube,web)
+#   LAST30DAYS_SEARCH        (default: reddit,x,bluesky,hn,youtube,web)
 #   LAST30DAYS_TIMEOUT       (default: 240)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${LAST30DAYS_OUTPUT_DIR:-$ROOT_DIR/artifacts/last30days}"
 SCRIPT_PATH="${LAST30DAYS_SCRIPT_PATH:-$HOME/.agents/skills/last30days/scripts/last30days.py}"
 TOPICS_RAW="${LAST30DAYS_TOPICS:-${LAST30DAYS_TOPIC:-grain market wheat corn soybeans sunflower rapeseed black sea export||ukraine grain export corridor black sea logistics||europe oilseeds crush biodiesel rapeseed sunflower imports}}"
-SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,hn,youtube,web}"
+SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-240}"
 
 if [[ ! -f "$SCRIPT_PATH" ]]; then
