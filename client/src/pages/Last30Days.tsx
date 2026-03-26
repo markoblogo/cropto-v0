@@ -157,6 +157,40 @@ function normalizeSource(source: string) {
   return val;
 }
 
+function sourceBadgeMeta(source: string) {
+  const normalized = normalizeSource(source);
+  const meta: Record<string, { label: string; className: string }> = {
+    web: {
+      label: "WEB",
+      className: "border-slate-700 bg-slate-900 text-sky-300",
+    },
+    x: {
+      label: "X",
+      className: "border-slate-700 bg-slate-900 text-slate-100",
+    },
+    bluesky: {
+      label: "BSKY",
+      className: "border-sky-900/70 bg-sky-950/60 text-sky-300",
+    },
+    reddit: {
+      label: "RDT",
+      className: "border-orange-900/70 bg-orange-950/40 text-orange-300",
+    },
+    youtube: {
+      label: "YT",
+      className: "border-rose-900/70 bg-rose-950/40 text-rose-300",
+    },
+    hn: {
+      label: "HN",
+      className: "border-amber-900/70 bg-amber-950/40 text-amber-300",
+    },
+  };
+  return meta[normalized] || {
+    label: normalized.toUpperCase(),
+    className: "border-slate-700 bg-slate-900 text-slate-300",
+  };
+}
+
 function shortLegendLabel(mode: "sources" | "commodities" | "regions" | "languages", label: string): string {
   const normalized = label.toLowerCase();
   if (mode === "languages") return label.toUpperCase();
@@ -1287,16 +1321,30 @@ export default function Last30DaysPage() {
                           </td>
                           <td className="px-2 py-2 font-mono">{item.impact.toFixed(2)}</td>
                           <td className="px-2 py-2 text-sm text-slate-200">
-                            <div
-                              className="line-clamp-2 max-w-[900px] leading-6 text-slate-200"
-                              title={normalizeFeedTitle(item)}
-                            >
-                              {normalizeFeedTitle(item)}
+                            <div className="group relative max-w-[900px]">
+                              <div
+                                className="line-clamp-2 leading-6 text-slate-200"
+                                title={normalizeFeedTitle(item)}
+                              >
+                                {normalizeFeedTitle(item)}
+                              </div>
+                              <div className="pointer-events-none absolute left-0 top-full z-20 mt-2 hidden w-[min(680px,calc(100vw-8rem))] rounded-xl border border-slate-700 bg-slate-950/98 p-3 text-sm leading-6 text-slate-100 shadow-[0_16px_44px_rgba(0,0,0,.48)] group-hover:block">
+                                <div className="mb-2 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.12em] text-slate-400">
+                                  <span>Full headline</span>
+                                  <span>{extractHostnameLabel(item.url)}</span>
+                                </div>
+                                <div className="text-sm leading-6 text-slate-100">{normalizeFeedTitle(item)}</div>
+                              </div>
                             </div>
                           </td>
                           <td className="px-2 py-2">
-                            <a href={item.url || "#"} target="_blank" rel="noreferrer" className="text-xs text-sky-300 hover:text-sky-200">
-                              {normalizeSource(item.source)}
+                            <a
+                              href={item.url || "#"}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`inline-flex min-w-[48px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-cyan-400 ${sourceBadgeMeta(item.source).className}`}
+                            >
+                              {sourceBadgeMeta(item.source).label}
                             </a>
                           </td>
                         </tr>
