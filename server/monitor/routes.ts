@@ -108,6 +108,7 @@ import { fetchWithHeaders, redactSensitiveQuery, redactSensitiveUrl } from "./gr
 import { buildMonitorTriageReport } from "./utils/triage";
 import type { MonitorNewsItem } from "./types";
 import { buildWeatherYieldRiskLayer, getWeatherYieldRiskDetails } from "./weatherYieldRiskService";
+import { loadLast30DaysSummary, type Last30DaysRecord, type Last30DaysSignal } from "./last30daysService";
 
 function triageReportToMarkdown(report: any): string {
   const providers = Array.isArray(report?.providers) ? report.providers : [];
@@ -543,6 +544,93 @@ export function registerMonitorRoutes(app: Express): void {
         enabled: MONITOR_SOURCES.filter((source) => source.enabled).length,
       },
     });
+  });
+
+  app.get("/api/last30days/summary", async (req, res) => {
+    try {
+      const daysRaw = Number.parseInt(String(req.query.days || "30"), 10);
+      const days = Number.isFinite(daysRaw) ? Math.max(1, Math.min(365, daysRaw)) : 30;
+      const region = String(req.query.region || "all").toLowerCase();
+      const lang = String(req.query.lang || "all").toLowerCase();
+      const includeSources = req.query.includeSources === "1" || req.query.includeSources === "true";
+
+      const base = await loadLast30DaysSummary();
+      const minTs = Date.now() - days * 24 * 60 * 60 * 1000;
+
+      const filtered = base.items
+        .filter((item) => Date.parse(item.publishedAt) >= minTs)
+        .filter((item) => region === "all" || item.region === region)
+        .filter((item) => lang === "all" || item.language === lang)
+        .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+
+      const signalWeight: Record<Last30DaysSignal, number> = {
+        bullish: 1,
+        neutral: 0,
+        bearish: -1,
+      };
+
+      const byCount = (items: Last30DaysRecord[], keyFn: (item: Last30DaysRecord) => string) => {
+        return items.reduce<Record<string, number>>((acc, item) => {
+          const key = keyFn(item) || "unknown";
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {});
+      };
+
+      const commodityShare = byCount(filtered, (item) => item.commodity);
+      const regionalHeat = byCount(
+        filtered.filter((item) => item.impact >= 4),
+        (item) => item.region,
+      );
+
+      const signalScoreRaw = filtered.reduce((acc, item) => acc + signalWeight[item.signal], 0);
+      const signalBalancePct = filtered.length ? Math.round((signalScoreRaw / filtered.length) * 100) : 0;
+      const riskIndex = filtered.length
+        ? Number((filtered.reduce((acc, item) => acc + item.impact, 0) / filtered.length).toFixed(2))
+        : 0;
+      const topCommodity =
+        Object.entries(commodityShare).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+      const sources = includeSources
+        ? Array.from(new Set(filtered.map((item) => item.source))).sort((a, b) => a.localeCompare(b))
+        : undefined;
+
+      return res.json({
+        generatedAt: base.generatedAt,
+        sourceFile: base.sourceFile,
+        sourceUpdatedAt: base.sourceUpdatedAt,
+        warnings: base.warnings,
+        filters: {
+          days,
+          region,
+          lang,
+        },
+        summary: {
+          coverageCount: filtered.length,
+          signalBalancePct,
+          riskIndex,
+          topCommodity,
+          commodityShare,
+          regionalHeat,
+        },
+        sources,
+        items: filtered.slice(0, 250),
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        generatedAt: new Date().toISOString(),
+        summary: {
+          coverageCount: 0,
+          signalBalancePct: 0,
+          riskIndex: 0,
+          topCommodity: null,
+          commodityShare: {},
+          regionalHeat: {},
+        },
+        items: [],
+        message: error?.message || "Failed to build last30days summary",
+      });
+    }
   });
 
   app.get("/api/monitor/news", async (req, res) => {
