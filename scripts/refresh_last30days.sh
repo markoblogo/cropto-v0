@@ -106,13 +106,14 @@ run_query() {
   local days="$1"
   local topic="$2"
   local out_file="$3"
+  local err_file="$4"
   python3 "$SCRIPT_PATH" "$topic" \
     --days="$days" \
     --emit=json \
     --store \
     --include-web \
     --search "$SEARCH_SOURCES" \
-    --timeout "$TIMEOUT_SECS" > "$out_file"
+    --timeout "$TIMEOUT_SECS" > "$out_file" 2> "$err_file"
 }
 
 write_empty_payload() {
@@ -249,11 +250,16 @@ run_window() {
   echo "[last30days] Running ${label} (${days}d) across ${#TOPICS[@]} topics..."
   for topic in "${TOPICS[@]}"; do
     local tmp_file="$OUT_DIR/.${label}.topic${i}.json"
+    local err_file="$OUT_DIR/.${label}.topic${i}.err.log"
     set +e
-    run_query "$days" "$topic" "$tmp_file"
+    run_query "$days" "$topic" "$tmp_file" "$err_file"
     local rc=$?
     set -e
     if [[ $rc -eq 0 ]]; then
+      if [[ ",$SEARCH_SOURCES," == *",bluesky," ]] && grep -Eq "Bluesky error: .*403|Bluesky search failed: HTTP 403" "$err_file"; then
+        echo "[last30days] WARN: bluesky returned 403 during search, disabling bluesky for remaining topics in this run." >&2
+        SEARCH_SOURCES="$(strip_source_from_search "bluesky" "$SEARCH_SOURCES")"
+      fi
       input_files+=("$tmp_file")
       for raw_name in raw_reddit_threads_enriched.json raw_x_posts.json raw_youtube_videos.json raw_hn_stories.json raw_bluesky_posts.json; do
         local raw_src="$OUT_DIR/$raw_name"
@@ -267,6 +273,7 @@ run_window() {
       echo "[last30days] WARN: query failed for ${label} topic #$((i + 1))" >&2
       rm -f "$tmp_file"
     fi
+    rm -f "$err_file"
     i=$((i + 1))
   done
 

@@ -141,12 +141,16 @@ function inferLanguage(item: any, text: string): string {
   if (candidates.length > 0) {
     const primary = candidates[0];
     if (primary.startsWith("uk")) return "uk";
+    if (primary.startsWith("ru")) return "uk";
     if (primary.startsWith("fr")) return "fr";
     return "en";
   }
 
   const lower = text.toLowerCase();
   if (/[іїєґ]/.test(lower)) return "uk";
+  if (/[а-яё]/i.test(lower)) return "uk";
+  const urlText = normalizeText(item?.url || item?.link || item?.source_url).toLowerCase();
+  if (urlText.includes(".ua/") || urlText.endsWith(".ua")) return "uk";
   return "en";
 }
 
