@@ -21,6 +21,10 @@ MONITOR_NEWS_URL = os.environ.get(
     "LAST30DAYS_MONITOR_NEWS_URL",
     "https://cropto.abvx.xyz/api/monitor/news?time=7d",
 ).strip()
+SEA_BROKERAGE_URL = os.environ.get(
+    "LAST30DAYS_SEA_BROKERAGE_URL",
+    "https://cropto.abvx.xyz/api/sea-brokerage-monitor/entries",
+).strip()
 
 WINDOWS = [
     ("yesterday", 1, "Yesterday"),
@@ -148,6 +152,25 @@ def fetch_monitor_news():
             payload = json.loads(resp.read().decode("utf-8"))
             feed = payload.get("feed") if isinstance(payload, dict) else None
             return feed if isinstance(feed, list) else []
+    except Exception:
+        return []
+
+def fetch_sea_brokerage_entries():
+    if not SEA_BROKERAGE_URL:
+        return []
+    req = urllib.request.Request(
+        SEA_BROKERAGE_URL,
+        headers={
+            "accept": "application/json",
+            "user-agent": "CroptoLast30DaysAIGenerator/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            if resp.status < 200 or resp.status >= 300:
+                return []
+            payload = json.loads(resp.read().decode("utf-8"))
+            return payload if isinstance(payload, list) else []
     except Exception:
         return []
 
@@ -380,6 +403,46 @@ def build_spike_lines(news_items, scope, days):
         out.append(line)
     return out[:8]
 
+def build_brokerage_lines(entries, scope, days):
+    if not isinstance(entries, list):
+        return []
+    now = datetime.now(timezone.utc)
+    out = []
+    for row in entries:
+        if not isinstance(row, dict):
+            continue
+        created = str(row.get("createdAt") or row.get("created_at") or "")
+        created_dt = parse_iso_datetime(created)
+        if created_dt and (now - created_dt).days > max(days, 2):
+            continue
+        destination = str(row.get("destinationCountry") or row.get("destinationPort") or "").lower()
+        origin = str(row.get("originCountry") or "").lower()
+        is_ua = "ukraine" in destination or "ukraine" in origin
+        if scope == "uk" and not is_ua:
+            continue
+        if scope == "en" and is_ua:
+            continue
+        side = str(row.get("type") or "").upper()
+        commodity = str(row.get("commodityLabel") or row.get("commodity") or "Commodity")
+        basis = str(row.get("basis") or "")
+        price_from = row.get("priceFrom")
+        price_to = row.get("priceTo")
+        price = row.get("price")
+        currency = str(row.get("currency") or "USD")
+        period = str(row.get("periodLabel") or "")
+        destination_label = str(row.get("destinationPort") or row.get("destinationCountry") or "")
+        company = str(row.get("companyName") or row.get("brokerName") or "")
+        if price_from and price_to:
+            price_text = f"{price_from}-{price_to} {currency}"
+        elif price:
+            price_text = f"{price} {currency}"
+        else:
+            price_text = f"price n/a {currency}"
+        out.append(
+            f"[{created[:10]}] {side} | {commodity} | {basis} | {price_text} | {period} | {destination_label} | {company}"
+        )
+    return out[:12]
+
 
 def extract_text(payload):
     if isinstance(payload, dict) and isinstance(payload.get("output_text"), str) and payload["output_text"].strip():
@@ -484,7 +547,7 @@ def cleanup_summary_text(text: str, language: str) -> str:
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
     return cleaned or raw
 
-def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, days):
+def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, brokerage_lines, days):
     system_prompt = (
         "You are a senior grains & oilseeds analyst. Write in Ukrainian."
         if language == "uk"
@@ -520,6 +583,9 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             "Spike weekly notes (if available):",
             "\n".join(spike_lines) if spike_lines else "No spike weekly notes in scope.",
             "",
+            "Broker desk entries from spike-monitor (if available):",
+            "\n".join(brokerage_lines) if brokerage_lines else "No fresh broker desk entries in scope.",
+            "",
             "Output format requirements:",
             "1) Produce concise analyst note in this exact structure: 'General situation', 'What changed vs previous comparable period', 'Actionable implications for trading/brokerage', 'Key facts'.",
             "2) In 'Key facts' provide 4-6 bullets with concrete numbers and dates from supplied data (not generic phrases).",
@@ -529,6 +595,7 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             "6) Keep total summary length 900-1400 characters.",
             "7) Forbidden: mention counts of reports/signals/messages, phrases like 'neutral-impact reports', or repeated restatement of the same fact.",
             "8) Prefer concrete market outcomes: prices, logistics constraints, margin pressure, spread behavior, export route changes.",
+            "9) If broker desk entries are present, use them as live market color for yesterday and mention bid/offer positioning only when it adds trading value.",
             "",
             "Return STRICT JSON with this schema:",
             '{ "summary": "text", "chart": { "type": "event_mix|price_overlay_week|price_overlay_month|bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ], "series": [ {"name":"...", "points":[{"label":"...","value":number}]} ] } }',
@@ -556,7 +623,7 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
     return parsed
 
 
-def write_window(window_name, days, period_label, monitor_payload, monitor_news_payload, all_items_month):
+def write_window(window_name, days, period_label, monitor_payload, monitor_news_payload, brokerage_payload, all_items_month):
     src = read_json(OUT_DIR / f"{window_name}.json")
     if src is None:
         return False, f"{window_name}.json missing"
@@ -573,6 +640,8 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
     uk_fact_pack = build_fact_pack(uk_items, uk_scope_all, days)
     en_spike_lines = build_spike_lines(monitor_news_payload, "en", days)
     uk_spike_lines = build_spike_lines(monitor_news_payload, "uk", days)
+    en_brokerage_lines = build_brokerage_lines(brokerage_payload, "en", days)
+    uk_brokerage_lines = build_brokerage_lines(brokerage_payload, "uk", days)
 
     warnings = []
     en_payload = None
@@ -587,6 +656,7 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
             en_metrics,
             en_fact_pack,
             en_spike_lines,
+            en_brokerage_lines,
             days,
         )
     except Exception as error:
@@ -601,6 +671,7 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
             uk_metrics,
             uk_fact_pack,
             uk_spike_lines,
+            uk_brokerage_lines,
             days,
         )
     except Exception as error:
@@ -676,6 +747,7 @@ def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     monitor_payload = fetch_monitor_context()
     monitor_news_payload = fetch_monitor_news()
+    brokerage_payload = fetch_sea_brokerage_entries()
     month_src = read_json(OUT_DIR / "month.json")
     all_items_month = normalize_items(month_src or {})
     ok = True
@@ -686,6 +758,7 @@ def main():
             period_label,
             monitor_payload,
             monitor_news_payload,
+            brokerage_payload,
             all_items_month,
         )
         if success:

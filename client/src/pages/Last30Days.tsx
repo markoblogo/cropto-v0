@@ -539,15 +539,15 @@ function DeskSnapshotPulse({
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-      <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid max-h-72 gap-3 overflow-y-auto pr-1 md:grid-cols-[1.15fr_0.85fr]">
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.12em] text-slate-400">Desk Snapshot</p>
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {quotes.slice(0, 5).map((quote) => (
               <div key={`${quote.region}-${quote.commodity}-${quote.currency}`} className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold text-slate-100">{formatCommodityLabel(quote.commodity)}</span>
-                  <span className="text-sm font-mono text-cyan-300">
+                  <span className="text-[13px] font-semibold text-slate-100">{formatCommodityLabel(quote.commodity)}</span>
+                  <span className="text-[13px] font-mono text-cyan-300">
                     {quote.value.toFixed(quote.value % 1 === 0 ? 0 : 1)} {quote.currency}
                   </span>
                 </div>
@@ -561,13 +561,13 @@ function DeskSnapshotPulse({
         </div>
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.12em] text-slate-400">Pulse</p>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {drivers.length ? drivers.map((driver, idx) => {
               const max = Math.max(...drivers.map((entry) => entry.score), 1);
               return (
                 <div key={driver.label} className="rounded-lg border border-slate-800 bg-slate-900/75 px-3 py-2">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-slate-100">{driver.label}</span>
+                    <span className="text-[13px] font-semibold text-slate-100">{driver.label}</span>
                     <span className="text-xs font-mono text-slate-300">{driver.score.toFixed(0)}</span>
                   </div>
                   <div className="mt-2 h-2 rounded bg-slate-800">
@@ -874,7 +874,7 @@ function SummaryCard({
   const sections = splitSummaryIntoSections(summary);
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-      <div className="mb-3 flex items-center gap-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold">{title}</h3>
         <div className="flex items-center gap-2">
           <button onClick={() => navigator.clipboard.writeText(summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
@@ -888,7 +888,7 @@ function SummaryCard({
           </button>
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-200 select-text">
           <div className="space-y-4">
             {(sections.length ? sections : [{ heading: "", body: [summary] }]).map((section, idx) => (
@@ -1113,9 +1113,9 @@ export default function Last30DaysPage() {
                     disabled={!option.ready}
                   >
                     {!option.ready ? (
-                      <span className="absolute inset-y-0 left-0 rounded-full bg-cyan-400/15" style={{ width: `${Math.max(10, Math.round(option.progress * 100))}%` }} />
+                      <span className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-300/75 to-orange-400/75" style={{ width: `${Math.max(10, Math.round(option.progress * 100))}%` }} />
                     ) : null}
-                    <span className="relative flex items-center justify-between gap-2">
+                    <span className={`relative flex items-center gap-2 ${option.ready || days === option.value ? "justify-center" : "justify-between"}`}>
                       <span>{option.label}</span>
                       {option.value !== 1 ? <span className="text-[10px] uppercase tracking-[0.08em]">{option.progressLabel}</span> : null}
                     </span>

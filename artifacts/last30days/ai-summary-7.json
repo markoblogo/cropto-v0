@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-26T15:17:00.929219+00:00",
+  "generatedAt": "2026-03-26T15:51:11.249648+00:00",
   "filters": {
     "days": 7
   },
@@ -9,10 +9,10 @@
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Global grain and oilseed markets remain stable with mixed signals and no significant price volatility. Corn futures reached their highest level since June 2025, yet cash markets show stagnation. Wheat markets are influenced by recent EU and Argentine purchases, but US prices remain firm without weakening. Protein meals continue to rally, defying bearish expectations. What changed vs previous comparable period: Market activity increased slightly with more reports but no shift in sentiment or impact. Corn futures strength contrasts with stagnant cash markets, a divergence not seen in the prior week. Actionable implications for trading/brokerage: Traders should monitor corn futures for potential breakout opportunities while being cautious due to stagnant physical markets. Wheat demand from EU and Argentina supports price resilience, suggesting limited downside risk. Protein meal strength may offer hedging opportunities against feed cost inflation. \n\nKey facts:\n- Corn futures hit highest since June 2025 as of March 20, 2026.\n- Wheat prices stable despite EU and Argentine export purchases reported mid-March.\n- Brazilian corn FOB Santos price was 112.7 USD/ton on March 12, 2026.\n- Brazilian soybeans and wheat prices both at 662.9 USD/ton on March 14, 2026.\n- No bearish or bullish price signals recorded from March 20 to March 26, 2026.\n- Export inspections rising in 2026, indicating steady global trade flows as of March 25, 2026.",
+    "text": "General situation: Global grain and oilseed markets remain stable with mixed signals and no significant price shifts. Corn futures hit their highest since last June, yet cash markets show stagnation. Wheat markets are steady despite recent EU and Argentine purchases, while protein meals continue to rally, defying bearish expectations. What changed vs previous comparable period: Market activity increased slightly with more reports but no change in overall sentiment or impact. Corn futures strength contrasts with stagnant cash prices, maintaining a balanced outlook. Actionable implications for trading/brokerage: Traders should monitor corn futures for potential momentum but remain cautious due to stagnant cash markets. The firmness in protein meals suggests opportunities in meal trading, while wheat remains range-bound amid competing export influences. Broker offers for April corn CIF at 241 EUR and bids for sunflower CPT at 301 USD indicate active positioning in key oilseeds. \n\nKey facts:\n- Corn futures reached highest levels since June 2025 as of March 20, 2026.\n- Brazilian corn FOB Santos price was 112.7 USD/ton on March 12, 2026.\n- Brazilian soybeans and wheat prices stood at 662.9 USD/ton on March 14, 2026.\n- Argentine barley Grade 2 Up River price was 212 USD/ton as of December 31, 2025.\n- Broker offer for corn CIF Tarragona at 241 EUR for April 10-30, 2026.\n- Broker bid for sunflower CPT Marmara at 301 USD for first half of March 2026.",
     "chart": {
       "type": "price_overlay_week",
-      "title": "Grain & Oilseed Prices: Week of Mar 20-26, 2026",
+      "title": "Grain & Oilseed Prices (Mar 20-26, 2026)",
       "points": [
         {
           "label": "Mar 20",
@@ -78,7 +78,7 @@
           ]
         },
         {
-          "name": "Wheat Brazil (USD/ton)",
+          "name": "Soybeans Brazil (USD/ton)",
           "points": [
             {
               "label": "Mar 20",
@@ -86,32 +86,32 @@
             },
             {
               "label": "Mar 21",
-              "value": 662.9
+              "value": 663
             },
             {
               "label": "Mar 22",
-              "value": 662.9
+              "value": 663
             },
             {
               "label": "Mar 23",
-              "value": 662.9
+              "value": 663
             },
             {
               "label": "Mar 24",
-              "value": 662.9
+              "value": 663
             },
             {
               "label": "Mar 25",
-              "value": 662.9
+              "value": 663
             },
             {
               "label": "Mar 26",
-              "value": 662.9
+              "value": 663
             }
           ]
         },
         {
-          "name": "Soybeans Brazil (USD/ton)",
+          "name": "Wheat Brazil (USD/ton)",
           "points": [
             {
               "label": "Mar 20",
@@ -154,7 +154,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних України залишається стабільною, проте зберігаються ризики через військові дії, що впливають на логістику. За останній тиждень ціни на основні культури в портах Одещини демонструють незначне зростання: кукурудза – 214 USD/т, пшениця – 215 USD/т, соя – 447 USD/т, соняшник – 708 USD/т. Водночас, через російські атаки пошкоджено зернові судна та інфраструктуру в порту Одеси, що створює додаткові логістичні виклики. Порівняно з попереднім тижнем, кількість інформаційних сигналів зросла, але без зміни цінового тренду. Активно обговорюється розвиток альтернативних маршрутів експорту, зокрема річкової логістики на Дунаї, що може компенсувати обмеження морських шляхів. Війна продовжує негативно впливати на ринок олії, де соя та ріпак не компенсують втрати соняшнику. Для трейдерів важливо враховувати підвищену волатильність через військові ризики та зміщення логістичних маршрутів, що може впливати на маржі та строки поставок.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Динаміка цін на ключові культури в портах Одещини (16-22 березня 2026)\",     \"points\": [       {\"label\": \"16 березня\", \"value\": 0},       {\"label\": \"17 березня\", \"value\": 0},       {\"label\": \"18 березня\", \"value\": 0},       {\"label\": \"19 березня\", \"value\": 0},       {\"label\": \"20 березня\", \"value\": 0},       {\"label\": \"21 березня\", \"value\": 0},       {\"label\": \"22 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза (USD/т)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 210},           {\"label\": \"17 березня\", \"value\": 212},           {\"label\": \"18 березня\", \"value\": 213},           {\"label\": \"19 березня\", \"value\": 214},           {\"label\": \"20 березня\", \"value\": 214},           {\"label\": \"21 березня\", \"value\": 214},           {\"label\": \"22 березня\", \"value\": 214}         ]       },       {         \"name\": \"Пшениця (USD/т)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 210},           {\"label\": \"17 березня\", \"value\": 212},           {\"label\": \"18 березня\", \"value\": 213},           {\"label\": \"19 березня\", \"value\": 215},           {\"label\": \"20 березня\", \"value\": 215},           {\"label\": \"21 березня\", \"value\": 215},           {\"label\": \"22 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соя (USD/т)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 440},           {\"label\": \"17 березня\", \"value\": 445},           {\"label\": \"18 березня\", \"value\": 446},           {\"label\": \"19 березня\", \"value\": 447},           {\"label\": \"20 березня\", \"value\": 447},           {\"label\": \"21 березня\", \"value\": 447},           {\"label\":",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних України залишається стабільною, проте зберігаються ризики через військові атаки на портову інфраструктуру. За останній тиждень відзначається збільшення кількості повідомлень про події, пов’язані з логістикою та експортом, зокрема пошкодження зернового бункера та суден у порту Одеси внаслідок російських ударів. Порівняно з попереднім тижнем, активність інформаційного потоку зросла, але цінові показники залишаються стабільними. Ціни на основні культури (кукурудза, пшениця, соняшник, соя) на експортних терміналах Одеси та переробних майданчиках не зазнали значних змін, що свідчить про баланс попиту та пропозиції. Водночас триває робота над розвитком альтернативної річкової логістики на Дунаї, що може знизити залежність від морських портів і зменшити логістичні ризики. Для трейдерів важливо враховувати потенційні перебої в морській логістиці та орієнтуватися на річкові маршрути, а також моніторити цінові пропозиції на біржах, де спостерігається тісний коридор між бідом і офером за ячмінь і пшеницю. Військові дії та їхній вплив на інфраструктуру залишаються ключовими факторами ризику для експорту зерна в найближчій перспективі.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Ціни на основні культури, 16-22 березня 2026\",     \"points\": [       {\"label\": \"16 березня\", \"value\": 0},       {\"label\": \"17 березня\", \"value\": 0},       {\"label\": \"18 березня\", \"value\": 0},       {\"label\": \"19 березня\", \"value\": 0},       {\"label\": \"20 березня\", \"value\": 0},       {\"label\": \"21 березня\", \"value\": 0},       {\"label\": \"22 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 214},           {\"label\": \"17 березня\", \"value\": 214},           {\"label\": \"18 березня\", \"value\": 214},           {\"label\": \"19 березня\", \"value\": 214},           {\"label\": \"20 березня\", \"value\": 214},           {\"label\": \"21 березня\", \"value\": 214},           {\"label\": \"22 березня\", \"value\": 214}         ]       },       {         \"name\": \"Пшениця CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 215},           {\"label\": \"17 березня\", \"value\": 215},           {\"label\": \"18 березня\", \"value\": 215},           {\"label\": \"19 березня\", \"value\": 215},           {\"label\": \"20 березня\", \"value\": 215},           {\"label\": \"21 березня\", \"value\": 215},           {\"label\": \"22 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса (переробка)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 708},           {\"label\": \"17 березня\", \"value\": 708},",
     "chart": null,
     "inputCounts": {
       "last30days": 20,
