@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-26T14:06:54.171484+00:00",
+  "generatedAt": "2026-03-26T15:17:32.104338+00:00",
   "filters": {
     "days": 30
   },
@@ -9,26 +9,91 @@
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Over the past 30 days, global grain and oilseed markets have remained largely neutral with no significant bullish or bearish shifts. Market dynamics show mixed signals, with corn futures reaching their highest levels since last June, yet cash markets remain stagnant. Wheat markets are influenced by steady demand from the EU and Argentina, while Indian export activity adds complexity. Energy volatility and fertilizer supply disruptions continue to inject uncertainty into wheat, corn, and oilseed pricing. What changed vs previous comparable period: Compared to the prior 30-day window, there has been a notable increase in market commentary and reports (10 vs 1), though the overall market impact remains neutral. The rise in grain export inspections and infrastructure improvements in India mark subtle shifts in trade flows and quality control. Actionable implications for trading/brokerage: Traders should monitor corn futures for potential volatility given recent highs, while remaining cautious on cash market stagnation. The interplay of input costs and export demand, especially from India and South America, suggests opportunities in wheat and oilseeds but with limited immediate price momentum. Continued attention to energy and fertilizer market developments is advised as they may affect crop production costs and supply. Key facts: • 10 neutral-impact global reports from Feb 25 to Mar 26, up from 1 in prior month • Corn futures hit highest since June 2025 by Mar 20, but cash markets stagnant • Indian export activity and EU/Argentina wheat purchases noted without US market weakness • Rising grain export inspections reported on Mar 25, indicating trade flow vigilance • Energy volatility and fertilizer disruptions highlighted on Mar 12 as key market drivers • New commodity testing lab launched in Gandhidham, India on Mar 10, enhancing quality control",
+    "text": "General situation: Over the past 30 days, global grain and oilseed markets have exhibited a broadly neutral tone with no significant bullish or bearish shifts. Corn futures reached their highest levels since last June, yet world cash markets remain largely stagnant. Wheat markets showed resilience despite recent EU and Argentine purchases, while protein meals continued to rally, defying bearish expectations. Energy volatility and fertilizer supply disruptions have contributed to ongoing uncertainty, particularly impacting wheat, corn, and oilseed sectors. What changed vs previous comparable period: Compared to the prior month, market dynamics have remained stable with no notable change in sentiment or impact. However, the volume of market commentary and analysis increased markedly, reflecting heightened attention to trade infrastructure improvements in India and global export inspection trends. Actionable implications for trading/brokerage: Traders should monitor corn futures for potential volatility given recent highs, while remaining cautious on cash market stagnation. Wheat demand from India and EU purchases may support prices, but input cost pressures could cap upside. Protein meal strength suggests opportunities in that segment, though energy and fertilizer risks warrant close observation. \n\nKey facts:\n- Corn futures peaked at highest since June 2025 as of March 20, 2026.\n- Indian export demand and EU/Argentine wheat purchases noted around March 20, 2026.\n- TIC Quality Control launched advanced commodity testing lab in Gandhidham, India on March 10, 2026.\n- Energy price swings and Hormuz Strait risks cited on March 12, 2026, influencing grain market uncertainty.\n- Rapeseed prices and demand declined recently, impacting oilseed sector.\n- Global grain export inspections rising in 2026, signaling evolving trade flows as of March 25, 2026.",
     "chart": {
-      "type": "bars",
-      "title": "Global Grain & Oilseed Report Count by Week (Feb 25 - Mar 26, 2026)",
+      "type": "price_overlay_month",
+      "title": "Grain & Oilseed Price Trends (Feb 25 - Mar 26, 2026)",
       "points": [
         {
-          "label": "W1 (Feb 25-Mar 3)",
+          "label": "W1",
           "value": 1
         },
         {
-          "label": "W2 (Mar 4-Mar 10)",
+          "label": "W2",
           "value": 2
         },
         {
-          "label": "W3 (Mar 11-Mar 17)",
+          "label": "W3",
           "value": 3
         },
         {
-          "label": "W4 (Mar 18-Mar 26)",
+          "label": "W4",
           "value": 4
+        }
+      ],
+      "series": [
+        {
+          "name": "Corn FOB Santos (BR)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 110
+            },
+            {
+              "label": "W2",
+              "value": 111
+            },
+            {
+              "label": "W3",
+              "value": 112.7
+            },
+            {
+              "label": "W4",
+              "value": 112.7
+            }
+          ]
+        },
+        {
+          "name": "Soybeans Brazil",
+          "points": [
+            {
+              "label": "W1",
+              "value": 660
+            },
+            {
+              "label": "W2",
+              "value": 661
+            },
+            {
+              "label": "W3",
+              "value": 662.9
+            },
+            {
+              "label": "W4",
+              "value": 662.9
+            }
+          ]
+        },
+        {
+          "name": "Wheat Brazil",
+          "points": [
+            {
+              "label": "W1",
+              "value": 660
+            },
+            {
+              "label": "W2",
+              "value": 661
+            },
+            {
+              "label": "W3",
+              "value": 662.9
+            },
+            {
+              "label": "W4",
+              "value": 662.9
+            }
+          ]
         }
       ]
     },
@@ -41,29 +106,8 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів характеризується стабільністю з нейтральними сигналами та відсутністю суттєвих цінових коливань. Загальна площа посівів у 2026 році трохи зменшилася до 21,2 млн га порівняно з 21,6 млн га минулого року, зокрема площа кукурудзи знизилася з 4,5 до 4,4 млн га, а площа пшениці навпаки зросла з 5,0 до 5,3 млн га. Ці зміни свідчать про переорієнтацію посівних площ у бік пшениці. Ціни на ключові культури в портах Одеси залишаються стабільними: кукурудза – 214, соя – 447, соняшник – 708, пшениця – 215 грн/т. Відсутність суттєвих новин з логістики та експорту, а також нейтральний інформаційний фон, свідчать про збереження поточного балансу попиту та пропозиції. Порівняно з попереднім місяцем, коли даних не було, активність інформаційного потоку зросла, але без впливу на ринок. \n\nЩо змінилося: за останній місяць з'явилися перші оцінки посівних площ 2026 року, що демонструють незначне зниження загальної площі та зміщення у бік пшениці. Інформаційний фон став більш насиченим, але без зміни трендів чи цінових сигналів. \n\nІмплікації для торгівлі: з огляду на стабільність цін і нейтральний інформаційний фон, рекомендується утримуватися від активних спекулятивних позицій, зосередившись на довгостроковому моніторингу посівних площ та логістичних маршрутів, особливо розвитку портів на Дунаї, які можуть стати альтернативою Чорноморському зерновому коридору. \n\nКлючові факти:\n- Площа посівів зернових та олійних у 2026 році оцінена в 21,2 млн га проти 21,6 млн га у 2025 році (05.03.2026).\n- Площа кукурудзи зменшилася до 4,4 млн га з 4,5 млн га минулого року.\n- Площа пшениці зросла до 5,3 млн га з 5,0 млн га.\n- Ціна соняшника на переробку в Одесі – 708 грн/т (25.03.2026).\n- Ціна кукурудзи на експорт в Одесі – 214 грн/т (25.03.2026).\n- Ціна сої на експорт в Одесі – 447 грн/т (25.03.2026).\n- В інформаційному потоці за 30 днів – 6 нейтральних повідомлень, без бичачих чи ведмежих сигналів.",
-    "chart": {
-      "type": "bars",
-      "title": "Активність інформаційного потоку за 4 тижні",
-      "points": [
-        {
-          "label": "Тиждень 1",
-          "value": 1
-        },
-        {
-          "label": "Тиждень 2",
-          "value": 0
-        },
-        {
-          "label": "Тиждень 3",
-          "value": 2
-        },
-        {
-          "label": "Тиждень 4",
-          "value": 3
-        }
-      ]
-    },
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів характеризується стабільністю цін та збереженням логістичних викликів, зокрема у портовій інфраструктурі та зерновому коридорі. Площа посівів у 2026 році дещо зменшилася до 21,2 млн га проти 21,6 млн га минулого року, зокрема кукурудзи – 4,4 млн га (4,5 млн га рік тому), але площа пшениці зросла до 5,3 млн га з 5,0 млн га. Ціни на соняшникову олію залишаються на рівні близько 708 грн/т, що свідчить про відносну стабільність попиту та пропозиції. Логістика через Дунай та альтернативні маршрути поступово розвиваються, але блокада Чорного моря та обмежена пропускна спроможність Босфору продовжують стримувати експорт. Порти Одеського регіону утримують ціни на кукурудзу та пшеницю близько 214-215 грн/т, а соя торгується на рівні 447 грн/т. Порівняно з попереднім періодом, кількість інформаційних сигналів зросла, але ринкові умови залишаються без суттєвих змін. Відсутність суттєвих цінових коливань свідчить про баланс між пропозицією та попитом на фоні геополітичних ризиків та логістичних обмежень.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Динаміка цін на ключові культури в Україні, 4 тижні\",     \"points\": [       {\"label\": \"W1\", \"value\": 0},       {\"label\": \"W2\", \"value\": 0},       {\"label\": \"W3\", \"value\": 0},       {\"label\": \"W4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 213},           {\"label\": \"W4\", \"value\": 214}         ]       },       {         \"name\": \"Пшениця CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 213},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Соняшникова олія CPT Паритет Одеса (переробка)\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 707},           {\"label\": \"W4\", \"value\": 708}         ]       },       {         \"name\": \"Соя CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 446},           {\"label\": \"W4\", \"value\": 447}         ]       }     ]   },   \"key_facts\": [     \"Площа посівів зернових та олійних у 2026 році оцінена в 21,2 млн га проти 21,6 млн га у 2025 році.\",     \"",
+    "chart": null,
     "inputCounts": {
       "last30days": 24,
       "monitor": 5

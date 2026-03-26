@@ -458,6 +458,32 @@ def summary_too_generic(text):
     marker_hits = sum(1 for marker in generic_markers if marker in plain)
     return (not has_numbers) or marker_hits >= 2
 
+def cleanup_summary_text(text: str, language: str) -> str:
+    raw = (text or "").strip()
+    if not raw:
+        return raw
+    banned_patterns = [
+        r"\bneutral-impact report[s]?\b",
+        r"\bnumber of (market )?reports\b",
+        r"\bcount of (news|reports|signals)\b",
+        r"\bкількість (інформаційних )?повідомлень\b",
+        r"\bнейтральн(их|і) повідомлень\b",
+        r"\baverage impact\b",
+        r"\bсередній вплив\b",
+    ]
+    chunks = re.split(r"(?<=[\.\!\?])\s+", raw.replace("\n", " ").strip())
+    kept = []
+    for sentence in chunks:
+        low = sentence.lower()
+        if any(re.search(pattern, low) for pattern in banned_patterns):
+            continue
+        kept.append(sentence.strip())
+    cleaned = " ".join([s for s in kept if s])
+    cleaned = cleaned.replace("Key facts:", "\n\nKey facts:\n").replace("Ключові факти:", "\n\nКлючові факти:\n")
+    cleaned = re.sub(r"\s+[•\-]\s+", "\n- ", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    return cleaned or raw
+
 def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, days):
     system_prompt = (
         "You are a senior grains & oilseeds analyst. Write in Ukrainian."
@@ -465,11 +491,11 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
         else "You are a senior grains & oilseeds analyst. Write in English."
     )
     chart_hint = (
-        "For Yesterday: output 3-5 category bars (for example: logistics pressure, demand pulse, price pressure, execution risk). No line chart."
+        "For Yesterday: output chart.type='event_mix' with 3-5 bars by drivers (logistics, demand, pricing, execution risk)."
         if days == 1
-        else "For Week: output exactly 7 points day-by-day from window start to window end."
+        else "For Week: output chart.type='price_overlay_week' and include chart.series with 2-4 commodity price lines across 7 points."
         if days == 7
-        else "For 30 Days: output exactly 4 weekly buckets (W1..W4)."
+        else "For 30 Days: output chart.type='price_overlay_month' and include chart.series with 2-4 commodity price lines across 4 weekly points (W1..W4)."
     )
     user_prompt = "\n".join(
         [
@@ -501,9 +527,11 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             "4) Build period-specific logic strictly: yesterday => yesterday events + vs previous day; week => week dynamics + vs previous week; month => 30d regime + vs previous month if available, else early-vs-late month.",
             "5) If Spike weekly note exists (especially for UK and week/month), integrate 1-2 concrete operational insights from it.",
             "6) Keep total summary length 900-1400 characters.",
+            "7) Forbidden: mention counts of reports/signals/messages, phrases like 'neutral-impact reports', or repeated restatement of the same fact.",
+            "8) Prefer concrete market outcomes: prices, logistics constraints, margin pressure, spread behavior, export route changes.",
             "",
             "Return STRICT JSON with this schema:",
-            '{ "summary": "text", "chart": { "type": "bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ] } }',
+            '{ "summary": "text", "chart": { "type": "event_mix|price_overlay_week|price_overlay_month|bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ], "series": [ {"name":"...", "points":[{"label":"...","value":number}]} ] } }',
             f"Chart rule: {chart_hint}",
         ]
     )
@@ -522,7 +550,9 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
         )
         retried = _call_openai_once(system_prompt, retry_prompt)
         if str(retried.get("summary") or "").strip():
+            retried["summary"] = cleanup_summary_text(str(retried.get("summary") or ""), language)
             return retried
+    parsed["summary"] = cleanup_summary_text(str(parsed.get("summary") or ""), language)
     return parsed
 
 
@@ -614,6 +644,28 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
     out_path = OUT_DIR / f"ai-summary-{days}.json"
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    if window_name == "yesterday":
+        entry_date = max(
+            [parse_iso_date(row.get("date", "")) for row in items if parse_iso_date(row.get("date", ""))] or [datetime.now(timezone.utc).date()]
+        ).isoformat()
+        history_path = OUT_DIR / "ai-daily-history.json"
+        history = read_json(history_path) or {"generatedAt": None, "items": []}
+        existing = [row for row in history.get("items", []) if isinstance(row, dict) and row.get("date") != entry_date]
+        existing.append(
+            {
+                "date": entry_date,
+                "generatedAt": payload["generatedAt"],
+                "en": payload.get("en", {}).get("text") if payload.get("en") else "",
+                "uk": payload.get("uk", {}).get("text") if payload.get("uk") else "",
+                "sourceUpdatedAt": payload.get("sourceUpdatedAt"),
+            }
+        )
+        existing.sort(key=lambda row: str(row.get("date") or ""))
+        history["generatedAt"] = payload["generatedAt"]
+        history["items"] = existing[-45:]
+        with history_path.open("w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
     return True, str(out_path)
 
 

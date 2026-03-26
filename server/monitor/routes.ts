@@ -663,6 +663,17 @@ async function readCachedAiSummary(days: number): Promise<any | null> {
   }
 }
 
+async function readAiDailyHistory(): Promise<any | null> {
+  const dir = process.env.LAST30DAYS_OUTPUT_DIR || path.resolve(process.cwd(), "artifacts/last30days");
+  const file = path.join(dir, "ai-daily-history.json");
+  try {
+    const content = await readFile(file, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
 async function writeCachedAiSummary(days: number, payload: any): Promise<void> {
   const dir = process.env.LAST30DAYS_OUTPUT_DIR || path.resolve(process.cwd(), "artifacts/last30days");
   const file = path.join(dir, `ai-summary-${days}.json`);
@@ -680,6 +691,22 @@ function sanitizeAiWarnings(warnings: string[] | undefined, hasContent: boolean)
     return ["ai_summary_refresh_pending: showing fallback summary"];
   }
   return list;
+}
+
+function aiWindowReadiness(historyPayload: any): { historyDays: number; windowsReady: { week: boolean; month: boolean } } {
+  const items = Array.isArray(historyPayload?.items) ? historyPayload.items : [];
+  const uniqueDays = new Set(
+    items
+      .map((row: any) => String(row?.date || "").slice(0, 10))
+      .filter((d: string) => Boolean(d)),
+  ).size;
+  return {
+    historyDays: uniqueDays,
+    windowsReady: {
+      week: uniqueDays >= 7,
+      month: uniqueDays >= 30,
+    },
+  };
 }
 
 export function registerMonitorRoutes(app: Express): void {
@@ -824,12 +851,15 @@ export function registerMonitorRoutes(app: Express): void {
 
       if (!refresh) {
         const cached = await readCachedAiSummary(days);
+        const history = await readAiDailyHistory();
+        const readiness = aiWindowReadiness(history);
         if (cached) {
           const hasContent = hasAiText(cached?.en) || hasAiText(cached?.uk);
           return res.json({
             ...cached,
             warnings: sanitizeAiWarnings(cached?.warnings, hasContent),
             mode: hasContent ? (cached.mode || "precomputed") : "fallback_only",
+            ...readiness,
           });
         }
         return res.json({
@@ -840,6 +870,7 @@ export function registerMonitorRoutes(app: Express): void {
           en: null,
           uk: null,
           mode: "fallback_only",
+          ...readiness,
         });
       }
 
@@ -891,12 +922,14 @@ export function registerMonitorRoutes(app: Express): void {
         uk,
         mode: hasContent ? "live_refresh" : "fallback_only",
       };
+      const history = await readAiDailyHistory();
+      const readiness = aiWindowReadiness(history);
       if (hasContent) {
         await writeCachedAiSummary(days, payload).catch((error: any) => {
           warnings.push(`cache_write_failed: ${String(error?.message || error)}`);
         });
       }
-      return res.json(payload);
+      return res.json({ ...payload, ...readiness });
     } catch (error: any) {
       return res.status(500).json({
         generatedAt: new Date().toISOString(),

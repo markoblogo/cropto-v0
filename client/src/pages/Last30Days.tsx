@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronDown, ChevronRight, Copy, Download, Printer } from "lucide-react";
 
@@ -37,9 +37,10 @@ type Last30DaysAiSummaryBlock = {
   model: string;
   text: string;
   chart?: {
-    type?: "bars" | "line" | "weekly_bars";
+    type?: "bars" | "line" | "weekly_bars" | "event_mix" | "price_overlay_week" | "price_overlay_month";
     title?: string;
     points?: Array<{ label: string; value: number }>;
+    series?: Array<{ name: string; points: Array<{ label: string; value: number }> }>;
   } | null;
   inputCounts: {
     last30days: number;
@@ -54,6 +55,11 @@ type Last30DaysAiResponse = {
   warnings?: string[];
   en: Last30DaysAiSummaryBlock | null;
   uk: Last30DaysAiSummaryBlock | null;
+  historyDays?: number;
+  windowsReady?: {
+    week?: boolean;
+    month?: boolean;
+  };
 };
 
 const TIMEFRAME_OPTIONS = [
@@ -200,10 +206,60 @@ function AIPeriodChart({
   chart,
   fallbackValues,
 }: {
-  chart?: { type?: "bars" | "line" | "weekly_bars"; title?: string; points?: Array<{ label: string; value: number }> } | null;
+  chart?:
+    | {
+        type?: "bars" | "line" | "weekly_bars" | "event_mix" | "price_overlay_week" | "price_overlay_month";
+        title?: string;
+        points?: Array<{ label: string; value: number }>;
+        series?: Array<{ name: string; points: Array<{ label: string; value: number }> }>;
+      }
+    | null;
   fallbackValues: number[];
 }) {
   const points = Array.isArray(chart?.points) ? chart!.points!.filter((p) => Number.isFinite(p?.value)) : [];
+  const series = Array.isArray(chart?.series)
+    ? chart.series
+        .map((s) => ({
+          name: String(s?.name || "Series"),
+          points: Array.isArray(s?.points) ? s.points.filter((p) => Number.isFinite(p?.value)) : [],
+        }))
+        .filter((s) => s.points.length >= 2)
+    : [];
+
+  if (series.length) {
+    const width = 240;
+    const height = 110;
+    const flatValues = series.flatMap((s) => s.points.map((p) => Number(p.value || 0)));
+    const max = Math.max(...flatValues, 1);
+    const min = Math.min(...flatValues, 0);
+    const range = Math.max(max - min, 1);
+    return (
+      <div className="space-y-2">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-28 w-full">
+          {series.slice(0, 4).map((s, idx) => {
+            const color = PIE_COLORS[idx % PIE_COLORS.length];
+            const poly = s.points
+              .map((p, i) => {
+                const x = (i / Math.max(s.points.length - 1, 1)) * width;
+                const y = height - ((Number(p.value || 0) - min) / range) * (height - 8) - 4;
+                return `${x},${y}`;
+              })
+              .join(" ");
+            return <polyline key={s.name} fill="none" stroke={color} strokeWidth="2.1" points={poly} />;
+          })}
+        </svg>
+        <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
+          {series.slice(0, 4).map((s, idx) => (
+            <span key={s.name} className="inline-flex items-center gap-1 rounded border border-slate-700 px-1.5 py-0.5">
+              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+              {s.name}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!points.length) {
     return <TrendSparkline values={fallbackValues} />;
   }
@@ -336,6 +392,18 @@ function makeAnalyticSummary(items: Last30DaysRecord[], periodLabel: string, lan
   ].join("\n");
 }
 
+function normalizeSummaryText(text: string): string {
+  const raw = String(text || "").trim();
+  if (!raw) return raw;
+  const withBreaks = raw
+    .replace(/\s+(General situation:|Загальна ситуація:)/gi, "\n$1")
+    .replace(/\s+(What changed[^:]*:|Що змінилося[^:]*:)/gi, "\n\n$1")
+    .replace(/\s+(Actionable implications[^:]*:|Практичні наслідки[^:]*:|Торгівельні та брокерські рекомендації:|Імплікації для торгівлі:)/gi, "\n\n$1")
+    .replace(/\s+(Key facts:|Ключові факти:)/gi, "\n\n$1")
+    .replace(/\s+[•\-]\s+/g, "\n- ");
+  return withBreaks.replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function downloadText(filename: string, text: string) {
   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const href = URL.createObjectURL(blob);
@@ -369,26 +437,22 @@ function SummaryCard({
   trend,
   aiChart,
   filename,
-  summaryMode,
 }: {
   title: string;
   summary: string;
   trend: number[];
   aiChart?: {
-    type?: "bars" | "line" | "weekly_bars";
+    type?: "bars" | "line" | "weekly_bars" | "event_mix" | "price_overlay_week" | "price_overlay_month";
     title?: string;
     points?: Array<{ label: string; value: number }>;
+    series?: Array<{ name: string; points: Array<{ label: string; value: number }> }>;
   } | null;
   filename: string;
-  summaryMode: string;
 }) {
   return (
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.12em] text-slate-400">{summaryMode}</p>
-        </div>
+        <h3 className="text-sm font-semibold">{title}</h3>
         <div className="flex items-center gap-2">
           <button onClick={() => navigator.clipboard.writeText(summary)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 hover:border-cyan-400">
             <Copy className="mr-1 inline h-3 w-3" />Copy
@@ -441,6 +505,17 @@ export default function Last30DaysPage() {
     refetchOnWindowFocus: true,
   });
 
+  const capabilityQuery = useQuery({
+    queryKey: ["/api/last30days/ai-summary", "capabilities"],
+    queryFn: async () => {
+      const response = await fetch("/api/last30days/ai-summary?days=1");
+      if (!response.ok) throw new Error("Failed to load last30days capabilities");
+      return (await response.json()) as Last30DaysAiResponse;
+    },
+    staleTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+
   const aiSummaryQuery = useQuery({
     queryKey: ["/api/last30days/ai-summary", days],
     queryFn: async () => {
@@ -471,10 +546,8 @@ export default function Last30DaysPage() {
   const ukSummaryFallback = useMemo(() => makeAnalyticSummary(ukItems, periodLabel, "UK"), [ukItems, periodLabel]);
   const enAi = aiSummaryQuery.data?.en?.text?.trim() || "";
   const ukAi = aiSummaryQuery.data?.uk?.text?.trim() || "";
-  const enSummary = enAi || enSummaryFallback;
-  const ukSummary = ukAi || ukSummaryFallback;
-  const enMode = enAi ? `AI (${aiSummaryQuery.data?.en?.model || "model"})` : "Fallback (rule-based)";
-  const ukMode = ukAi ? `AI (${aiSummaryQuery.data?.uk?.model || "model"})` : "Fallback (rule-based)";
+  const enSummary = normalizeSummaryText(enAi || enSummaryFallback);
+  const ukSummary = normalizeSummaryText(ukAi || ukSummaryFallback);
 
   const enTrend = useMemo(() => buildDailyTrend(enItems, days), [enItems, days]);
   const ukTrend = useMemo(() => buildDailyTrend(ukItems, days), [ukItems, days]);
@@ -508,6 +581,23 @@ export default function Last30DaysPage() {
       }),
     [activeItems, feedRegion, feedLang, feedCommodity, feedSource, feedSearch],
   );
+
+  const timeframeOptions = useMemo(
+    () =>
+      TIMEFRAME_OPTIONS.filter(
+        (option) =>
+          option.value === 1 ||
+          (option.value === 7 && Boolean(capabilityQuery.data?.windowsReady?.week)) ||
+          (option.value === 30 && Boolean(capabilityQuery.data?.windowsReady?.month)),
+      ),
+    [capabilityQuery.data],
+  );
+
+  useEffect(() => {
+    if (!timeframeOptions.some((option) => option.value === days)) {
+      setDays(1);
+    }
+  }, [days, timeframeOptions]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -548,7 +638,7 @@ export default function Last30DaysPage() {
               </p>
 
               <div className="mt-6 flex max-w-[620px] items-center gap-6">
-                {TIMEFRAME_OPTIONS.map((option) => (
+                {timeframeOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setDays(option.value)}
@@ -596,7 +686,6 @@ export default function Last30DaysPage() {
             trend={enTrend}
             aiChart={aiSummaryQuery.data?.en?.chart}
             filename={`summary-en-${days}d.txt`}
-            summaryMode={enMode}
           />
           <SummaryCard
             title={`Summary UK - ${periodLabel}`}
@@ -604,7 +693,6 @@ export default function Last30DaysPage() {
             trend={ukTrend}
             aiChart={aiSummaryQuery.data?.uk?.chart}
             filename={`summary-uk-${days}d.txt`}
-            summaryMode={ukMode}
           />
         </section>
 
