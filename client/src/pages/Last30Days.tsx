@@ -207,6 +207,8 @@ type SummarySection = {
   body: string[];
 };
 
+type SummarySectionKind = "general" | "change" | "action" | "facts" | "other";
+
 type PriceQuote = {
   commodity: string;
   value: number;
@@ -258,6 +260,49 @@ function splitSummaryIntoSections(text: string): SummarySection[] {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
   if (!normalized) return [];
+
+  const isUk = /[іїєґІЇЄҐ]/.test(normalized) || /[а-яА-Я]/.test(normalized);
+  const sectionLabels: Record<Exclude<SummarySectionKind, "other">, string> = isUk
+    ? {
+        general: "Загальна ситуація",
+        change: "Що змінилося",
+        action: "Практичні наслідки для трейдингу та брокерських операцій",
+        facts: "Ключові факти",
+      }
+    : {
+        general: "General situation",
+        change: "What changed vs previous comparable period",
+        action: "Actionable implications for trading/brokerage",
+        facts: "Key facts",
+      };
+
+  const classifyBlock = (value: string): SummarySectionKind => {
+    const low = value.toLowerCase();
+    if (
+      /^(general situation:|загальна ситуація:)/i.test(value) ||
+      /ринку|market/.test(low)
+    ) {
+      if (!/key facts|ключові факти|actionable implications|практичні наслідки|що змінилося|what changed/i.test(low)) {
+        return "general";
+      }
+    }
+    if (
+      /^(what changed vs previous comparable period:|що змінилося:?|що змінилося у порівнянні)/i.test(value) ||
+      /compared to|порівняно з/.test(low)
+    ) {
+      return "change";
+    }
+    if (
+      /^(actionable implications for trading\/brokerage:|практичні наслідки для трейдингу та брокерських операцій:|торгівельні та брокерські рекомендації:|імплікації для торгівлі:)/i.test(value) ||
+      /traders should|для трейдерів|рекомендується/.test(low)
+    ) {
+      return "action";
+    }
+    if (/^(key facts:|ключові факти:)/i.test(value) || /(^|\n)- /.test(value) || /\n• /.test(value)) {
+      return "facts";
+    }
+    return "other";
+  };
 
   const headingPatterns = [
     "General situation:",
@@ -313,6 +358,64 @@ function splitSummaryIntoSections(text: string): SummarySection[] {
     } else {
       current.body.push(block);
     }
+  }
+
+  const hasCanonicalHeadings = sections.some((section) =>
+    /^(General situation|What changed|Actionable implications|Key facts|Загальна ситуація|Що змінилося|Практичні наслідки|Торгівельні та брокерські рекомендації|Імплікації для торгівлі|Ключові факти)/i.test(
+      section.heading,
+    ),
+  );
+
+  if (hasCanonicalHeadings) {
+    return sections;
+  }
+
+  const canonicalBuckets: Record<SummarySectionKind, string[]> = {
+    general: [],
+    change: [],
+    action: [],
+    facts: [],
+    other: [],
+  };
+
+  for (const block of blocks) {
+    canonicalBuckets[classifyBlock(block)].push(block);
+  }
+
+  if (canonicalBuckets.general.length === 0 && blocks[0]) {
+    canonicalBuckets.general.push(blocks[0]);
+  }
+  if (canonicalBuckets.action.length === 0 && blocks.length > 1) {
+    const actionCandidate = blocks.find((block, index) => index > 0 && classifyBlock(block) === "other");
+    if (actionCandidate) canonicalBuckets.action.push(actionCandidate);
+  }
+  if (canonicalBuckets.change.length === 0) {
+    const changeCandidate = blocks.find((block) => /compared to|порівняно з|зміни|changed/i.test(block));
+    if (changeCandidate) canonicalBuckets.change.push(changeCandidate);
+  }
+  if (canonicalBuckets.facts.length === 0) {
+    const factCandidates = blocks.filter((block) => /(\d{4}-\d{2}-\d{2}|\d+\s?(usd|eur|uah|грн))/i.test(block));
+    if (factCandidates.length) {
+      canonicalBuckets.facts.push(...factCandidates.slice(-2));
+    }
+  }
+
+  const ordered: SummarySection[] = [];
+  (["general", "change", "action", "facts"] as const).forEach((kind) => {
+    const body = canonicalBuckets[kind]
+      .map((entry) =>
+        entry
+          .replace(/^(General situation:|What changed vs previous comparable period:|Actionable implications for trading\/brokerage:|Key facts:|Загальна ситуація:|Що змінилося:?|Що змінилося у порівнянні з попереднім тижнем:|Практичні наслідки для трейдингу та брокерських операцій:|Торгівельні та брокерські рекомендації:|Імплікації для торгівлі:|Ключові факти:)\s*/i, "")
+          .trim(),
+      )
+      .filter(Boolean);
+    if (body.length) {
+      ordered.push({ heading: sectionLabels[kind], body });
+    }
+  });
+
+  if (ordered.length) {
+    return ordered;
   }
 
   return sections;
