@@ -1,11 +1,12 @@
 # grain and oilseeds market wheat corn soybeans sunflower rapeseed black sea export logistics - Last 30 Days Research Report
 
-**Generated:** 2026-03-26T09:25:47.316960+00:00
+**Generated:** 2026-03-26T09:42:31.202847+00:00
 **Date Range:** 2026-02-24 to 2026-03-26
 **Mode:** reddit-web
 
 ## Models Used
 
+- **OpenAI:** gpt-5.4-mini
 
 ## Web Results
 
@@ -19,27 +20,47 @@
 
 > 
 
-### W9: Black Sea Grain Market Insight – Mid-April 2025
+### W15: AgroPortal Bulgaria | LinkedIn
 
-- **Source:** grainsprices.com
-- **URL:** https://grainsprices.com/article/18881
+- **Source:** linkedin.com
+- **URL:** https://www.linkedin.com/company/agroportal-bulgaria
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W12: Black Sea Grain | Eagmark Agri-Hub
+### W5: Andreea Grosu - Execution Officer at Grain Resources Black Sea SRL | LinkedIn
 
-- **Source:** eagmark.net
-- **URL:** https://eagmark.net/events/wYvioM6lzmOgFGndEqrG?srsltid=AfmBOoqYTtc9Ua8eXzt_-cig_b7JTJNsU2hjz05eI38ck17dx23lgFpJ
+- **Source:** linkedin.com
+- **URL:** https://www.linkedin.com/in/andreea-grosu-16989a55
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W6: Black Sea Oilseed Markets 2026: Tight Balances, Weather Risks ...
+### W6: BLACK SEA GRAIN.KYIV-2026 -
+
+- **Source:** uga.ua
+- **URL:** https://uga.ua/en/calendar/black-sea-grain-kyiv-2026-3/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: Black Sea Cereal Company | LinkedIn
+
+- **Source:** linkedin.com
+- **URL:** https://www.linkedin.com/company/black-sea-cereal-company
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W14: Black Sea Oilseed Markets 2026: Tight Balances, Weather Risks ...
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/en/news/black-sea-oilseed-markets-2026-tight-balances-weather-risks-and-strategic-repricing/
@@ -49,10 +70,10 @@
 
 > 
 
-### W8: Black Sea may hold back world wheat supplies into 2026 - Reuters
+### W11: Black Sea Regional Analysis - World Perspectives
 
-- **Source:** reuters.com
-- **URL:** https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/
+- **Source:** worldperspectives.com
+- **URL:** https://worldperspectives.com/articles/black-sea-regional-analysis-03252026
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -69,57 +90,37 @@
 
 > 
 
-### W14: FACTBOX: Black Sea grains trade sees shift amid potential Russia-Ukraine peace deal | S&P Global
+### W9: GLOBAL TRADE WAR TO BOOST EXPORTS FROM BLACK SEA REGION | Miller Magazine
 
-- **Source:** spglobal.com
-- **URL:** https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/031925-factbox-black-sea-grains-trade-sees-shift-amid-potential-russia-ukraine-peace-deal
+- **Source:** millermagazine.com
+- **URL:** https://millermagazine.com/blog/global-trade-war-to-boost-exports-from-black-sea-region-2872
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W7: Global Grain Market: Daily Recap 23.03.2026
-
-- **Source:** grainsprices.com
-- **URL:** https://grainsprices.com/article/19552
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W11: Iran in 2026: Why grain suppliers will be reshuffled and where Black ...
+### W13: Global grain trends and transformations discussed at Black Sea ...
 
 - **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/en/news/iran-in-2026-why-grain-suppliers-will-be-reshuffled-and-where-black-sea/
+- **URL:** https://ukragroconsult.com/en/news/global-grain-trends-and-transformations-discussed-at-black-sea-grain-conference/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W13: Sunflower markets steady as SAFEX firms and Black Sea prices hold
+### W10: MarGen Group    MA-Management SA | LinkedIn
 
-- **Source:** commodity-board.com
-- **URL:** https://commodity-board.com/sunflower-markets-steady-as-safex-firms-and-black-sea-prices-hold/
+- **Source:** linkedin.com
+- **URL:** https://www.linkedin.com/company/margen-ma-management-sa
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W5: Turkey Grain Market-2026: Trade Flows, Price Dynamics & Black Sea Competition
-
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/en/news/turkey-grain-market-2026-trade-flows-price-dynamics-black-sea-competition/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W4: Weekly Analysis 16.03.2026 - 20.03.2026 - Grains Prices
+### W7: Weekly Analysis 16.03.2026 - 20.03.2026 - Grains Prices
 
 - **Source:** grainsprices.com
 - **URL:** https://grainsprices.com/article/19550
@@ -129,7 +130,7 @@
 
 > 
 
-### W15: [PDF] Current state of the Black Sea grain and oilseed markets
+### W8: [PDF] Current state of the Black Sea grain and oilseed markets
 
 - **Source:** agmanager.info
 - **URL:** https://agmanager.info/sites/default/files/pdf/Broyaka_Ukraine_11-05-25.pdf
@@ -139,7 +140,7 @@
 
 > 
 
-### W10: [PDF] Grains and Oilseeds Outlook | USDA
+### W4: [PDF] Grains and Oilseeds Outlook | USDA
 
 - **Source:** usda.gov
 - **URL:** https://www.usda.gov/sites/default/files/documents/2026AOF-grains-oilseeds-outlook.pdf
