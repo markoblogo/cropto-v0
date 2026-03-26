@@ -185,17 +185,17 @@ function DistributionPanel({
   }
 
   return (
-    <div className="grid h-[246px] gap-4 md:grid-cols-[230px_1fr] md:items-center">
+    <div className="grid min-h-[260px] gap-6 md:grid-cols-[250px_1fr] md:items-center">
       <div className="flex justify-center">
-        <div className="relative h-52 w-52 rounded-full" style={{ background: conic }}>
-          <div className="absolute inset-7 rounded-full bg-slate-950/95" />
+        <div className="relative h-60 w-60 rounded-full" style={{ background: conic }}>
+          <div className="absolute inset-8 rounded-full bg-slate-950/95" />
         </div>
       </div>
-      <div className="max-h-[210px] space-y-2 overflow-y-auto pr-1">
+      <div className="max-h-[232px] space-y-3 overflow-y-auto pr-1">
         {trimmed.map(([label], idx) => (
-          <div key={label} className="flex items-center text-sm">
+          <div key={label} className="flex items-center text-base">
             <div className="flex items-center gap-2 text-slate-300">
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+              <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
               <span>{shortLegendLabel(mode, label)}</span>
             </div>
           </div>
@@ -423,8 +423,8 @@ export default function Last30DaysPage() {
         ) : null}
 
         <section className="mb-4 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)]">
-          <div className="grid items-start gap-8 lg:grid-cols-[1.18fr_0.82fr]">
-            <div>
+          <div className="grid items-start gap-10 lg:grid-cols-[1.02fr_0.98fr]">
+            <div className="pr-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">Cropto / Last30Days</p>
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Grain & Oilseeds Intelligence Desk</h1>
               <p className="mt-2 text-sm text-slate-300">Priority mode: synthesized analytics first, raw feed second.</p>
@@ -432,12 +432,12 @@ export default function Last30DaysPage() {
                 This panel is built for fast interpretation: tight period focus, visual distribution context, and narrative summary first.
               </p>
 
-              <div className="mt-5 flex max-w-[660px] items-center gap-5">
+              <div className="mt-6 flex max-w-[620px] items-center gap-6">
                 {TIMEFRAME_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setDays(option.value)}
-                    className={`w-[190px] rounded-full border px-3 py-2 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
+                    className={`w-[180px] rounded-full border px-3 py-2.5 text-xs font-semibold ${days === option.value ? "border-amber-300 bg-amber-300 text-slate-900" : "border-slate-700 bg-slate-900 text-slate-300"}`}
                   >
                     {option.label}
                   </button>
@@ -445,26 +445,31 @@ export default function Last30DaysPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800/70 bg-slate-900/55 p-4">
-              <h3 className="mb-2 text-sm font-semibold text-slate-100">
-                Distribution - {analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}
-              </h3>
-              <div className="grid gap-3 md:grid-cols-[118px_1fr] md:items-start">
-                <div className="grid gap-2">
-                {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setAnalyticsTab(tab)}
-                    className={`rounded-xl border px-2 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
-                  >
-                    {tab === "languages" ? "Language" : tab[0].toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
+            <div className="lg:border-l lg:border-slate-800/70 lg:pl-10">
+              <div className="grid gap-5 md:grid-cols-[126px_1fr] md:items-start">
+                <div>
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-slate-100">Distribution</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-100">
+                      {analyticsTab === "languages" ? "Language" : analyticsTab[0].toUpperCase() + analyticsTab.slice(1)}
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    {(["sources", "commodities", "regions", "languages"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setAnalyticsTab(tab)}
+                        className={`rounded-xl border px-2 py-1.5 text-xs font-semibold ${analyticsTab === tab ? "border-cyan-300 bg-cyan-300 text-slate-900" : "border-slate-700 bg-slate-950 text-slate-300"}`}
+                      >
+                        {tab === "languages" ? "Language" : tab[0].toUpperCase() + tab.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <DistributionPanel entries={infographicEntries} mode={analyticsTab} />
+                </div>
               </div>
-              <div className="pl-0 md:pl-1">
-                <DistributionPanel entries={infographicEntries} mode={analyticsTab} />
-              </div>
-            </div>
             </div>
           </div>
         </section>
