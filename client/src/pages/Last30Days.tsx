@@ -180,29 +180,27 @@ function DistributionPanel({
   }
   const conic = stops.length ? `conic-gradient(${stops.join(", ")})` : "conic-gradient(#1e293b 0 100%)";
 
+  if (trimmed.length === 0) {
+    return <div className="text-sm text-slate-400">No records for current scope.</div>;
+  }
+
   return (
-    <div className="h-[246px] rounded-2xl border border-slate-800/80 bg-slate-900/70 p-4">
-      {trimmed.length === 0 ? (
-        <div className="text-sm text-slate-400">No records for current scope.</div>
-      ) : (
-        <div className="grid h-full gap-4 md:grid-cols-[184px_1fr] md:items-center">
-          <div className="flex justify-center">
-            <div className="relative h-44 w-44 rounded-full" style={{ background: conic }}>
-              <div className="absolute inset-6 rounded-full bg-slate-950/95" />
+    <div className="grid h-[246px] gap-4 md:grid-cols-[230px_1fr] md:items-center">
+      <div className="flex justify-center">
+        <div className="relative h-52 w-52 rounded-full" style={{ background: conic }}>
+          <div className="absolute inset-7 rounded-full bg-slate-950/95" />
+        </div>
+      </div>
+      <div className="max-h-[210px] space-y-2 overflow-y-auto pr-1">
+        {trimmed.map(([label], idx) => (
+          <div key={label} className="flex items-center text-sm">
+            <div className="flex items-center gap-2 text-slate-300">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+              <span>{shortLegendLabel(mode, label)}</span>
             </div>
           </div>
-          <div className="max-h-[176px] space-y-2 overflow-y-auto pr-1">
-            {trimmed.map(([label], idx) => (
-              <div key={label} className="flex items-center text-sm">
-                <div className="flex items-center gap-2 text-slate-300">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
-                  <span>{shortLegendLabel(mode, label)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
