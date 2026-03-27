@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-27T05:06:20.982044+00:00",
+  "generatedAt": "2026-03-27T07:03:36.633208+00:00",
   "items": [
     {
       "id": "R1",
@@ -32,9 +32,9 @@
       "subs": {
         "relevance": 57,
         "recency": 93,
-        "engagement": 19
+        "engagement": 14
       },
-      "score": 54,
+      "score": 53,
       "source": "x",
       "title": "🇪🇺 EU Trade Flows Turn More Selective Across Grains and Oils 🚢\n\n🌾 Grain exports are running stronger, while grain imports are generally below last year’s pace – with wheat and barley standing out on the export side, and corn still lagging.\n\n🫛 In oilseeds and vegetable oils, the picture is more mixed. Seed imports are softer overall, but the veg oil basket is shifting, with soyoil and rapeseed oil gaining share while sunflower oil is weaker. That suggests the EU is changing not just how much it b"
     },
@@ -102,25 +102,6 @@
       "title": "Зерновий грабунок понад на 5 мільярдів гривень: справу гауляйтера Сальдо про вивезення українського ... https://t.co/SpGy7nGzvf"
     },
     {
-      "id": "X2",
-      "text": "На Одещині орки знову пошкодили зерновий термінал і фермерське господарство.\nПостраждалих немає, це радує.\nКац@пські морди залякують, нищать наше зерно, руйнують нашу логістику.\nАналіз від Генштабу показав, що атаки на Одещину за останні пів року збільшилися в рази. https://t.co/btE8cJXNAm",
-      "url": "https://x.com/VictoriaMandri2/status/2035820826411381011",
-      "author_handle": "VictoriaMandri2",
-      "date": "2026-03-22",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.11,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 11,
-        "recency": 83,
-        "engagement": 50
-      },
-      "score": 37,
-      "source": "x",
-      "title": "На Одещині орки знову пошкодили зерновий термінал і фермерське господарство.\nПостраждалих немає, це радує.\nКац@пські морди залякують, нищать наше зерно, руйнують нашу логістику.\nАналіз від Генштабу показав, що атаки на Одещину за останні пів року збільшилися в рази. https://t.co/btE8cJXNAm"
-    },
-    {
       "id": "X1",
       "text": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути",
       "url": "https://x.com/mmx88mhz/status/2035535595850641535",
@@ -142,7 +123,48 @@
       "title": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути"
     },
     {
-      "id": "W9",
+      "id": "X4",
+      "text": "долар трампр\nзерновий откорм",
+      "url": "https://x.com/BazilBrasileiro/status/2034881049478439234",
+      "author_handle": "BazilBrasileiro",
+      "date": "2026-03-20",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.14,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 14,
+        "recency": 76,
+        "engagement": 50
+      },
+      "score": 37,
+      "source": "x",
+      "title": "долар трампр\nзерновий откорм"
+    },
+    {
+      "id": "X5",
+      "text": "Одеса\nВнаслідок нічної  кацапської атаки пошкоджено 2 цивільних комерційних судна під прапорами Палау та Барбадос, які були пришвартовані біля причалів та завантажені зерном.\n На жаль, постраждало двоє людей. Крім того, на території порту пошкоджено зерновий бункер та обладнання. https://t.co/izvFiO9O3p",
+      "url": "https://x.com/hochu_dodomu/status/2034881023939420591",
+      "author_handle": "hochu_dodomu",
+      "date": "2026-03-20",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 17,
+        "reposts": 42
+      },
+      "relevance": 0.11,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 11,
+        "recency": 76,
+        "engagement": 50
+      },
+      "score": 38,
+      "source": "x",
+      "title": "Одеса\nВнаслідок нічної  кацапської атаки пошкоджено 2 цивільних комерційних судна під прапорами Палау та Барбадос, які були пришвартовані біля причалів та завантажені зерном.\n На жаль, постраждало двоє людей. Крім того, на території порту пошкоджено зерновий бункер та обладнання. https://t.co/izvFiO9O3p"
+    },
+    {
+      "id": "W4",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -161,9 +183,9 @@
     },
     {
       "id": "W13",
-      "title": "Black Sea Grain Market Analysis",
-      "url": "https://grainsprices.com/article/19274",
-      "source_domain": "grainsprices.com",
+      "title": "Black Sea Cereal Company | LinkedIn",
+      "url": "https://www.linkedin.com/company/black-sea-cereal-company",
+      "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -178,25 +200,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Black Sea Regional Analysis",
-      "url": "https://www.worldperspectives.com/index.php/articles/black-sea-regional-analysis-03252026",
-      "source_domain": "worldperspectives.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
+      "id": "W11",
       "title": "Black Sea Wheat and Corn Face New Volatility in 2026",
       "url": "https://markets.financialcontent.com/dptribune/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
       "source_domain": "markets.financialcontent.com",
@@ -214,25 +218,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "Black Sea grain and oilseed production and trade",
-      "url": "https://www.agmanager.info/sites/default/files/pdf/19_Broyaka_BlackSea.pdf",
-      "source_domain": "agmanager.info",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
+      "id": "W8",
       "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
       "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
       "source_domain": "spglobal.com",
@@ -250,7 +236,25 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W7",
+      "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
+      "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
+      "source_domain": "reuters.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -269,9 +273,9 @@
     },
     {
       "id": "W10",
-      "title": "Corn and Wheat futures gain as export data meets expectations.",
-      "url": "https://www.cmegroup.com/videos/2026/03/24/corn-and-wheat-futures-gain-as-export-data-meets-expectations-3.html",
-      "source_domain": "cmegroup.com",
+      "title": "Dobrita Adrian - Commodity Trader | \nExperienced Agribusiness professional in Romania and in the Black Sea region | LinkedIn",
+      "url": "https://www.linkedin.com/in/dobrita-adrian-30559394",
+      "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -287,24 +291,6 @@
     },
     {
       "id": "W14",
-      "title": "Grain Market Update (20 March 2026) - YouTube",
-      "url": "https://www.youtube.com/watch%3Fv%3DbiGvkMlY6c4",
-      "source_domain": "youtube.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
       "title": "Grain Market Update: March 20, 2026 - YouTube",
       "url": "https://www.youtube.com/shorts/BwQf4Im5glA",
       "source_domain": "youtube.com",
@@ -322,43 +308,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "Grain Markets & Iran. Big Rallies and other Implications. March 2, 2026",
-      "url": "https://www.youtube.com/watch%3Fv%3D10ma_LoasKc",
-      "source_domain": "youtube.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
-      "title": "International Agricultural Conference BLACK SEA GRAIN. KYIV – 2026 - UkrAgroConsult",
-      "url": "https://ukragroconsult.com/en/conference/black-sea-grain-kyiv-2026/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
+      "id": "W12",
       "title": "International Agricultural Conference BLACK SEA OIL ...",
       "url": "https://ukragroconsult.com/en/conference/black-sea-oil-trade-2026/about/",
       "source_domain": "ukragroconsult.com",
@@ -376,10 +326,82 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W6",
+      "title": "Lamprakis Lazos - Managing Director-Black Sea Division AMEROPA \nMember of the Board of Directors of Ameropa Grains and Chimpex | LinkedIn",
+      "url": "https://linkedin.com/in/lamprakis-lazos-7baa6a2a5",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "MarGen Group    MA-Management SA | LinkedIn",
+      "url": "https://www.linkedin.com/company/margen-ma-management-sa",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Sunflower markets steady as SAFEX firms and Black Sea ...",
+      "url": "https://commodity-board.com/sunflower-markets-steady-as-safex-firms-and-black-sea-prices-hold/",
+      "source_domain": "commodity-board.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
       "title": "The War Room - Market insights for grain farmers - YouTube",
       "url": "https://www.youtube.com/watch%3Fv%3D4rOBoiGSFX4",
       "source_domain": "youtube.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Weekly Analysis 16.03.2026 - 20.03.2026",
+      "url": "https://grainsprices.com/article/19550",
+      "source_domain": "grainsprices.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -412,7 +434,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W7",
       "title": "Альтернатива зерновому коридору. Чи зможе Дунай \"витягнути ...",
       "url": "https://www.ukr.net/news/details/economics/97442404.html",
       "source_domain": "ukr.net",
@@ -430,7 +452,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W9",
       "title": "Дунай залишається найбільш недооціненим ...",
       "url": "https://www.ukr.net/news/details/economics/116184494.html",
       "source_domain": "ukr.net",
@@ -502,7 +524,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W8",
       "title": "Зерновий коридор: чому кількість проходження суден через Босфор є критично низькою? - Артем Чорноморов  / ЛІГА.Блоги",
       "url": "https://blog.liga.net/user/achornomorov/article/50097",
       "source_domain": "blog.liga.net",
@@ -592,7 +614,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W6",
       "title": "Україна та ЄС обговорили розвиток логістики на Дунаї — Центр транспортних стратегій",
       "url": "https://cfts.org.ua/news/2026/03/16/ukrana_ta_es_obgovorili_rozvitok_logistiki_na_duna_86164",
       "source_domain": "cfts.org.ua",
@@ -738,6 +760,6 @@
   ],
   "meta": {
     "inputFiles": 6,
-    "itemCount": 40
+    "itemCount": 41
   }
 }

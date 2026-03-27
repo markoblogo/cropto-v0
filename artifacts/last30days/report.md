@@ -1,6 +1,6 @@
 # соняшникова олія ріпак соя європа ринок - Last 30 Days Research Report
 
-**Generated:** 2026-03-27T05:07:31.407467+00:00
+**Generated:** 2026-03-27T07:04:43.357030+00:00
 **Date Range:** 2026-02-25 to 2026-03-27
 **Mode:** all
 
@@ -44,70 +44,30 @@
 
 ## Web Results
 
-### W6: Fat-and-Oil Industry-2025», яка відбудеться 30 жовтня в ...
-
-- **Source:** instagram.com
-- **URL:** https://www.instagram.com/p/DOMSWhRDJnI/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W9: Pavlo Koval added a new photo.
-
-- **Source:** facebook.com
-- **URL:** https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225148737304815/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W5: [PDF] DOI: http://doi.org/10.32702/2307-2105.2023.10.34 УДК 339.1:631.1 ...
-
-- **Source:** nayka.com.ua
-- **URL:** https://www.nayka.com.ua/index.php/ee/article/download/2325/2357/5919
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: [PDF] ДОСЛІДЖЕННЯ РИНКУ СОНЯШНИКОВОЇ ОЛІЇ У СВІТІ ТА УКРАЇНІ
-
-- **Source:** science.lpnu.ua
-- **URL:** https://science.lpnu.ua/sites/default/files/journal-paper/2024/dec/37321/menedzhmentnadoi-365-382.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W11: [PDF] СВІТОВІ ТЕНДЕНЦІЇ РОЗВИТКУ РИНКУ ОЛІЙНИХ КУЛЬТУР
-
-- **Source:** ed.pdatu.edu.ua
-- **URL:** http://ed.pdatu.edu.ua/article/view/237685/236364
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W8: [PDF] УДК
-
-- **Source:** ei-journal.com
-- **URL:** https://www.ei-journal.com/index.php/journal/article/download/272/142
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W4: Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua
+### W12: Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W8: Зростає ціна — зростає і заздрість, або Чому соняшникова олія в Європі дешевша — Latifundist.com
+
+- **Source:** latifundist.com
+- **URL:** https://latifundist.com/blog/read/zrosta-tsna--zrosta--zazdrst-abo-chomu-sonyashnikova-olya-v-vrop-deshevsha
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W4: МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ...
+
+- **Source:** vsau.org
+- **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -124,30 +84,90 @@
 
 > 
 
-### W7: Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com
+### W9: Початок експортного сезону: квоти ЄС і мито на ріпак та ...
 
-- **Source:** latifundist.com
-- **URL:** https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami
+- **Source:** elevatorist.com
+- **URL:** https://elevatorist.com/blog/read/970-pochatok-eksportnogo-sezonu-pid-tiskom-kvoti-yes-i-mito-na-ripak-ta-soyu
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W10: Попит на рослинні олії змінює баланс світового ринку олійних ...
+### W6: Ринок соняшникової олії на порозі великих глобальних змін
 
 - **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/
+- **URL:** https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W12: Ріпакова та соєва олії витісняють соняшникову з ключових ринків — AgroPortal.ua
+### W5: СУЧАСНІ ВИКЛИКИ У РОЗВИТКУ МІСТ ТА РЕГІОНІВ ...
+
+- **Source:** dpu.edu.ua
+- **URL:** https://dpu.edu.ua/images/Documents/UNIVERSITET/FAKULTETI%20INSTITUTI/Fakultet%20podatkovoi%20spravi%20obliku%20ta%20auditu/Kafedra%20ekonomicnoi%20politiki%20ta%20stalogo%20rozvitku/OP%20Ekonomika%20mista%20ta%20regionu%20Magistr/Zbirniki%20tez/2022_Zbirnik_tez_Vseukrainskoi_naukovo_prakticnoi_konferencii_Stalij_rozvitok_mist_ta_regioniv_Ukraini.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W7: Сезон соняшникової олії 2025: менше врожаю, гірша якість, вищі ціни — що чекає ринок — Latifundist.com
+
+- **Source:** latifundist.com
+- **URL:** https://latifundist.com/spetsproekt/1195-sezon-sonyashnikovoyi-oliyi-2025-menshe-syemechki-girsha-yakist-vishchi-tsini-chogo-chekati
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W15: Соняшник зростає у ціні, соя та ріпак втрачають позиції
+
+- **Source:** landlord.ua
+- **URL:** https://landlord.ua/news/roslinnitstvo/sonyashnyk-zrostaye-u-czini-soya-ta-ripak-vtrachayut-pozycziyi-analiz-rynku-olijnyh-kultur-u-serpni/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W13: Соняшник, соя чи ріпак: економіка вибору культури
+
+- **Source:** ngkoil.com
+- **URL:** https://ngkoil.com/ngkoil.com/blog/crop-competition-sunflower-soybean-rapeseed
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W10: У січні 2026 року було експортовано 5,0 млн т продукції АПК, що ...
+
+- **Source:** facebook.com
+- **URL:** https://www.facebook.com/UkrainianAgribusinessClub/posts/-%25D1%2583-%25D1%2581%25D1%2596%25D1%2587%25D0%25BD%25D1%2596-2026-%25D1%2580%25D0%25BE%25D0%25BA%25D1%2583-%25D0%25B1%25D1%2583%25D0%25BB%25D0%25BE-%25D0%25B5%25D0%25BA%25D1%2581%25D0%25BF%25D0%25BE%25D1%2580%25D1%2582%25D0%25BE%25D0%25B2%25D0%25B0%25D0%25BD%25D0%25BE-50-%25D0%25BC%25D0%25BB%25D0%25BD-%25D1%2582-%25D0%25BF%25D1%2580%25D0%25BE%25D0%25B4%25D1%2583%25D0%25BA%25D1%2586%25D1%2596%25D1%2597-%25D0%25B0%25D0%25BF%25D0%25BA-%25D1%2589%25D0%25BE-%25D0%25BD%25D0%25B0-08-%25D0%25BC%25D0%25B5%25D0%25BD%25D1%2588%25D0%25B5-%25D0%25B0%25D0%25BD%25D0%25B0%25D0%25BB%25D0%25BE/1310266614465940/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W11: Україна забезпечила майже весь імпорт одного з продуктів до ЄС — це обурює місцевих виробників / NV
+
+- **Source:** biz.nv.ua
+- **URL:** https://biz.nv.ua/ukr/markets/ukrajina-zabezpechila-mayzhe-ves-import-odnogo-z-produktiv-do-yes-ce-oburyuye-miscevih-virobnikiv-50590116.html
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W14: Україна повернула собі лідерство у постачанні ріпакової олії до ЄС
 
 - **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/ripakova-ta-soyeva-oliji-vitisnyayut-sonyashnikovu-z-klyuchovih-rinkiv
+- **URL:** https://agroportal.ua/news/ukraina/ukrajina-povernula-sobi-liderstvo-u-postachanni-ripakovoji-oliji-do-yes
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
