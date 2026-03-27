@@ -4,7 +4,7 @@
     "from": "2026-02-25",
     "to": "2026-03-27"
   },
-  "generated_at": "2026-03-27T02:02:42.625385+00:00",
+  "generated_at": "2026-03-27T05:07:31.407467+00:00",
   "mode": "all",
   "openai_model_used": "gpt-5.4-mini",
   "xai_model_used": null,
@@ -71,23 +71,6 @@
   ],
   "web": [
     {
-      "id": "W15",
-      "title": "(PDF) SOCIO-ECONOMIC DEVELOPMENT OF RURAL ...",
-      "url": "https://www.academia.edu/34323653/SOCIO_ECONOMIC_DEVELOPMENT_OF_RURAL_TERRITORIES_IN_THE_CONDITIONS_OF_POWER_DECENTRALIZATION",
-      "source_domain": "academia.edu",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
       "id": "W6",
       "title": "Fat-and-Oil Industry-2025\u00bb, \u044f\u043a\u0430 \u0432\u0456\u0434\u0431\u0443\u0434\u0435\u0442\u044c\u0441\u044f 30 \u0436\u043e\u0432\u0442\u043d\u044f \u0432 ...",
       "url": "https://www.instagram.com/p/DOMSWhRDJnI/",
@@ -105,7 +88,7 @@
       "score": 3
     },
     {
-      "id": "W12",
+      "id": "W9",
       "title": "Pavlo Koval added a new photo.",
       "url": "https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225148737304815/",
       "source_domain": "facebook.com",
@@ -122,10 +105,10 @@
       "score": 3
     },
     {
-      "id": "W2",
-      "title": "SELECTED PAPERS EUROPEAN DIMENSIONS OF ...",
-      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
-      "source_domain": "ec.europa.eu",
+      "id": "W5",
+      "title": "[PDF] DOI: http://doi.org/10.32702/2307-2105.2023.10.34 \u0423\u0414\u041a 339.1:631.1 ...",
+      "url": "https://www.nayka.com.ua/index.php/ee/article/download/2325/2357/5919",
+      "source_domain": "nayka.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -139,10 +122,27 @@
       "score": 3
     },
     {
-      "id": "W3",
-      "title": "Zbi\u00f3r materia\u0142\u00f3w konferencji, Kamieniec-Podolski",
-      "url": "https://mans.edu.pl/fcp/iOEUfFzs9BjEkLTg1Y1BSe0N_YAVTHwIIOgIaTAIABCRvRQMEOjBBaHICPXNtSBk6PjIyBV4RBDYnD1cYTk8cOjYCEg/2/public/wydawnictwa/zbior_materialow_konferencji_kamieniec-podolski__lomza_20-2111_2025_compressed.pdf",
-      "source_domain": "mans.edu.pl",
+      "id": "W13",
+      "title": "[PDF] \u0414\u041e\u0421\u041b\u0406\u0414\u0416\u0415\u041d\u041d\u042f \u0420\u0418\u041d\u041a\u0423 \u0421\u041e\u041d\u042f\u0428\u041d\u0418\u041a\u041e\u0412\u041e\u0407 \u041e\u041b\u0406\u0407 \u0423 \u0421\u0412\u0406\u0422\u0406 \u0422\u0410 \u0423\u041a\u0420\u0410\u0407\u041d\u0406",
+      "url": "https://science.lpnu.ua/sites/default/files/journal-paper/2024/dec/37321/menedzhmentnadoi-365-382.pdf",
+      "source_domain": "science.lpnu.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W11",
+      "title": "[PDF] \u0421\u0412\u0406\u0422\u041e\u0412\u0406 \u0422\u0415\u041d\u0414\u0415\u041d\u0426\u0406\u0407 \u0420\u041e\u0417\u0412\u0418\u0422\u041a\u0423 \u0420\u0418\u041d\u041a\u0423 \u041e\u041b\u0406\u0419\u041d\u0418\u0425 \u041a\u0423\u041b\u042c\u0422\u0423\u0420",
+      "url": "http://ed.pdatu.edu.ua/article/view/237685/236364",
+      "source_domain": "ed.pdatu.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -157,9 +157,9 @@
     },
     {
       "id": "W8",
-      "title": "\u041c\u0406\u0416\u0421\u0415\u041a\u0422\u041e\u0420\u0410\u041b\u042c\u041d\u0410 \u0412\u0417\u0410\u0404\u041c\u041e\u0414\u0406\u042f \u0412 \u0415\u041a\u041e\u041d\u041e\u041c\u0406\u0426\u0406 \u0423\u041a\u0420\u0410\u0407\u041d\u0418",
-      "url": "https://ird.gov.ua/irdp/p20250035.pdf",
-      "source_domain": "ird.gov.ua",
+      "title": "[PDF] \u0423\u0414\u041a",
+      "url": "https://www.ei-journal.com/index.php/journal/article/download/272/142",
+      "source_domain": "ei-journal.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -173,10 +173,10 @@
       "score": 3
     },
     {
-      "id": "W7",
-      "title": "\u041c\u0406\u041d\u0406\u0421\u0422\u0415\u0420\u0421\u0422\u0412\u041e \u041e\u0421\u0412\u0406\u0422\u0418 \u0406 \u041d\u0410\u0423\u041a\u0418 \u0423\u041a\u0420\u0410\u0407\u041d\u0418 ...",
-      "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
-      "source_domain": "vsau.org",
+      "id": "W4",
+      "title": "\u0412\u043f\u043b\u0438\u0432 \u0432\u0456\u0439\u043d\u0438 \u043d\u0430 \u0440\u0438\u043d\u043e\u043a \u043e\u043b\u0456\u0457 \u0423\u043a\u0440\u0430\u0457\u043d\u0438: \u0441\u043e\u044f \u0442\u0430 \u0440\u0456\u043f\u0430\u043a \u043d\u0435 \u043f\u043e\u043a\u0440\u0438\u0432\u0430\u044e\u0442\u044c \u0432\u0442\u0440\u0430\u0442\u0438 \u043f\u043e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u0443 \u2014 AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -190,7 +190,7 @@
       "score": 3
     },
     {
-      "id": "W9",
+      "id": "W2",
       "title": "\u041e\u0433\u043b\u044f\u0434 \u0440\u0438\u043d\u043a\u0443 \u043e\u043b\u0456\u0439\u043d\u0438\u0445: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0442\u0430 \u0441\u043e\u044f \u0434\u043e\u0440\u043e\u0436\u0447\u0430\u044e\u0442\u044c, \u0430 \u043f\u043e\u043f\u0438\u0442 \u043d\u0430 \u0440\u0456\u043f\u0430\u043a \u0443 \u0404\u0432\u0440\u043e\u043f\u0456 \u0441\u043b\u0430\u0431\u0448\u0430\u0454 | \u041f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u044f \u2013 \u0413\u043e\u043b\u043e\u0432\u043d\u0438\u0439 \u0436\u0443\u0440\u043d\u0430\u043b \u0437 \u043f\u0438\u0442\u0430\u043d\u044c \u0430\u0433\u0440\u043e\u0431\u0456\u0437\u043d\u0435\u0441\u0443",
       "url": "https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye",
       "source_domain": "propozitsiya.com",
@@ -207,7 +207,7 @@
       "score": 3
     },
     {
-      "id": "W11",
+      "id": "W7",
       "title": "\u041f\u0435\u0440\u0435\u0440\u043e\u0431\u043b\u044f\u044e\u0442\u044c \u0441\u043e\u044e \u043d\u0430\u0432\u0456\u0442\u044c \u0442\u0456 \u041e\u0415\u0417\u0438, \u044f\u043a\u0456 \u0440\u0430\u043d\u0456\u0448\u0435 \u0437 \u043d\u0435\u044e \u043d\u0435 \u043f\u0440\u0430\u0446\u044e\u0432\u0430\u043b\u0438. \u0429\u043e \u0432\u0456\u0434\u0431\u0443\u0432\u0430\u0454\u0442\u044c\u0441\u044f \u043d\u0430 \u0440\u0438\u043d\u043a\u0443 \u043e\u043b\u0456\u0439\u043d\u0438\u0445 \u0456 \u044f\u043a\u0430 \u043a\u0440\u0430\u0448-\u043c\u0430\u0440\u0436\u0430 \u043f\u0435\u0440\u0435\u0440\u043e\u0431\u043a\u0438 \u0431\u043e\u0431\u043e\u0432\u043e\u0457 \u2014 Latifundist.com",
       "url": "https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami",
       "source_domain": "latifundist.com",
@@ -224,7 +224,24 @@
       "score": 3
     },
     {
-      "id": "W13",
+      "id": "W10",
+      "title": "\u041f\u043e\u043f\u0438\u0442 \u043d\u0430 \u0440\u043e\u0441\u043b\u0438\u043d\u043d\u0456 \u043e\u043b\u0456\u0457 \u0437\u043c\u0456\u043d\u044e\u0454 \u0431\u0430\u043b\u0430\u043d\u0441 \u0441\u0432\u0456\u0442\u043e\u0432\u043e\u0433\u043e \u0440\u0438\u043d\u043a\u0443 \u043e\u043b\u0456\u0439\u043d\u0438\u0445 ...",
+      "url": "https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W12",
       "title": "\u0420\u0456\u043f\u0430\u043a\u043e\u0432\u0430 \u0442\u0430 \u0441\u043e\u0454\u0432\u0430 \u043e\u043b\u0456\u0457 \u0432\u0438\u0442\u0456\u0441\u043d\u044f\u044e\u0442\u044c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0443 \u0437 \u043a\u043b\u044e\u0447\u043e\u0432\u0438\u0445 \u0440\u0438\u043d\u043a\u0456\u0432 \u2014 AgroPortal.ua",
       "url": "https://agroportal.ua/news/ukraina/ripakova-ta-soyeva-oliji-vitisnyayut-sonyashnikovu-z-klyuchovih-rinkiv",
       "source_domain": "agroportal.ua",
@@ -241,58 +258,7 @@
       "score": 3
     },
     {
-      "id": "W4",
-      "title": "\u0421\u0432\u0456\u0442\u043e\u0432\u0456 \u0440\u0438\u043d\u043a\u0438: \u0440\u0456\u043f\u0430\u043a \u0432\u0438\u0442\u0456\u0441\u043d\u0438\u0432 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0443 \u043e\u043b\u0456\u044e \u0437 \u0435\u043d\u0435\u0440\u0433\u0435\u0442\u0438\u0447\u043d\u043e\u0457 \u0441\u0444\u0435\u0440\u0438 \u0456 \u0432\u0438\u0448\u0442\u043e\u0432\u0445\u0443\u0454 \u0437 \u0445\u0430\u0440\u0447\u043e\u0432\u043e\u0457 \u2014 AgroPortal.ua",
-      "url": "https://agroportal.ua/news/mir/svitovi-rinki-ripak-vitisniv-sonyashnikovu-oliyu-z-energetichnoji-sferi-i-vishtovhuye-z-harchovoji",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W10",
-      "title": "\u0421\u0443\u0447\u0430\u0441\u043d\u0456 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0438 \u0442\u0430 \u043e\u0441\u043d\u043e\u0432\u043d\u0456 \u0444\u0430\u043a\u0442\u043e\u0440\u0438 \u0440\u043e\u0437\u0432\u0438\u0442\u043a\u0443 ...",
-      "url": "https://eapk.com.ua/web/uploads/journals_pdf/14_06_5-9_merged.pdf",
-      "source_domain": "eapk.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W14",
-      "title": "\u0426\u0456\u043d\u0438 \u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0443 \u043e\u043b\u0456\u044e \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0442\u0430 \u0404\u0432\u0440\u043e\u043f\u0456 ...",
-      "url": "https://agroportal.ua/news/ukraina/cini-na-sonyashnikovu-oliyu-v-ukrajini-ta-yevropi-onovlyuyut-maksimumi",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W5",
+      "id": "W3",
       "title": "\u043f\u0430\u043b\u044c\u043c\u0430\u00bb \u0442\u0430 \u0441\u043e\u044f, \u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0432\u0442\u0440\u0430\u0447\u0430\u0454 \u043f\u043e\u0437\u0438\u0446\u0456\u0457. ...",
       "url": "https://www.ukr.net/news/details/world/116561582.html",
       "source_domain": "ukr.net",
@@ -318,6 +284,6 @@
   "polymarket": [],
   "best_practices": [],
   "prompt_pack": [],
-  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0440\u0456\u043f\u0430\u043a \u0441\u043e\u044f \u0454\u0432\u0440\u043e\u043f\u0430 \u0440\u0438\u043d\u043e\u043a (Last 30 Days)\n\n*Generated: 2026-03-27 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [Web] (PDF) SOCIO-ECONOMIC DEVELOPMENT OF RURAL ......\n- [Web] Fat-and-Oil Industry-2025\u00bb, \u044f\u043a\u0430 \u0432\u0456\u0434\u0431\u0443\u0434\u0435\u0442\u044c\u0441\u044f 30 \u0436\u043e\u0432...\n- [Web] Pavlo Koval added a new photo....\n- [Web] SELECTED PAPERS EUROPEAN DIMENSIONS OF ......\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0440\u0456\u043f\u0430\u043a \u0441\u043e\u044f \u0454\u0432\u0440\u043e\u043f\u0430 \u0440\u0438\u043d\u043e\u043a (Last 30 Days)\n\n*Generated: 2026-03-27 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [Web] Fat-and-Oil Industry-2025\u00bb, \u044f\u043a\u0430 \u0432\u0456\u0434\u0431\u0443\u0434\u0435\u0442\u044c\u0441\u044f 30 \u0436\u043e\u0432...\n- [Web] Pavlo Koval added a new photo....\n- [Web] [PDF] DOI: http://doi.org/10.32702/2307-2105.2023....\n- [Web] [PDF] \u0414\u041e\u0421\u041b\u0406\u0414\u0416\u0415\u041d\u041d\u042f \u0420\u0418\u041d\u041a\u0423 \u0421\u041e\u041d\u042f\u0428\u041d\u0418\u041a\u041e\u0412\u041e\u0407 \u041e\u041b\u0406\u0407 \u0423 \u0421\u0412\u0406\u0422\u0406 ...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
   "bluesky_error": "Bluesky search failed: HTTP 403: Forbidden"
 }
