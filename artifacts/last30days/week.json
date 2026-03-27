@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-27T18:53:18.834701+00:00",
+  "generatedAt": "2026-03-27T21:32:22.129308+00:00",
   "items": [
     {
       "id": "R1",
@@ -167,7 +167,7 @@
       "title": "На Одещині пошкоджено іноземні судна із зерном: РФ била \"шахедами\"\n\nВнаслідок чергової російської атаки постраждали дві людини, пошкоджено судна, адмінбудівлі, зерновий бункер і обладнання https://t.co/VaAU8FrGe0"
     },
     {
-      "id": "W11",
+      "id": "W10",
       "title": "AM Market Report – March 26, 2026 - MarketsFarm",
       "url": "https://marketsfarm.com/am-market-report-march-26-2026/",
       "source_domain": "marketsfarm.com",
@@ -185,7 +185,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W15",
       "title": "Andreea Grosu - Execution Officer at Grain Resources Black Sea SRL | LinkedIn",
       "url": "https://www.linkedin.com/in/andreea-grosu-16989a55",
       "source_domain": "linkedin.com",
@@ -221,7 +221,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
+      "id": "W14",
       "title": "Black Sea Grain Market Analysis",
       "url": "https://grainsprices.com/article/19274",
       "source_domain": "grainsprices.com",
@@ -257,7 +257,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W3",
       "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
       "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
       "source_domain": "spglobal.com",
@@ -311,7 +311,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W11",
       "title": "Dobrita Adrian - Commodity Trader | \nExperienced Agribusiness professional in Romania and in the Black Sea region | LinkedIn",
       "url": "https://www.linkedin.com/in/dobrita-adrian-30559394",
       "source_domain": "linkedin.com",
@@ -329,7 +329,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "Grain Market Overview: Start Tuesday 24.03.2026",
       "url": "https://grainsprices.com/article/19559",
       "source_domain": "grainsprices.com",
@@ -365,7 +365,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W9",
       "title": "International Agricultural Conference BLACK SEA OIL ...",
       "url": "https://ukragroconsult.com/en/conference/black-sea-oil-trade-2026/about/",
       "source_domain": "ukragroconsult.com",
@@ -419,7 +419,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W9",
       "title": "«Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com",
       "url": "https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu",
       "source_domain": "latifundist.com",
@@ -455,7 +455,25 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W14",
+      "title": "Дунай залишається найбільш недооціненим ...",
+      "url": "https://www.ukr.net/news/details/economics/116184494.html",
+      "source_domain": "ukr.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
       "title": "Експорт через Дунай і морський коридор: чи прискориться ...",
       "url": "https://zastup.org.ua/eksport-cherez-dunaj/",
       "source_domain": "zastup.org.ua",
@@ -509,25 +527,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "Коридор «Україна – порти Румунії та Болгарії» перетворюється ...",
-      "url": "https://landlord.ua/news/korydor-ukrayina-porty-rumuniyi-ta-bolgariyi-peretvoryuyetsya-na-odyn-iz-globalnyh-rynkiv-torgivli/",
-      "source_domain": "landlord.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W11",
       "title": "Наступного року порти Дунаю мають обробити не ...",
       "url": "https://www.railinsider.com.ua/nastupnogo-roku-porty-dunayu-mayut-obrobyty-ne-menshe-15-mln-t-vantazhiv-minrozvytku/",
       "source_domain": "railinsider.com.ua",
@@ -545,7 +545,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W5",
       "title": "Панель \"Логістика зерна в турбулентні часи\" - YouTube",
       "url": "https://www.youtube.com/watch?v=3EHy4d6UpXE",
       "source_domain": "youtube.com",
@@ -563,7 +563,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W12",
       "title": "Перспективи української річкової логістики",
       "url": "https://carryland.com.ua/blog/view/perspektivi-ukrayinskoyi-richkovoyi-logistiki-a197/",
       "source_domain": "carryland.com.ua",
@@ -581,7 +581,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W10",
       "title": "Порти Дунаю готують до зростання вантажообігу до 15 млн т у 2026 році | Події, інтерв'ю | E-land",
       "url": "https://e-land.ua/news/item/porty-dunayu-hotuyut-do-zrostannia-vantazhoobihu-do-15-mln-t-u-2026-rotsi",
       "source_domain": "e-land.ua",
@@ -635,7 +635,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W2",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
       "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
       "source_domain": "agrotimes.ua",
@@ -653,7 +653,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W4",
       "title": "Як працює зерновий коридор після розірвання зернової угоди",
       "url": "https://www.youtube.com/watch?v=fdQu8cGqjEY",
       "source_domain": "youtube.com",
@@ -671,7 +671,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W11",
       "title": "[PDF] Actual-problems-of-practice-and-science-and-methods-of-their ...",
       "url": "https://eu-conf.com/wp-content/uploads/2022/01/Actual-problems-of-practice-and-science-and-methods-of-their-solution.pdf",
       "source_domain": "eu-conf.com",
@@ -689,7 +689,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "[PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...",
       "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
       "source_domain": "ec.europa.eu",
@@ -743,7 +743,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W9",
       "title": "[PDF] Сучасні проблеми та основні фактори розвитку аграрного ...",
       "url": "https://eapk.com.ua/web/uploads/journals_pdf/14_06_5-9_merged.pdf",
       "source_domain": "eapk.com.ua",
@@ -797,7 +797,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W8",
       "title": "Весняна посівна 2025: на які культури роблять ставку українські аграрії? — Latifundist.com",
       "url": "https://latifundist.com/blog/read/3134-trendi-2025-ploshchi-pid-sonyashnikom-tsogorich-zrostut-do-55-mln-ga-pid-kukurudzoyu--do-44-mln-ga-a-ot-soya-prosyade--olga-molokovich",
       "source_domain": "latifundist.com",
@@ -815,7 +815,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W2",
       "title": "Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua",
       "url": "https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
       "source_domain": "agroportal.ua",
@@ -833,7 +833,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W6",
       "title": "Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу",
       "url": "https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye",
       "source_domain": "propozitsiya.com",
@@ -851,7 +851,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W10",
       "title": "Початок експортного сезону: квоти ЄС і мито на ріпак та сою — Elevatorist.com",
       "url": "https://elevatorist.com/blog/read/970-pochatok-eksportnogo-sezonu-pid-tiskom-kvoti-yes-i-mito-na-ripak-ta-soyu",
       "source_domain": "elevatorist.com",
@@ -887,7 +887,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W12",
       "title": "Соняшник, соя чи ріпак: економіка вибору культури",
       "url": "https://ngkoil.com/ngkoil.com/blog/crop-competition-sunflower-soybean-rapeseed",
       "source_domain": "ngkoil.com",
@@ -905,7 +905,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "пальма» та соя, а соняшникова олія втрачає позиції. ...",
       "url": "https://www.ukr.net/news/details/world/116561582.html",
       "source_domain": "ukr.net",
