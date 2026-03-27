@@ -1,7 +1,7 @@
 # соняшникова олія ріпак соя європа ринок - Last 30 Days Research Report
 
-**Generated:** 2026-03-26T21:31:23.611917+00:00
-**Date Range:** 2026-02-24 to 2026-03-26
+**Generated:** 2026-03-27T02:02:42.625385+00:00
+**Date Range:** 2026-02-25 to 2026-03-27
 **Mode:** all
 
 ## Models Used
@@ -14,7 +14,7 @@
 
 - **URL:** https://x.com/Seal_Di/status/2033761745131471304
 - **Date:** 2026-03-17 (confidence: high)
-- **Score:** 59/100
+- **Score:** 58/100
 - **Relevance:** 
 - **Engagement:** 26 likes, ? reposts
 
@@ -24,7 +24,7 @@
 
 - **URL:** https://x.com/busia09/status/2033221717665935676
 - **Date:** 2026-03-15 (confidence: high)
-- **Score:** 34/100
+- **Score:** 33/100
 - **Relevance:** 
 - **Engagement:** 2 likes, ? reposts
 
@@ -34,7 +34,7 @@
 
 - **URL:** https://x.com/shved_y73778/status/2033782692169285813
 - **Date:** 2026-03-17 (confidence: high)
-- **Score:** 53/100
+- **Score:** 52/100
 - **Relevance:** 
 - **Engagement:** 16 likes, ? reposts
 
@@ -44,17 +44,37 @@
 
 ## Web Results
 
-### W12: Pavlo Koval added a new photo.
+### W15: (PDF) SOCIO-ECONOMIC DEVELOPMENT OF RURAL ...
 
-- **Source:** facebook.com
-- **URL:** https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225137045612530/
+- **Source:** academia.edu
+- **URL:** https://www.academia.edu/34323653/SOCIO_ECONOMIC_DEVELOPMENT_OF_RURAL_TERRITORIES_IN_THE_CONDITIONS_OF_POWER_DECENTRALIZATION
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W4: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
+### W6: Fat-and-Oil Industry-2025», яка відбудеться 30 жовтня в ...
+
+- **Source:** instagram.com
+- **URL:** https://www.instagram.com/p/DOMSWhRDJnI/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: Pavlo Koval added a new photo.
+
+- **Source:** facebook.com
+- **URL:** https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225148737304815/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W2: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
 
 - **Source:** ec.europa.eu
 - **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
@@ -64,7 +84,7 @@
 
 > 
 
-### W6: Zbiór materiałów konferencji, Kamieniec-Podolski
+### W3: Zbiór materiałów konferencji, Kamieniec-Podolski
 
 - **Source:** mans.edu.pl
 - **URL:** https://mans.edu.pl/fcp/iOEUfFzs9BjEkLTg1Y1BSe0N_YAVTHwIIOgIaTAIABCRvRQMEOjBBaHICPXNtSBk6PjIyBV4RBDYnD1cYTk8cOjYCEg/2/public/wydawnictwa/zbior_materialow_konferencji_kamieniec-podolski__lomza_20-2111_2025_compressed.pdf
@@ -74,7 +94,27 @@
 
 > 
 
-### W3: Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу
+### W8: МІЖСЕКТОРАЛЬНА ВЗАЄМОДІЯ В ЕКОНОМІЦІ УКРАЇНИ
+
+- **Source:** ird.gov.ua
+- **URL:** https://ird.gov.ua/irdp/p20250035.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W7: МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ...
+
+- **Source:** vsau.org
+- **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W9: Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу
 
 - **Source:** propozitsiya.com
 - **URL:** https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye
@@ -84,17 +124,7 @@
 
 > 
 
-### W7: Олійні культури: врожай соняшнику обмежений, ріпак та соя дорожчають | Пропозиція – Головний журнал з питань агробізнесу
-
-- **Source:** propozitsiya.com
-- **URL:** https://propozitsiya.com/news/oliyni-kultury-vrozhay-sonyashnyku-obmezhenyy-ripak-ta-soya-dorozhchayut
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W9: Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com
+### W11: Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami
@@ -104,47 +134,17 @@
 
 > 
 
-### W10: Польський ринок: ріпак у лідерах, для соняшнику немає переробки — AgroPortal.ua
+### W13: Ріпакова та соєва олії витісняють соняшникову з ключових ринків — AgroPortal.ua
 
 - **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/mir/polskiy-rinok-ripak-u-liderah-dlya-sonyashniku-nemaye-pererobki
+- **URL:** https://agroportal.ua/news/ukraina/ripakova-ta-soyeva-oliji-vitisnyayut-sonyashnikovu-z-klyuchovih-rinkiv
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W5: Попит на рослинні олії змінює баланс світового ринку ...
-
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: Ринок соняшникової олії на порозі великих глобальних ...
-
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W11: СУЧАСНІ ВИКЛИКИ У РОЗВИТКУ МІСТ ТА РЕГІОНІВ ...
-
-- **Source:** dpu.edu.ua
-- **URL:** https://dpu.edu.ua/images/Documents/UNIVERSITET/FAKULTETI%20INSTITUTI/Fakultet%20podatkovoi%20spravi%20obliku%20ta%20auditu/Kafedra%20ekonomicnoi%20politiki%20ta%20stalogo%20rozvitku/OP%20Ekonomika%20mista%20ta%20regionu%20Magistr/Zbirniki%20tez/2022_Zbirnik_tez_Vseukrainskoi_naukovo_prakticnoi_konferencii_Stalij_rozvitok_mist_ta_regioniv_Ukraini.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W15: Світові ринки: ріпак витіснив соняшникову олію з енергетичної сфери і виштовхує з харчової — AgroPortal.ua
+### W4: Світові ринки: ріпак витіснив соняшникову олію з енергетичної сфери і виштовхує з харчової — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/news/mir/svitovi-rinki-ripak-vitisniv-sonyashnikovu-oliyu-z-energetichnoji-sferi-i-vishtovhuye-z-harchovoji
@@ -154,30 +154,30 @@
 
 > 
 
-### W8: аграрна політика європейського союзу
+### W10: Сучасні проблеми та основні фактори розвитку ...
 
-- **Source:** nmc-vfpo.gov.ua
-- **URL:** https://nmc-vfpo.gov.ua/wp-content/uploads/2019/10/monografiya-agricultural-policy-of-eu.pdf
+- **Source:** eapk.com.ua
+- **URL:** https://eapk.com.ua/web/uploads/journals_pdf/14_06_5-9_merged.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W2: пальма» та соя, а соняшникова олія втрачає позиції. ...
+### W14: Ціни на соняшникову олію в Україні та Європі ...
+
+- **Source:** agroportal.ua
+- **URL:** https://agroportal.ua/news/ukraina/cini-na-sonyashnikovu-oliyu-v-ukrajini-ta-yevropi-onovlyuyut-maksimumi
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W5: пальма» та соя, а соняшникова олія втрачає позиції. ...
 
 - **Source:** ukr.net
 - **URL:** https://www.ukr.net/news/details/world/116561582.html
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W14: продовольча безпека: світові тенденції та можливості ...
-
-- **Source:** nubip.edu.ua
-- **URL:** https://nubip.edu.ua/sites/default/files/u317/2022_monografiya_prodovolcha_bezpeka.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
