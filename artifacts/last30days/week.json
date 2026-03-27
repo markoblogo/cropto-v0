@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-27T09:53:29.797795+00:00",
+  "generatedAt": "2026-03-27T12:59:21.318198+00:00",
   "items": [
     {
       "id": "R1",
@@ -167,7 +167,25 @@
       "title": "На Одещині пошкоджено іноземні судна із зерном: РФ била \"шахедами\"\n\nВнаслідок чергової російської атаки постраждали дві людини, пошкоджено судна, адмінбудівлі, зерновий бункер і обладнання https://t.co/VaAU8FrGe0"
     },
     {
-      "id": "W15",
+      "id": "W8",
+      "title": "18.03.2026 - CSI Trading",
+      "url": "https://csitrading.ae/wp-content/uploads/2026/03/CSI-Daily-News-18.03.2026.pdf",
+      "source_domain": "csitrading.ae",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -185,7 +203,25 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W15",
+      "title": "AgroPortal Bulgaria | LinkedIn",
+      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
       "title": "Black Sea Cereal Company | LinkedIn",
       "url": "https://www.linkedin.com/company/black-sea-cereal-company",
       "source_domain": "linkedin.com",
@@ -203,7 +239,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W2",
       "title": "Black Sea Regional Analysis",
       "url": "https://worldperspectives.com/articles/black-sea-regional-analysis-03252026",
       "source_domain": "worldperspectives.com",
@@ -221,7 +257,25 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W3",
+      "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges",
+      "url": "https://ukragroconsult.com/en/news/black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -239,99 +293,9 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Daily Market Wire 17 March 2026 - Grain Central",
-      "url": "https://www.graincentral.com/markets/daily-market-wire-17-march-2026/",
-      "source_domain": "graincentral.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Dobrita Adrian - Commodity Trader | \nExperienced Agribusiness professional in Romania and in the Black Sea region | LinkedIn",
-      "url": "https://www.linkedin.com/in/dobrita-adrian-30559394",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
-      "title": "EuroGrainExchange 2026 to spotlight Black Sea–Balkans–Danube grain trade dynamics | Miller Magazine",
-      "url": "https://millermagazine.com/blog/eurograinexchange-2026-to-spotlight-black-seabalkansdanube-grain-trade-dynamics-6644",
-      "source_domain": "millermagazine.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
-      "title": "Global Ag News For Jan 28.2026 - ADM Investor Services",
-      "url": "https://www.admis.com/global-ag-news-for-jan-28-2026-2/",
-      "source_domain": "admis.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W4",
-      "title": "Grain Market Overview: Start Tuesday 24.03.2026",
-      "url": "https://grainsprices.com/article/19559",
-      "source_domain": "grainsprices.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
-      "title": "Lamprakis Lazos - Managing Director-Black Sea Division AMEROPA \nMember of the Board of Directors of Ameropa Grains and Chimpex | LinkedIn",
-      "url": "https://linkedin.com/in/lamprakis-lazos-7baa6a2a5",
+      "title": "Irina Melnic - CEO | International Trade & Export Specialist | Grains, Wheat Flour & Agri-Commodities | Logistics & Global Partnerships | LinkedIn",
+      "url": "https://www.linkedin.com/in/irina-melnic-2a7749104",
       "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
@@ -347,10 +311,28 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "MarGen Group    MA-Management SA | LinkedIn",
-      "url": "https://www.linkedin.com/company/margen-ma-management-sa",
+      "id": "W12",
+      "title": "Mihaela Ploscaru - Market Analyst at Agrilinkhub SRL | LinkedIn",
+      "url": "https://www.linkedin.com/in/mihaela-ploscaru-2aa8611a3",
       "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "SovEcon: Russian and global grain market news",
+      "url": "https://blog.sizov.report/sovecon-russian-and-global-grain-market-news-march-21-2026/",
+      "source_domain": "blog.sizov.report",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -366,9 +348,9 @@
     },
     {
       "id": "W14",
-      "title": "Sunflower markets steady as SAFEX firms and Black Sea ...",
-      "url": "https://commodity-board.com/sunflower-markets-steady-as-safex-firms-and-black-sea-prices-hold/",
-      "source_domain": "commodity-board.com",
+      "title": "Ukraine increased rapeseed oil exports 34 times in 2026",
+      "url": "https://logos-pres.md/en/news/ukraine-increased-rapeseed-oil-exports-34-times-in-2026/",
+      "source_domain": "logos-pres.md",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -383,7 +365,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W9",
       "title": "Weekly Analysis 16.03.2026 - 20.03.2026",
       "url": "https://grainsprices.com/article/19550",
       "source_domain": "grainsprices.com",
@@ -401,43 +383,43 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "Workboat Indexes | WorkBoat - The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
-      "url": "https://markets.financialcontent.com/workboat/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
-      "source_domain": "markets.financialcontent.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
-      "title": "«Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com",
-      "url": "https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W11",
+      "title": "[PDF] Black Sea grain and oilseed production and trade - AgManager.info",
+      "url": "https://www.agmanager.info/sites/default/files/pdf/19_Broyaka_BlackSea.pdf",
+      "source_domain": "agmanager.info",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "[PDF] Grains and Oilseeds Outlook | USDA",
+      "url": "https://www.usda.gov/sites/default/files/documents/2026AOF-grains-oilseeds-outlook.pdf",
+      "source_domain": "usda.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
       "title": "Альтернатива зерновому коридору. Чи зможе Дунай \"витягнути ...",
       "url": "https://www.ukr.net/news/details/economics/97442404.html",
       "source_domain": "ukr.net",
@@ -455,27 +437,9 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів",
-      "url": "https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv",
-      "source_domain": "ndu.kr.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
-      "title": "Дунай залишається найбільш недооціненим стратегічним ...",
-      "url": "https://www.ukr.net/news/details/economics/116184494.html",
+      "id": "W13",
+      "title": "Дунайська логістика стійкіша до атак завдяки розосередженій ...",
+      "url": "https://www.ukr.net/news/details/economics/116188056.html",
       "source_domain": "ukr.net",
       "snippet": "",
       "date": null,
@@ -509,7 +473,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "Зернова логістика на Дунаї у 2022 та перспективи 2023 року — Elevatorist.com",
       "url": "https://elevatorist.com/blog/read/839-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-1",
       "source_domain": "elevatorist.com",
@@ -527,7 +491,25 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W10",
+      "title": "Зерновий коридор: чому кількість проходження суден через Босфор є критично низькою? - Артем Чорноморов  / ЛІГА.Блоги",
+      "url": "https://blog.liga.net/user/achornomorov/article/50097",
+      "source_domain": "blog.liga.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
       "title": "Коридор «Україна – порти Румунії та Болгарії» перетворюється ...",
       "url": "https://landlord.ua/news/korydor-ukrayina-porty-rumuniyi-ta-bolgariyi-peretvoryuyetsya-na-odyn-iz-globalnyh-rynkiv-torgivli/",
       "source_domain": "landlord.ua",
@@ -563,7 +545,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W6",
       "title": "Перспективи української річкової логістики",
       "url": "https://carryland.com.ua/blog/view/perspektivi-ukrayinskoyi-richkovoyi-logistiki-a197/",
       "source_domain": "carryland.com.ua",
@@ -581,7 +563,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W14",
       "title": "Третя масова атака портів Дунаю за тиждень. Що з фрахтом та експортом? — Latifundist.com",
       "url": "https://latifundist.com/blog/read/3016-porti-dunayu-pid-obstrilami-shcho-z-frahtom-ta-eksportom",
       "source_domain": "latifundist.com",
@@ -599,7 +581,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W8",
       "title": "Україна запускає масштабну модернізацію портів на Дунаї з ...",
       "url": "https://agroelita.info/ukraina-zapuskaie-masshtabnu-modernizatsiiu-portiv-na-dunai-z-harantiieiu-vantazhopotoku-i-tysiachamy-robochykh-mists/",
       "source_domain": "agroelita.info",
@@ -617,7 +599,25 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W4",
+      "title": "Україна та ЄС обговорили розвиток логістики на Дунаї — Центр транспортних стратегій",
+      "url": "https://cfts.org.ua/news/2026/03/16/ukrana_ta_es_obgovorili_rozvitok_logistiki_na_duna_86164",
+      "source_domain": "cfts.org.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
       "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
       "source_domain": "agrotimes.ua",
@@ -635,10 +635,10 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї -",
-      "url": "https://uga.ua/news/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
-      "source_domain": "uga.ua",
+      "id": "W11",
+      "title": "Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України",
+      "url": "https://interfax.com.ua/news/blog/1147202.html",
+      "source_domain": "interfax.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -653,7 +653,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "Як працює зерновий коридор після розірвання зернової угоди",
       "url": "https://www.youtube.com/watch?v=fdQu8cGqjEY",
       "source_domain": "youtube.com",
@@ -671,10 +671,64 @@
       "source": "web"
     },
     {
+      "id": "W13",
+      "title": "(PDF) SOCIO-ECONOMIC DEVELOPMENT OF RURAL ...",
+      "url": "https://www.academia.edu/34323653/SOCIO_ECONOMIC_DEVELOPMENT_OF_RURAL_TERRITORIES_IN_THE_CONDITIONS_OF_POWER_DECENTRALIZATION",
+      "source_domain": "academia.edu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W11",
-      "title": "Pavlo Koval added a new photo.",
-      "url": "https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225148737784827/",
-      "source_domain": "facebook.com",
+      "title": "Actual-problems-of-practice-and-science-and-methods-of- ...",
+      "url": "https://eu-conf.com/wp-content/uploads/2022/01/Actual-problems-of-practice-and-science-and-methods-of-their-solution.pdf",
+      "source_domain": "eu-conf.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "SELECTED PAPERS EUROPEAN DIMENSIONS OF ...",
+      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
+      "source_domain": "ec.europa.eu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Zbiór materiałów konferencji, Kamieniec-Podolski",
+      "url": "https://mans.edu.pl/fcp/iOEUfFzs9BjEkLTg1Y1BSe0N_YAVTHwIIOgIaTAIABCRvRQMEOjBBaHICPXNtSBk6PjIyBV4RBDYnD1cYTk8cOjYCEg/2/public/wydawnictwa/zbior_materialow_konferencji_kamieniec-podolski__lomza_20-2111_2025_compressed.pdf",
+      "source_domain": "mans.edu.pl",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -690,6 +744,24 @@
     },
     {
       "id": "W8",
+      "title": "Весняна посівна 2025: на які культури роблять ставку українські аграрії? — Latifundist.com",
+      "url": "https://latifundist.com/blog/read/3134-trendi-2025-ploshchi-pid-sonyashnikom-tsogorich-zrostut-do-55-mln-ga-pid-kukurudzoyu--do-44-mln-ga-a-ot-soya-prosyade--olga-molokovich",
+      "source_domain": "latifundist.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
       "title": "Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua",
       "url": "https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
       "source_domain": "agroportal.ua",
@@ -708,45 +780,9 @@
     },
     {
       "id": "W6",
-      "title": "Зростає ціна — зростає і заздрість, або Чому соняшникова олія в Європі дешевша — Latifundist.com",
-      "url": "https://latifundist.com/blog/read/zrosta-tsna--zrosta--zazdrst-abo-chomu-sonyashnikova-olya-v-vrop-deshevsha",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W2",
       "title": "МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ...",
       "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
       "source_domain": "vsau.org",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W13",
-      "title": "Максим Король: Ми вже переробляємо сою та соняшник. Чому б не переробляти ріпак?",
-      "url": "https://www.svitlovodskotg.com.ua/post/%D0%BC%D0%B0%D0%BA%D1%81%D0%B8%D0%BC-%D0%BA%D0%BE%D1%80%D0%BE%D0%BB%D1%8C-%D0%BC%D0%B8-%D0%B2%D0%B6%D0%B5-%D0%BF%D0%B5%D1%80%D0%B5%D1%80%D0%BE%D0%B1%D0%BB%D1%8F%D1%94%D0%BC%D0%BE-%D1%81%D0%BE%D1%8E-%D1%82%D0%B0-%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA-%D1%87%D0%BE%D0%BC%D1%83-%D0%B1-%D0%BD%D0%B5-%D0%BF%D0%B5%D1%80%D0%B5%D1%80%D0%BE%D0%B1%D0%BB%D1%8F%D1%82%D0%B8-%D1%80%D1%96%D0%BF%D0%B0%D0%BA",
-      "source_domain": "svitlovodskotg.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -779,7 +815,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W9",
       "title": "Початок експортного сезону: квоти ЄС і мито на ріпак та сою — Elevatorist.com",
       "url": "https://elevatorist.com/blog/read/970-pochatok-eksportnogo-sezonu-pid-tiskom-kvoti-yes-i-mito-na-ripak-ta-soyu",
       "source_domain": "elevatorist.com",
@@ -797,10 +833,10 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "СУЧАСНІ ВИКЛИКИ У РОЗВИТКУ МІСТ ТА РЕГІОНІВ ...",
-      "url": "https://dpu.edu.ua/images/Documents/UNIVERSITET/FAKULTETI%20INSTITUTI/Fakultet%20podatkovoi%20spravi%20obliku%20ta%20auditu/Kafedra%20ekonomicnoi%20politiki%20ta%20stalogo%20rozvitku/OP%20Ekonomika%20mista%20ta%20regionu%20Magistr/Zbirniki%20tez/2022_Zbirnik_tez_Vseukrainskoi_naukovo_prakticnoi_konferencii_Stalij_rozvitok_mist_ta_regioniv_Ukraini.pdf",
-      "source_domain": "dpu.edu.ua",
+      "id": "W14",
+      "title": "Ріпакова дилема: чому Україна втрачає мільйони на ...",
+      "url": "https://agronews.ua/news/ripakova-dylema-chomu-ukrayina-vtrachaye-miljony-na-syrovyni/",
+      "source_domain": "agronews.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -815,25 +851,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Соняшник зростає у ціні, соя та ріпак втрачають позиції",
-      "url": "https://landlord.ua/news/roslinnitstvo/sonyashnyk-zrostaye-u-czini-soya-ta-ripak-vtrachayut-pozycziyi-analiz-rynku-olijnyh-kultur-u-serpni/",
-      "source_domain": "landlord.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
+      "id": "W12",
       "title": "Соняшник, соя чи ріпак: економіка вибору культури",
       "url": "https://ngkoil.com/ngkoil.com/blog/crop-competition-sunflower-soybean-rapeseed",
       "source_domain": "ngkoil.com",
@@ -851,10 +869,28 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "Ціна на соняшникову та ріпакову олію в Європі",
-      "url": "https://at2000.com.ua/zakupivlya/tpost/8cevxk0dx1-tsna-na-sonyashnikovu-ta-rpakovu-olyu-v",
-      "source_domain": "at2000.com.ua",
+      "id": "W10",
+      "title": "Сучасні проблеми та основні фактори розвитку ...",
+      "url": "https://eapk.com.ua/web/uploads/journals_pdf/14_06_5-9_merged.pdf",
+      "source_domain": "eapk.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "аграрна політика європейського союзу",
+      "url": "https://nmc-vfpo.gov.ua/wp-content/uploads/2019/10/monografiya-agricultural-policy-of-eu.pdf",
+      "source_domain": "nmc-vfpo.gov.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -889,6 +925,6 @@
   ],
   "meta": {
     "inputFiles": 6,
-    "itemCount": 48
+    "itemCount": 50
   }
 }
