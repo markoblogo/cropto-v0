@@ -139,6 +139,8 @@ export function BrokerWorkspacePane({
                 const isOwnEntry =
                   (!!currentBrokerId && entry.brokerId === currentBrokerId) ||
                   (!!currentBrokerCode && entry.brokerCode === currentBrokerCode);
+                const hasIncomingLikes = isOwnEntry && (entry.likeCount ?? 0) > 0;
+                const hasOutgoingLike = !isOwnEntry && !!entry.likedByMe;
 
                 return (
                   <Button
@@ -156,24 +158,28 @@ export function BrokerWorkspacePane({
                       <div className="line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
-                      {likesEnabled && (entry.type === "bid" || entry.type === "offer") && !isOwnEntry ? (
+                      {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
                         <span
-                          role={entry.likedByMe ? undefined : "button"}
-                          tabIndex={entry.likedByMe ? -1 : 0}
-                          className={`ml-auto inline-flex h-6 min-w-[48px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
-                            entry.likedByMe
-                              ? "cursor-default border-primary/60 bg-primary/25 text-primary"
-                              : "cursor-pointer border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
+                          role={isOwnEntry || entry.likedByMe ? undefined : "button"}
+                          tabIndex={isOwnEntry || entry.likedByMe ? -1 : 0}
+                          className={`ml-auto inline-flex h-6 min-w-[36px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
+                            hasIncomingLikes
+                              ? "cursor-default border-emerald-400/80 bg-emerald-500/25 text-emerald-300"
+                              : hasOutgoingLike
+                                ? "cursor-default border-amber-400/80 bg-amber-500/20 text-amber-300"
+                                : isOwnEntry
+                                  ? "hidden"
+                                  : "cursor-pointer border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
                           }`}
                           onClick={(event) => {
-                            if (entry.likedByMe) {
+                            if (isOwnEntry || entry.likedByMe) {
                               return;
                             }
                             event.stopPropagation();
                             onToggleLike?.(entry);
                           }}
                           onKeyDown={(event) => {
-                            if (entry.likedByMe) {
+                            if (isOwnEntry || entry.likedByMe) {
                               return;
                             }
                             if (event.key === "Enter" || event.key === " ") {
@@ -185,7 +191,7 @@ export function BrokerWorkspacePane({
                           aria-label={`Like ${entry.type}`}
                         >
                           <Handshake className="h-3.5 w-3.5" />
-                          <span>{entry.likeCount ?? 0}</span>
+                          {hasIncomingLikes ? <span>{entry.likeCount ?? 0}</span> : null}
                         </span>
                       ) : null}
                     </div>
