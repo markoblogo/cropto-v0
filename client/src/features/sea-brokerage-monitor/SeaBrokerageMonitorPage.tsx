@@ -279,7 +279,7 @@ export function SeaBrokerageMonitorPage() {
             onFiltersChange={setTradePaneFilters}
             createActionLabel="Create TRADE"
             createActionVariant="default"
-            createActionClassName="bg-teal-500/85 text-teal-950 hover:bg-teal-400 border border-teal-300/70"
+            createActionClassName="bg-teal-500/85 text-white hover:bg-teal-400 border border-teal-300/70"
             onCreateAction={() => setCreateDialogType("trade")}
           />
         </section>
