@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-03-26T15:51:35.671702+00:00",
+  "generatedAt": "2026-03-28T18:44:54.324765+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-26T13:09:53.531165+00:00",
+  "sourceUpdatedAt": "2026-03-28T18:43:54.191329+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Over the past 30 days, global grain and oilseed markets have exhibited mixed but stable dynamics with no significant bullish or bearish shifts. Corn futures reached their highest levels since last June, yet cash markets remain largely stagnant, reflecting a disconnect between futures and physical trade. Wheat markets showed resilience despite recent EU and Argentine purchases, with input cost pressures balanced by Indian export opportunities. Energy volatility and fertilizer supply disruptions continue to inject uncertainty into wheat, corn, and oilseed markets. What changed vs previous comparable period: Compared to the prior month, market activity increased with more frequent reporting and analysis, but overall market sentiment and impact remained unchanged. The rise in grain export inspections in 2026 signals ongoing trade activity, while infrastructure improvements in India suggest strengthening export capabilities. Actionable implications for trading/brokerage: Traders should monitor corn futures for potential volatility given recent highs, but remain cautious as cash market stagnation may limit near-term physical trade momentum. Wheat market participants should watch Indian export developments and input cost dynamics for pricing signals. The recent offer for CIF corn at 241 EUR for April delivery in Tarragona indicates firm pricing levels, while sunflower bids at 301 USD in Marmara highlight regional demand pockets. \n\nKey facts:\n- Corn futures peaked at highest since June 2025 as of March 20.\n- CIF corn offers at 241 EUR for April 10-30 delivery (March 25).\n- Sunflower bids at 301 USD CPT Marmara for early March (March 24).\n- Indian export infrastructure enhanced with new commodity testing lab in Gandhidham (March 10).\n- Wheat market stable despite EU and Argentine purchases, balancing input costs and export demand (March 20).\n- Energy and fertilizer market volatility continue to influence grain price uncertainty (March 12).",
+    "text": "General situation: Over the past 30 days, global grains and oilseeds markets have remained stable with no significant bullish or bearish shifts. Bunge (BG) faces margin compression risks as soybean input prices rise faster than soy oil and meal outputs, compounded by high leverage post-Viterra merger and uncertain biofuel tax credits. Brazilian soybean exporters show reluctance to offer CFR China shipments due to freight and phytosanitary certification risks, despite strong crush margins and improving meal sales in China. Black Sea wheat prices have inflated by 5-7% month-on-month, supported by freight parity enabling exports to ASEAN countries. What changed vs previous comparable period: This 30-day window shows increased market activity compared to the prior month, which had no recorded reports. Price inflation in Black Sea wheat and cautious Brazilian export offers contrast with the prior quiet period. Actionable implications for trading/brokerage: Traders should monitor Bunge’s margin squeeze risk and debt profile before engaging. Brazilian soybean export offers may remain tight, potentially supporting prices. Black Sea wheat exports to ASEAN remain attractive due to freight parity, suggesting opportunities in that corridor. Freight market disruptions noted last week may further impact logistics costs and timing. \n\nKey facts:\n- Bunge trades at 10x EV/EBITDA with $12.2B debt post-Viterra merger as of March 18, 2026.\n- Black Sea wheat FOB prices inflated 5-7% vs prior month (March 12, 2026).\n- Brazilian soybean offers to China limited due to freight and phytosanitary risks (March 11, 2026).\n- INR/USD exchange rate steady at 93/94 supporting export competitiveness (March 12, 2026).\n- Chicago USDA wheat prices remain above $600/MT, underpinning regional price support.\n- Freight market disruptions and spikes reported late March may increase shipping costs and delays.",
     "chart": {
       "type": "price_overlay_month",
-      "title": "Grain & Oilseed Prices Over Last 30 Days",
+      "title": "Price Trends for Key Commodities (Feb-Mar 2026)",
       "points": [
         {
           "label": "W1",
@@ -33,28 +33,7 @@
       ],
       "series": [
         {
-          "name": "Corn FOB Santos (BR)",
-          "points": [
-            {
-              "label": "W1",
-              "value": 110
-            },
-            {
-              "label": "W2",
-              "value": 111
-            },
-            {
-              "label": "W3",
-              "value": 113
-            },
-            {
-              "label": "W4",
-              "value": 113
-            }
-          ]
-        },
-        {
-          "name": "Soybeans Brazil",
+          "name": "Brazil Soybeans (USD/MT)",
           "points": [
             {
               "label": "W1",
@@ -75,23 +54,44 @@
           ]
         },
         {
-          "name": "Wheat Brazil",
+          "name": "Brazil Wheat (USD/MT)",
           "points": [
             {
               "label": "W1",
-              "value": 660
+              "value": 620
             },
             {
               "label": "W2",
-              "value": 661
+              "value": 630
             },
             {
               "label": "W3",
-              "value": 663
+              "value": 650
             },
             {
               "label": "W4",
-              "value": 663
+              "value": 660
+            }
+          ]
+        },
+        {
+          "name": "Chicago USDA Wheat (USD/MT)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 605
+            },
+            {
+              "label": "W2",
+              "value": 610
+            },
+            {
+              "label": "W3",
+              "value": 615
+            },
+            {
+              "label": "W4",
+              "value": 620
             }
           ]
         }
@@ -106,7 +106,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів характеризується стабільністю цін та збереженням логістичних викликів. Загальна площа посівів у 2026 році зменшилася до 21,2 млн га порівняно з 21,6 млн га минулого року, зокрема площа кукурудзи знизилася до 4,4 млн га, а пшениці навпаки зросла до 5,3 млн га. Ціни на соняшникову олію залишаються високими – 708 USD/т на переробку в Одесі, що свідчить про міцний попит. Логістика через Чорне море залишається складною через блокаду, що змушує активніше використовувати альтернативні маршрути, зокрема порти Дунаю. Порівняно з попереднім місяцем, кількість інформаційних сигналів зросла, але без суттєвих змін у настроях ринку. \\n\\nЩо змінилося: площа посівів дещо скоротилася, особливо кукурудзи, але пшениці збільшилася. Ціни на ключові культури стабільні, з незначними коливаннями. Логістичні проблеми залишаються актуальними, що підтримує високий рівень цін на експорт. \\n\\nІмплікації для трейдингу: варто звернути увагу на стабільний попит на соняшникову олію та пшеницю, а також на активізацію торгівлі через порти Дунаю як альтернативу Чорноморському коридору. Ціни на ячмінь і пшеницю на FOB Одеса близько 224-226 USD/т, що дає можливість для короткострокових угод з помірним маржинальним потенціалом. \\n\\n\n\nКлючові факти:\n\\n- Площа посівів зернових та олійних у 2026 році – 21,2 млн га проти 21,6 млн га у 2025 році (05.03.2026)\\n- Площа кукурудзи зменшилася до 4,4 млн га, пшениці зросла до 5,3 млн га (05.03.2026)\\n- Ціна соняшникової олії на переробку в Одесі – 708 USD/т (25.03.2026)\\n- Ціна кукурудзи на експорт в Одесі – 214 USD/т (25.03.2026)\\n- Ціна пшениці 12.5% FOB Одеса – 224-226 USD/т (24.03.2026)\\n- Активне використання портів Дунаю для експорту зерна через блокаду Чорного моря\\n\\n\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Цінова динаміка ключових культур, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3},       {\"label\": \"W4\", \"value\": 4}     ],     \"series\": [       {         \"name\": \"Соняшникова олія CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 710},           {\"label\": \"W4\", \"value\": 708}         ]       },       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"W1",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів залишається стабільною без суттєвих цінових коливань. Ціни на кукурудзу на експорті в порту Одеси тримаються в діапазоні 220-226 USD/т, що відображає баланс попиту та пропозиції. Соняшникова олія продовжує залишатися важливим продуктом переробки з ціною близько 709 USD/т. Порівняно з попереднім місяцем, активність на ринку значно зросла, зокрема за рахунок збільшення пропозицій шроту соєвого (ціна 19700 грн/т) та пшениці. Відсутність суттєвих змін у ціновій динаміці свідчить про стабільність ринку, незважаючи на геополітичні ризики, зокрема удари по російських нафтових портах, що можуть впливати на логістику. Для трейдерів важливо враховувати стабільність цін та наявність пропозицій з доставкою, що сприяє гнучкості у формуванні контрактів. Рекомендовано слідкувати за подальшими змінами в логістиці та можливими коливаннями цін на кукурудзу та соняшникову олію у квітні.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на ключові культури в Україні, USD/т\",     \"points\": [       {\"label\": \"W1\", \"value\": 0},       {\"label\": \"W2\", \"value\": 0},       {\"label\": \"W3\", \"value\": 0},       {\"label\": \"W4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 214},           {\"label\": \"W2\", \"value\": 220},           {\"label\": \"W3\", \"value\": 223},           {\"label\": \"W4\", \"value\": 223}         ]       },       {         \"name\": \"Пшениця CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 215},           {\"label\": \"W2\", \"value\": 215},           {\"label\": \"W3\", \"value\": 223},           {\"label\": \"W4\", \"value\": 223}         ]       },       {         \"name\": \"Соняшник CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 709},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 447},           {\"label\": \"W4\", \"value\": 447}         ]       }     ]   },   \"key_facts\": [     \"Ціна кукурудзи CPT Одеса стабільно тримається на рівні 220-226 USD/т (27.03-28.03).\",     \"Пшениця CPT Одеса зросла з 215 до 223 USD/т у кінці березня.\",     \"Соняшникова олія CPT Одеса досягла 709 USD/т станом на 27.03.\",     \"Шрот соєвий пропонується по 19700 грн/т у Кіровоградській області (26.",
     "chart": null,
     "inputCounts": {
       "last30days": 24,

@@ -1,3 +1,197 @@
 {
-  "items": []
+  "id": "resp_0fd27104523acdd40069c82154e9548194ab84bee1cec3dc78",
+  "object": "response",
+  "created_at": 1774723413,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1774723419,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "output": [
+    {
+      "id": "ws_0fd27104523acdd40069c821554b088194aca44db86b0b6a54",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "queries": [
+          "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com reddit",
+          "reddit \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430",
+          "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 reddit"
+        ],
+        "query": "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com reddit",
+        "sources": [
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/learn/what-is-reddit"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era-nyc"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era-vancouver"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/success-stories/advertisers/nespresso"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/conversations/how-super-bowl-lx-played-out-on-reddit"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/success-stories/advertisers/discover"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/blog/max-campaigns"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/trends/beauty-reddit-insights"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/blog/ces-2026"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/blog/reddit-smartly-integration"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era-toronto"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ws_0fd27104523acdd40069c8215669308194b85d8242fa4a12fc",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "queries": [
+          "site:reddit.com/r/ \"\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f\" reddit",
+          "site:reddit.com/r/ \"sunflower oil\" logistics Ukraine reddit",
+          "site:reddit.com/r/ Ukraine sunflower oil logistics reddit"
+        ],
+        "query": "site:reddit.com/r/ \"\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f\" reddit",
+        "sources": [
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz"
+          },
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7"
+          },
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/ukraine/comments/1274fy7"
+          },
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo"
+          },
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/TradingPlaybook/comments/1s1vmq3/just_in_ukraine_strikes_russias_largest_oil_port/"
+          },
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/ukraine/comments/1m259mb"
+          },
+          {
+            "type": "url",
+            "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg"
+          }
+        ]
+      }
+    },
+    {
+      "id": "msg_0fd27104523acdd40069c821580e288194a1e97ef5e092700f",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "{\n  \"items\": [\n    {\n      \"title\": \"100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.\",\n      \"url\": \"https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz\",\n      \"subreddit\": \"u_Sunflower-Oil-Offers\",\n      \"date\": \"2022-10-11\",\n      \"why_relevant\": \"Directly about sunflower oil supply and export logistics from Ukraine.\",\n      \"relevance\": 0.98\n    },\n    {\n      \"title\": \"Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each\",\n      \"url\": \"https://www.reddit.com/r/ukraine/comments/y6cpf7\",\n      \"subreddit\": \"ukraine\",\n      \"date\": \"2022-10-17\",\n      \"why_relevant\": \"Discusses sunflower oil storage, transport, and export infrastructure in Ukraine.\",\n      \"relevance\": 0.97\n    },\n    {\n      \"title\": \"Students in a Japanese town planted a sunflower field, then made sunflower oil, sold it, and donated the proceeds to Ukraine.\",\n      \"url\": \"https://www.reddit.com/r/ukraine/comments/1274fy7\",\n      \"subreddit\": \"ukraine\",\n      \"date\": \"2023-03-31\",\n      \"why_relevant\": \"Contains sunflower oil and Ukraine in a discussion context, though not strictly logistics-focused.\",\n      \"relevance\": 0.72\n    },\n    {\n      \"title\": \"Crude and Refined Sunflower Oil\",\n      \"url\": \"https://www.reddit.com/r/u_lt10plimited/comments/sp4soo\",\n      \"subreddit\": \"u_lt10plimited\",\n      \"date\": \"2022-02-10\",\n      \"why_relevant\": \"Commercial post about sunflower oil sourcing and bulk supply chains tied to Ukraine and Russia.\",\n      \"relevance\": 0.94\n    },\n    {\n      \"title\": \"Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f\",\n      \"url\": \"https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg\",\n      \"subreddit\": \"u_Sunflower-Oil-Offers\",\n      \"date\": \"2022-10-20\",\n      \"why_relevant\": \"Wholesale sunflower oil offer mentioning Ukraine and logistics/shipping terms.\",\n      \"relevance\": 0.96\n    },\n    {\n      \"title\": \"JUST IN: \ud83c\uddfa\ud83c\udde6\ud83c\uddf7\ud83c\uddfa Ukraine strikes Russia's largest oil port.\",\n      \"url\": \"https://www.reddit.com/r/TradingPlaybook/comments/1s1vmq3/just_in_ukraine_strikes_russias_largest_oil_port/\",\n      \"subreddit\": \"TradingPlaybook\",\n      \"date\": \"2026-03-24\",\n      \"why_relevant\": \"Thread includes discussion of oil shipping routes and mentions sunflower oil logistics.\",\n      \"relevance\": 0.68\n    },\n    {\n      \"title\": \"Helicopter of Ukrainian Air Forces flights over sunflower field\",\n      \"url\": \"https://www.reddit.com/r/ukraine/comments/1m259mb\",\n      \"subreddit\": \"ukraine\",\n      \"date\": \"2025-07-17\",\n      \"why_relevant\": \"Contains discussion noting Ukraine\u2019s sunflower oil export importance.\",\n      \"relevance\": 0.61\n    }\n  ]\n}"
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": null,
+  "reasoning": {
+    "effort": "none",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": true,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tools": [
+    {
+      "type": "web_search",
+      "filters": {
+        "allowed_domains": [
+          "reddit.com"
+        ]
+      },
+      "search_context_size": "medium",
+      "user_location": {
+        "type": "approximate",
+        "city": null,
+        "country": "US",
+        "region": null,
+        "timezone": null
+      }
+    }
+  ],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 12841,
+    "input_tokens_details": {
+      "cached_tokens": 4608
+    },
+    "output_tokens": 941,
+    "output_tokens_details": {
+      "reasoning_tokens": 181
+    },
+    "total_tokens": 13782
+  },
+  "user": null,
+  "metadata": {}
 }

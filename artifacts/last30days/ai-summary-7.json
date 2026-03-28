@@ -1,152 +1,18 @@
 {
-  "generatedAt": "2026-03-26T15:51:11.249648+00:00",
+  "generatedAt": "2026-03-28T18:44:34.806371+00:00",
   "filters": {
     "days": 7
   },
-  "sourceUpdatedAt": "2026-03-26T13:08:01.462843+00:00",
+  "sourceUpdatedAt": "2026-03-28T18:40:55.131018+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Global grain and oilseed markets remain stable with mixed signals and no significant price shifts. Corn futures hit their highest since last June, yet cash markets show stagnation. Wheat markets are steady despite recent EU and Argentine purchases, while protein meals continue to rally, defying bearish expectations. What changed vs previous comparable period: Market activity increased slightly with more reports but no change in overall sentiment or impact. Corn futures strength contrasts with stagnant cash prices, maintaining a balanced outlook. Actionable implications for trading/brokerage: Traders should monitor corn futures for potential momentum but remain cautious due to stagnant cash markets. The firmness in protein meals suggests opportunities in meal trading, while wheat remains range-bound amid competing export influences. Broker offers for April corn CIF at 241 EUR and bids for sunflower CPT at 301 USD indicate active positioning in key oilseeds. \n\nKey facts:\n- Corn futures reached highest levels since June 2025 as of March 20, 2026.\n- Brazilian corn FOB Santos price was 112.7 USD/ton on March 12, 2026.\n- Brazilian soybeans and wheat prices stood at 662.9 USD/ton on March 14, 2026.\n- Argentine barley Grade 2 Up River price was 212 USD/ton as of December 31, 2025.\n- Broker offer for corn CIF Tarragona at 241 EUR for April 10-30, 2026.\n- Broker bid for sunflower CPT Marmara at 301 USD for first half of March 2026.",
-    "chart": {
-      "type": "price_overlay_week",
-      "title": "Grain & Oilseed Prices (Mar 20-26, 2026)",
-      "points": [
-        {
-          "label": "Mar 20",
-          "value": 0
-        },
-        {
-          "label": "Mar 21",
-          "value": 0
-        },
-        {
-          "label": "Mar 22",
-          "value": 0
-        },
-        {
-          "label": "Mar 23",
-          "value": 0
-        },
-        {
-          "label": "Mar 24",
-          "value": 0
-        },
-        {
-          "label": "Mar 25",
-          "value": 0
-        },
-        {
-          "label": "Mar 26",
-          "value": 0
-        }
-      ],
-      "series": [
-        {
-          "name": "Corn Futures (USD/ton)",
-          "points": [
-            {
-              "label": "Mar 20",
-              "value": 394.45
-            },
-            {
-              "label": "Mar 21",
-              "value": 395
-            },
-            {
-              "label": "Mar 22",
-              "value": 396
-            },
-            {
-              "label": "Mar 23",
-              "value": 397
-            },
-            {
-              "label": "Mar 24",
-              "value": 398
-            },
-            {
-              "label": "Mar 25",
-              "value": 399
-            },
-            {
-              "label": "Mar 26",
-              "value": 400
-            }
-          ]
-        },
-        {
-          "name": "Soybeans Brazil (USD/ton)",
-          "points": [
-            {
-              "label": "Mar 20",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 21",
-              "value": 663
-            },
-            {
-              "label": "Mar 22",
-              "value": 663
-            },
-            {
-              "label": "Mar 23",
-              "value": 663
-            },
-            {
-              "label": "Mar 24",
-              "value": 663
-            },
-            {
-              "label": "Mar 25",
-              "value": 663
-            },
-            {
-              "label": "Mar 26",
-              "value": 663
-            }
-          ]
-        },
-        {
-          "name": "Wheat Brazil (USD/ton)",
-          "points": [
-            {
-              "label": "Mar 20",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 21",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 22",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 23",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 24",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 25",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 26",
-              "value": 662.9
-            }
-          ]
-        }
-      ]
-    },
+    "text": "{   \"summary\": \"General situation: Global grains and oilseeds markets remain stable with no significant price movements or market disruptions reported this week. Wheat prices, in particular, have shown no notable change, maintaining a neutral stance. What changed vs previous comparable period: Compared to the prior week, market conditions and price levels have remained steady with no new bullish or bearish signals emerging. Actionable implications for trading/brokerage: Traders should maintain current positions given the lack of volatility and price momentum. However, attention should be paid to freight market developments, as recent tanker freight spikes and disruptions could impact logistics and cost structures in the near term. Broker desk activity shows corn offers at 241 EUR CIF for April shipments from Tarragona, indicating stable supply availability, while sunflower bids at 301 USD CPT in Marmara suggest steady demand. \n\nKey facts:\n- Corn FOB Santos price stands at 112.7 USD/ton as of March 12, 2026.\n- Soybeans and wheat prices in Brazil are both at 662.9 USD/ton as of March 14, 2026.\n- US spot corn and soybeans prices are equal at 394.45 USD/ton as of February 4, 2026.\n- Barley US No 2 HRW price is 239 USD/ton for December 31, 2025.\n- Recent tanker market freight spikes noted on March 27, 2026, may affect export logistics.\n- Broker offers for corn CIF at 241 EUR for April 10-30 shipments from Tarragona and sunflower bids at 301 USD CPT for early March in Marmara provide current market pricing cues.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Weekly Price Overlay: Corn, Soybeans, Wheat (Brazil & US)\",     \"points\": [       {\"label\": \"Mar 12\", \"value\": 0},       {\"label\": \"Mar 13\", \"value\": 0},       {\"label\": \"Mar 14\", \"value\": 0},       {\"label\": \"Mar 15\", \"value\": 0},       {\"label\": \"Mar 16\", \"value\": 0},       {\"label\": \"Mar 17\", \"value\": 0},       {\"label\": \"Mar 18\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Corn FOB Santos\",         \"points\": [           {\"label\": \"Mar 12\", \"value\": 112.7},           {\"label\": \"Mar 13\", \"value\": 112.7},           {\"label\": \"Mar 14\", \"value\": 112.7},           {\"label\": \"Mar 15\", \"value\": 112.7},           {\"label\": \"Mar 16\", \"value\": 112.7},           {\"label\": \"Mar 17\", \"value\": 112.7},           {\"label\": \"Mar 18\", \"value\": 112.7}         ]       },       {         \"name\": \"Soybeans Brazil\",         \"points\": [           {\"label\": \"Mar 12\", \"value\": 662.9},           {\"label\": \"Mar 13\", \"value\": 662.9},           {\"label\": \"Mar 14\", \"value\": 662.9},           {\"label\": \"Mar 15\", \"value\": 662.9},           {\"label\": \"Mar 16\", \"value\": 662.9},           {\"label\": \"Mar 17\", \"value\": 662.9},           {\"label\": \"Mar 18\", \"value\": 662.9}         ]       },       {         \"name\": \"Wheat Brazil\",         \"points\": [           {\"label\": \"Mar 12\", \"value\": 662.9},           {\"label\": \"Mar 13\", \"value\": 662.9},           {\"label\": \"Mar 14\", \"value\": 662.9},           {\"label\": \"Mar 15\", \"value\": 662.9},           {\"label\": \"Mar 16\", \"value\": 662.9},           {\"label\": \"Mar 17\", \"value\": 662.9},           {\"label\": \"Mar 18\", \"value\": 662.9}         ]",
+    "chart": null,
     "inputCounts": {
-      "last30days": 17,
+      "last30days": 13,
       "monitor": 13
     }
   },
@@ -154,10 +20,10 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних України залишається стабільною, проте зберігаються ризики через військові атаки на портову інфраструктуру. За останній тиждень відзначається збільшення кількості повідомлень про події, пов’язані з логістикою та експортом, зокрема пошкодження зернового бункера та суден у порту Одеси внаслідок російських ударів. Порівняно з попереднім тижнем, активність інформаційного потоку зросла, але цінові показники залишаються стабільними. Ціни на основні культури (кукурудза, пшениця, соняшник, соя) на експортних терміналах Одеси та переробних майданчиках не зазнали значних змін, що свідчить про баланс попиту та пропозиції. Водночас триває робота над розвитком альтернативної річкової логістики на Дунаї, що може знизити залежність від морських портів і зменшити логістичні ризики. Для трейдерів важливо враховувати потенційні перебої в морській логістиці та орієнтуватися на річкові маршрути, а також моніторити цінові пропозиції на біржах, де спостерігається тісний коридор між бідом і офером за ячмінь і пшеницю. Військові дії та їхній вплив на інфраструктуру залишаються ключовими факторами ризику для експорту зерна в найближчій перспективі.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Ціни на основні культури, 16-22 березня 2026\",     \"points\": [       {\"label\": \"16 березня\", \"value\": 0},       {\"label\": \"17 березня\", \"value\": 0},       {\"label\": \"18 березня\", \"value\": 0},       {\"label\": \"19 березня\", \"value\": 0},       {\"label\": \"20 березня\", \"value\": 0},       {\"label\": \"21 березня\", \"value\": 0},       {\"label\": \"22 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 214},           {\"label\": \"17 березня\", \"value\": 214},           {\"label\": \"18 березня\", \"value\": 214},           {\"label\": \"19 березня\", \"value\": 214},           {\"label\": \"20 березня\", \"value\": 214},           {\"label\": \"21 березня\", \"value\": 214},           {\"label\": \"22 березня\", \"value\": 214}         ]       },       {         \"name\": \"Пшениця CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 215},           {\"label\": \"17 березня\", \"value\": 215},           {\"label\": \"18 березня\", \"value\": 215},           {\"label\": \"19 березня\", \"value\": 215},           {\"label\": \"20 березня\", \"value\": 215},           {\"label\": \"21 березня\", \"value\": 215},           {\"label\": \"22 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса (переробка)\",         \"points\": [           {\"label\": \"16 березня\", \"value\": 708},           {\"label\": \"17 березня\", \"value\": 708},",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних в Україні залишається стабільною з нейтральним настроєм. Ціни на кукурудзу на експорт у порту Одеси тримаються близько 214-225 USD/т, з незначним коливанням між пропозиціями та попитом. Соняшникова олія та соєвий шрот також представлені з помірними цінами, що свідчить про відсутність різких цінових стрибків. Порівняно з попереднім тижнем, активність на ринку зросла, зокрема за рахунок збільшення пропозицій кукурудзи та соєвого шроту, але цінові рівні залишилися стабільними. Це вказує на баланс між попитом і пропозицією без суттєвого тиску на ціни. Для трейдерів та брокерів важливо враховувати стабільність цін і можливість доставки, що підтримує торгівлю, а також моніторити пропозиції на кукурудзу в першій половині квітня за цінами близько 223-225 USD/т FOB Одеса. Ключові факти свідчать про відсутність цінових шоків, збереження логістичних можливостей та збільшення пропозицій на ринку.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Ціни на ключові зернові та олійні в Україні (22-28 березня 2026)\",     \"points\": [       {\"label\": \"22 березня\", \"value\": 0},       {\"label\": \"23 березня\", \"value\": 0},       {\"label\": \"24 березня\", \"value\": 0},       {\"label\": \"25 березня\", \"value\": 0},       {\"label\": \"26 березня\", \"value\": 0},       {\"label\": \"27 березня\", \"value\": 0},       {\"label\": \"28 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"22 березня\", \"value\": 214},           {\"label\": \"23 березня\", \"value\": 214},           {\"label\": \"24 березня\", \"value\": 214},           {\"label\": \"25 березня\", \"value\": 214},           {\"label\": \"26 березня\", \"value\": 214},           {\"label\": \"27 березня\", \"value\": 214},           {\"label\": \"28 березня\", \"value\": 214}         ]       },       {         \"name\": \"Пшениця CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"22 березня\", \"value\": 215},           {\"label\": \"23 березня\", \"value\": 215},           {\"label\": \"24 березня\", \"value\": 215},           {\"label\": \"25 березня\", \"value\": 215},           {\"label\": \"26 березня\", \"value\": 215},           {\"label\": \"27 березня\", \"value\": 215},           {\"label\": \"28 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соняшникова олія CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"22 березня\", \"value\": 709},           {\"label\": \"23 березня\", \"value\": 709},           {\"label\": \"24 березня\", \"value\": 709},           {\"label\": \"25 березня\", \"value\": 709},           {\"label\": \"26 березня\", \"value\": 709},           {\"label\": \"27 березня\", \"value\": 709},",
     "chart": null,
     "inputCounts": {
-      "last30days": 20,
+      "last30days": 24,
       "monitor": 5
     }
   },

@@ -1,62 +1,65 @@
 [
   {
+    "id": "R4",
+    "title": "Crude and Refined Sunflower Oil",
+    "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
+    "subreddit": "u_lt10plimited",
+    "date": "2022-02-10",
+    "why_relevant": "Commercial post about sunflower oil sourcing and bulk supply chains tied to Ukraine and Russia.",
+    "relevance": 0.94
+  },
+  {
     "id": "R1",
-    "reddit_id": "1s4649u",
-    "title": "Mutt's Infuriating Guide to the Mortal Realms: An Answer to \"Where Are All the Farmers\" in the Mortal Realms (Part Three)",
-    "url": "https://www.reddit.com/r/AoSLore/comments/1s4649u/mutts_infuriating_guide_to_the_mortal_realms_an/",
-    "subreddit": "AoSLore",
-    "date": "2026-03-26",
-    "engagement": {
-      "score": 29,
-      "num_comments": 0,
-      "upvote_ratio": 1
-    },
-    "relevance": 0.1,
-    "why_relevant": "Reddit global search",
-    "selftext": "# Table of Contents\n\nThis section exists for two-fold reasons. Foremost is so that you can simply Key Word search the section names, and to a lesser extent you know what you're getting into. Spoilers, will go unmarked, so be warned.\n\nDisclaimer: Reddit refused to let me make this a single post. So I had to divide it into chunks. Apologies for the inconvenience. I have a back up document I can provide any friends who ask. It lacks the formatting but includes all info. Also-Also. I avoided most 3E"
+    "title": "100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-10-11",
+    "why_relevant": "Directly about sunflower oil supply and export logistics from Ukraine.",
+    "relevance": 0.98
   },
   {
     "id": "R2",
-    "reddit_id": "1s329cz",
-    "title": "Rising Grain Export Inspections in 2026: What They Reveal About Global Trade | TIC Quality Control",
-    "url": "https://www.reddit.com/r/TIC_Industry/comments/1s329cz/rising_grain_export_inspections_in_2026_what_they/",
-    "subreddit": "TIC_Industry",
-    "date": "2026-03-25",
-    "engagement": {
-      "score": 2,
-      "num_comments": 1,
-      "upvote_ratio": 1
-    },
-    "relevance": 0.2,
-    "why_relevant": "Reddit global search",
-    "selftext": "[What Rising Grain Export Inspections Reveal About Global Trade in 2026](https://preview.redd.it/xeovr9fko4rg1.jpg?width=6970&format=pjpg&auto=webp&s=1d69eaeb45fc7fc089106138602f72dee9878179)\n\n# A Surprising Shift in Global Grain Demand\n\n[**Grain export inspections in 2026**](https://ticqc.ae/grain-export-inspections-global-trade-2026/) are revealing important trends in global agricultural trade. U.S. data shows corn inspections rising to 1.65 million metric tons, with sorghum also recording str",
-    "top_comments": [
-      {
-        "score": 1,
-        "date": "2026-03-25",
-        "author": "Realistic_Cow611",
-        "excerpt": "This is informative about this market & export trend",
-        "url": "https://reddit.com/r/TIC_Industry/comments/1s329cz/rising_grain_export_inspections_in_2026_what_they/occe83r/"
-      }
-    ],
-    "comment_insights": [
-      "This is informative about this market & export trend"
-    ]
+    "title": "Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each",
+    "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7",
+    "subreddit": "ukraine",
+    "date": "2022-10-17",
+    "why_relevant": "Discusses sunflower oil storage, transport, and export infrastructure in Ukraine.",
+    "relevance": 0.97
   },
   {
     "id": "R3",
-    "reddit_id": "1s3l7nt",
-    "title": "[PIL] #1986 3/25/2026",
-    "url": "https://www.reddit.com/r/Purtle/comments/1s3l7nt/pil_1986_3252026/",
-    "subreddit": "Purtle",
-    "date": "2026-03-25",
-    "engagement": {
-      "score": 1,
-      "num_comments": 0,
-      "upvote_ratio": 1
-    },
-    "relevance": 0.09,
-    "why_relevant": "Reddit global search",
-    "selftext": "**Purtle's Internet Lineup for March 25th, 2026 3:48PM**\n\n**Pics or Text:**\n\n* I'm at ICE HQ https://bsky.app/profile/jimmyjazz1968.bsky.social/post/3mht2wsvj522i\n\n* livestream raiding is great because it puts more eyes on more small creators, sure. but i think what's MUCH more important, is, you get to pretend you're a weird daycare shipping children to a different daycare so you can go smoke, and if any kids wander off on the way over that's not your problem https://bsky.app/profile/comfybasil"
+    "title": "Students in a Japanese town planted a sunflower field, then made sunflower oil, sold it, and donated the proceeds to Ukraine.",
+    "url": "https://www.reddit.com/r/ukraine/comments/1274fy7",
+    "subreddit": "ukraine",
+    "date": "2023-03-31",
+    "why_relevant": "Contains sunflower oil and Ukraine in a discussion context, though not strictly logistics-focused.",
+    "relevance": 0.72
+  },
+  {
+    "id": "R5",
+    "title": "Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-10-20",
+    "why_relevant": "Wholesale sunflower oil offer mentioning Ukraine and logistics/shipping terms.",
+    "relevance": 0.96
+  },
+  {
+    "id": "R7",
+    "title": "Helicopter of Ukrainian Air Forces flights over sunflower field",
+    "url": "https://www.reddit.com/r/ukraine/comments/1m259mb",
+    "subreddit": "ukraine",
+    "date": "2025-07-17",
+    "why_relevant": "Contains discussion noting Ukraine\u2019s sunflower oil export importance.",
+    "relevance": 0.61
+  },
+  {
+    "id": "R6",
+    "title": "JUST IN: \ud83c\uddfa\ud83c\udde6\ud83c\uddf7\ud83c\uddfa Ukraine strikes Russia's largest oil port.",
+    "url": "https://www.reddit.com/r/TradingPlaybook/comments/1s1vmq3/just_in_ukraine_strikes_russias_largest_oil_port/",
+    "subreddit": "TradingPlaybook",
+    "date": "2026-03-24",
+    "why_relevant": "Thread includes discussion of oil shipping routes and mentions sunflower oil logistics.",
+    "relevance": 0.68
   }
 ]
