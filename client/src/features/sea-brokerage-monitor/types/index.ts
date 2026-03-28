@@ -164,6 +164,36 @@ export interface FeedFilterState {
   dateTo: string;
 }
 
+export interface FilterPreset {
+  id: string;
+  brokerUserId: string;
+  brokerCode: string;
+  name: string;
+  isDefault: boolean;
+  filters: {
+    commodity: string;
+    basis: string;
+    brokerProfileId: string;
+    originCountry: string;
+    deliveryPlace: string;
+    search: string;
+  };
+  offerPaneFilters: {
+    brokerProfileId: string;
+    search: string;
+  };
+  bidPaneFilters: {
+    brokerProfileId: string;
+    search: string;
+  };
+  tradePaneFilters: {
+    brokerProfileId: string;
+    search: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SelectOption<TValue extends string = string> {
   value: TValue;
   label: string;

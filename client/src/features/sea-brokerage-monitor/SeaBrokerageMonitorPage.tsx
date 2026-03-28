@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -17,7 +18,7 @@ import {
   defaultFeedFilters,
   filterBrokerageEntries,
 } from "./services/feedFilters.service";
-import type { BrokerageEntry, EntryType, FeedFilterState } from "./types";
+import type { BrokerageEntry, EntryType, FeedFilterState, FilterPreset } from "./types";
 import { queryClient } from "@/lib/queryClient";
 
 const defaultPaneFilters: BrokerWorkspacePaneFilters = {
@@ -55,9 +56,24 @@ export function SeaBrokerageMonitorPage() {
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [tradePaneFilters, setTradePaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState("");
   const [magicLinkRequested, setMagicLinkRequested] = useState(false);
+  const defaultPresetAppliedTokenRef = useRef<string | null>(null);
+
+  const { data: filterPresets = [] } = useQuery<FilterPreset[]>({
+    queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
+    enabled: !!session.monitorAuthToken,
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/filter-presets", {
+        method: "GET",
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      });
+      if (!response.ok) return [];
+      return response.json();
+    },
+  });
 
   const filteredEntries = useMemo(
     () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
@@ -141,8 +157,110 @@ export function SeaBrokerageMonitorPage() {
     [tradeEntriesBase, tradePaneFilters],
   );
 
+  function handleOfferPaneFiltersChange(next: BrokerWorkspacePaneFilters) {
+    setActivePresetId(null);
+    setOfferPaneFilters(next);
+  }
+
+  function handleBidPaneFiltersChange(next: BrokerWorkspacePaneFilters) {
+    setActivePresetId(null);
+    setBidPaneFilters(next);
+  }
+
+  function handleTradePaneFiltersChange(next: BrokerWorkspacePaneFilters) {
+    setActivePresetId(null);
+    setTradePaneFilters(next);
+  }
+
   function updateFilter<K extends keyof FeedFilterState>(key: K, value: FeedFilterState[K]) {
+    setActivePresetId(null);
     setFilters((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function applyPreset(preset: FilterPreset) {
+    setFilters((prev) => ({
+      ...prev,
+      commodity: (preset.filters.commodity as FeedFilterState["commodity"]) || "all",
+      basis: (preset.filters.basis as FeedFilterState["basis"]) || "all",
+      brokerProfileId: preset.filters.brokerProfileId || "all",
+      originCountry: preset.filters.originCountry || "all",
+      deliveryPlace: preset.filters.deliveryPlace || "all",
+      search: preset.filters.search || "",
+    }));
+    setOfferPaneFilters({
+      brokerProfileId: preset.offerPaneFilters.brokerProfileId || "all",
+      search: preset.offerPaneFilters.search || "",
+    });
+    setBidPaneFilters({
+      brokerProfileId: preset.bidPaneFilters.brokerProfileId || "all",
+      search: preset.bidPaneFilters.search || "",
+    });
+    setTradePaneFilters({
+      brokerProfileId: preset.tradePaneFilters.brokerProfileId || "all",
+      search: preset.tradePaneFilters.search || "",
+    });
+    setActivePresetId(preset.id);
+  }
+
+  async function handleSavePreset() {
+    if (!session.monitorAuthToken) {
+      setTelegramAuthOpen(true);
+      return;
+    }
+    const name = window.prompt("View name", "My view");
+    if (!name || !name.trim()) return;
+    await fetch("/api/sea-brokerage-monitor/filter-presets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+        isDefault: false,
+        filters: {
+          commodity: filters.commodity,
+          basis: filters.basis,
+          brokerProfileId: filters.brokerProfileId,
+          originCountry: filters.originCountry,
+          deliveryPlace: filters.deliveryPlace,
+          search: filters.search,
+        },
+        offerPaneFilters,
+        bidPaneFilters,
+        tradePaneFilters,
+      }),
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
+    });
+  }
+
+  async function handleSetDefaultPreset() {
+    if (!session.monitorAuthToken || !activePresetId) return;
+    await fetch(`/api/sea-brokerage-monitor/filter-presets/${activePresetId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      },
+      body: JSON.stringify({ isDefault: true }),
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
+    });
+  }
+
+  async function handleDeletePreset() {
+    if (!session.monitorAuthToken || !activePresetId) return;
+    await fetch(`/api/sea-brokerage-monitor/filter-presets/${activePresetId}`, {
+      method: "DELETE",
+      headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+    });
+    setActivePresetId(null);
+    await queryClient.invalidateQueries({
+      queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
+    });
   }
 
   async function handleToggleLike(entry: BrokerageEntry) {
@@ -241,6 +359,22 @@ export function SeaBrokerageMonitorPage() {
     }
   }, [session.monitorAuthToken, telegramAuthOpen]);
 
+  useEffect(() => {
+    if (!session.monitorAuthToken) {
+      defaultPresetAppliedTokenRef.current = null;
+      setActivePresetId(null);
+      return;
+    }
+    if (defaultPresetAppliedTokenRef.current === session.monitorAuthToken) {
+      return;
+    }
+    const defaultPreset = filterPresets.find((preset) => preset.isDefault);
+    if (defaultPreset) {
+      applyPreset(defaultPreset);
+    }
+    defaultPresetAppliedTokenRef.current = session.monitorAuthToken;
+  }, [filterPresets, session.monitorAuthToken]);
+
   async function handleRequestTelegramMagicLink() {
     const normalized = telegramUsername.trim().replace(/^@+/, "");
     if (!normalized) return;
@@ -255,6 +389,20 @@ export function SeaBrokerageMonitorPage() {
           filters={filters}
           onFilterChange={updateFilter}
           brokerOptions={globalBrokerOptions}
+          canManagePresets={session.canCreateEntries}
+          presetOptions={filterPresets.map((preset) => ({
+            value: preset.id,
+            label: `${preset.isDefault ? "★ " : ""}${preset.name}`,
+          }))}
+          activePresetId={activePresetId}
+          onApplyPreset={(presetId) => {
+            const preset = filterPresets.find((item) => item.id === presetId);
+            if (!preset) return;
+            applyPreset(preset);
+          }}
+          onSavePreset={() => void handleSavePreset()}
+          onSetDefaultPreset={() => void handleSetDefaultPreset()}
+          onDeletePreset={() => void handleDeletePreset()}
         />
 
         <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
@@ -267,7 +415,7 @@ export function SeaBrokerageMonitorPage() {
             selectedEntryId={selectedEntry?.type === "offer" ? selectedEntry.id : null}
             onSelectEntry={setSelectedEntry}
             filters={offerPaneFilters}
-            onFiltersChange={setOfferPaneFilters}
+            onFiltersChange={handleOfferPaneFiltersChange}
             likesEnabled
             onToggleLike={handleToggleLike}
             currentBrokerId={session.authorProfile?.id ?? null}
@@ -285,7 +433,7 @@ export function SeaBrokerageMonitorPage() {
             selectedEntryId={selectedEntry?.type === "bid" ? selectedEntry.id : null}
             onSelectEntry={setSelectedEntry}
             filters={bidPaneFilters}
-            onFiltersChange={setBidPaneFilters}
+            onFiltersChange={handleBidPaneFiltersChange}
             likesEnabled
             onToggleLike={handleToggleLike}
             currentBrokerId={session.authorProfile?.id ?? null}
@@ -313,7 +461,7 @@ export function SeaBrokerageMonitorPage() {
             selectedEntryId={selectedEntry?.type === "trade" ? selectedEntry.id : null}
             onSelectEntry={setSelectedEntry}
             filters={tradePaneFilters}
-            onFiltersChange={setTradePaneFilters}
+            onFiltersChange={handleTradePaneFiltersChange}
             likesEnabled={false}
             createActionLabel="Create TRADE"
             createActionVariant="default"

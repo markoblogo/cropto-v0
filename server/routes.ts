@@ -195,6 +195,7 @@ const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
+const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
 
 type SeaBrokerageEntryLike = {
@@ -217,6 +218,66 @@ type SeaBrokerageMatchLike = {
   kind: "normal" | "boss";
   createdAt: string;
 };
+
+type SeaBrokerageFilterPreset = {
+  id: string;
+  brokerUserId: string;
+  brokerCode: string;
+  name: string;
+  isDefault: boolean;
+  filters: {
+    commodity: string;
+    basis: string;
+    brokerProfileId: string;
+    originCountry: string;
+    deliveryPlace: string;
+    search: string;
+  };
+  offerPaneFilters: {
+    brokerProfileId: string;
+    search: string;
+  };
+  bidPaneFilters: {
+    brokerProfileId: string;
+    search: string;
+  };
+  tradePaneFilters: {
+    brokerProfileId: string;
+    search: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+const seaBrokerageFilterPresetPayloadSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  isDefault: z.coerce.boolean().optional(),
+  filters: z.object({
+    commodity: z.string().trim().default("all"),
+    basis: z.string().trim().default("all"),
+    brokerProfileId: z.string().trim().default("all"),
+    originCountry: z.string().trim().default("all"),
+    deliveryPlace: z.string().trim().default("all"),
+    search: z.string().default(""),
+  }),
+  offerPaneFilters: z.object({
+    brokerProfileId: z.string().trim().default("all"),
+    search: z.string().default(""),
+  }),
+  bidPaneFilters: z.object({
+    brokerProfileId: z.string().trim().default("all"),
+    search: z.string().default(""),
+  }),
+  tradePaneFilters: z.object({
+    brokerProfileId: z.string().trim().default("all"),
+    search: z.string().default(""),
+  }),
+});
+
+const seaBrokerageFilterPresetUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(60).optional(),
+  isDefault: z.coerce.boolean().optional(),
+});
 
 function decimalToNumber(value: unknown) {
   if (value === null || value === undefined) return null;
@@ -501,6 +562,79 @@ async function readSeaBrokerageMatchLikes(): Promise<SeaBrokerageMatchLike[]> {
 
 async function writeSeaBrokerageMatchLikes(likes: SeaBrokerageMatchLike[]) {
   await storage.upsertAppSetting(SEA_BROKERAGE_MATCH_LIKES_KEY, JSON.stringify(likes));
+}
+
+function resolveSeaBrokerageBrokerUserId(authorizedBroker: {
+  telegramUserId: string | null;
+  telegramUsername: string | null;
+  authUserId: string | null;
+  brokerCode: string;
+}) {
+  return (
+    authorizedBroker.telegramUserId ||
+    authorizedBroker.telegramUsername ||
+    authorizedBroker.authUserId ||
+    `broker:${authorizedBroker.brokerCode.toLowerCase()}`
+  );
+}
+
+async function readSeaBrokerageFilterPresets(): Promise<SeaBrokerageFilterPreset[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_FILTER_PRESETS_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageFilterPreset[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.id === "string" &&
+          typeof item.brokerUserId === "string" &&
+          typeof item.brokerCode === "string" &&
+          typeof item.name === "string" &&
+          typeof item.isDefault === "boolean" &&
+          typeof item.createdAt === "string" &&
+          typeof item.updatedAt === "string" &&
+          item.filters &&
+          item.offerPaneFilters &&
+          item.bidPaneFilters &&
+          item.tradePaneFilters,
+      )
+      .map((item) => ({
+        id: String(item.id).trim(),
+        brokerUserId: String(item.brokerUserId).trim(),
+        brokerCode: String(item.brokerCode).trim(),
+        name: String(item.name).trim(),
+        isDefault: !!item.isDefault,
+        filters: {
+          commodity: String(item.filters.commodity || "all"),
+          basis: String(item.filters.basis || "all"),
+          brokerProfileId: String(item.filters.brokerProfileId || "all"),
+          originCountry: String(item.filters.originCountry || "all"),
+          deliveryPlace: String(item.filters.deliveryPlace || "all"),
+          search: String(item.filters.search || ""),
+        },
+        offerPaneFilters: {
+          brokerProfileId: String(item.offerPaneFilters.brokerProfileId || "all"),
+          search: String(item.offerPaneFilters.search || ""),
+        },
+        bidPaneFilters: {
+          brokerProfileId: String(item.bidPaneFilters.brokerProfileId || "all"),
+          search: String(item.bidPaneFilters.search || ""),
+        },
+        tradePaneFilters: {
+          brokerProfileId: String(item.tradePaneFilters.brokerProfileId || "all"),
+          search: String(item.tradePaneFilters.search || ""),
+        },
+        createdAt: String(item.createdAt),
+        updatedAt: String(item.updatedAt),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function writeSeaBrokerageFilterPresets(presets: SeaBrokerageFilterPreset[]) {
+  await storage.upsertAppSetting(SEA_BROKERAGE_FILTER_PRESETS_KEY, JSON.stringify(presets));
 }
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
@@ -7723,6 +7857,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching sea brokerage monitor entries:", error);
       res.status(500).json({ error: "Failed to fetch sea brokerage monitor entries" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/filter-presets", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.json([]);
+      }
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const presets = await readSeaBrokerageFilterPresets();
+      const visible = presets
+        .filter((preset) => preset.brokerUserId.toLowerCase() === brokerUserId)
+        .sort((a, b) => {
+          if (a.isDefault !== b.isDefault) return a.isDefault ? -1 : 1;
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        });
+      return res.json(visible);
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage filter presets:", error);
+      return res.status(500).json({ error: "Failed to fetch filter presets" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/filter-presets", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const parsed = seaBrokerageFilterPresetPayloadSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker);
+      const nowIso = new Date().toISOString();
+      const presetId = randomUUID();
+      const nextPreset: SeaBrokerageFilterPreset = {
+        id: presetId,
+        brokerUserId,
+        brokerCode: authorizedBroker.brokerCode,
+        name: parsed.data.name,
+        isDefault: !!parsed.data.isDefault,
+        filters: parsed.data.filters,
+        offerPaneFilters: parsed.data.offerPaneFilters,
+        bidPaneFilters: parsed.data.bidPaneFilters,
+        tradePaneFilters: parsed.data.tradePaneFilters,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+
+      const all = await readSeaBrokerageFilterPresets();
+      const normalizedBrokerUserId = brokerUserId.toLowerCase();
+      const updated = all.map((preset) =>
+        preset.brokerUserId.toLowerCase() === normalizedBrokerUserId && nextPreset.isDefault
+          ? { ...preset, isDefault: false, updatedAt: nowIso }
+          : preset,
+      );
+      updated.push(nextPreset);
+      await writeSeaBrokerageFilterPresets(updated);
+      return res.status(201).json(nextPreset);
+    } catch (error: any) {
+      console.error("Error creating sea brokerage filter preset:", error);
+      return res.status(500).json({ error: "Failed to create filter preset" });
+    }
+  });
+
+  app.patch("/api/sea-brokerage-monitor/filter-presets/:presetId", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+      const parsed = seaBrokerageFilterPresetUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const presetId = String(req.params.presetId || "").trim();
+      if (!presetId) return res.status(400).json({ error: "Preset id is required" });
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const nowIso = new Date().toISOString();
+      const all = await readSeaBrokerageFilterPresets();
+      const target = all.find(
+        (preset) => preset.id === presetId && preset.brokerUserId.toLowerCase() === brokerUserId,
+      );
+      if (!target) {
+        return res.status(404).json({ error: "Preset not found" });
+      }
+
+      const nextName = parsed.data.name ?? target.name;
+      const markDefault = parsed.data.isDefault === true;
+      const updated = all.map((preset) => {
+        if (preset.brokerUserId.toLowerCase() !== brokerUserId) return preset;
+        if (preset.id === presetId) {
+          return {
+            ...preset,
+            name: nextName,
+            isDefault: parsed.data.isDefault !== undefined ? !!parsed.data.isDefault : preset.isDefault,
+            updatedAt: nowIso,
+          };
+        }
+        if (markDefault) {
+          return { ...preset, isDefault: false, updatedAt: nowIso };
+        }
+        return preset;
+      });
+
+      await writeSeaBrokerageFilterPresets(updated);
+      const refreshed = updated.find((preset) => preset.id === presetId)!;
+      return res.json(refreshed);
+    } catch (error: any) {
+      console.error("Error updating sea brokerage filter preset:", error);
+      return res.status(500).json({ error: "Failed to update filter preset" });
+    }
+  });
+
+  app.delete("/api/sea-brokerage-monitor/filter-presets/:presetId", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const presetId = String(req.params.presetId || "").trim();
+      if (!presetId) return res.status(400).json({ error: "Preset id is required" });
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const all = await readSeaBrokerageFilterPresets();
+      const before = all.length;
+      const next = all.filter(
+        (preset) => !(preset.id === presetId && preset.brokerUserId.toLowerCase() === brokerUserId),
+      );
+      if (before === next.length) {
+        return res.status(404).json({ error: "Preset not found" });
+      }
+      await writeSeaBrokerageFilterPresets(next);
+      return res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting sea brokerage filter preset:", error);
+      return res.status(500).json({ error: "Failed to delete filter preset" });
     }
   });
 

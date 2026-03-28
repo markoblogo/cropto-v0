@@ -1,4 +1,5 @@
-import { Search } from "lucide-react";
+import { Save, Search, Star, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,12 +21,26 @@ interface MonitorToolbarProps {
   filters: FeedFilterState;
   onFilterChange: <K extends keyof FeedFilterState>(key: K, value: FeedFilterState[K]) => void;
   brokerOptions: Array<{ value: string; label: string }>;
+  canManagePresets?: boolean;
+  presetOptions?: Array<{ value: string; label: string }>;
+  activePresetId?: string | null;
+  onApplyPreset?: (presetId: string) => void;
+  onSavePreset?: () => void;
+  onSetDefaultPreset?: () => void;
+  onDeletePreset?: () => void;
 }
 
 export function MonitorToolbar({
   filters,
   onFilterChange,
   brokerOptions,
+  canManagePresets = false,
+  presetOptions = [],
+  activePresetId = null,
+  onApplyPreset,
+  onSavePreset,
+  onSetDefaultPreset,
+  onDeletePreset,
 }: MonitorToolbarProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 px-1.5 py-1 shadow-sm sm:px-2.5 sm:py-1.5">
@@ -34,6 +49,51 @@ export function MonitorToolbar({
           <div className="mr-auto min-w-0 text-[8.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:text-[11px] sm:tracking-[0.18em]">
             Spike Brokerage Monitor
           </div>
+          {canManagePresets ? (
+            <div className="flex min-w-0 items-center gap-1">
+              <Select
+                value={activePresetId ?? "none"}
+                onValueChange={(value) => {
+                  if (value !== "none") onApplyPreset?.(value);
+                }}
+              >
+                <SelectTrigger className="h-6 min-w-[152px] text-[10px] sm:h-7 sm:text-[11px]">
+                  <SelectValue placeholder="Views" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Views</SelectItem>
+                  {presetOptions.map((preset) => (
+                    <SelectItem key={preset.value} value={preset.value}>
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button type="button" variant="outline" size="sm" className="h-6 px-1.5 sm:h-7" onClick={onSavePreset}>
+                <Save className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-1.5 sm:h-7"
+                onClick={onSetDefaultPreset}
+                disabled={!activePresetId}
+              >
+                <Star className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 px-1.5 sm:h-7"
+                onClick={onDeletePreset}
+                disabled={!activePresetId}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(220px,1.3fr)] xl:gap-1.5">
