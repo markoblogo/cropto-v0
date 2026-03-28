@@ -18,7 +18,6 @@ import {
   buildCompactCanonicalView,
   formatEntryCommodityCompact,
   formatEntryPriceRange,
-  formatEntryTimestampCompact,
 } from "../services/entryFormatting.service";
 import { getPortPlaceDisplayLabel } from "../services/displayStandards";
 import type { BrokerageEntry, MatchSuggestion } from "../types";
@@ -123,9 +122,11 @@ export function ContextualMatchingPanel({
   return (
     <>
       <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
-        <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3 sm:py-1.5">
-          <div className="flex min-w-0 flex-wrap items-center gap-0.5 sm:gap-1.5">
-            <CardTitle className="mr-auto text-[11.5px] sm:text-[13px]">Matches</CardTitle>
+        <CardHeader className="space-y-0.75 border-b border-border/60 px-1.5 py-0.75 sm:space-y-1 sm:px-3 sm:py-1.5">
+          <div className="flex min-w-0 items-center gap-1">
+            <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
+              MATCHES
+            </CardTitle>
             <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
             </div>
@@ -141,7 +142,7 @@ export function ContextualMatchingPanel({
               </Button>
             ) : null}
           </div>
-          <div className="mt-0.5 grid min-w-0 gap-0.5 sm:mt-1 sm:grid-cols-3 sm:gap-1.5">
+          <div className="grid min-w-0 gap-0.5 sm:grid-cols-3 sm:gap-1.5">
             <Select
               value={focus.commodity}
               onValueChange={(value) =>
@@ -151,7 +152,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-6 text-[10.5px] sm:h-7 sm:text-[11px]">
+              <SelectTrigger className="h-5.5 text-[10px] sm:h-6.5 sm:text-xs">
                 <SelectValue placeholder="Commodity focus" />
               </SelectTrigger>
               <SelectContent>
@@ -172,7 +173,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-6 text-[10.5px] sm:h-7 sm:text-[11px]">
+              <SelectTrigger className="h-5.5 text-[10px] sm:h-6.5 sm:text-xs">
                 <SelectValue placeholder="Basis focus" />
               </SelectTrigger>
               <SelectContent>
@@ -193,7 +194,7 @@ export function ContextualMatchingPanel({
                 }))
               }
             >
-              <SelectTrigger className="h-6 text-[10.5px] sm:h-7 sm:text-[11px]">
+              <SelectTrigger className="h-5.5 text-[10px] sm:h-6.5 sm:text-xs">
                 <SelectValue placeholder="Delivery focus" />
               </SelectTrigger>
               <SelectContent>
@@ -238,12 +239,6 @@ export function ContextualMatchingPanel({
                     !!selectedEntry &&
                     (suggestion.bidEntryId === selectedEntry.id ||
                       suggestion.offerEntryId === selectedEntry.id);
-                  const latestEntryCreatedAt =
-                    getLatestMatchTimestamp(suggestion) ===
-                    new Date(suggestion.bidEntry.createdAt).getTime()
-                      ? suggestion.bidEntry.createdAt
-                      : suggestion.offerEntry.createdAt;
-
                   return (
                     <div
                       key={suggestion.id}
@@ -251,9 +246,6 @@ export function ContextualMatchingPanel({
                         isRelated ? "bg-muted/20" : ""
                       }`}
                     >
-                      <div className="text-[9px] leading-3 text-muted-foreground sm:text-[10px]">
-                        ==========
-                      </div>
                       <button
                         type="button"
                         onClick={() => setDetailEntry(suggestion.bidEntry)}
@@ -268,10 +260,6 @@ export function ContextualMatchingPanel({
                       >
                         Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
                       </button>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[9px] leading-3 text-muted-foreground sm:text-[10px]">
-                        <span>==========</span>
-                        <span>{formatEntryTimestampCompact(latestEntryCreatedAt)}</span>
-                      </div>
                     </div>
                   );
                 })}

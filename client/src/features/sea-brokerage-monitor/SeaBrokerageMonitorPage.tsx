@@ -278,7 +278,7 @@ export function SeaBrokerageMonitorPage() {
             filters={tradePaneFilters}
             onFiltersChange={setTradePaneFilters}
             createActionLabel="Create TRADE"
-            createActionVariant="secondary"
+            createActionVariant="default"
             onCreateAction={() => setCreateDialogType("trade")}
           />
         </section>
