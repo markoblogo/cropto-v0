@@ -122,7 +122,11 @@ export function getPortPlaceDisplayLabel(portCode: string | null | undefined) {
 export function getPortPlaceCompactDisplay(portCode: string | null | undefined) {
   if (!portCode) return "";
   const port = portOptionMap[portCode];
-  if (!port) return portCode.toUpperCase();
+  if (!port) {
+    const normalized = portCode.toUpperCase();
+    if (normalized.startsWith("CUSTOM_")) return "";
+    return normalized;
+  }
   if (port.unlocode) return port.unlocode;
   return `${port.compactDisplay}, ${port.countryCodeAlpha3}`;
 }
@@ -206,7 +210,10 @@ export function normalizePeriodCompactLabel(input: {
 
 export function formatEntryDestinationCompactDisplay(entry: BrokerageEntry) {
   if (entry.destinationPortCode) {
-    return getPortPlaceCompactDisplay(entry.destinationPortCode);
+    const compactByCode = getPortPlaceCompactDisplay(entry.destinationPortCode);
+    if (compactByCode) {
+      return compactByCode;
+    }
   }
 
   const compactPort = (entry.destinationPort ?? "").toUpperCase();

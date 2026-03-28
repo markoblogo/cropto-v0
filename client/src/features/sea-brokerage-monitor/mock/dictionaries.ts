@@ -88,7 +88,7 @@ export const basisOptions: SelectOption<Basis>[] = [
 
 export const paymentTermOptions: PaymentTermOption[] = [
   { code: "CAD", displayLabel: "Cash against documents", compactDisplay: "CAD" },
-  { code: "CAFD", displayLabel: "Cash against final documents", compactDisplay: "CAFD" },
+  { code: "CAFD", displayLabel: "Cash against fax copy documents", compactDisplay: "CAFD" },
 ];
 
 export const countryOptions: CountryOption[] = [

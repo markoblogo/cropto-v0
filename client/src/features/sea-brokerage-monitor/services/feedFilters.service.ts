@@ -1,4 +1,5 @@
 import {
+  formatEntryDestinationCompactDisplay,
   getCommodityCompactDisplay,
   getCountryCompactDisplay,
   getPortPlaceCompactDisplay,
@@ -52,6 +53,7 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       entry.destinationCountry,
       getCountryCompactDisplay(entry.destinationCountryCode ?? entry.destinationCountry),
       entry.destinationPortCode ? getPortPlaceCompactDisplay(entry.destinationPortCode) : null,
+      formatEntryDestinationCompactDisplay(entry),
       entry.note,
     ]
       .map(normalizeText)

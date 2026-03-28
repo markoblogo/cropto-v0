@@ -65,29 +65,43 @@ const currencyOptions: Array<{ value: Currency; label: string }> = [
   { value: "EUR", label: "EUR (€)" },
   { value: "UAH", label: "UAH (₴)" },
 ];
-type PeriodPreset = "spot" | "prompt" | "current_month_1h" | "current_month_2h" | "explicit_range";
+type PeriodPreset =
+  | "spot"
+  | "prompt"
+  | "current_month_1h"
+  | "current_month_2h"
+  | "full_month"
+  | "explicit_range";
 
 const periodPresetOptions: SelectOption<PeriodPreset>[] = [
   { value: "spot", label: "SPOT" },
   { value: "prompt", label: "PROMPT" },
-  { value: "current_month_1h", label: "1H current month" },
-  { value: "current_month_2h", label: "2H current month" },
-  { value: "explicit_range", label: "Explicit date range" },
+  { value: "current_month_1h", label: "1H Month" },
+  { value: "current_month_2h", label: "2H Month" },
+  { value: "full_month", label: "Full month" },
+  { value: "explicit_range", label: "Exact window" },
 ];
 const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
   { value: "handysize", label: "Handysize" },
   { value: "coaster", label: "Coaster" },
   { value: "truck", label: "Truck" },
   { value: "rail", label: "Rail" },
+  { value: "truck/rail", label: "Truck/Rail" },
   { value: "vessel", label: "Vessel" },
-  { value: "mixed", label: "Mixed" },
 ];
 
 const entryFormSchema = z
   .object({
     sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
     buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
-    periodPreset: z.enum(["spot", "prompt", "current_month_1h", "current_month_2h", "explicit_range"]),
+    periodPreset: z.enum([
+      "spot",
+      "prompt",
+      "current_month_1h",
+      "current_month_2h",
+      "full_month",
+      "explicit_range",
+    ]),
     commodity: z.string().min(1, "Commodity is required"),
     originCountry: z.string().min(1, "Origin is required"),
     quantityMt: z.coerce.number().positive("Quantity must be greater than 0"),
@@ -97,15 +111,30 @@ const entryFormSchema = z
       .max(25, "Tolerance must be 25% or lower"),
     basis: z.enum(["FOB", "CIF", "CPT", "DAP", "FCA"]),
     destinationPortCode: z.string().min(1, "Port / place is required"),
+    periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),
     periodEnd: z.string().optional().default(""),
     currency: z.enum(["USD", "EUR", "UAH"]),
     price: z.coerce.number().nonnegative("Price must be 0 or greater"),
     paymentTerms: z.string().min(1, "Payment terms are required"),
-    transportType: z.enum(["handysize", "coaster", "truck", "rail", "vessel", "mixed"]),
+    transportType: z.enum(["handysize", "coaster", "truck", "rail", "truck/rail", "vessel"]),
     note: z.string().max(500, "Note must be 500 characters or fewer").optional(),
   })
   .superRefine((values, ctx) => {
+    if (
+      (values.periodPreset === "full_month" ||
+        values.periodPreset === "current_month_1h" ||
+        values.periodPreset === "current_month_2h") &&
+      !values.periodMonth
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodMonth"],
+        message: "Month / year is required",
+      });
+      return;
+    }
+
     if (values.periodPreset !== "explicit_range") {
       return;
     }
@@ -149,6 +178,9 @@ function formatPortPlaceLabel(option: PortOption) {
 }
 
 function getDefaultValues(entryType: EntryType): EntryFormValues {
+  const now = new Date();
+  const periodMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
   return {
     sellerName: "",
     buyerName: "",
@@ -159,6 +191,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     tolerancePct: 5,
     basis: "FOB",
     destinationPortCode: "odesa",
+    periodMonth,
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
     currency: "USD",
@@ -196,24 +229,50 @@ function formatDateInput(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function getMonthBoundaryDates(referenceDate = new Date()) {
-  const year = referenceDate.getFullYear();
-  const month = referenceDate.getMonth();
-  const monthStart = new Date(year, month, 1);
-  const midMonth = new Date(year, month, 15);
-  const secondHalfStart = new Date(year, month, 16);
-  const monthEnd = new Date(year, month + 1, 0);
+function getFullMonthRange(periodMonth: string) {
+  const [yearString, monthString] = periodMonth.split("-");
+  const year = Number(yearString);
+  const month = Number(monthString);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+    return null;
+  }
+
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 0);
 
   return {
-    firstHalfStart: formatDateInput(monthStart),
-    firstHalfEnd: formatDateInput(midMonth),
-    secondHalfStart: formatDateInput(secondHalfStart),
-    secondHalfEnd: formatDateInput(monthEnd),
+    start: formatDateInput(monthStart),
+    end: formatDateInput(monthEnd),
+    label: `${monthStart.toLocaleString("en-US", { month: "short" }).toUpperCase()} ${year}`,
+  };
+}
+
+function getMonthBoundaryDatesFromPeriodMonth(periodMonth: string) {
+  const range = getFullMonthRange(periodMonth);
+  if (!range) {
+    return null;
+  }
+
+  const start = new Date(range.start);
+  const end = new Date(range.end);
+
+  const firstHalfStart = formatDateInput(start);
+  const firstHalfEnd = formatDateInput(new Date(start.getFullYear(), start.getMonth(), 15));
+  const secondHalfStart = formatDateInput(new Date(start.getFullYear(), start.getMonth(), 16));
+  const secondHalfEnd = formatDateInput(end);
+
+  return {
+    firstHalfStart,
+    firstHalfEnd,
+    secondHalfStart,
+    secondHalfEnd,
   };
 }
 
 function resolvePeriodValues(
   preset: PeriodPreset,
+  periodMonth: string,
   periodStart: string,
   periodEnd: string,
 ): {
@@ -241,7 +300,16 @@ function resolvePeriodValues(
   }
 
   if (preset === "current_month_1h" || preset === "current_month_2h") {
-    const boundaries = getMonthBoundaryDates();
+    const boundaries = getMonthBoundaryDatesFromPeriodMonth(periodMonth);
+    if (!boundaries) {
+      return {
+        periodType: "window",
+        periodLabel: "OPEN",
+        periodStart: null,
+        periodEnd: null,
+      };
+    }
+
     const rangeStart =
       preset === "current_month_1h" ? boundaries.firstHalfStart : boundaries.secondHalfStart;
     const rangeEnd =
@@ -256,6 +324,25 @@ function resolvePeriodValues(
       }),
       periodStart: rangeStart,
       periodEnd: rangeEnd,
+    };
+  }
+
+  if (preset === "full_month") {
+    const range = getFullMonthRange(periodMonth);
+    if (!range) {
+      return {
+        periodType: "window",
+        periodLabel: "OPEN",
+        periodStart: null,
+        periodEnd: null,
+      };
+    }
+
+    return {
+      periodType: "window",
+      periodLabel: range.label,
+      periodStart: range.start,
+      periodEnd: range.end,
     };
   }
 
@@ -333,6 +420,7 @@ export function EntryCreateDialog({
     const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
     const resolvedPeriod = resolvePeriodValues(
       values.periodPreset,
+      values.periodMonth,
       values.periodStart,
       values.periodEnd,
     );
@@ -397,6 +485,7 @@ export function EntryCreateDialog({
       );
       const resolvedPeriod = resolvePeriodValues(
         formValues.periodPreset,
+        formValues.periodMonth,
         formValues.periodStart,
         formValues.periodEnd,
       );
@@ -819,10 +908,35 @@ export function EntryCreateDialog({
                 <div className="hidden md:block" />
               ) : (
                 <div className="flex items-end text-[11px] text-muted-foreground">
-                  {resolvePeriodValues(values.periodPreset, values.periodStart, values.periodEnd).periodLabel}
+                  {resolvePeriodValues(
+                    values.periodPreset,
+                    values.periodMonth,
+                    values.periodStart,
+                    values.periodEnd,
+                  ).periodLabel}
                 </div>
               )}
             </div>
+
+            {values.periodPreset === "full_month" ||
+            values.periodPreset === "current_month_1h" ||
+            values.periodPreset === "current_month_2h" ? (
+              <div className="grid gap-2.5 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="periodMonth"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Month / year</FormLabel>
+                      <FormControl>
+                        <Input type="month" value={field.value ?? ""} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : null}
 
             {values.periodPreset === "explicit_range" ? (
               <div className="grid gap-2.5 md:grid-cols-2">

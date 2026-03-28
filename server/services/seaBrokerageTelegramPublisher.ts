@@ -95,7 +95,21 @@ function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
   if (entry.periodStart && entry.periodEnd) {
     return `${formatDateDottedShort(entry.periodStart)}-${formatDateDottedShort(entry.periodEnd)}`;
   }
-  return entry.periodLabel.toUpperCase();
+  const rawLabel = (entry.periodLabel || "").trim().toUpperCase();
+  if (!rawLabel) return "OPEN";
+  if (rawLabel === "SPOT" || rawLabel === "PROMPT") return rawLabel;
+
+  const start = entry.periodStart ? new Date(entry.periodStart) : null;
+  if (start && !Number.isNaN(start.getTime())) {
+    const month = start.toLocaleString("en-US", { month: "long" }).toUpperCase();
+    const year = String(start.getFullYear()).slice(-2);
+    if (rawLabel.startsWith("1H")) return `1H ${month} ${year}`;
+    if (rawLabel.startsWith("2H")) return `2H ${month} ${year}`;
+    if (rawLabel.startsWith("LH")) return `LH ${month} ${year}`;
+    if (rawLabel === "MONTH" || rawLabel.endsWith("MONTH")) return `${month} ${year}`;
+  }
+
+  return rawLabel;
 }
 
 function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
@@ -163,14 +177,16 @@ function formatStandardTelegramMessage(
       : "BROKER DESK",
   );
   const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
+  const counterpartyLine = formatTelegramCounterparty(entry) || (entry.type === "offer" ? "SELLER" : "BUYER");
 
   const lines = [
     header,
     "------------------------------",
-    formatTelegramTransportCode(entry),
+    counterpartyLine.toUpperCase(),
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
     formatQuantityLine(entry),
     `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
+    formatTelegramTransportCode(entry),
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
     entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,

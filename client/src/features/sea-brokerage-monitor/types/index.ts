@@ -17,7 +17,7 @@ export type TransportType =
   | "truck"
   | "rail"
   | "vessel"
-  | "mixed";
+  | "truck/rail";
 
 export type Currency = "USD" | "EUR" | "UAH";
 export type PaymentTermCode = "CAD" | "CAFD";
