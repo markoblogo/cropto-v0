@@ -790,7 +790,12 @@ export function EntryCreateDialog({
                       <div className="mt-2 flex items-center gap-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant={isAddingCompany ? "outline" : "secondary"}
+                          className={
+                            isAddingCompany
+                              ? undefined
+                              : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
+                          }
                           size="sm"
                           onClick={() => {
                             setIsAddingCompany((prev) => !prev);
@@ -800,6 +805,21 @@ export function EntryCreateDialog({
                           {isAddingCompany ? "Cancel" : "Add company"}
                         </Button>
                       </div>
+                      {isAddingCompany ? (
+                        <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
+                          <Input
+                            placeholder="Company name in English"
+                            value={newCompanyName}
+                            onChange={(event) => setNewCompanyName(event.target.value)}
+                          />
+                          <Button type="button" size="sm" onClick={addCustomCompany}>
+                            {isSavingCompany ? "Saving..." : "Save company"}
+                          </Button>
+                        </div>
+                      ) : null}
+                      {companyEditorMessage ? (
+                        <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -832,7 +852,12 @@ export function EntryCreateDialog({
                       <div className="mt-2 flex items-center gap-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant={isAddingCompany ? "outline" : "secondary"}
+                          className={
+                            isAddingCompany
+                              ? undefined
+                              : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
+                          }
                           size="sm"
                           onClick={() => {
                             setIsAddingCompany((prev) => !prev);
@@ -842,6 +867,21 @@ export function EntryCreateDialog({
                           {isAddingCompany ? "Cancel" : "Add company"}
                         </Button>
                       </div>
+                      {isAddingCompany ? (
+                        <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
+                          <Input
+                            placeholder="Company name in English"
+                            value={newCompanyName}
+                            onChange={(event) => setNewCompanyName(event.target.value)}
+                          />
+                          <Button type="button" size="sm" onClick={addCustomCompany}>
+                            {isSavingCompany ? "Saving..." : "Save company"}
+                          </Button>
+                        </div>
+                      ) : null}
+                      {companyEditorMessage ? (
+                        <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -922,24 +962,6 @@ export function EntryCreateDialog({
                 )}
               />
             </div>
-
-            {isAddingCompany ? (
-              <div className="grid gap-2 md:grid-cols-2">
-                <Input
-                  placeholder="Company name in English"
-                  value={newCompanyName}
-                  onChange={(event) => setNewCompanyName(event.target.value)}
-                />
-                <div className="flex items-center gap-2">
-                  <Button type="button" size="sm" onClick={addCustomCompany}>
-                    {isSavingCompany ? "Saving..." : "Save company"}
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-            {companyEditorMessage ? (
-              <div className="text-[11px] text-muted-foreground">{companyEditorMessage}</div>
-            ) : null}
 
             <div className="grid gap-2.5 md:grid-cols-2">
               <FormField

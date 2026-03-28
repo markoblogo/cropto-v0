@@ -362,6 +362,47 @@ async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionar
   }
 }
 
+function buildSeaBrokerageCompanyEntry(label: string): SeaBrokerageCompanyDictionaryEntry {
+  const normalized = normalizeCompanyLabel(label);
+  return {
+    id: buildCompanyId(normalized),
+    displayLabel: normalized,
+    compactDisplay: normalized.toUpperCase(),
+  };
+}
+
+function deriveSeaBrokerageCompaniesFromEntries(
+  entries: SeaBrokerageEntryRow[],
+): SeaBrokerageCompanyDictionaryEntry[] {
+  const labels = new Set<string>();
+  for (const entry of entries) {
+    const seller = normalizeCompanyLabel(entry.sellerName || "");
+    const buyer = normalizeCompanyLabel(entry.buyerName || "");
+    if (seller) labels.add(seller);
+    if (buyer) labels.add(buyer);
+  }
+
+  return Array.from(labels.values()).map((label) => buildSeaBrokerageCompanyEntry(label));
+}
+
+function mergeSeaBrokerageCompanies(
+  left: SeaBrokerageCompanyDictionaryEntry[],
+  right: SeaBrokerageCompanyDictionaryEntry[],
+): SeaBrokerageCompanyDictionaryEntry[] {
+  const byLabel = new Map<string, SeaBrokerageCompanyDictionaryEntry>();
+  for (const item of [...left, ...right]) {
+    const key = item.displayLabel.trim().toLowerCase();
+    if (!key) continue;
+    if (!byLabel.has(key)) {
+      byLabel.set(key, item);
+    }
+  }
+
+  return Array.from(byLabel.values()).sort((a, b) =>
+    a.displayLabel.localeCompare(b.displayLabel),
+  );
+}
+
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
   return `sea_brokerage_match_notified:${bidEntryId}:${offerEntryId}`;
 }
@@ -7843,7 +7884,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sea-brokerage-monitor/companies", async (_req, res) => {
     try {
-      const companies = await readSeaBrokerageCompanies();
+      const [savedCompanies, entries] = await Promise.all([
+        readSeaBrokerageCompanies(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const derivedCompanies = deriveSeaBrokerageCompaniesFromEntries(entries);
+      const companies = mergeSeaBrokerageCompanies(savedCompanies, derivedCompanies);
       return res.json({ companies });
     } catch (error: any) {
       console.error("Error listing sea brokerage companies:", error);
@@ -7873,7 +7919,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const current = await readSeaBrokerageCompanies();
+      const [savedCompanies, entries] = await Promise.all([
+        readSeaBrokerageCompanies(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const current = mergeSeaBrokerageCompanies(
+        savedCompanies,
+        deriveSeaBrokerageCompaniesFromEntries(entries),
+      );
       const duplicate = current.find(
         (item) => item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
       );
@@ -7893,7 +7946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         compactDisplay: label.toUpperCase(),
       };
 
-      const next = [...current, created];
+      const next = mergeSeaBrokerageCompanies(savedCompanies, [created]);
       await storage.upsertAppSetting(SEA_BROKERAGE_COMPANIES_KEY, JSON.stringify(next));
 
       return res.status(201).json({ company: created, duplicate: false });
