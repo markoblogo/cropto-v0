@@ -720,9 +720,7 @@ export function EntryCreateDialog({
                 {session.sessionState === "demo_telegram" ? "Demo Telegram" : "Telegram session"}
               </Badge>
               <span className="font-medium">{session.telegramHandle}</span>
-              <span className="text-muted-foreground">
-                {session.authorProfile.brokerCode} / {session.authorProfile.companyName}
-              </span>
+              <span className="text-muted-foreground">{session.authorProfile.brokerCode}</span>
             </div>
           ) : (
             <div className="mt-1.5 space-y-2.5">
