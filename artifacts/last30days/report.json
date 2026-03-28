@@ -4,7 +4,7 @@
     "from": "2026-02-26",
     "to": "2026-03-28"
   },
-  "generated_at": "2026-03-28T09:35:51.033353+00:00",
+  "generated_at": "2026-03-28T12:47:49.662983+00:00",
   "mode": "all",
   "openai_model_used": "gpt-5.4-mini",
   "xai_model_used": null,
@@ -71,10 +71,61 @@
   ],
   "web": [
     {
-      "id": "W13",
-      "title": "DOI: http://doi.org/10.32702/2307-2105.2023.1.32 \u0423\u0414\u041a ...",
-      "url": "https://www.nayka.com.ua/index.php/ee/article/download/1034/1044/2969",
-      "source_domain": "nayka.com.ua",
+      "id": "W6",
+      "title": "(PDF) CREATIVE APPROACHES IN MODERN SCIENTIFIC AND PRACTICAL ACTIVITIES",
+      "url": "https://www.researchgate.net/publication/375801395_CREATIVE_APPROACHES_IN_MODERN_SCIENTIFIC_AND_PRACTICAL_ACTIVITIES",
+      "source_domain": "researchgate.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W14",
+      "title": "(PDF) \u0417\u0410\u0421\u0422\u041e\u0421\u0423\u0412\u0410\u041d\u041d\u042f \u0421\u0418\u041d\u0422\u0415\u0422\u0418\u0427\u041d\u0418\u0425 \u0420\u0415\u0413\u0423\u041b\u042f\u0422\u041e\u0420\u0406\u0412 \u0420\u041e\u0421\u0422\u0423 ...",
+      "url": "https://www.academia.edu/97357201/%D0%97%D0%90%D0%A1%D0%A2%D0%9E%D0%A1%D0%A3%D0%92%D0%90%D0%9D%D0%9D%D0%AF_%D0%A1%D0%98%D0%9D%D0%A2%D0%95%D0%A2%D0%98%D0%A7%D0%9D%D0%98%D0%A5_%D0%A0%D0%95%D0%93%D0%A3%D0%9B%D0%AF%D0%A2%D0%9E%D0%A0%D0%86%D0%92_%D0%A0%D0%9E%D0%A1%D0%A2%D0%A3_%D0%A0%D0%9E%D0%A1%D0%9B%D0%98%D0%9D_%D0%A2%D0%90_%D0%9C%D0%86%D0%9A%D0%A0%D0%9E%D0%94%D0%9E%D0%91%D0%A0%D0%98%D0%92_%D0%94%D0%9B%D0%AF_%D0%9F%D0%9E%D0%9B%D0%86%D0%9F%D0%A8%D0%95%D0%9D%D0%9D%D0%AF_%D0%A0%D0%9E%D0%A1%D0%A2%D0%A3_%D0%97%D0%95%D0%A0%D0%9D%D0%9E%D0%92%D0%9E%D0%87_%D0%9A%D0%A3%D0%9B%D0%AC%D0%A2%D0%A3%D0%A0%D0%98_%D0%9F%D0%A8%D0%95%D0%9D%D0%98%D0%A6%D0%86",
+      "source_domain": "academia.edu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W12",
+      "title": "[PDF] Actual-problems-of-practice-and-science-and-methods-of-their ...",
+      "url": "https://eu-conf.com/wp-content/uploads/2022/01/Actual-problems-of-practice-and-science-and-methods-of-their-solution.pdf",
+      "source_domain": "eu-conf.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W8",
+      "title": "[PDF] SCIENTIA - \u0414\u0435\u0440\u0436\u0430\u0432\u043d\u0438\u0439 \u0442\u043e\u0440\u0433\u043e\u0432\u0435\u043b\u044c\u043d\u043e-\u0435\u043a\u043e\u043d\u043e\u043c\u0456\u0447\u043d\u0438\u0439 \u0443\u043d\u0456\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442",
+      "url": "https://journals.knute.edu.ua/scientia-fructuosa/issue/download/164/192",
+      "source_domain": "journals.knute.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -89,8 +140,8 @@
     },
     {
       "id": "W2",
-      "title": "[PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...",
-      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
+      "title": "[PDF] \u0430\u0433\u0440\u0430\u0440\u043d\u0430 \u043f\u043e\u043b\u0456\u0442\u0438\u043a\u0430 \u0454\u0432\u0440\u043e\u043f\u0435\u0439\u0441\u044c\u043a\u043e\u0433\u043e \u0441\u043e\u044e\u0437\u0443 - European Commission",
+      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/8270200e-44c6-49be-bd89-ea519a66e3fe/Agricultural_policy_of_EU.pdf",
       "source_domain": "ec.europa.eu",
       "snippet": "",
       "date": null,
@@ -105,10 +156,10 @@
       "score": 3
     },
     {
-      "id": "W3",
-      "title": "[PDF] Zbi\u00f3r materia\u0142\u00f3w konferencji, Kamieniec-Podolski",
-      "url": "https://mans.edu.pl/fcp/iOEUfFzs9BjEkLTg1Y1BSe0N_YAVTHwIIOgIaTAIABCRvRQMEOjBBaHICPXNtSBk6PjIyBV4RBDYnD1cYTk8cOjYCEg/2/public/wydawnictwa/zbior_materialow_konferencji_kamieniec-podolski__lomza_20-2111_2025_compressed.pdf",
-      "source_domain": "mans.edu.pl",
+      "id": "W5",
+      "title": "\u00ab\u0415\u041a\u041e\u041d\u041e\u041c\u0406\u0427\u041d\u0406 \u0414\u041d\u0406 \u2013 2025\u00bb",
+      "url": "https://www.nubip.edu.ua/sites/default/files/u404/zbirnik_tez_ekonom_dni_2025.pdf",
+      "source_domain": "nubip.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -122,24 +173,7 @@
       "score": 3
     },
     {
-      "id": "W15",
-      "title": "[PDF] \u0422\u0440\u0430\u043d\u0441\u0444\u043e\u0440\u043c\u0430\u0446\u0456\u044f \u0430\u0433\u0440\u0430\u0440\u043d\u043e\u0433\u043e \u0441\u0435\u043a\u0442\u043e\u0440\u0443 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u043a\u0438 \u0434\u043e \u0440\u0438\u043d\u043a\u043e\u0432\u0438\u0445 \u0443\u043c\u043e\u0432 ...",
-      "url": "https://eapk.com.ua/web/uploads/journals_pdf/3_merged.pdf",
-      "source_domain": "eapk.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W6",
+      "id": "W4",
       "title": "\u0412\u043f\u043b\u0438\u0432 \u0432\u0456\u0439\u043d\u0438 \u043d\u0430 \u0440\u0438\u043d\u043e\u043a \u043e\u043b\u0456\u0457 \u0423\u043a\u0440\u0430\u0457\u043d\u0438: \u0441\u043e\u044f \u0442\u0430 \u0440\u0456\u043f\u0430\u043a \u043d\u0435 \u043f\u043e\u043a\u0440\u0438\u0432\u0430\u044e\u0442\u044c \u0432\u0442\u0440\u0430\u0442\u0438 \u043f\u043e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u0443 \u2014 AgroPortal.ua",
       "url": "https://agroportal.ua/ru/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
       "source_domain": "agroportal.ua",
@@ -156,10 +190,10 @@
       "score": 3
     },
     {
-      "id": "W12",
-      "title": "\u041c\u0406\u0416\u0421\u0415\u041a\u0422\u041e\u0420\u0410\u041b\u042c\u041d\u0410 \u0412\u0417\u0410\u0404\u041c\u041e\u0414\u0406\u042f \u0412 \u0415\u041a\u041e\u041d\u041e\u041c\u0406\u0426\u0406 \u0423\u041a\u0420\u0410\u0407\u041d\u0418",
-      "url": "https://ird.gov.ua/irdp/p20250035.pdf",
-      "source_domain": "ird.gov.ua",
+      "id": "W9",
+      "title": "\u0415\u043a\u0441\u043f\u043e\u0440\u0442\u043d\u0435 \u043c\u0438\u0442\u043e \u043d\u0430 \u0441\u043e\u044e \u0442\u0430 \u0440\u0456\u043f\u0430\u043a \u0443\u0436\u0435 \u0437\u0430\u0432\u0434\u0430\u043b\u043e 17 \u043c\u043b\u0440\u0434 \u0433\u0440\u043d \u0437\u0431\u0438\u0442\u043a\u0456\u0432 \u0430\u0433\u0440\u0430\u0440\u0456\u044f\u043c \u0423\u043a\u0440\u0430\u0457\u043d\u0438 \u2014 AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina/eksportne-mito-na-soyu-ta-ripak-uzhe-zavdalo-17-mlrd-grn-zbitkiv-agrariyam-ukrajini",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -173,7 +207,7 @@
       "score": 3
     },
     {
-      "id": "W7",
+      "id": "W3",
       "title": "\u041e\u0433\u043b\u044f\u0434 \u0440\u0438\u043d\u043a\u0443 \u043e\u043b\u0456\u0439\u043d\u0438\u0445: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0442\u0430 \u0441\u043e\u044f \u0434\u043e\u0440\u043e\u0436\u0447\u0430\u044e\u0442\u044c, \u0430 \u043f\u043e\u043f\u0438\u0442 \u043d\u0430 \u0440\u0456\u043f\u0430\u043a \u0443 \u0404\u0432\u0440\u043e\u043f\u0456 \u0441\u043b\u0430\u0431\u0448\u0430\u0454 | \u041f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u044f \u2013 \u0413\u043e\u043b\u043e\u0432\u043d\u0438\u0439 \u0436\u0443\u0440\u043d\u0430\u043b \u0437 \u043f\u0438\u0442\u0430\u043d\u044c \u0430\u0433\u0440\u043e\u0431\u0456\u0437\u043d\u0435\u0441\u0443",
       "url": "https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye",
       "source_domain": "propozitsiya.com",
@@ -190,26 +224,9 @@
       "score": 3
     },
     {
-      "id": "W9",
-      "title": "\u041f\u043e\u043f\u0438\u0442 \u043d\u0430 \u0440\u043e\u0441\u043b\u0438\u043d\u043d\u0456 \u043e\u043b\u0456\u0457 \u0437\u043c\u0456\u043d\u044e\u0454 \u0431\u0430\u043b\u0430\u043d\u0441 \u0441\u0432\u0456\u0442\u043e\u0432\u043e\u0433\u043e \u0440\u0438\u043d\u043a\u0443 \u043e\u043b\u0456\u0439\u043d\u0438\u0445 ...",
-      "url": "https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W14",
-      "title": "\u0420\u0438\u043d\u043e\u043a \u043e\u043b\u0456\u0439\u043d\u0438\u0445: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0434\u043e\u0440\u043e\u0436\u0447\u0430\u0454 \u043d\u0430 \u043f\u0435\u0440\u0435\u0440\u043e\u0431\u0446\u0456, \u0440\u0456\u043f\u0430\u043a \u043d\u0435 \u0434\u043e\u0442\u044f\u0433\u0443\u0454 \u0434\u043e \u043c\u0438\u043d\u0443\u043b\u043e\u0440\u0456\u0447\u043d\u043e\u0433\u043e \u0435\u043a\u0441\u043f\u043e\u0440\u0442\u0443, \u0430 \u0441\u043e\u0454\u0432\u0430 \u043e\u043b\u0456\u044f \u0431'\u0454 \u0440\u0435\u043a\u043e\u0440\u0434\u0438 | \u041f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u044f \u2013 \u0413\u043e\u043b\u043e\u0432\u043d\u0438\u0439 \u0436\u0443\u0440\u043d\u0430\u043b \u0437 \u043f\u0438\u0442\u0430\u043d\u044c \u0430\u0433\u0440\u043e\u0431\u0456\u0437\u043d\u0435\u0441\u0443",
-      "url": "https://propozitsiya.com/news/rynok-oliynykh-sonyashnyk-dorozhchaye-na-pererobtsi-ripak-ne-dotyahuye-do-mynulorichnoho",
+      "id": "W11",
+      "title": "\u0420\u0438\u043d\u043e\u043a \u043e\u043b\u0456\u0439\u043d\u0438\u0445: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0442\u0430 \u0441\u043e\u044f \u0434\u043e\u0440\u043e\u0436\u0447\u0430\u044e\u0442\u044c, \u0430 \u0440\u0456\u043f\u0430\u043a \u043e\u0447\u0456\u043a\u0443\u0454 \u043d\u043e\u0432\u043e\u0433\u043e \u0432\u0440\u043e\u0436\u0430\u044e | \u041f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u044f \u2013 \u0413\u043e\u043b\u043e\u0432\u043d\u0438\u0439 \u0436\u0443\u0440\u043d\u0430\u043b \u0437 \u043f\u0438\u0442\u0430\u043d\u044c \u0430\u0433\u0440\u043e\u0431\u0456\u0437\u043d\u0435\u0441\u0443",
+      "url": "https://propozitsiya.com/news/rynok-oliynykh-sonyashnyk-ta-soya-dorozhchayut-ripak-ochikuye-novoho-vrozhayu",
       "source_domain": "propozitsiya.com",
       "snippet": "",
       "date": null,
@@ -224,9 +241,9 @@
       "score": 3
     },
     {
-      "id": "W4",
-      "title": "\u0421\u0432\u0456\u0442\u043e\u0432\u0456 \u0440\u0438\u043d\u043a\u0438: \u0440\u0456\u043f\u0430\u043a \u0432\u0438\u0442\u0456\u0441\u043d\u0438\u0432 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0443 \u043e\u043b\u0456\u044e \u0437 \u0435\u043d\u0435\u0440\u0433\u0435\u0442\u0438\u0447\u043d\u043e\u0457 \u0441\u0444\u0435\u0440\u0438 \u0456 \u0432\u0438\u0448\u0442\u043e\u0432\u0445\u0443\u0454 \u0437 \u0445\u0430\u0440\u0447\u043e\u0432\u043e\u0457 \u2014 AgroPortal.ua",
-      "url": "https://agroportal.ua/news/mir/svitovi-rinki-ripak-vitisniv-sonyashnikovu-oliyu-z-energetichnoji-sferi-i-vishtovhuye-z-harchovoji",
+      "id": "W15",
+      "title": "\u0420\u0456\u043f\u0430\u043a\u043e\u0432\u0430 \u0442\u0430 \u0441\u043e\u0454\u0432\u0430 \u043e\u043b\u0456\u0457 \u0432\u0438\u0442\u0456\u0441\u043d\u044f\u044e\u0442\u044c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0443 \u0437 \u043a\u043b\u044e\u0447\u043e\u0432\u0438\u0445 \u0440\u0438\u043d\u043a\u0456\u0432 \u2014 AgroPortal.ua",
+      "url": "https://agroportal.ua/news/mir/ripakova-ta-soyeva-oliji-vitisnyayut-sonyashnikovu-z-klyuchovih-rinkiv",
       "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
@@ -241,10 +258,10 @@
       "score": 3
     },
     {
-      "id": "W8",
-      "title": "\u0423\u043a\u0440\u0430\u0438\u043d\u0430 \u043b\u0438\u0434\u0438\u0440\u0443\u0435\u0442 \u0432 \u0415\u0432\u0440\u043e\u043f\u0435 \u043f\u043e \u0432\u044b\u0440\u0430\u0449\u0438\u0432\u0430\u043d\u0438\u044e \u0441\u043e\u0438 \u0438 \u0438\u043c\u0435\u0435\u0442 \u043f\u043e\u0442\u0435\u043d\u0446\u0438\u0430\u043b \u0432 \u043f\u0435\u0440\u0435\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u2014 AgroPortal.ua",
-      "url": "https://agroportal.ua/ru/news/rastenievodstvo/ukrajina-lidiruye-u-yevropi-za-viroshchuvannyam-soji-ta-maye-potencil-u-pererobci",
-      "source_domain": "agroportal.ua",
+      "id": "W7",
+      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430 \u0441\u043a\u043e\u0440\u043e\u0447\u0443\u0454 \u0435\u043a\u0441\u043f\u043e\u0440\u0442 \u0440\u0456\u043f\u0430\u043a\u0443: \u0404\u0432\u0440\u043e\u043f\u0456 \u0437\u0430\u0433\u0440\u043e\u0436\u0443\u0454 ...",
+      "url": "https://delo.ua/news/ukrayina-skorocuje-eksport-ripaku-jevropi-zagrozuje-deficit-sirovini-462279/",
+      "source_domain": "delo.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -258,27 +275,10 @@
       "score": 3
     },
     {
-      "id": "W11",
-      "title": "\u0427\u043e\u043c\u0443 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0432\u0442\u0440\u0430\u0447\u0430\u0454 \u043f\u043e\u0437\u0438\u0446\u0456\u0457: \u0440\u043e\u0437\u0431\u0456\u0440 \u0441\u0432\u0456\u0442\u043e\u0432\u043e\u0433\u043e \u0440\u0438\u043d\u043a\u0443 \u2014 AgroPortal.ua",
-      "url": "https://agroportal.ua/publishing/analitika/chomu-sonyashnikova-oliya-vtrachaye-poziciji-rozbir-svitovogo-rinku",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W5",
-      "title": "\u0430\u0433\u0440\u0430\u0440\u043d\u0430 \u043f\u043e\u043b\u0456\u0442\u0438\u043a\u0430 \u0454\u0432\u0440\u043e\u043f\u0435\u0439\u0441\u044c\u043a\u043e\u0433\u043e \u0441\u043e\u044e\u0437\u0443",
-      "url": "https://nmc-vfpo.gov.ua/wp-content/uploads/2019/10/monografiya-agricultural-policy-of-eu.pdf",
-      "source_domain": "nmc-vfpo.gov.ua",
+      "id": "W13",
+      "title": "\u0424'\u044e\u0447\u0435\u0440\u0441\u0438 \u043d\u0430 \u0441\u043e\u044e \u043d\u0430 \u0427\u0438\u043a\u0430\u0437\u044c\u043a\u0456\u0439 \u0431\u0456\u0440\u0436\u0456 \u043f\u0440\u043e\u0434\u043e\u0432\u0436\u0438\u043b\u0438 ...",
+      "url": "https://ukragroconsult.com/news/fyuchersy-na-soyu-na-chykazykij-birzhi-prodovzhyly-zrostannya/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -293,9 +293,9 @@
     },
     {
       "id": "W10",
-      "title": "\u0443 \u0441\u0432\u0456\u0442\u0456 \u0441\u0442\u0440\u0456\u043c\u043a\u043e \u0434\u043e\u0440\u043e\u0436\u0447\u0430\u0454 \u00ab\u043f\u0430\u043b\u044c\u043c\u0430\u00bb \u0442\u0430 \u0441\u043e\u044f, \u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f ...",
-      "url": "https://www.ukr.net/news/details/world/116561582.html",
-      "source_domain": "ukr.net",
+      "title": "\u0427\u043e\u043c\u0443 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0432\u0442\u0440\u0430\u0447\u0430\u0454 \u043f\u043e\u0437\u0438\u0446\u0456\u0457: \u0440\u043e\u0437\u0431\u0456\u0440 \u0441\u0432\u0456\u0442\u043e\u0432\u043e\u0433\u043e \u0440\u0438\u043d\u043a\u0443 \u2014 AgroPortal.ua",
+      "url": "https://agroportal.ua/publishing/analitika/chomu-sonyashnikova-oliya-vtrachaye-poziciji-rozbir-svitovogo-rinku",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -318,6 +318,6 @@
   "polymarket": [],
   "best_practices": [],
   "prompt_pack": [],
-  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0440\u0456\u043f\u0430\u043a \u0441\u043e\u044f \u0454\u0432\u0440\u043e\u043f\u0430 \u0440\u0438\u043d\u043e\u043a (Last 30 Days)\n\n*Generated: 2026-03-28 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [Web] DOI: http://doi.org/10.32702/2307-2105.2023.1.32 \u0423...\n- [Web] [PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTA...\n- [Web] [PDF] Zbi\u00f3r materia\u0142\u00f3w konferencji, Kamieniec-Podo...\n- [Web] [PDF] \u0422\u0440\u0430\u043d\u0441\u0444\u043e\u0440\u043c\u0430\u0446\u0456\u044f \u0430\u0433\u0440\u0430\u0440\u043d\u043e\u0433\u043e \u0441\u0435\u043a\u0442\u043e\u0440\u0443 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u043a\u0438 \u0434\u043e...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0440\u0456\u043f\u0430\u043a \u0441\u043e\u044f \u0454\u0432\u0440\u043e\u043f\u0430 \u0440\u0438\u043d\u043e\u043a (Last 30 Days)\n\n*Generated: 2026-03-28 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [Web] (PDF) CREATIVE APPROACHES IN MODERN SCIENTIFIC AND...\n- [Web] (PDF) \u0417\u0410\u0421\u0422\u041e\u0421\u0423\u0412\u0410\u041d\u041d\u042f \u0421\u0418\u041d\u0422\u0415\u0422\u0418\u0427\u041d\u0418\u0425 \u0420\u0415\u0413\u0423\u041b\u042f\u0422\u041e\u0420\u0406\u0412 \u0420\u041e\u0421\u0422\u0423 ....\n- [Web] [PDF] Actual-problems-of-practice-and-science-and-...\n- [Web] [PDF] SCIENTIA - \u0414\u0435\u0440\u0436\u0430\u0432\u043d\u0438\u0439 \u0442\u043e\u0440\u0433\u043e\u0432\u0435\u043b\u044c\u043d\u043e-\u0435\u043a\u043e\u043d\u043e\u043c\u0456\u0447\u043d\u0438\u0439...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
   "bluesky_error": "Bluesky search failed: HTTP 403: Forbidden"
 }

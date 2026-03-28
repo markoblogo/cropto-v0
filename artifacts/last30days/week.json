@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-28T09:34:47.992172+00:00",
+  "generatedAt": "2026-03-28T12:46:40.678569+00:00",
   "items": [
     {
       "id": "R1",
@@ -142,7 +142,7 @@
       "title": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути"
     },
     {
-      "id": "W4",
+      "id": "W15",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -160,7 +160,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W12",
       "title": "AGS GRAIN | LinkedIn",
       "url": "https://www.linkedin.com/company/ags-grain",
       "source_domain": "linkedin.com",
@@ -178,7 +178,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W6",
       "title": "AMBRA GRAIN | LinkedIn",
       "url": "https://www.linkedin.com/company/ambra-grain",
       "source_domain": "linkedin.com",
@@ -196,9 +196,9 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Black Sea Grain Market Analysis",
-      "url": "https://grainsprices.com/article/19274",
+      "id": "W8",
+      "title": "Black Sea Region Grain Market Analysis",
+      "url": "https://grainsprices.com/article/18924",
       "source_domain": "grainsprices.com",
       "snippet": "",
       "date": null,
@@ -214,7 +214,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W3",
       "title": "Black Sea Regional Analysis",
       "url": "https://worldperspectives.com/articles/black-sea-regional-analysis-03252026",
       "source_domain": "worldperspectives.com",
@@ -232,10 +232,10 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
-      "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
-      "source_domain": "reuters.com",
+      "id": "W2",
+      "title": "Black Sea Sunflower Oil Drops; Global Oilseed Outlook",
+      "url": "https://algoran-agro.com/2026/02/06/black-sea-sunflower-oil-prices-17/",
+      "source_domain": "algoran-agro.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -250,7 +250,25 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W4",
+      "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges",
+      "url": "https://ukragroconsult.com/en/news/black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -268,10 +286,10 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Current state of the Black Sea grain and oilseed markets",
-      "url": "https://agmanager.info/sites/default/files/pdf/Broyaka_Ukraine_11-05-25.pdf",
-      "source_domain": "agmanager.info",
+      "id": "W14",
+      "title": "Goodgrainoil | LinkedIn",
+      "url": "https://www.linkedin.com/company/goodgrainoil",
+      "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -286,7 +304,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W5",
       "title": "Irina Melnic - CEO | International Trade & Export Specialist | Grains, Wheat Flour & Agri-Commodities | Logistics & Global Partnerships | LinkedIn",
       "url": "https://www.linkedin.com/in/irina-melnic-2a7749104",
       "source_domain": "linkedin.com",
@@ -304,25 +322,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Market Trends Report – February & March 2026 - Grain Farmers of Ontario",
-      "url": "https://gfo.ca/market-trends/market-trends-report-february-march-2026/",
-      "source_domain": "gfo.ca",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W11",
       "title": "Mihaela Ploscaru - Market Analyst at Agrilinkhub SRL | LinkedIn",
       "url": "https://www.linkedin.com/in/mihaela-ploscaru-2aa8611a3",
       "source_domain": "linkedin.com",
@@ -340,10 +340,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Sunflower markets steady as SAFEX firms and Black Sea ...",
-      "url": "https://commodity-board.com/sunflower-markets-steady-as-safex-firms-and-black-sea-prices-hold/",
-      "source_domain": "commodity-board.com",
+      "id": "W9",
+      "title": "Ukraine exports 5 mln tonnes of agricultural products in Feb — analysts",
+      "url": "https://en.interfax.com.ua/news/economic/1148647.html",
+      "source_domain": "en.interfax.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -358,7 +358,25 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W7",
+      "title": "Ukraine's Rapeseed and Soy Processing Growth in 2026",
+      "url": "https://agroreview.com/en/newsen/crops/rapeseed-and-soy-processing-ukraine/",
+      "source_domain": "agroreview.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
       "title": "Ukrainian Grain and Oilseed Markets after Four Years of ...",
       "url": "https://www.agmanager.info/sites/default/files/pdf/Broyaka_Ukraine_03-25-26_A.pdf",
       "source_domain": "agmanager.info",
@@ -376,10 +394,10 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "User | chroniclejournal.com - The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
-      "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
-      "source_domain": "markets.chroniclejournal.com",
+      "id": "W13",
+      "title": "Blog - Page 622 of 1620 - Rail.insider — інформаційно- ...",
+      "url": "https://www.railinsider.com.ua/blog/page/622/",
+      "source_domain": "railinsider.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -394,9 +412,27 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "ЄС обговорив підтримку логістики у 2026 році — AgroPortal.ua",
-      "url": "https://agroportal.ua/news/ukraina/v-izmajili-obgovorili-pidtrimku-dunayskogo-logistichnogo-marshrutu",
+      "id": "W9",
+      "title": "Європейська Комісія та Україна узгодили подальші кроки для розвитку логістики на Дунаї | Міністерство розвитку громад та територій України",
+      "url": "https://mindev.gov.ua/news/yevropeiska-komisiia-ta-ukraina-uzghodyly-podalshi-kroky-dlia-rozvytku-lohistyky-na-dunai",
+      "source_domain": "mindev.gov.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Глобальні виклики зернового ринку: як брокери ...",
+      "url": "https://agroportal.ua/publishing/intervyu/globalni-vikliki-zernovogo-rinku-yaki-tendenciji-viznachatimut-rozvitok-torgivli",
       "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
@@ -412,64 +448,10 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів",
-      "url": "https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv",
-      "source_domain": "ndu.kr.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Дунай став дуже цінним в умовах війни - Агрополіт",
-      "url": "https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert",
-      "source_domain": "agropolit.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
-      "title": "Дунай стал ключевым логистическим коридором для Украины и ...",
-      "url": "https://ru.bessarabiainform.com/2025/12/dunay-stav-klyuchovym-lohistychnym-korydorom-dlya-ukrainy-ta-elementom-bezpeky-vsiei-evropy/",
-      "source_domain": "ru.bessarabiainform.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W12",
-      "title": "Дунайський напрямок став стратегічною альтернативою морським портам під час війни |Tripoli.land",
-      "url": "https://tripoli.land/news/dunayskiy-marshrut-okazalsya-bolee-ustoychivym-k-blokirovke-chem-morskie-porty",
-      "source_domain": "tripoli.land",
+      "title": "Логістика в Україні: компанії продовжують працювати",
+      "url": "https://ssk.ua/ua/blog/logistika-v-ukrayini-kompaniyi-prodovjuyut-pracyuvati",
+      "source_domain": "ssk.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -484,43 +466,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "Дунайські порти отримають новий імпульс: уряд готує масштабні ...",
-      "url": "https://www.instagram.com/p/DV_1AxSDCNH/",
-      "source_domain": "instagram.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W13",
-      "title": "Кабміну запропонують експеримент для портів Ізмаїла та Рені | Новини України | LIGA.net",
-      "url": "https://biz.liga.net/ua/all/transport/novosti/kabminu-zaproponuiut-dvorichnyy-eksperyment-dlia-portiv-izmaila-ta-reni",
-      "source_domain": "biz.liga.net",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
+      "id": "W2",
       "title": "Морські порти України з початку 2026 року обробили понад 15 млн тонн вантажів — Центр транспортних стратегій",
       "url": "https://cfts.org.ua/news/2026/03/13/morski_porti_ukrani_z_pochatku_2026_roku_obrobili_ponad_15_mln_tonn_vantazhiv_86152",
       "source_domain": "cfts.org.ua",
@@ -538,7 +484,61 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W14",
+      "title": "Міжнародна логістика  :: Державний університет інформаційно-комунікаційних технологій",
+      "url": "https://duikt.edu.ua/uploads/l_205_68872447.pdf",
+      "source_domain": "duikt.edu.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Наступного року порти Дунаю мають обробити не менше 15 млн ...",
+      "url": "https://www.railinsider.com.ua/nastupnogo-roku-porty-dunayu-mayut-obrobyty-ne-menshe-15-mln-t-vantazhiv-minrozvytku/",
+      "source_domain": "railinsider.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "План Б для експорту зерна: чого від нього очікувати? — Elevatorist.com",
+      "url": "https://elevatorist.com/blog/read/855-prioritet--v-rozvitku-dunayu-prognozi-ta-perspektivi-planu-b-po-eksportu-zerna",
+      "source_domain": "elevatorist.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
       "title": "Порти Дунаю готують до зростання вантажообігу до 15 млн т у 2026 році | Події, інтерв'ю | E-land",
       "url": "https://e-land.ua/news/item/porty-dunayu-hotuyut-do-zrostannia-vantazhoobihu-do-15-mln-t-u-2026-rotsi",
       "source_domain": "e-land.ua",
@@ -556,10 +556,10 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
-      "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
-      "source_domain": "agrotimes.ua",
+      "id": "W15",
+      "title": "Удари подвоюють витрати та створюють - Kyiv Post",
+      "url": "https://www.kyivpost.com/uk/post/72052",
+      "source_domain": "kyivpost.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -575,6 +575,24 @@
     },
     {
       "id": "W6",
+      "title": "Україна запускає масштабну модернізацію портів на ...",
+      "url": "https://agroelita.info/ukraina-zapuskaie-masshtabnu-modernizatsiiu-portiv-na-dunai-z-harantiieiu-vantazhopotoku-i-tysiachamy-robochykh-mists/",
+      "source_domain": "agroelita.info",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
       "url": "https://www.ukr.net/news/details/economics/115721216.html",
       "source_domain": "ukr.net",
@@ -592,10 +610,10 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W11",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
-      "url": "https://ukragroconsult.com/news/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
-      "source_domain": "ukragroconsult.com",
+      "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
+      "source_domain": "agrotimes.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -610,46 +628,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Уряд готує запуск дворічного проєкту з розвитку Дунайських портів",
-      "url": "https://odessa-biz.info/2026/03/17/urjad-gotuie-zapusk-dvorichnogo-proiektu-z-rozvitku-dunajskih-portiv/",
-      "source_domain": "odessa-biz.info",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W2",
-      "title": "Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України",
-      "url": "https://interfax.com.ua/news/blog/1147202.html",
-      "source_domain": "interfax.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Євросоюз скоротив на третину закупівлі соняшникової олії",
-      "url": "https://agroportal.ua/news/mir/yevrosoyuz-skorotiv-na-tretinu-zakupivli-sonyashnikovoji-oliji",
-      "source_domain": "agroportal.ua",
+      "id": "W8",
+      "title": "Українські дунайські порти у 2025 році перевалили понад 8,9 млн ...",
+      "url": "https://gmk.center/ua/news/ukrainski-dunajski-porti-u-2025-roci-perevalili-ponad-8-9-mln-t-vantazhiv/",
+      "source_domain": "gmk.center",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -684,6 +666,6 @@
   ],
   "meta": {
     "inputFiles": 6,
-    "itemCount": 37
+    "itemCount": 36
   }
 }
