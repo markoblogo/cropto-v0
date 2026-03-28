@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-03-28T18:43:54.191329+00:00",
+  "generatedAt": "2026-03-28T21:34:46.975338+00:00",
   "items": [
     {
-      "id": "X3",
+      "id": "X12",
       "text": "@CatSmile87 кукурудза, біб (але може зʼїсти мошка) квасоля, якщо без тик, мангольд, шпинат, всяка зелень та пряні трави, цибуля, буряк і морква потребують і прополювання і проривання, але теж не дуже вередливі (буває їдять черви, якзо грунт заражений)",
       "url": "https://x.com/thuglifeofrats/status/2037873224340386128",
       "author_handle": "thuglifeofrats",
       "date": "2026-03-28",
       "date_confidence": "high",
       "engagement": {
-        "likes": 3,
+        "likes": 4,
         "replies": 1
       },
       "relevance": 0.17,
@@ -17,23 +17,23 @@
       "subs": {
         "relevance": 17,
         "recency": 100,
-        "engagement": 20
+        "engagement": 23
       },
-      "score": 38,
+      "score": 39,
       "source": "x",
       "title": "@CatSmile87 кукурудза, біб (але може зʼїсти мошка) квасоля, якщо без тик, мангольд, шпинат, всяка зелень та пряні трави, цибуля, буряк і морква потребують і прополювання і проривання, але теж не дуже вередливі (буває їдять черви, якзо грунт заражений)"
     },
     {
-      "id": "X17",
+      "id": "X26",
       "text": "З Днем Народження мене🥰\nРік був непростим, але я все ще тут\nВдячна СОУ та чудовим людям, що мене оточують за це життя❤️\nДля бажаючих привітати - наша банка для підтримки поранених https://t.co/CBrgTow7vZ\nТа мій вішліст, раптом хтось має натхнення😁 https://t.co/EC7QsMdr7o https://t.co/V1pWEmGroU",
       "url": "https://x.com/jenny_has_a_gun/status/2037782812095402430",
       "author_handle": "jenny_has_a_gun",
       "date": "2026-03-28",
       "date_confidence": "high",
       "engagement": {
-        "likes": 35,
-        "reposts": 6,
-        "replies": 7
+        "likes": 43,
+        "reposts": 8,
+        "replies": 9
       },
       "relevance": 0.0,
       "why_relevant": "",
@@ -47,23 +47,26 @@
       "title": "З Днем Народження мене🥰\nРік був непростим, але я все ще тут\nВдячна СОУ та чудовим людям, що мене оточують за це життя❤️\nДля бажаючих привітати - наша банка для підтримки поранених https://t.co/CBrgTow7vZ\nТа мій вішліст, раптом хтось має натхнення😁 https://t.co/EC7QsMdr7o https://t.co/V1pWEmGroU"
     },
     {
-      "id": "X24",
-      "text": "❗️ Оголошення❕\n🌾 Продається: пшениця, ярий ячмінь та кукурудза 🌽\n🚚 Можлива доставка.\n📱 Телефонуйте: 0968142799 https://t.co/oJDNfjjWlw",
-      "url": "https://x.com/online_brody/status/2037473247399170278",
-      "author_handle": "online_brody",
-      "date": "2026-03-27",
+      "id": "X9",
+      "text": "Ходила на побачення з прекрасним містом❤️ https://t.co/0L6IrphWIp",
+      "url": "https://x.com/jenny_has_a_gun/status/2037967476600758492",
+      "author_handle": "jenny_has_a_gun",
+      "date": "2026-03-28",
       "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.17,
+      "engagement": {
+        "likes": 40,
+        "replies": 4
+      },
+      "relevance": 0.0,
       "why_relevant": "",
       "subs": {
-        "relevance": 17,
-        "recency": 96,
-        "engagement": 35
+        "relevance": 0,
+        "recency": 100,
+        "engagement": 73
       },
-      "score": 39,
+      "score": 46,
       "source": "x",
-      "title": "❗️ Оголошення❕\n🌾 Продається: пшениця, ярий ячмінь та кукурудза 🌽\n🚚 Можлива доставка.\n📱 Телефонуйте: 0968142799 https://t.co/oJDNfjjWlw"
+      "title": "Ходила на побачення з прекрасним містом❤️ https://t.co/0L6IrphWIp"
     },
     {
       "id": "X1",
@@ -85,24 +88,13 @@
       "title": "Продам шрот соєвий, пп Благодарагро (№291935)\n\nПродам шрот соєвий 100 тон за ціною 19700 грн за тонну пп Благодарагро в Кіровоградській області, Світловодський район, Світловодськ (Пропозиція №291935)  https://t.co/SdflUcNapS"
     },
     {
-      "id": "R6",
+      "id": "R10",
       "title": "JUST IN: 🇺🇦🇷🇺 Ukraine strikes Russia's largest oil port.",
       "url": "https://www.reddit.com/r/TradingPlaybook/comments/1s1vmq3/just_in_ukraine_strikes_russias_largest_oil_port/",
       "subreddit": "TradingPlaybook",
       "date": "2026-03-24",
-      "date_confidence": "high",
-      "engagement": null,
-      "top_comments": [],
-      "comment_insights": [],
-      "relevance": 0.68,
-      "why_relevant": "Thread includes discussion of oil shipping routes and mentions sunflower oil logistics.",
-      "subs": {
-        "relevance": 68,
-        "recency": 86,
-        "engagement": 50
-      },
-      "score": 64,
-      "source": "reddit"
+      "why_relevant": "Comments reference Odessa port warehouses, sunflower oil, and shipping logistics related to the Ukraine conflict.",
+      "relevance": 0.74
     },
     {
       "id": "X1",
@@ -339,130 +331,166 @@
       "title": "Продам шрот соєвий, ТОВ Агро -Еко ХХІ плюс ✅ (№291218)\n\nПродам шрот соєвий 100 тон за ціною 10850 грн за тонну ТОВ Агро -Еко ХХІ плюс в Хмельницькій області, Кам'янець-Подільський район, c.Панівці (Пропозиція №291218)  https://t.co/o3pFcuLyir"
     },
     {
-      "id": "R5",
+      "id": "R10",
+      "title": "U.S. and Brazil Soybean Competitiveness: Farm-Level Costs and Returns",
+      "url": "https://www.reddit.com/r/farming/comments/1rdgs4z/us_and_brazil_soybean_competitiveness_farmlevel/",
+      "subreddit": "farming",
+      "date": "2026-02-24",
+      "why_relevant": "Discusses soybean profitability and margins, useful background for crush-margin conversations.",
+      "relevance": 0.6
+    },
+    {
+      "id": "R9",
+      "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
+      "url": "https://www.reddit.com/r/UkraineRussiaReport/comments/1pvw1c1/ua_pov_the_scenery_at_one_of_ukraines_largest/",
+      "subreddit": "UkraineRussiaReport",
+      "date": "2025-12-26",
+      "why_relevant": "Discusses a major Ukrainian sunflower oil storage facility and transport/logistics implications from strikes.",
+      "relevance": 0.78
+    },
+    {
+      "id": "R9",
       "title": "How do the soybean farmers have no one to sell to?",
       "url": "https://www.reddit.com/r/NoStupidQuestions/comments/1o5nm3x/how_do_the_soybean_farmers_have_no_one_to_sell_to/",
       "subreddit": "NoStupidQuestions",
       "date": "2025-10-13",
-      "why_relevant": "Contains explanations of soybean crushing, meal, oil, and processing economics.",
-      "relevance": 0.78
+      "why_relevant": "Includes explanations of soybean crush and soy meal use.",
+      "relevance": 0.66
     },
     {
-      "id": "R4",
-      "title": "Which crops can replace soybeans for the 2026 season?",
-      "url": "https://www.reddit.com/r/Agriculture/comments/1o0ij1k",
-      "subreddit": "Agriculture",
-      "date": "2025-10-02",
-      "why_relevant": "Includes discussion of soybean crush margins and the delta between soybeans, meal, and oil.",
-      "relevance": 0.8
+      "id": "R2",
+      "title": "Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
+      "url": "https://www.reddit.com/r/ValueInvesting/comments/1km0ka0",
+      "subreddit": "ValueInvesting",
+      "date": "2025-05-13",
+      "why_relevant": "Mentions Ukraine sunflower seed oil production and export logistics through Black Sea/Danube routes.",
+      "relevance": 0.93
     },
     {
       "id": "R7",
-      "title": "Helicopter of Ukrainian Air Forces flights over sunflower field",
-      "url": "https://www.reddit.com/r/ukraine/comments/1m259mb",
-      "subreddit": "ukraine",
-      "date": "2025-07-17",
-      "why_relevant": "Contains discussion noting Ukraine’s sunflower oil export importance.",
-      "relevance": 0.61
+      "title": "Чому в в Україні у магазині немає ріпаковох олії?",
+      "url": "https://www.reddit.com/r/reddit_ukr/comments/1kln9eh",
+      "subreddit": "eddit_ukr",
+      "date": "2025-05-13",
+      "why_relevant": "Ukrainian discussion about cooking oils in Ukraine, including sunflower oil market context.",
+      "relevance": 0.83
     },
     {
-      "id": "R3",
+      "id": "R5",
       "title": "ADM closing soybean crush plant",
       "url": "https://www.reddit.com/r/farming/comments/1k2ci0h",
       "subreddit": "farming",
       "date": "2025-04-18",
-      "why_relevant": "Mentions soybean processing capacity and soybean meal market conditions tied to crush economics.",
-      "relevance": 0.82
+      "why_relevant": "Talks about soybean meal market oversupply and crush plant economics.",
+      "relevance": 0.88
     },
     {
-      "id": "R1",
-      "title": "Витрати на їжу",
-      "url": "https://www.reddit.com/r/reddit_ukr/comments/1jpxsd9",
-      "subreddit": "eddit_ukr",
-      "date": "2025-04-04",
-      "why_relevant": "Mentions wheat provided on rations and compares prices in the discussion.",
-      "relevance": 0.74
-    },
-    {
-      "id": "R2",
-      "title": "The Black Sea Brief (September 26, 2024)",
-      "url": "https://www.reddit.com/r/Commodities/comments/1fq8olj",
-      "subreddit": "Commodities",
-      "date": "2024-09-26",
-      "why_relevant": "Covers Black Sea wheat pricing and export flows.",
-      "relevance": 0.98
+      "id": "R3",
+      "title": "Buy Ukraine sunflower oil!",
+      "url": "https://www.reddit.com/r/BuyFromEU/comments/1iwgyi2",
+      "subreddit": "BuyFromEU",
+      "date": "2025-02-23",
+      "why_relevant": "Thread about buying Ukrainian sunflower oil, including comments on EU market access and product sourcing.",
+      "relevance": 0.9
     },
     {
       "id": "R9",
-      "title": "The Black Sea Brief (August 29, 2024)",
-      "url": "https://www.reddit.com/r/Commodities/comments/1f4sxis",
+      "title": "The Black Sea Brief (September 26, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1fq8olj/",
       "subreddit": "Commodities",
-      "date": "2024-08-30",
-      "why_relevant": "Black Sea wheat prices and export flow update.",
-      "relevance": 0.98
+      "date": "2024-09-26",
+      "why_relevant": "Weekly Black Sea brief with wheat pricing and trade flow details.",
+      "relevance": 0.95
     },
     {
-      "id": "R10",
-      "title": "The Black Sea Brief (July 4, 2024)",
-      "url": "https://www.reddit.com/r/Commodities/comments/1etoq3z",
+      "id": "R8",
+      "title": "The Black Sea Brief (August 29, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1f4sxis/",
       "subreddit": "Commodities",
-      "date": "2024-08-16",
-      "why_relevant": "Black Sea wheat market discussion with export and price updates.",
-      "relevance": 0.97
+      "date": "2024-08-29",
+      "why_relevant": "Mentions Black Sea wheat prices and export volumes.",
+      "relevance": 0.95
     },
     {
       "id": "R7",
-      "title": "The Black Sea Brief (June 27, 2024)",
-      "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1",
+      "title": "The Black Sea Brief (July 4, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1etoq3z/",
       "subreddit": "Commodities",
-      "date": "2024-06-28",
-      "why_relevant": "Black Sea grain brief with wheat prices and export flow details.",
-      "relevance": 0.98
-    },
-    {
-      "id": "R9",
-      "title": "Soybean Meal As Soil Additive / Fertilizer?",
-      "url": "https://www.reddit.com/r/houseplants/comments/1ctf0p7",
-      "subreddit": "houseplants",
-      "date": "2024-05-16",
-      "why_relevant": "Mentions soybean meal, though not crush margins; only loosely related.",
-      "relevance": 0.3
+      "date": "2024-07-04",
+      "why_relevant": "Includes wheat prices and export flow commentary for the Black Sea region.",
+      "relevance": 0.95
     },
     {
       "id": "R6",
-      "title": "The Black Sea Brief (March 13, 2024)",
-      "url": "https://www.reddit.com/r/Agriculture/comments/1be2if8",
-      "subreddit": "Agriculture",
-      "date": "2024-03-13",
-      "why_relevant": "Black Sea wheat brief covering prices and export activity.",
-      "relevance": 0.98
+      "title": "The Black Sea Brief (June 27, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1/",
+      "subreddit": "Commodities",
+      "date": "2024-06-27",
+      "why_relevant": "Black Sea wheat pricing and export demand discussion.",
+      "relevance": 0.95
     },
     {
       "id": "R4",
+      "title": "Concerns raised that U.S. soy crush capacity is overbuilt",
+      "url": "https://www.reddit.com/r/farming/comments/1bwrpu9",
+      "subreddit": "farming",
+      "date": "2024-04-05",
+      "why_relevant": "Discussion of soy crush capacity and depressed crush margins.",
+      "relevance": 0.9
+    },
+    {
+      "id": "R5",
+      "title": "The Black Sea Brief (April 3, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1bv6v4h/",
+      "subreddit": "Commodities",
+      "date": "2024-04-03",
+      "why_relevant": "Discusses Black Sea wheat prices and export market dynamics.",
+      "relevance": 0.95
+    },
+    {
+      "id": "R4",
+      "title": "The Black Sea Brief (March 20, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1bjrtbm/",
+      "subreddit": "Commodities",
+      "date": "2024-03-20",
+      "why_relevant": "Weekly Black Sea market brief with wheat prices and export conditions.",
+      "relevance": 0.95
+    },
+    {
+      "id": "R3",
+      "title": "The Black Sea Brief (March 13, 2024)",
+      "url": "https://www.reddit.com/r/Agriculture/comments/1be2if8/",
+      "subreddit": "Agriculture",
+      "date": "2024-03-13",
+      "why_relevant": "Covers Black Sea wheat prices and export flow updates.",
+      "relevance": 0.95
+    },
+    {
+      "id": "R2",
       "title": "Wheat price",
-      "url": "https://www.reddit.com/r/Commodities/comments/15hdqze",
+      "url": "https://www.reddit.com/r/Commodities/comments/15hdqze/",
       "subreddit": "Commodities",
       "date": "2023-08-04",
-      "why_relevant": "Thread about wheat prices with comments referencing Black Sea exports and Ukraine.",
-      "relevance": 0.95
+      "why_relevant": "Discussion mentions wheat prices and links them to Black Sea events and export disruptions.",
+      "relevance": 0.96
     },
     {
       "id": "R1",
       "title": "Wheat Prices Soar as Black Sea Exports Stalled by Russia",
-      "url": "https://www.reddit.com/r/u_MainNewsHub/comments/154hgj0",
+      "url": "https://www.reddit.com/r/u_MainNewsHub/comments/154hgj0/",
       "subreddit": "u_MainNewsHub",
       "date": "2023-07-20",
-      "why_relevant": "Directly discusses wheat prices and stalled Black Sea exports.",
-      "relevance": 0.99
+      "why_relevant": "Directly about wheat prices rising due to stalled Black Sea exports.",
+      "relevance": 0.98
     },
     {
-      "id": "R3",
-      "title": "Students in a Japanese town planted a sunflower field, then made sunflower oil, sold it, and donated the proceeds to Ukraine.",
-      "url": "https://www.reddit.com/r/ukraine/comments/1274fy7",
-      "subreddit": "ukraine",
-      "date": "2023-03-31",
-      "why_relevant": "Contains sunflower oil and Ukraine in a discussion context, though not strictly logistics-focused.",
-      "relevance": 0.72
+      "id": "R8",
+      "title": "Why is soybean that popular?",
+      "url": "https://www.reddit.com/r/farming/comments/14v2hmq",
+      "subreddit": "farming",
+      "date": "2023-07-09",
+      "why_relevant": "Explains soybeans, soy meal, and crush economics; indirectly relevant to crush margins.",
+      "relevance": 0.7
     },
     {
       "id": "R1",
@@ -470,62 +498,107 @@
       "url": "https://www.reddit.com/r/farming/comments/11bmgn8",
       "subreddit": "farming",
       "date": "2023-02-25",
-      "why_relevant": "Directly discusses soybean crush margins and their decline.",
+      "why_relevant": "Directly mentions soybean crush margins and discusses the impact on the soybean market.",
       "relevance": 0.99
     },
     {
       "id": "R8",
-      "title": "U.N., Turkey, Ukraine press ahead with Black Sea grain deal despite Russian pullout",
-      "url": "https://www.reddit.com/r/europe/comments/yhsxqq",
-      "subreddit": "europe",
-      "date": "2022-10-30",
-      "why_relevant": "Discusses the Black Sea grain deal and expected impact on wheat prices.",
-      "relevance": 0.93
-    },
-    {
-      "id": "R5",
       "title": "Sunflower oil ⚡️ OFFER ⚡️",
       "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
       "subreddit": "u_Sunflower-Oil-Offers",
       "date": "2022-10-20",
-      "why_relevant": "Wholesale sunflower oil offer mentioning Ukraine and logistics/shipping terms.",
-      "relevance": 0.96
+      "why_relevant": "Another sunflower oil sales thread with Ukraine FOB shipping/logistics information.",
+      "relevance": 0.79
     },
     {
-      "id": "R2",
+      "id": "R6",
+      "title": "Sunflower oil ⚡️ OFFER ⚡️",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-10-20",
+      "why_relevant": "Wholesale sunflower oil offer with FOB pricing in Ukraine and nearby logistics points.",
+      "relevance": 0.92
+    },
+    {
+      "id": "R5",
       "title": "Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each",
       "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7",
       "subreddit": "ukraine",
       "date": "2022-10-17",
-      "why_relevant": "Discusses sunflower oil storage, transport, and export infrastructure in Ukraine.",
-      "relevance": 0.97
+      "why_relevant": "Discussion about sunflower oil storage and transport infrastructure in Ukraine after an attack.",
+      "relevance": 0.86
     },
     {
-      "id": "R1",
+      "id": "R7",
       "title": "100% Refined Sunflower Oil 🌻 in Europe, direct from the factory.",
       "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
       "subreddit": "u_Sunflower-Oil-Offers",
       "date": "2022-10-11",
-      "why_relevant": "Directly about sunflower oil supply and export logistics from Ukraine.",
+      "why_relevant": "Wholesale sunflower oil listing with origin in Ukraine and FOB logistics details.",
+      "relevance": 0.8
+    },
+    {
+      "id": "R2",
+      "title": "100% Refined Sunflower Oil 🌻 in Europe, direct from the factory.",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-10-11",
+      "why_relevant": "Directly about sunflower oil trade from Ukraine with FOB locations and transport/payment logistics.",
+      "relevance": 0.95
+    },
+    {
+      "id": "R6",
+      "title": "Sunfloweer Oil 🌻 - wholesale price reduction",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-09-12",
+      "why_relevant": "Wholesale sunflower oil post that explicitly references Ukraine origin and logistics/shipping terms.",
+      "relevance": 0.8
+    },
+    {
+      "id": "R1",
+      "title": "Sunfloweer Oil 🌻 - wholesale price reduction",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-09-12",
+      "why_relevant": "Contains sunflower oil sourcing/pricing details and explicitly mentions origin Ukraine plus logistics/shipping terms.",
+      "relevance": 0.96
+    },
+    {
+      "id": "R4",
+      "title": "Saw this in my Supermarket now in Germany. \"Olenka Ukraine\" Products. According to that firm, the earnings go directly to Ukraine and also Charities there? Anybody knows more?",
+      "url": "https://www.reddit.com/r/ukraine/comments/x41yhw",
+      "subreddit": "ukraine",
+      "date": "2022-09-02",
+      "why_relevant": "Discusses Ukrainian sunflower oil product branding, sourcing, and export-market logistics.",
+      "relevance": 0.84
+    },
+    {
+      "id": "R3",
+      "title": "OFFERS - 🌻 SUNFLOWER OIL A QUALITY! 🌻",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/wxnfnd",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-08-25",
+      "why_relevant": "Wholesale sunflower oil post mentioning direct delivery from Ukraine and packaging/logistics terms.",
+      "relevance": 0.94
+    },
+    {
+      "id": "R1",
+      "title": "Food producer/supplier: any one worried about supplies from Ukraine/Russia. Specifically sunflower derivatives?",
+      "url": "https://www.reddit.com/r/supplychain/comments/sxy0rv",
+      "subreddit": "supplychain",
+      "date": "2022-02-21",
+      "why_relevant": "Directly discusses supply risk from Ukraine/Russia for sunflower derivatives and logistics-related disruption.",
       "relevance": 0.98
     },
     {
       "id": "R5",
-      "title": "Fuck wheat.",
-      "url": "https://www.reddit.com/r/Commodities/comments/uepyvo",
-      "subreddit": "Commodities",
-      "date": "2022-04-29",
-      "why_relevant": "Discussion of wheat pricing, global flows, and Black Sea supply dynamics.",
-      "relevance": 0.94
-    },
-    {
-      "id": "R3",
-      "title": "Capitalizing on the coming wheat shortage",
-      "url": "https://www.reddit.com/r/options/comments/t9syjy",
-      "subreddit": "options",
-      "date": "2022-03-09",
-      "why_relevant": "Discusses wheat price spikes driven by Black Sea export disruptions.",
-      "relevance": 0.97
+      "title": "Crude and Refined Sunflower Oil",
+      "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
+      "subreddit": "u_lt10plimited",
+      "date": "2022-02-10",
+      "why_relevant": "Contains claims about sourcing sunflower seeds from Ukraine and Russia and selling bulk sunflower oil globally.",
+      "relevance": 0.82
     },
     {
       "id": "R4",
@@ -533,44 +606,53 @@
       "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
       "subreddit": "u_lt10plimited",
       "date": "2022-02-10",
-      "why_relevant": "Commercial post about sunflower oil sourcing and bulk supply chains tied to Ukraine and Russia.",
-      "relevance": 0.94
+      "why_relevant": "Sunflower oil trade post discussing sourcing from Ukraine and international bulk supply logistics.",
+      "relevance": 0.9
     },
     {
-      "id": "R2",
+      "id": "R3",
       "title": "Request for help understanding an industry at the macro level: Is anyone active in the Bean Oil markets, physical or derivative?",
       "url": "https://www.reddit.com/r/Commodities/comments/nxkzq8",
       "subreddit": "Commodities",
-      "date": "2021-06-17",
-      "why_relevant": "Explains crush margins, soybean meal, and soybean oil economics in detail.",
-      "relevance": 0.95
-    },
-    {
-      "id": "R6",
-      "title": "\"soybeans are grown for their oil. we only feed it to livestock because it would be wasted otherwise\" a financial analysis debunks this claim",
-      "url": "https://www.reddit.com/r/vegan/comments/n9tsnx",
-      "subreddit": "vegan",
-      "date": "2021-05-11",
-      "why_relevant": "Discusses soybean meal and the economics of crushing soybeans.",
-      "relevance": 0.76
-    },
-    {
-      "id": "R8",
-      "title": "A vegan commenter here just said: \"77% of soy grown globally is fed to livestock...\"",
-      "url": "https://www.reddit.com/r/exvegans/comments/mb1j4h",
-      "subreddit": "exvegans",
-      "date": "2021-03-27",
-      "why_relevant": "Includes discussion of soybean meal as a crushed soy product used in feed.",
-      "relevance": 0.66
+      "date": "2021-06-12",
+      "why_relevant": "Explains how soybean meal demand, bean oil, and crush margins relate in the soy crush complex.",
+      "relevance": 0.96
     },
     {
       "id": "R7",
+      "title": "Weekly Ag Commodity Market Thread - Discussion and Questions",
+      "url": "https://www.reddit.com/r/Commodities/comments/nkr0jl",
+      "subreddit": "Commodities",
+      "date": "2021-05-19",
+      "why_relevant": "Contains soy complex discussion including crush margins and meal/oil dynamics.",
+      "relevance": 0.9
+    },
+    {
+      "id": "R2",
+      "title": "Soybean and soybean oil",
+      "url": "https://www.reddit.com/r/Commodities/comments/n0d9vx",
+      "subreddit": "Commodities",
+      "date": "2021-04-28",
+      "why_relevant": "Includes discussion of crush margins as a key factor in soybean and soybean oil markets.",
+      "relevance": 0.93
+    },
+    {
+      "id": "R6",
       "title": "SBM Futures",
       "url": "https://www.reddit.com/r/Commodities/comments/lmvwmx",
       "subreddit": "Commodities",
       "date": "2021-02-18",
-      "why_relevant": "Talks about soybean meal futures and explicitly mentions crush margins.",
-      "relevance": 0.98
+      "why_relevant": "Focused on soybean meal futures and explicitly mentions crush margins.",
+      "relevance": 0.94
+    },
+    {
+      "id": "R10",
+      "title": "Grain FOB Prices",
+      "url": "https://www.reddit.com/r/Commodities/comments/jp4aul/",
+      "subreddit": "Commodities",
+      "date": "2020-11-06",
+      "why_relevant": "Discussion includes Black Sea wheat price references and export pricing sources.",
+      "relevance": 0.9
     },
     {
       "id": "W4",
@@ -681,7 +763,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W8",
       "title": "Black Sea wheat intensifies global competition as Poland explores new export markets",
       "url": "https://ukragroconsult.com/en/news/black-sea-wheat-intensifies-global-competition-as-poland-explores-new-export-markets/",
       "source_domain": "ukragroconsult.com",
@@ -789,7 +871,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W9",
       "title": "Wheat price commentary: Futures rally on tight Black Sea supply, steady premiums - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/wheat-price-commentary-futures-rally-on-tight-black-sea-supply-steady-premiums/",
       "source_domain": "fastmarkets.com",
@@ -825,6 +907,24 @@
       "source": "web"
     },
     {
+      "id": "W14",
+      "title": "An Uncertain Outlook for US Soybeans in 2026 | Presented by CME Group - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DscBFeV0iduM",
+      "source_domain": "youtube.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W10",
       "title": "Are Soybeans the Profitability Play for 2026? - YouTube",
       "url": "https://www.youtube.com/watch%3Fv%3DFXB2c8jt0F0",
@@ -843,7 +943,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W9",
       "title": "NOPA Monthly Crush Report - NOPA",
       "url": "https://www.nopa.org/resources/nopa-monthly-crush-report/",
       "source_domain": "nopa.org",
@@ -879,7 +979,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W7",
       "title": "Norfolk Crush | LinkedIn",
       "url": "https://www.linkedin.com/company/norfolk-crush",
       "source_domain": "linkedin.com",
@@ -897,7 +997,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W5",
       "title": "Oxbow Crush | LinkedIn",
       "url": "https://www.linkedin.com/company/oxbow-crush",
       "source_domain": "linkedin.com",
@@ -915,7 +1015,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W15",
       "title": "Platinum Crush LLC | LinkedIn",
       "url": "https://www.linkedin.com/company/platinum-crush",
       "source_domain": "linkedin.com",
@@ -951,7 +1051,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W13",
       "title": "Soybean Crush Margins",
       "url": "https://www.dtnpf.com/agriculture/web/Ag/blogs/fundamentally-speaking/blog-post/2023/10/20/soybean-crush-margins",
       "source_domain": "dtnpf.com",
@@ -969,7 +1069,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W11",
       "title": "Soybean Crushing Company & Derivatives | LinkedIn",
       "url": "https://www.linkedin.com/company/soybean-crushing-company-&-derivatives",
       "source_domain": "linkedin.com",
@@ -987,7 +1087,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W12",
       "title": "Soybean Futures (Sep 2026) Trade Ideas — CBOT:ZSU2026",
       "url": "https://www.tradingview.com/symbols/CBOT-ZS1%21/community-ideas/?contract=ZSU2026",
       "source_domain": "tradingview.com",
@@ -1005,25 +1105,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Soybean Meal Futures Margins - CME Group",
-      "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean-meal.margins.html",
-      "source_domain": "cmegroup.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
+      "id": "W4",
       "title": "Soymeal Steals Spotlight in March 2026 WASDE - American Soybean Association",
       "url": "https://soygrowers.com/news-releases/soymeal-steals-spotlight-in-march-2026-wasde/",
       "source_domain": "soygrowers.com",
@@ -1059,7 +1141,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W8",
       "title": "VIDEO: Closing Market Update: Canola, soybeans fall sharply",
       "url": "https://www.manitobacooperator.ca/video/closing-market-update-canola-soybeans-fall-sharply-march-16-2026/",
       "source_domain": "manitobacooperator.ca",
@@ -1113,7 +1195,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W13",
       "title": "Конфликт на Ближнем Востоке не должен оказать ...",
       "url": "https://www.finam.ru/publications/item/konflikt-na-blizhnem-vostoke-ne-dolzhen-okazat-pryamogo-vliyaniya-na-stoimost-zerna-20260326-1505/",
       "source_domain": "finam.ru",
@@ -1131,8 +1213,8 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Мировой рынок зерна и масличных: пшеница и кукурузу ...",
+      "id": "W10",
+      "title": "Мировой рынок зерна и масличных: пшеница и кукурузу подешевели во вторник, цены на сою незначительно выросли - OilWorld.ru - все масла мира",
       "url": "https://www.oilworld.ru/news/forage/366293",
       "source_domain": "oilworld.ru",
       "snippet": "",
@@ -1149,7 +1231,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W7",
       "title": "Мировой рынок зерна и масличных: пшеница, кукуруза и соя ...",
       "url": "https://graininfo.ru/news/mirovoy-rynok-zerna-i-maslichnykh-pshenitsa-kukuruza-i-soya-podorozhali-v-sredu/",
       "source_domain": "graininfo.ru",
@@ -1203,7 +1285,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W8",
       "title": "Прогноз цен на кукурузу. Цены, новости, аналитика.",
       "url": "https://www.zol.ru/prognoz-tsen-na-kukuruzu.htm",
       "source_domain": "zol.ru",
@@ -1221,7 +1303,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W12",
       "title": "Пшеница, кукуруза и соя подорожали в среду на ...",
       "url": "https://ukragroconsult.com/ru/news/pshenicza-kukuruza-i-soya-podorozhali-v-sredu-na-chikagskoj-birzhe-2/",
       "source_domain": "ukragroconsult.com",
@@ -1257,10 +1339,10 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "Три шага на пути повышения урожайности кукурузы — Latifundist.com",
-      "url": "https://latifundist.com/spetsproekt/30-tri-shaga-na-puti-povysheniya-urozhajnosti-kukuruzy",
-      "source_domain": "latifundist.com",
+      "id": "W15",
+      "title": "Рынок кукурузы США в 2026 году будет оставаться под ...",
+      "url": "https://ukragroconsult.com/ru/news/rynok-kukuruzy-ssha-v-2026-godu-budet-ostavatsya-pod-davleniem-rekordnogo-predlozheniya/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1275,8 +1357,8 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Турция купила 325 тыс. тонн кукурузы на тендере | Zerno.ru",
+      "id": "W9",
+      "title": "Турция купила 325 тыс. тонн кукурузы на тендере - Zerno.ru",
       "url": "https://www.zerno.ru/node/17133",
       "source_domain": "zerno.ru",
       "snippet": "",
@@ -1293,7 +1375,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
+      "id": "W14",
       "title": "ФАО прогнозує зростання запасів зерна у світі до рекордного рівня — AgroPortal.ua",
       "url": "https://agroportal.ua/ru/news/mir/fao-prognozuye-zrostannya-zapasiv-zerna-u-sviti-do-rekordnogo-rivnya",
       "source_domain": "agroportal.ua",
@@ -1329,7 +1411,25 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W5",
+      "title": "Fat-and-Oil Industry-2025», яка відбудеться 30 жовтня в ...",
+      "url": "https://www.instagram.com/p/DOMSWhRDJnI/",
+      "source_domain": "instagram.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
       "title": "Latifundist.com - Соєвий шрот більше не дефіцит: ринок ...",
       "url": "https://www.facebook.com/photo.php%3Ffbid%3D1349492390531127%26set%3Da.465812945565747%26type%3D3",
       "source_domain": "facebook.com",
@@ -1347,61 +1447,43 @@
       "source": "web"
     },
     {
-      "id": "W3",
-      "title": "[PDF] УКРАЇНСЬКИЙ ЕКОНОМІЧНИЙ ЧАСОПИС",
-      "url": "https://eprints.cdu.edu.ua/7248/1/%D0%A3%D0%95%D0%A7%20%E2%84%969%E2%80%992025.pdf",
-      "source_domain": "eprints.cdu.edu.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W14",
-      "title": "[PDF] міністерство освіти і науки україни - НУБіП",
-      "url": "https://nubip.edu.ua/sites/default/files/rich_text_files/dis_%25D0%2597%25D0%25B0%25D0%25BD%25D1%2596%25D0%25B7%25D0%25B4%25D1%2580%25D0%25B0.pdf",
-      "source_domain": "nubip.edu.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
-      "title": "В Україні зростає переробка сої: у 2025/26 МР показник сягне 2,9 ...",
-      "url": "https://www.growhow.in.ua/v-ukraini-zrostaie-pererobka-soi-u-2025-26-mr-pokaznyk-siahne-2-9-mln-tonn/",
-      "source_domain": "growhow.in.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W10",
+      "title": "Zeep Ukraine | Kyiv",
+      "url": "https://www.facebook.com/ZeepInUA/",
+      "source_domain": "facebook.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Низькі ціни на соєвий шрот знижують маржу переробки ...",
+      "url": "https://ukragroconsult.com/news/nyzyki-cziny-na-soyevyj-shrot-znyzhuyuty-marzhu-pererobky-v-pivdennij-ameryczi/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
       "title": "Обсяг переробки сої в Україні у 2025/26 становитиме 2,9 млн тонн",
       "url": "https://www.apk-inform.com/uk/news/1553603",
       "source_domain": "apk-inform.com",
@@ -1419,7 +1501,43 @@
       "source": "web"
     },
     {
+      "id": "W7",
+      "title": "Особливості олійного сезону: соя конкурує із соняшником у переробці — AgroPortal.ua",
+      "url": "https://agroportal.ua/publishing/analitika/osoblivosti-oliynogo-sezonu-soya-konkuruye-iz-sonyashnikom-u-pererobci",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W4",
+      "title": "Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com",
+      "url": "https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami",
+      "source_domain": "latifundist.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
       "title": "Ринок соєвого шроту 2025/26: профіцит, ціни, експорт України — Latifundist.com",
       "url": "https://latifundist.com/blog/read/3194-rinok-soyevogo-shrotu-vhodit-u-fazu-profitsitu-chomu-tsini-pid-tiskom-i-shcho-tse-oznachaye-dlya-ukrayini",
       "source_domain": "latifundist.com",
@@ -1437,25 +1555,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Соняшник проти сої. Хто може наробити більше горя?",
-      "url": "https://latifundist.com/blog/read/3051-sonyashnik-proti-soyi-hto-mozhe-narobiti-bilshe-gorya",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W14",
       "title": "Соя дорожчає швидше за кукурудзу — фермери відкладають продажі в очікуванні подальшого зростання — КУРКУЛЬ",
       "url": "https://kurkul.com/news/40769-soya-dorojchaye-shvidshe-za-kukurudzu--fermeri-vidkladayut-prodaji-v-ochikuvanni-podalshogo-zrostannya",
       "source_domain": "kurkul.com",
@@ -1473,7 +1573,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W13",
       "title": "Соєвий комплекс: шрот зростає, олія під тиском - Agronews",
       "url": "https://agronews.com/ua/ua/news/analytics/2026-03-26/81820",
       "source_domain": "agronews.com",
@@ -1509,28 +1609,10 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Соєвий шрот готується до рекорду — ціни під тиском Світове ...",
-      "url": "https://www.instagram.com/p/DWTdbYij7oS/",
-      "source_domain": "instagram.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
-      "title": "Соєво-ріпакові правки можуть збільшити переробку олійних, але несуттєво — AgroPortal.ua",
-      "url": "https://agroportal.ua/news/ukraina/soyevo-ripakovi-pravki-mozhut-zbilshiti-pererobku-oliynih-ale-nesuttyevo",
-      "source_domain": "agroportal.ua",
+      "id": "W3",
+      "title": "УКРАЇНСЬКИЙ ЕКОНОМІЧНИЙ ЧАСОПИС",
+      "url": "https://eprints.cdu.edu.ua/7248/1/%D0%A3%D0%95%D0%A7%20%E2%84%969%E2%80%992025.pdf",
+      "source_domain": "eprints.cdu.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1563,10 +1645,10 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Штиль на ринках соняшника і олії. Шрот лихоманить — Latifundist.com",
-      "url": "https://latifundist.com/blog/read/3065-shtil-na-rinkah-sonyashnika-i-oliyi-shrot-lihomanit-yevropejtsi-jdut-v-defolti",
-      "source_domain": "latifundist.com",
+      "id": "W15",
+      "title": "у січні переробка сої в Україні збільшилась до 260 тис. т ...",
+      "url": "https://www.facebook.com/latifundistcom/photos/%EF%B8%8F-%D0%BC%D0%B0%D1%80%D0%B6%D0%B0-%D0%BF%D0%B5%D1%80%D0%B5%D1%80%D0%BE%D0%B1%D0%BA%D0%B8-%D1%81%D0%BE%D1%97-%D0%BF%D0%B0%D0%B4%D0%B0%D1%94-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%B7%D0%BD%D0%B8%D0%B6%D0%B5%D0%BD%D0%BD%D1%8F-%D0%B2%D0%B0%D1%80%D1%82%D0%BE%D1%81%D1%82%D1%96-%D1%81%D0%BE%D1%94%D0%B2%D0%BE%D0%B3%D0%BE-%D1%88%D1%80%D0%BE%D1%82%D1%83-%D0%B7%D0%B0-%D0%B4%D0%B0%D0%BD%D0%B8%D0%BC%D0%B8-%D0%B0%D0%BF%D0%BA-/1016699737143729/",
+      "source_domain": "facebook.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1581,7 +1663,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "(PDF) Agricultural exports of Ukraine in the conditions of war.",
       "url": "https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war",
       "source_domain": "researchgate.net",
@@ -1599,7 +1681,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W10",
       "title": "[PDF] ШЕВЧЕНКІВСЬКА ВЕСНА 2025 ЕКОНОМІКА УКРАЇНИ 2025",
       "url": "https://econom.knu.ua/wp-content/uploads/2025/04/%D0%A8%D0%92-%D0%B7%D0%B1%D1%96%D1%80%D0%BD%D0%B8%D0%BA_2025_%D1%81%D0%B0%D0%B9%D1%82.pdf",
       "source_domain": "econom.knu.ua",
@@ -1635,7 +1717,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W6",
       "title": "Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ",
       "url": "https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri",
       "source_domain": "kurkul.com",
@@ -1743,7 +1825,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W11",
       "title": "Україна забезпечує обсяги соняшникової олії до ...",
       "url": "https://www.zerno-ua.com/news/ukrayina-zabezpechuye-obsyagy-sonyashnykovoyi-oliyi-do-yevrosoyuzu/",
       "source_domain": "zerno-ua.com",
@@ -1761,7 +1843,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W8",
       "title": "Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com",
       "url": "https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin",
       "source_domain": "latifundist.com",
@@ -1815,7 +1897,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "Ціни на соняшник в Україні сягнули 31000 грн/т, але їх ...",
       "url": "https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-syagnuly-31000-grn-t-ale-yih-obmezhuye-stabilizacziya-czin-na-oliyu/",
       "source_domain": "ukragroconsult.com",
@@ -1835,6 +1917,6 @@
   ],
   "meta": {
     "inputFiles": 10,
-    "itemCount": 112
+    "itemCount": 122
   }
 }

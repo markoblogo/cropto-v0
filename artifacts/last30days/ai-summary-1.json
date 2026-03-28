@@ -1,55 +1,55 @@
 {
-  "generatedAt": "2026-03-28T18:44:14.135472+00:00",
+  "generatedAt": "2026-03-28T21:35:02.327522+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-28T18:38:03.682318+00:00",
+  "sourceUpdatedAt": "2026-03-28T21:29:04.476691+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Sindh province in Pakistan has launched a strategic wheat procurement policy to stabilize domestic prices and support farmers amid ongoing global commodity market pressures, including rising fertilizer and energy costs linked to Middle East conflicts. The policy targets direct procurement of 1 million metric tons at Rs. 3,500 per maund from over 330,000 registered farmers, eliminating middlemen and aiming to ensure affordable flour prices. What changed vs previous comparable period: This initiative marks a new, concrete government intervention starting April 1, replacing prior less coordinated procurement efforts and addressing systemic supply chain inefficiencies highlighted by wheat wastage and high flour prices. Actionable implications for trading/brokerage: Traders should anticipate stabilized local wheat prices in Sindh, potentially reducing volatility in regional flour markets. However, global wheat prices remain pressured by improved harvests in Europe and Russia, while US exports are forecast to slow, suggesting a complex pricing environment. The recent corn CIF offer for April delivery at 241 EUR from Tarragona indicates active trade flows in grains outside Ukraine. \n\nKey facts:\n- Sindh to procure 1 million metric tons of wheat starting April 1 at 109 centers\n- Support price set at Rs. 3,500 per maund benefiting 330,000+ farmers\n- Procurement exclusively from registered Hari Card holders to ensure direct farmer benefit\n- Global wheat prices easing due to better harvest prospects in Europe and Russia as of late March\n- US wheat exports forecast to slow sharply next year amid normalized global supplies\n- Corn CIF offer at 241 EUR for April delivery from Tarragona reflects active non-Black Sea trade",
+    "text": "General situation: The global grains and oilseeds market remains stable with no significant price shifts reported yesterday outside Ukraine. Sindh province in Pakistan introduced a major wheat procurement policy aiming to stabilize local prices and support farmers by purchasing 1 million metric tons at Rs. 3,500 per maund, benefiting over 330,000 registered farmers. What changed vs previous comparable period: No new market-moving events or price changes were recorded yesterday compared to the previous day. However, the Sindh procurement plan marks a proactive policy shift to directly support growers and control flour prices, contrasting with prior periods of price volatility and supply chain inefficiencies. Actionable implications for trading/brokerage: Traders should monitor Sindh’s wheat procurement rollout starting April 1, as it may reduce local price volatility and limit speculative price spikes in the region. The policy’s direct farmer engagement could improve supply chain transparency and reduce middlemen margins, potentially impacting regional wheat demand and pricing dynamics. \n\nKey facts:\n- Sindh government to procure 1 million metric tons of wheat starting April 1 at 109 centers\n- Support price fixed at Rs. 3,500 per maund, benefiting 330,000+ registered Hari Card farmers\n- Procurement excludes middlemen, ensuring direct farmer payments including Rs. 60 per bag incentive\n- No wheat price or freight rate changes reported yesterday globally outside Ukraine\n- Global wheat prices eased recently due to improved harvest prospects in Europe and Russia, despite US Plains dry weather and high fertilizer costs\n- No new price data or market signals recorded yesterday compared to the previous day",
     "chart": {
       "type": "event_mix",
-      "title": "Wheat Market Drivers Yesterday",
+      "title": "Market Drivers Yesterday",
       "points": [
         {
           "label": "Logistics",
-          "value": 2
+          "value": 0
         },
         {
           "label": "Demand",
-          "value": 3
+          "value": 0
         },
         {
           "label": "Pricing",
-          "value": 4
+          "value": 0
         },
         {
           "label": "Execution Risk",
-          "value": 1
+          "value": 0
         }
       ],
       "series": [
         {
-          "name": "Impact Drivers",
+          "name": "Impact",
           "points": [
             {
               "label": "Logistics",
-              "value": 2
+              "value": 0
             },
             {
               "label": "Demand",
-              "value": 3
+              "value": 0
             },
             {
               "label": "Pricing",
-              "value": 4
+              "value": 0
             },
             {
               "label": "Execution Risk",
-              "value": 1
+              "value": 0
             }
           ]
         }
@@ -64,26 +64,26 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних культур України залишається стабільною, без суттєвих цінових коливань. Ціни на кукурудзу на FOB Одеса тримаються в діапазоні 223-225 USD/т, а пшениця пропонується по 215-223 USD/т. Пропозиції на ріпак та соняшник також стабільні, з CPT цінами відповідно 593 EUR/т та 709 USD/т. Торгові заявки на кукурудзу демонструють невеликий розрив між bid (226 USD/т) та offer (223 USD/т), що свідчить про помірний попит і пропозицію. Відсутність значних змін у ціновій політиці та логістиці підтримує стабільність ринку. Для трейдерів важливо враховувати поточний баланс між попитом і пропозицією, а також слідкувати за можливими коливаннями через зовнішні фактори, зокрема світові ціни на нафту та дизель, які можуть впливати на логістику.",
+    "text": "Загальна ситуація на ринку зернових та олійних в Україні залишається стабільною, без суттєвих цінових коливань. Ціни на кукурудзу CPT Одеса тримаються на рівні 214-226 USD за тонну, а пшениця CPT Одеса – близько 215-223 USD. Пальне в Україні продовжує дорожчати, що може впливати на логістику та собівартість експорту. Порівняно з попереднім днем, з'явилися нові пропозиції та попити на кукурудзу, але загальна цінова динаміка залишилася без змін. Відсутність суттєвих змін у сигналах свідчить про стабільність ринку, хоча зростання цін на пальне створює додаткові ризики для експортерів. Ринок залишається чутливим до зовнішніх факторів, зокрема геополітичних та енергетичних.",
     "chart": {
       "type": "event_mix",
-      "title": "Фактори впливу на ринок зернових та олійних (28.03.2026)",
+      "title": "Фактори впливу на ринок зернових в Україні (28.03.2026)",
       "points": [
         {
           "label": "Логістика",
-          "value": 30
+          "value": 3
         },
         {
           "label": "Попит",
-          "value": 25
+          "value": 2
         },
         {
           "label": "Ціноутворення",
-          "value": 20
+          "value": 3
         },
         {
           "label": "Ризики виконання",
-          "value": 25
+          "value": 1
         }
       ],
       "series": [
@@ -92,19 +92,19 @@
           "points": [
             {
               "label": "Логістика",
-              "value": 30
+              "value": 3
             },
             {
               "label": "Попит",
-              "value": 25
+              "value": 2
             },
             {
               "label": "Ціноутворення",
-              "value": 20
+              "value": 3
             },
             {
               "label": "Ризики виконання",
-              "value": 25
+              "value": 1
             }
           ]
         }

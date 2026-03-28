@@ -1,22 +1,12 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-28T18:43:54.036817+00:00
+**Generated:** 2026-03-28T21:34:46.719200+00:00
 **Date Range:** 2026-02-26 to 2026-03-28
 **Mode:** all
 
 ## Models Used
 
 - **OpenAI:** gpt-5.4-mini
-
-## Reddit Threads
-
-### R6: JUST IN: 🇺🇦🇷🇺 Ukraine strikes Russia's largest oil port.
-
-- **Subreddit:** r/TradingPlaybook
-- **URL:** https://www.reddit.com/r/TradingPlaybook/comments/1s1vmq3/just_in_ukraine_strikes_russias_largest_oil_port/
-- **Date:** 2026-03-24 (confidence: high)
-- **Score:** 64/100
-- **Relevance:** Thread includes discussion of oil shipping routes and mentions sunflower oil logistics.
 
 ## X Posts
 
@@ -96,7 +86,7 @@
 
 ## Web Results
 
-### W3: (PDF) Agricultural exports of Ukraine in the conditions of war.
+### W2: (PDF) Agricultural exports of Ukraine in the conditions of war.
 
 - **Source:** researchgate.net
 - **URL:** https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war
@@ -106,7 +96,7 @@
 
 > 
 
-### W11: [PDF] ШЕВЧЕНКІВСЬКА ВЕСНА 2025 ЕКОНОМІКА УКРАЇНИ 2025
+### W10: [PDF] ШЕВЧЕНКІВСЬКА ВЕСНА 2025 ЕКОНОМІКА УКРАЇНИ 2025
 
 - **Source:** econom.knu.ua
 - **URL:** https://econom.knu.ua/wp-content/uploads/2025/04/%D0%A8%D0%92-%D0%B7%D0%B1%D1%96%D1%80%D0%BD%D0%B8%D0%BA_2025_%D1%81%D0%B0%D0%B9%D1%82.pdf
@@ -126,7 +116,7 @@
 
 > 
 
-### W8: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
+### W6: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
 
 - **Source:** kurkul.com
 - **URL:** https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri
@@ -186,7 +176,7 @@
 
 > 
 
-### W10: Україна забезпечує обсяги соняшникової олії до ...
+### W11: Україна забезпечує обсяги соняшникової олії до ...
 
 - **Source:** zerno-ua.com
 - **URL:** https://www.zerno-ua.com/news/ukrayina-zabezpechuye-obsyagy-sonyashnykovoyi-oliyi-do-yevrosoyuzu/
@@ -196,7 +186,7 @@
 
 > 
 
-### W6: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
+### W8: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin
@@ -226,7 +216,7 @@
 
 > 
 
-### W2: Ціни на соняшник в Україні сягнули 31000 грн/т, але їх ...
+### W3: Ціни на соняшник в Україні сягнули 31000 грн/т, але їх ...
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-syagnuly-31000-grn-t-ale-yih-obmezhuye-stabilizacziya-czin-na-oliyu/
