@@ -51,6 +51,7 @@ export function SeaBrokerageMonitorPage() {
   const [offerPaneFilters, setOfferPaneFilters] =
     useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
+  const [tradePaneFilters, setTradePaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState("");
@@ -84,6 +85,15 @@ export function SeaBrokerageMonitorPage() {
     [filteredEntries],
   );
 
+  const tradeEntriesBase = useMemo(
+    () =>
+      filterBrokerageEntries(filteredEntries, {
+        ...defaultFeedFilters,
+        entryType: "trade",
+      }),
+    [filteredEntries],
+  );
+
   const offerBrokerOptions = useMemo(
     () => buildBrokerOptions(offerEntriesBase),
     [offerEntriesBase],
@@ -92,6 +102,11 @@ export function SeaBrokerageMonitorPage() {
   const bidBrokerOptions = useMemo(
     () => buildBrokerOptions(bidEntriesBase),
     [bidEntriesBase],
+  );
+
+  const tradeBrokerOptions = useMemo(
+    () => buildBrokerOptions(tradeEntriesBase),
+    [tradeEntriesBase],
   );
 
   const offerEntries = useMemo(
@@ -114,6 +129,16 @@ export function SeaBrokerageMonitorPage() {
     [bidEntriesBase, bidPaneFilters],
   );
 
+  const tradeEntries = useMemo(
+    () =>
+      filterBrokerageEntries(tradeEntriesBase, {
+        ...defaultFeedFilters,
+        brokerProfileId: tradePaneFilters.brokerProfileId,
+        search: tradePaneFilters.search,
+      }),
+    [tradeEntriesBase, tradePaneFilters],
+  );
+
   function updateFilter<K extends keyof FeedFilterState>(key: K, value: FeedFilterState[K]) {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }
@@ -123,11 +148,11 @@ export function SeaBrokerageMonitorPage() {
       return;
     }
 
-    const visibleEntryIds = new Set([...offerEntries, ...bidEntries].map((entry) => entry.id));
+    const visibleEntryIds = new Set([...offerEntries, ...bidEntries, ...tradeEntries].map((entry) => entry.id));
     if (!visibleEntryIds.has(selectedEntry.id)) {
       setSelectedEntry(null);
     }
-  }, [bidEntries, offerEntries, selectedEntry]);
+  }, [bidEntries, offerEntries, selectedEntry, tradeEntries]);
 
   useEffect(() => {
     function handleOpenTelegramAuth() {
@@ -173,6 +198,15 @@ export function SeaBrokerageMonitorPage() {
       setBidPaneFilters((prev) => ({ ...prev, brokerProfileId: "all" }));
     }
   }, [bidBrokerOptions, bidPaneFilters.brokerProfileId]);
+
+  useEffect(() => {
+    if (
+      tradePaneFilters.brokerProfileId !== "all" &&
+      !tradeBrokerOptions.some((option) => option.value === tradePaneFilters.brokerProfileId)
+    ) {
+      setTradePaneFilters((prev) => ({ ...prev, brokerProfileId: "all" }));
+    }
+  }, [tradeBrokerOptions, tradePaneFilters.brokerProfileId]);
 
   useEffect(() => {
     if (session.monitorAuthToken && telegramAuthOpen) {
@@ -228,10 +262,26 @@ export function SeaBrokerageMonitorPage() {
           />
         </section>
 
-        <ContextualMatchingPanel
-          entries={filteredEntries}
-          selectedEntry={selectedEntry}
-        />
+        <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] sm:gap-1">
+          <ContextualMatchingPanel
+            entries={filteredEntries}
+            selectedEntry={selectedEntry}
+          />
+          <BrokerWorkspacePane
+            title="Trades"
+            emptyTitle="No visible trades"
+            emptyDescription="Create a new TRADE or adjust trade-side filters."
+            entries={tradeEntries}
+            brokerOptions={tradeBrokerOptions}
+            selectedEntryId={selectedEntry?.type === "trade" ? selectedEntry.id : null}
+            onSelectEntry={setSelectedEntry}
+            filters={tradePaneFilters}
+            onFiltersChange={setTradePaneFilters}
+            createActionLabel="Create TRADE"
+            createActionVariant="secondary"
+            onCreateAction={() => setCreateDialogType("trade")}
+          />
+        </section>
 
         <Collapsible>
           <div className="flex justify-end">
@@ -262,6 +312,14 @@ export function SeaBrokerageMonitorPage() {
           if (!open) setCreateDialogType(null);
         }}
         entryType="offer"
+        session={session}
+      />
+      <EntryCreateDialog
+        open={createDialogType === "trade"}
+        onOpenChange={(open) => {
+          if (!open) setCreateDialogType(null);
+        }}
+        entryType="trade"
         session={session}
       />
 

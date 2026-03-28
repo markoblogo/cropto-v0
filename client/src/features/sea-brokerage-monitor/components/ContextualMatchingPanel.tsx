@@ -56,6 +56,10 @@ export function ContextualMatchingPanel({
 }: ContextualMatchingPanelProps) {
   const [detailEntry, setDetailEntry] = useState<BrokerageEntry | null>(null);
   const [focus, setFocus] = useState<MatchingFocusState>(defaultFocusState);
+  const matchableEntries = useMemo(
+    () => entries.filter((entry) => entry.type === "bid" || entry.type === "offer"),
+    [entries],
+  );
 
   const deliveryPlaceOptions = useMemo(
     () => [
@@ -72,7 +76,7 @@ export function ContextualMatchingPanel({
   );
 
   const rollingSuggestions = useMemo(() => {
-    const suggestions = generateMatchSuggestions(entries);
+    const suggestions = generateMatchSuggestions(matchableEntries);
 
     return suggestions
       .filter((suggestion) => {
@@ -114,7 +118,7 @@ export function ContextualMatchingPanel({
         return getLatestMatchTimestamp(b) - getLatestMatchTimestamp(a);
       })
       .slice(0, 12);
-  }, [entries, focus, selectedEntry]);
+  }, [focus, matchableEntries, selectedEntry]);
 
   return (
     <>
@@ -152,9 +156,9 @@ export function ContextualMatchingPanel({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All commodities</SelectItem>
-                {Array.from(new Set(entries.map((entry) => entry.commodity))).map((commodity) => (
+                {Array.from(new Set(matchableEntries.map((entry) => entry.commodity))).map((commodity) => (
                   <SelectItem key={commodity} value={commodity}>
-                    {entries.find((entry) => entry.commodity === commodity)?.commodityLabel ?? commodity}
+                    {matchableEntries.find((entry) => entry.commodity === commodity)?.commodityLabel ?? commodity}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -173,7 +177,7 @@ export function ContextualMatchingPanel({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All basis</SelectItem>
-                {Array.from(new Set(entries.map((entry) => entry.basis))).map((basis) => (
+                {Array.from(new Set(matchableEntries.map((entry) => entry.basis))).map((basis) => (
                   <SelectItem key={basis} value={basis}>
                     {basis}
                   </SelectItem>

@@ -21,7 +21,7 @@ import type {
 } from "../types";
 
 export interface CreateBrokerageEntryInput {
-  type: "bid" | "offer";
+  type: "bid" | "offer" | "trade";
   sellerName?: string | null;
   buyerName?: string | null;
   originCountry?: string | null;
@@ -164,19 +164,19 @@ export function reseedSeaBrokerageMonitorDemoData() {
   emitChange();
 }
 
-export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
+export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer" | "trade") {
   const broker = type === "bid" ? brokers[0] : brokers[1];
 
   return createBrokerageEntry({
     type,
     commodity: "corn",
-    sellerName: type === "offer" ? "Sample Seller Group" : null,
-    buyerName: type === "bid" ? "Sample Buyer Group" : null,
+    sellerName: type === "offer" || type === "trade" ? "Sample Seller Group" : null,
+    buyerName: type === "bid" || type === "trade" ? "Sample Buyer Group" : null,
     originCountry: "Ukraine",
     originCountryCode: "UA",
     commodityLabel: commodityOptionMap.corn.displayLabel,
     gradeOrSpec: "",
-    quantityMt: type === "bid" ? 13500 : 13250,
+    quantityMt: type === "bid" ? 13500 : type === "trade" ? 14000 : 13250,
     tolerancePct: 5,
     volumeFrom: type === "bid" ? 12000 : 12500,
     volumeTo: type === "bid" ? 15000 : 14500,
@@ -195,9 +195,9 @@ export function addSeaBrokerageMonitorSampleEntry(type: "bid" | "offer") {
     }),
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
-    price: type === "bid" ? 228 : 226,
-    priceFrom: type === "bid" ? 228 : 226,
-    priceTo: type === "bid" ? 228 : 226,
+    price: type === "bid" ? 228 : type === "trade" ? 227 : 226,
+    priceFrom: type === "bid" ? 228 : type === "trade" ? 227 : 226,
+    priceTo: type === "bid" ? 228 : type === "trade" ? 227 : 226,
     currency: "USD",
     transportType: "vessel",
     note:

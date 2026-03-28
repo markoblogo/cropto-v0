@@ -98,7 +98,7 @@ const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
 };
 
 const createSeaBrokerageEntryRequestSchema = z.object({
-  type: z.enum(["bid", "offer"]),
+  type: z.enum(["bid", "offer", "trade"]),
   sellerName: z.string().trim().max(200).nullable().optional(),
   buyerName: z.string().trim().max(200).nullable().optional(),
   originCountry: z.string().trim().nullable().optional(),

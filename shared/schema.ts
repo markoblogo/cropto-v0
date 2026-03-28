@@ -488,7 +488,7 @@ export const forwardSpreads = pgTable("forward_spreads", {
 
 export const seaBrokerageEntries = pgTable("sea_brokerage_entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  type: text("type", { enum: ["bid", "offer"] }).notNull(),
+  type: text("type", { enum: ["bid", "offer", "trade"] }).notNull(),
   brokerUserId: text("broker_user_id").notNull(),
   brokerEmail: text("broker_email"),
   brokerTelegramUserId: text("broker_telegram_user_id"),

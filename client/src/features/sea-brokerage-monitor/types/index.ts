@@ -1,4 +1,4 @@
-export type EntryType = "bid" | "offer";
+export type EntryType = "bid" | "offer" | "trade";
 
 export type CommodityCode =
   | "corn"

@@ -140,11 +140,15 @@ function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
   if (entry.type === "bid") {
     return entry.buyerName?.trim() || null;
   }
+  if (entry.type === "trade") {
+    return null;
+  }
   return entry.sellerName?.trim() || null;
 }
 
 function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) {
-  const ideaTag = entry.type === "bid" ? "#bid_idea" : "#offer_idea";
+  const ideaTag =
+    entry.type === "bid" ? "#bid_idea" : entry.type === "trade" ? "#trade_idea" : "#offer_idea";
   const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
   return [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
 }
@@ -190,11 +194,18 @@ function formatStandardTelegramMessage(
   );
   const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
   const counterpartyLine = formatTelegramCounterparty(entry) || (entry.type === "offer" ? "SELLER" : "BUYER");
+  const sellerLine =
+    (entry.sellerName || "").trim() ||
+    (entry.type === "offer" ? "SELLER" : entry.type === "trade" ? "SELLER" : "");
+  const buyerLine =
+    (entry.buyerName || "").trim() ||
+    (entry.type === "bid" ? "BUYER" : entry.type === "trade" ? "BUYER" : "");
 
   const lines = [
     header,
     "------------------------------",
-    counterpartyLine.toUpperCase(),
+    entry.type === "trade" ? `SELLER: ${sellerLine.toUpperCase()}` : counterpartyLine.toUpperCase(),
+    entry.type === "trade" ? `BUYER: ${buyerLine.toUpperCase()}` : null,
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
     formatQuantityLine(entry),
     `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,

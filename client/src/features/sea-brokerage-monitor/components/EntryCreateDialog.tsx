@@ -188,7 +188,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     periodPreset: "explicit_range",
     commodity: "corn",
     originCountry: "UA",
-    quantityMt: entryType === "bid" ? 25000 : 20000,
+    quantityMt: entryType === "bid" ? 25000 : entryType === "trade" ? 22000 : 20000,
     tolerancePct: 5,
     basis: "FOB",
     destinationPortCode: "odesa",
@@ -196,7 +196,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
     currency: "USD",
-    price: entryType === "bid" ? 225 : 223,
+    price: entryType === "bid" ? 225 : entryType === "trade" ? 224 : 223,
     paymentTerms: entryType === "bid" ? "CAD" : "CAFD",
     transportType: "vessel",
     note: "",
@@ -370,6 +370,9 @@ export function EntryCreateDialog({
 }: EntryCreateDialogProps) {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isAddingCompany, setIsAddingCompany] = useState(false);
+  const [companyEditorTarget, setCompanyEditorTarget] = useState<"sellerName" | "buyerName">(
+    entryType === "offer" ? "sellerName" : "buyerName",
+  );
   const [newCompanyName, setNewCompanyName] = useState("");
   const [companyEditorMessage, setCompanyEditorMessage] = useState<string | null>(null);
   const [isSavingCompany, setIsSavingCompany] = useState(false);
@@ -432,6 +435,7 @@ export function EntryCreateDialog({
     form.reset(getDefaultValues(entryType));
     setSubmitMessage(null);
     setIsAddingCompany(false);
+    setCompanyEditorTarget(entryType === "offer" ? "sellerName" : "buyerName");
     setNewCompanyName("");
     setCompanyEditorMessage(null);
     setIsSavingCompany(false);
@@ -465,8 +469,8 @@ export function EntryCreateDialog({
       brokerName: session.authorProfile.brokerName,
       companyName: session.authorProfile.companyName,
       sellerName:
-        entryType === "offer" && values.sellerName?.trim() ? values.sellerName.trim() : null,
-      buyerName: entryType === "bid" && values.buyerName?.trim() ? values.buyerName.trim() : null,
+        entryType !== "bid" && values.sellerName?.trim() ? values.sellerName.trim() : null,
+      buyerName: entryType !== "offer" && values.buyerName?.trim() ? values.buyerName.trim() : null,
       originCountry,
       originCountryCode: values.originCountry,
       commodity: values.commodity as BrokerageEntry["commodity"],
@@ -508,6 +512,17 @@ export function EntryCreateDialog({
       return;
     }
 
+    if (entryType === "trade") {
+      if (!formValues.sellerName?.trim()) {
+        setSubmitMessage("Seller is required for TRADE.");
+        return;
+      }
+      if (!formValues.buyerName?.trim()) {
+        setSubmitMessage("Buyer is required for TRADE.");
+        return;
+      }
+    }
+
     try {
       const commodity = commodityOptions.find((option) => option.code === formValues.commodity);
       const selectedPort = allPortOptions.find((option) => option.code === formValues.destinationPortCode);
@@ -525,11 +540,11 @@ export function EntryCreateDialog({
       const payload = {
         type: entryType,
         sellerName:
-          entryType === "offer" && formValues.sellerName?.trim()
+          entryType !== "bid" && formValues.sellerName?.trim()
             ? formValues.sellerName.trim()
             : null,
         buyerName:
-          entryType === "bid" && formValues.buyerName?.trim()
+          entryType !== "offer" && formValues.buyerName?.trim()
             ? formValues.buyerName.trim()
             : null,
         originCountry: getCountryDisplayLabel(formValues.originCountry),
@@ -660,7 +675,12 @@ export function EntryCreateDialog({
       (option) => option.displayLabel.trim().toLowerCase() === label.toLowerCase(),
     );
     if (existing) {
-      const fieldName = entryType === "offer" ? "sellerName" : "buyerName";
+      const fieldName =
+        entryType === "offer"
+          ? "sellerName"
+          : entryType === "bid"
+            ? "buyerName"
+            : companyEditorTarget;
       form.setValue(fieldName, existing.displayLabel, { shouldValidate: true });
       setIsAddingCompany(false);
       setCompanyEditorMessage("Company already exists and has been selected.");
@@ -690,7 +710,12 @@ export function EntryCreateDialog({
       }
 
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/companies"] });
-      const fieldName = entryType === "offer" ? "sellerName" : "buyerName";
+      const fieldName =
+        entryType === "offer"
+          ? "sellerName"
+          : entryType === "bid"
+            ? "buyerName"
+            : companyEditorTarget;
       form.setValue(fieldName, company.displayLabel, { shouldValidate: true });
       setNewCompanyName("");
       setIsAddingCompany(false);
@@ -706,7 +731,9 @@ export function EntryCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
         <DialogHeader>
-          <DialogTitle>{entryType === "bid" ? "Create BID" : "Create OFFER"}</DialogTitle>
+          <DialogTitle>
+            {entryType === "bid" ? "Create BID" : entryType === "offer" ? "Create OFFER" : "Create TRADE"}
+          </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
             Compact broker entry workflow.
           </DialogDescription>
@@ -760,7 +787,7 @@ export function EntryCreateDialog({
         <Form {...form}>
           <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-2.5 md:grid-cols-2">
-              {entryType === "offer" ? (
+              {entryType !== "bid" ? (
                 <FormField
                   control={form.control}
                   name="sellerName"
@@ -788,22 +815,25 @@ export function EntryCreateDialog({
                       <div className="mt-2 flex items-center gap-2">
                         <Button
                           type="button"
-                          variant={isAddingCompany ? "outline" : "secondary"}
+                          variant={isAddingCompany && companyEditorTarget === "sellerName" ? "outline" : "secondary"}
                           className={
-                            isAddingCompany
+                            isAddingCompany && companyEditorTarget === "sellerName"
                               ? undefined
                               : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
                           }
                           size="sm"
                           onClick={() => {
-                            setIsAddingCompany((prev) => !prev);
+                            setCompanyEditorTarget("sellerName");
+                            setIsAddingCompany((prev) =>
+                              companyEditorTarget === "sellerName" ? !prev : true,
+                            );
                             setCompanyEditorMessage(null);
                           }}
                         >
-                          {isAddingCompany ? "Cancel" : "Add company"}
+                          {isAddingCompany && companyEditorTarget === "sellerName" ? "Cancel" : "Add company"}
                         </Button>
                       </div>
-                      {isAddingCompany ? (
+                      {isAddingCompany && companyEditorTarget === "sellerName" ? (
                         <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
                           <Input
                             placeholder="Company name in English"
@@ -815,14 +845,15 @@ export function EntryCreateDialog({
                           </Button>
                         </div>
                       ) : null}
-                      {companyEditorMessage ? (
+                      {companyEditorMessage && companyEditorTarget === "sellerName" ? (
                         <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
                       ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              ) : (
+              ) : null}
+              {entryType !== "offer" ? (
                 <FormField
                   control={form.control}
                   name="buyerName"
@@ -850,22 +881,25 @@ export function EntryCreateDialog({
                       <div className="mt-2 flex items-center gap-2">
                         <Button
                           type="button"
-                          variant={isAddingCompany ? "outline" : "secondary"}
+                          variant={isAddingCompany && companyEditorTarget === "buyerName" ? "outline" : "secondary"}
                           className={
-                            isAddingCompany
+                            isAddingCompany && companyEditorTarget === "buyerName"
                               ? undefined
                               : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
                           }
                           size="sm"
                           onClick={() => {
-                            setIsAddingCompany((prev) => !prev);
+                            setCompanyEditorTarget("buyerName");
+                            setIsAddingCompany((prev) =>
+                              companyEditorTarget === "buyerName" ? !prev : true,
+                            );
                             setCompanyEditorMessage(null);
                           }}
                         >
-                          {isAddingCompany ? "Cancel" : "Add company"}
+                          {isAddingCompany && companyEditorTarget === "buyerName" ? "Cancel" : "Add company"}
                         </Button>
                       </div>
-                      {isAddingCompany ? (
+                      {isAddingCompany && companyEditorTarget === "buyerName" ? (
                         <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
                           <Input
                             placeholder="Company name in English"
@@ -877,14 +911,14 @@ export function EntryCreateDialog({
                           </Button>
                         </div>
                       ) : null}
-                      {companyEditorMessage ? (
+                      {companyEditorMessage && companyEditorTarget === "buyerName" ? (
                         <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
                       ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
+              ) : null}
               <FormField
                 control={form.control}
                 name="commodity"
@@ -1254,7 +1288,9 @@ export function EntryCreateDialog({
             <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
               <div className="mb-1 flex items-center justify-between gap-3">
                 <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Tape preview</div>
-                <Badge variant="outline">{entryType === "bid" ? "BID IDEA" : "OFFER IDEA"}</Badge>
+                <Badge variant="outline">
+                  {entryType === "bid" ? "BID IDEA" : entryType === "offer" ? "OFFER IDEA" : "TRADE IDEA"}
+                </Badge>
               </div>
               <div className="text-sm leading-5 text-foreground">{canonicalPreview}</div>
             </div>
@@ -1272,7 +1308,9 @@ export function EntryCreateDialog({
                   ? "Saving..."
                   : entryType === "bid"
                     ? "Create BID"
-                    : "Create OFFER"}
+                    : entryType === "offer"
+                      ? "Create OFFER"
+                      : "Create TRADE"}
               </Button>
             </div>
           </form>
