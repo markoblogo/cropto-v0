@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-28T04:52:13.747309+00:00",
+  "generatedAt": "2026-03-28T06:55:40.402637+00:00",
   "items": [
     {
       "id": "R1",
@@ -142,7 +142,7 @@
       "title": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути"
     },
     {
-      "id": "W14",
+      "id": "W2",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -160,7 +160,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W15",
       "title": "AGS GRAIN | LinkedIn",
       "url": "https://www.linkedin.com/company/ags-grain",
       "source_domain": "linkedin.com",
@@ -178,7 +178,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W7",
       "title": "AMBRA GRAIN | LinkedIn",
       "url": "https://www.linkedin.com/company/ambra-grain",
       "source_domain": "linkedin.com",
@@ -196,10 +196,10 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Black Sea Region Grain Market Analysis",
-      "url": "https://grainsprices.com/article/18924",
-      "source_domain": "grainsprices.com",
+      "id": "W11",
+      "title": "Black Sea Export Strategies Within the Pressure of ...",
+      "url": "https://ukragroconsult.com/en/news/black-sea-export-strategies-within-the-pressure-of-the-global-food-market/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -214,25 +214,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "Black Sea Regional Analysis",
-      "url": "https://worldperspectives.com/articles/black-sea-regional-analysis-03252026",
-      "source_domain": "worldperspectives.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
+      "id": "W6",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -268,7 +250,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W8",
       "title": "Corn and Wheat futures gain as export data meets expectations. - CME Group",
       "url": "https://www.cmegroup.com/videos/2026/03/24/corn-and-wheat-futures-gain-as-export-data-meets-expectations-3.html",
       "source_domain": "cmegroup.com",
@@ -286,10 +268,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Goodgrainoil | LinkedIn",
-      "url": "https://www.linkedin.com/company/goodgrainoil",
-      "source_domain": "linkedin.com",
+      "id": "W5",
+      "title": "Global Grain Market: Daily Recap 23.03.2026",
+      "url": "https://grainsprices.com/article/19552",
+      "source_domain": "grainsprices.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -304,7 +286,25 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W9",
+      "title": "Grain Market Overview: Start Friday 27.03.2026",
+      "url": "https://grainsprices.com/article/19566",
+      "source_domain": "grainsprices.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
       "title": "Grain Market Update (20 March 2026) - YouTube",
       "url": "https://www.youtube.com/watch%3Fv%3DbiGvkMlY6c4",
       "source_domain": "youtube.com",
@@ -322,7 +322,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W12",
       "title": "Grains, Oilseeds and Pulses: 2026 FCC Economic Outlook - YouTube",
       "url": "https://www.youtube.com/watch%3Fv%3DGF7o1yDCtGs",
       "source_domain": "youtube.com",
@@ -340,7 +340,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W4",
       "title": "Irina Melnic - CEO | International Trade & Export Specialist | Grains, Wheat Flour & Agri-Commodities | Logistics & Global Partnerships | LinkedIn",
       "url": "https://www.linkedin.com/in/irina-melnic-2a7749104",
       "source_domain": "linkedin.com",
@@ -358,7 +358,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W10",
       "title": "Mihaela Ploscaru - Market Analyst at Agrilinkhub SRL | LinkedIn",
       "url": "https://www.linkedin.com/in/mihaela-ploscaru-2aa8611a3",
       "source_domain": "linkedin.com",
@@ -376,10 +376,10 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "[PDF] Black Sea grain and oilseed production and trade - AgManager.info",
-      "url": "https://www.agmanager.info/sites/default/files/pdf/19_Broyaka_BlackSea.pdf",
-      "source_domain": "agmanager.info",
+      "id": "W13",
+      "title": "Rapeseed oil is among the top 8 agricultural products ...",
+      "url": "https://ukragroconsult.com/en/news/rapeseed-oil-is-among-the-top-8-agricultural-products-exported-by-ukraine/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -394,7 +394,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W4",
       "title": "Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів",
       "url": "https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv",
       "source_domain": "ndu.kr.ua",
@@ -412,7 +412,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W5",
       "title": "Дунай став дуже цінним в умовах війни - Агрополіт",
       "url": "https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert",
       "source_domain": "agropolit.com",
@@ -520,7 +520,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W6",
       "title": "Морські порти України з початку 2026 року обробили понад 15 млн тонн вантажів — Центр транспортних стратегій",
       "url": "https://cfts.org.ua/news/2026/03/13/morski_porti_ukrani_z_pochatku_2026_roku_obrobili_ponad_15_mln_tonn_vantazhiv_86152",
       "source_domain": "cfts.org.ua",
@@ -646,7 +646,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "Євросоюз скоротив на третину закупівлі соняшникової олії",
       "url": "https://agroportal.ua/news/mir/yevrosoyuz-skorotiv-na-tretinu-zakupivli-sonyashnikovoji-oliji",
       "source_domain": "agroportal.ua",
@@ -664,7 +664,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua",
       "url": "https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
       "source_domain": "agroportal.ua",
