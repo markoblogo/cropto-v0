@@ -60,6 +60,12 @@ export interface PaymentTermOption {
   compactDisplay: string;
 }
 
+export interface CompanyOption {
+  id: string;
+  displayLabel: string;
+  compactDisplay: string;
+}
+
 export interface BrokerUser {
   // Stable broker profile identifier used by module entries and filters.
   id: string;

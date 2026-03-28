@@ -178,6 +178,10 @@ const seaBrokerageLocationCreateSchema = z.object({
   countryCodeAlpha3: z.string().trim().length(3),
 });
 
+const seaBrokerageCompanyCreateSchema = z.object({
+  displayLabel: z.string().trim().min(2).max(120),
+});
+
 type SeaBrokerageCustomLocation = {
   code: string;
   displayLabel: string;
@@ -188,6 +192,7 @@ type SeaBrokerageCustomLocation = {
 };
 
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
+const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
 
 function decimalToNumber(value: unknown) {
   if (value === null || value === undefined) return null;
@@ -278,6 +283,10 @@ function normalizeCityLabel(value: string) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
+function normalizeCompanyLabel(value: string) {
+  return String(value || "").trim().replace(/\s+/g, " ");
+}
+
 function slugifyLocationLabel(value: string) {
   return normalizeCityLabel(value)
     .toLowerCase()
@@ -313,6 +322,40 @@ async function readSeaBrokerageCustomLocations(): Promise<SeaBrokerageCustomLoca
         countryCodeAlpha3: String(item.countryCodeAlpha3).trim().toUpperCase(),
         compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
         unlocode: item.unlocode ? String(item.unlocode).trim().toUpperCase() : undefined,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+type SeaBrokerageCompanyDictionaryEntry = {
+  id: string;
+  displayLabel: string;
+  compactDisplay: string;
+};
+
+function buildCompanyId(label: string) {
+  const baseSlug = slugifyLocationLabel(label) || "company";
+  return `company_${baseSlug}`;
+}
+
+async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionaryEntry[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_COMPANIES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageCompanyDictionaryEntry[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.id === "string" &&
+          typeof item.displayLabel === "string" &&
+          typeof item.compactDisplay === "string",
+      )
+      .map((item) => ({
+        id: String(item.id).trim(),
+        displayLabel: normalizeCompanyLabel(item.displayLabel),
+        compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
       }));
   } catch {
     return [];
@@ -7795,6 +7838,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating sea brokerage custom location:", error);
       return res.status(500).json({ error: "Failed to create custom location" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/companies", async (_req, res) => {
+    try {
+      const companies = await readSeaBrokerageCompanies();
+      return res.json({ companies });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage companies:", error);
+      return res.status(500).json({ error: "Failed to list companies" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/companies", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error: "Broker is not authorized to add companies.",
+        });
+      }
+
+      const parsed = seaBrokerageCompanyCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const label = normalizeCompanyLabel(parsed.data.displayLabel);
+      if (!/^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/.test(label)) {
+        return res.status(400).json({
+          error: "Company name must use Latin letters/numbers and basic punctuation.",
+        });
+      }
+
+      const current = await readSeaBrokerageCompanies();
+      const duplicate = current.find(
+        (item) => item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+      );
+      if (duplicate) {
+        return res.status(200).json({ company: duplicate, duplicate: true });
+      }
+
+      const id = buildCompanyId(label);
+      const collision = current.find((item) => item.id === id);
+      const resolvedId = collision
+        ? `${id}_${createHash("md5").update(label).digest("hex").slice(0, 4)}`
+        : id;
+
+      const created: SeaBrokerageCompanyDictionaryEntry = {
+        id: resolvedId,
+        displayLabel: label,
+        compactDisplay: label.toUpperCase(),
+      };
+
+      const next = [...current, created];
+      await storage.upsertAppSetting(SEA_BROKERAGE_COMPANIES_KEY, JSON.stringify(next));
+
+      return res.status(201).json({ company: created, duplicate: false });
+    } catch (error: any) {
+      console.error("Error creating sea brokerage company:", error);
+      return res.status(500).json({ error: "Failed to create company" });
     }
   });
 

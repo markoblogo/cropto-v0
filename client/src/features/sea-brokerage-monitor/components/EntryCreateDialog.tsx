@@ -49,6 +49,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type {
   Basis,
   BrokerageEntry,
+  CompanyOption,
   Currency,
   EntryType,
   PeriodType,
@@ -368,6 +369,10 @@ export function EntryCreateDialog({
   session,
 }: EntryCreateDialogProps) {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [isAddingCompany, setIsAddingCompany] = useState(false);
+  const [newCompanyName, setNewCompanyName] = useState("");
+  const [companyEditorMessage, setCompanyEditorMessage] = useState<string | null>(null);
+  const [isSavingCompany, setIsSavingCompany] = useState(false);
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [newLocationCity, setNewLocationCity] = useState("");
   const [newLocationCountryCode, setNewLocationCountryCode] = useState("UA");
@@ -379,6 +384,18 @@ export function EntryCreateDialog({
   });
 
   const values = form.watch();
+  const { data: companyOptionsData = [] } = useQuery<CompanyOption[]>({
+    queryKey: ["/api/sea-brokerage-monitor/companies"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/companies");
+      if (!response.ok) {
+        throw new Error(`Failed to load companies (${response.status})`);
+      }
+      const payload = (await response.json()) as { companies?: CompanyOption[] };
+      return Array.isArray(payload.companies) ? payload.companies : [];
+    },
+    staleTime: 60_000,
+  });
   const { data: sharedPortOptionsData = [] } = useQuery<PortOption[]>({
     queryKey: ["/api/sea-brokerage-monitor/locations"],
     queryFn: async () => {
@@ -399,10 +416,25 @@ export function EntryCreateDialog({
     }
     return Array.from(byCode.values());
   }, [sharedPortOptionsData]);
+  const companyOptions = useMemo(() => {
+    const byLabel = new Map<string, CompanyOption>();
+    for (const option of companyOptionsData) {
+      const key = option.displayLabel.trim().toLowerCase();
+      if (!key) continue;
+      byLabel.set(key, option);
+    }
+    return Array.from(byLabel.values()).sort((left, right) =>
+      left.displayLabel.localeCompare(right.displayLabel),
+    );
+  }, [companyOptionsData]);
 
   useEffect(() => {
     form.reset(getDefaultValues(entryType));
     setSubmitMessage(null);
+    setIsAddingCompany(false);
+    setNewCompanyName("");
+    setCompanyEditorMessage(null);
+    setIsSavingCompany(false);
     setIsAddingLocation(false);
     setLocationEditorMessage(null);
     setIsSavingLocation(false);
@@ -613,6 +645,63 @@ export function EntryCreateDialog({
     }
   }
 
+  async function addCustomCompany() {
+    const label = newCompanyName.trim().replace(/\s+/g, " ");
+    if (!label) {
+      setCompanyEditorMessage("Company name is required.");
+      return;
+    }
+    if (!/^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/.test(label)) {
+      setCompanyEditorMessage("Use English company name (letters, numbers, basic punctuation).");
+      return;
+    }
+
+    const existing = companyOptions.find(
+      (option) => option.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+    );
+    if (existing) {
+      const fieldName = entryType === "offer" ? "sellerName" : "buyerName";
+      form.setValue(fieldName, existing.displayLabel, { shouldValidate: true });
+      setIsAddingCompany(false);
+      setCompanyEditorMessage("Company already exists and has been selected.");
+      return;
+    }
+
+    try {
+      setIsSavingCompany(true);
+      const response = await fetch("/api/sea-brokerage-monitor/companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+        },
+        body: JSON.stringify({ displayLabel: label }),
+      });
+
+      if (!response.ok) {
+        const text = (await response.text()) || "Failed to add company";
+        throw new Error(text);
+      }
+
+      const payload = (await response.json()) as { company?: CompanyOption; duplicate?: boolean };
+      const company = payload.company;
+      if (!company) {
+        throw new Error("Invalid company payload.");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/companies"] });
+      const fieldName = entryType === "offer" ? "sellerName" : "buyerName";
+      form.setValue(fieldName, company.displayLabel, { shouldValidate: true });
+      setNewCompanyName("");
+      setIsAddingCompany(false);
+      setCompanyEditorMessage(payload.duplicate ? "Company already existed and was selected." : "Company added.");
+    } catch (error) {
+      setCompanyEditorMessage(error instanceof Error ? error.message : "Failed to add company.");
+    } finally {
+      setIsSavingCompany(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
@@ -680,13 +769,37 @@ export function EntryCreateDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Seller / Seller name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Seller company or contact name"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
+                      <Select
+                        value={field.value?.trim() ? field.value : "__none__"}
+                        onValueChange={(value) => field.onChange(value === "__none__" ? "" : value)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select seller company" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="__none__">Not specified</SelectItem>
+                          {companyOptions.map((option) => (
+                            <SelectItem key={option.id} value={option.displayLabel}>
+                              {option.displayLabel}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setIsAddingCompany((prev) => !prev);
+                            setCompanyEditorMessage(null);
+                          }}
+                        >
+                          {isAddingCompany ? "Cancel" : "Add company"}
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -698,13 +811,37 @@ export function EntryCreateDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Buyer / Buyer name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Buyer company or contact name"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
+                      <Select
+                        value={field.value?.trim() ? field.value : "__none__"}
+                        onValueChange={(value) => field.onChange(value === "__none__" ? "" : value)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select buyer company" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="__none__">Not specified</SelectItem>
+                          {companyOptions.map((option) => (
+                            <SelectItem key={option.id} value={option.displayLabel}>
+                              {option.displayLabel}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setIsAddingCompany((prev) => !prev);
+                            setCompanyEditorMessage(null);
+                          }}
+                        >
+                          {isAddingCompany ? "Cancel" : "Add company"}
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -785,6 +922,24 @@ export function EntryCreateDialog({
                 )}
               />
             </div>
+
+            {isAddingCompany ? (
+              <div className="grid gap-2 md:grid-cols-2">
+                <Input
+                  placeholder="Company name in English"
+                  value={newCompanyName}
+                  onChange={(event) => setNewCompanyName(event.target.value)}
+                />
+                <div className="flex items-center gap-2">
+                  <Button type="button" size="sm" onClick={addCustomCompany}>
+                    {isSavingCompany ? "Saving..." : "Save company"}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+            {companyEditorMessage ? (
+              <div className="text-[11px] text-muted-foreground">{companyEditorMessage}</div>
+            ) : null}
 
             <div className="grid gap-2.5 md:grid-cols-2">
               <FormField
