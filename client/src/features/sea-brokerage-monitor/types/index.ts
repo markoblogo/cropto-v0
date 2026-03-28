@@ -120,6 +120,8 @@ export interface BrokerageEntry {
   canonicalView: string;
   telegramRelayStatus?: TelegramRelayStatus;
   telegramRelayMessage?: string | null;
+  likeCount?: number;
+  likedByMe?: boolean;
 }
 
 export interface MatchSuggestion {

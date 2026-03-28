@@ -12,11 +12,13 @@ import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
+import { buildSeaBrokerageMonitorAuthHeaders } from "./services/monitorAuth.service";
 import {
   defaultFeedFilters,
   filterBrokerageEntries,
 } from "./services/feedFilters.service";
 import type { BrokerageEntry, EntryType, FeedFilterState } from "./types";
+import { queryClient } from "@/lib/queryClient";
 
 const defaultPaneFilters: BrokerWorkspacePaneFilters = {
   brokerProfileId: "all",
@@ -143,6 +145,29 @@ export function SeaBrokerageMonitorPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
+  async function handleToggleLike(entry: BrokerageEntry) {
+    if (entry.type !== "bid" && entry.type !== "offer") {
+      return;
+    }
+    if (!session.canCreateEntries) {
+      setTelegramAuthOpen(true);
+      return;
+    }
+
+    try {
+      await fetch(`/api/sea-brokerage-monitor/entries/${entry.id}/likes/toggle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
+    } catch {
+      // Ignore transient like errors in UI to keep tape interactions fast.
+    }
+  }
+
   useEffect(() => {
     if (!selectedEntry) {
       return;
@@ -243,6 +268,8 @@ export function SeaBrokerageMonitorPage() {
             onSelectEntry={setSelectedEntry}
             filters={offerPaneFilters}
             onFiltersChange={setOfferPaneFilters}
+            likesEnabled
+            onToggleLike={handleToggleLike}
             createActionLabel="Create OFFER"
             createActionVariant="secondary"
             onCreateAction={() => setCreateDialogType("offer")}
@@ -257,6 +284,8 @@ export function SeaBrokerageMonitorPage() {
             onSelectEntry={setSelectedEntry}
             filters={bidPaneFilters}
             onFiltersChange={setBidPaneFilters}
+            likesEnabled
+            onToggleLike={handleToggleLike}
             createActionLabel="Create BID"
             onCreateAction={() => setCreateDialogType("bid")}
           />
@@ -277,6 +306,7 @@ export function SeaBrokerageMonitorPage() {
             onSelectEntry={setSelectedEntry}
             filters={tradePaneFilters}
             onFiltersChange={setTradePaneFilters}
+            likesEnabled={false}
             createActionLabel="Create TRADE"
             createActionVariant="default"
             createActionClassName="bg-teal-500/85 text-white hover:bg-teal-400 border border-teal-300/70"

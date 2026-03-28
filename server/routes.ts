@@ -193,6 +193,17 @@ type SeaBrokerageCustomLocation = {
 
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
+const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
+
+type SeaBrokerageEntryLike = {
+  entryId: string;
+  brokerUserId: string;
+  brokerCode: string;
+  brokerName: string;
+  telegramUsername?: string | null;
+  telegramUserId?: string | null;
+  createdAt: string;
+};
 
 function decimalToNumber(value: unknown) {
   if (value === null || value === undefined) return null;
@@ -200,7 +211,10 @@ function decimalToNumber(value: unknown) {
   return Number.isFinite(numeric) ? numeric : null;
 }
 
-function mapSeaBrokerageEntryToClientShape(entry: SeaBrokerageEntryRow) {
+function mapSeaBrokerageEntryToClientShape(
+  entry: SeaBrokerageEntryRow,
+  likeMeta?: { likeCount: number; likedByMe: boolean },
+) {
   return {
     id: entry.id,
     type: entry.type,
@@ -253,6 +267,8 @@ function mapSeaBrokerageEntryToClientShape(entry: SeaBrokerageEntryRow) {
     canonicalView: entry.canonicalView,
     telegramRelayStatus: entry.telegramRelayStatus,
     telegramRelayMessage: entry.telegramRelayMessage,
+    likeCount: likeMeta?.likeCount ?? 0,
+    likedByMe: likeMeta?.likedByMe ?? false,
   };
 }
 
@@ -401,6 +417,39 @@ function mergeSeaBrokerageCompanies(
   return Array.from(byLabel.values()).sort((a, b) =>
     a.displayLabel.localeCompare(b.displayLabel),
   );
+}
+
+async function readSeaBrokerageEntryLikes(): Promise<SeaBrokerageEntryLike[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_ENTRY_LIKES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageEntryLike[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.entryId === "string" &&
+          typeof item.brokerUserId === "string" &&
+          typeof item.brokerCode === "string" &&
+          typeof item.brokerName === "string" &&
+          typeof item.createdAt === "string",
+      )
+      .map((item) => ({
+        entryId: String(item.entryId).trim(),
+        brokerUserId: String(item.brokerUserId).trim(),
+        brokerCode: String(item.brokerCode).trim(),
+        brokerName: String(item.brokerName).trim(),
+        telegramUsername: item.telegramUsername ? String(item.telegramUsername).trim() : null,
+        telegramUserId: item.telegramUserId ? String(item.telegramUserId).trim() : null,
+        createdAt: String(item.createdAt),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function writeSeaBrokerageEntryLikes(likes: SeaBrokerageEntryLike[]) {
+  await storage.upsertAppSetting(SEA_BROKERAGE_ENTRY_LIKES_KEY, JSON.stringify(likes));
 }
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
@@ -7559,13 +7608,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ===== SEA BROKERAGE MONITOR =====
 
-  app.get("/api/sea-brokerage-monitor/entries", async (_req, res) => {
+  app.get("/api/sea-brokerage-monitor/entries", async (req: AuthRequest, res) => {
     try {
-      const entries = await storage.listSeaBrokerageEntries();
-      res.json(entries.map(mapSeaBrokerageEntryToClientShape));
+      const [entries, likes] = await Promise.all([
+        storage.listSeaBrokerageEntries(),
+        readSeaBrokerageEntryLikes(),
+      ]);
+
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      const viewerBrokerUserId =
+        authorizedBroker?.telegramUserId ||
+        authorizedBroker?.telegramUsername ||
+        authorizedBroker?.authUserId ||
+        null;
+
+      const likesByEntry = new Map<
+        string,
+        { count: number; likedByMe: boolean }
+      >();
+
+      for (const like of likes) {
+        const current = likesByEntry.get(like.entryId) ?? { count: 0, likedByMe: false };
+        const likedByMe =
+          !!viewerBrokerUserId && like.brokerUserId.toLowerCase() === viewerBrokerUserId.toLowerCase();
+        likesByEntry.set(like.entryId, {
+          count: current.count + 1,
+          likedByMe: current.likedByMe || likedByMe,
+        });
+      }
+
+      res.json(
+        entries.map((entry) =>
+          mapSeaBrokerageEntryToClientShape(entry, {
+            likeCount: likesByEntry.get(entry.id)?.count ?? 0,
+            likedByMe: likesByEntry.get(entry.id)?.likedByMe ?? false,
+          }),
+        ),
+      );
     } catch (error: any) {
       console.error("Error fetching sea brokerage monitor entries:", error);
       res.status(500).json({ error: "Failed to fetch sea brokerage monitor entries" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/entries/:entryId/likes/toggle", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const entryId = String(req.params.entryId || "").trim();
+      if (!entryId) {
+        return res.status(400).json({ error: "Entry id is required" });
+      }
+
+      const entries = await storage.listSeaBrokerageEntries();
+      const targetEntry = entries.find((entry) => entry.id === entryId);
+      if (!targetEntry) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+
+      if (targetEntry.type !== "bid" && targetEntry.type !== "offer") {
+        return res.status(400).json({ error: "Likes are allowed only for BID/OFFER entries" });
+      }
+
+      const likerBrokerUserId =
+        authorizedBroker.telegramUserId ||
+        authorizedBroker.telegramUsername ||
+        authorizedBroker.authUserId ||
+        `broker:${authorizedBroker.brokerCode.toLowerCase()}`;
+
+      const likes = await readSeaBrokerageEntryLikes();
+      const existingIndex = likes.findIndex(
+        (like) =>
+          like.entryId === entryId &&
+          like.brokerUserId.toLowerCase() === likerBrokerUserId.toLowerCase(),
+      );
+
+      let liked = false;
+      if (existingIndex >= 0) {
+        likes.splice(existingIndex, 1);
+      } else {
+        likes.push({
+          entryId,
+          brokerUserId: likerBrokerUserId,
+          brokerCode: authorizedBroker.brokerCode,
+          brokerName: authorizedBroker.brokerName,
+          telegramUsername: authorizedBroker.telegramUsername,
+          telegramUserId: authorizedBroker.telegramUserId,
+          createdAt: new Date().toISOString(),
+        });
+        liked = true;
+      }
+
+      await writeSeaBrokerageEntryLikes(likes);
+
+      if (liked) {
+        const ownerChat = targetEntry.brokerTelegramUsername
+          ? `@${targetEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+          : targetEntry.brokerTelegramUserId
+            ? String(targetEntry.brokerTelegramUserId)
+            : null;
+        const likerChat = authorizedBroker.telegramUsername
+          ? `@${authorizedBroker.telegramUsername.replace(/^@+/, "")}`
+          : authorizedBroker.telegramUserId
+            ? String(authorizedBroker.telegramUserId)
+            : null;
+        const canonical = targetEntry.canonicalView;
+        const ownerMessage = `#like_idea 👍\n${authorizedBroker.brokerCode} liked your ${targetEntry.type.toUpperCase()}:\n${canonical}`;
+        const likerMessage = `#like_idea 👍\nYou liked ${targetEntry.type.toUpperCase()} by ${targetEntry.brokerCode}:\n${canonical}`;
+
+        if (ownerChat) {
+          await sendSeaBrokerageTelegramDirectMessage(ownerChat, ownerMessage);
+        }
+        if (likerChat) {
+          await sendSeaBrokerageTelegramDirectMessage(likerChat, likerMessage);
+        }
+      }
+
+      const likeCount = likes.filter((like) => like.entryId === entryId).length;
+      return res.status(201).json({ liked, likeCount });
+    } catch (error: any) {
+      console.error("Error toggling sea brokerage entry like:", error);
+      return res.status(500).json({ error: "Failed to toggle like" });
     }
   });
 
@@ -8135,6 +8306,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           if (matchRelayResult.status === "published") {
             await storage.upsertAppSetting(key, "published");
+            const compactBid = match.bidEntry.canonicalView;
+            const compactOffer = match.offerEntry.canonicalView;
+            const dmMessage = `#match_idea 🤝\nBID: ${compactBid}\nOFFER: ${compactOffer}`;
+            const buyerBrokerChat = match.bidEntry.brokerTelegramUsername
+              ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+              : match.bidEntry.brokerTelegramUserId
+                ? String(match.bidEntry.brokerTelegramUserId)
+                : null;
+            const sellerBrokerChat = match.offerEntry.brokerTelegramUsername
+              ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+              : match.offerEntry.brokerTelegramUserId
+                ? String(match.offerEntry.brokerTelegramUserId)
+                : null;
+            if (buyerBrokerChat) {
+              await sendSeaBrokerageTelegramDirectMessage(buyerBrokerChat, dmMessage);
+            }
+            if (sellerBrokerChat && sellerBrokerChat !== buyerBrokerChat) {
+              await sendSeaBrokerageTelegramDirectMessage(sellerBrokerChat, dmMessage);
+            }
           } else {
             await storage.upsertAppSetting(
               `${key}:last_error`,

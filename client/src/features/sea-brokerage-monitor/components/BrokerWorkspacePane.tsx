@@ -1,4 +1,4 @@
-import { Plus, Search } from "lucide-react";
+import { Heart, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,8 @@ interface BrokerWorkspacePaneProps {
   onCreateAction?: () => void;
   createActionVariant?: "default" | "secondary";
   createActionClassName?: string;
+  onToggleLike?: (entry: BrokerageEntry) => void;
+  likesEnabled?: boolean;
 }
 
 export function BrokerWorkspacePane({
@@ -51,6 +53,8 @@ export function BrokerWorkspacePane({
   onCreateAction,
   createActionVariant = "default",
   createActionClassName,
+  onToggleLike,
+  likesEnabled = false,
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -141,10 +145,36 @@ export function BrokerWorkspacePane({
                         : "border-l-transparent hover:bg-muted/16"
                     }`}
                   >
-                    <div className="w-full min-w-0 overflow-hidden">
+                    <div className="flex w-full min-w-0 items-start gap-2 overflow-hidden">
                       <div className="line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
+                      {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className={`ml-auto inline-flex h-5 items-center gap-1 rounded border px-1 text-[9px] leading-none transition-colors ${
+                            entry.likedByMe
+                              ? "border-primary/50 bg-primary/20 text-primary"
+                              : "border-border/70 bg-background/40 text-muted-foreground hover:bg-muted/20"
+                          }`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onToggleLike?.(entry);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              onToggleLike?.(entry);
+                            }
+                          }}
+                          aria-label={`Like ${entry.type}`}
+                        >
+                          <Heart className={`h-3 w-3 ${entry.likedByMe ? "fill-current" : ""}`} />
+                          <span>{entry.likeCount ?? 0}</span>
+                        </span>
+                      ) : null}
                     </div>
                   </Button>
                 );
