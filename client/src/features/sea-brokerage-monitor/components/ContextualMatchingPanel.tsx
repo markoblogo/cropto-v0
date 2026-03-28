@@ -231,7 +231,7 @@ export function ContextualMatchingPanel({
               </div>
             ) : null}
 
-            <ScrollArea className="h-[142px] sm:h-[148px] lg:h-[158px]">
+            <ScrollArea className="h-[236px] sm:h-[248px] lg:h-[262px] xl:h-[274px]">
               <div className="divide-y divide-border/50">
                 {rollingSuggestions.map((suggestion) => {
                   const isRelated =

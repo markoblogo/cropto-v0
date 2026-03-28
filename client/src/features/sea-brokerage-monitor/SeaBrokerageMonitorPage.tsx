@@ -262,7 +262,7 @@ export function SeaBrokerageMonitorPage() {
           />
         </section>
 
-        <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] sm:gap-1">
+        <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
           <ContextualMatchingPanel
             entries={filteredEntries}
             selectedEntry={selectedEntry}
