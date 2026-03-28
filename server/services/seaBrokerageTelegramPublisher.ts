@@ -223,6 +223,13 @@ function formatPriceInline(entry: SeaBrokerageEntryRow) {
   return formatTelegramPrice(entry);
 }
 
+function normalizeCounterpartyName(value?: string | null) {
+  const normalized = (value || "").trim();
+  if (!normalized) return null;
+  if (normalized.toLowerCase() === "not specified") return null;
+  return normalized.toUpperCase();
+}
+
 function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow, includeBroker = true) {
   const brokerHandle = entry.brokerTelegramUsername
     ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
@@ -230,8 +237,8 @@ function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow
   const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
   const brokerPart = includeBroker ? ` ${brokerHandle}` : "";
   const counterparty = label === "BID"
-    ? (entry.buyerName || "").trim()
-    : (entry.sellerName || "").trim();
+    ? normalizeCounterpartyName(entry.buyerName)
+    : normalizeCounterpartyName(entry.sellerName);
   return [
     `${label}${brokerPart}`,
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
