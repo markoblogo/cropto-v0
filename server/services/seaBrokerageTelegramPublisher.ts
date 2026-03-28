@@ -208,14 +208,6 @@ function formatStandardTelegramMessage(
   return lines.filter(Boolean).join("\n");
 }
 
-function formatTransportInline(value: string | null | undefined) {
-  return (value || "")
-    .replace(/[_\s-]+/g, " ")
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "");
-}
-
 function formatQuantityInline(entry: SeaBrokerageEntryRow) {
   const quantity = entry.quantityMt ?? entry.volumeTo ?? entry.volumeFrom;
   const quantityLabel = Number(quantity).toLocaleString("en-US").replace(/,/g, "'");
@@ -237,13 +229,16 @@ function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow
     : entry.brokerCode;
   const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
   const brokerPart = includeBroker ? ` ${brokerHandle}` : "";
+  const counterparty = label === "BID"
+    ? (entry.buyerName || "").trim()
+    : (entry.sellerName || "").trim();
   return [
     `${label}${brokerPart}`,
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
     formatQuantityInline(entry),
     `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
     `${formatPeriodInline(entry)} @ ${formatPriceInline(entry)}`,
-    formatTransportInline(entry.transportType),
+    counterparty || entry.companyName || entry.brokerName || entry.brokerCode,
   ]
     .filter(Boolean)
     .join(" / ");
@@ -253,17 +248,11 @@ function formatMatchMessage(
   match: SeaBrokerageMatchSuggestion,
   includeBrokerIdentity: boolean,
 ) {
-  const confidence = match.confidenceLabel.toUpperCase();
-  const delta = match.priceDelta === null ? "N/A" : `${match.priceDelta.toFixed(2)} USD`;
-  const reason = match.reasons?.[0] || "Commercial overlap detected";
-
   return [
     "#match_idea 🤝",
     "------------------------------",
     formatMatchSideLine("BID", match.bidEntry, includeBrokerIdentity),
     formatMatchSideLine("OFFER", match.offerEntry, includeBrokerIdentity),
-    `SCORE ${match.score}/100 | ${confidence} | Δ ${delta}`,
-    reason,
     "------------------------------",
   ].join("\n");
 }

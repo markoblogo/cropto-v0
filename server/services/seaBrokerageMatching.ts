@@ -10,44 +10,6 @@ export type SeaBrokerageMatchSuggestion = {
   reasons: string[];
 };
 
-function toNumber(value: unknown) {
-  if (value === null || value === undefined) return null;
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : null;
-}
-
-function getMidPrice(entry: SeaBrokerageEntryRow) {
-  const direct = toNumber(entry.price);
-  if (direct !== null) return direct;
-
-  const from = toNumber(entry.priceFrom);
-  const to = toNumber(entry.priceTo);
-  if (from !== null && to !== null) return (from + to) / 2;
-
-  return from ?? to ?? null;
-}
-
-function getVolumeOverlapScore(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBrokerageEntryRow) {
-  const overlapStart = Math.max(bidEntry.volumeFrom, offerEntry.volumeFrom);
-  const overlapEnd = Math.min(bidEntry.volumeTo, offerEntry.volumeTo);
-
-  if (overlapEnd >= overlapStart) {
-    return { score: 16, reason: "Compatible volume ranges overlap" };
-  }
-
-  const gap = Math.min(
-    Math.abs(bidEntry.volumeFrom - offerEntry.volumeTo),
-    Math.abs(offerEntry.volumeFrom - bidEntry.volumeTo),
-  );
-  const reference = Math.max(bidEntry.volumeTo, offerEntry.volumeTo, 1);
-
-  if (gap / reference <= 0.15) {
-    return { score: 8, reason: "Volume ranges are close enough for partial execution" };
-  }
-
-  return { score: 0, reason: null as string | null };
-}
-
 function getPeriodOverlapScore(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBrokerageEntryRow) {
   if (bidEntry.periodStart && bidEntry.periodEnd && offerEntry.periodStart && offerEntry.periodEnd) {
     const bidStart = new Date(bidEntry.periodStart).getTime();
@@ -56,56 +18,31 @@ function getPeriodOverlapScore(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBr
     const offerEnd = new Date(offerEntry.periodEnd).getTime();
     const overlaps = bidStart <= offerEnd && offerStart <= bidEnd;
     if (overlaps) {
-      return { score: 16, reason: "Shipment windows overlap" };
+      return { score: 1, reason: "Shipment windows overlap at least one day" };
     }
-  }
-
-  if (bidEntry.periodLabel.toLowerCase() === offerEntry.periodLabel.toLowerCase()) {
-    return { score: 10, reason: "Period labels align" };
   }
 
   return { score: 0, reason: null as string | null };
 }
 
-function getPriceScore(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBrokerageEntryRow) {
-  if ((bidEntry.currency || "").toUpperCase() !== (offerEntry.currency || "").toUpperCase()) {
-    return {
-      score: 0,
-      delta: null,
-      reason: "Currencies differ, reducing direct price comparability",
-    };
+function sameDeliveryPlace(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBrokerageEntryRow) {
+  if (
+    bidEntry.destinationPortCode &&
+    offerEntry.destinationPortCode &&
+    bidEntry.destinationPortCode === offerEntry.destinationPortCode
+  ) {
+    return true;
   }
 
-  const bidMid = getMidPrice(bidEntry);
-  const offerMid = getMidPrice(offerEntry);
-  if (bidMid === null || offerMid === null) {
-    return {
-      score: 4,
-      delta: null,
-      reason: "Price is partially specified",
-    };
-  }
-
-  const delta = Math.abs(bidMid - offerMid);
-  const reference = Math.max((bidMid + offerMid) / 2, 1);
-  const deltaRatio = delta / reference;
-
-  if (bidMid >= offerMid) {
-    if (deltaRatio <= 0.01) return { score: 28, delta, reason: "Price ranges are directly executable" };
-    if (deltaRatio <= 0.03) return { score: 22, delta, reason: "Bid and offer are commercially close" };
-  }
-
-  if (deltaRatio <= 0.01) return { score: 24, delta, reason: "Tight price alignment" };
-  if (deltaRatio <= 0.03) return { score: 18, delta, reason: "Small price delta" };
-  if (deltaRatio <= 0.06) return { score: 10, delta, reason: "Moderate price delta" };
-
-  return { score: 4, delta, reason: "Wide price delta" };
+  return (bidEntry.destinationPort || "").trim().toUpperCase() ===
+    (offerEntry.destinationPort || "").trim().toUpperCase();
 }
 
-function getConfidenceLabel(score: number): SeaBrokerageMatchSuggestion["confidenceLabel"] {
-  if (score >= 75) return "high confidence";
-  if (score >= 55) return "medium confidence";
-  return "weak match";
+function isWithinLast7Days(entry: SeaBrokerageEntryRow, now = Date.now()) {
+  const createdAt = new Date(entry.createdAt).getTime();
+  if (Number.isNaN(createdAt)) return false;
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  return createdAt >= now - sevenDaysMs;
 }
 
 function scoreBidOfferPair(
@@ -113,60 +50,35 @@ function scoreBidOfferPair(
   offerEntry: SeaBrokerageEntryRow,
 ): SeaBrokerageMatchSuggestion | null {
   if (bidEntry.commodity !== offerEntry.commodity) return null;
-
-  let score = 35;
-  const reasons: string[] = ["Same commodity"];
-
-  if ((bidEntry.basis || "").toUpperCase() === (offerEntry.basis || "").toUpperCase()) {
-    score += 18;
-    reasons.push("Same basis");
-  }
-
-  if ((bidEntry.destinationPort || "").toUpperCase() === (offerEntry.destinationPort || "").toUpperCase()) {
-    score += 18;
-    reasons.push("Same destination port");
-  } else if (
-    (bidEntry.destinationCountryCode || bidEntry.destinationCountry || "").toUpperCase() ===
-    (offerEntry.destinationCountryCode || offerEntry.destinationCountry || "").toUpperCase()
-  ) {
-    score += 12;
-    reasons.push("Same destination country");
-  }
+  if ((bidEntry.basis || "").toUpperCase() !== (offerEntry.basis || "").toUpperCase()) return null;
+  if (!sameDeliveryPlace(bidEntry, offerEntry)) return null;
 
   const periodScore = getPeriodOverlapScore(bidEntry, offerEntry);
-  score += periodScore.score;
-  if (periodScore.reason) reasons.push(periodScore.reason);
+  if (periodScore.score === 0) return null;
 
-  const volumeScore = getVolumeOverlapScore(bidEntry, offerEntry);
-  score += volumeScore.score;
-  if (volumeScore.reason) reasons.push(volumeScore.reason);
-
-  const priceScore = getPriceScore(bidEntry, offerEntry);
-  score += priceScore.score;
-  if (priceScore.reason) reasons.push(priceScore.reason);
-
-  if ((bidEntry.transportType || "").toUpperCase() === (offerEntry.transportType || "").toUpperCase()) {
-    score += 4;
-    reasons.push("Same transport type");
-  }
-
-  const normalizedScore = Math.max(0, Math.min(100, Math.round(score)));
-  if (normalizedScore < 35) return null;
+  const normalizedScore = 100;
+  const reasons = [
+    "Same commodity",
+    "Same basis",
+    "Same delivery place",
+    periodScore.reason ?? "Shipment windows overlap at least one day",
+  ];
 
   return {
     id: `${bidEntry.id}__${offerEntry.id}`,
     bidEntry,
     offerEntry,
     score: normalizedScore,
-    confidenceLabel: getConfidenceLabel(normalizedScore),
-    priceDelta: priceScore.delta,
+    confidenceLabel: "high confidence",
+    priceDelta: null,
     reasons,
   };
 }
 
 export function generateSeaBrokerageMatchSuggestions(entries: SeaBrokerageEntryRow[]) {
-  const bids = entries.filter((entry) => entry.type === "bid");
-  const offers = entries.filter((entry) => entry.type === "offer");
+  const activeEntries = entries.filter((entry) => isWithinLast7Days(entry));
+  const bids = activeEntries.filter((entry) => entry.type === "bid");
+  const offers = activeEntries.filter((entry) => entry.type === "offer");
   const suggestions: SeaBrokerageMatchSuggestion[] = [];
 
   for (const bidEntry of bids) {
@@ -177,7 +89,6 @@ export function generateSeaBrokerageMatchSuggestions(entries: SeaBrokerageEntryR
   }
 
   return suggestions.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
     return new Date(b.bidEntry.createdAt).getTime() - new Date(a.bidEntry.createdAt).getTime();
   });
 }

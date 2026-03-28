@@ -8099,11 +8099,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries)
           .filter(
             (match) =>
-              (match.bidEntry.id === updated.id || match.offerEntry.id === updated.id) &&
-              match.score >= 75,
+              match.bidEntry.id === updated.id || match.offerEntry.id === updated.id,
           )
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 1);
+          .sort(
+            (a, b) =>
+              new Date(b.bidEntry.createdAt).getTime() - new Date(a.bidEntry.createdAt).getTime(),
+          )
+          .slice(0, 20);
         console.info(
           "[SeaBrokerage][MatchRelayCandidates]",
           JSON.stringify({

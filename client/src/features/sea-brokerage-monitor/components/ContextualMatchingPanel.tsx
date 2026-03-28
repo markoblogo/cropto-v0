@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ExternalLink, Scale } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -46,17 +44,6 @@ function buildCompactCounterpartyLine(entry: BrokerageEntry) {
   return buildCompactCanonicalView(entry);
 }
 
-function confidenceTone(confidence: "high confidence" | "medium confidence" | "weak match") {
-  switch (confidence) {
-    case "high confidence":
-      return "border-emerald-400/40 bg-emerald-500/10 text-emerald-700";
-    case "medium confidence":
-      return "border-amber-400/40 bg-amber-500/10 text-amber-700";
-    default:
-      return "border-slate-400/40 bg-slate-500/10 text-slate-700";
-  }
-}
-
 function getLatestMatchTimestamp(suggestion: MatchSuggestion) {
   const bidTime = new Date(suggestion.bidEntry.createdAt).getTime();
   const offerTime = new Date(suggestion.offerEntry.createdAt).getTime();
@@ -68,7 +55,6 @@ export function ContextualMatchingPanel({
   selectedEntry,
 }: ContextualMatchingPanelProps) {
   const [detailEntry, setDetailEntry] = useState<BrokerageEntry | null>(null);
-  const [expandedSuggestionId, setExpandedSuggestionId] = useState<string | null>(null);
   const [focus, setFocus] = useState<MatchingFocusState>(defaultFocusState);
 
   const deliveryPlaceOptions = useMemo(
@@ -112,31 +98,22 @@ export function ContextualMatchingPanel({
         return commodityMatches && basisMatches && placeMatches;
       })
       .sort((a, b) => {
-        const aRelated = selectedEntry && (a.bidEntryId === selectedEntry.id || a.offerEntryId === selectedEntry.id) ? 1 : 0;
-        const bRelated = selectedEntry && (b.bidEntryId === selectedEntry.id || b.offerEntryId === selectedEntry.id) ? 1 : 0;
-        const aFocusBoost =
-          (focus.commodity !== "all" && a.bidEntry.commodity === focus.commodity ? 2 : 0) +
-          (focus.basis !== "all" &&
-          (a.bidEntry.basis === focus.basis || a.offerEntry.basis === focus.basis)
+        const aRelated =
+          selectedEntry && (a.bidEntryId === selectedEntry.id || a.offerEntryId === selectedEntry.id)
             ? 1
-            : 0);
-        const bFocusBoost =
-          (focus.commodity !== "all" && b.bidEntry.commodity === focus.commodity ? 2 : 0) +
-          (focus.basis !== "all" &&
-          (b.bidEntry.basis === focus.basis || b.offerEntry.basis === focus.basis)
+            : 0;
+        const bRelated =
+          selectedEntry && (b.bidEntryId === selectedEntry.id || b.offerEntryId === selectedEntry.id)
             ? 1
-            : 0);
+            : 0;
 
         if (aRelated !== bRelated) {
           return bRelated - aRelated;
         }
-        if (aFocusBoost !== bFocusBoost) {
-          return bFocusBoost - aFocusBoost;
-        }
 
-        return getLatestMatchTimestamp(b) - getLatestMatchTimestamp(a) || b.score - a.score;
+        return getLatestMatchTimestamp(b) - getLatestMatchTimestamp(a);
       })
-      .slice(0, 8);
+      .slice(0, 12);
   }, [entries, focus, selectedEntry]);
 
   return (
@@ -231,7 +208,7 @@ export function ContextualMatchingPanel({
           <CardContent className="p-2.5 sm:p-4">
             <MonitorEmptyState
               title="No current matches"
-              description="Create or reveal compatible offers and bids to populate the rolling matching stream."
+              description="Create compatible offers and bids from last 7 days to populate matching."
             />
           </CardContent>
         ) : (
@@ -257,76 +234,40 @@ export function ContextualMatchingPanel({
                     !!selectedEntry &&
                     (suggestion.bidEntryId === selectedEntry.id ||
                       suggestion.offerEntryId === selectedEntry.id);
-                  const latestTimestamp = formatEntryTimestampCompact(
+                  const latestEntryCreatedAt =
                     getLatestMatchTimestamp(suggestion) ===
-                      new Date(suggestion.bidEntry.createdAt).getTime()
+                    new Date(suggestion.bidEntry.createdAt).getTime()
                       ? suggestion.bidEntry.createdAt
-                      : suggestion.offerEntry.createdAt,
-                  );
+                      : suggestion.offerEntry.createdAt;
 
                   return (
                     <div
                       key={suggestion.id}
-                      className={`min-w-0 overflow-hidden px-2 py-0.5 sm:px-3 sm:py-0.75 ${
+                      className={`min-w-0 overflow-hidden px-2 py-1 sm:px-3 sm:py-1.5 ${
                         isRelated ? "bg-muted/20" : ""
                       }`}
                     >
-                      <div className="flex flex-wrap items-center gap-x-1 gap-y-0 text-[9.5px] leading-3 sm:text-[10px] sm:leading-3">
-                        <Badge className={`h-4 px-1 py-0 text-[9px] sm:h-4.5 ${confidenceTone(suggestion.confidenceLabel)}`}>
-                          {suggestion.confidenceLabel}
-                        </Badge>
-                        <span className="text-muted-foreground">
-                          {suggestion.scoreLabel}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-muted-foreground">
-                          <Scale className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                          {suggestion.priceDeltaLabel}
-                        </span>
-                        <span className="text-muted-foreground">{latestTimestamp}</span>
+                      <div className="text-[9px] leading-3 text-muted-foreground sm:text-[10px]">
+                        ==========
                       </div>
-
-                      <div className="mt-px grid min-w-0 gap-x-2 gap-y-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                        <button
-                          type="button"
-                          onClick={() => setDetailEntry(suggestion.bidEntry)}
-                          className="min-w-0 line-clamp-2 break-words text-left text-[9.5px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:truncate sm:text-[10.5px] sm:leading-3.5"
-                        >
-                          Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDetailEntry(suggestion.offerEntry)}
-                          className="min-w-0 line-clamp-2 break-words text-left text-[9.5px] font-medium leading-3.25 text-foreground transition-colors hover:text-primary sm:truncate sm:text-[10.5px] sm:leading-3.5"
-                        >
-                          Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => setDetailEntry(suggestion.bidEntry)}
+                        className="mt-0.5 min-w-0 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px]"
+                      >
+                        Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDetailEntry(suggestion.offerEntry)}
+                        className="mt-0.5 min-w-0 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px]"
+                      >
+                        Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
+                      </button>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[9px] leading-3 text-muted-foreground sm:text-[10px]">
+                        <span>==========</span>
+                        <span>{formatEntryTimestampCompact(latestEntryCreatedAt)}</span>
                       </div>
-
-                      <div className="mt-px line-clamp-2 break-words text-[9px] leading-3 text-muted-foreground sm:truncate sm:text-[9.5px] sm:leading-3">
-                        {suggestion.reasons[0] ?? "Commercial fit found"}
-                      </div>
-
-                      {suggestion.reasons.length > 2 ? (
-                        <Collapsible
-                          open={expandedSuggestionId === suggestion.id}
-                          onOpenChange={(open) =>
-                            setExpandedSuggestionId(open ? suggestion.id : null)
-                          }
-                        >
-                          <CollapsibleTrigger asChild>
-                            <button
-                              type="button"
-                              className="mt-px inline-flex items-center gap-1 text-[9.5px] text-muted-foreground transition-colors hover:text-foreground sm:text-[10px]"
-                            >
-                              More detail
-                              <ChevronDown className="h-3.5 w-3.5" />
-                            </button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="mt-0.5 text-[10px] leading-4 text-muted-foreground">
-                            {suggestion.reasons.join(" · ")}
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ) : null}
                     </div>
                   );
                 })}
