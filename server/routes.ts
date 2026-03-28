@@ -7684,6 +7684,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         authorizedBroker.authUserId ||
         `broker:${authorizedBroker.brokerCode.toLowerCase()}`;
 
+      const isSelfLike =
+        (!!authorizedBroker.telegramUserId &&
+          !!targetEntry.brokerTelegramUserId &&
+          authorizedBroker.telegramUserId === targetEntry.brokerTelegramUserId) ||
+        (!!authorizedBroker.telegramUsername &&
+          !!targetEntry.brokerTelegramUsername &&
+          authorizedBroker.telegramUsername.toLowerCase() ===
+            targetEntry.brokerTelegramUsername.toLowerCase()) ||
+        authorizedBroker.brokerCode.toLowerCase() === targetEntry.brokerCode.toLowerCase();
+      if (isSelfLike) {
+        return res.status(400).json({ error: "Self-like is not allowed" });
+      }
+
       const likes = await readSeaBrokerageEntryLikes();
       const existingIndex = likes.findIndex(
         (like) =>
@@ -7709,31 +7722,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await writeSeaBrokerageEntryLikes(likes);
 
+      let ownerDmDelivered = false;
+      let likerDmDelivered = false;
       if (liked) {
-        const ownerChat = targetEntry.brokerTelegramUsername
-          ? `@${targetEntry.brokerTelegramUsername.replace(/^@+/, "")}`
-          : targetEntry.brokerTelegramUserId
-            ? String(targetEntry.brokerTelegramUserId)
+        const ownerChat = targetEntry.brokerTelegramUserId
+          ? String(targetEntry.brokerTelegramUserId)
+          : targetEntry.brokerTelegramUsername
+            ? `@${targetEntry.brokerTelegramUsername.replace(/^@+/, "")}`
             : null;
-        const likerChat = authorizedBroker.telegramUsername
-          ? `@${authorizedBroker.telegramUsername.replace(/^@+/, "")}`
-          : authorizedBroker.telegramUserId
-            ? String(authorizedBroker.telegramUserId)
+        const likerChat = authorizedBroker.telegramUserId
+          ? String(authorizedBroker.telegramUserId)
+          : authorizedBroker.telegramUsername
+            ? `@${authorizedBroker.telegramUsername.replace(/^@+/, "")}`
             : null;
         const canonical = targetEntry.canonicalView;
         const ownerMessage = `#like_idea 👍\n${authorizedBroker.brokerCode} liked your ${targetEntry.type.toUpperCase()}:\n${canonical}`;
         const likerMessage = `#like_idea 👍\nYou liked ${targetEntry.type.toUpperCase()} by ${targetEntry.brokerCode}:\n${canonical}`;
 
         if (ownerChat) {
-          await sendSeaBrokerageTelegramDirectMessage(ownerChat, ownerMessage);
+          const dm = await sendSeaBrokerageTelegramDirectMessage(ownerChat, ownerMessage);
+          ownerDmDelivered = dm.ok;
+          if (!dm.ok) {
+            console.warn(
+              "[SeaBrokerage][LikeDM][Owner]",
+              JSON.stringify({ entryId, ownerChat, error: dm.error }),
+            );
+          }
         }
         if (likerChat) {
-          await sendSeaBrokerageTelegramDirectMessage(likerChat, likerMessage);
+          const dm = await sendSeaBrokerageTelegramDirectMessage(likerChat, likerMessage);
+          likerDmDelivered = dm.ok;
+          if (!dm.ok) {
+            console.warn(
+              "[SeaBrokerage][LikeDM][Liker]",
+              JSON.stringify({ entryId, likerChat, error: dm.error }),
+            );
+          }
         }
       }
 
       const likeCount = likes.filter((like) => like.entryId === entryId).length;
-      return res.status(201).json({ liked, likeCount });
+      return res.status(201).json({ liked, likeCount, ownerDmDelivered, likerDmDelivered });
     } catch (error: any) {
       console.error("Error toggling sea brokerage entry like:", error);
       return res.status(500).json({ error: "Failed to toggle like" });

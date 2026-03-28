@@ -270,6 +270,8 @@ export function SeaBrokerageMonitorPage() {
             onFiltersChange={setOfferPaneFilters}
             likesEnabled
             onToggleLike={handleToggleLike}
+            currentBrokerId={session.authorProfile?.id ?? null}
+            currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             createActionLabel="Create OFFER"
             createActionVariant="secondary"
             onCreateAction={() => setCreateDialogType("offer")}
@@ -286,6 +288,8 @@ export function SeaBrokerageMonitorPage() {
             onFiltersChange={setBidPaneFilters}
             likesEnabled
             onToggleLike={handleToggleLike}
+            currentBrokerId={session.authorProfile?.id ?? null}
+            currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             createActionLabel="Create BID"
             onCreateAction={() => setCreateDialogType("bid")}
           />

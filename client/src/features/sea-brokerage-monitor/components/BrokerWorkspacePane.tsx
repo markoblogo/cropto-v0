@@ -1,4 +1,4 @@
-import { Heart, Plus, Search } from "lucide-react";
+import { Handshake, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,8 @@ interface BrokerWorkspacePaneProps {
   createActionClassName?: string;
   onToggleLike?: (entry: BrokerageEntry) => void;
   likesEnabled?: boolean;
+  currentBrokerId?: string | null;
+  currentBrokerCode?: string | null;
 }
 
 export function BrokerWorkspacePane({
@@ -55,6 +57,8 @@ export function BrokerWorkspacePane({
   createActionClassName,
   onToggleLike,
   likesEnabled = false,
+  currentBrokerId,
+  currentBrokerCode,
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -132,6 +136,9 @@ export function BrokerWorkspacePane({
             <div className="divide-y divide-border/50">
               {entries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
+                const isOwnEntry =
+                  (!!currentBrokerId && entry.brokerId === currentBrokerId) ||
+                  (!!currentBrokerCode && entry.brokerCode === currentBrokerCode);
 
                 return (
                   <Button
@@ -149,14 +156,14 @@ export function BrokerWorkspacePane({
                       <div className="line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
-                      {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
+                      {likesEnabled && (entry.type === "bid" || entry.type === "offer") && !isOwnEntry ? (
                         <span
                           role="button"
                           tabIndex={0}
-                          className={`ml-auto inline-flex h-5 items-center gap-1 rounded border px-1 text-[9px] leading-none transition-colors ${
+                          className={`ml-auto inline-flex h-6 min-w-[48px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
                             entry.likedByMe
-                              ? "border-primary/50 bg-primary/20 text-primary"
-                              : "border-border/70 bg-background/40 text-muted-foreground hover:bg-muted/20"
+                              ? "border-primary/60 bg-primary/25 text-primary"
+                              : "border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
                           }`}
                           onClick={(event) => {
                             event.stopPropagation();
@@ -171,7 +178,7 @@ export function BrokerWorkspacePane({
                           }}
                           aria-label={`Like ${entry.type}`}
                         >
-                          <Heart className={`h-3 w-3 ${entry.likedByMe ? "fill-current" : ""}`} />
+                          <Handshake className="h-3.5 w-3.5" />
                           <span>{entry.likeCount ?? 0}</span>
                         </span>
                       ) : null}
