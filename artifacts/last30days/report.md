@@ -1,6 +1,6 @@
 # соняшникова олія ріпак соя європа ринок - Last 30 Days Research Report
 
-**Generated:** 2026-03-28T01:54:04.823944+00:00
+**Generated:** 2026-03-28T04:53:13.381603+00:00
 **Date Range:** 2026-02-26 to 2026-03-28
 **Mode:** all
 
@@ -44,7 +44,7 @@
 
 ## Web Results
 
-### W3: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
+### W4: SELECTED PAPERS EUROPEAN DIMENSIONS OF ...
 
 - **Source:** ec.europa.eu
 - **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
@@ -54,20 +54,10 @@
 
 > 
 
-### W15: Аналітики розповіли про головні тенденції на олійному ...
+### W8: Zbiór materiałów konferencji, Kamieniec-Podolski
 
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/analitiki-rozpovili-pro-golovni-tendenciji-na-oliynomu-rinku
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: Влияние войны на рынок масла Украины: соя и рапс не ...
-
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/ru/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku
+- **Source:** mans.edu.pl
+- **URL:** https://mans.edu.pl/fcp/iOEUfFzs9BjEkLTg1Y1BSe0N_YAVTHwIIOgIaTAIABCRvRQMEOjBBaHICPXNtSBk6PjIyBV4RBDYnD1cYTk8cOjYCEg/2/public/wydawnictwa/zbior_materialow_konferencji_kamieniec-podolski__lomza_20-2111_2025_compressed.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -84,7 +74,17 @@
 
 > 
 
-### W4: Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу
+### W14: Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua
+
+- **Source:** agroportal.ua
+- **URL:** https://agroportal.ua/ru/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W3: Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу
 
 - **Source:** propozitsiya.com
 - **URL:** https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye
@@ -94,7 +94,7 @@
 
 > 
 
-### W9: Попит на рослинні олії змінює баланс світового ринку олійних ...
+### W10: Попит на рослинні олії змінює баланс світового ринку олійних ...
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/popyt-na-roslynni-oliyi-zminyuye-balans-svitovogo-rynku-olijnyh-kulytur/
@@ -104,7 +104,7 @@
 
 > 
 
-### W10: Ринок олійних: соняшник та соя дорожчають, а ріпак очікує нового врожаю | Пропозиція – Головний журнал з питань агробізнесу
+### W11: Ринок олійних: соняшник та соя дорожчають, а ріпак очікує нового врожаю | Пропозиція – Головний журнал з питань агробізнесу
 
 - **Source:** propozitsiya.com
 - **URL:** https://propozitsiya.com/news/rynok-oliynykh-sonyashnyk-ta-soya-dorozhchayut-ripak-ochikuye-novoho-vrozhayu
@@ -114,7 +114,7 @@
 
 > 
 
-### W11: Ринок соняшникової олії на порозі великих глобальних змін
+### W12: Ринок соняшникової олії на порозі великих глобальних змін
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/
@@ -124,7 +124,7 @@
 
 > 
 
-### W8: Світовий ринок рослинних олій зросте до 850 млн т — AgroPortal.ua
+### W9: Світовий ринок рослинних олій зросте до 850 млн т — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/news/mir/svitoviy-rinok-roslinnih-oliy-zroste-do-850-mln-t
@@ -144,7 +144,7 @@
 
 > 
 
-### W12: Ситуація на ринку олійних: переробники соняшнику стають обережнішими, а ріпак дешевшає | Пропозиція – Головний журнал з питань агробізнесу
+### W13: Ситуація на ринку олійних: переробники соняшнику стають обережнішими, а ріпак дешевшає | Пропозиція – Головний журнал з питань агробізнесу
 
 - **Source:** propozitsiya.com
 - **URL:** https://propozitsiya.com/news/sytuatsiya-na-rynku-oliynykh-pererobnyky-sonyashnyku-stayut-oberezhnishymy-ripak-deshevshaye
@@ -154,7 +154,7 @@
 
 > 
 
-### W14: Трансформація аграрного сектору економіки до ...
+### W15: Трансформація аграрного сектору економіки до ...
 
 - **Source:** eapk.com.ua
 - **URL:** https://eapk.com.ua/web/uploads/journals_pdf/3_merged.pdf
@@ -164,7 +164,7 @@
 
 > 
 
-### W5: Украина лидирует в Европе по выращиванию сои и ...
+### W5: Украина лидирует в Европе по выращиванию сои и имеет потенциал в переработке — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/ru/news/rastenievodstvo/ukrajina-lidiruye-u-yevropi-za-viroshchuvannyam-soji-ta-maye-potencil-u-pererobci

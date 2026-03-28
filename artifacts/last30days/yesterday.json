@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-28T01:51:38.668030+00:00",
+  "generatedAt": "2026-03-28T04:51:13.914674+00:00",
   "items": [
     {
       "id": "X2",
@@ -54,7 +54,7 @@
       "date": "2026-03-27",
       "date_confidence": "high",
       "engagement": {
-        "likes": 200,
+        "likes": 208,
         "reposts": 2,
         "replies": 9
       },
@@ -77,7 +77,7 @@
       "date": "2026-03-27",
       "date_confidence": "high",
       "engagement": {
-        "likes": 65,
+        "likes": 66,
         "replies": 2
       },
       "relevance": 0.3,
@@ -107,7 +107,7 @@
       "subs": {
         "relevance": 30,
         "recency": 96,
-        "engagement": 44
+        "engagement": 43
       },
       "score": 50,
       "source": "x",
@@ -122,28 +122,6 @@
       "date_confidence": "high",
       "engagement": {
         "likes": 14,
-        "replies": 1
-      },
-      "relevance": 0.3,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 30,
-        "recency": 96,
-        "engagement": 42
-      },
-      "score": 50,
-      "source": "x",
-      "title": "а що толку від ціни, якщо в тебе системно вибивають експортні потужності? і тенденція не на зниження ударів, а на збільшення? я от не вірю в то що рашка зможе скористуватись цією нагодою. \n\nплюс в них системна криза в регіонах, а додаткові гроші (якщо вони навіть і були б) це гроші федерального центру. карочі там не все так просто."
-    },
-    {
-      "id": "X17",
-      "text": "@PKurylenko Да я так таїти пишу посміятися \n\nЗа 15 років мене важко здивувати \n\nПісля негативної ціни на нафту якось усе не сильно вражає",
-      "url": "https://x.com/Pashak1436/status/2037564456553861280",
-      "author_handle": "Pashak1436",
-      "date": "2026-03-27",
-      "date_confidence": "high",
-      "engagement": {
-        "likes": 5,
         "replies": 2
       },
       "relevance": 0.3,
@@ -151,11 +129,11 @@
       "subs": {
         "relevance": 30,
         "recency": 96,
-        "engagement": 29
+        "engagement": 43
       },
-      "score": 46,
+      "score": 50,
       "source": "x",
-      "title": "@PKurylenko Да я так таїти пишу посміятися \n\nЗа 15 років мене важко здивувати \n\nПісля негативної ціни на нафту якось усе не сильно вражає"
+      "title": "а що толку від ціни, якщо в тебе системно вибивають експортні потужності? і тенденція не на зниження ударів, а на збільшення? я от не вірю в то що рашка зможе скористуватись цією нагодою. \n\nплюс в них системна криза в регіонах, а додаткові гроші (якщо вони навіть і були б) це гроші федерального центру. карочі там не все так просто."
     },
     {
       "id": "X6",
@@ -186,7 +164,9 @@
       "author_handle": "NOHEATED",
       "date": "2026-03-27",
       "date_confidence": "high",
-      "engagement": null,
+      "engagement": {
+        "replies": 1
+      },
       "relevance": 0.33,
       "why_relevant": "",
       "subs": {
@@ -197,6 +177,28 @@
       "score": 46,
       "source": "x",
       "title": "@kitvni Ви бачили ціни на DDR5?"
+    },
+    {
+      "id": "X17",
+      "text": "@PKurylenko Да я так таїти пишу посміятися \n\nЗа 15 років мене важко здивувати \n\nПісля негативної ціни на нафту якось усе не сильно вражає",
+      "url": "https://x.com/Pashak1436/status/2037564456553861280",
+      "author_handle": "Pashak1436",
+      "date": "2026-03-27",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 5,
+        "replies": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 28
+      },
+      "score": 45,
+      "source": "x",
+      "title": "@PKurylenko Да я так таїти пишу посміятися \n\nЗа 15 років мене важко здивувати \n\nПісля негативної ціни на нафту якось усе не сильно вражає"
     },
     {
       "id": "X4",
@@ -403,16 +405,16 @@
       "date": "2026-03-27",
       "date_confidence": "high",
       "engagement": {
-        "likes": 5
+        "likes": 4
       },
       "relevance": 0.3,
       "why_relevant": "",
       "subs": {
         "relevance": 30,
         "recency": 96,
-        "engagement": 24
+        "engagement": 21
       },
-      "score": 44,
+      "score": 43,
       "source": "x",
       "title": "@karaylo тепер понятно чого ціни на ОЗУ такі\nзаради того, щоб робити таку хрінь...\nнахуя? для кого?\n\nв шоці"
     },
@@ -733,27 +735,9 @@
       "selftext": "**Purtle's Internet Lineup for March 25th, 2026 3:48PM**\n\n**Pics or Text:**\n\n* I'm at ICE HQ https://bsky.app/profile/jimmyjazz1968.bsky.social/post/3mht2wsvj522i\n\n* livestream raiding is great because it puts more eyes on more small creators, sure. but i think what's MUCH more important, is, you get to pretend you're a weird daycare shipping children to a different daycare so you can go smoke, and if any kids wander off on the way over that's not your problem https://bsky.app/profile/comfybasil"
     },
     {
-      "id": "W3",
-      "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
-      "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
-      "source_domain": "fastmarkets.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
-      "title": "AGS GRAIN | LinkedIn",
-      "url": "https://www.linkedin.com/company/ags-grain",
+      "id": "W15",
+      "title": "AgroPortal Bulgaria | LinkedIn",
+      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
       "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
@@ -769,10 +753,10 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Black Sea Grain Exports Hit Headwinds After Quotas - Algoran Agro",
-      "url": "https://algoran-agro.com/2026/02/10/black-sea-grain-exports/",
-      "source_domain": "algoran-agro.com",
+      "id": "W7",
+      "title": "Black Sea Cereal Company | LinkedIn",
+      "url": "https://www.linkedin.com/company/black-sea-cereal-company",
+      "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -787,7 +771,25 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W2",
+      "title": "Black Sea Grain Market Analysis",
+      "url": "https://grainsprices.com/article/19274",
+      "source_domain": "grainsprices.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
       "title": "Black Sea Regional Analysis - World Perspectives",
       "url": "https://www.worldperspectives.com/articles/black-sea-regional-analysis-03252026",
       "source_domain": "worldperspectives.com",
@@ -805,10 +807,10 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
-      "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
-      "source_domain": "spglobal.com",
+      "id": "W14",
+      "title": "Black Sea grain and oilseed production and trade",
+      "url": "https://www.agmanager.info/sites/default/files/pdf/19_Broyaka_BlackSea.pdf",
+      "source_domain": "agmanager.info",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -823,7 +825,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W13",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -841,81 +843,9 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Corn & Wheat Market Outlook 2026 - YouTube",
-      "url": "https://www.youtube.com/watch%3Fv%3Dl8TyV3AmWCk",
-      "source_domain": "youtube.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W14",
-      "title": "Current state of the Black Sea grain and oilseed markets",
-      "url": "https://agmanager.info/sites/default/files/pdf/Broyaka_Ukraine_11-05-25.pdf",
-      "source_domain": "agmanager.info",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
-      "title": "GLOBAL TRADE WAR TO BOOST EXPORTS FROM BLACK SEA REGION | Miller Magazine",
-      "url": "https://millermagazine.com/blog/global-trade-war-to-boost-exports-from-black-sea-region-2872",
-      "source_domain": "millermagazine.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
-      "title": "GRAINS-Wheat, Corn Rise After Russian Comments on Black Sea Export Deal",
-      "url": "https://www.agriculture.com/markets/newswire/grains-wheat-corn-rise-after-russian-comments-on-black-sea-export-deal",
-      "source_domain": "agriculture.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "Goodgrainoil | LinkedIn",
-      "url": "https://www.linkedin.com/company/goodgrainoil",
+      "id": "W12",
+      "title": "Dobrita Adrian - Commodity Trader | \nExperienced Agribusiness professional in Romania and in the Black Sea region | LinkedIn",
+      "url": "https://www.linkedin.com/in/dobrita-adrian-30559394",
       "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
@@ -931,10 +861,28 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Grains and Oilseeds Outlook",
-      "url": "https://www.usda.gov/sites/default/files/documents/2026AOF-grains-oilseeds-outlook.pdf",
-      "source_domain": "usda.gov",
+      "id": "W11",
+      "title": "Grain Market Update (20 March 2026) - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DbiGvkMlY6c4",
+      "source_domain": "youtube.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Grains, Oilseeds and Pulses: 2026 FCC Economic Outlook - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DGF7o1yDCtGs",
+      "source_domain": "youtube.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -968,26 +916,8 @@
     },
     {
       "id": "W10",
-      "title": "Mihaela Ploscaru - Market Analyst at Agrilinkhub SRL | LinkedIn",
-      "url": "https://www.linkedin.com/in/mihaela-ploscaru-2aa8611a3",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
-      "title": "Мінекономіки підвищило мінімальні експортні ціни на ...",
-      "url": "https://ukragroconsult.com/news/minekonomiky-pidvyshhylo-minimalyni-eksportni-cziny-na-pshenyczyu-u-sichni/",
+      "title": "Sunflower prices in Ukraine 06.09.2025 - UkrAgroConsult",
+      "url": "https://ukragroconsult.com/en/sunflower-prices/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
@@ -1004,7 +934,61 @@
     },
     {
       "id": "W6",
-      "title": "На ринку почали формуватись ціни на пшеницю врожаю ...",
+      "title": "Ukrainian Grain and Oilseed Markets after Four Years of ...",
+      "url": "https://www.agmanager.info/sites/default/files/pdf/Broyaka_Ukraine_03-25-26_A.pdf",
+      "source_domain": "agmanager.info",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Workboat Indexes | WorkBoat - The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
+      "url": "https://markets.financialcontent.com/workboat/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
+      "source_domain": "markets.financialcontent.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "[PDF] Grain: World Markets and Trade - USDA/FAS",
+      "url": "https://apps.fas.usda.gov/psdonline/circulars/grain.pdf",
+      "source_domain": "apps.fas.usda.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "На ринку почали формуватись ціни на пшеницю врожаю 2026",
       "url": "https://ukragroconsult.com/news/na-rynku-pochaly-formuvatysy-cziny-na-pshenyczyu-vrozhayu-2026/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
@@ -1022,6 +1006,24 @@
     },
     {
       "id": "W4",
+      "title": "Названо ціни на пшеницю врожаю-2026 — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/rastenievodstvo/nazvano-cini-na-pshenicyu-vrozhayu-2026",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
       "title": "Ринок пшениці Чорноморсько-Дунайського регіону 2026: погодні ризики, зсуви торгівлі та нове ціноутворення",
       "url": "https://ukragroconsult.com/news/rynok-pshenyczi-chornomorsyko-dunajsykogo-regionu-2026-pogodni-ryzyky-zsuvy-torgivli-ta-nove-czinoutvorennya/",
       "source_domain": "ukragroconsult.com",
@@ -1039,7 +1041,61 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W7",
+      "title": "Ціни на пшеницю врожаю 2026 вже почали формуватись на ринку",
+      "url": "https://superagronom.com/news/22187-tsini-na-pshenitsyu-zrostayut-pochali-formuvatis-tsini-na-pshenitsyu-vrojayu-2026",
+      "source_domain": "superagronom.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Ціни на пшеницю зростатимуть до середини березня",
+      "url": "https://agrotimes.ua/agromarket/cziny-na-pshenyczyu-zrostatymut-do-seredyny-bereznya/",
+      "source_domain": "agrotimes.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Ціни на українську пшеницю зростають",
+      "url": "https://agroportal.ua/news/rastenievodstvo/cini-na-ukrajinsku-pshenicyu-zrostayut",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
       "title": "Чорноморська пшениця з початку війни на Близькому Сході виросла в ціні до найвищого рівня з серпня 2025 року — Latifundist.com",
       "url": "https://latifundist.com/novosti/69785-chornomorska-pshenitsya-z-pochatku-vijni-na-blizkomu-shodi-virosla-v-tsini-do-najvishchogo-rivnya-z-serpnya-2025-roku",
       "source_domain": "latifundist.com",
@@ -1057,7 +1113,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "Чорноморська пшениця посилює конкуренцію на ...",
       "url": "https://ukragroconsult.com/news/chornomorsyka-pshenyczya-posylyuye-konkurencziyu-na-svitovomu-rynku-polyshha-shukaye-novi-napryamky-eksportu/",
       "source_domain": "ukragroconsult.com",
@@ -1093,7 +1149,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W6",
       "title": "Дунай став дуже цінним в умовах війни — АГРОПОЛІТ",
       "url": "https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert",
       "source_domain": "agropolit.com",
@@ -1219,7 +1275,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W7",
       "title": "Порти Дунаю готують до зростання вантажообігу до 15 млн т у 2026 році | Події, інтерв'ю | E-land",
       "url": "https://e-land.ua/news/item/porty-dunayu-hotuyut-do-zrostannia-vantazhoobihu-do-15-mln-t-u-2026-rotsi",
       "source_domain": "e-land.ua",
@@ -1255,7 +1311,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W8",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
       "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
       "source_domain": "agrotimes.ua",
@@ -1327,154 +1383,10 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Soybean Market: чи зможе Україна зберегти свої соєві ...",
-      "url": "https://agroportal.ua/multimedia/soybean-market-chi-zmozhe-ukrajina-zberegti-svoji-soyevi-poziciji",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "АПК-Інформ",
-      "url": "https://www.apk-inform.com/",
-      "source_domain": "apk-inform.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
-      "title": "Валютна виручка від експорту соєвої олії зросла на 19,3%",
-      "url": "https://www.fixygen.ua/news/20260327/valyutna-viruchka-vid-eksportu-soevoyi-oliyi-zrosla-na-193.html",
-      "source_domain": "fixygen.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
+      "id": "W2",
       "title": "Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua",
       "url": "https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
       "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W2",
-      "title": "Експерти прогнозують сої один з найскладніших сезонів — AgroPortal.ua",
-      "url": "https://agroportal.ua/publishing/lichnyi-vzglyad/sezon-2026-27-dlya-soji-bude-odnim-iz-nayskladnishih-do-chogo-gotuvatisya-agrariyam",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
-      "title": "Огляд ринку олійних: соняшник та соя дорожчають, а попит на ріпак у Європі слабшає | Пропозиція – Головний журнал з питань агробізнесу",
-      "url": "https://propozitsiya.com/news/ohlyad-rynku-oliynykh-sonyashnyk-ta-soya-dorozhchayut-popyt-na-ripak-u-yevropi-slabshaye",
-      "source_domain": "propozitsiya.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "Переробка ріпаку та сої в Україні: зростання експорту",
-      "url": "https://agroreview.com/content/roslyny/pererobka-ripaku-soyi-ukrayini-zrosla/",
-      "source_domain": "agroreview.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
-      "title": "Ф'ючерси на сою на Чиказькій біржі продовжили ...",
-      "url": "https://ukragroconsult.com/news/fyuchersy-na-soyu-na-chykazykij-birzhi-prodovzhyly-zrostannya/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
-      "title": "пальма» та соя, а соняшникова олія втрачає позиції. ...",
-      "url": "https://www.ukr.net/news/details/world/116561582.html",
-      "source_domain": "ukr.net",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1491,6 +1403,6 @@
   ],
   "meta": {
     "inputFiles": 8,
-    "itemCount": 77
+    "itemCount": 72
   }
 }

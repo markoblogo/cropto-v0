@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-28T01:52:49.285865+00:00",
+  "generatedAt": "2026-03-28T04:52:13.747309+00:00",
   "items": [
     {
       "id": "R1",
@@ -142,7 +142,7 @@
       "title": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути"
     },
     {
-      "id": "W4",
+      "id": "W14",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -160,7 +160,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W12",
       "title": "AGS GRAIN | LinkedIn",
       "url": "https://www.linkedin.com/company/ags-grain",
       "source_domain": "linkedin.com",
@@ -178,10 +178,10 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "AM Market Report – March 26, 2026 | The Western Producer",
-      "url": "https://www.producer.com/am-market-reports/am-market-report-march-26-2026/",
-      "source_domain": "producer.com",
+      "id": "W6",
+      "title": "AMBRA GRAIN | LinkedIn",
+      "url": "https://www.linkedin.com/company/ambra-grain",
+      "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -196,9 +196,9 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Black Sea Grain Market Analysis",
-      "url": "https://grainsprices.com/article/19274",
+      "id": "W8",
+      "title": "Black Sea Region Grain Market Analysis",
+      "url": "https://grainsprices.com/article/18924",
       "source_domain": "grainsprices.com",
       "snippet": "",
       "date": null,
@@ -214,7 +214,25 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W4",
+      "title": "Black Sea Regional Analysis",
+      "url": "https://worldperspectives.com/articles/black-sea-regional-analysis-03252026",
+      "source_domain": "worldperspectives.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -232,9 +250,9 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Corn & Wheat Market Outlook 2026",
-      "url": "https://www.youtube.com/watch?v=l8TyV3AmWCk",
+      "id": "W3",
+      "title": "Corn & Wheat Market Outlook 2026 - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3Dl8TyV3AmWCk",
       "source_domain": "youtube.com",
       "snippet": "",
       "date": null,
@@ -250,7 +268,25 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W7",
+      "title": "Corn and Wheat futures gain as export data meets expectations. - CME Group",
+      "url": "https://www.cmegroup.com/videos/2026/03/24/corn-and-wheat-futures-gain-as-export-data-meets-expectations-3.html",
+      "source_domain": "cmegroup.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
       "title": "Goodgrainoil | LinkedIn",
       "url": "https://www.linkedin.com/company/goodgrainoil",
       "source_domain": "linkedin.com",
@@ -268,46 +304,28 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Grain Market Overview: Start Friday 27.03.2026",
-      "url": "https://grainsprices.com/article/19566",
-      "source_domain": "grainsprices.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Grains and Oilseeds Outlook",
-      "url": "https://www.usda.gov/sites/default/files/documents/2026AOF-grains-oilseeds-outlook.pdf",
-      "source_domain": "usda.gov",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W13",
-      "title": "Higher moves in soybeans, corn, and wheat - Brownfield Ag News",
-      "url": "https://www.brownfieldagnews.com/market-news/higher-moves-in-soybeans-corn-and-wheat/",
-      "source_domain": "brownfieldagnews.com",
+      "title": "Grain Market Update (20 March 2026) - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DbiGvkMlY6c4",
+      "source_domain": "youtube.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Grains, Oilseeds and Pulses: 2026 FCC Economic Outlook - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DGF7o1yDCtGs",
+      "source_domain": "youtube.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -340,7 +358,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W9",
       "title": "Mihaela Ploscaru - Market Analyst at Agrilinkhub SRL | LinkedIn",
       "url": "https://www.linkedin.com/in/mihaela-ploscaru-2aa8611a3",
       "source_domain": "linkedin.com",
@@ -358,10 +376,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Turkey Grain Market-2026: Trade Flows, Price Dynamics & Black Sea Competition",
-      "url": "https://ukragroconsult.com/en/news/turkey-grain-market-2026-trade-flows-price-dynamics-black-sea-competition/",
-      "source_domain": "ukragroconsult.com",
+      "id": "W2",
+      "title": "[PDF] Black Sea grain and oilseed production and trade - AgManager.info",
+      "url": "https://www.agmanager.info/sites/default/files/pdf/19_Broyaka_BlackSea.pdf",
+      "source_domain": "agmanager.info",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -376,79 +394,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Will Ukraine be able to export all of its grain in 2026?",
-      "url": "https://sfs.org.au/article/will-ukraine-be-able-to-export-all-of-its-grain-in-2026",
-      "source_domain": "sfs.org.au",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Expert opinions -",
-      "url": "https://uga.ua/en/expert-opinions/",
-      "source_domain": "uga.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "[PDF] Untitled - WAYSCIENCE",
-      "url": "http://www.wayscience.com/wp-content/uploads/2025/04/Conference-Proceedings-April-3-4-2025-1.pdf",
-      "source_domain": "wayscience.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
-      "title": "[PDF] Кваліфікаційна робота магістра",
-      "url": "https://dspace.znu.edu.ua/jspui/bitstream/12345/30514/1/04%20%D0%9F%D0%B5%D1%80%D0%B5%D0%BF%D0%B5%D0%BB%D0%B8%D1%86%D1%8F_%D0%92_%D0%92_%D0%BA%D0%B2%D0%B0%D0%BB%D1%96%D1%84_%D1%80%D0%BE%D0%B1%D0%BE%D1%82%D0%B0_%D0%BC%D0%B0%D0%B3%D1%96%D1%81%D1%82%D1%80%D0%B0_%D0%95%D0%9A_2025.pdf",
-      "source_domain": "dspace.znu.edu.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
+      "id": "W5",
       "title": "Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів",
       "url": "https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv",
       "source_domain": "ndu.kr.ua",
@@ -466,8 +412,8 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Дунай став дуже цінним в умовах війни — АГРОПОЛІТ",
+      "id": "W6",
+      "title": "Дунай став дуже цінним в умовах війни - Агрополіт",
       "url": "https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert",
       "source_domain": "agropolit.com",
       "snippet": "",
@@ -484,7 +430,97 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W13",
+      "title": "Дунай стал ключевым логистическим коридором для Украины и ...",
+      "url": "https://ru.bessarabiainform.com/2025/12/dunay-stav-klyuchovym-lohistychnym-korydorom-dlya-ukrainy-ta-elementom-bezpeky-vsiei-evropy/",
+      "source_domain": "ru.bessarabiainform.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Дунайська логістика стійкіша до атак завдяки розосередженій ...",
+      "url": "https://www.ukr.net/news/details/economics/116188056.html",
+      "source_domain": "ukr.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Дунайські порти отримають новий імпульс: уряд готує масштабні ...",
+      "url": "https://www.instagram.com/p/DV_1AxSDCNH/",
+      "source_domain": "instagram.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Дунайські порти стануть мультимодальними хабами - Agravery.com",
+      "url": "https://agravery.com/uk/posts/show/dunajski-porti-stanut-multimodalnimi-habami",
+      "source_domain": "agravery.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Кабміну запропонують експеримент для портів Ізмаїла та Рені | Новини України | LIGA.net",
+      "url": "https://biz.liga.net/ua/all/transport/novosti/kabminu-zaproponuiut-dvorichnyy-eksperyment-dlia-portiv-izmaila-ta-reni",
+      "source_domain": "biz.liga.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
       "title": "Морські порти України з початку 2026 року обробили понад 15 млн тонн вантажів — Центр транспортних стратегій",
       "url": "https://cfts.org.ua/news/2026/03/13/morski_porti_ukrani_z_pochatku_2026_roku_obrobili_ponad_15_mln_tonn_vantazhiv_86152",
       "source_domain": "cfts.org.ua",
@@ -502,8 +538,8 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "Наступного року порти Дунаю мають обробити не ...",
+      "id": "W7",
+      "title": "Наступного року порти Дунаю мають обробити не менше 15 млн ...",
       "url": "https://www.railinsider.com.ua/nastupnogo-roku-porty-dunayu-mayut-obrobyty-ne-menshe-15-mln-t-vantazhiv-minrozvytku/",
       "source_domain": "railinsider.com.ua",
       "snippet": "",
@@ -520,7 +556,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W3",
       "title": "Порти Дунаю готують до зростання вантажообігу до 15 млн т у 2026 році | Події, інтерв'ю | E-land",
       "url": "https://e-land.ua/news/item/porty-dunayu-hotuyut-do-zrostannia-vantazhoobihu-do-15-mln-t-u-2026-rotsi",
       "source_domain": "e-land.ua",
@@ -538,8 +574,8 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Україна запускає масштабну модернізацію портів на ...",
+      "id": "W9",
+      "title": "Україна запускає масштабну модернізацію портів на Дунаї з ...",
       "url": "https://agroelita.info/ukraina-zapuskaie-masshtabnu-modernizatsiiu-portiv-na-dunai-z-harantiieiu-vantazhopotoku-i-tysiachamy-robochykh-mists/",
       "source_domain": "agroelita.info",
       "snippet": "",
@@ -556,10 +592,10 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Україна розвиває річкові порти як альтернативу «зерновому коридору» — КУРКУЛЬ",
-      "url": "https://kurkul.com/news/33526-ukrayinski-richkovi-porti-mojut-stati-alternativoyu-zernovomu-koridoru--marchuk",
-      "source_domain": "kurkul.com",
+      "id": "W8",
+      "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
+      "url": "https://ukragroconsult.com/news/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -574,7 +610,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W12",
       "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
       "url": "https://agrotimes.ua/elevator/ukrayina-ta-yes-uzgodyly-plan-rozvytku-logistyky-na-dunayi/",
       "source_domain": "agrotimes.ua",
@@ -592,43 +628,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Україна та ЄС узгодили план розвитку логістики на Дунаї",
-      "url": "https://www.ukr.net/news/details/economics/115721216.html",
-      "source_domain": "ukr.net",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Управління морським та внутрішнім водним транспортом у 2025 році: ключові результати та плани на 2026 рік | Міністерство розвитку громад та територій України",
-      "url": "https://mindev.gov.ua/news/upravlinnia-morskym-ta-vnutrishnim-vodnym-transportom-u-2025-rotsi-kliuchovi-rezultaty-ta-plany-na-2026-rik",
-      "source_domain": "mindev.gov.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W2",
       "title": "Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України",
       "url": "https://interfax.com.ua/news/blog/1147202.html",
       "source_domain": "interfax.com.ua",
@@ -646,7 +646,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "Євросоюз скоротив на третину закупівлі соняшникової олії",
       "url": "https://agroportal.ua/news/mir/yevrosoyuz-skorotiv-na-tretinu-zakupivli-sonyashnikovoji-oliji",
       "source_domain": "agroportal.ua",
@@ -664,7 +664,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "Вплив війни на ринок олії України: соя та ріпак не покривають втрати по соняшнику — AgroPortal.ua",
       "url": "https://agroportal.ua/news/ukraina/vpliv-viyni-na-rinok-oliji-ukrajini-soya-ta-ripak-ne-pokrivayut-vtrati-po-sonyashniku",
       "source_domain": "agroportal.ua",
