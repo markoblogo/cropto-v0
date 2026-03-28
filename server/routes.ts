@@ -194,6 +194,8 @@ type SeaBrokerageCustomLocation = {
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
+const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
+const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
 
 type SeaBrokerageEntryLike = {
   entryId: string;
@@ -205,6 +207,17 @@ type SeaBrokerageEntryLike = {
   createdAt: string;
 };
 
+type SeaBrokerageMatchLike = {
+  matchId: string;
+  bidEntryId: string;
+  offerEntryId: string;
+  likerBrokerUserId: string;
+  likerBrokerCode: string;
+  likerBrokerName: string;
+  kind: "normal" | "boss";
+  createdAt: string;
+};
+
 function decimalToNumber(value: unknown) {
   if (value === null || value === undefined) return null;
   const numeric = Number(value);
@@ -213,7 +226,7 @@ function decimalToNumber(value: unknown) {
 
 function mapSeaBrokerageEntryToClientShape(
   entry: SeaBrokerageEntryRow,
-  likeMeta?: { likeCount: number; likedByMe: boolean },
+  likeMeta?: { likeCount: number; likedByMe: boolean; hasBossMatchLike?: boolean },
 ) {
   return {
     id: entry.id,
@@ -269,6 +282,7 @@ function mapSeaBrokerageEntryToClientShape(
     telegramRelayMessage: entry.telegramRelayMessage,
     likeCount: likeMeta?.likeCount ?? 0,
     likedByMe: likeMeta?.likedByMe ?? false,
+    hasBossMatchLike: likeMeta?.hasBossMatchLike ?? false,
   };
 }
 
@@ -450,6 +464,43 @@ async function readSeaBrokerageEntryLikes(): Promise<SeaBrokerageEntryLike[]> {
 
 async function writeSeaBrokerageEntryLikes(likes: SeaBrokerageEntryLike[]) {
   await storage.upsertAppSetting(SEA_BROKERAGE_ENTRY_LIKES_KEY, JSON.stringify(likes));
+}
+
+async function readSeaBrokerageMatchLikes(): Promise<SeaBrokerageMatchLike[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_MATCH_LIKES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageMatchLike[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.matchId === "string" &&
+          typeof item.bidEntryId === "string" &&
+          typeof item.offerEntryId === "string" &&
+          typeof item.likerBrokerUserId === "string" &&
+          typeof item.likerBrokerCode === "string" &&
+          typeof item.likerBrokerName === "string" &&
+          (item.kind === "normal" || item.kind === "boss") &&
+          typeof item.createdAt === "string",
+      )
+      .map((item) => ({
+        matchId: String(item.matchId).trim(),
+        bidEntryId: String(item.bidEntryId).trim(),
+        offerEntryId: String(item.offerEntryId).trim(),
+        likerBrokerUserId: String(item.likerBrokerUserId).trim(),
+        likerBrokerCode: String(item.likerBrokerCode).trim(),
+        likerBrokerName: String(item.likerBrokerName).trim(),
+        kind: item.kind === "boss" ? "boss" : "normal",
+        createdAt: String(item.createdAt),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function writeSeaBrokerageMatchLikes(likes: SeaBrokerageMatchLike[]) {
+  await storage.upsertAppSetting(SEA_BROKERAGE_MATCH_LIKES_KEY, JSON.stringify(likes));
 }
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
@@ -7610,9 +7661,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sea-brokerage-monitor/entries", async (req: AuthRequest, res) => {
     try {
-      const [entries, likes] = await Promise.all([
+      const [entries, likes, matchLikes] = await Promise.all([
         storage.listSeaBrokerageEntries(),
         readSeaBrokerageEntryLikes(),
+        readSeaBrokerageMatchLikes(),
       ]);
 
       const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
@@ -7638,11 +7690,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const matchEntryIdsById = new Map<string, { bidEntryId: string; offerEntryId: string }>();
+      for (const match of generateSeaBrokerageMatchSuggestions(entries)) {
+        matchEntryIdsById.set(match.id, {
+          bidEntryId: match.bidEntry.id,
+          offerEntryId: match.offerEntry.id,
+        });
+      }
+
+      const entryIdsWithBossMatchLike = new Set<string>();
+      for (const like of matchLikes) {
+        if (like.kind !== "boss") continue;
+        const byMatchId = matchEntryIdsById.get(like.matchId);
+        if (byMatchId) {
+          entryIdsWithBossMatchLike.add(byMatchId.bidEntryId);
+          entryIdsWithBossMatchLike.add(byMatchId.offerEntryId);
+          continue;
+        }
+        if (like.bidEntryId) entryIdsWithBossMatchLike.add(like.bidEntryId);
+        if (like.offerEntryId) entryIdsWithBossMatchLike.add(like.offerEntryId);
+      }
+
       res.json(
         entries.map((entry) =>
           mapSeaBrokerageEntryToClientShape(entry, {
             likeCount: likesByEntry.get(entry.id)?.count ?? 0,
             likedByMe: likesByEntry.get(entry.id)?.likedByMe ?? false,
+            hasBossMatchLike: entryIdsWithBossMatchLike.has(entry.id),
           }),
         ),
       );
@@ -7776,6 +7850,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error toggling sea brokerage entry like:", error);
       return res.status(500).json({ error: "Failed to toggle like" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/matches/likes", async (req: AuthRequest, res) => {
+    try {
+      const likes = await readSeaBrokerageMatchLikes();
+      return res.json(likes);
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage match likes:", error);
+      return res.status(500).json({ error: "Failed to fetch match likes" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/matches/:matchId/likes", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const matchId = String(req.params.matchId || "").trim();
+      if (!matchId) {
+        return res.status(400).json({ error: "Match id is required" });
+      }
+
+      const allEntries = await storage.listSeaBrokerageEntries();
+      const match = generateSeaBrokerageMatchSuggestions(allEntries).find((item) => item.id === matchId);
+      if (!match) {
+        return res.status(404).json({ error: "Match not found" });
+      }
+
+      const brokerCode = authorizedBroker.brokerCode.toUpperCase();
+      const isBoss = SEA_BROKERAGE_BOSS_CODES.has(brokerCode);
+      const isParticipant =
+        match.bidEntry.brokerCode.toUpperCase() === brokerCode ||
+        match.offerEntry.brokerCode.toUpperCase() === brokerCode;
+      if (!isParticipant && !isBoss) {
+        return res.status(403).json({ error: "Only match participants or boss brokers can like this match" });
+      }
+
+      const likerBrokerUserId =
+        authorizedBroker.telegramUserId ||
+        authorizedBroker.telegramUsername ||
+        authorizedBroker.authUserId ||
+        `broker:${authorizedBroker.brokerCode.toLowerCase()}`;
+
+      const likes = await readSeaBrokerageMatchLikes();
+      const existing = likes.find(
+        (item) =>
+          item.matchId === matchId &&
+          item.likerBrokerUserId.toLowerCase() === likerBrokerUserId.toLowerCase(),
+      );
+      if (existing) {
+        return res.status(200).json({
+          liked: true,
+          alreadyLiked: true,
+          kind: existing.kind,
+        });
+      }
+
+      const kind: "normal" | "boss" = isBoss ? "boss" : "normal";
+      likes.push({
+        matchId,
+        bidEntryId: match.bidEntry.id,
+        offerEntryId: match.offerEntry.id,
+        likerBrokerUserId,
+        likerBrokerCode: authorizedBroker.brokerCode,
+        likerBrokerName: authorizedBroker.brokerName,
+        kind,
+        createdAt: new Date().toISOString(),
+      });
+      await writeSeaBrokerageMatchLikes(likes);
+
+      let buyerDmDelivered = false;
+      let sellerDmDelivered = false;
+      if (kind === "boss") {
+        const compactBid = match.bidEntry.canonicalView;
+        const compactOffer = match.offerEntry.canonicalView;
+        const dmMessage = [
+          "#match_priority 💠",
+          `${authorizedBroker.brokerCode} marked this match for follow-up`,
+          `BID: ${compactBid}`,
+          `OFFER: ${compactOffer}`,
+        ].join("\n");
+        const buyerBrokerChat = match.bidEntry.brokerTelegramUserId
+          ? String(match.bidEntry.brokerTelegramUserId)
+          : match.bidEntry.brokerTelegramUsername
+            ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null;
+        const sellerBrokerChat = match.offerEntry.brokerTelegramUserId
+          ? String(match.offerEntry.brokerTelegramUserId)
+          : match.offerEntry.brokerTelegramUsername
+            ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null;
+
+        if (buyerBrokerChat) {
+          const dm = await sendSeaBrokerageTelegramDirectMessage(buyerBrokerChat, dmMessage);
+          buyerDmDelivered = dm.ok;
+        }
+        if (sellerBrokerChat && sellerBrokerChat !== buyerBrokerChat) {
+          const dm = await sendSeaBrokerageTelegramDirectMessage(sellerBrokerChat, dmMessage);
+          sellerDmDelivered = dm.ok;
+        } else {
+          sellerDmDelivered = buyerDmDelivered;
+        }
+      }
+
+      return res.status(201).json({
+        liked: true,
+        alreadyLiked: false,
+        kind,
+        buyerDmDelivered,
+        sellerDmDelivered,
+      });
+    } catch (error: any) {
+      console.error("Error liking sea brokerage match:", error);
+      return res.status(500).json({ error: "Failed to like match" });
     }
   });
 

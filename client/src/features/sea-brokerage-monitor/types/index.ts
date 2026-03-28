@@ -122,6 +122,7 @@ export interface BrokerageEntry {
   telegramRelayMessage?: string | null;
   likeCount?: number;
   likedByMe?: boolean;
+  hasBossMatchLike?: boolean;
 }
 
 export interface MatchSuggestion {
@@ -137,6 +138,17 @@ export interface MatchSuggestion {
   priceDeltaLabel: string;
   reasons: string[];
   matchedAt?: string | null;
+}
+
+export interface MatchLike {
+  matchId: string;
+  bidEntryId: string;
+  offerEntryId: string;
+  likerBrokerUserId: string;
+  likerBrokerCode: string;
+  likerBrokerName: string;
+  kind: "normal" | "boss";
+  createdAt: string;
 }
 
 export interface FeedFilterState {

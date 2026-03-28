@@ -1,4 +1,4 @@
-import { Handshake, Plus, Search } from "lucide-react";
+import { Handshake, Plus, Search, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -141,6 +141,7 @@ export function BrokerWorkspacePane({
                   (!!currentBrokerCode && entry.brokerCode === currentBrokerCode);
                 const hasIncomingLikes = isOwnEntry && (entry.likeCount ?? 0) > 0;
                 const hasOutgoingLike = !isOwnEntry && !!entry.likedByMe;
+                const hasBossMatchLike = !!entry.hasBossMatchLike;
 
                 return (
                   <Button
@@ -163,7 +164,9 @@ export function BrokerWorkspacePane({
                           role={isOwnEntry || entry.likedByMe ? undefined : "button"}
                           tabIndex={isOwnEntry || entry.likedByMe ? -1 : 0}
                           className={`ml-auto inline-flex h-6 min-w-[36px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
-                            hasIncomingLikes
+                            hasBossMatchLike
+                              ? "cursor-default border-sky-400/80 bg-sky-500/20 text-sky-300"
+                              : hasIncomingLikes
                               ? "cursor-default border-emerald-400/80 bg-emerald-500/25 text-emerald-300"
                               : hasOutgoingLike
                                 ? "cursor-default border-amber-400/80 bg-amber-500/20 text-amber-300"
@@ -190,8 +193,8 @@ export function BrokerWorkspacePane({
                           }}
                           aria-label={`Like ${entry.type}`}
                         >
-                          <Handshake className="h-3.5 w-3.5" />
-                          {hasIncomingLikes ? <span>{entry.likeCount ?? 0}</span> : null}
+                          {hasBossMatchLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
+                          {!hasBossMatchLike && hasIncomingLikes ? <span>{entry.likeCount ?? 0}</span> : null}
                         </span>
                       ) : null}
                     </div>

@@ -299,6 +299,10 @@ export function SeaBrokerageMonitorPage() {
           <ContextualMatchingPanel
             entries={filteredEntries}
             selectedEntry={selectedEntry}
+            monitorAuthToken={session.monitorAuthToken}
+            canLikeMatches={session.canCreateEntries}
+            currentBrokerCode={session.authorProfile?.brokerCode ?? null}
+            onRequireAuth={() => setTelegramAuthOpen(true)}
           />
           <BrokerWorkspacePane
             title="Trades"

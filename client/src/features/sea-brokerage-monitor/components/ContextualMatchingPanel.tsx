@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
-import { ExternalLink } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ExternalLink, Handshake, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -19,12 +21,18 @@ import {
   formatEntryCommodityCompact,
   formatEntryPriceRange,
 } from "../services/entryFormatting.service";
+import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
 import { getPortPlaceDisplayLabel } from "../services/displayStandards";
-import type { BrokerageEntry, MatchSuggestion } from "../types";
+import { apiRequest } from "@/lib/queryClient";
+import type { BrokerageEntry, MatchLike, MatchSuggestion } from "../types";
 
 interface ContextualMatchingPanelProps {
   entries: BrokerageEntry[];
   selectedEntry: BrokerageEntry | null;
+  monitorAuthToken?: string | null;
+  canLikeMatches?: boolean;
+  currentBrokerCode?: string | null;
+  onRequireAuth?: () => void;
 }
 
 type MatchingFocusState = {
@@ -38,6 +46,7 @@ const defaultFocusState: MatchingFocusState = {
   basis: "all",
   deliveryPlace: "all",
 };
+const BOSS_BROKER_CODES = new Set(["OS", "VZH", "ABV"]);
 
 function buildCompactCounterpartyLine(entry: BrokerageEntry) {
   return buildCompactCanonicalView(entry);
@@ -49,11 +58,93 @@ function getLatestMatchTimestamp(suggestion: MatchSuggestion) {
   return Math.max(bidTime, offerTime);
 }
 
+type CompareRow = {
+  label: string;
+  bidValue: string;
+  offerValue: string;
+  equal: boolean;
+};
+
+function normalizeCompareValue(value: string) {
+  return value.trim().replace(/\s+/g, " ").toUpperCase();
+}
+
+function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
+  const bid = suggestion.bidEntry;
+  const offer = suggestion.offerEntry;
+
+  const rows: CompareRow[] = [
+    {
+      label: "Counterparty",
+      bidValue: bid.buyerName?.trim() || "Not specified",
+      offerValue: offer.sellerName?.trim() || "Not specified",
+      equal: normalizeCompareValue(bid.buyerName?.trim() || "") === normalizeCompareValue(offer.sellerName?.trim() || ""),
+    },
+    {
+      label: "Commodity",
+      bidValue: bid.commodityLabel,
+      offerValue: offer.commodityLabel,
+      equal: normalizeCompareValue(bid.commodity) === normalizeCompareValue(offer.commodity),
+    },
+    {
+      label: "Quantity / Tolerance",
+      bidValue: `${bid.quantityMt ?? bid.volumeFrom} MT ${bid.tolerancePct != null ? `(+/- ${bid.tolerancePct}%)` : ""}`.trim(),
+      offerValue: `${offer.quantityMt ?? offer.volumeFrom} MT ${offer.tolerancePct != null ? `(+/- ${offer.tolerancePct}%)` : ""}`.trim(),
+      equal:
+        (bid.quantityMt ?? bid.volumeFrom) === (offer.quantityMt ?? offer.volumeFrom) &&
+        (bid.tolerancePct ?? null) === (offer.tolerancePct ?? null),
+    },
+    {
+      label: "Basis / Place",
+      bidValue: `${bid.basis} ${getPortPlaceDisplayLabel(bid.destinationPortCode || "")}`,
+      offerValue: `${offer.basis} ${getPortPlaceDisplayLabel(offer.destinationPortCode || "")}`,
+      equal:
+        normalizeCompareValue(bid.basis) === normalizeCompareValue(offer.basis) &&
+        normalizeCompareValue(bid.destinationPortCode || bid.destinationPort) ===
+          normalizeCompareValue(offer.destinationPortCode || offer.destinationPort),
+    },
+    {
+      label: "Transport",
+      bidValue: bid.transportType.toUpperCase(),
+      offerValue: offer.transportType.toUpperCase(),
+      equal: normalizeCompareValue(bid.transportType) === normalizeCompareValue(offer.transportType),
+    },
+    {
+      label: "Period",
+      bidValue: bid.periodLabel,
+      offerValue: offer.periodLabel,
+      equal: normalizeCompareValue(bid.periodLabel) === normalizeCompareValue(offer.periodLabel),
+    },
+    {
+      label: "Price",
+      bidValue: `${bid.price ?? bid.priceFrom ?? "n/a"} ${bid.currency}`,
+      offerValue: `${offer.price ?? offer.priceFrom ?? "n/a"} ${offer.currency}`,
+      equal:
+        (bid.price ?? bid.priceFrom ?? null) === (offer.price ?? offer.priceFrom ?? null) &&
+        normalizeCompareValue(bid.currency) === normalizeCompareValue(offer.currency),
+    },
+    {
+      label: "Payment terms",
+      bidValue: bid.paymentTerms || "Not specified",
+      offerValue: offer.paymentTerms || "Not specified",
+      equal: normalizeCompareValue(bid.paymentTerms || "") === normalizeCompareValue(offer.paymentTerms || ""),
+    },
+  ];
+
+  return rows;
+}
+
 export function ContextualMatchingPanel({
   entries,
   selectedEntry,
+  monitorAuthToken = null,
+  canLikeMatches = false,
+  currentBrokerCode = null,
+  onRequireAuth,
 }: ContextualMatchingPanelProps) {
+  const queryClient = useQueryClient();
   const [detailEntry, setDetailEntry] = useState<BrokerageEntry | null>(null);
+  const [compareSuggestion, setCompareSuggestion] = useState<MatchSuggestion | null>(null);
   const [focus, setFocus] = useState<MatchingFocusState>(defaultFocusState);
   const matchableEntries = useMemo(
     () => entries.filter((entry) => entry.type === "bid" || entry.type === "offer"),
@@ -118,6 +209,50 @@ export function ContextualMatchingPanel({
       })
       .slice(0, 12);
   }, [focus, matchableEntries, selectedEntry]);
+
+  const { data: matchLikes = [] } = useQuery<MatchLike[]>({
+    queryKey: ["/api/sea-brokerage-monitor/matches/likes", monitorAuthToken],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/sea-brokerage-monitor/matches/likes", undefined, {
+        headers: buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken),
+      });
+      return response.json();
+    },
+  });
+
+  const likesByMatch = useMemo(() => {
+    const map = new Map<string, MatchLike[]>();
+    for (const like of matchLikes) {
+      const current = map.get(like.matchId);
+      if (current) {
+        current.push(like);
+      } else {
+        map.set(like.matchId, [like]);
+      }
+    }
+    return map;
+  }, [matchLikes]);
+
+  async function handleLikeMatch(suggestion: MatchSuggestion) {
+    if (!canLikeMatches) {
+      onRequireAuth?.();
+      return;
+    }
+    try {
+      await fetch(`/api/sea-brokerage-monitor/matches/${suggestion.id}/likes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken),
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["/api/sea-brokerage-monitor/matches/likes", monitorAuthToken],
+      });
+    } catch {
+      // Keep matching interactions resilient to transient relay/API hiccups.
+    }
+  }
 
   return (
     <>
@@ -249,6 +384,21 @@ export function ContextualMatchingPanel({
                     !!selectedEntry &&
                     (suggestion.bidEntryId === selectedEntry.id ||
                       suggestion.offerEntryId === selectedEntry.id);
+                  const matchLikesList = likesByMatch.get(suggestion.id) ?? [];
+                  const brokerCodeUpper = String(currentBrokerCode || "").toUpperCase();
+                  const bidIsMine = !!brokerCodeUpper && suggestion.bidEntry.brokerCode.toUpperCase() === brokerCodeUpper;
+                  const offerIsMine =
+                    !!brokerCodeUpper && suggestion.offerEntry.brokerCode.toUpperCase() === brokerCodeUpper;
+                  const isMine = bidIsMine || offerIsMine;
+                  const hasOutgoingLike =
+                    !!brokerCodeUpper &&
+                    matchLikesList.some((like) => like.likerBrokerCode.toUpperCase() === brokerCodeUpper);
+                  const hasIncomingLike =
+                    isMine &&
+                    matchLikesList.some((like) => like.likerBrokerCode.toUpperCase() !== brokerCodeUpper);
+                  const hasBossLike = matchLikesList.some((like) => like.kind === "boss");
+                  const canLikeThisMatch =
+                    canLikeMatches && (!!brokerCodeUpper && (isMine || BOSS_BROKER_CODES.has(brokerCodeUpper)));
                   return (
                     <div
                       key={suggestion.id}
@@ -256,20 +406,58 @@ export function ContextualMatchingPanel({
                         isRelated ? "bg-muted/20" : ""
                       }`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => setDetailEntry(suggestion.bidEntry)}
-                        className="mt-0.5 min-w-0 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px]"
-                      >
-                        Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDetailEntry(suggestion.offerEntry)}
-                        className="mt-0.5 min-w-0 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground transition-colors hover:text-primary sm:text-[11px]"
-                      >
-                        Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
-                      </button>
+                      <div className="flex items-start gap-2">
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setDetailEntry(suggestion.bidEntry)}
+                            className={`mt-0.5 min-w-0 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 transition-colors hover:text-primary sm:text-[11px] ${
+                              bidIsMine ? "text-emerald-300" : "text-foreground"
+                            }`}
+                          >
+                            Bid: {buildCompactCounterpartyLine(suggestion.bidEntry)}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDetailEntry(suggestion.offerEntry)}
+                            className={`mt-0.5 min-w-0 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 transition-colors hover:text-primary sm:text-[11px] ${
+                              offerIsMine ? "text-emerald-300" : "text-foreground"
+                            }`}
+                          >
+                            Offer: {buildCompactCounterpartyLine(suggestion.offerEntry)}
+                          </button>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-5.5 px-1.5 text-[9.5px] sm:h-6 sm:text-[10px]"
+                            onClick={() => setCompareSuggestion(suggestion)}
+                          >
+                            COMPARE
+                          </Button>
+                          <button
+                            type="button"
+                            disabled={!canLikeThisMatch || hasOutgoingLike}
+                            onClick={() => void handleLikeMatch(suggestion)}
+                            className={`inline-flex h-6 min-w-[32px] items-center justify-center rounded border px-1 ${
+                              hasBossLike
+                                ? "border-sky-400/80 bg-sky-500/20 text-sky-300"
+                                : hasOutgoingLike
+                                  ? "cursor-default border-amber-400/80 bg-amber-500/20 text-amber-300"
+                                  : hasIncomingLike
+                                    ? "border-emerald-400/80 bg-emerald-500/20 text-emerald-300"
+                                    : canLikeThisMatch
+                                      ? "border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
+                                      : "cursor-default border-border/60 bg-background/40 text-muted-foreground/60"
+                            }`}
+                            aria-label="Like match"
+                          >
+                            {hasBossLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
@@ -286,6 +474,39 @@ export function ContextualMatchingPanel({
           if (!open) setDetailEntry(null);
         }}
       />
+
+      <Dialog open={!!compareSuggestion} onOpenChange={(open) => !open && setCompareSuggestion(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Match compare</DialogTitle>
+          </DialogHeader>
+          {compareSuggestion ? (
+            <div className="space-y-2">
+              {buildCompareRows(compareSuggestion).map((row) => (
+                <div key={row.label} className="grid gap-1.5 rounded-md border border-border/60 p-2 sm:grid-cols-12 sm:items-center">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:col-span-2">
+                    {row.label}
+                  </div>
+                  <div
+                    className={`rounded border px-2 py-1 text-[11px] sm:col-span-5 ${
+                      row.equal ? "border-border/60 text-foreground" : "border-amber-400/60 text-amber-200"
+                    }`}
+                  >
+                    BID: {row.bidValue}
+                  </div>
+                  <div
+                    className={`rounded border px-2 py-1 text-[11px] sm:col-span-5 ${
+                      row.equal ? "border-border/60 text-foreground" : "border-sky-400/60 text-sky-200"
+                    }`}
+                  >
+                    OFFER: {row.offerValue}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
