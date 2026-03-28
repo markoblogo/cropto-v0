@@ -32,7 +32,7 @@ export function MonitorToolbar({
       <div className="flex min-w-0 flex-col gap-1 sm:gap-1.5">
         <div className="flex min-w-0 flex-wrap items-center gap-1 sm:gap-1.5">
           <div className="mr-auto min-w-0 text-[8.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:text-[11px] sm:tracking-[0.18em]">
-            Sea Brokerage Monitor
+            Spike Brokerage Monitor
           </div>
         </div>
 

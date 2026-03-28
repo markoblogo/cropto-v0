@@ -144,7 +144,7 @@ export function ContextualMatchingPanel({
       <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/60 px-1.5 py-0.75 sm:px-3 sm:py-1.5">
           <div className="flex min-w-0 flex-wrap items-center gap-0.5 sm:gap-1.5">
-            <CardTitle className="mr-auto text-[11.5px] sm:text-[13px]">Best Current Matches</CardTitle>
+            <CardTitle className="mr-auto text-[11.5px] sm:text-[13px]">Matches</CardTitle>
             <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
             </div>
