@@ -7705,8 +7705,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       let liked = false;
+      let alreadyLiked = false;
       if (existingIndex >= 0) {
-        likes.splice(existingIndex, 1);
+        liked = true;
+        alreadyLiked = true;
       } else {
         likes.push({
           entryId,
@@ -7720,11 +7722,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         liked = true;
       }
 
-      await writeSeaBrokerageEntryLikes(likes);
+      if (!alreadyLiked) {
+        await writeSeaBrokerageEntryLikes(likes);
+      }
 
       let ownerDmDelivered = false;
       let likerDmDelivered = false;
-      if (liked) {
+      if (liked && !alreadyLiked) {
         const ownerChat = targetEntry.brokerTelegramUserId
           ? String(targetEntry.brokerTelegramUserId)
           : targetEntry.brokerTelegramUsername
@@ -7762,7 +7766,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const likeCount = likes.filter((like) => like.entryId === entryId).length;
-      return res.status(201).json({ liked, likeCount, ownerDmDelivered, likerDmDelivered });
+      return res.status(201).json({
+        liked,
+        alreadyLiked,
+        likeCount,
+        ownerDmDelivered,
+        likerDmDelivered,
+      });
     } catch (error: any) {
       console.error("Error toggling sea brokerage entry like:", error);
       return res.status(500).json({ error: "Failed to toggle like" });

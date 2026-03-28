@@ -158,18 +158,24 @@ export function BrokerWorkspacePane({
                       </div>
                       {likesEnabled && (entry.type === "bid" || entry.type === "offer") && !isOwnEntry ? (
                         <span
-                          role="button"
-                          tabIndex={0}
+                          role={entry.likedByMe ? undefined : "button"}
+                          tabIndex={entry.likedByMe ? -1 : 0}
                           className={`ml-auto inline-flex h-6 min-w-[48px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
                             entry.likedByMe
-                              ? "border-primary/60 bg-primary/25 text-primary"
-                              : "border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
+                              ? "cursor-default border-primary/60 bg-primary/25 text-primary"
+                              : "cursor-pointer border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
                           }`}
                           onClick={(event) => {
+                            if (entry.likedByMe) {
+                              return;
+                            }
                             event.stopPropagation();
                             onToggleLike?.(entry);
                           }}
                           onKeyDown={(event) => {
+                            if (entry.likedByMe) {
+                              return;
+                            }
                             if (event.key === "Enter" || event.key === " ") {
                               event.preventDefault();
                               event.stopPropagation();
