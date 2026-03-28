@@ -36,6 +36,14 @@ interface StandardizedFeedCardProps {
 type FeedSecondaryView = "tape" | "archive" | "analytics";
 
 function TapeTypeBadge({ type }: { type: BrokerageEntry["type"] }) {
+  if (type === "trade") {
+    return (
+      <span className="shrink-0 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
+        TRADE IDEA
+      </span>
+    );
+  }
+
   return (
     <span
       className={
@@ -55,7 +63,8 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
   const bidCount = entries.filter((entry) => entry.type === "bid").length;
-  const offerCount = entries.length - bidCount;
+  const offerCount = entries.filter((entry) => entry.type === "offer").length;
+  const tradeCount = entries.filter((entry) => entry.type === "trade").length;
 
   return (
     <>
@@ -65,12 +74,15 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
             <div className="min-w-0">
               <CardTitle className="text-lg">Broker Tape</CardTitle>
               <CardDescription>
-                Unified chronological tape of standardized BID and OFFER ideas.
+                Unified chronological tape of standardized BID, OFFER, and TRADE ideas.
               </CardDescription>
             </div>
 
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Badge variant="outline">{entries.length} visible</Badge>
+              <Badge variant="outline">BIDs {bidCount}</Badge>
+              <Badge variant="outline">OFFERS {offerCount}</Badge>
+              <Badge variant="outline">TRADES {tradeCount}</Badge>
               <Button variant="ghost" size="sm" onClick={() => exportEntriesToCsv(entries)} disabled={entries.length === 0}>
                 <Download className="mr-2 h-4 w-4" />
                 CSV
@@ -98,7 +110,7 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
               <div className="p-6">
                 <MonitorEmptyState
                   title="No tape entries"
-                  description="Adjust filters, reseed demo data, or create a new BID or OFFER to populate the broker tape."
+                  description="Adjust filters or create a new BID, OFFER, or TRADE to populate the broker tape."
                 />
               </div>
             ) : (
