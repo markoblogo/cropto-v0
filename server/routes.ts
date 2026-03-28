@@ -172,6 +172,13 @@ const seaBrokerageTelegramMagicLinkConsumeSchema = z.object({
   token: z.string().trim().min(16),
 });
 
+const seaBrokerageDevSimulateLikeSchema = z.object({
+  entryId: z.string().trim().min(1),
+  likerBrokerCode: z.string().trim().min(1).max(24).optional(),
+  likerTelegramUsername: z.string().trim().min(1).max(64).optional(),
+  notifyDm: z.coerce.boolean().optional().default(false),
+});
+
 const seaBrokerageLocationCreateSchema = z.object({
   displayLabel: z.string().trim().min(2).max(60),
   countryCode: z.string().trim().length(2),
@@ -7776,6 +7783,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error toggling sea brokerage entry like:", error);
       return res.status(500).json({ error: "Failed to toggle like" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/dev/simulate-incoming-like", async (req: AuthRequest, res) => {
+    try {
+      const configuredSecret = String(process.env.SEA_BROKERAGE_DEV_SIM_SECRET || "").trim();
+      if (!configuredSecret) {
+        return res.status(404).json({ error: "Dev simulation endpoint is disabled." });
+      }
+
+      const requestSecret = String(
+        req.header("x-sea-brokerage-dev-secret") ||
+          (typeof req.body?.secret === "string" ? req.body.secret : "") ||
+          "",
+      ).trim();
+      if (!requestSecret || requestSecret !== configuredSecret) {
+        return res.status(403).json({ error: "Invalid dev simulation secret." });
+      }
+
+      const parsed = seaBrokerageDevSimulateLikeSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const { entryId, likerBrokerCode, likerTelegramUsername, notifyDm } = parsed.data;
+      const entries = await storage.listSeaBrokerageEntries();
+      const targetEntry = entries.find((entry) => entry.id === entryId);
+      if (!targetEntry) {
+        return res.status(404).json({ error: "Entry not found." });
+      }
+      if (targetEntry.type !== "bid" && targetEntry.type !== "offer") {
+        return res.status(400).json({ error: "Likes are allowed only for BID/OFFER entries." });
+      }
+
+      const allowlist = (await listSeaBrokerageBrokerAllowlist()).filter((broker) => broker.isActive);
+      const normalizedCode = likerBrokerCode?.toLowerCase();
+      const normalizedUsername = likerTelegramUsername?.replace(/^@+/, "").toLowerCase();
+      const likerProfile =
+        allowlist.find(
+          (broker) =>
+            (!!normalizedCode && broker.brokerCode.toLowerCase() === normalizedCode) ||
+            (!!normalizedUsername &&
+              String(broker.telegramUsername || "")
+                .replace(/^@+/, "")
+                .toLowerCase() === normalizedUsername),
+        ) ||
+        allowlist.find((broker) => broker.brokerCode.toLowerCase() !== targetEntry.brokerCode.toLowerCase());
+
+      if (!likerProfile) {
+        return res.status(404).json({ error: "No eligible broker profile found for simulation." });
+      }
+      if (likerProfile.brokerCode.toLowerCase() === targetEntry.brokerCode.toLowerCase()) {
+        return res.status(400).json({ error: "Simulated liker cannot be the entry owner." });
+      }
+
+      const likerBrokerUserId =
+        likerProfile.telegramUserId ||
+        likerProfile.telegramUsername ||
+        likerProfile.authUserId ||
+        `broker:${likerProfile.brokerCode.toLowerCase()}`;
+
+      const likes = await readSeaBrokerageEntryLikes();
+      const existing = likes.find(
+        (like) =>
+          like.entryId === entryId &&
+          like.brokerUserId.toLowerCase() === likerBrokerUserId.toLowerCase(),
+      );
+      if (existing) {
+        const likeCount = likes.filter((like) => like.entryId === entryId).length;
+        return res.status(200).json({
+          ok: true,
+          alreadyLiked: true,
+          likeCount,
+          targetEntryId: entryId,
+          simulatedLikerBrokerCode: likerProfile.brokerCode,
+        });
+      }
+
+      likes.push({
+        entryId,
+        brokerUserId: likerBrokerUserId,
+        brokerCode: likerProfile.brokerCode,
+        brokerName: likerProfile.brokerName,
+        telegramUsername: likerProfile.telegramUsername,
+        telegramUserId: likerProfile.telegramUserId,
+        createdAt: new Date().toISOString(),
+      });
+      await writeSeaBrokerageEntryLikes(likes);
+
+      let ownerDmDelivered = false;
+      let likerDmDelivered = false;
+      if (notifyDm) {
+        const ownerChat = targetEntry.brokerTelegramUserId
+          ? String(targetEntry.brokerTelegramUserId)
+          : targetEntry.brokerTelegramUsername
+            ? `@${targetEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null;
+        const likerChat = likerProfile.telegramUserId
+          ? String(likerProfile.telegramUserId)
+          : likerProfile.telegramUsername
+            ? `@${likerProfile.telegramUsername.replace(/^@+/, "")}`
+            : null;
+        const canonical = targetEntry.canonicalView;
+        const ownerMessage = `#like_idea 👍\n${likerProfile.brokerCode} liked your ${targetEntry.type.toUpperCase()}:\n${canonical}`;
+        const likerMessage = `#like_idea 👍\nYou liked ${targetEntry.type.toUpperCase()} by ${targetEntry.brokerCode}:\n${canonical}`;
+
+        if (ownerChat) {
+          const dm = await sendSeaBrokerageTelegramDirectMessage(ownerChat, ownerMessage);
+          ownerDmDelivered = dm.ok;
+        }
+        if (likerChat) {
+          const dm = await sendSeaBrokerageTelegramDirectMessage(likerChat, likerMessage);
+          likerDmDelivered = dm.ok;
+        }
+      }
+
+      const likeCount = likes.filter((like) => like.entryId === entryId).length;
+      return res.status(201).json({
+        ok: true,
+        likeCount,
+        targetEntryId: entryId,
+        simulatedLikerBrokerCode: likerProfile.brokerCode,
+        ownerDmDelivered,
+        likerDmDelivered,
+      });
+    } catch (error: any) {
+      console.error("Error simulating sea brokerage incoming like:", error);
+      return res.status(500).json({ error: "Failed to simulate incoming like" });
     }
   });
 
