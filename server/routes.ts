@@ -7886,10 +7886,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const brokerCode = authorizedBroker.brokerCode.toUpperCase();
-      const isBoss = SEA_BROKERAGE_BOSS_CODES.has(brokerCode);
       const isParticipant =
         match.bidEntry.brokerCode.toUpperCase() === brokerCode ||
         match.offerEntry.brokerCode.toUpperCase() === brokerCode;
+      const isBoss = SEA_BROKERAGE_BOSS_CODES.has(brokerCode) && !isParticipant;
       if (!isParticipant && !isBoss) {
         return res.status(403).json({ error: "Only match participants or boss brokers can like this match" });
       }
