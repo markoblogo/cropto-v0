@@ -127,6 +127,16 @@ export function ContextualMatchingPanel({
             <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
               MATCHES
             </CardTitle>
+            <Button
+              type="button"
+              size="sm"
+              aria-hidden="true"
+              tabIndex={-1}
+              disabled
+              className="invisible h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px]"
+            >
+              Placeholder
+            </Button>
             <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
             </div>

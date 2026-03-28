@@ -34,6 +34,7 @@ interface BrokerWorkspacePaneProps {
   createActionLabel?: string;
   onCreateAction?: () => void;
   createActionVariant?: "default" | "secondary";
+  createActionClassName?: string;
 }
 
 export function BrokerWorkspacePane({
@@ -49,6 +50,7 @@ export function BrokerWorkspacePane({
   createActionLabel,
   onCreateAction,
   createActionVariant = "default",
+  createActionClassName,
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -64,7 +66,7 @@ export function BrokerWorkspacePane({
                 size="sm"
                 variant={createActionVariant}
                 onClick={onCreateAction}
-                className="h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px]"
+                className={`h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px] ${createActionClassName ?? ""}`}
               >
                 <Plus className="mr-1 h-3 w-3" />
                 {createActionLabel}
