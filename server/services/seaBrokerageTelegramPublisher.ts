@@ -92,21 +92,33 @@ function formatDateDottedShort(value: string) {
 }
 
 function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
-  if (entry.periodStart && entry.periodEnd) {
-    return `${formatDateDottedShort(entry.periodStart)}-${formatDateDottedShort(entry.periodEnd)}`;
-  }
   const rawLabel = (entry.periodLabel || "").trim().toUpperCase();
   if (!rawLabel) return "OPEN";
   if (rawLabel === "SPOT" || rawLabel === "PROMPT") return rawLabel;
 
   const start = entry.periodStart ? new Date(entry.periodStart) : null;
-  if (start && !Number.isNaN(start.getTime())) {
-    const month = start.toLocaleString("en-US", { month: "long" }).toUpperCase();
-    const year = String(start.getFullYear()).slice(-2);
-    if (rawLabel.startsWith("1H")) return `1H ${month} ${year}`;
-    if (rawLabel.startsWith("2H")) return `2H ${month} ${year}`;
-    if (rawLabel.startsWith("LH")) return `LH ${month} ${year}`;
-    if (rawLabel === "MONTH" || rawLabel.endsWith("MONTH")) return `${month} ${year}`;
+  const hasValidStart = !!start && !Number.isNaN(start.getTime());
+  const monthLong = hasValidStart
+    ? start.toLocaleString("en-US", { month: "long" }).toUpperCase()
+    : null;
+  const yearShort = hasValidStart ? String(start.getFullYear()).slice(-2) : null;
+
+  if (entry.periodType === "range" && entry.periodStart && entry.periodEnd) {
+    return `${formatDateDottedShort(entry.periodStart)}-${formatDateDottedShort(entry.periodEnd)}`;
+  }
+
+  if (entry.periodType === "window" || entry.periodType === "month") {
+    if (rawLabel.startsWith("1H")) return monthLong && yearShort ? `1H ${monthLong} ${yearShort}` : "1H";
+    if (rawLabel.startsWith("2H")) return monthLong && yearShort ? `2H ${monthLong} ${yearShort}` : "2H";
+    if (rawLabel.startsWith("LH")) return monthLong && yearShort ? `LH ${monthLong} ${yearShort}` : "LH";
+    if (monthLong && yearShort) return `${monthLong} ${yearShort}`;
+  }
+
+  if (hasValidStart && monthLong && yearShort) {
+    if (rawLabel.startsWith("1H")) return `1H ${monthLong} ${yearShort}`;
+    if (rawLabel.startsWith("2H")) return `2H ${monthLong} ${yearShort}`;
+    if (rawLabel.startsWith("LH")) return `LH ${monthLong} ${yearShort}`;
+    if (rawLabel === "MONTH" || rawLabel.endsWith("MONTH")) return `${monthLong} ${yearShort}`;
   }
 
   return rawLabel;
