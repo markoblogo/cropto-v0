@@ -1,83 +1,119 @@
 [
   {
-    "id": "R3",
-    "title": "Sunflower Oil \u2018Vanishes\u2019 as Ukraine War Grinds On",
-    "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
-    "subreddit": "autotldr",
-    "date": "2022-04-30",
-    "why_relevant": "Mentions supply-chain disruption in the UK due to Ukraine war and sunflower oil shortages.",
+    "id": "R1",
+    "title": "Financial Market Update - Tuesday, March 17, 2026 - Top 1 Stories You Need to Know",
+    "url": "https://www.reddit.com/r/financialbooklet/comments/1rvwsvj/financial_market_update_tuesday_march_17_2026_top/",
+    "subreddit": "financialbooklet",
+    "date": "2026-03-17",
+    "why_relevant": "Discusses corn futures, export outlook, and cash corn prices as part of a market outlook update.",
     "relevance": 0.92
   },
   {
-    "id": "R5",
-    "title": "Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
-    "url": "https://www.reddit.com/r/ValueInvesting/comments/1km0ka0",
-    "subreddit": "ValueInvesting",
-    "date": "2025-05-13",
-    "why_relevant": "Talks about Ukraine sunflower oil production and export blockage through Black Sea ports, directly relevant to logistics.",
-    "relevance": 0.89
+    "id": "R4",
+    "title": "USDA's reputation suffers after massive revisions in US corn acres",
+    "url": "https://www.reddit.com/r/fednews/comments/1r1y3s9/usdas_reputation_suffers_after_massive_revisions/",
+    "subreddit": "fednews",
+    "date": "2026-02-11",
+    "why_relevant": "A second matching Reddit thread surfaced for the same USDA corn acreage revision discussion.",
+    "relevance": 0.88
   },
   {
-    "id": "R4",
-    "title": "Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each",
-    "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7",
-    "subreddit": "ukraine",
-    "date": "2022-10-17",
-    "why_relevant": "Discusses sunflower oil storage infrastructure in Ukraine, relevant to logistics and transport/storage impacts.",
+    "id": "R3",
+    "title": "Corn futures plunge as USDA reports record 17 billion bushel crop",
+    "url": "https://www.reddit.com/r/farming/comments/1qbtflc/corn_futures_plunge_as_usda_reports_record_17/",
+    "subreddit": "farming",
+    "date": "2026-01-13",
+    "why_relevant": "Highly relevant corn market thread centered on USDA supply estimates and corn futures.",
+    "relevance": 0.97
+  },
+  {
+    "id": "R1",
+    "title": "USDA's reputation suffers after massive revisions in US corn acres",
+    "url": "https://www.reddit.com/r/fednews/comments/1r1y3s9/usdas_reputation_suffers_after_massive_revisions/",
+    "subreddit": "fednews",
+    "date": "2026-02-11",
+    "why_relevant": "Discusses USDA corn acreage revisions, USDA data reliability, and implications for corn markets.",
     "relevance": 0.9
   },
   {
     "id": "R2",
-    "title": "Sunflower oil prices fall as Ukraine ships stock to India",
-    "url": "https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy",
-    "subreddit": "GeopoliticsIndia",
-    "date": "2023-06-14",
-    "why_relevant": "Same article and discussion, focused on Ukraine's sunflower oil shipments and trade logistics.",
-    "relevance": 0.95
+    "title": "US farmers to sow more soybeans in 2026, less corn, USDA says",
+    "url": "https://www.reddit.com/r/LeopardsAteMyFarm/comments/1r99lks/us_farmers_to_sow_more_soybeans_in_2026_less_corn/",
+    "subreddit": "LeopardsAteMyFarm",
+    "date": "2026-02-20",
+    "why_relevant": "Directly about USDA crop outlook and reduced corn planting expectations.",
+    "relevance": 0.88
   },
   {
-    "id": "R1",
-    "title": "Sunflower oil prices fall as Ukraine ships stock to India",
-    "url": "https://www.reddit.com/r/worldnews/comments/14997mm",
-    "subreddit": "worldnews",
-    "date": "2023-06-14",
-    "why_relevant": "Discusses Ukraine moving sunflower oil into India, which relates to export/logistics and market flows.",
+    "id": "R2",
+    "title": "Financial Market Update - Sunday, February 22, 2026 - Top 4 Stories You Need to Know",
+    "url": "https://www.reddit.com/r/financialbooklet/comments/1rbjscn/financial_market_update_sunday_february_22_2026/",
+    "subreddit": "financialbooklet",
+    "date": "2026-02-22",
+    "why_relevant": "Includes a corn price rally and broader corn market commentary.",
+    "relevance": 0.9
+  },
+  {
+    "id": "R3",
+    "title": "Financial Market Update - Monday, March 2, 2026 - Top 2 Stories You Need to Know",
+    "url": "https://www.reddit.com/r/financialbooklet/comments/1rihcym/financial_market_update_monday_march_2_2026_top_2/",
+    "subreddit": "financialbooklet",
+    "date": "2026-03-02",
+    "why_relevant": "Mentions corn futures, ethanol demand, weaker USD, and USDA crop outlook.",
+    "relevance": 0.89
+  },
+  {
+    "id": "R6",
+    "title": "Corn Yields at 181 Make Sense. Corn Overview to Start 2025 Campaign.",
+    "url": "https://www.reddit.com/r/Agriculture/comments/1klhdmx/",
+    "subreddit": "Agriculture",
+    "date": "2025-05-13",
+    "why_relevant": "Contains an explicit corn overview, yield expectations, demand, and price outlook.",
+    "relevance": 0.98
+  },
+  {
+    "id": "R4",
+    "title": "Since MARKETS DON\u2019T EXIST for corn yields of this size, corn prices, which are already at five-year lows, will only continue to plummet.",
+    "url": "https://www.reddit.com/r/Agriculture/comments/1nbod81/since_markets_dont_exist_for_corn_yields_of_this/",
+    "subreddit": "Agriculture",
+    "date": "2025-09-08",
+    "why_relevant": "Directly discusses corn prices, yields, and market outlook.",
+    "relevance": 0.97
+  },
+  {
+    "id": "R5",
+    "title": "A bearish November WASDE led by larger corn yields & ending stocks.",
+    "url": "https://www.reddit.com/r/Agriculture/comments/17rps26/",
+    "subreddit": "Agriculture",
+    "date": "2023-11-09",
+    "why_relevant": "Commodity market discussion focused on corn yields, ending stocks, and price outlook.",
     "relevance": 0.96
   },
   {
     "id": "R7",
-    "title": "Crude and Refined Sunflower Oil",
-    "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
-    "subreddit": "u_lt10plimited",
-    "date": "2022-02-10",
-    "why_relevant": "Advertises sunflower oil sourcing from Ukraine and Russia and mentions bulk supply chains.",
-    "relevance": 0.72
-  },
-  {
-    "id": "R9",
-    "title": "Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f",
-    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
-    "subreddit": "u_Sunflower-Oil-Offers",
-    "date": "2022-10-20",
-    "why_relevant": "Contains sunflower oil sales with FOB logistics and Ukraine origin.",
-    "relevance": 0.69
-  },
-  {
-    "id": "R6",
-    "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
-    "url": "https://www.reddit.com/r/UkraineRussiaReport/comments/1pvw1c1/ua_pov_the_scenery_at_one_of_ukraines_largest/",
-    "subreddit": "UkraineRussiaReport",
-    "date": "2025-12-26",
-    "why_relevant": "About a major sunflower oil storage facility in Ukraine and damage affecting storage/logistics.",
+    "title": "Corn",
+    "url": "https://www.reddit.com/r/Vitards/comments/n8m21q",
+    "subreddit": "Vitards",
+    "date": "2021-05-10",
+    "why_relevant": "Investment discussion of corn exposure via ETFs, futures, and related equities.",
     "relevance": 0.88
   },
   {
-    "id": "R8",
-    "title": "100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.",
-    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
-    "subreddit": "u_Sunflower-Oil-Offers",
-    "date": "2022-10-11",
-    "why_relevant": "Mentions Ukrainian origin, FOB locations, and transport/logistics details for sunflower oil.",
+    "id": "R9",
+    "title": "Corn Gluten Feed Market 2026: Report Highlights the Competitive Scenario with Impact of Drivers and Challenges",
+    "url": "https://www.reddit.com/r/u_pmrfood/comments/gndneg",
+    "subreddit": "u_pmrfood",
+    "date": "2020-05-01",
+    "why_relevant": "Corn market report thread related to feed demand and regional outlook.",
     "relevance": 0.7
+  },
+  {
+    "id": "R8",
+    "title": "Corn Based Ingredients Market 2026 Provides Growth Forecast and Upcoming Trends Opportunities by Types, Development Factors",
+    "url": "https://www.reddit.com/r/u_pmrfood/comments/g17lv7",
+    "subreddit": "u_pmrfood",
+    "date": "2020-05-01",
+    "why_relevant": "Market-oriented corn discussion, though more about ingredients than futures or grain prices.",
+    "relevance": 0.72
   }
 ]

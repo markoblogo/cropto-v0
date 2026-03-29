@@ -4,7 +4,7 @@
     "from": "2026-02-27",
     "to": "2026-03-29"
   },
-  "generated_at": "2026-03-29T05:15:44.048386+00:00",
+  "generated_at": "2026-03-29T07:11:20.945867+00:00",
   "mode": "all",
   "openai_model_used": "gpt-5.4-mini",
   "xai_model_used": null,
@@ -149,10 +149,10 @@
   ],
   "web": [
     {
-      "id": "W4",
-      "title": "[PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...",
-      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
-      "source_domain": "ec.europa.eu",
+      "id": "W3",
+      "title": "(PDF) Agricultural exports of Ukraine in the conditions of war.",
+      "url": "https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war",
+      "source_domain": "researchgate.net",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -166,10 +166,27 @@
       "score": 3
     },
     {
-      "id": "W13",
-      "title": "[PDF] \u0412\u0456\u0434\u0431\u0443\u0434\u043e\u0432\u0430 \u0423\u043a\u0440\u0430\u0457\u043d\u0438: \u043f\u0440\u0438\u043d\u0446\u0438\u043f\u0438 \u0442\u0430 \u043f\u043e\u043b\u0456\u0442\u0438\u043a\u0430 - CEPR",
-      "url": "https://cepr.org/system/files/2022-12/reconstruction%2520book_Ukrainian_0.pdf",
-      "source_domain": "cepr.org",
+      "id": "W11",
+      "title": "[PDF] \u0428\u0415\u0412\u0427\u0415\u041d\u041a\u0406\u0412\u0421\u042c\u041a\u0410 \u0412\u0415\u0421\u041d\u0410 2025 \u0415\u041a\u041e\u041d\u041e\u041c\u0406\u041a\u0410 \u0423\u041a\u0420\u0410\u0407\u041d\u0418 2025",
+      "url": "https://econom.knu.ua/wp-content/uploads/2025/04/%D0%A8%D0%92-%D0%B7%D0%B1%D1%96%D1%80%D0%BD%D0%B8%D0%BA_2025_%D1%81%D0%B0%D0%B9%D1%82.pdf",
+      "source_domain": "econom.knu.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W6",
+      "title": "[PDF] \u043c\u0430\u0440\u043a\u0435\u0442\u0438\u043d\u0433 \u0442\u0430 \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0432 \u0430\u0433\u0440\u043e\u0431\u0456\u0437\u043d\u0435\u0441\u0456 - \u041d\u0423\u0411\u0456\u041f",
+      "url": "https://nubip.edu.ua/sites/default/files/u169/zbirnik_tez_konf_mark_ta_logistika_v_agrobiznesi.pdf",
+      "source_domain": "nubip.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -184,40 +201,6 @@
     },
     {
       "id": "W9",
-      "title": "[PDF] \u041c\u0406\u041d\u0406\u0421\u0422\u0415\u0420\u0421\u0422\u0412\u041e \u041e\u0421\u0412\u0406\u0422\u0418 \u0406 \u041d\u0410\u0423\u041a\u0418 \u0423\u041a\u0420\u0410\u0407\u041d\u0418 \u0412\u0406\u041d\u041d\u0418\u0426\u042c\u041a\u0418\u0419 ...",
-      "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
-      "source_domain": "vsau.org",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W5",
-      "title": "\u0412\u043d\u0443\u0442\u0440\u0456\u0448\u043d\u0456 \u0446\u0456\u043d\u0438 \u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u043a\u043e\u0440\u0438\u0433\u0443\u044e\u0442\u044c\u0441\u044f \u0448\u0432\u0438\u0434\u0448\u0435, \u043d\u0456\u0436 \u0435\u043a\u0441\u043f\u043e\u0440\u0442\u043d\u0456 \u0446\u0456\u043d\u0438 \u043d\u0430 \u043e\u043b\u0456\u044e \u2014 \u0431\u0440\u043e\u043a\u0435\u0440\u0438 \u2014 \u041a\u0423\u0420\u041a\u0423\u041b\u042c",
-      "url": "https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri",
-      "source_domain": "kurkul.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W10",
       "title": "\u0412\u0440\u043e\u0436\u0430\u0439 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 - \u0435\u043a\u0441\u043f\u0435\u0440\u0442\u043a\u0430 \u0434\u0430\u043b\u0430 \u0441\u0443\u043c\u043d\u0438\u0439 \u043f\u0440\u043e\u0433\u043d\u043e\u0437 \u043f\u043e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u0443 \u043d\u0430 2026 \u0440\u0456\u043a",
       "url": "https://www.unian.ua/economics/agro/vrozhay-v-ukrajini-ekspertka-dala-sumniy-prognoz-po-sonyashniku-na-2026-rik-13249509.html",
       "source_domain": "unian.ua",
@@ -234,10 +217,10 @@
       "score": 3
     },
     {
-      "id": "W14",
-      "title": "\u0415\u043a\u0441\u043f\u043e\u0440\u0442 \u0440\u0430\u043f\u0441\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u0437 \u0423\u043a\u0440\u0430\u0457\u043d\u0438 \u0443 2025/26 ...",
-      "url": "https://open4business.com.ua/eksport-rapsovoyi-oliyi-z-ukrayiny-u-2025-26-marketyngovomu-roczi-zris-u-22-raza/",
-      "source_domain": "open4business.com.ua",
+      "id": "W13",
+      "title": "\u041f\u0420\u041e\u0411\u041b\u0415\u041c\u0418 \u041b\u041e\u0413\u0406\u0421\u0422\u0418\u041a\u0418 \u0421\u041e\u041d\u042f\u0428\u041d\u0418\u041a\u041e\u0412\u041e\u0407 \u041e\u041b\u0406\u0407 \u0412 ...",
+      "url": "https://dspace.lute.lviv.ua/items/90436f87-db03-4833-978b-07701dad26e0",
+      "source_domain": "dspace.lute.lviv.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -252,9 +235,9 @@
     },
     {
       "id": "W8",
-      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430 \u0437\u0430\u0431\u0435\u0437\u043f\u0435\u0447\u0443\u0454 \u043e\u0431\u0441\u044f\u0433\u0438 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u0434\u043e ...",
-      "url": "https://www.zerno-ua.com/news/ukrayina-zabezpechuye-obsyagy-sonyashnykovoyi-oliyi-do-yevrosoyuzu/",
-      "source_domain": "zerno-ua.com",
+      "title": "\u0420\u041e\u041b\u042c \u0423\u041a\u0420\u0410\u0407\u041d\u0418 \u041d\u0410 \u0421\u0412\u0406\u0422\u041e\u0412\u041e\u041c\u0423 \u0420\u0418\u041d\u041a\u0423 \u0421\u041e\u041d\u042f\u0428\u041d\u0418\u041a\u0423 \u0406 ...",
+      "url": "https://archive.journal-grail.science/index.php/2710-3056/article/view/3808",
+      "source_domain": "archive.journal-grail.science",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -268,7 +251,24 @@
       "score": 3
     },
     {
-      "id": "W11",
+      "id": "W14",
+      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430 \u0432 \u043b\u0456\u0434\u0435\u0440\u0430\u0445 \u043f\u043e\u0441\u0442\u0430\u0447\u0430\u043d\u043d\u044f \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u0432 \u0404\u0421",
+      "url": "https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834",
+      "source_domain": "24tv.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W12",
       "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430 \u0437\u0430\u043b\u0438\u0448\u0430\u0454\u0442\u044c\u0441\u044f \u043d\u0430\u0439\u0431\u0456\u043b\u044c\u0448\u0438\u043c \u0435\u043a\u0441\u043f\u043e\u0440\u0442\u0435\u0440\u043e\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u0434\u043e \u0404\u0432\u0440\u043e\u043f\u0438, \u043d\u0435\u0437\u043d\u0430\u0447\u043d\u0430 \u0447\u0430\u0441\u0442\u043a\u0430 \u2014 \u0449\u0435 \u0443 \u0434\u0432\u043e\u0445 \u043a\u0440\u0430\u0457\u043d \u2014 Latifundist.com",
       "url": "https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin",
       "source_domain": "latifundist.com",
@@ -285,7 +285,7 @@
       "score": 3
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430 \u0437\u0430\u043b\u0438\u0448\u0430\u0454\u0442\u044c\u0441\u044f \u043d\u0430\u0439\u0431\u0456\u043b\u044c\u0448\u0438\u043c \u043f\u043e\u0441\u0442\u0430\u0447\u0430\u043b\u044c\u043d\u0438\u043a\u043e\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u0434\u043e \u0404\u0421 \u2013 \u0447\u0430\u0441\u0442\u043a\u0430 \u0440\u0438\u043d\u043a\u0443 92% \u2014 Forbes.ua",
       "url": "https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927",
       "source_domain": "forbes.ua",
@@ -319,6 +319,23 @@
       "score": 3
     },
     {
+      "id": "W10",
+      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430 \u0443\u0442\u0440\u0438\u043c\u0443\u0454 \u043b\u0456\u0434\u0435\u0440\u0441\u0442\u0432\u043e \u0437 \u043f\u043e\u0441\u0442\u0430\u0447\u0430\u043d\u043d\u044f \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u0434\u043e \u0404\u0421 \u2014 AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina/ukrajina-utrimuye-liderstvo-z-postachannya-sonyashnikovoji-oliji-do-yes",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
       "id": "W15",
       "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430. \u0420\u0438\u043d\u043e\u043a \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u0443 \u043d\u0430 \u0441\u0442\u0430\u0440\u0442\u0456 2026 \u0440\u043e\u043a\u0443 - UkrAgroConsult",
       "url": "https://ukragroconsult.com/news/ukrayina-rynok-sonyashnyku-naperedodni-novogo-2026-roku/",
@@ -336,8 +353,8 @@
       "score": 3
     },
     {
-      "id": "W6",
-      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0432 \u0433\u043b\u043e\u0431\u0430\u043b\u044c\u043d\u043e\u043c\u0443 \u043c\u0430\u0441\u0448\u0442\u0430\u0431\u0456: \u041b\u043e\u0433\u0456\u0441\u0442\u0438\u0447\u043d\u0456 ...",
+      "id": "W2",
+      "title": "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0432 \u0433\u043b\u043e\u0431\u0430\u043b\u044c\u043d\u043e\u043c\u0443 \u043c\u0430\u0441\u0448\u0442\u0430\u0431\u0456",
       "url": "https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
@@ -353,27 +370,10 @@
       "score": 3
     },
     {
-      "id": "W2",
-      "title": "\u0426\u0456\u043d\u0438 \u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0441\u044f\u0433\u043d\u0443\u043b\u0438 31000 \u0433\u0440\u043d/\u0442, \u0430\u043b\u0435 \u0457\u0445 ...",
-      "url": "https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-syagnuly-31000-grn-t-ale-yih-obmezhuye-stabilizacziya-czin-na-oliyu/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W12",
-      "title": "\u0426\u0456\u043d\u0438 \u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u043f\u0435\u0440\u0435\u0432\u0438\u0449\u0438\u043b\u0438 30 \u0442\u0438\u0441. \u0433\u0440\u043d/\u0442 - Agronews",
-      "url": "https://agronews.com/ua/ru/news/breaking-news/2026-03-25/81556",
-      "source_domain": "agronews.com",
+      "id": "W5",
+      "title": "\u0427\u043e\u043c\u0443 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0434\u043e\u0440\u043e\u0436\u0447\u0430\u0454 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0456 \u043a\u043e\u043b\u0438 \u0447\u0435\u043a\u0430\u0442\u0438 ...",
+      "url": "https://agronews.ua/news/chomu-v-ukrayini-dorozhchaye-sonyashnykova-oliya-i-koly-chekaty-znyzhennya-czin/",
+      "source_domain": "agronews.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -396,6 +396,7 @@
   "polymarket": [],
   "best_practices": [],
   "prompt_pack": [],
-  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 (Last 30 Days)\n\n*Generated: 2026-03-29 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] \u0441\u044e\u0434\u0438 \u0449\u0435 \u043a\u0430\u043f\u0443\u0441\u0442\u0443 \u043a\u0432\u0430\u0448\u0430\u043d\u0443 \u0430\u0431\u043e \u0441\u0432\u0456\u0436\u0438\u0439 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043c\u043e\u043b\u043e\u0434\u043e\u0457...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [X] @locpell \u0422\u0435\u0444\u043b\u043e\u043d \u0434\u0430\u0454 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u043f\u0440\u0438...\n- [Web] [PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTA...\n- [Web] [PDF] \u0412\u0456\u0434\u0431\u0443\u0434\u043e\u0432\u0430 \u0423\u043a\u0440\u0430\u0457\u043d\u0438: \u043f\u0440\u0438\u043d\u0446\u0438\u043f\u0438 \u0442\u0430 \u043f\u043e\u043b\u0456\u0442\u0438\u043a\u0430 - CE...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 (Last 30 Days)\n\n*Generated: 2026-03-29 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] \u0441\u044e\u0434\u0438 \u0449\u0435 \u043a\u0430\u043f\u0443\u0441\u0442\u0443 \u043a\u0432\u0430\u0448\u0430\u043d\u0443 \u0430\u0431\u043e \u0441\u0432\u0456\u0436\u0438\u0439 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043c\u043e\u043b\u043e\u0434\u043e\u0457...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [X] @locpell \u0422\u0435\u0444\u043b\u043e\u043d \u0434\u0430\u0454 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u043f\u0440\u0438...\n- [Web] (PDF) Agricultural exports of Ukraine in the condi...\n- [Web] [PDF] \u0428\u0415\u0412\u0427\u0415\u041d\u041a\u0406\u0412\u0421\u042c\u041a\u0410 \u0412\u0415\u0421\u041d\u0410 2025 \u0415\u041a\u041e\u041d\u041e\u041c\u0406\u041a\u0410 \u0423\u041a\u0420\u0410\u0407\u041d\u0418 2...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "reddit_error": "API error: HTTP 400: Bad Request",
   "bluesky_error": "Bluesky search failed: HTTP 403: Forbidden"
 }
