@@ -1,6 +1,6 @@
 # Context: соняшникова олія логістика україна (Last 30 Days)
 
-*Generated: 2026-03-28 | Sources: all*
+*Generated: 2026-03-29 | Sources: all*
 
 ## Key Sources
 
@@ -10,7 +10,7 @@
 - [X] @o_zhab зазвичай добре допомагає звичайна соняшник...
 - [X] @locpell Тефлон дає економію соняшникової олії при...
 - [Web] (PDF) Agricultural exports of Ukraine in the condi...
-- [Web] [PDF] ШЕВЧЕНКІВСЬКА ВЕСНА 2025 ЕКОНОМІКА УКРАЇНИ 2...
+- [Web] [PDF] ЛОГІСТИЧНЕ УПРАВЛІННЯ ТА БЕЗПЕКА РУХУ НА ТРА...
 
 ## Summary
 

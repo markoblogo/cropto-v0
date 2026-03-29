@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-03-28T21:35:02.327522+00:00",
+  "generatedAt": "2026-03-29T02:10:11.473767+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-28T21:29:04.476691+00:00",
+  "sourceUpdatedAt": "2026-03-29T02:04:23.014740+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: The global grains and oilseeds market remains stable with no significant price shifts reported yesterday outside Ukraine. Sindh province in Pakistan introduced a major wheat procurement policy aiming to stabilize local prices and support farmers by purchasing 1 million metric tons at Rs. 3,500 per maund, benefiting over 330,000 registered farmers. What changed vs previous comparable period: No new market-moving events or price changes were recorded yesterday compared to the previous day. However, the Sindh procurement plan marks a proactive policy shift to directly support growers and control flour prices, contrasting with prior periods of price volatility and supply chain inefficiencies. Actionable implications for trading/brokerage: Traders should monitor Sindh’s wheat procurement rollout starting April 1, as it may reduce local price volatility and limit speculative price spikes in the region. The policy’s direct farmer engagement could improve supply chain transparency and reduce middlemen margins, potentially impacting regional wheat demand and pricing dynamics. \n\nKey facts:\n- Sindh government to procure 1 million metric tons of wheat starting April 1 at 109 centers\n- Support price fixed at Rs. 3,500 per maund, benefiting 330,000+ registered Hari Card farmers\n- Procurement excludes middlemen, ensuring direct farmer payments including Rs. 60 per bag incentive\n- No wheat price or freight rate changes reported yesterday globally outside Ukraine\n- Global wheat prices eased recently due to improved harvest prospects in Europe and Russia, despite US Plains dry weather and high fertilizer costs\n- No new price data or market signals recorded yesterday compared to the previous day",
+    "text": "General situation: The global grains and oilseeds markets remained stable yesterday with no significant price or sentiment shifts outside Ukraine. The key development continues to be regional policy support in Sindh, Pakistan, where a new wheat procurement program aims to stabilize local prices and support farmers. What changed vs previous comparable period: There were no new market-moving events or price changes reported yesterday compared to the prior day. The procurement policy in Sindh, announced on March 28, remains the focal point, with no fresh updates. Actionable implications for trading/brokerage: Traders should monitor Sindh's wheat procurement implementation starting April 1, as it may influence regional wheat supply and price stability. Outside of this, market conditions suggest a holding pattern with limited volatility, favoring cautious positioning. \n\nKey facts:\n- Sindh government to procure 1 million metric tons of wheat at Rs. 3,500 per maund starting April 1, benefiting over 330,000 farmers.\n- Procurement will be direct from registered Hari Card holders, eliminating middlemen.\n- Global wheat prices eased recently due to improved harvest prospects in Europe and Russia, despite US Plains dryness and high fertilizer costs.\n- Freight rates in the Black Sea region increased due to fuel costs but were not fully supported by cargo values.\n- Corn and oilseed markets in Brazil and Argentina showed no new price changes as of mid-March data.\n- No new market-impacting events or price movements were recorded yesterday compared to the previous day.",
     "chart": {
       "type": "event_mix",
-      "title": "Market Drivers Yesterday",
+      "title": "Market Drivers Impact Yesterday",
       "points": [
         {
           "label": "Logistics",
-          "value": 0
+          "value": 1
         },
         {
           "label": "Demand",
@@ -33,11 +33,11 @@
       ],
       "series": [
         {
-          "name": "Impact",
+          "name": "Impact Level",
           "points": [
             {
               "label": "Logistics",
-              "value": 0
+              "value": 1
             },
             {
               "label": "Demand",
@@ -64,52 +64,8 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних в Україні залишається стабільною, без суттєвих цінових коливань. Ціни на кукурудзу CPT Одеса тримаються на рівні 214-226 USD за тонну, а пшениця CPT Одеса – близько 215-223 USD. Пальне в Україні продовжує дорожчати, що може впливати на логістику та собівартість експорту. Порівняно з попереднім днем, з'явилися нові пропозиції та попити на кукурудзу, але загальна цінова динаміка залишилася без змін. Відсутність суттєвих змін у сигналах свідчить про стабільність ринку, хоча зростання цін на пальне створює додаткові ризики для експортерів. Ринок залишається чутливим до зовнішніх факторів, зокрема геополітичних та енергетичних.",
-    "chart": {
-      "type": "event_mix",
-      "title": "Фактори впливу на ринок зернових в Україні (28.03.2026)",
-      "points": [
-        {
-          "label": "Логістика",
-          "value": 3
-        },
-        {
-          "label": "Попит",
-          "value": 2
-        },
-        {
-          "label": "Ціноутворення",
-          "value": 3
-        },
-        {
-          "label": "Ризики виконання",
-          "value": 1
-        }
-      ],
-      "series": [
-        {
-          "name": "Вплив факторів",
-          "points": [
-            {
-              "label": "Логістика",
-              "value": 3
-            },
-            {
-              "label": "Попит",
-              "value": 2
-            },
-            {
-              "label": "Ціноутворення",
-              "value": 3
-            },
-            {
-              "label": "Ризики виконання",
-              "value": 1
-            }
-          ]
-        }
-      ]
-    },
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних в Україні залишається стабільною, без суттєвих цінових коливань у порівнянні з попереднім днем. Ціни на кукурудзу CPT Одеса тримаються в діапазоні 214-226 USD/т, а пшениця FOB Оdesa – близько 223 USD/т. Пропозиції на ринку кукурудзи активні, з невеликим розривом між bid та offer, що свідчить про збалансований попит і пропозицію. Водночас, ціни на пальне в Україні продовжують зростати, що може впливати на логістичні витрати аграріїв. Порівняно з попереднім днем, кількість інформаційних сигналів з ринку зернових знизилася, але цінова стабільність зберігається. \\n\\nЩо змінилося у порівнянні з попереднім днем: відсутність нових інформаційних повідомлень про зміни цін або логістики, що свідчить про тимчасову паузу в динаміці ринку. Ціни на кукурудзу та пшеницю залишаються на рівні 214-226 USD/т, що не відрізняється від попереднього дня. Зростання цін на пальне на 1 грн за літр може підвищити витрати на транспортування, але поки що це не відобразилося на цінах зернових.\\n\\nДіяльні наслідки для трейдингу та брокерської діяльності: збереження цінової стабільності дає змогу планувати короткострокові операції без значних ризиків цінових коливань. Водночас, зростання вартості пального вимагає уваги до логістичних витрат і можливого коригування маржі. Активність на ринку кукурудзи з пропозиціями FOB і CPT свідчить про готовність продавців до угод, що можна використовувати для укладання контрактів на квітень.\\n\\n\n\nКлючові факти:\n\\n- Кукурудза CPT Одеса торгується в діапазоні 214-226 USD/т (28.03.2026)\\n- Пшениця FOB Одеса пропонується по 223 USD/т (28.03.2026)\\n- Соняшникова олія CPT Паритет Одеса – 709 USD/т (27.03.2026)\\n- Ціни на дизельне пальне в Києві досягли 91 грн/л, бензин 95-го – близько 78 грн/л (28.03.2026)\\n- Зростання цін на пальне за добу – близько 1 грн/л\\n- Відсутність нових інформаційних сигналів про зміни на ринку зернових 29.03.2026\",   \"chart\": {     \"type\": \"event_mix\",     \"title\": \"Вплив факторів на ринок зернових 28.03.2026\",     \"points\": [       { \"label\": \"Логістика\", \"value\": 3 },       { \"label\": \"Попит\", \"value\": 2 },       { \"label\": \"Ціноутворення\", \"value\": 2 },       { \"label\": \"Ризик виконання\", \"value\": 1 }     ],     \"series\": [       {         \"name\": \"Вплив факторів\",         \"points\": [           { \"label\": \"Логістика\", \"value\": 3 },           { \"label\": \"Попит\", \"value\": 2 },           { \"label\": \"Ціноутворення\", \"value\": 2 },           { \"label\": \"Ризик виконання\", \"value\": 1",
+    "chart": null,
     "inputCounts": {
       "last30days": 24,
       "monitor": 5
