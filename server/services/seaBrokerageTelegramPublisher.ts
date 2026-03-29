@@ -207,6 +207,7 @@ function formatStandardTelegramMessage(
     entry.type === "trade" ? `SELLER: ${sellerLine.toUpperCase()}` : counterpartyLine.toUpperCase(),
     entry.type === "trade" ? `BUYER: ${buyerLine.toUpperCase()}` : null,
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
+    entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim().toUpperCase() : null,
     formatQuantityLine(entry),
     `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
     formatTelegramTransportCode(entry),

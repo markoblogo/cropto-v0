@@ -104,8 +104,9 @@ const entryFormSchema = z
       "explicit_range",
     ]),
     commodity: z.string().min(1, "Commodity is required"),
+    harvestYear: z.string().trim().optional().default(""),
     originCountry: z.string().min(1, "Origin is required"),
-    quantityMt: z.coerce.number().positive("Quantity must be greater than 0"),
+    quantityMt: z.coerce.number().min(0, "Quantity must be 0 or greater"),
     tolerancePct: z.coerce
       .number()
       .min(0, "Tolerance must be 0 or greater")
@@ -136,31 +137,51 @@ const entryFormSchema = z
       return;
     }
 
-    if (values.periodPreset !== "explicit_range") {
+    if (values.periodPreset === "explicit_range") {
+      if (!values.periodStart) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["periodStart"],
+          message: "Shipment / delivery period from is required",
+        });
+      }
+
+      if (!values.periodEnd) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["periodEnd"],
+          message: "Shipment / delivery period to is required",
+        });
+      }
+
+      if (values.periodStart && values.periodEnd && values.periodEnd < values.periodStart) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["periodEnd"],
+          message: "Shipment / delivery to must be on or after from",
+        });
+      }
+    }
+
+    const harvestYear = String(values.harvestYear || "").trim();
+    if (!harvestYear) {
       return;
     }
-
-    if (!values.periodStart) {
+    if (!/^\d{4}$/.test(harvestYear)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["periodStart"],
-        message: "Shipment / delivery period from is required",
+        path: ["harvestYear"],
+        message: "Harvest year must be YYYY",
       });
+      return;
     }
-
-    if (!values.periodEnd) {
+    const year = Number(harvestYear);
+    const nowYear = new Date().getFullYear();
+    if (year < nowYear - 3 || year > nowYear + 3) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["periodEnd"],
-        message: "Shipment / delivery period to is required",
-      });
-    }
-
-    if (values.periodStart && values.periodEnd && values.periodEnd < values.periodStart) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["periodEnd"],
-        message: "Shipment / delivery to must be on or after from",
+        path: ["harvestYear"],
+        message: "Harvest year is out of expected range",
       });
     }
   });
@@ -187,6 +208,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     buyerName: "",
     periodPreset: "explicit_range",
     commodity: "corn",
+    harvestYear: "",
     originCountry: "UA",
     quantityMt: entryType === "bid" ? 25000 : entryType === "trade" ? 22000 : 20000,
     tolerancePct: 5,
@@ -481,6 +503,8 @@ export function EntryCreateDialog({
     const originCountry = getCountryDisplayLabel(values.originCountry);
     const destinationCountry = getCountryDisplayLabel(selectedPort?.countryCode);
     const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
+    const harvestYear = String(values.harvestYear || "").trim();
+    const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
     const resolvedPeriod = resolvePeriodValues(
       values.periodPreset,
       values.periodMonth,
@@ -502,7 +526,7 @@ export function EntryCreateDialog({
       originCountryCode: values.originCountry,
       commodity: values.commodity as BrokerageEntry["commodity"],
       commodityLabel: commodity?.displayLabel ?? values.commodity,
-      gradeOrSpec: "",
+      gradeOrSpec,
       quantityMt: values.quantityMt,
       tolerancePct: values.tolerancePct,
       volumeFrom,
@@ -557,6 +581,8 @@ export function EntryCreateDialog({
         formValues.quantityMt,
         formValues.tolerancePct,
       );
+      const harvestYear = String(formValues.harvestYear || "").trim();
+      const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
       const resolvedPeriod = resolvePeriodValues(
         formValues.periodPreset,
         formValues.periodMonth,
@@ -578,7 +604,7 @@ export function EntryCreateDialog({
         originCountryCode: formValues.originCountry,
         commodity: formValues.commodity as BrokerageEntry["commodity"],
         commodityLabel: commodity?.displayLabel ?? formValues.commodity,
-        gradeOrSpec: "",
+        gradeOrSpec,
         quantityMt: formValues.quantityMt,
         tolerancePct: formValues.tolerancePct,
         volumeFrom,
@@ -1020,6 +1046,27 @@ export function EntryCreateDialog({
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="harvestYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Harvest year</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="2020"
+                        max="2035"
+                        step="1"
+                        placeholder="e.g. 2026"
+                        value={field.value ?? ""}
+                        onChange={(event) => field.onChange(event.target.value)}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

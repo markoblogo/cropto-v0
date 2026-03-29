@@ -21,6 +21,13 @@ import {
   formatEntryVolumeRange,
 } from "../services/entryFormatting.service";
 
+function extractHarvestYear(entry: BrokerageEntry) {
+  const grade = String(entry.gradeOrSpec || "").trim();
+  if (!grade) return null;
+  const match = grade.match(/\b(20\d{2})\b/);
+  return match ? match[1] : null;
+}
+
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1 rounded-xl border border-border/70 bg-muted/20 px-4 py-3">
@@ -37,6 +44,7 @@ interface EntryDetailSheetProps {
 }
 
 export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheetProps) {
+  const harvestYear = entry ? extractHarvestYear(entry) : null;
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-[100vw] overflow-x-hidden overflow-y-auto sm:max-w-2xl">
@@ -77,6 +85,7 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
                     : "Not set"
                 }
               />
+              <DetailRow label="Harvest year" value={harvestYear ?? "Not set"} />
               <DetailRow label="Quantity" value={formatEntryVolumeRange(entry)} />
               <DetailRow
                 label="Tolerance"
