@@ -1,18 +1,152 @@
 {
-  "generatedAt": "2026-03-29T02:10:38.701881+00:00",
+  "generatedAt": "2026-03-29T05:16:19.784521+00:00",
   "filters": {
     "days": 7
   },
-  "sourceUpdatedAt": "2026-03-29T02:07:09.733524+00:00",
+  "sourceUpdatedAt": "2026-03-29T05:12:56.916394+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"General situation: Brazilian corn and soybeans prices remain elevated with corn FOB Santos at 112.72 USD/ton as of March 12 and soybeans at 662.90 USD/ton on March 14. US spot prices for corn, soybeans, and wheat are steady around 394.45 USD/ton as of early February, showing no recent volatility. Argentine grain prices are dated and low, reflecting outdated market conditions. What changed vs previous comparable period: There is no significant price movement or market impact compared to the prior week, with no recorded changes or market events influencing prices. Actionable implications for trading/brokerage: The stable price environment suggests limited short-term trading opportunities; however, the recent broker desk offer for CIF corn at 241 EUR/ton for April shipments from Tarragona indicates active export interest in European markets. Traders should monitor CIF offers and bids for sunflower seeds in Marmara region for potential arbitrage. \n\nKey facts:\n- Brazilian corn FOB Santos price at 112.72 USD/ton on March 12, 2026\n- Brazilian soybeans price at 662.90 USD/ton on March 14, 2026\n- US spot corn, soybeans, and wheat prices steady at 394.45 USD/ton as of February 4, 2026\n- Argentine barley Grade 2 Up River price at 212 USD/ton with last update December 31, 2025\n- Broker desk offer for CIF corn at 241 EUR/ton for April 10-30 shipments from Tarragona\n- Broker desk bid for sunflower CPT at 301 USD/ton for first half March in Marmara region\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Weekly Price Overlay: Corn & Soybeans Brazil vs US Spot\",     \"points\": [       {\"label\": \"Mar 12\", \"value\": 112.72},       {\"label\": \"Mar 13\", \"value\": 112.72},       {\"label\": \"Mar 14\", \"value\": 112.72},       {\"label\": \"Mar 15\", \"value\": 112.72},       {\"label\": \"Mar 16\", \"value\": 112.72},       {\"label\": \"Mar 17\", \"value\": 112.72},       {\"label\": \"Mar 18\", \"value\": 112.72}     ],     \"series\": [       {         \"name\": \"Brazil Corn FOB Santos (USD/ton)\",         \"points\": [           {\"label\": \"Mar 12\", \"value\": 112.72},           {\"label\": \"Mar 13\", \"value\": 112.72},           {\"label\": \"Mar 14\", \"value\": 112.72},           {\"label\": \"Mar 15\", \"value\": 112.72},           {\"label\": \"Mar 16\", \"value\": 112.72},           {\"label\": \"Mar 17\", \"value\": 112.72},           {\"label\": \"Mar 18\", \"value\": 112.72}         ]       },       {         \"name\": \"Brazil Soybeans (USD/ton)\",         \"points\": [           {\"label\": \"Mar 12\", \"value\": 662.90},           {\"label\": \"Mar 13\", \"value\": 662.90},           {\"label\": \"Mar 14\", \"value\": 662.90},           {\"label\": \"Mar 15\", \"value\": 662.90},           {\"label\": \"Mar 16\", \"value\": 662.90},           {\"label\": \"Mar 17\", \"value\": 662.90},           {\"label\": \"Mar 18\", \"value\": 662.90}         ]       },       {         \"name\": \"US Corn Spot (USD/ton)\",         \"points\": [           {\"label\": \"Mar 12\", \"value\": 394.45},           {\"label\": \"Mar 13\", \"value\": 394.45},           {\"label\": \"Mar 14\", \"value\": 394.45},           {\"label\": \"Mar 15\", \"value\": 394.45},           {\"label\": \"Mar 16\", \"value\": 394.45},           {\"label\": \"Mar",
-    "chart": null,
+    "text": "General situation: The grains and oilseeds markets outside Ukraine remain stable with no significant price movements or market-impacting events reported in the past week. Brazilian corn and soybeans prices hold steady, while US spot prices for corn, soybeans, and wheat remain unchanged. What changed vs previous comparable period: Market activity slightly decreased with no new reports or signals compared to the prior week, maintaining a neutral stance and zero net impact on prices. Actionable implications for trading/brokerage: Traders should monitor the ongoing CIF corn offers for April shipments from Tarragona at 241 EUR and the sunflower seed bids in Marmara at 301 USD for early March, which may indicate localized demand pockets. However, the overall market lacks directional momentum, suggesting a wait-and-see approach until fresh fundamental drivers emerge. \n\nKey facts:\n- Brazilian corn FOB Santos price at 112.72 USD/ton as of March 12, 2026\n- Brazilian soybeans and wheat prices both at 662.90 USD/ton as of March 14, 2026\n- US spot prices for corn, soybeans, and wheat steady at 394.45 USD/ton as of February 4, 2026\n- Argentine barley Grade 2 Up River priced at 212 USD/ton with no recent change\n- Broker desk reports a CIF corn offer at 241 EUR for April 10-30 shipments from Tarragona\n- Sunflower seed bid at 301 USD CPT Marmara for early March shipments",
+    "chart": {
+      "type": "price_overlay_week",
+      "title": "Grains & Oilseeds Prices Last 7 Days",
+      "points": [
+        {
+          "label": "Mar 12",
+          "value": 112.72
+        },
+        {
+          "label": "Mar 13",
+          "value": 112.72
+        },
+        {
+          "label": "Mar 14",
+          "value": 662.9
+        },
+        {
+          "label": "Mar 15",
+          "value": 662.9
+        },
+        {
+          "label": "Mar 16",
+          "value": 394.45
+        },
+        {
+          "label": "Mar 17",
+          "value": 394.45
+        },
+        {
+          "label": "Mar 18",
+          "value": 394.45
+        }
+      ],
+      "series": [
+        {
+          "name": "Brazil Corn FOB Santos",
+          "points": [
+            {
+              "label": "Mar 12",
+              "value": 112.72
+            },
+            {
+              "label": "Mar 13",
+              "value": 112.72
+            },
+            {
+              "label": "Mar 14",
+              "value": 112.72
+            },
+            {
+              "label": "Mar 15",
+              "value": 112.72
+            },
+            {
+              "label": "Mar 16",
+              "value": 112.72
+            },
+            {
+              "label": "Mar 17",
+              "value": 112.72
+            },
+            {
+              "label": "Mar 18",
+              "value": 112.72
+            }
+          ]
+        },
+        {
+          "name": "Brazil Soybeans",
+          "points": [
+            {
+              "label": "Mar 12",
+              "value": 662.9
+            },
+            {
+              "label": "Mar 13",
+              "value": 662.9
+            },
+            {
+              "label": "Mar 14",
+              "value": 662.9
+            },
+            {
+              "label": "Mar 15",
+              "value": 662.9
+            },
+            {
+              "label": "Mar 16",
+              "value": 662.9
+            },
+            {
+              "label": "Mar 17",
+              "value": 662.9
+            },
+            {
+              "label": "Mar 18",
+              "value": 662.9
+            }
+          ]
+        },
+        {
+          "name": "US Corn Spot",
+          "points": [
+            {
+              "label": "Mar 12",
+              "value": 394.45
+            },
+            {
+              "label": "Mar 13",
+              "value": 394.45
+            },
+            {
+              "label": "Mar 14",
+              "value": 394.45
+            },
+            {
+              "label": "Mar 15",
+              "value": 394.45
+            },
+            {
+              "label": "Mar 16",
+              "value": 394.45
+            },
+            {
+              "label": "Mar 17",
+              "value": 394.45
+            },
+            {
+              "label": "Mar 18",
+              "value": 394.45
+            }
+          ]
+        }
+      ]
+    },
     "inputCounts": {
-      "last30days": 0,
+      "last30days": 1,
       "monitor": 13
     }
   },
@@ -20,7 +154,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних України залишається стабільною з нейтральним настроєм. Ціни на кукурудзу на експортному ринку в Одесі утримуються в діапазоні 214-226 USD/т, з активною торгівлею та пропозиціями на початок квітня. Соняшникова олія також демонструє стабільність на рівні 709 USD/т. Порівняно з попереднім тижнем, обсяги інформаційних сигналів не змінилися, а цінові тренди залишаються без суттєвих коливань. Пропозиції соєвого шроту в Україні зафіксовані на рівні 19 700 грн/т, що свідчить про збереження інтересу до кормових ресурсів. Відсутність змін у ціновій динаміці та балансі сигналів вказує на стабільність ринку без суттєвих ризиків або можливостей для різких рухів. Для трейдерів актуальним є моніторинг цінових пропозицій на кукурудзу в Одесі, де спостерігається активність як з боку покупців, так і продавців, що може створити сприятливі умови для укладання угод у найближчі тижні.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Ціни на ключові культури в Україні (22-28 березня 2026)\",     \"points\": [       {\"label\": \"22 березня\", \"value\": 0},       {\"label\": \"23 березня\", \"value\": 0},       {\"label\": \"24 березня\", \"value\": 0},       {\"label\": \"25 березня\", \"value\": 0},       {\"label\": \"26 березня\", \"value\": 0},       {\"label\": \"27 березня\", \"value\": 0},       {\"label\": \"28 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"22 березня\", \"value\": 214},           {\"label\": \"23 березня\", \"value\": 214},           {\"label\": \"24 березня\", \"value\": 215},           {\"label\": \"25 березня\", \"value\": 215},           {\"label\": \"26 березня\", \"value\": 215},           {\"label\": \"27 березня\", \"value\": 214},           {\"label\": \"28 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соняшникова олія CPT Паритет Одеса (USD/т)\",         \"points\": [           {\"label\": \"22 березня\", \"value\": 709},           {\"label\": \"23 березня\", \"value\": 709},           {\"label\": \"24 березня\", \"value\": 709},           {\"label\": \"25 березня\", \"value\": 709},           {\"label\": \"26 березня\", \"value\": 709},           {\"label\": \"27 березня\", \"value\": 709},           {\"label\": \"28 березня\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"22 березня\", \"value\": 447},           {\"label\": \"23 березня\", \"value\": 447},           {\"label\": \"24 березня\", \"value\": 447},           {\"label\": \"25 березня\", \"value\": 447},           {\"label\": \"26 березня\", \"value\": 447},           {\"label\": \"27 березня\", \"value\": 447},           {\"label\": \"28 бер",
+    "text": "{   \"summary\": \"Загальна ситуація на українському ринку зернових і олійних на кінець березня 2026 року залишається стабільною з нейтральним настроєм. Ціни на кукурудзу CPT Одеса тримаються в діапазоні 214-226 USD/т, з активною торгівлею та пропозиціями на квітень. Порівняно з попереднім тижнем, кількість інформаційних сигналів зросла, але без зміни цінових трендів. Пропозиції соєвого шроту зафіксовані на рівні 19 700 грн/т у Кіровоградській області. Внутрішній ринок соняшникової олії демонструє швидшу корекцію цін, ніж експортний. Відсутність суттєвих змін у прогнозах експорту пшениці та кукурудзи підтримує стабільність ринку. Ціни на кукурудзу залишаються в межах 214-226 USD/т, що свідчить про баланс попиту і пропозиції. Пропозиції соєвого шроту зберігаються на стабільному рівні. \\n\\nПрактичні наслідки для трейдерів і брокерів: збереження цінового діапазону кукурудзи дозволяє планувати короткострокові операції з мінімальним ризиком. Активність на ринку соєвого шроту може бути використана для укладання контрактів на внутрішньому ринку. Враховуючи швидку корекцію цін на соняшникову олію, варто уважно стежити за внутрішніми цінами для оптимізації маржі.",
     "chart": null,
     "inputCounts": {
       "last30days": 24,

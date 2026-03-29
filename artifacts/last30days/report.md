@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-29T02:09:50.267892+00:00
+**Generated:** 2026-03-29T05:15:44.048386+00:00
 **Date Range:** 2026-02-27 to 2026-03-29
 **Mode:** all
 
@@ -86,107 +86,87 @@
 
 ## Web Results
 
-### W3: (PDF) Agricultural exports of Ukraine in the conditions of war.
+### W4: [PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...
 
-- **Source:** researchgate.net
-- **URL:** https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war
+- **Source:** ec.europa.eu
+- **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W8: [PDF] ЛОГІСТИЧНЕ УПРАВЛІННЯ ТА БЕЗПЕКА РУХУ НА ТРАНСПОРТІ
+### W13: [PDF] Відбудова України: принципи та політика - CEPR
 
-- **Source:** snu.edu.ua
-- **URL:** https://snu.edu.ua/wp-content/uploads/2024/11/l_u_b_2024.pdf
+- **Source:** cepr.org
+- **URL:** https://cepr.org/system/files/2022-12/reconstruction%2520book_Ukrainian_0.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W6: [PDF] маркетинг та логістика в агробізнесі - НУБіП
+### W9: [PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...
 
-- **Source:** nubip.edu.ua
-- **URL:** https://nubip.edu.ua/sites/default/files/u169/zbirnik_tez_konf_mark_ta_logistika_v_agrobiznesi.pdf
+- **Source:** vsau.org
+- **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W15: Експорт під ударом: у 2026 році Україна може недоотримати понад $600 млн валютної виручки від соняшникової олії
+### W5: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
 
-- **Source:** ukr.net
-- **URL:** https://www.ukr.net/news/details/economics/115756364.html
+- **Source:** kurkul.com
+- **URL:** https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W4: Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло
+### W10: Врожай в Україні - експертка дала сумний прогноз по соняшнику на 2026 рік
 
-- **Source:** slovoidilo.ua
-- **URL:** https://www.slovoidilo.ua/2026/02/13/infografika/ekonomika/ridke-zoloto-yak-zminyuvalysya-obsyahy-eksportu-ta-cziny-ukrayinskoyi-oliyi
+- **Source:** unian.ua
+- **URL:** https://www.unian.ua/economics/agro/vrozhay-v-ukrajini-ekspertka-dala-sumniy-prognoz-po-sonyashniku-na-2026-rik-13249509.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W9: ПРОБЛЕМИ ЛОГІСТИКИ СОНЯШНИКОВОЇ ОЛІЇ В ПЕРІОД ...
+### W14: Експорт рапсової олії з України у 2025/26 ...
 
-- **Source:** dspace.lute.lviv.ua
-- **URL:** https://dspace.lute.lviv.ua/items/90436f87-db03-4833-978b-07701dad26e0
+- **Source:** open4business.com.ua
+- **URL:** https://open4business.com.ua/eksport-rapsovoyi-oliyi-z-ukrayiny-u-2025-26-marketyngovomu-roczi-zris-u-22-raza/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W14: ПРОБЛЕМИ ЛОГІСТИКИ СОНЯШНИКОВОЇ ОЛІЇ В ПЕРІОД ...
+### W8: Україна забезпечує обсяги соняшникової олії до ...
 
-- **Source:** perspectives.pp.ua
-- **URL:** http://perspectives.pp.ua/index.php/nts/article/view/8760
+- **Source:** zerno-ua.com
+- **URL:** https://www.zerno-ua.com/news/ukrayina-zabezpechuye-obsyagy-sonyashnykovoyi-oliyi-do-yevrosoyuzu/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W2: РОЛЬ УКРАЇНИ НА СВІТОВОМУ РИНКУ СОНЯШНИКУ І ...
+### W11: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
 
-- **Source:** archive.journal-grail.science
-- **URL:** https://archive.journal-grail.science/index.php/2710-3056/article/view/3808
+- **Source:** latifundist.com
+- **URL:** https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W5: Україна забезпечила майже 92% імпорту соняшникової олії до ЄС у 2025/26 МР
-
-- **Source:** interfax.com.ua
-- **URL:** https://interfax.com.ua/news/economic/1150124.html
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: Україна забезпечує 92% імпорту соняшникової олії до ЄС
-
-- **Source:** press-center.news
-- **URL:** https://press-center.news/eksport-soniashnykovoi-olii-2026-ukraina-utrymuie-92-rynku-ies-popry-padinnia-vrozhaiu/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W10: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+### W3: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
 
 - **Source:** forbes.ua
 - **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
@@ -196,7 +176,7 @@
 
 > 
 
-### W11: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
+### W7: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
 
 - **Source:** e-land.ua
 - **URL:** https://e-land.ua/news/item/ukrayina-u-2026-rotsi-zberezhe-vyrobnytstvo-soniashnykovoyi-oliyi-na-rivni-blyzko-4-mln-tonn
@@ -206,20 +186,40 @@
 
 > 
 
-### W12: Україна утримує лідерство з постачання соняшникової олії до ЄС — AgroPortal.ua
+### W15: Україна. Ринок соняшнику на старті 2026 року - UkrAgroConsult
 
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/ukrajina-utrimuye-liderstvo-z-postachannya-sonyashnikovoji-oliji-do-yes
+- **Source:** ukragroconsult.com
+- **URL:** https://ukragroconsult.com/news/ukrayina-rynok-sonyashnyku-naperedodni-novogo-2026-roku/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W7: Українська соняшникова олія в глобальному масштабі: Логістичні ...
+### W6: Українська соняшникова олія в глобальному масштабі: Логістичні ...
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W2: Ціни на соняшник в Україні сягнули 31000 грн/т, але їх ...
+
+- **Source:** ukragroconsult.com
+- **URL:** https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-syagnuly-31000-grn-t-ale-yih-obmezhuye-stabilizacziya-czin-na-oliyu/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: Ціни на соняшник перевищили 30 тис. грн/т - Agronews
+
+- **Source:** agronews.com
+- **URL:** https://agronews.com/ua/ru/news/breaking-news/2026-03-25/81556
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
