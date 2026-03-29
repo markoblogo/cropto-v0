@@ -1,30 +1,487 @@
 {
-  "generatedAt": "2026-03-29T09:53:23.119349+00:00",
+  "generatedAt": "2026-03-29T13:05:03.860407+00:00",
   "items": [
     {
+      "id": "X24",
+      "text": "I think farming can do better than this!? Does this policy mean milk, beef and lamb also double and become completely unaffordable to the genuine poor in society. Nigel Farage’s farming adviser calls for wheat prices to double | Farming | The Guardian https://t.co/95a3lDjo5N",
+      "url": "https://x.com/sussexfarming/status/2038172896456015961",
+      "author_handle": "sussexfarming",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 15,
+        "replies": 10
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 100
+      },
+      "score": 68,
+      "source": "x",
+      "title": "I think farming can do better than this!? Does this policy mean milk, beef and lamb also double and become completely unaffordable to the genuine poor in society. Nigel Farage’s farming adviser calls for wheat prices to double | Farming | The Guardian https://t.co/95a3lDjo5N"
+    },
+    {
+      "id": "X28",
+      "text": "Nigel Farage’s farming adviser calls for wheat prices to double\n\nhttps://t.co/zC6tmKyiWl",
+      "url": "https://x.com/horton_official/status/2038162496389824789",
+      "author_handle": "horton_official",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 7,
+        "reposts": 1,
+        "replies": 8
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 84
+      },
+      "score": 63,
+      "source": "x",
+      "title": "Nigel Farage’s farming adviser calls for wheat prices to double\n\nhttps://t.co/zC6tmKyiWl"
+    },
+    {
+      "id": "X25",
+      "text": "Nigel Farage’s farming adviser calls for wheat prices to double\nExclusive: critics warn Reform UK use of trade policy would increase food costs amid cost-of-living crisis\nhttps://t.co/SpgT6thUsl",
+      "url": "https://x.com/dave43law/status/2038168907547087208",
+      "author_handle": "dave43law",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 5,
+        "reposts": 2,
+        "replies": 4
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 74
+      },
+      "score": 60,
+      "source": "x",
+      "title": "Nigel Farage’s farming adviser calls for wheat prices to double\nExclusive: critics warn Reform UK use of trade policy would increase food costs amid cost-of-living crisis\nhttps://t.co/SpgT6thUsl"
+    },
+    {
+      "id": "X20",
+      "text": "@sussexfarming I’m afraid that the international wheat market will not take much notice of Nigel, maybe aim for some more realistic wins…also agree, beef and lamb prices are already at a level where demand could wane - we’ve seen it happen with butter.",
+      "url": "https://x.com/HefinR/status/2038185879898882372",
+      "author_handle": "HefinR",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 6,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 52
+      },
+      "score": 54,
+      "source": "x",
+      "title": "@sussexfarming I’m afraid that the international wheat market will not take much notice of Nigel, maybe aim for some more realistic wins…also agree, beef and lamb prices are already at a level where demand could wane - we’ve seen it happen with butter."
+    },
+    {
+      "id": "X13",
+      "text": "@EdwdPrice The system could work for everyone with slightly higher prices but just a doubling of wheat price isnt going to solve much",
+      "url": "https://x.com/sussexfarming/status/2038199227927429387",
+      "author_handle": "sussexfarming",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 7
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 50
+      },
+      "score": 53,
+      "source": "x",
+      "title": "@EdwdPrice The system could work for everyone with slightly higher prices but just a doubling of wheat price isnt going to solve much"
+    },
+    {
+      "id": "X14",
+      "text": "@soupercocky My prediction is with corn and wheat supply and demand getting back to deficit over the next 18 months, harvest 2027 grain prices may well be back to where we were a few years ago, $400 plus for wheat. 🌾",
+      "url": "https://x.com/James_Stacey_/status/2038199183182864548",
+      "author_handle": "James_Stacey_",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 4,
+        "replies": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 44
+      },
+      "score": 51,
+      "source": "x",
+      "title": "@soupercocky My prediction is with corn and wheat supply and demand getting back to deficit over the next 18 months, harvest 2027 grain prices may well be back to where we were a few years ago, $400 plus for wheat. 🌾"
+    },
+    {
+      "id": "X5",
+      "text": "A tonne of wheat will make roughly 1,500 loaves of bread, so at 2026 ex farm prices there is only just over 10 pence worth of wheat in a loaf.  Even if wheat prices doubled, the cost of bread would not double.  The farmer carries the risk and does much of the work, yet ends up with only a tiny share of the final value.\n\nSo who is profiteering here ?  \n\nThis is where government policy should be stepping in to restore fairness to the supply chain, after years of failure by both current and previou",
+      "url": "https://x.com/TWBFarms/status/2038229399661621383",
+      "author_handle": "TWBFarms",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 4,
+        "replies": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 44
+      },
+      "score": 51,
+      "source": "x",
+      "title": "A tonne of wheat will make roughly 1,500 loaves of bread, so at 2026 ex farm prices there is only just over 10 pence worth of wheat in a loaf.  Even if wheat prices doubled, the cost of bread would not double.  The farmer carries the risk and does much of the work, yet ends up with only a tiny share of the final value.\n\nSo who is profiteering here ?  \n\nThis is where government policy should be stepping in to restore fairness to the supply chain, after years of failure by both current and previou"
+    },
+    {
+      "id": "X4",
+      "text": "@BBCPolitics The Government's position is that exploiting our oil and gas reserves is pointless, as prices are set globally and thereby vulnerable to shocks outwith our control. So by that logic why are we growing wheat, corn or rapeseed? I mean - all of those are priced globally.",
+      "url": "https://x.com/AlexanderP76326/status/2038230732263264275",
+      "author_handle": "AlexanderP76326",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@BBCPolitics The Government's position is that exploiting our oil and gas reserves is pointless, as prices are set globally and thereby vulnerable to shocks outwith our control. So by that logic why are we growing wheat, corn or rapeseed? I mean - all of those are priced globally."
+    },
+    {
       "id": "X9",
+      "text": "@Nigel_Farage @Nigel_Farage &amp; his land owning gentry want to double food prices so folk like his farming 'adviser', large scale wheat grower, Clive Bailye, who wants to double wheat prices to the hard-pressed 'peasants', can get even richer.\nOh &amp; Reform UK, Clive Bailye is also a massive bigot https://t.co/9tPRWSyLRq",
+      "url": "https://x.com/the_mekon/status/2038210258368188646",
+      "author_handle": "the_mekon",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@Nigel_Farage @Nigel_Farage &amp; his land owning gentry want to double food prices so folk like his farming 'adviser', large scale wheat grower, Clive Bailye, who wants to double wheat prices to the hard-pressed 'peasants', can get even richer.\nOh &amp; Reform UK, Clive Bailye is also a massive bigot https://t.co/9tPRWSyLRq"
+    },
+    {
+      "id": "X6",
+      "text": "American farmers right now:\n$12 billion in bridge payments. ✅ \nCorn, soy & wheat reference prices up 10-21%. ✅ \n30 million new acres added to support programs. ✅ \nCrop insurance. Disaster relief. Loan programs. ✅\n2026 Farm Bill advancing in Congress.\nKnow what your state qualifies for: https://t.co/gc7Jl6IWoX",
+      "url": "https://x.com/IndiaDecodee/status/2038218567494095086",
+      "author_handle": "IndiaDecodee",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "American farmers right now:\n$12 billion in bridge payments. ✅ \nCorn, soy & wheat reference prices up 10-21%. ✅ \n30 million new acres added to support programs. ✅ \nCrop insurance. Disaster relief. Loan programs. ✅\n2026 Farm Bill advancing in Congress.\nKnow what your state qualifies for: https://t.co/gc7Jl6IWoX"
+    },
+    {
+      "id": "X22",
+      "text": "Breaking: Nigel Farage’s farming adviser calls for wheat prices to double\n\nSource: Guardian",
+      "url": "https://x.com/QuantEthos/status/2038174300985819594",
+      "author_handle": "QuantEthos",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Breaking: Nigel Farage’s farming adviser calls for wheat prices to double\n\nSource: Guardian"
+    },
+    {
+      "id": "X2",
+      "text": "UK Farmers Call for Higher Wheat Prices\n#UK #Wheat \nhttps://t.co/SZ46b3Xb08",
+      "url": "https://x.com/the_british_eye/status/2038234741569143045",
+      "author_handle": "the_british_eye",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "UK Farmers Call for Higher Wheat Prices\n#UK #Wheat \nhttps://t.co/SZ46b3Xb08"
+    },
+    {
+      "id": "X17",
+      "text": "UK Political Adviser Proposes Doubling Wheat Prices Through Trade Policy Changes - EnviroLink Network - https://t.co/HE6A1t2MbP https://t.co/K7pIVCBnty",
+      "url": "https://x.com/envirolinknews/status/2038195191257985472",
+      "author_handle": "envirolinknews",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "UK Political Adviser Proposes Doubling Wheat Prices Through Trade Policy Changes - EnviroLink Network - https://t.co/HE6A1t2MbP https://t.co/K7pIVCBnty"
+    },
+    {
+      "id": "X16",
+      "text": "@ferraro_marcus @sussexfarming But when you look at the low land cost that wheat growers are competing with around the world you have to wonder will land prices be the reset - 3t wheat on £10k land will not compete 🤷‍♂️",
+      "url": "https://x.com/HefinR/status/2038195199541752171",
+      "author_handle": "HefinR",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 14
+      },
+      "score": 42,
+      "source": "x",
+      "title": "@ferraro_marcus @sussexfarming But when you look at the low land cost that wheat growers are competing with around the world you have to wonder will land prices be the reset - 3t wheat on £10k land will not compete 🤷‍♂️"
+    },
+    {
+      "id": "X21",
+      "text": "@sussexfarming The principle impact is to poultry.\nI would estimate Wheat prices should probably be about 50% higher than they are.",
+      "url": "https://x.com/EdwdPrice/status/2038182677514256759",
+      "author_handle": "EdwdPrice",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 10
+      },
+      "score": 41,
+      "source": "x",
+      "title": "@sussexfarming The principle impact is to poultry.\nI would estimate Wheat prices should probably be about 50% higher than they are."
+    },
+    {
+      "id": "X11",
+      "text": "@mays_farm @horton_official @sussexfarming Is he not suggesting an increased premium on milling wheat specifically, rather than doubling all wheat prices?",
+      "url": "https://x.com/Rosewood_Farm/status/2038205828939837843",
+      "author_handle": "Rosewood_Farm",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 6
+      },
+      "score": 40,
+      "source": "x",
+      "title": "@mays_farm @horton_official @sussexfarming Is he not suggesting an increased premium on milling wheat specifically, rather than doubling all wheat prices?"
+    },
+    {
+      "id": "X18",
+      "text": "🇺🇸🔬Speaking of nitrogen fertilizer prices, I read a relatively recent study from the Illinois Uni (farmdoc daily (15):98) over my Sunday morning coffee. \n\n#Corn🌽is very hungry for nitrogen (68%, 140 lbs/acre), #wheat less so (21%, 70 lbs/acre) and #beans not so much (3%, 15 lbs/acre). If the problem remains with nitrogen, farmers might be more willing to swap corn for beans or wheat. But that's mathematical, it's hard to judge from a field perspective.",
+      "url": "https://x.com/krusts/status/2038194692219670685",
+      "author_handle": "krusts",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 6
+      },
+      "score": 40,
+      "source": "x",
+      "title": "🇺🇸🔬Speaking of nitrogen fertilizer prices, I read a relatively recent study from the Illinois Uni (farmdoc daily (15):98) over my Sunday morning coffee. \n\n#Corn🌽is very hungry for nitrogen (68%, 140 lbs/acre), #wheat less so (21%, 70 lbs/acre) and #beans not so much (3%, 15 lbs/acre). If the problem remains with nitrogen, farmers might be more willing to swap corn for beans or wheat. But that's mathematical, it's hard to judge from a field perspective."
+    },
+    {
+      "id": "X8",
+      "text": "@gaurav_kochar The perception of tightening supply is not wrong, but we are not in a supply bullish wheat market yet.  The funds pushed us here on macro risk….and we’re heading into a mixed weather market…so prices unlikely to snap back.  Best chance of clear direction is mid to late summer.",
+      "url": "https://x.com/JasonHutchinso3/status/2038213364241879282",
+      "author_handle": "JasonHutchinso3",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 38,
+      "source": "x",
+      "title": "@gaurav_kochar The perception of tightening supply is not wrong, but we are not in a supply bullish wheat market yet.  The funds pushed us here on macro risk….and we’re heading into a mixed weather market…so prices unlikely to snap back.  Best chance of clear direction is mid to late summer."
+    },
+    {
+      "id": "X23",
+      "text": "Bhai May 2024 PoJK during JAAC-led protests over electricity prices &amp; wheat subsidy cuts, at least 3 civilians were killed after a crackdown involving Pakistani security forces, including the Pakistan Army aur tum baat larte ho Kashmir ki....",
+      "url": "https://x.com/WahidaWwahidaa/status/2038172964999614802",
+      "author_handle": "WahidaWwahidaa",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 38,
+      "source": "x",
+      "title": "Bhai May 2024 PoJK during JAAC-led protests over electricity prices &amp; wheat subsidy cuts, at least 3 civilians were killed after a crackdown involving Pakistani security forces, including the Pakistan Army aur tum baat larte ho Kashmir ki...."
+    },
+    {
+      "id": "X29",
+      "text": "India raised Wheat Minimum Support Price → markets reacted.\nMaryland raised taxes → people changed behavior.\nNew York capped rents → supply shrank.\nSo the real questions are:\n1️⃣ What actually happens when governments interfere with prices and incentives?\n2️⃣ Who really controls food prices in the long run?\n3️⃣ How do employers decide how much salary to pay?\n4️⃣ Why is a BMW X7 far more expensive than a Toyota Corolla and are you actually “losing” that extra money you pay?\n\nIn this 9-min AI vide",
+      "url": "https://x.com/CaptVenkatReddy/status/2038127845495468070",
+      "author_handle": "CaptVenkatReddy",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 38,
+      "source": "x",
+      "title": "India raised Wheat Minimum Support Price → markets reacted.\nMaryland raised taxes → people changed behavior.\nNew York capped rents → supply shrank.\nSo the real questions are:\n1️⃣ What actually happens when governments interfere with prices and incentives?\n2️⃣ Who really controls food prices in the long run?\n3️⃣ How do employers decide how much salary to pay?\n4️⃣ Why is a BMW X7 far more expensive than a Toyota Corolla and are you actually “losing” that extra money you pay?\n\nIn this 9-min AI vide"
+    },
+    {
+      "id": "X1",
+      "text": "2/comparing three protein supply chains: soybean meal, fish meal, and  microbial protein derived from methane-oxidizing bacteria (MOB). Their  conclusion is unambiguous: the microbial route wins—by a lot.\nAccording to the release:\n“Shifting to MOB protein shrinks overall ecosystem damage by 88% relative to standard soybean farming.” \n( betcha  natural grazing cows  do better though ;-) soy gmo water  chem to grow n pesticides etc  use is HIGH. grass grows cows eat ;-)",
+      "url": "https://x.com/AmicusCuri99068/status/2038231444531859654",
+      "author_handle": "AmicusCuri99068",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "2/comparing three protein supply chains: soybean meal, fish meal, and  microbial protein derived from methane-oxidizing bacteria (MOB). Their  conclusion is unambiguous: the microbial route wins—by a lot.\nAccording to the release:\n“Shifting to MOB protein shrinks overall ecosystem damage by 88% relative to standard soybean farming.” \n( betcha  natural grazing cows  do better though ;-) soy gmo water  chem to grow n pesticides etc  use is HIGH. grass grows cows eat ;-)"
+    },
+    {
+      "id": "X12",
       "text": "Пані @ankapavlyk - мені замовили каштанчик в подарунок на ДН і він неймовірний\nЩе й двоє друзів замовили їх, ну вони🤌😁 https://t.co/TDHUkTPwbv",
       "url": "https://x.com/jenny_has_a_gun/status/2038176246329196835",
       "author_handle": "jenny_has_a_gun",
       "date": "2026-03-29",
       "date_confidence": "high",
       "engagement": {
-        "likes": 10,
-        "replies": 3
+        "likes": 24,
+        "replies": 4
       },
       "relevance": 0.0,
       "why_relevant": "",
       "subs": {
         "relevance": 0,
         "recency": 100,
-        "engagement": 50
+        "engagement": 76
       },
-      "score": 40,
+      "score": 47,
       "source": "x",
       "title": "Пані @ankapavlyk - мені замовили каштанчик в подарунок на ДН і він неймовірний\nЩе й двоє друзів замовили їх, ну вони🤌😁 https://t.co/TDHUkTPwbv"
     },
     {
       "id": "X1",
+      "text": "@CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця.",
+      "url": "https://x.com/Andriy_Zas/status/2038219258727911734",
+      "author_handle": "Andriy_Zas",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 50
+      },
+      "score": 54,
+      "source": "x",
+      "title": "@CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця."
+    },
+    {
+      "id": "X2",
       "text": "Infinity Export is a trusted exporter of premium quality soybean meal 🌾 from India 🇮🇳, widely used in animal feed and poultry nutrition.\n\nOur soybean meal is high in protein, properly processed, and packed with international\n📞 +91 84697 97592\n📧 infinityexport123@gmail.com https://t.co/GcrmBql0M1",
       "url": "https://x.com/InfinityE56490/status/2037953981440549177",
       "author_handle": "InfinityE56490",
@@ -43,7 +500,7 @@
       "title": "Infinity Export is a trusted exporter of premium quality soybean meal 🌾 from India 🇮🇳, widely used in animal feed and poultry nutrition.\n\nOur soybean meal is high in protein, properly processed, and packed with international\n📞 +91 84697 97592\n📧 infinityexport123@gmail.com https://t.co/GcrmBql0M1"
     },
     {
-      "id": "X2",
+      "id": "X3",
       "text": "Membayangkana bagaimana jika soybean meal beneran harus lewat jalur tunggal milik Berdikari dan importir swasta tidak boleh melakukan importasi.",
       "url": "https://x.com/natureadmirer8/status/2037904456327757930",
       "author_handle": "natureadmirer8",
@@ -62,7 +519,7 @@
       "title": "Membayangkana bagaimana jika soybean meal beneran harus lewat jalur tunggal milik Berdikari dan importir swasta tidak boleh melakukan importasi."
     },
     {
-      "id": "X3",
+      "id": "X4",
       "text": "@TaviCosta The trade relationship Iran - Brazil is focused on food security. Other key Brazilian exports include soybean meal, edible oil, meat, and raw sugar, essential for Iran's livestock production. \nIran will not block the ships transporting fertilizers to Brazi.",
       "url": "https://x.com/Vardao346240/status/2037783983992324293",
       "author_handle": "Vardao346240",
@@ -84,37 +541,14 @@
       "title": "@TaviCosta The trade relationship Iran - Brazil is focused on food security. Other key Brazilian exports include soybean meal, edible oil, meat, and raw sugar, essential for Iran's livestock production. \nIran will not block the ships transporting fertilizers to Brazi."
     },
     {
-      "id": "X26",
-      "text": "@CatSmile87 кукурудза, біб (але може зʼїсти мошка) квасоля, якщо без тик, мангольд, шпинат, всяка зелень та пряні трави, цибуля, буряк і морква потребують і прополювання і проривання, але теж не дуже вередливі (буває їдять черви, якзо грунт заражений)",
-      "url": "https://x.com/thuglifeofrats/status/2037873224340386128",
-      "author_handle": "thuglifeofrats",
-      "date": "2026-03-28",
-      "date_confidence": "high",
-      "engagement": {
-        "likes": 4,
-        "replies": 1
-      },
-      "relevance": 0.17,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 17,
-        "recency": 96,
-        "engagement": 26
-      },
-      "score": 39,
-      "source": "x",
-      "title": "@CatSmile87 кукурудза, біб (але може зʼїсти мошка) квасоля, якщо без тик, мангольд, шпинат, всяка зелень та пряні трави, цибуля, буряк і морква потребують і прополювання і проривання, але теж не дуже вередливі (буває їдять черви, якзо грунт заражений)"
-    },
-    {
-      "id": "X23",
+      "id": "X28",
       "text": "Ходила на побачення з прекрасним містом❤️ https://t.co/0L6IrphWIp",
       "url": "https://x.com/jenny_has_a_gun/status/2037967476600758492",
       "author_handle": "jenny_has_a_gun",
       "date": "2026-03-28",
       "date_confidence": "high",
       "engagement": {
-        "likes": 58,
-        "reposts": 1,
+        "likes": 61,
         "replies": 4
       },
       "relevance": 0.0,
@@ -129,7 +563,29 @@
       "title": "Ходила на побачення з прекрасним містом❤️ https://t.co/0L6IrphWIp"
     },
     {
-      "id": "X11",
+      "id": "X20",
+      "text": "Ексміністру агропромислового розвитку Сольському обрали запобіжний захід у справі про фіктивний продаж кукурдзи на 63,7 млн грн https://t.co/npJQ7gppqI",
+      "url": "https://x.com/EspresoTV/status/2037977439545049463",
+      "author_handle": "EspresoTV",
+      "date": "2026-03-28",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 21,
+        "reposts": 7
+      },
+      "relevance": 0.0,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 0,
+        "recency": 96,
+        "engagement": 86
+      },
+      "score": 49,
+      "source": "x",
+      "title": "Ексміністру агропромислового розвитку Сольському обрали запобіжний захід у справі про фіктивний продаж кукурдзи на 63,7 млн грн https://t.co/npJQ7gppqI"
+    },
+    {
+      "id": "X12",
       "text": "🌱 Soybean math flips: oil drives, meal struggles\n\nThe soybean market is shifting — and the balance is no longer built on meal.\n\n🛢 Soybean oil is setting margins\n⛽️ Biodiesel demand is driving crushing\n📈 More processing = more meal\n\nBut here’s the problem:\n\n📦 Global soybean crush: record 368 MMT in 2025/26\n📉 Meal supply: record ~290 MMT\n📊 Stocks rising to ~19 MMT\n\n➡️ More supply — but demand can’t keep up\n\n“While soybean oil is finding support, CBOT meal prices capped near 330 USD/MT — well below",
       "url": "https://x.com/ASAP_Agri/status/2037449409139511426",
       "author_handle": "ASAP_Agri",
@@ -151,7 +607,7 @@
       "title": "🌱 Soybean math flips: oil drives, meal struggles\n\nThe soybean market is shifting — and the balance is no longer built on meal.\n\n🛢 Soybean oil is setting margins\n⛽️ Biodiesel demand is driving crushing\n📈 More processing = more meal\n\nBut here’s the problem:\n\n📦 Global soybean crush: record 368 MMT in 2025/26\n📉 Meal supply: record ~290 MMT\n📊 Stocks rising to ~19 MMT\n\n➡️ More supply — but demand can’t keep up\n\n“While soybean oil is finding support, CBOT meal prices capped near 330 USD/MT — well below"
     },
     {
-      "id": "X10",
+      "id": "X11",
       "text": "Soybean Meal export sales came in hot yesterday, the strongest for this point in the marketing year since 2019.\n\nUnusually low meal shipments and reduced crush rates out of Argentina in February appear to have opened a window for stronger U.S. exports.\n\nThe red bold line shows the current marketing year vs. the past 6 years. 👇\n\n#cmdtyView",
       "url": "https://x.com/BarchartAg/status/2037526506788823186",
       "author_handle": "BarchartAg",
@@ -172,7 +628,7 @@
       "title": "Soybean Meal export sales came in hot yesterday, the strongest for this point in the marketing year since 2019.\n\nUnusually low meal shipments and reduced crush rates out of Argentina in February appear to have opened a window for stronger U.S. exports.\n\nThe red bold line shows the current marketing year vs. the past 6 years. 👇\n\n#cmdtyView"
     },
     {
-      "id": "X9",
+      "id": "X10",
       "text": "$MU $HG1\n\nJuly Soybean Meal futures show bullish control; buy signal set above $322.00 resistance",
       "url": "https://x.com/byul_finance/status/2037540800817676352",
       "author_handle": "byul_finance",
@@ -191,7 +647,7 @@
       "title": "$MU $HG1\n\nJuly Soybean Meal futures show bullish control; buy signal set above $322.00 resistance"
     },
     {
-      "id": "X6",
+      "id": "X7",
       "text": "@NoahOptions What's your opinion on liqudity and transparency in Dalian and Zhengzhou futures and options? Dalian launched new serial options on corn and soybean meal on Feb 2, 2026. Any opinion on premium selling in those?",
       "url": "https://x.com/crushspread/status/2037564798985007127",
       "author_handle": "crushspread",
@@ -210,7 +666,7 @@
       "title": "@NoahOptions What's your opinion on liqudity and transparency in Dalian and Zhengzhou futures and options? Dalian launched new serial options on corn and soybean meal on Feb 2, 2026. Any opinion on premium selling in those?"
     },
     {
-      "id": "X4",
+      "id": "X5",
       "text": "@ksufarmboy Many people do not understand that they only use the heart of the corn kernel. the rest is dried and made into distiller grain. \nNext time you eat Chicken, Pork, Beef that and soybean meal are the basic ingredients of animal feed.\nhulls off wheat is used 4 animal feed.",
       "url": "https://x.com/dkwilk160338/status/2037635416317411686",
       "author_handle": "dkwilk160338",
@@ -229,7 +685,7 @@
       "title": "@ksufarmboy Many people do not understand that they only use the heart of the corn kernel. the rest is dried and made into distiller grain. \nNext time you eat Chicken, Pork, Beef that and soybean meal are the basic ingredients of animal feed.\nhulls off wheat is used 4 animal feed."
     },
     {
-      "id": "X8",
+      "id": "X9",
       "text": "I hate this, because I like hemp fiber, cotton, AND wool!\n\nAt least she's making another use of it.\n\nYep, I imagine doing this to soybean meal once we divert ALL the soy oil into biodiesel, or just put it out in the fields to nitrogen burn weeds, mulch them, &amp; refertilize them.",
       "url": "https://x.com/DRedneck92/status/2037541305740386549",
       "author_handle": "DRedneck92",
@@ -248,7 +704,7 @@
       "title": "I hate this, because I like hemp fiber, cotton, AND wool!\n\nAt least she's making another use of it.\n\nYep, I imagine doing this to soybean meal once we divert ALL the soy oil into biodiesel, or just put it out in the fields to nitrogen burn weeds, mulch them, &amp; refertilize them."
     },
     {
-      "id": "X7",
+      "id": "X8",
       "text": "🌱 Producer Shop Talks: Real Conversations, Right Where You Farm 🚜 \n\nNEXT WEEK, join us for casual, farmer-focused gatherings across North Dakota. Grab a meal, hear updates from the ND Soybean Growers Association and ND Soybean Council, and connect with fellow farmers and ag experts.\n\n📍 Spring 2026 Dates\nMarch 31 – Berthold | 8:30 a.m. | Cody Hansen’s Farm\nApril 1 – Fort Ransom | 2:30 p.m. | Thrill Hills\nApril 2 – Grand Forks | 11:30 a.m. | Evan Montgomery’s Farm\nApril 8 – Harvey | 11:30 a.m. | P",
       "url": "https://x.com/NDSoybean/status/2037545956539810220",
       "author_handle": "NDSoybean",
@@ -267,7 +723,7 @@
       "title": "🌱 Producer Shop Talks: Real Conversations, Right Where You Farm 🚜 \n\nNEXT WEEK, join us for casual, farmer-focused gatherings across North Dakota. Grab a meal, hear updates from the ND Soybean Growers Association and ND Soybean Council, and connect with fellow farmers and ag experts.\n\n📍 Spring 2026 Dates\nMarch 31 – Berthold | 8:30 a.m. | Cody Hansen’s Farm\nApril 1 – Fort Ransom | 2:30 p.m. | Thrill Hills\nApril 2 – Grand Forks | 11:30 a.m. | Evan Montgomery’s Farm\nApril 8 – Harvey | 11:30 a.m. | P"
     },
     {
-      "id": "X5",
+      "id": "X6",
       "text": "In this past week, I've lost track of how many risk warnings have been published for the Chinese soybean meal ETF diverging from NAV.",
       "url": "https://x.com/crushspread/status/2037566028318638112",
       "author_handle": "crushspread",
@@ -288,7 +744,7 @@
       "title": "In this past week, I've lost track of how many risk warnings have been published for the Chinese soybean meal ETF diverging from NAV."
     },
     {
-      "id": "X12",
+      "id": "X13",
       "text": "$DBA\nCorn 14% \nLive Cattle 14.16% \nSoybean 13.15% \nLean Hogs 11.53% \nFeeder Cattle 6.99% \nWheat 6.73% \nSoybean Oil 6.22% \nWorld Sugar 5.18% \nHard Red Winter Wheat 5.13% \nCotton 4.98% \nSoybean Meal 4.66% \nCoffee 3.89% \nCocoa 2.65% https://t.co/trNfVeY7OZ",
       "url": "https://x.com/BASETRADER_CMT/status/2037394708117574054",
       "author_handle": "BASETRADER_CMT",
@@ -309,7 +765,7 @@
       "title": "$DBA\nCorn 14% \nLive Cattle 14.16% \nSoybean 13.15% \nLean Hogs 11.53% \nFeeder Cattle 6.99% \nWheat 6.73% \nSoybean Oil 6.22% \nWorld Sugar 5.18% \nHard Red Winter Wheat 5.13% \nCotton 4.98% \nSoybean Meal 4.66% \nCoffee 3.89% \nCocoa 2.65% https://t.co/trNfVeY7OZ"
     },
     {
-      "id": "X18",
+      "id": "X19",
       "text": "I always advise taking our Natto capsules after the final meal of the evening to allow the capsules to work their magic overnight.\n\nAs they are the whole fermented soybean ground down to a fine powder - they are highly bioavailable unlike all of those synthetics out there.",
       "url": "https://x.com/LivingAlpha1/status/2037067280501162299",
       "author_handle": "LivingAlpha1",
@@ -328,7 +784,7 @@
       "title": "I always advise taking our Natto capsules after the final meal of the evening to allow the capsules to work their magic overnight.\n\nAs they are the whole fermented soybean ground down to a fine powder - they are highly bioavailable unlike all of those synthetics out there."
     },
     {
-      "id": "X16",
+      "id": "X17",
       "text": "🇧🇷 Brazil’s Export Machine Is Gaining Speed Into Late March 🚢\n\n🫛 Brazil’s ANEC schedule points to a firmer export week across the Brazilian ag complex, with soybeans still leading and both soybean meal and maize also moving higher.\n\n🌽 The broader signal is steady shipment momentum into late March, with soybeans holding a strong pace while meal and maize add support. That keeps Brazil at the center of nearby global supply flows.\n\n📌 Takeaway: the export program looks broadly active rather than rel",
       "url": "https://x.com/ProspexAgro/status/2037153847445995906",
       "author_handle": "ProspexAgro",
@@ -349,7 +805,7 @@
       "title": "🇧🇷 Brazil’s Export Machine Is Gaining Speed Into Late March 🚢\n\n🫛 Brazil’s ANEC schedule points to a firmer export week across the Brazilian ag complex, with soybeans still leading and both soybean meal and maize also moving higher.\n\n🌽 The broader signal is steady shipment momentum into late March, with soybeans holding a strong pace while meal and maize add support. That keeps Brazil at the center of nearby global supply flows.\n\n📌 Takeaway: the export program looks broadly active rather than rel"
     },
     {
-      "id": "X19",
+      "id": "X20",
       "text": "A 2024 analysis in \"Food and Humanity\" found one ton of insect meal costs about 10 times that of soybean meal and 3.5 times that of fishmeal, a cost gap researchers say is unlikely to narrow anytime soon. https://t.co/ZYY03AyYMi",
       "url": "https://x.com/undarkmag/status/2036963977196896427",
       "author_handle": "undarkmag",
@@ -371,7 +827,7 @@
       "title": "A 2024 analysis in \"Food and Humanity\" found one ton of insect meal costs about 10 times that of soybean meal and 3.5 times that of fishmeal, a cost gap researchers say is unlikely to narrow anytime soon. https://t.co/ZYY03AyYMi"
     },
     {
-      "id": "X15",
+      "id": "X16",
       "text": "@GainesBets91772 @SamaHoole The buns have soybean oil, not the cheese. It’s legally labeled “cheese food” bc its only 60% natural cheese 40%milk/cream/emulsifiers. It is not processed with seed oil, &amp; trace emulsifiers like Lecithin are fine. It’s not avocado &amp; salmon but it’s a healthy keto meal in a pinch",
       "url": "https://x.com/BudgetDFS/status/2037181333626106315",
       "author_handle": "BudgetDFS",
@@ -393,7 +849,7 @@
       "title": "@GainesBets91772 @SamaHoole The buns have soybean oil, not the cheese. It’s legally labeled “cheese food” bc its only 60% natural cheese 40%milk/cream/emulsifiers. It is not processed with seed oil, &amp; trace emulsifiers like Lecithin are fine. It’s not avocado &amp; salmon but it’s a healthy keto meal in a pinch"
     },
     {
-      "id": "X13",
+      "id": "X14",
       "text": "You're not far off. Iowa produces ~1/3 of U.S. pork and leads in eggs, fueled by its corn/soy. About 15% of corn goes direct to local livestock feed (mostly hogs/poultry), plus DDGS byproduct from ethanol (~60% of corn crop). Soybean meal is overwhelmingly for animal feed, especially hogs. Market sets the flow, and yes, much becomes bacon, eggs, pork products. The \"shipped out\" part varies—plenty stays in-state for Iowa's massive herds.",
       "url": "https://x.com/grok/status/2037276675109458049",
       "author_handle": "grok",
@@ -415,7 +871,7 @@
       "title": "You're not far off. Iowa produces ~1/3 of U.S. pork and leads in eggs, fueled by its corn/soy. About 15% of corn goes direct to local livestock feed (mostly hogs/poultry), plus DDGS byproduct from ethanol (~60% of corn crop). Soybean meal is overwhelmingly for animal feed, especially hogs. Market sets the flow, and yes, much becomes bacon, eggs, pork products. The \"shipped out\" part varies—plenty stays in-state for Iowa's massive herds."
     },
     {
-      "id": "X17",
+      "id": "X18",
       "text": "@Vantraxel @CBKimbrell You have no clue what you are talking about. Every bushel or corn soybeans and wheat I grew last year went into a cow, our own or someone else’s, a laying hen a turkey, soybean meal for a pig or cow, or flour to make pretzels and cookies to feed you fat ass.",
       "url": "https://x.com/JB31450429/status/2037128477636182419",
       "author_handle": "JB31450429",
@@ -436,7 +892,7 @@
       "title": "@Vantraxel @CBKimbrell You have no clue what you are talking about. Every bushel or corn soybeans and wheat I grew last year went into a cow, our own or someone else’s, a laying hen a turkey, soybean meal for a pig or cow, or flour to make pretzels and cookies to feed you fat ass."
     },
     {
-      "id": "X14",
+      "id": "X15",
       "text": "Not that hog producers in China were doing well before, but... ouch. Green is Dalian soybean meal, red is Dalian corn. Purple is Dalian hogs. https://t.co/a9c5O4ZvkR",
       "url": "https://x.com/crushspread/status/2037267769473761468",
       "author_handle": "crushspread",
@@ -476,7 +932,7 @@
       "title": "Продам шрот соєвий, пп Благодарагро (№291935)\n\nПродам шрот соєвий 100 тон за ціною 19700 грн за тонну пп Благодарагро в Кіровоградській області, Світловодський район, Світловодськ (Пропозиція №291935)  https://t.co/SdflUcNapS"
     },
     {
-      "id": "X24",
+      "id": "X25",
       "text": "The #soybean meal FOB has risen 13% since early Feb reaching its highest price of the last 13 months. This rise improved the theoretical gross #crushing margin. https://t.co/OUty9o9AfQ",
       "url": "https://x.com/jpreciadopatino/status/2036790329538494734",
       "author_handle": "jpreciadopatino",
@@ -498,7 +954,7 @@
       "title": "The #soybean meal FOB has risen 13% since early Feb reaching its highest price of the last 13 months. This rise improved the theoretical gross #crushing margin. https://t.co/OUty9o9AfQ"
     },
     {
-      "id": "X25",
+      "id": "X26",
       "text": "#EU🇪🇺 #soybean🌱meal imports 🚢 as of Mar 22 were ⬆️ 5% above the 3-MY-avg and ⬇️ 11% below LY, according to @EUAgri. \n\nNote: The MY is Oct-Sep, but top import origins are ranked according to data starting from July. https://t.co/slDQBlNzZF",
       "url": "https://x.com/mkt_intl/status/2036751009888764114",
       "author_handle": "mkt_intl",
@@ -517,7 +973,7 @@
       "title": "#EU🇪🇺 #soybean🌱meal imports 🚢 as of Mar 22 were ⬆️ 5% above the 3-MY-avg and ⬇️ 11% below LY, according to @EUAgri. \n\nNote: The MY is Oct-Sep, but top import origins are ranked according to data starting from July. https://t.co/slDQBlNzZF"
     },
     {
-      "id": "X20",
+      "id": "X21",
       "text": "@SamaHoole The UK imports approximately 2.7 to 3.2 million tonnes of soybean meal equivalents annually, primarily from South America (Argentina, Brazil) and the USA, to support its livestock sector. Over 85% of this soy is utilized for animal feed, particularly for pigs and poultry. https://t.co/tEl6EjHZ7m",
       "url": "https://x.com/X_gebruiker/status/2036895006242263316",
       "author_handle": "X_gebruiker",
@@ -536,7 +992,7 @@
       "title": "@SamaHoole The UK imports approximately 2.7 to 3.2 million tonnes of soybean meal equivalents annually, primarily from South America (Argentina, Brazil) and the USA, to support its livestock sector. Over 85% of this soy is utilized for animal feed, particularly for pigs and poultry. https://t.co/tEl6EjHZ7m"
     },
     {
-      "id": "X21",
+      "id": "X22",
       "text": "@UinPen @tonymo @JamesLucasIT Soybean meal is often used in animal feed and is known to contain compounds that can influence hormone levels in livestock, in relation to growth and reproduction. I’m not talking about protein building. Phytoestrogen effects on chickens are hormonal.",
       "url": "https://x.com/JakeCutterr/status/2036883381149987087",
       "author_handle": "JakeCutterr",
@@ -555,7 +1011,7 @@
       "title": "@UinPen @tonymo @JamesLucasIT Soybean meal is often used in animal feed and is known to contain compounds that can influence hormone levels in livestock, in relation to growth and reproduction. I’m not talking about protein building. Phytoestrogen effects on chickens are hormonal."
     },
     {
-      "id": "X23",
+      "id": "X24",
       "text": "@UinPen @tonymo @JamesLucasIT Think that soybean meal doesn’t alter hormone levels?",
       "url": "https://x.com/JakeCutterr/status/2036791284929646946",
       "author_handle": "JakeCutterr",
@@ -576,7 +1032,7 @@
       "title": "@UinPen @tonymo @JamesLucasIT Think that soybean meal doesn’t alter hormone levels?"
     },
     {
-      "id": "X26",
+      "id": "X27",
       "text": "@wrldclass51nn3r @cardamomkiss Formula is soybean meal and fake ingredients. It's poison.",
       "url": "https://x.com/uncomfybrain/status/2036612785409233285",
       "author_handle": "uncomfybrain",
@@ -595,7 +1051,7 @@
       "title": "@wrldclass51nn3r @cardamomkiss Formula is soybean meal and fake ingredients. It's poison."
     },
     {
-      "id": "X22",
+      "id": "X23",
       "text": "Indeed.  Furthermore the 'soy is grown for oil, not meal' gotcha is misleading.\nYes, soybeans are crushed for both oil and meal. But claiming oil is the primary reason Brazilian soy is grown - with meal as a mere byproduct - is not accurate.\nLivestock feed demand (soybean meal) has long been, and largely remains, the main structural driver of soy production and expansion in Brazil.\nVegans eating tofu or using a splash of soy oil in their salad dressing consume a tiny fraction of total soy.\nGloba",
       "url": "https://x.com/Alan_Watson_/status/2036803236179354035",
       "author_handle": "Alan_Watson_",
@@ -616,7 +1072,7 @@
       "title": "Indeed.  Furthermore the 'soy is grown for oil, not meal' gotcha is misleading.\nYes, soybeans are crushed for both oil and meal. But claiming oil is the primary reason Brazilian soy is grown - with meal as a mere byproduct - is not accurate.\nLivestock feed demand (soybean meal) has long been, and largely remains, the main structural driver of soy production and expansion in Brazil.\nVegans eating tofu or using a splash of soy oil in their salad dressing consume a tiny fraction of total soy.\nGloba"
     },
     {
-      "id": "X28",
+      "id": "X29",
       "text": "@Ole_S_Hansen It’s just starting. Here Oil vs Bloomberg Agriculture Subindex.\n\nComposed of futures contracts on coffee, corn, cotton, soybeans, soybean oil, soybean meal, sugar and wheat. https://t.co/2ZLWh5uK0b",
       "url": "https://x.com/Kacper_PK_CH/status/2036356107061412049",
       "author_handle": "Kacper_PK_CH",
@@ -639,26 +1095,7 @@
       "title": "@Ole_S_Hansen It’s just starting. Here Oil vs Bloomberg Agriculture Subindex.\n\nComposed of futures contracts on coffee, corn, cotton, soybeans, soybean oil, soybean meal, sugar and wheat. https://t.co/2ZLWh5uK0b"
     },
     {
-      "id": "X29",
-      "text": "Natokinase comes from fermentation of Soybeans. It is a Japanese meal.\nI understand the enzymes derived from fermented soybean proteins also dissolve Covid Spike Proteins and clots, this according to a growing number of Doctors.\nBuy Natokinase almost anywhere vitamins are sold.",
-      "url": "https://x.com/god_came_down/status/2036336880611213339",
-      "author_handle": "god_came_down",
-      "date": "2026-03-24",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.39,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 39,
-        "recency": 83,
-        "engagement": 35
-      },
-      "score": 45,
-      "source": "x",
-      "title": "Natokinase comes from fermentation of Soybeans. It is a Japanese meal.\nI understand the enzymes derived from fermented soybean proteins also dissolve Covid Spike Proteins and clots, this according to a growing number of Doctors.\nBuy Natokinase almost anywhere vitamins are sold."
-    },
-    {
-      "id": "X27",
+      "id": "X28",
       "text": "$CL1\n\nSoybean futures mixed midday; oil gains on expected EPA RVO release, meal declines",
       "url": "https://x.com/byul_finance/status/2036497990920364202",
       "author_handle": "byul_finance",
@@ -679,7 +1116,7 @@
       "title": "$CL1\n\nSoybean futures mixed midday; oil gains on expected EPA RVO release, meal declines"
     },
     {
-      "id": "X1",
+      "id": "X2",
       "text": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути",
       "url": "https://x.com/mmx88mhz/status/2035535595850641535",
       "author_handle": "mmx88mhz",
@@ -817,46 +1254,64 @@
       "relevance": 0.72
     },
     {
+      "id": "W14",
+      "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
+      "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "AgroPortal Bulgaria | LinkedIn",
+      "url": "https://www.linkedin.com/company/agroportal-bulgaria",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "Black Sea Cereal Company | LinkedIn",
+      "url": "https://www.linkedin.com/company/black-sea-cereal-company",
+      "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W11",
-      "title": "ATI Soybean Market Update | March 24, 2026 ...",
-      "url": "https://www.youtube.com/watch?v=s37mjUerzSo",
-      "source_domain": "youtube.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Contracting Crush Margins - DTN Progressive Farmer",
-      "url": "https://www.dtnpf.com/agriculture/web/ag/blogs/fundamentally-speaking/blog-post/2023/04/27/contracting-crush-margins",
-      "source_domain": "dtnpf.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "High crush margins drive rapid expansion - Farm Progress",
-      "url": "https://www.farmprogress.com/soybean/high-crush-margins-drive-rapid-expansion",
-      "source_domain": "farmprogress.com",
+      "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
+      "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
+      "source_domain": "reuters.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -872,7 +1327,223 @@
     },
     {
       "id": "W2",
-      "title": "Implied Soybean Crush Futures Quotes - CME Group",
+      "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
+      "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
+      "source_domain": "millermagazine.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "COMMODITIES 2026: Russian wheat output expected to fall as farmers pivot to oilseeds | S&P Global",
+      "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/121525-commodities-2026-russian-wheat-output-expected-to-fall-as-farmers-pivot-to-oilseeds",
+      "source_domain": "spglobal.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Export prices FOB on 17-03-2026",
+      "url": "https://agridata.ec.europa.eu/Reports/Cereals_Dashboard.pdf",
+      "source_domain": "agridata.ec.europa.eu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Key changes in Russian wheat market for first half of MY 2025/26: 2026 preview - Fastmarkets",
+      "url": "https://www.fastmarkets.com/insights/key-changes-in-russian-wheat-market-for-first-half-of-my-2025-26-2026-preview/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "Prices for Ukrainian wheat rise to $220/tonne amid Iran events",
+      "url": "https://interfax.com/newsroom/top-stories/116411/",
+      "source_domain": "interfax.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Ukraine. Hopes for seasonal increase in food wheat prices ...",
+      "url": "https://ukragroconsult.com/en/news/ukraine-hopes-for-seasonal-increase-in-food-wheat-prices-may-not-be-realized/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Wheat Futures Attempt Breakout as Black Sea Risks and Weather ...",
+      "url": "https://www.theglobeandmail.com/investing/markets/commodities/LSH23/pressreleases/640218/wheat-futures-attempt-breakout-as-black-sea-risks-and-weather-concerns-reenter-the-market/",
+      "source_domain": "theglobeandmail.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Wheat market outlook: Russia exports surge, EU yields soften ...",
+      "url": "https://commodity-board.com/wheat-under-pressure-as-russia-boosts-exports-and-eu-yield-outlook-softens/",
+      "source_domain": "commodity-board.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Wheat price commentary: Futures rally on tight Black Sea supply, steady premiums - Fastmarkets",
+      "url": "https://www.fastmarkets.com/insights/wheat-price-commentary-futures-rally-on-tight-black-sea-supply-steady-premiums/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "[PDF] Black Sea Wheat Market Faces New Competition and Price ...",
+      "url": "https://ukragroconsult.com/wp-content/uploads/2026/03/wheateng.pdf",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "FLASH: Chinese imported soybean CNF price 2026.03.23 | Mysteel",
+      "url": "https://www.mysteel.net/news/5116835-flash-chinese-imported-soybean-cnf-price-20260323",
+      "source_domain": "mysteel.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Flash: soybean meal basis in main regions of China 2026.03.23 | Mysteel",
+      "url": "https://www.mysteel.net/news/5116906-flash-soybean-meal-basis-in-main-regions-of-china-20260323",
+      "source_domain": "mysteel.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Implied Soybean Crush Quotes - CME Group",
       "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean-crush.html",
       "source_domain": "cmegroup.com",
       "snippet": "",
@@ -889,7 +1560,43 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W7",
+      "title": "Key Indicators - March 22, 2026 - - Ever.Ag Insights",
+      "url": "https://insights.ever.ag/2026/03/22/key-indicators-march-22-2026/",
+      "source_domain": "insights.ever.ag",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "Navigating Soybean Crush Margins",
+      "url": "https://walshtrading.com/navigating-soybean-crush-margins/",
+      "source_domain": "walshtrading.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
       "title": "OILEX - International Multi Oil Extraction Company | LinkedIn",
       "url": "https://www.linkedin.com/company/oilex-international-oil-extraction-company",
       "source_domain": "linkedin.com",
@@ -907,10 +1614,28 @@
       "source": "web"
     },
     {
+      "id": "W15",
+      "title": "Record Soy Crush Lifts Domestic Demand While Policy…",
+      "url": "https://www.grainjournal.com/article/1118445/record-soy-crush-lifts-domestic-demand-while-policy-questions-loom",
+      "source_domain": "grainjournal.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W6",
-      "title": "Setting Up Soybeans for Success in 2026 with Tight Margins & Dry ...",
-      "url": "https://www.youtube.com/watch%3Fv%3DxfhoR-og94o",
-      "source_domain": "youtube.com",
+      "title": "Soybean Crush Expansion, 2025 Update - American Soybean Association",
+      "url": "https://soygrowers.com/news-releases/soybean-crush-expansion-2025-update/",
+      "source_domain": "soygrowers.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -926,7 +1651,7 @@
     },
     {
       "id": "W10",
-      "title": "Soybean Crush Margins - DTN Progressive Farmer",
+      "title": "Soybean Crush Margins",
       "url": "https://www.dtnpf.com/agriculture/web/ag/blogs/fundamentally-speaking/blog-post/2023/10/20/soybean-crush-margins",
       "source_domain": "dtnpf.com",
       "snippet": "",
@@ -943,28 +1668,10 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Soybean Crush May '26 Futures Price - Barchart.com",
-      "url": "https://www.barchart.com/futures/quotes/CSK26",
+      "id": "W11",
+      "title": "Soybean Crush Prices and Soybean Crush Futures Prices - Barchart.com",
+      "url": "https://www.barchart.com/futures/quotes/CS*0/futures-prices",
       "source_domain": "barchart.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
-      "title": "Soybean Crush Spreads",
-      "url": "https://www.cmegroup.com/trading/agricultural/grain-and-oilseed/soybean-crush-spreads.html",
-      "source_domain": "cmegroup.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -997,43 +1704,25 @@
       "source": "web"
     },
     {
+      "id": "W8",
+      "title": "Soybean Crushing Margins Outlook for Q1 2025",
+      "url": "https://worldperspectives.com/articles/soybean-crushing-margins-outlook-for-q1-2025-12042025",
+      "source_domain": "worldperspectives.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W14",
-      "title": "Soybean Margins - CME Group",
-      "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.margins.html?redirect=/soybeans&videoId=6391140908112",
-      "source_domain": "cmegroup.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W13",
-      "title": "Soybean Meal Mar 2026 Futures Prices and News | SMH26",
-      "url": "https://www.wsj.com/market-data/quotes/futures/SMH26?gaa_at=eafs&gaa_n=AWEtsqfvoiNK4-TAdEHLqAyJjn2XM3hRYE52HdCtchfbJy-6gQ9Hk9e-efc-&gaa_ts=69c8f853&gaa_sig=X3Yq_HiX53vFX5zzHEPL3TXqJ1WhUFwsv39Tb1vgNym7CwkEvuAAW0s15EmrmvlJeIp8B4_D5VvGEmJFF3a_3g%3D%3D",
-      "source_domain": "wsj.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
       "title": "Soybean Meal March 2026 Options Quotes - Markets",
       "url": "https://m.farms.com/markets/market-s?page=optqte&sym=zmh26&mode=d",
       "source_domain": "m.farms.com",
@@ -1051,10 +1740,28 @@
       "source": "web"
     },
     {
+      "id": "W12",
+      "title": "[PDF] Oil Crops Outlook: March 2026 - Economic Research Service",
+      "url": "https://ers.usda.gov/sites/default/files/_laserfiche/outlooks/113933/OCS-26c.pdf%3Fv%3D61003",
+      "source_domain": "ers.usda.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
       "id": "W4",
-      "title": "Soybean Processing Margins Far Weaker Than Past Few Years",
-      "url": "https://www.dtnpf.com/agriculture/web/ag/news/article/2024/04/26/soybean-processing-margins-far-past",
-      "source_domain": "dtnpf.com",
+      "title": "Анализ Рынка Кукурузы: Прогноз Урожая Кукурузы в ЕС ...",
+      "url": "https://commodity-board.com/%D1%80%D1%8B%D0%BD%D0%BE%D0%BA-%D0%BA%D1%83%D0%BA%D1%83%D1%80%D1%83%D0%B7%D1%8B-%D1%81%D1%82%D0%B0%D0%B1%D0%B8%D0%BB%D0%B8%D0%B7%D0%B8%D1%80%D1%83%D0%B5%D1%82%D1%81%D1%8F-%D0%BF%D0%BE-%D0%BC%D0%B5/",
+      "source_domain": "commodity-board.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1069,10 +1776,10 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Иран объявил тендеры по закупке кукурузы и шрота",
-      "url": "https://oleoscope.com/news/iran-objavil-tendery-po-zakupke-kukuruzy-i-shrota/",
-      "source_domain": "oleoscope.com",
+      "id": "W14",
+      "title": "Анализ размера и доли рынка кукурузы - Тенденции роста и ...",
+      "url": "https://www.mordorintelligence.com/ru/industry-reports/maize-market",
+      "source_domain": "mordorintelligence.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1087,28 +1794,10 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Кукуруза: Рост цен в США - Mundus Agri",
-      "url": "https://www.mundus-agri.eu/news/-.n19569.html",
-      "source_domain": "mundus-agri.eu",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "Минпромторг импорт пшеницы в Турции удвоится в ...",
-      "url": "https://axillc.ru/news/novinki/minpromtorg-import-pshenitsy-v-turtsii-udvoitsya-v-2026-godu/",
-      "source_domain": "axillc.ru",
+      "id": "W13",
+      "title": "Высшее ФАО для кукурузы может дать 15 т/га, но ...",
+      "url": "https://ukragroconsult.com/ru/news/vysshee-fao-dlya-kukuruzy-mozhet-dat-15-t-ga-no-vlazhnoe-zerno-sest-pribyl-mnenie/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1124,9 +1813,9 @@
     },
     {
       "id": "W3",
-      "title": "Минсельхоз США снизил прогноз экспорта пшеницы из России | АгроЭкоМиссия - Цифровая платформа знаний",
-      "url": "https://agriecomission.com/news/minselhoz-ssha-snizil-prognoz-eksporta-pshenicy-iz-rossii",
-      "source_domain": "agriecomission.com",
+      "title": "Идея бизнеса: торговля вареной кукурузой - отличный бизнес для новичка",
+      "url": "https://businessmens.ru/article/idea/ideya-biznesa-torgovlya-varenoy-kukuruzoy---otlichnyy-biznes-dlya-novichka",
+      "source_domain": "businessmens.ru",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1141,10 +1830,10 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Мировой рынок зерна и масличных: пшеница, кукуруза ...",
-      "url": "https://graininfo.ru/news/mirovoy-rynok-zerna-i-maslichnykh-pshenitsa-kukuruza-i-soya-podorozhali-v-sredu/",
-      "source_domain": "graininfo.ru",
+      "id": "W9",
+      "title": "Как открыть бизнес по выращиванию кукурузы [бизнес план с расчетами на 2026 год]",
+      "url": "https://hf.ru/c/business_virashivanie-kukuruzi",
+      "source_domain": "hf.ru",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1159,7 +1848,61 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W15",
+      "title": "Кукуруза от производителя: статистика, выращивание и выгоды ...",
+      "url": "https://grainrus.com/novosti-kompanii/articles/kukuruza-ot-proizvoditelya-aktualnye-trendy-i-perspektivy-rossiyskogo-rynka-v-2025-godu/",
+      "source_domain": "grainrus.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Кукуруза – в тренде - Лимагрен",
+      "url": "https://lgseeds.ru/blog/Kukuruzavtrende/",
+      "source_domain": "lgseeds.ru",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Отчет о рынке кукурузы: тенденции, прогноз и конкурентный ...",
+      "url": "https://ru.lucintel.com/corn-market.aspx",
+      "source_domain": "ru.lucintel.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
       "title": "Перспективы роста рынка кукурузы - Latifundist.com",
       "url": "https://latifundist.com/blog/read/1757-perspektivy-rosta-rynka-kukuruzy",
       "source_domain": "latifundist.com",
@@ -1177,10 +1920,10 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Российский рынок кукурузы в 2024 году",
-      "url": "https://ab-centre.ru/news/rossiyskiy-rynok-kukuruzy-v-2024-godu-klyuchevye-tendencii-i-prognozy",
-      "source_domain": "ab-centre.ru",
+      "id": "W5",
+      "title": "Прогноз на зерновой рынок 2025 года: высокие урожаи, низкие ...",
+      "url": "https://millerrussian.com/blog/2025-477",
+      "source_domain": "millerrussian.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1195,7 +1938,25 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W8",
+      "title": "Прогнозы IGC по производству и потреблению кукурузы на 2026 ...",
+      "url": "https://graininfo.ru/news/prognozy-igc-po-proizvodstvu-i-potrebleniyu-kukuruzy-na-2026-27-mg-vyzovy-i-tendentsii/",
+      "source_domain": "graininfo.ru",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
       "title": "Тендер UA-2026-03-02-013970-a кукурудза від 02.03. ...",
       "url": "https://gov.e-tender.ua/tender/produkti-harchuvannya/UA-2026-03-02-013970-a-kukurudza",
       "source_domain": "gov.e-tender.ua",
@@ -1214,9 +1975,9 @@
     },
     {
       "id": "W6",
-      "title": "Эксперты USDA снизили прогноз экспорта кукурузы для ...",
-      "url": "https://agronews.ua/ru/news/%D1%8Dksperty-usda-snyzyly-prognoz-eksporta-kukuruzy-dlya-ukrayny/",
-      "source_domain": "agronews.ua",
+      "title": "Экспортные пошлины на пшеницу, ячмень и кукурузу в ...",
+      "url": "https://www.finam.ru/publications/item/eksportnye-poshliny-na-pshenitsu-yachmen-i-kukuruzu-v-rossii-ostanutsya-nulevymi-s-11-fevralya-20260207-0945/",
+      "source_domain": "finam.ru",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1231,10 +1992,10 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "[PDF] ІННОВАЦІЙНІ ПІДХОДИ ТА НОВІТНІ ТЕНДЕНЦІЇ В УПРАВЛІННІ ...",
-      "url": "https://dspace.nuft.edu.ua/bitstreams/da7ebd02-2b5e-4a74-9b7d-aa8052bb1bbc/download",
-      "source_domain": "dspace.nuft.edu.ua",
+      "id": "W7",
+      "title": "обновленные ГОСТы на нут и кукурузу вступили в силу в ...",
+      "url": "https://mosreg.ru/sobytiya/novosti/news-submoscow/minselkhoz-obnovlennye-gosty-na-nut-i-kukuruzu-vstupili-v-silu-v-regione-s-nachala-goda",
+      "source_domain": "mosreg.ru",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1249,9 +2010,45 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W6",
+      "title": "Fat-and-Oil Industry-2025», яка відбудеться 30 жовтня в ...",
+      "url": "https://www.instagram.com/p/DOMSWhRDJnI/",
+      "source_domain": "instagram.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "[PDF] Untitled - Вінницький Національний аграрний університет",
+      "url": "http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=http://repository.vsau.org/getfile.php/35301.pdf&ved=2ahUKEwjmnNPJlcWTAxXYmokEHdGyEHkQFnoECAYQAg&usg=AOvVaw3fNDsw607Guk1NKXAANgrc",
+      "source_domain": "google.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
       "title": "[PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...",
-      "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
+      "url": "https://vsau.org/assets/images/content/nauka/specrady/diser-semchuk.pdf",
       "source_domain": "vsau.org",
       "snippet": "",
       "date": null,
@@ -1268,9 +2065,9 @@
     },
     {
       "id": "W4",
-      "title": "[PDF] МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ - ResearchGate",
-      "url": "https://www.researchgate.net/profile/Galina-Studinska/publication/377217800_Fenomen_ukrainskogo_volonterstva_v_socialnomu_marketingu/links/659aaa5f6f6e450f19d3f0ee/Fenomen-ukrainskogo-volonterstva-v-socialnomu-marketingu.pdf",
-      "source_domain": "researchgate.net",
+      "title": "[PDF] УКРАЇНСЬКИЙ ЕКОНОМІЧНИЙ ЧАСОПИС",
+      "url": "https://eprints.cdu.edu.ua/7248/1/%25D0%25A3%25D0%2595%25D0%25A7%2520%25E2%2584%25969%25E2%2580%25992025.pdf",
+      "source_domain": "eprints.cdu.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1285,10 +2082,154 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "[PDF] м. Львів, 22 травня 2024",
-      "url": "https://sci.ldubgd.edu.ua/jspui/bitstream/123456789/13764/1/%25D0%2597%25D0%25B1%25D1%2596%25D1%2580%25D0%25BD%25D0%25B8%25D0%25BA%2520%25D1%2582%25D0%25B5%25D0%25B7%25202024%2520%25D0%259F%25D0%25A2.pdf",
-      "source_domain": "sci.ldubgd.edu.ua",
+      "id": "W11",
+      "title": "Маржа переробки сої падає через зниження цін на соєвий шрот — аналітики — Latifundist.com",
+      "url": "https://latifundist.com/novosti/66621-marzha-pererobki-soyi-padaye-cherez-znizhennya-tsin-na-soyevij-shrot--analitiki",
+      "source_domain": "latifundist.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Мировые цены на соевый шрот могут снизиться на фоне увеличения предложения",
+      "url": "https://feedlot.ru/novosti/mirovyie-czenyi-na-soevyij-shrot-mogut-snizitsya-na-fone-uvelicheniya-predlozheniya",
+      "source_domain": "feedlot.ru",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Низкие цены на соевый шрот снижают маржу ...",
+      "url": "https://ukragroconsult.com/ru/news/nizkie-czeny-na-soevyj-shrot-snizhayut-marzhu-pererabotki-v-yuzhnoj-amerike/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Особливості олійного сезону: соя конкурує із соняшником у переробці — AgroPortal.ua",
+      "url": "https://agroportal.ua/publishing/analitika/osoblivosti-oliynogo-sezonu-soya-konkuruye-iz-sonyashnikom-u-pererobci",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Переробляють сою навіть ті ОЕЗи, які раніше з нею не працювали. Що відбувається на ринку олійних і яка краш-маржа переробки бобової — Latifundist.com",
+      "url": "https://latifundist.com/spetsproekt/1128-vidsutnist-sonyashnika-shtovhaye-oezi-perehoditi-na-soyu-zapitali-u-pererobnikiv-shcho-z-krash-marzhoyu-pererobki-bobovoyi-ta-rinkami",
+      "source_domain": "latifundist.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Попит на сою в Китаї у третьому кварталі сповільниться ...",
+      "url": "https://ukragroconsult.com/news/popyt-na-soyu-v-kytayi-u-tretomu-kvartali-spovilnytsya-cherez-padinnya-czin-na-shrot-ta-znyzhennya-marzhi-pererobky/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "2026 рік не принесе суттєвого подорожчання ...",
+      "url": "https://ukragroconsult.com/news/2026-rik-ne-prynese-suttyevogo-podorozhchannya-sonyashnykovoyi-oliyi-v-ukrayini/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "One moment, please...",
+      "url": "https://voez.com.ua/publikacziyi/",
+      "source_domain": "voez.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "SELECTED PAPERS EUROPEAN DIMENSIONS OF ...",
+      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
+      "source_domain": "ec.europa.eu",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1321,46 +2262,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "На морі і на землі. Чим \"світова війна\" за олію загрожує Україні й українцям",
-      "url": "https://www.unian.ua/economics/agro/na-mori-i-na-zemli-chim-svitova-viyna-za-oliyu-zagrozhuye-ukrajini-y-ukrajincyam-13269165.html",
-      "source_domain": "unian.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
-      "title": "Поиск по тегу #соняшникова олія в новостях, статьях, фото и видео, досье и компаниях — Latifundist.com",
-      "url": "https://latifundist.com/tag/%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0%20%D0%BE%D0%BB%D1%96%D1%8F",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
-      "title": "Суттєвого подорожчання соняшникової олії очікувати не ...",
-      "url": "https://www.ukr.net/news/details/economics/115453372.html",
-      "source_domain": "ukr.net",
+      "id": "W11",
+      "title": "Відновлення олійно-жирової галузі України у 2026 році",
+      "url": "https://agroreview.com/content/olijno-zhyrova-galuz-ukrayiny-vidnovlyuyetsya/",
+      "source_domain": "agroreview.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1376,6 +2281,78 @@
     },
     {
       "id": "W5",
+      "title": "Експерти оцінили втрати України від зупинки експорту соняшникової олії – AgroNews",
+      "url": "https://agronews.ua/news/eksperty-oczinyly-vtraty-ukrayiny-vid-zupynky-eksportu-sonyashnykovoyi-oliyi/",
+      "source_domain": "agronews.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "ЗБІРНИК НАУКОВИХ ПРАЦЬ за матеріалами VІІ ...",
+      "url": "https://snu.edu.ua/wp-content/uploads/2024/07/o_a_o_2024.pdf",
+      "source_domain": "snu.edu.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ...",
+      "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
+      "source_domain": "vsau.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ",
+      "url": "https://www.researchgate.net/profile/Galina-Studinska/publication/377217800_Fenomen_ukrainskogo_volonterstva_v_socialnomu_marketingu/links/659aaa5f6f6e450f19d3f0ee/Fenomen-ukrainskogo-volonterstva-v-socialnomu-marketingu.pdf",
+      "source_domain": "researchgate.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
       "title": "Україна в лідерах постачання соняшникової олії в ЄС",
       "url": "https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834",
       "source_domain": "24tv.ua",
@@ -1393,7 +2370,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W14",
       "title": "Україна забезпечила близько 92% імпорту соняшникової ...",
       "url": "https://landlord.ua/news/ukrayina-zabezpechyla-blyzko-92-importu-sonyashnykovoyi-oliyi-do-yes-u-2025-26-mr/",
       "source_domain": "landlord.ua",
@@ -1411,7 +2388,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W9",
       "title": "Україна утримує лідерство з постачання соняшникової ...",
       "url": "https://ukragroconsult.com/news/ukrayina-utrymuye-liderstvo-z-postachannya-sonyashnykovoyi-oliyi-do-yes/",
       "source_domain": "ukragroconsult.com",
@@ -1429,10 +2406,10 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "Україна — №1 у світі з виробництва соняшникової олії ...",
-      "url": "https://www.instagram.com/reel/DNLp6exKGeu/",
-      "source_domain": "instagram.com",
+      "id": "W13",
+      "title": "Ціни на продукти стрімко зростають: що буде далі",
+      "url": "https://podrobnosti.ua/2513799-tsni-na-produkti-strmko-zrostajut-scho-bude-dal.html",
+      "source_domain": "podrobnosti.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1447,28 +2424,10 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "Українцям не радять робити запаси олії попри можливе ...",
-      "url": "https://agronews.ua/news/ukrayinczyam-ne-radyat-robyty-zapasy-oliyi-popry-mozhlyve-zrostannya-czin/",
-      "source_domain": "agronews.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "Я читаю під схожими відео коментарі. Уважно. І там ... - TikTok",
-      "url": "https://www.tiktok.com/%40kozhukhivskyi/video/7599287057730587926",
-      "source_domain": "tiktok.com",
+      "id": "W6",
+      "title": "маркетинг та логістика в агробізнесі",
+      "url": "https://nubip.edu.ua/sites/default/files/u169/zbirnik_tez_konf_mark_ta_logistika_v_agrobiznesi.pdf",
+      "source_domain": "nubip.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1484,7 +2443,7 @@
     }
   ],
   "meta": {
-    "inputFiles": 8,
-    "itemCount": 84
+    "inputFiles": 10,
+    "itemCount": 134
   }
 }

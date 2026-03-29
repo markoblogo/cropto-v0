@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-29T10:03:28.190547+00:00
+**Generated:** 2026-03-29T13:15:12.559554+00:00
 **Date Range:** 2026-02-27 to 2026-03-29
 **Mode:** all
 
@@ -10,7 +10,7 @@
 
 ## X Posts
 
-### X4: @Seal_Di
+### X5: @Seal_Di
 
 - **URL:** https://x.com/Seal_Di/status/2033761745131471304
 - **Date:** 2026-03-17 (confidence: high)
@@ -20,7 +20,7 @@
 
 > @homobanderivka що їм соняшникова олія зробила😭😭😭
 
-### X3: @shved_y73778
+### X4: @shved_y73778
 
 - **URL:** https://x.com/shved_y73778/status/2033782692169285813
 - **Date:** 2026-03-17 (confidence: high)
@@ -32,7 +32,16 @@
 З шоколадом - це два РІЗНІ продукти: компактна пожива та стимулятор (теобромін+кофеїн)
 За йогурти згоден, але тому що не люблю ароматизаторав та підсолоджувачів - я краще варення у білий додам.
 
-### X7: @soncesonce
+### X1: @Andriy_Zas
+
+- **URL:** https://x.com/Andriy_Zas/status/2038219258727911734
+- **Date:** 2026-03-29 (confidence: high)
+- **Score:** 50/100
+- **Relevance:** 
+
+> @CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця.
+
+### X8: @soncesonce
 
 - **URL:** https://x.com/soncesonce/status/2029333867136458950
 - **Date:** 2026-03-04 (confidence: high)
@@ -42,7 +51,7 @@
 
 > сюди ще капусту квашану або свіжий салат з молодої тонко посіченої капусти кріп цибуля і олія прямого віджиму соняшникова - і взагалі красота
 
-### X5: @busia09
+### X6: @busia09
 
 - **URL:** https://x.com/busia09/status/2033221717665935676
 - **Date:** 2026-03-15 (confidence: high)
@@ -52,7 +61,7 @@
 
 > @o_zhab зазвичай добре допомагає звичайна соняшникова олія
 
-### X1: @mmx88mhz
+### X2: @mmx88mhz
 
 - **URL:** https://x.com/mmx88mhz/status/2035535595850641535
 - **Date:** 2026-03-22 (confidence: high)
@@ -63,7 +72,7 @@
 > @locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. 
 Що робити =&gt; викинути
 
-### X2: @hmaro4os
+### X3: @hmaro4os
 
 - **URL:** https://x.com/hmaro4os/status/2034315069845107095
 - **Date:** 2026-03-18 (confidence: high)
@@ -73,7 +82,7 @@
 
 > Екологи припускають, що це наслідки обстрілу росіянами портового терміналу 20 грудня: тоді соняшникова олія буквально текла вулицями.
 
-### X6: @ihor_kho
+### X7: @ihor_kho
 
 - **URL:** https://x.com/ihor_kho/status/2029639411609076109
 - **Date:** 2026-03-05 (confidence: high)
@@ -86,47 +95,57 @@
 
 ## Web Results
 
-### W2: (PDF) Agricultural exports of Ukraine in the conditions of war.
+### W4: [PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...
+
+- **Source:** ec.europa.eu
+- **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W13: [PDF] ЕКОНОМІКА І МЕНЕДЖМЕНТ 2025: ПЕРСПЕКТИВИ ІНТЕГРАЦІЇ ...
+
+- **Source:** dnu.dp.ua
+- **URL:** https://www.dnu.dp.ua/docs/ndc/2025/materiali_konferentciy/5_Zbirnyk-konferentsiyi-2025-Tom-4.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W7: [PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...
+
+- **Source:** vsau.org
+- **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W8: [PDF] МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ - ResearchGate
 
 - **Source:** researchgate.net
-- **URL:** https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war
+- **URL:** https://www.researchgate.net/profile/Galina-Studinska/publication/377217800_Fenomen_ukrainskogo_volonterstva_v_socialnomu_marketingu/links/659aaa5f6f6e450f19d3f0ee/Fenomen-ukrainskogo-volonterstva-v-socialnomu-marketingu.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W10: [PDF] Відбудова України: принципи та політика - CEPR
+### W2: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
 
-- **Source:** cepr.org
-- **URL:** https://cepr.org/system/files/2022-12/reconstruction%20book_Ukrainian_0.pdf
+- **Source:** kurkul.com
+- **URL:** https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W13: [PDF] ШЕВЧЕНКІВСЬКА ВЕСНА 2025 ЕКОНОМІКА УКРАЇНИ 2025
-
-- **Source:** econom.knu.ua
-- **URL:** https://econom.knu.ua/wp-content/uploads/2025/04/%D0%A8%D0%92-%D0%B7%D0%B1%D1%96%D1%80%D0%BD%D0%B8%D0%BA_2025_%D1%81%D0%B0%D0%B9%D1%82.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W6: [PDF] маркетинг та логістика в агробізнесі - НУБіП
-
-- **Source:** nubip.edu.ua
-- **URL:** https://nubip.edu.ua/sites/default/files/u169/zbirnik_tez_konf_mark_ta_logistika_v_agrobiznesi.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W11: Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло
+### W12: Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло
 
 - **Source:** slovoidilo.ua
 - **URL:** https://www.slovoidilo.ua/2026/02/13/infografika/ekonomika/ridke-zoloto-yak-zminyuvalysya-obsyahy-eksportu-ta-cziny-ukrayinskoyi-oliyi
@@ -136,37 +155,17 @@
 
 > 
 
-### W14: ПРОБЛЕМИ ЛОГІСТИКИ СОНЯШНИКОВОЇ ОЛІЇ В ...
+### W14: Поиск по тегу #соняшникова олія в новостях, статьях, фото и видео, досье и компаниях — Latifundist.com
 
-- **Source:** dspace.lute.lviv.ua
-- **URL:** https://dspace.lute.lviv.ua/items/90436f87-db03-4833-978b-07701dad26e0
+- **Source:** latifundist.com
+- **URL:** https://latifundist.com/tag/%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0%20%D0%BE%D0%BB%D1%96%D1%8F
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W7: РОЛЬ УКРАЇНИ НА СВІТОВОМУ РИНКУ СОНЯШНИКУ І ...
-
-- **Source:** archive.journal-grail.science
-- **URL:** https://archive.journal-grail.science/index.php/2710-3056/article/view/3808
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W15: Топ-5 торгових марок соняшникової олії в Україні у 2026 - UKR.NET
-
-- **Source:** ukr.net
-- **URL:** https://www.ukr.net/news/details/economics/116525930.html
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W5: Україна в лідерах постачання соняшникової олії в ЄС - 24 Канал
+### W6: Україна в лідерах постачання соняшникової олії в ЄС
 
 - **Source:** 24tv.ua
 - **URL:** https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834
@@ -176,7 +175,27 @@
 
 > 
 
-### W8: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
+### W11: Україна забезпечила близько 92% імпорту соняшникової ...
+
+- **Source:** landlord.ua
+- **URL:** https://landlord.ua/news/ukrayina-zabezpechyla-blyzko-92-importu-sonyashnykovoyi-oliyi-do-yes-u-2025-26-mr/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W15: Україна забезпечила майже 92% імпорту соняшникової олії до ЄС у 2025/26 МР
+
+- **Source:** interfax.com.ua
+- **URL:** https://interfax.com.ua/news/economic/1150124.html
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W3: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin
@@ -186,7 +205,7 @@
 
 > 
 
-### W3: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+### W5: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
 
 - **Source:** forbes.ua
 - **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
@@ -196,30 +215,20 @@
 
 > 
 
-### W12: Україна утримує лідерство з постачання соняшникової олії до ЄС — AgroPortal.ua
+### W10: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
 
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/ukrajina-utrimuye-liderstvo-z-postachannya-sonyashnikovoji-oliji-do-yes
+- **Source:** e-land.ua
+- **URL:** https://e-land.ua/news/item/ukrayina-u-2026-rotsi-zberezhe-vyrobnytstvo-soniashnykovoyi-oliyi-na-rivni-blyzko-4-mln-tonn
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W4: Українська соняшникова олія в глобальному масштабі
+### W9: Україна утримує лідерство з постачання соняшникової ...
 
 - **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W9: Чому в Україні дорожчає соняшникова олія і коли чекати ...
-
-- **Source:** agronews.ua
-- **URL:** https://agronews.ua/news/chomu-v-ukrayini-dorozhchaye-sonyashnykova-oliya-i-koly-chekaty-znyzhennya-czin/
+- **URL:** https://ukragroconsult.com/news/ukrayina-utrymuye-liderstvo-z-postachannya-sonyashnykovoyi-oliyi-do-yes/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 

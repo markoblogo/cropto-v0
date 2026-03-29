@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-03-29T10:03:28.447312+00:00",
+  "generatedAt": "2026-03-29T13:15:12.874872+00:00",
   "items": [
     {
-      "id": "X11",
+      "id": "X12",
       "text": "Пані @ankapavlyk - мені замовили каштанчик в подарунок на ДН і він неймовірний\nЩе й двоє друзів замовили їх, ну вони🤌😁 https://t.co/TDHUkTPwbv",
       "url": "https://x.com/jenny_has_a_gun/status/2038176246329196835",
       "author_handle": "jenny_has_a_gun",
       "date": "2026-03-29",
       "date_confidence": "high",
       "engagement": {
-        "likes": 12,
+        "likes": 26,
         "replies": 4
       },
       "relevance": 0.0,
@@ -17,44 +17,40 @@
       "subs": {
         "relevance": 0,
         "recency": 100,
-        "engagement": 55
+        "engagement": 78
       },
-      "score": 41,
+      "score": 48,
       "source": "x",
       "title": "Пані @ankapavlyk - мені замовили каштанчик в подарунок на ДН і він неймовірний\nЩе й двоє друзів замовили їх, ну вони🤌😁 https://t.co/TDHUkTPwbv"
     },
     {
-      "id": "X28",
-      "text": "@CatSmile87 кукурудза, біб (але може зʼїсти мошка) квасоля, якщо без тик, мангольд, шпинат, всяка зелень та пряні трави, цибуля, буряк і морква потребують і прополювання і проривання, але теж не дуже вередливі (буває їдять черви, якзо грунт заражений)",
-      "url": "https://x.com/thuglifeofrats/status/2037873224340386128",
-      "author_handle": "thuglifeofrats",
-      "date": "2026-03-28",
+      "id": "X1",
+      "text": "@CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця.",
+      "url": "https://x.com/Andriy_Zas/status/2038219258727911734",
+      "author_handle": "Andriy_Zas",
+      "date": "2026-03-29",
       "date_confidence": "high",
-      "engagement": {
-        "likes": 4,
-        "replies": 1
-      },
-      "relevance": 0.17,
+      "engagement": null,
+      "relevance": 0.39,
       "why_relevant": "",
       "subs": {
-        "relevance": 17,
-        "recency": 96,
-        "engagement": 26
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
       },
-      "score": 39,
+      "score": 50,
       "source": "x",
-      "title": "@CatSmile87 кукурудза, біб (але може зʼїсти мошка) квасоля, якщо без тик, мангольд, шпинат, всяка зелень та пряні трави, цибуля, буряк і морква потребують і прополювання і проривання, але теж не дуже вередливі (буває їдять черви, якзо грунт заражений)"
+      "title": "@CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця."
     },
     {
-      "id": "X25",
+      "id": "X28",
       "text": "Ходила на побачення з прекрасним містом❤️ https://t.co/0L6IrphWIp",
       "url": "https://x.com/jenny_has_a_gun/status/2037967476600758492",
       "author_handle": "jenny_has_a_gun",
       "date": "2026-03-28",
       "date_confidence": "high",
       "engagement": {
-        "likes": 58,
-        "reposts": 1,
+        "likes": 61,
         "replies": 4
       },
       "relevance": 0.0,
@@ -67,6 +63,28 @@
       "score": 54,
       "source": "x",
       "title": "Ходила на побачення з прекрасним містом❤️ https://t.co/0L6IrphWIp"
+    },
+    {
+      "id": "X20",
+      "text": "Ексміністру агропромислового розвитку Сольському обрали запобіжний захід у справі про фіктивний продаж кукурдзи на 63,7 млн грн https://t.co/npJQ7gppqI",
+      "url": "https://x.com/EspresoTV/status/2037977439545049463",
+      "author_handle": "EspresoTV",
+      "date": "2026-03-28",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 21,
+        "reposts": 7
+      },
+      "relevance": 0.0,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 0,
+        "recency": 96,
+        "engagement": 86
+      },
+      "score": 49,
+      "source": "x",
+      "title": "Ексміністру агропромислового розвитку Сольському обрали запобіжний захід у справі про фіктивний продаж кукурдзи на 63,7 млн грн https://t.co/npJQ7gppqI"
     },
     {
       "id": "X1",
@@ -88,7 +106,7 @@
       "title": "Продам шрот соєвий, пп Благодарагро (№291935)\n\nПродам шрот соєвий 100 тон за ціною 19700 грн за тонну пп Благодарагро в Кіровоградській області, Світловодський район, Світловодськ (Пропозиція №291935)  https://t.co/SdflUcNapS"
     },
     {
-      "id": "X1",
+      "id": "X2",
       "text": "@locpell Тефлон дає економію соняшникової олії при готуванні, відповідно економію калорій у їжі.  Соняшникова олія дуже калорійна і наприклад у чугуні або сталі калорії їжі вийдуть у рази більше. \nЩо робити =&gt; викинути",
       "url": "https://x.com/mmx88mhz/status/2035535595850641535",
       "author_handle": "mmx88mhz",
@@ -130,7 +148,7 @@
       "title": "$BG — the only name in my commodity supercycle watchlist where the mean case is a LOSS from current price.\n\nHere’s why I’m not touching it yet.\n\nBunge is a spread business. Crush margin = soy oil + soy meal output MINUS soybean input. When beans rise faster than outputs, margins compress. That’s the core risk everyone misses.\n\nValuation: \n10x EV/EBITDA — richest in the group, above its own sector median. Post-Viterra merger debt sits at $12.2B. 45Z biofuel tax credit still uncertain.\n\nYes, US so"
     },
     {
-      "id": "X2",
+      "id": "X3",
       "text": "Екологи припускають, що це наслідки обстрілу росіянами портового терміналу 20 грудня: тоді соняшникова олія буквально текла вулицями.",
       "url": "https://x.com/hmaro4os/status/2034315069845107095",
       "author_handle": "hmaro4os",
@@ -161,7 +179,7 @@
       "relevance": 0.92
     },
     {
-      "id": "X4",
+      "id": "X5",
       "text": "@homobanderivka що їм соняшникова олія зробила😭😭😭",
       "url": "https://x.com/Seal_Di/status/2033761745131471304",
       "author_handle": "Seal_Di",
@@ -182,7 +200,7 @@
       "title": "@homobanderivka що їм соняшникова олія зробила😭😭😭"
     },
     {
-      "id": "X3",
+      "id": "X4",
       "text": "@homobanderivka Тобто пресова соняшникова олія типу шкідлива, а жир хер пойми чого корисний?\nЗ шоколадом - це два РІЗНІ продукти: компактна пожива та стимулятор (теобромін+кофеїн)\nЗа йогурти згоден, але тому що не люблю ароматизаторав та підсолоджувачів - я краще варення у білий додам.",
       "url": "https://x.com/shved_y73778/status/2033782692169285813",
       "author_handle": "shved_y73778",
@@ -203,7 +221,7 @@
       "title": "@homobanderivka Тобто пресова соняшникова олія типу шкідлива, а жир хер пойми чого корисний?\nЗ шоколадом - це два РІЗНІ продукти: компактна пожива та стимулятор (теобромін+кофеїн)\nЗа йогурти згоден, але тому що не люблю ароматизаторав та підсолоджувачів - я краще варення у білий додам."
     },
     {
-      "id": "X5",
+      "id": "X6",
       "text": "@o_zhab зазвичай добре допомагає звичайна соняшникова олія",
       "url": "https://x.com/busia09/status/2033221717665935676",
       "author_handle": "busia09",
@@ -269,7 +287,7 @@
       "title": "There’s chatter about no bids for Brz beans. That doesn’t make any sense — in fact, it’s the opposite.\n\nChinese crushers have good board crush margins, and daily soybean meal sales are improving.\n\nThe issue is on the offer side. Very few This week offers CFR China this week. Exporters in Brazil are not willing to take the risk on freight and phyto certs."
     },
     {
-      "id": "X6",
+      "id": "X7",
       "text": "@gramm_football М'ясо – те, яке є)\nТам готують частіше з яловичини. Тут в мене була свинина. Олія там бажано шоб була бавовняна, тут в мене рафінована соняшникова. Трохи кинув масла, бо треба було його вже кудись пустити, шоб не старіло. Кажуть, шо курдючне сало дає гарний смак.",
       "url": "https://x.com/ihor_kho/status/2029639411609076109",
       "author_handle": "ihor_kho",
@@ -291,7 +309,7 @@
       "title": "@gramm_football М'ясо – те, яке є)\nТам готують частіше з яловичини. Тут в мене була свинина. Олія там бажано шоб була бавовняна, тут в мене рафінована соняшникова. Трохи кинув масла, бо треба було його вже кудись пустити, шоб не старіло. Кажуть, шо курдючне сало дає гарний смак."
     },
     {
-      "id": "X7",
+      "id": "X8",
       "text": "сюди ще капусту квашану або свіжий салат з молодої тонко посіченої капусти кріп цибуля і олія прямого віджиму соняшникова - і взагалі красота",
       "url": "https://x.com/soncesonce/status/2029333867136458950",
       "author_handle": "soncesonce",
@@ -420,7 +438,25 @@
       "relevance": 0.72
     },
     {
-      "id": "W6",
+      "id": "W13",
+      "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
+      "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
+      "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
       "title": "AgroPortal Bulgaria | LinkedIn",
       "url": "https://www.linkedin.com/company/agroportal-bulgaria",
       "source_domain": "linkedin.com",
@@ -438,7 +474,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W9",
       "title": "Black Sea Cereal Company | LinkedIn",
       "url": "https://www.linkedin.com/company/black-sea-cereal-company",
       "source_domain": "linkedin.com",
@@ -456,7 +492,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W10",
       "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
@@ -492,7 +528,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W15",
       "title": "Black Sea wheat intensifies global competition as Poland explores new export markets",
       "url": "https://ukragroconsult.com/en/news/black-sea-wheat-intensifies-global-competition-as-poland-explores-new-export-markets/",
       "source_domain": "ukragroconsult.com",
@@ -510,7 +546,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W4",
       "title": "COMMODITIES 2026: Russian wheat output expected to fall as farmers pivot to oilseeds | S&P Global",
       "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/121525-commodities-2026-russian-wheat-output-expected-to-fall-as-farmers-pivot-to-oilseeds",
       "source_domain": "spglobal.com",
@@ -528,10 +564,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Corn & Wheat Market Outlook 2026 - YouTube",
-      "url": "https://www.youtube.com/watch%3Fv%3Dl8TyV3AmWCk",
-      "source_domain": "youtube.com",
+      "id": "W7",
+      "title": "Export prices FOB on 17-03-2026",
+      "url": "https://agridata.ec.europa.eu/Reports/Cereals_Dashboard.pdf",
+      "source_domain": "agridata.ec.europa.eu",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -546,7 +582,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W8",
       "title": "Key changes in Russian wheat market for first half of MY 2025/26: 2026 preview - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/key-changes-in-russian-wheat-market-for-first-half-of-my-2025-26-2026-preview/",
       "source_domain": "fastmarkets.com",
@@ -564,8 +600,8 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Prices for Ukrainian wheat rise to $220/tonne amid Iran ...",
+      "id": "W11",
+      "title": "Prices for Ukrainian wheat rise to $220/tonne amid Iran events",
       "url": "https://interfax.com/newsroom/top-stories/116411/",
       "source_domain": "interfax.com",
       "snippet": "",
@@ -582,25 +618,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Ukraine. Hopes for seasonal increase in food wheat prices may not ...",
-      "url": "https://ukragroconsult.com/en/news/ukraine-hopes-for-seasonal-increase-in-food-wheat-prices-may-not-be-realized/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
+      "id": "W3",
       "title": "Wheat Futures Attempt Breakout as Black Sea Risks ...",
       "url": "https://www.theglobeandmail.com/investing/markets/commodities/LSH23/pressreleases/640218/wheat-futures-attempt-breakout-as-black-sea-risks-and-weather-concerns-reenter-the-market/",
       "source_domain": "theglobeandmail.com",
@@ -618,7 +636,25 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W14",
+      "title": "Wheat market outlook: Russia exports surge, EU yields soften ...",
+      "url": "https://commodity-board.com/wheat-under-pressure-as-russia-boosts-exports-and-eu-yield-outlook-softens/",
+      "source_domain": "commodity-board.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
       "title": "Wheat price commentary: Futures rally on tight Black Sea supply, steady premiums - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/wheat-price-commentary-futures-rally-on-tight-black-sea-supply-steady-premiums/",
       "source_domain": "fastmarkets.com",
@@ -636,9 +672,9 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Wheat prices in Ukraine 24.11.2025 - UkrAgroConsult",
-      "url": "https://ukragroconsult.com/en/wheat-prices/",
+      "id": "W12",
+      "title": "[PDF] Black Sea Wheat Market Faces New Competition and Price ...",
+      "url": "https://ukragroconsult.com/wp-content/uploads/2026/03/wheateng.pdf",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
@@ -654,10 +690,10 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "[PDF] Export prices FOB on 17-03-2026",
-      "url": "https://agridata.ec.europa.eu/Reports/Cereals_Dashboard.pdf",
-      "source_domain": "agridata.ec.europa.eu",
+      "id": "W15",
+      "title": "A sensitive soybean market—White House delays China talks",
+      "url": "https://www.youtube.com/watch%3Fv%3DgcbvRatBIDU",
+      "source_domain": "youtube.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -672,10 +708,28 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "As Biofuel Policy Clouds Soybean Crush Outlook, Capacity Expansion in Kansas Offers Bright Spot - RFD",
-      "url": "https://www.rfdtv.com/biofuel-policy-uncertainty-hits-soybeans-kansas-crush-offers-bright-spot",
-      "source_domain": "rfdtv.com",
+      "id": "W12",
+      "title": "An Uncertain Outlook for US Soybeans in 2026 | Presented by CME Group - YouTube",
+      "url": "https://www.youtube.com/watch%3Fv%3DscBFeV0iduM",
+      "source_domain": "youtube.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "China soybean crush margins remain negative | Latest Market News",
+      "url": "https://www.argusmedia.com/pt/news/2194602-china-soybean-crush-margins-remain-negative%3FbackToResults%3Dtrue",
+      "source_domain": "argusmedia.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -691,24 +745,6 @@
     },
     {
       "id": "W8",
-      "title": "Navigating Soybean Crush Margins",
-      "url": "https://walshtrading.com/navigating-soybean-crush-margins/",
-      "source_domain": "walshtrading.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
       "title": "Norfolk Crush | LinkedIn",
       "url": "https://www.linkedin.com/company/norfolk-crush",
       "source_domain": "linkedin.com",
@@ -726,25 +762,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "OILEX - International Multi Oil Extraction Company | LinkedIn",
-      "url": "https://www.linkedin.com/company/oilex-international-oil-extraction-company",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
+      "id": "W6",
       "title": "Oxbow Crush | LinkedIn",
       "url": "https://www.linkedin.com/company/oxbow-crush",
       "source_domain": "linkedin.com",
@@ -780,7 +798,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W11",
       "title": "Soy Product Pricing and Crush Margins Amid Energy ...",
       "url": "https://worldperspectives.com/articles/soy-product-pricing-and-crush-margins-amid-energy-uncertainty",
       "source_domain": "worldperspectives.com",
@@ -798,10 +816,28 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W10",
       "title": "Soybean Crushing Company & Derivatives | LinkedIn",
       "url": "https://www.linkedin.com/company/soybean-crushing-company-&-derivatives",
       "source_domain": "linkedin.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Soybean Meal Futures Margins - CME Group",
+      "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean-meal.margins.html",
+      "source_domain": "cmegroup.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -834,7 +870,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W7",
       "title": "Stable trade relations key to an improved soybean outlook in 2026",
       "url": "https://www.farmprogress.com/soybean/what-key-soybean-events-last-year-mean-for-2026",
       "source_domain": "farmprogress.com",
@@ -852,26 +888,8 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Terrain | 2026 Feed Outlook Has Margin Risk",
-      "url": "https://www.terrainag.com/insights/2026-feed-outlook-has-margin-risk/",
-      "source_domain": "terrainag.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
-      "title": "The Slow Soybean Switch - Terrain Ag",
+      "id": "W3",
+      "title": "The Slow Soybean Switch",
       "url": "https://www.terrainag.com/insights/the-slow-soybean-switch/",
       "source_domain": "terrainag.com",
       "snippet": "",
@@ -888,7 +906,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "The Soy Crush Expansion Draws Parallels to Ethanol Boom. Here Are the Differences. - Pro Farmer",
       "url": "https://www.profarmer.com/news/agriculture-news/soy-crush-expansion-draws-parallels-ethanol-boom-here-are-differences",
       "source_domain": "profarmer.com",
@@ -906,10 +924,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "User | chroniclejournal.com - Hedge Funds Pivot to Biofuels: Corn and Soymeal Demand Surges Amid Energy Crisis",
-      "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-26-hedge-funds-pivot-to-biofuels-corn-and-soymeal-demand-surges-amid-energy-crisis",
-      "source_domain": "markets.chroniclejournal.com",
+      "id": "W9",
+      "title": "What to Watch in 2026: The Market Forces That Could Reset Farm ...",
+      "url": "https://www.youtube.com/watch%3Fv%3DfAW1uTgpsAE",
+      "source_domain": "youtube.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -924,7 +942,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "IGC предупредил о дисбалансе мирового рынка кукурузы",
       "url": "https://logos-pres.md/ru/novosti/prognoz-igc-vozmozhen-disbalans-mirovogo-rynka-kukuruzy/",
       "source_domain": "logos-pres.md",
@@ -942,44 +960,8 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "SunSirs: прогноз рынка кукурузы Китая на 2026 год после пика в июле 2025 года",
-      "url": "https://www.sunsirs.com/ru/detail_news-30415.html",
-      "source_domain": "sunsirs.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W13",
-      "title": "Ìèðîâîé ðûíîê çåðíà è ìàñëè÷íûõ: ïøåíèöà è ñîÿ ïîäîðîæàëè â ÷åòâåðã, êóêóðóçà ïîäåøåâåëà",
-      "url": "https://www.zol.ru/n/40ad4",
-      "source_domain": "zol.ru",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
-      "title": "Азия и перестройка мирового рынка кукурузы: прогнозы ...",
+      "id": "W11",
+      "title": "Азия и перестройка мирового рынка кукурузы: прогнозы на 2026 ...",
       "url": "https://graininfo.ru/news/aziya-i-perestroyka-mirovogo-rynka-kukuruzy-prognozy-na-2026-god/",
       "source_domain": "graininfo.ru",
       "snippet": "",
@@ -996,10 +978,10 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "В феврале 2026 г. цены на кукурузу демонстрировали разнонаправленное движение, а пшеница подорожала даже несмотря на обильное предложение. Цены на рис увеличились незначительно | Мониторинге и анализе",
-      "url": "https://www.fao.org/giews/food-prices/international-prices/detail/ru/c/1757883/",
-      "source_domain": "fao.org",
+      "id": "W9",
+      "title": "Анализ Рынка Кукурузы: Прогноз Урожая Кукурузы в ЕС ...",
+      "url": "https://commodity-board.com/%D1%80%D1%8B%D0%BD%D0%BE%D0%BA-%D0%BA%D1%83%D0%BA%D1%83%D1%80%D1%83%D0%B7%D1%8B-%D1%81%D1%82%D0%B0%D0%B1%D0%B8%D0%BB%D0%B8%D0%B7%D0%B8%D1%80%D1%83%D0%B5%D1%82%D1%81%D1%8F-%D0%BF%D0%BE-%D0%BC%D0%B5/",
+      "source_domain": "commodity-board.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1014,9 +996,45 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "Мировой рынок зерна и масличных: пшеница и кукурузу подешевели во вторник, цены на сою незначительно выросли - OilWorld.ru - все масла мира",
-      "url": "https://www.oilworld.ru/news/forage/366293",
+      "id": "W13",
+      "title": "Конфликт на Ближнем Востоке не должен оказать ...",
+      "url": "https://www.finam.ru/publications/item/konflikt-na-blizhnem-vostoke-ne-dolzhen-okazat-pryamogo-vliyaniya-na-stoimost-zerna-20260326-1505/",
+      "source_domain": "finam.ru",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Кукуруза от производителя: статистика, выращивание и выгоды ...",
+      "url": "https://grainrus.com/novosti-kompanii/articles/kukuruza-ot-proizvoditelya-aktualnye-trendy-i-perspektivy-rossiyskogo-rynka-v-2025-godu/",
+      "source_domain": "grainrus.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Мировой рынок зерна и масличных: цены на кукурузу незначительно выросли в пятницу, пшеница и соя подешевели - OilWorld.ru - все масла мира",
+      "url": "https://www.oilworld.ru/news/forage/366228",
       "source_domain": "oilworld.ru",
       "snippet": "",
       "date": null,
@@ -1032,25 +1050,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "Мировой рынок зерна и масличных: пшеница и соя подорожали ...",
-      "url": "https://www.oilworld.ru/news/forage/366163",
-      "source_domain": "oilworld.ru",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W2",
+      "id": "W8",
       "title": "Мировой рынок кукурузы 2026/27: производство снижается, спрос растёт",
       "url": "https://agroexpert.md/rus/v-mire/mirovoy-rynok-kukuruzy-2026-27-proizvodstvo-snizhaetsya-spros-rastet",
       "source_domain": "agroexpert.md",
@@ -1068,10 +1068,10 @@
       "source": "web"
     },
     {
-      "id": "W9",
-      "title": "Перспективы роста рынка кукурузы - Latifundist.com",
-      "url": "https://latifundist.com/blog/read/1757-perspektivy-rosta-rynka-kukuruzy",
-      "source_domain": "latifundist.com",
+      "id": "W3",
+      "title": "Прогноз на зерновой рынок 2025 года: высокие урожаи, низкие маржи и растущие риски | Miller Magazine Russian",
+      "url": "https://millerrussian.com/blog/2025-477",
+      "source_domain": "millerrussian.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1086,7 +1086,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W6",
       "title": "Прогноз цен на кукурузу. Цены, новости, аналитика.",
       "url": "https://www.zol.ru/prognoz-tsen-na-kukuruzu.htm",
       "source_domain": "zol.ru",
@@ -1104,7 +1104,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W10",
       "title": "Пшеница, кукуруза и соя подорожали в среду на ...",
       "url": "https://ukragroconsult.com/ru/news/pshenicza-kukuruza-i-soya-podorozhali-v-sredu-na-chikagskoj-birzhe-2/",
       "source_domain": "ukragroconsult.com",
@@ -1122,9 +1122,9 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Рынок кукурузы США в 2026 году будет оставаться под ...",
-      "url": "https://ukragroconsult.com/ru/news/rynok-kukuruzy-ssha-v-2026-godu-budet-ostavatsya-pod-davleniem-rekordnogo-predlozheniya/",
+      "id": "W15",
+      "title": "Рекордный урожай кукурузы в США увеличивает ...",
+      "url": "https://ukragroconsult.com/ru/news/rekordnyj-urozhaj-kukuruzy-v-ssha-uvelichivaet-davlenie-na-mirovye-czeny/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
@@ -1140,10 +1140,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Спрос на кормовую кукурузу упадет в 2026 году - SunSirs",
-      "url": "https://www.sunsirs.com/m-ru/page/commodity-news-detail/commodity-news-detail-30192.html",
-      "source_domain": "sunsirs.com",
+      "id": "W4",
+      "title": "Тендеры и закупки кукурузы | Все тендеры России",
+      "url": "https://rostender.info/category/tendery-na-kukuruzu",
+      "source_domain": "rostender.info",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1158,10 +1158,10 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "прогноз мирового производства кукурузы на 2025 / 2026 ...",
-      "url": "https://www.sunsirs.com/ru/detail_news-25995.html",
-      "source_domain": "sunsirs.com",
+      "id": "W5",
+      "title": "Тендеры на кукурузу. Закупки, поставки, продажи на ...",
+      "url": "https://www.b2b-center.ru/search-tender/tendery-kukuruza/",
+      "source_domain": "b2b-center.ru",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1176,7 +1176,25 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W12",
+      "title": "пшеница, кукуруза и соя подорожали в среду",
+      "url": "https://www.zol.ru/n/4080b",
+      "source_domain": "zol.ru",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
       "title": "Calaméo - Вестник агропромышленного комплекса, №3-4, 2020.",
       "url": "https://www.calameo.com/books/004948822166279f2e36b",
       "source_domain": "calameo.com",
@@ -1194,62 +1212,8 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "[PDF] Московский экономический журнал. № 1. 2025 Moscow economic ...",
-      "url": "https://qje.su/ru/storage/download/183745",
-      "source_domain": "qje.su",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
-      "title": "[PDF] актуальные проблемы развития бухгалтерского учета, анализа ...",
-      "url": "https://bteu.by/bteuby/wp-content/uploads/2026/02/konf._2026_fevral_akt.-problemy-razv.-buch.-ucheta.-sb.-st.pdf",
-      "source_domain": "bteu.by",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W2",
-      "title": "[PDF] міністерство освіти і науки україни - НУБіП",
-      "url": "https://nubip.edu.ua/sites/default/files/rich_text_files/dis_%25D0%2597%25D0%25B0%25D0%25BD%25D1%2596%25D0%25B7%25D0%25B4%25D1%2580%25D0%25B0.pdf",
-      "source_domain": "nubip.edu.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "Низкие цены на соевый шрот снижают маржу переработки в ...",
+      "title": "Низкие цены на соевый шрот снижают маржу ...",
       "url": "https://ukragroconsult.com/ru/news/nizkie-czeny-na-soevyj-shrot-snizhayut-marzhu-pererabotki-v-yuzhnoj-amerike/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
@@ -1266,10 +1230,10 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "(PDF) Agricultural exports of Ukraine in the conditions of war.",
-      "url": "https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war",
-      "source_domain": "researchgate.net",
+      "id": "W5",
+      "title": "актуальные проблемы развития бухгалтерского учета, ...",
+      "url": "https://bteu.by/bteuby/wp-content/uploads/2026/02/konf._2026_fevral_akt.-problemy-razv.-buch.-ucheta.-sb.-st.pdf",
+      "source_domain": "bteu.by",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1284,45 +1248,9 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "[PDF] Відбудова України: принципи та політика - CEPR",
-      "url": "https://cepr.org/system/files/2022-12/reconstruction%20book_Ukrainian_0.pdf",
-      "source_domain": "cepr.org",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W13",
-      "title": "[PDF] ШЕВЧЕНКІВСЬКА ВЕСНА 2025 ЕКОНОМІКА УКРАЇНИ 2025",
-      "url": "https://econom.knu.ua/wp-content/uploads/2025/04/%D0%A8%D0%92-%D0%B7%D0%B1%D1%96%D1%80%D0%BD%D0%B8%D0%BA_2025_%D1%81%D0%B0%D0%B9%D1%82.pdf",
-      "source_domain": "econom.knu.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
-      "title": "[PDF] маркетинг та логістика в агробізнесі - НУБіП",
-      "url": "https://nubip.edu.ua/sites/default/files/u169/zbirnik_tez_konf_mark_ta_logistika_v_agrobiznesi.pdf",
+      "id": "W3",
+      "title": "міністерство освіти і науки україни",
+      "url": "https://nubip.edu.ua/sites/default/files/proceedings_zbirnik_tez_molodih_vchenih_2024.pdf",
       "source_domain": "nubip.edu.ua",
       "snippet": "",
       "date": null,
@@ -1338,7 +1266,97 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W4",
+      "title": "[PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...",
+      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
+      "source_domain": "ec.europa.eu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "[PDF] ЕКОНОМІКА І МЕНЕДЖМЕНТ 2025: ПЕРСПЕКТИВИ ІНТЕГРАЦІЇ ...",
+      "url": "https://www.dnu.dp.ua/docs/ndc/2025/materiali_konferentciy/5_Zbirnyk-konferentsiyi-2025-Tom-4.pdf",
+      "source_domain": "dnu.dp.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "[PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...",
+      "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
+      "source_domain": "vsau.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "[PDF] МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ - ResearchGate",
+      "url": "https://www.researchgate.net/profile/Galina-Studinska/publication/377217800_Fenomen_ukrainskogo_volonterstva_v_socialnomu_marketingu/links/659aaa5f6f6e450f19d3f0ee/Fenomen-ukrainskogo-volonterstva-v-socialnomu-marketingu.pdf",
+      "source_domain": "researchgate.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ",
+      "url": "https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri",
+      "source_domain": "kurkul.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
       "title": "Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло",
       "url": "https://www.slovoidilo.ua/2026/02/13/infografika/ekonomika/ridke-zoloto-yak-zminyuvalysya-obsyahy-eksportu-ta-cziny-ukrayinskoyi-oliyi",
       "source_domain": "slovoidilo.ua",
@@ -1357,9 +1375,9 @@
     },
     {
       "id": "W14",
-      "title": "ПРОБЛЕМИ ЛОГІСТИКИ СОНЯШНИКОВОЇ ОЛІЇ В ...",
-      "url": "https://dspace.lute.lviv.ua/items/90436f87-db03-4833-978b-07701dad26e0",
-      "source_domain": "dspace.lute.lviv.ua",
+      "title": "Поиск по тегу #соняшникова олія в новостях, статьях, фото и видео, досье и компаниях — Latifundist.com",
+      "url": "https://latifundist.com/tag/%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0%20%D0%BE%D0%BB%D1%96%D1%8F",
+      "source_domain": "latifundist.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1374,44 +1392,8 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "РОЛЬ УКРАЇНИ НА СВІТОВОМУ РИНКУ СОНЯШНИКУ І ...",
-      "url": "https://archive.journal-grail.science/index.php/2710-3056/article/view/3808",
-      "source_domain": "archive.journal-grail.science",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W15",
-      "title": "Топ-5 торгових марок соняшникової олії в Україні у 2026 - UKR.NET",
-      "url": "https://www.ukr.net/news/details/economics/116525930.html",
-      "source_domain": "ukr.net",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
-      "title": "Україна в лідерах постачання соняшникової олії в ЄС - 24 Канал",
+      "id": "W6",
+      "title": "Україна в лідерах постачання соняшникової олії в ЄС",
       "url": "https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834",
       "source_domain": "24tv.ua",
       "snippet": "",
@@ -1428,7 +1410,43 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W11",
+      "title": "Україна забезпечила близько 92% імпорту соняшникової ...",
+      "url": "https://landlord.ua/news/ukrayina-zabezpechyla-blyzko-92-importu-sonyashnykovoyi-oliyi-do-yes-u-2025-26-mr/",
+      "source_domain": "landlord.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "Україна забезпечила майже 92% імпорту соняшникової олії до ЄС у 2025/26 МР",
+      "url": "https://interfax.com.ua/news/economic/1150124.html",
+      "source_domain": "interfax.com.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
       "title": "Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com",
       "url": "https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin",
       "source_domain": "latifundist.com",
@@ -1446,7 +1464,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W5",
       "title": "Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua",
       "url": "https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927",
       "source_domain": "forbes.ua",
@@ -1464,28 +1482,10 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "Україна утримує лідерство з постачання соняшникової олії до ЄС — AgroPortal.ua",
-      "url": "https://agroportal.ua/news/ukraina/ukrajina-utrimuye-liderstvo-z-postachannya-sonyashnikovoji-oliji-do-yes",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "Українська соняшникова олія в глобальному масштабі",
-      "url": "https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/",
-      "source_domain": "ukragroconsult.com",
+      "id": "W10",
+      "title": "Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land",
+      "url": "https://e-land.ua/news/item/ukrayina-u-2026-rotsi-zberezhe-vyrobnytstvo-soniashnykovoyi-oliyi-na-rivni-blyzko-4-mln-tonn",
+      "source_domain": "e-land.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1501,9 +1501,9 @@
     },
     {
       "id": "W9",
-      "title": "Чому в Україні дорожчає соняшникова олія і коли чекати ...",
-      "url": "https://agronews.ua/news/chomu-v-ukrayini-dorozhchaye-sonyashnykova-oliya-i-koly-chekaty-znyzhennya-czin/",
-      "source_domain": "agronews.ua",
+      "title": "Україна утримує лідерство з постачання соняшникової ...",
+      "url": "https://ukragroconsult.com/news/ukrayina-utrymuye-liderstvo-z-postachannya-sonyashnykovoyi-oliyi-do-yes/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
