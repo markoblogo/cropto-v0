@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-29T13:15:12.559554+00:00
+**Generated:** 2026-03-29T15:57:56.932981+00:00
 **Date Range:** 2026-02-27 to 2026-03-29
 **Mode:** all
 
@@ -115,7 +115,7 @@
 
 > 
 
-### W7: [PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...
+### W5: [PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...
 
 - **Source:** vsau.org
 - **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
@@ -125,7 +125,7 @@
 
 > 
 
-### W8: [PDF] МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ - ResearchGate
+### W9: [PDF] МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ - ResearchGate
 
 - **Source:** researchgate.net
 - **URL:** https://www.researchgate.net/profile/Galina-Studinska/publication/377217800_Fenomen_ukrainskogo_volonterstva_v_socialnomu_marketingu/links/659aaa5f6f6e450f19d3f0ee/Fenomen-ukrainskogo-volonterstva-v-socialnomu-marketingu.pdf
@@ -135,7 +135,7 @@
 
 > 
 
-### W2: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
+### W3: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
 
 - **Source:** kurkul.com
 - **URL:** https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri
@@ -155,7 +155,7 @@
 
 > 
 
-### W14: Поиск по тегу #соняшникова олія в новостях, статьях, фото и видео, досье и компаниях — Latifundist.com
+### W15: Поиск по тегу #соняшникова олія в новостях, статьях, фото и видео, досье и компаниях — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/tag/%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0%20%D0%BE%D0%BB%D1%96%D1%8F
@@ -165,7 +165,7 @@
 
 > 
 
-### W6: Україна в лідерах постачання соняшникової олії в ЄС
+### W7: Україна в лідерах постачання соняшникової олії в ЄС
 
 - **Source:** 24tv.ua
 - **URL:** https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834
@@ -185,7 +185,7 @@
 
 > 
 
-### W15: Україна забезпечила майже 92% імпорту соняшникової олії до ЄС у 2025/26 МР
+### W14: Україна забезпечила майже 92% імпорту соняшникової олії до ЄС у 2025/26 МР
 
 - **Source:** interfax.com.ua
 - **URL:** https://interfax.com.ua/news/economic/1150124.html
@@ -195,7 +195,7 @@
 
 > 
 
-### W3: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
+### W2: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin
@@ -205,7 +205,7 @@
 
 > 
 
-### W5: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+### W6: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
 
 - **Source:** forbes.ua
 - **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
@@ -215,7 +215,7 @@
 
 > 
 
-### W10: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
+### W8: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
 
 - **Source:** e-land.ua
 - **URL:** https://e-land.ua/news/item/ukrayina-u-2026-rotsi-zberezhe-vyrobnytstvo-soniashnykovoyi-oliyi-na-rivni-blyzko-4-mln-tonn
@@ -225,7 +225,7 @@
 
 > 
 
-### W9: Україна утримує лідерство з постачання соняшникової ...
+### W10: Україна утримує лідерство з постачання соняшникової ...
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/ukrayina-utrymuye-liderstvo-z-postachannya-sonyashnykovoyi-oliyi-do-yes/
