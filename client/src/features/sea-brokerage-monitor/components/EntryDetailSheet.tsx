@@ -114,6 +114,7 @@ export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheet
               <DetailRow label="Period End" value={entry.periodEnd ?? "Not set"} />
               <DetailRow label="Price" value={`${formatEntryPriceRange(entry)} ${entry.currency}`} />
               <DetailRow label="Transport" value={entry.transportType} />
+              <DetailRow label="Other terms" value={entry.note || "Not set"} />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown } from "lucide-react";
 import { BrokerWorkspacePane, type BrokerWorkspacePaneFilters } from "./components/BrokerWorkspacePane";
 import { ContextualMatchingPanel } from "./components/ContextualMatchingPanel";
+import { EntryDetailSheet } from "./components/EntryDetailSheet";
 import { EntryCreateDialog } from "./components/EntryCreateDialog";
 import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
@@ -56,6 +57,7 @@ export function SeaBrokerageMonitorPage() {
   const [bidPaneFilters, setBidPaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [tradePaneFilters, setTradePaneFilters] = useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
+  const [isEntryDetailOpen, setIsEntryDetailOpen] = useState(false);
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState("");
@@ -177,6 +179,11 @@ export function SeaBrokerageMonitorPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
+  function handleSelectEntry(entry: BrokerageEntry) {
+    setSelectedEntry(entry);
+    setIsEntryDetailOpen(true);
+  }
+
   function applyPreset(preset: FilterPreset) {
     setFilters((prev) => ({
       ...prev,
@@ -294,6 +301,7 @@ export function SeaBrokerageMonitorPage() {
     const visibleEntryIds = new Set([...offerEntries, ...bidEntries, ...tradeEntries].map((entry) => entry.id));
     if (!visibleEntryIds.has(selectedEntry.id)) {
       setSelectedEntry(null);
+      setIsEntryDetailOpen(false);
     }
   }, [bidEntries, offerEntries, selectedEntry, tradeEntries]);
 
@@ -413,7 +421,7 @@ export function SeaBrokerageMonitorPage() {
             entries={offerEntries}
             brokerOptions={offerBrokerOptions}
             selectedEntryId={selectedEntry?.type === "offer" ? selectedEntry.id : null}
-            onSelectEntry={setSelectedEntry}
+            onSelectEntry={handleSelectEntry}
             filters={offerPaneFilters}
             onFiltersChange={handleOfferPaneFiltersChange}
             likesEnabled
@@ -431,7 +439,7 @@ export function SeaBrokerageMonitorPage() {
             entries={bidEntries}
             brokerOptions={bidBrokerOptions}
             selectedEntryId={selectedEntry?.type === "bid" ? selectedEntry.id : null}
-            onSelectEntry={setSelectedEntry}
+            onSelectEntry={handleSelectEntry}
             filters={bidPaneFilters}
             onFiltersChange={handleBidPaneFiltersChange}
             likesEnabled
@@ -459,7 +467,7 @@ export function SeaBrokerageMonitorPage() {
             entries={tradeEntries}
             brokerOptions={tradeBrokerOptions}
             selectedEntryId={selectedEntry?.type === "trade" ? selectedEntry.id : null}
-            onSelectEntry={setSelectedEntry}
+            onSelectEntry={handleSelectEntry}
             filters={tradePaneFilters}
             onFiltersChange={handleTradePaneFiltersChange}
             likesEnabled={false}
@@ -508,6 +516,14 @@ export function SeaBrokerageMonitorPage() {
         }}
         entryType="trade"
         session={session}
+      />
+
+      <EntryDetailSheet
+        entry={selectedEntry}
+        open={isEntryDetailOpen && !!selectedEntry}
+        onOpenChange={(open) => {
+          setIsEntryDetailOpen(open);
+        }}
       />
 
       <Dialog open={telegramAuthOpen} onOpenChange={setTelegramAuthOpen}>
