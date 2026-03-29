@@ -60,8 +60,8 @@ function getLatestMatchTimestamp(suggestion: MatchSuggestion) {
 
 type CompareRow = {
   label: string;
-  bidValue: string;
   offerValue: string;
+  bidValue: string;
   equal: boolean;
 };
 
@@ -76,28 +76,28 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
   const rows: CompareRow[] = [
     {
       label: "Counterparty",
-      bidValue: bid.buyerName?.trim() || "Not specified",
       offerValue: offer.sellerName?.trim() || "Not specified",
+      bidValue: bid.buyerName?.trim() || "Not specified",
       equal: normalizeCompareValue(bid.buyerName?.trim() || "") === normalizeCompareValue(offer.sellerName?.trim() || ""),
     },
     {
       label: "Commodity",
-      bidValue: bid.commodityLabel,
       offerValue: offer.commodityLabel,
+      bidValue: bid.commodityLabel,
       equal: normalizeCompareValue(bid.commodity) === normalizeCompareValue(offer.commodity),
     },
     {
       label: "Quantity / Tolerance",
-      bidValue: `${bid.quantityMt ?? bid.volumeFrom} MT ${bid.tolerancePct != null ? `(+/- ${bid.tolerancePct}%)` : ""}`.trim(),
       offerValue: `${offer.quantityMt ?? offer.volumeFrom} MT ${offer.tolerancePct != null ? `(+/- ${offer.tolerancePct}%)` : ""}`.trim(),
+      bidValue: `${bid.quantityMt ?? bid.volumeFrom} MT ${bid.tolerancePct != null ? `(+/- ${bid.tolerancePct}%)` : ""}`.trim(),
       equal:
         (bid.quantityMt ?? bid.volumeFrom) === (offer.quantityMt ?? offer.volumeFrom) &&
         (bid.tolerancePct ?? null) === (offer.tolerancePct ?? null),
     },
     {
       label: "Basis / Place",
-      bidValue: `${bid.basis} ${getPortPlaceDisplayLabel(bid.destinationPortCode || "")}`,
       offerValue: `${offer.basis} ${getPortPlaceDisplayLabel(offer.destinationPortCode || "")}`,
+      bidValue: `${bid.basis} ${getPortPlaceDisplayLabel(bid.destinationPortCode || "")}`,
       equal:
         normalizeCompareValue(bid.basis) === normalizeCompareValue(offer.basis) &&
         normalizeCompareValue(bid.destinationPortCode || bid.destinationPort) ===
@@ -105,28 +105,28 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
     },
     {
       label: "Transport",
-      bidValue: bid.transportType.toUpperCase(),
       offerValue: offer.transportType.toUpperCase(),
+      bidValue: bid.transportType.toUpperCase(),
       equal: normalizeCompareValue(bid.transportType) === normalizeCompareValue(offer.transportType),
     },
     {
       label: "Period",
-      bidValue: bid.periodLabel,
       offerValue: offer.periodLabel,
+      bidValue: bid.periodLabel,
       equal: normalizeCompareValue(bid.periodLabel) === normalizeCompareValue(offer.periodLabel),
     },
     {
       label: "Price",
-      bidValue: `${bid.price ?? bid.priceFrom ?? "n/a"} ${bid.currency}`,
       offerValue: `${offer.price ?? offer.priceFrom ?? "n/a"} ${offer.currency}`,
+      bidValue: `${bid.price ?? bid.priceFrom ?? "n/a"} ${bid.currency}`,
       equal:
         (bid.price ?? bid.priceFrom ?? null) === (offer.price ?? offer.priceFrom ?? null) &&
         normalizeCompareValue(bid.currency) === normalizeCompareValue(offer.currency),
     },
     {
       label: "Payment terms",
-      bidValue: bid.paymentTerms || "Not specified",
       offerValue: offer.paymentTerms || "Not specified",
+      bidValue: bid.paymentTerms || "Not specified",
       equal: normalizeCompareValue(bid.paymentTerms || "") === normalizeCompareValue(offer.paymentTerms || ""),
     },
   ];
@@ -482,24 +482,41 @@ export function ContextualMatchingPanel({
           </DialogHeader>
           {compareSuggestion ? (
             <div className="space-y-2">
+              <div className="hidden grid-cols-12 gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:grid">
+                <div className="sm:col-span-2">Parameters</div>
+                <div className="sm:col-span-4">Offer</div>
+                <div className="sm:col-span-4">Bid</div>
+                <div className="sm:col-span-2">Result</div>
+              </div>
               {buildCompareRows(compareSuggestion).map((row) => (
                 <div key={row.label} className="grid gap-1.5 rounded-md border border-border/60 p-2 sm:grid-cols-12 sm:items-center">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:col-span-2">
                     {row.label}
                   </div>
                   <div
-                    className={`rounded border px-2 py-1 text-[11px] sm:col-span-5 ${
+                    className={`rounded border px-2 py-1 text-[11px] sm:col-span-4 ${
                       row.equal ? "border-border/60 text-foreground" : "border-amber-400/60 text-amber-200"
                     }`}
                   >
-                    BID: {row.bidValue}
+                    {row.offerValue}
                   </div>
                   <div
-                    className={`rounded border px-2 py-1 text-[11px] sm:col-span-5 ${
+                    className={`rounded border px-2 py-1 text-[11px] sm:col-span-4 ${
                       row.equal ? "border-border/60 text-foreground" : "border-sky-400/60 text-sky-200"
                     }`}
                   >
-                    OFFER: {row.offerValue}
+                    {row.bidValue}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div
+                      className={`inline-flex h-8 w-full items-center justify-center rounded border text-sm font-semibold ${
+                        row.equal
+                          ? "border-emerald-500/70 bg-emerald-500/15 text-emerald-300"
+                          : "border-rose-500/70 bg-rose-500/15 text-rose-300"
+                      }`}
+                    >
+                      {row.equal ? "✔️" : "✖️"}
+                    </div>
                   </div>
                 </div>
               ))}
