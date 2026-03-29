@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-29T19:06:32.281927+00:00
+**Generated:** 2026-03-29T21:58:46.880168+00:00
 **Date Range:** 2026-02-27 to 2026-03-29
 **Mode:** all
 
@@ -36,9 +36,9 @@
 
 - **URL:** https://x.com/Andriy_Zas/status/2038219258727911734
 - **Date:** 2026-03-29 (confidence: high)
-- **Score:** 50/100
+- **Score:** 44/100
 - **Relevance:** 
-- **Engagement:** ? likes, ? reposts
+- **Engagement:** 1 likes, ? reposts
 
 > @CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця.
 
@@ -96,7 +96,7 @@
 
 ## Web Results
 
-### W4: [PDF] PROCEEDINGS EUROPEAN DIMENSIONS OF SUSTAINABLE ...
+### W3: [PDF] PROCEEDINGS EUROPEAN DIMENSIONS OF SUSTAINABLE ...
 
 - **Source:** ec.europa.eu
 - **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/4311b9cb-a656-44e3-b488-1b70211a7ab8/Proceedings_2020____________________________________.pdf
@@ -136,7 +136,7 @@
 
 > 
 
-### W2: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
+### W4: Внутрішні ціни на соняшник коригуються швидше, ніж експортні ціни на олію — брокери — КУРКУЛЬ
 
 - **Source:** kurkul.com
 - **URL:** https://kurkul.com/news/40830-vnutrishni-tsini-na-sonyashnik-koriguyutsya-shvidshe-nij-eksportni-tsini-na-oliyu--brokeri
@@ -156,7 +156,7 @@
 
 > 
 
-### W9: Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло
+### W12: Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло
 
 - **Source:** slovoidilo.ua
 - **URL:** https://www.slovoidilo.ua/2026/02/13/infografika/ekonomika/ridke-zoloto-yak-zminyuvalysya-obsyahy-eksportu-ta-cziny-ukrayinskoyi-oliyi
@@ -176,17 +176,7 @@
 
 > 
 
-### W12: Топ-5 торгових марок соняшникової олії в Україні у 2026 - UKR.NET
-
-- **Source:** ukr.net
-- **URL:** https://www.ukr.net/news/details/economics/116525930.html
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W5: Україна в лідерах постачання соняшникової олії в ЄС - 24 Канал
+### W10: Україна в лідерах постачання соняшникової олії в ЄС
 
 - **Source:** 24tv.ua
 - **URL:** https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834
@@ -196,7 +186,7 @@
 
 > 
 
-### W10: Україна забезпечила близько 92% імпорту соняшникової ...
+### W9: Україна забезпечила близько 92% імпорту соняшникової ...
 
 - **Source:** landlord.ua
 - **URL:** https://landlord.ua/news/ukrayina-zabezpechyla-blyzko-92-importu-sonyashnykovoyi-oliyi-do-yes-u-2025-26-mr/
@@ -206,7 +196,7 @@
 
 > 
 
-### W8: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
+### W2: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin
@@ -216,7 +206,7 @@
 
 > 
 
-### W3: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+### W7: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
 
 - **Source:** forbes.ua
 - **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
@@ -226,10 +216,20 @@
 
 > 
 
-### W7: Україна утримує лідерство з постачання соняшникової ...
+### W5: Україна утримує лідерство з постачання соняшникової ...
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/ukrayina-utrymuye-liderstvo-z-postachannya-sonyashnykovoyi-oliyi-do-yes/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W8: Ціни на олію в Україні: повний огляд ринку та прогнозів на 2026 рік - Duflu
+
+- **Source:** duflu.org.ua
+- **URL:** https://duflu.org.ua/cziny-na-oliyu-v-ukrayini-povnyj-oglyad-rynku-ta-prognoziv-na-2026-rik/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
