@@ -376,7 +376,10 @@ export function EntryCreateDialog({
   const [newCompanyName, setNewCompanyName] = useState("");
   const [companyEditorMessage, setCompanyEditorMessage] = useState<string | null>(null);
   const [isSavingCompany, setIsSavingCompany] = useState(false);
+  const [sellerCompanySearch, setSellerCompanySearch] = useState("");
+  const [buyerCompanySearch, setBuyerCompanySearch] = useState("");
   const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [portSearch, setPortSearch] = useState("");
   const [newLocationCity, setNewLocationCity] = useState("");
   const [newLocationCountryCode, setNewLocationCountryCode] = useState("UA");
   const [locationEditorMessage, setLocationEditorMessage] = useState<string | null>(null);
@@ -430,6 +433,27 @@ export function EntryCreateDialog({
       left.displayLabel.localeCompare(right.displayLabel),
     );
   }, [companyOptionsData]);
+  const sellerCompanyOptions = useMemo(() => {
+    const query = sellerCompanySearch.trim().toLowerCase();
+    if (!query) return companyOptions;
+    return companyOptions.filter((option) =>
+      option.displayLabel.toLowerCase().includes(query),
+    );
+  }, [companyOptions, sellerCompanySearch]);
+  const buyerCompanyOptions = useMemo(() => {
+    const query = buyerCompanySearch.trim().toLowerCase();
+    if (!query) return companyOptions;
+    return companyOptions.filter((option) =>
+      option.displayLabel.toLowerCase().includes(query),
+    );
+  }, [companyOptions, buyerCompanySearch]);
+  const filteredPortOptions = useMemo(() => {
+    const query = portSearch.trim().toLowerCase();
+    if (!query) return allPortOptions;
+    return allPortOptions.filter((option) =>
+      formatPortPlaceLabel(option).toLowerCase().includes(query),
+    );
+  }, [allPortOptions, portSearch]);
 
   useEffect(() => {
     form.reset(getDefaultValues(entryType));
@@ -437,9 +461,12 @@ export function EntryCreateDialog({
     setIsAddingCompany(false);
     setCompanyEditorTarget(entryType === "offer" ? "sellerName" : "buyerName");
     setNewCompanyName("");
+    setSellerCompanySearch("");
+    setBuyerCompanySearch("");
     setCompanyEditorMessage(null);
     setIsSavingCompany(false);
     setIsAddingLocation(false);
+    setPortSearch("");
     setLocationEditorMessage(null);
     setIsSavingLocation(false);
   }, [entryType, form, open]);
@@ -797,6 +824,9 @@ export function EntryCreateDialog({
                       <Select
                         value={field.value?.trim() ? field.value : "__none__"}
                         onValueChange={(value) => field.onChange(value === "__none__" ? "" : value)}
+                        onOpenChange={(open) => {
+                          if (!open) setSellerCompanySearch("");
+                        }}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -804,8 +834,17 @@ export function EntryCreateDialog({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <div className="px-2 pb-2">
+                            <Input
+                              placeholder="Type company..."
+                              value={sellerCompanySearch}
+                              onChange={(event) => setSellerCompanySearch(event.target.value)}
+                              className="h-8 text-xs"
+                              onKeyDown={(event) => event.stopPropagation()}
+                            />
+                          </div>
                           <SelectItem value="__none__">Not specified</SelectItem>
-                          {companyOptions.map((option) => (
+                          {sellerCompanyOptions.map((option) => (
                             <SelectItem key={option.id} value={option.displayLabel}>
                               {option.displayLabel}
                             </SelectItem>
@@ -863,6 +902,9 @@ export function EntryCreateDialog({
                       <Select
                         value={field.value?.trim() ? field.value : "__none__"}
                         onValueChange={(value) => field.onChange(value === "__none__" ? "" : value)}
+                        onOpenChange={(open) => {
+                          if (!open) setBuyerCompanySearch("");
+                        }}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -870,8 +912,17 @@ export function EntryCreateDialog({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <div className="px-2 pb-2">
+                            <Input
+                              placeholder="Type company..."
+                              value={buyerCompanySearch}
+                              onChange={(event) => setBuyerCompanySearch(event.target.value)}
+                              className="h-8 text-xs"
+                              onKeyDown={(event) => event.stopPropagation()}
+                            />
+                          </div>
                           <SelectItem value="__none__">Not specified</SelectItem>
-                          {companyOptions.map((option) => (
+                          {buyerCompanyOptions.map((option) => (
                             <SelectItem key={option.id} value={option.displayLabel}>
                               {option.displayLabel}
                             </SelectItem>
@@ -925,7 +976,13 @@ export function EntryCreateDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Commodity</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      onOpenChange={(open) => {
+                        if (!open) setPortSearch("");
+                      }}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Commodity" />
@@ -1033,7 +1090,16 @@ export function EntryCreateDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {allPortOptions.map((option) => (
+                        <div className="px-2 pb-2">
+                          <Input
+                            placeholder="Type port/city/country..."
+                            value={portSearch}
+                            onChange={(event) => setPortSearch(event.target.value)}
+                            className="h-8 text-xs"
+                            onKeyDown={(event) => event.stopPropagation()}
+                          />
+                        </div>
+                        {filteredPortOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
                             {formatPortPlaceLabel(option)}
                           </SelectItem>
