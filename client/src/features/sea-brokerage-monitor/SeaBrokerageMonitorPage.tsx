@@ -21,6 +21,7 @@ import {
   currencyOptions as defaultCurrencyOptions,
   portOptions as defaultPortOptions,
 } from "./mock/dictionaries";
+import { isoCountryOptionsEn } from "./mock/isoCountryOptions.en";
 import { buildSeaBrokerageMonitorAuthHeaders } from "./services/monitorAuth.service";
 import {
   defaultFeedFilters,
@@ -214,7 +215,7 @@ export function SeaBrokerageMonitorPage() {
   }, [feedWithBusinessUnits]);
   const toolbarCountryOptions = useMemo(() => {
     const byCode = new Map<string, CountryOption>();
-    for (const option of [...defaultCountryOptions, ...customCountryOptions]) {
+    for (const option of [...isoCountryOptionsEn, ...defaultCountryOptions, ...customCountryOptions]) {
       byCode.set(option.code, option);
     }
     return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));

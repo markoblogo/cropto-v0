@@ -38,6 +38,7 @@ import {
   paymentTermOptions,
   portOptions,
 } from "../mock/dictionaries";
+import { isoCountryOptionsEn } from "../mock/isoCountryOptions.en";
 import {
   getCountryDisplayLabel,
 } from "../services/displayStandards";
@@ -239,56 +240,7 @@ function normalizeLocationCityInput(value: string) {
     .replace(/\s+/g, " ");
 }
 
-function countryAlpha3FromCode(code: string) {
-  const normalized = code.toUpperCase();
-  if (normalized === "UA") return "UKR";
-  if (normalized === "MD") return "MDA";
-  if (normalized === "BG") return "BGR";
-  if (normalized === "EG") return "EGY";
-  if (normalized === "IL") return "ISR";
-  if (normalized === "CY") return "CYP";
-  if (normalized === "LB") return "LBN";
-  if (normalized === "ES") return "ESP";
-  if (normalized === "IT") return "ITA";
-  if (normalized === "NL") return "NLD";
-  if (normalized === "RO") return "ROU";
-  if (normalized === "TR") return "TUR";
-  return `${normalized}X`;
-}
-
-function buildGlobalEnglishCountryOptions(): CountryOption[] {
-  try {
-    if (typeof Intl === "undefined") {
-      return [];
-    }
-
-    const supportedValuesOf = (
-      Intl as unknown as { supportedValuesOf?: (key: string) => string[] }
-    ).supportedValuesOf;
-    const DisplayNames = (Intl as unknown as { DisplayNames?: typeof Intl.DisplayNames }).DisplayNames;
-    if (typeof supportedValuesOf !== "function" || typeof DisplayNames !== "function") {
-      return [];
-    }
-
-    const displayNames = new DisplayNames(["en"], { type: "region" });
-    const codes = supportedValuesOf("region");
-    const mapped = codes
-      .filter((code) => /^[A-Z]{2}$/.test(code))
-      .map((code) => ({
-        code,
-        displayLabel: displayNames.of(code) || code,
-        countryCodeAlpha3: countryAlpha3FromCode(code),
-        compactDisplay: countryAlpha3FromCode(code),
-      }))
-      .filter((item) => item.displayLabel !== item.code);
-
-    return mapped.sort((left, right) => left.displayLabel.localeCompare(right.displayLabel));
-  } catch {
-    return [];
-  }
-}
-
-const globalEnglishCountryOptions = buildGlobalEnglishCountryOptions();
+const globalEnglishCountryOptions = isoCountryOptionsEn;
 
 function formatPortPlaceLabel(option: PortOption) {
   return `${option.displayLabel}, ${getCountryDisplayLabel(option.countryCode)}`;
