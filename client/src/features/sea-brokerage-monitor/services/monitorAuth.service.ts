@@ -77,18 +77,26 @@ function readTelegramWidgetUserFromHash(hashValue: string) {
 
 export function getSeaBrokerageMonitorToken() {
   if (typeof window === "undefined") return null;
-  const token = window.localStorage.getItem(MONITOR_AUTH_TOKEN_STORAGE_KEY);
-  return token?.trim() || null;
+  try {
+    const token = window.localStorage.getItem(MONITOR_AUTH_TOKEN_STORAGE_KEY);
+    return token?.trim() || null;
+  } catch {
+    return null;
+  }
 }
 
 export function setSeaBrokerageMonitorToken(token: string | null) {
   if (typeof window === "undefined") return;
-  if (!token) {
-    window.localStorage.removeItem(MONITOR_AUTH_TOKEN_STORAGE_KEY);
-    window.dispatchEvent(new CustomEvent(MONITOR_AUTH_CHANGED_EVENT));
-    return;
+  try {
+    if (!token) {
+      window.localStorage.removeItem(MONITOR_AUTH_TOKEN_STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent(MONITOR_AUTH_CHANGED_EVENT));
+      return;
+    }
+    window.localStorage.setItem(MONITOR_AUTH_TOKEN_STORAGE_KEY, token);
+  } catch {
+    // Storage can be blocked by browser privacy settings.
   }
-  window.localStorage.setItem(MONITOR_AUTH_TOKEN_STORAGE_KEY, token);
   window.dispatchEvent(new CustomEvent(MONITOR_AUTH_CHANGED_EVENT));
 }
 

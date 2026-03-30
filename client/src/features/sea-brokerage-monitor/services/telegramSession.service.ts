@@ -40,20 +40,26 @@ export function isSeaBrokerageMonitorDemoSessionEnabled() {
 
 export function getStoredDemoTelegramBrokerId() {
   if (typeof window === "undefined") return null;
-
-  const value = window.localStorage.getItem(DEMO_TELEGRAM_BROKER_STORAGE_KEY);
-  return brokers.some((broker) => broker.id === value) ? value : null;
+  try {
+    const value = window.localStorage.getItem(DEMO_TELEGRAM_BROKER_STORAGE_KEY);
+    return brokers.some((broker) => broker.id === value) ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 export function setStoredDemoTelegramBrokerId(brokerId: string | null) {
   if (typeof window === "undefined") return;
+  try {
+    if (!brokerId) {
+      window.localStorage.removeItem(DEMO_TELEGRAM_BROKER_STORAGE_KEY);
+      return;
+    }
 
-  if (!brokerId) {
-    window.localStorage.removeItem(DEMO_TELEGRAM_BROKER_STORAGE_KEY);
-    return;
+    window.localStorage.setItem(DEMO_TELEGRAM_BROKER_STORAGE_KEY, brokerId);
+  } catch {
+    // no-op: storage can be unavailable in strict privacy contexts
   }
-
-  window.localStorage.setItem(DEMO_TELEGRAM_BROKER_STORAGE_KEY, brokerId);
 }
 
 export function resolveDemoTelegramBroker(brokerId: string | null | undefined) {
