@@ -245,7 +245,7 @@ function formatStandardTelegramMessage(
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
     entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,
-    entry.note?.trim() ? `OTHER TERMS: ${entry.note.trim()}` : null,
+    formatOptionalOtherTerms(entry.note),
     "------------------------------",
     isTrade ? `${tradeSellerBroker} 🤝 ${tradeBuyerBroker}` : null,
   ];
@@ -301,6 +301,14 @@ function formatTradePartyLine(
     return `${label}: ${normalizedCompany} / ${normalizedIdentity}`;
   }
   return `${label}: ${normalizedCompany}`;
+}
+
+function formatOptionalOtherTerms(value?: string | null) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const hasMeaningfulContent = /[\p{L}\p{N}]/u.test(raw);
+  if (!hasMeaningfulContent) return null;
+  return `OTHER TERMS: ${raw}`;
 }
 
 function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow, includeBroker = true) {
