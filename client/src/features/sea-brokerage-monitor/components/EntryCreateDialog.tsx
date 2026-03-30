@@ -232,6 +232,47 @@ function normalizeLocationCityInput(value: string) {
     .replace(/\s+/g, " ");
 }
 
+function countryAlpha3FromCode(code: string) {
+  const normalized = code.toUpperCase();
+  if (normalized === "UA") return "UKR";
+  if (normalized === "MD") return "MDA";
+  if (normalized === "BG") return "BGR";
+  if (normalized === "EG") return "EGY";
+  if (normalized === "IL") return "ISR";
+  if (normalized === "CY") return "CYP";
+  if (normalized === "LB") return "LBN";
+  if (normalized === "ES") return "ESP";
+  if (normalized === "IT") return "ITA";
+  if (normalized === "NL") return "NLD";
+  if (normalized === "RO") return "ROU";
+  if (normalized === "TR") return "TUR";
+  return `${normalized}X`;
+}
+
+function buildGlobalEnglishCountryOptions(): CountryOption[] {
+  const supportedValuesOf = (Intl as unknown as { supportedValuesOf?: (key: string) => string[] })
+    .supportedValuesOf;
+  if (typeof supportedValuesOf !== "function") {
+    return [];
+  }
+
+  const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+  const codes = supportedValuesOf("region");
+  const mapped = codes
+    .filter((code) => /^[A-Z]{2}$/.test(code))
+    .map((code) => ({
+      code,
+      displayLabel: displayNames.of(code) || code,
+      countryCodeAlpha3: countryAlpha3FromCode(code),
+      compactDisplay: countryAlpha3FromCode(code),
+    }))
+    .filter((item) => item.displayLabel !== item.code);
+
+  return mapped.sort((left, right) => left.displayLabel.localeCompare(right.displayLabel));
+}
+
+const globalEnglishCountryOptions = buildGlobalEnglishCountryOptions();
+
 function formatPortPlaceLabel(option: PortOption) {
   return `${option.displayLabel}, ${getCountryDisplayLabel(option.countryCode)}`;
 }
@@ -466,15 +507,9 @@ export function EntryCreateDialog({
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [portSearch, setPortSearch] = useState("");
   const [newLocationCity, setNewLocationCity] = useState("");
-  const [newLocationCountryCode, setNewLocationCountryCode] = useState("UA");
+  const [newLocationCountrySearch, setNewLocationCountrySearch] = useState("Ukraine");
   const [locationEditorMessage, setLocationEditorMessage] = useState<string | null>(null);
   const [isSavingLocation, setIsSavingLocation] = useState(false);
-  const [isAddingCountry, setIsAddingCountry] = useState(false);
-  const [newCountryName, setNewCountryName] = useState("");
-  const [newCountryCode, setNewCountryCode] = useState("");
-  const [newCountryCodeAlpha3, setNewCountryCodeAlpha3] = useState("");
-  const [countryEditorMessage, setCountryEditorMessage] = useState<string | null>(null);
-  const [isSavingCountry, setIsSavingCountry] = useState(false);
   const [commoditySearch, setCommoditySearch] = useState("");
   const [isAddingCommodity, setIsAddingCommodity] = useState(false);
   const [newCommodityName, setNewCommodityName] = useState("");
@@ -546,7 +581,11 @@ export function EntryCreateDialog({
   }, [sharedPortOptionsData]);
   const allCountryOptions = useMemo(() => {
     const byCode = new Map<string, CountryOption>();
-    for (const option of [...countryOptions, ...sharedCountryOptionsData]) {
+    for (const option of [
+      ...globalEnglishCountryOptions,
+      ...countryOptions,
+      ...sharedCountryOptionsData,
+    ]) {
       byCode.set(option.code, option);
     }
     return Array.from(byCode.values()).sort((left, right) =>
@@ -621,14 +660,10 @@ export function EntryCreateDialog({
     setIsSavingCompany(false);
     setIsAddingLocation(false);
     setPortSearch("");
+    setNewLocationCity("");
+    setNewLocationCountrySearch("Ukraine");
     setLocationEditorMessage(null);
     setIsSavingLocation(false);
-    setIsAddingCountry(false);
-    setNewCountryName("");
-    setNewCountryCode("");
-    setNewCountryCodeAlpha3("");
-    setCountryEditorMessage(null);
-    setIsSavingCountry(false);
     setCommoditySearch("");
     setIsAddingCommodity(false);
     setNewCommodityName("");
@@ -799,8 +834,13 @@ export function EntryCreateDialog({
 
   async function addCustomLocation() {
     const city = normalizeLocationCityInput(newLocationCity);
-    const countryCode = newLocationCountryCode;
-    const country = allCountryOptions.find((option) => option.code === countryCode);
+    const countrySearch = normalizeLocationCityInput(newLocationCountrySearch);
+    const country = allCountryOptions.find(
+      (option) =>
+        option.code.toLowerCase() === countrySearch.toLowerCase() ||
+        option.displayLabel.toLowerCase() === countrySearch.toLowerCase(),
+    );
+    const countryCode = country?.code || "";
 
     if (!country) {
       setLocationEditorMessage("Select country from the list.");
@@ -853,71 +893,13 @@ export function EntryCreateDialog({
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/locations"] });
       form.setValue("destinationPortCode", location.code, { shouldValidate: true });
       setNewLocationCity("");
-      setNewLocationCountryCode("UA");
+      setNewLocationCountrySearch(country.displayLabel);
       setIsAddingLocation(false);
       setLocationEditorMessage(payload.duplicate ? "Location already existed and was selected." : "Location added.");
     } catch (error) {
       setLocationEditorMessage(error instanceof Error ? error.message : "Failed to add location.");
     } finally {
       setIsSavingLocation(false);
-    }
-  }
-
-  async function addCustomCountry() {
-    const displayLabel = normalizeLocationCityInput(newCountryName);
-    const countryCode = String(newCountryCode || "").trim().toUpperCase();
-    const countryCodeAlpha3 = String(newCountryCodeAlpha3 || "").trim().toUpperCase();
-
-    if (!/^[A-Za-z][A-Za-z\s'-]{1,79}$/.test(displayLabel)) {
-      setCountryEditorMessage("Use English country name.");
-      return;
-    }
-    if (!/^[A-Z]{2}$/.test(countryCode)) {
-      setCountryEditorMessage("Country code must be Alpha-2 (e.g. ES).");
-      return;
-    }
-    if (!/^[A-Z]{3}$/.test(countryCodeAlpha3)) {
-      setCountryEditorMessage("Country code must be Alpha-3 (e.g. ESP).");
-      return;
-    }
-
-    try {
-      setIsSavingCountry(true);
-      const response = await fetch("/api/sea-brokerage-monitor/countries", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
-        },
-        body: JSON.stringify({
-          displayLabel,
-          countryCode,
-          countryCodeAlpha3,
-        }),
-      });
-      if (!response.ok) {
-        const text = (await response.text()) || "Failed to add country";
-        throw new Error(text);
-      }
-
-      const payload = (await response.json()) as { country?: CountryOption; duplicate?: boolean };
-      const country = payload.country;
-      if (!country) {
-        throw new Error("Invalid country payload.");
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/countries"] });
-      setNewLocationCountryCode(country.code);
-      form.setValue("originCountry", country.code, { shouldValidate: true });
-      setNewCountryName("");
-      setNewCountryCode("");
-      setNewCountryCodeAlpha3("");
-      setIsAddingCountry(false);
-      setCountryEditorMessage(payload.duplicate ? "Country already existed and was selected." : "Country added.");
-    } catch (error) {
-      setCountryEditorMessage(error instanceof Error ? error.message : "Failed to add country.");
-    } finally {
-      setIsSavingCountry(false);
     }
   }
 
@@ -1558,66 +1540,22 @@ export function EntryCreateDialog({
                           value={newLocationCity}
                           onChange={(event) => setNewLocationCity(event.target.value)}
                         />
-                        <Select value={newLocationCountryCode} onValueChange={setNewLocationCountryCode}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Country" />
-                          </SelectTrigger>
-                          <SelectContent>
+                        <div className="space-y-1">
+                          <Input
+                            list="sea-monitor-country-options"
+                            placeholder="Country in English (start typing...)"
+                            value={newLocationCountrySearch}
+                            onChange={(event) => setNewLocationCountrySearch(event.target.value)}
+                          />
+                          <datalist id="sea-monitor-country-options">
                             {allCountryOptions.map((option) => (
-                              <SelectItem key={option.code} value={option.code}>
-                                {option.displayLabel}
-                              </SelectItem>
+                              <option key={option.code} value={option.displayLabel} />
                             ))}
-                          </SelectContent>
-                        </Select>
-                        <div className="md:col-span-2 flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant={isAddingCountry ? "outline" : "secondary"}
-                            className={
-                              isAddingCountry
-                                ? undefined
-                                : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
-                            }
-                            size="sm"
-                            onClick={() => {
-                              setIsAddingCountry((prev) => !prev);
-                              setCountryEditorMessage(null);
-                            }}
-                          >
-                            {isAddingCountry ? "Cancel country editor" : "Add country"}
-                          </Button>
+                          </datalist>
+                          <div className="text-[11px] text-muted-foreground">
+                            Type country name and pick suggestion from list.
+                          </div>
                         </div>
-                        {isAddingCountry ? (
-                          <>
-                            <Input
-                              placeholder="Country name in English"
-                              value={newCountryName}
-                              onChange={(event) => setNewCountryName(event.target.value)}
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                              <Input
-                                placeholder="Alpha-2 (UA)"
-                                value={newCountryCode}
-                                maxLength={2}
-                                onChange={(event) => setNewCountryCode(event.target.value.toUpperCase())}
-                              />
-                              <Input
-                                placeholder="Alpha-3 (UKR)"
-                                value={newCountryCodeAlpha3}
-                                maxLength={3}
-                                onChange={(event) =>
-                                  setNewCountryCodeAlpha3(event.target.value.toUpperCase())
-                                }
-                              />
-                            </div>
-                            <div className="md:col-span-2">
-                              <Button type="button" size="sm" onClick={addCustomCountry}>
-                                {isSavingCountry ? "Saving..." : "Save country"}
-                              </Button>
-                            </div>
-                          </>
-                        ) : null}
                         <div className="md:col-span-2">
                           <Button type="button" size="sm" onClick={addCustomLocation}>
                             {isSavingLocation ? "Saving..." : "Save location"}
@@ -1627,9 +1565,6 @@ export function EntryCreateDialog({
                     ) : null}
                     {locationEditorMessage ? (
                       <div className="mt-1 text-[11px] text-muted-foreground">{locationEditorMessage}</div>
-                    ) : null}
-                    {countryEditorMessage ? (
-                      <div className="mt-1 text-[11px] text-muted-foreground">{countryEditorMessage}</div>
                     ) : null}
                     <FormMessage />
                   </FormItem>
