@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-30T02:34:16.813722+00:00
+**Generated:** 2026-03-30T05:51:05.495364+00:00
 **Date Range:** 2026-02-28 to 2026-03-30
 **Mode:** all
 
@@ -36,9 +36,9 @@
 
 - **URL:** https://x.com/Andriy_Zas/status/2038219258727911734
 - **Date:** 2026-03-29 (confidence: high)
-- **Score:** 49/100
+- **Score:** 43/100
 - **Relevance:** 
-- **Engagement:** ? likes, ? reposts
+- **Engagement:** 1 likes, ? reposts
 
 > @CloakLady З продуктів: молоко в трикутних пакетах (синього кольору - вищого гатунку), домашня ковбаса із села, борщ із печі, черешня прямо з дерева, кавуни по 5 коп., празький торт, тюлька з картоплею,  соняшникова олія із автомата за 50 коп., в столових безкоштовний хліб + гірчиця.
 
@@ -96,140 +96,140 @@
 
 ## Web Results
 
-### W2: 2026 рік не принесе суттєвого подорожчання ...
+### W3: In December 2025, Ukraine's agricultural export capacity ... - Instagram
 
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/2026-rik-ne-prynese-suttyevogo-podorozhchannya-sonyashnykovoyi-oliyi-v-ukrayini/
+- **Source:** instagram.com
+- **URL:** https://www.instagram.com/p/DS2Sfkbj0N1/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W14: Pavlo Koval added a new photo.
+### W12: Врожай в Україні - експертка дала сумний прогноз по соняшнику на 2026 рік
 
-- **Source:** facebook.com
-- **URL:** https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225137045252521/
+- **Source:** unian.ua
+- **URL:** https://www.unian.ua/economics/agro/vrozhay-v-ukrajini-ekspertka-dala-sumniy-prognoz-po-sonyashniku-na-2026-rik-13249509.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W6: Procurement plan: Олія соняшникова | #UA-P-2026-03-24-018471-a | e-Lot
+### W14: Компанія UKROLIYA - професійна та органічна високоолеїнова олія
 
-- **Source:** e-lot.com.ua
-- **URL:** https://e-lot.com.ua/en/plans/UA-P-2026-03-24-018471-a
+- **Source:** ukroliya.com
+- **URL:** https://www.ukroliya.com/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W9: Untitled - DSpace KSAEU
+### W15: МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ...
 
-- **Source:** dspace.ksaeu.kherson.ua
-- **URL:** https://dspace.ksaeu.kherson.ua/bitstream/handle/123456789/4962/%D0%9C%D0%9D%D0%9F%D0%9A%20%D0%97%D0%B0%D0%BF%D0%BE%D1%80%D1%96%D0%B6%D0%B6%D1%8F%20%2001%2C20.pdf?sequence=1&isAllowed=y
+- **Source:** vsau.org
+- **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W15: modern challenges to science and practice
+### W7: Натуральна соняшникова олія від ТМ БІРЮША
 
-- **Source:** openarchive.nure.ua
-- **URL:** https://openarchive.nure.ua/server/api/core/bitstreams/3088f26d-85d6-41ae-920c-ae5933faab30/content
+- **Source:** tiktok.com
+- **URL:** https://www.tiktok.com/@zernozbud/video/7477889146971835653
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W11: Виробництво соняшникової олії в Україні у 2026 році може скласти 4 млн тонн —…
+### W11: Публікації - Верхівцевський Олійноекстракційний Завод
 
-- **Source:** delo.ua
-- **URL:** https://delo.ua/news/virobnictvo-sonyasnikovoyi-oliyi-v-ukrayini-u-2026-roci-moze-sklasti-4-mln-tonn-459545/
+- **Source:** voez.com.ua
+- **URL:** https://voez.com.ua/publikacziyi/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W3: ЕКОНОМІЧНИЙ ПРОСТІР
-
-- **Source:** researchgate.net
-- **URL:** https://www.researchgate.net/profile/Khalina-Veronika/publication/342273684_PUBLIC_ECO-PROCUREMENT_ORGANIZATIONAL_AND_ECONOMIC_FUNDAMENTALS_OF_IMPLEMENTATION_AND_EXECUTION/links/63ffc6b60d98a97717cac52f/PUBLIC-ECO-PROCUREMENT-ORGANIZATIONAL-AND-ECONOMIC-FUNDAMENTALS-OF-IMPLEMENTATION-AND-EXECUTION.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W4: Експорт соняшникової олії з Молдови до ЄС зріс майже ...
-
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/eksport-sonyashnykovoyi-oliyi-z-moldovy-do-yes-zris-majzhe-u-6-raziv/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: М А Т Е Р І А Л И - Наука та інновації - Білоцерківський ...
-
-- **Source:** science.btsau.edu.ua
-- **URL:** https://science.btsau.edu.ua/sites/default/files/tezy/tezy_stud_econ_14.04.23.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W5: Поиск по тегу #соняшникова олія в новостях, статьях, фото и видео, досье и компаниях — Latifundist.com
+### W9: Соняшник 2022. Посіви. Залишки. Переробні можливості. Умови зберігання під час війни — Latifundist.com
 
 - **Source:** latifundist.com
-- **URL:** https://latifundist.com/tag/%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0%20%D0%BE%D0%BB%D1%96%D1%8F
+- **URL:** https://latifundist.com/spetsproekt/963-olijni-v-umovah-vijni-posiv-zalishki-pererobka-umovi-zberigannya
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W12: Соняшникова олія в портах України зросла в ціні через дефіцит і високий попит | Аналітика | E-land
+### W13: Соняшникова олія за корисністю не поступається оливковій
+
+- **Source:** landlord.ua
+- **URL:** https://landlord.ua/news/sonyashnikova-oliya-za-korisnistyu-ne-postupayetsya-olivkoviy/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W2: Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com
+
+- **Source:** latifundist.com
+- **URL:** https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W6: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+
+- **Source:** forbes.ua
+- **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W10: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
 
 - **Source:** e-land.ua
-- **URL:** https://e-land.ua/news/item/soniashnykova-oliia-v-portakh-ukrayiny-zrosla-v-tsini-cherez-defitsyt-i-vysokyi-popyt
+- **URL:** https://e-land.ua/news/item/ukrayina-u-2026-rotsi-zberezhe-vyrobnytstvo-soniashnykovoyi-oliyi-na-rivni-blyzko-4-mln-tonn
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W7: Україна в лідерах постачання соняшникової олії в ЄС
+### W4: Українська соняшникова олія в глобальному масштабі
 
-- **Source:** 24tv.ua
-- **URL:** https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834
+- **Source:** ukragroconsult.com
+- **URL:** https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W8: Чому в Україні дорожчає соняшникова олія і коли чекати ...
+### W8: Українська соняшникова олія поступається позиціями рф на ...
 
-- **Source:** agronews.ua
-- **URL:** https://agronews.ua/news/chomu-v-ukrayini-dorozhchaye-sonyashnykova-oliya-i-koly-chekaty-znyzhennya-czin/
+- **Source:** facebook.com
+- **URL:** https://www.facebook.com/latifundistcom/posts/-%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0-%D0%BE%D0%BB%D1%96%D1%8F-%D0%BF%D0%BE%D1%81%D1%82%D1%83%D0%BF%D0%B0%D1%94%D1%82%D1%8C%D1%81%D1%8F-%D0%BF%D0%BE%D0%B7%D0%B8%D1%86%D1%96%D1%8F%D0%BC%D0%B8-%D1%80%D1%84-%D0%BD%D0%B0-%D1%80%D0%B8%D0%BD%D0%BA%D1%83-%D0%BA%D0%B8%D1%82%D0%B0%D1%8E-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%81%D0%BA%D0%BB%D0%B0/1107219321425103/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W10: міністерство освіти і науки україни національний технічний ...
+### W5: Ціна соняшникової олії 2026: роздріб, опт, тенденції - EuroFest
 
-- **Source:** repository.kpi.kharkov.ua
-- **URL:** https://repository.kpi.kharkov.ua/bitstreams/2efbe475-c4cc-4931-92b0-a3eab481cfb9/download
+- **Source:** eurofest.org.ua
+- **URL:** https://www.eurofest.org.ua/tsina-soniashnykovoi-olii-2026-rozdrib-opt-tendentsii/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
