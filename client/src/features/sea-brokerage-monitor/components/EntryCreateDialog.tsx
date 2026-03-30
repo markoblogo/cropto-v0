@@ -250,25 +250,35 @@ function countryAlpha3FromCode(code: string) {
 }
 
 function buildGlobalEnglishCountryOptions(): CountryOption[] {
-  const supportedValuesOf = (Intl as unknown as { supportedValuesOf?: (key: string) => string[] })
-    .supportedValuesOf;
-  if (typeof supportedValuesOf !== "function") {
+  try {
+    if (typeof Intl === "undefined") {
+      return [];
+    }
+
+    const supportedValuesOf = (
+      Intl as unknown as { supportedValuesOf?: (key: string) => string[] }
+    ).supportedValuesOf;
+    const DisplayNames = (Intl as unknown as { DisplayNames?: typeof Intl.DisplayNames }).DisplayNames;
+    if (typeof supportedValuesOf !== "function" || typeof DisplayNames !== "function") {
+      return [];
+    }
+
+    const displayNames = new DisplayNames(["en"], { type: "region" });
+    const codes = supportedValuesOf("region");
+    const mapped = codes
+      .filter((code) => /^[A-Z]{2}$/.test(code))
+      .map((code) => ({
+        code,
+        displayLabel: displayNames.of(code) || code,
+        countryCodeAlpha3: countryAlpha3FromCode(code),
+        compactDisplay: countryAlpha3FromCode(code),
+      }))
+      .filter((item) => item.displayLabel !== item.code);
+
+    return mapped.sort((left, right) => left.displayLabel.localeCompare(right.displayLabel));
+  } catch {
     return [];
   }
-
-  const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
-  const codes = supportedValuesOf("region");
-  const mapped = codes
-    .filter((code) => /^[A-Z]{2}$/.test(code))
-    .map((code) => ({
-      code,
-      displayLabel: displayNames.of(code) || code,
-      countryCodeAlpha3: countryAlpha3FromCode(code),
-      compactDisplay: countryAlpha3FromCode(code),
-    }))
-    .filter((item) => item.displayLabel !== item.code);
-
-  return mapped.sort((left, right) => left.displayLabel.localeCompare(right.displayLabel));
 }
 
 const globalEnglishCountryOptions = buildGlobalEnglishCountryOptions();
