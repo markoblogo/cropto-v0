@@ -37,6 +37,14 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function formatBrokerTelegramIdentity(telegramUsername?: string | null, telegramUserId?: string | null) {
+  const username = String(telegramUsername || "").trim().replace(/^@+/, "");
+  if (username) return `@${username.toLowerCase()}`;
+  const userId = String(telegramUserId || "").trim();
+  if (userId) return `tg:${userId}`;
+  return "Not set";
+}
+
 interface EntryDetailSheetProps {
   entry: BrokerageEntry | null;
   open: boolean;
@@ -126,6 +134,24 @@ export function EntryDetailSheet({
               />
               <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
               <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
+              {entry.type === "trade" ? (
+                <DetailRow
+                  label="Seller broker (Telegram)"
+                  value={formatBrokerTelegramIdentity(
+                    entry.tradeSellerBrokerTelegramUsername,
+                    entry.tradeSellerBrokerTelegramUserId,
+                  )}
+                />
+              ) : null}
+              {entry.type === "trade" ? (
+                <DetailRow
+                  label="Buyer broker (Telegram)"
+                  value={formatBrokerTelegramIdentity(
+                    entry.tradeBuyerBrokerTelegramUsername,
+                    entry.tradeBuyerBrokerTelegramUserId,
+                  )}
+                />
+              ) : null}
               <DetailRow
                 label="Origin"
                 value={

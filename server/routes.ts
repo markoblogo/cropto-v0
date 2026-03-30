@@ -101,6 +101,10 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   type: z.enum(["bid", "offer", "trade"]),
   sellerName: z.string().trim().max(200).nullable().optional(),
   buyerName: z.string().trim().max(200).nullable().optional(),
+  tradeSellerBrokerTelegramUserId: z.string().trim().nullable().optional(),
+  tradeSellerBrokerTelegramUsername: z.string().trim().nullable().optional(),
+  tradeBuyerBrokerTelegramUserId: z.string().trim().nullable().optional(),
+  tradeBuyerBrokerTelegramUsername: z.string().trim().nullable().optional(),
   originCountry: z.string().trim().nullable().optional(),
   originCountryCode: z.string().trim().nullable().optional(),
   commodity: z.string().min(1),
@@ -388,6 +392,10 @@ function mapSeaBrokerageEntryToClientShape(
     brokerTelegramUsername: entry.brokerTelegramUsername,
     sellerName: entry.sellerName,
     buyerName: entry.buyerName,
+    tradeSellerBrokerTelegramUserId: entry.tradeSellerBrokerTelegramUserId,
+    tradeSellerBrokerTelegramUsername: entry.tradeSellerBrokerTelegramUsername,
+    tradeBuyerBrokerTelegramUserId: entry.tradeBuyerBrokerTelegramUserId,
+    tradeBuyerBrokerTelegramUsername: entry.tradeBuyerBrokerTelegramUsername,
     originCountry: entry.originCountry,
     originCountryCode: entry.originCountryCode,
     commodity: entry.commodity,
@@ -8231,6 +8239,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ===== SEA BROKERAGE MONITOR =====
 
+  app.get("/api/sea-brokerage-monitor/broker-directory", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const allowlist = await listSeaBrokerageBrokerAllowlist();
+      const directory = allowlist
+        .filter((item) => item.isActive)
+        .map((item) => ({
+          brokerCode: item.brokerCode,
+          brokerName: item.brokerName,
+          companyName: item.companyName,
+          telegramUserId: item.telegramUserId,
+          telegramUsername: item.telegramUsername,
+        }))
+        .sort((left, right) => left.brokerCode.localeCompare(right.brokerCode));
+
+      return res.json({ brokers: directory });
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage broker directory:", error);
+      return res.status(500).json({ error: "Failed to fetch broker directory" });
+    }
+  });
+
   app.get("/api/sea-brokerage-monitor/entries", async (req: AuthRequest, res) => {
     try {
       const [entries, likes, matchLikes] = await Promise.all([
@@ -9596,6 +9634,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: fromZodError(parsed.error).message });
       }
 
+      if (parsed.data.type === "trade") {
+        const hasSellerBrokerIdentity =
+          !!parsed.data.tradeSellerBrokerTelegramUserId || !!parsed.data.tradeSellerBrokerTelegramUsername;
+        const hasBuyerBrokerIdentity =
+          !!parsed.data.tradeBuyerBrokerTelegramUserId || !!parsed.data.tradeBuyerBrokerTelegramUsername;
+        if (!hasSellerBrokerIdentity || !hasBuyerBrokerIdentity) {
+          return res.status(400).json({
+            error: "TRADE requires both seller broker and buyer broker Telegram identities.",
+          });
+        }
+      }
+
       const created = await storage.createSeaBrokerageEntry({
         ...parsed.data,
         brokerUserId:
@@ -9609,6 +9659,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         brokerCode: authorizedBroker.brokerCode,
         brokerName: authorizedBroker.brokerName,
         companyName: authorizedBroker.companyName,
+        tradeSellerBrokerTelegramUserId: parsed.data.tradeSellerBrokerTelegramUserId ?? null,
+        tradeSellerBrokerTelegramUsername: parsed.data.tradeSellerBrokerTelegramUsername ?? null,
+        tradeBuyerBrokerTelegramUserId: parsed.data.tradeBuyerBrokerTelegramUserId ?? null,
+        tradeBuyerBrokerTelegramUsername: parsed.data.tradeBuyerBrokerTelegramUsername ?? null,
         gradeOrSpec: parsed.data.gradeOrSpec ?? "",
         price:
           parsed.data.price === null || parsed.data.price === undefined
@@ -9678,10 +9732,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (payload.type !== existing.type) {
         return res.status(400).json({ error: "Entry type cannot be changed" });
       }
+      if (payload.type === "trade") {
+        const hasSellerBrokerIdentity =
+          !!payload.tradeSellerBrokerTelegramUserId || !!payload.tradeSellerBrokerTelegramUsername;
+        const hasBuyerBrokerIdentity =
+          !!payload.tradeBuyerBrokerTelegramUserId || !!payload.tradeBuyerBrokerTelegramUsername;
+        if (!hasSellerBrokerIdentity || !hasBuyerBrokerIdentity) {
+          return res.status(400).json({
+            error: "TRADE requires both seller broker and buyer broker Telegram identities.",
+          });
+        }
+      }
 
       const updated = await storage.updateSeaBrokerageEntry(entryId, {
         sellerName: payload.sellerName ?? null,
         buyerName: payload.buyerName ?? null,
+        tradeSellerBrokerTelegramUserId: payload.tradeSellerBrokerTelegramUserId ?? null,
+        tradeSellerBrokerTelegramUsername: payload.tradeSellerBrokerTelegramUsername ?? null,
+        tradeBuyerBrokerTelegramUserId: payload.tradeBuyerBrokerTelegramUserId ?? null,
+        tradeBuyerBrokerTelegramUsername: payload.tradeBuyerBrokerTelegramUsername ?? null,
         originCountry: payload.originCountry ?? null,
         originCountryCode: payload.originCountryCode ?? null,
         commodity: payload.commodity,
@@ -9863,6 +9932,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         companyName: source.companyName,
         sellerName: source.sellerName,
         buyerName: source.buyerName,
+        tradeSellerBrokerTelegramUserId: source.tradeSellerBrokerTelegramUserId,
+        tradeSellerBrokerTelegramUsername: source.tradeSellerBrokerTelegramUsername,
+        tradeBuyerBrokerTelegramUserId: source.tradeBuyerBrokerTelegramUserId,
+        tradeBuyerBrokerTelegramUsername: source.tradeBuyerBrokerTelegramUsername,
         originCountry: source.originCountry,
         originCountryCode: source.originCountryCode,
         commodity: source.commodity,

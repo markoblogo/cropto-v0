@@ -211,12 +211,22 @@ function formatStandardTelegramMessage(
   const buyerLine =
     (entry.buyerName || "").trim() ||
     (entry.type === "bid" ? "BUYER" : entry.type === "trade" ? "BUYER" : "");
+  const tradeSellerBroker = formatTelegramBrokerIdentity(
+    entry.tradeSellerBrokerTelegramUsername,
+    entry.tradeSellerBrokerTelegramUserId,
+  );
+  const tradeBuyerBroker = formatTelegramBrokerIdentity(
+    entry.tradeBuyerBrokerTelegramUsername,
+    entry.tradeBuyerBrokerTelegramUserId,
+  );
 
   const lines = [
     header,
     "------------------------------",
     entry.type === "trade" ? `SELLER: ${sellerLine.toUpperCase()}` : counterpartyLine.toUpperCase(),
     entry.type === "trade" ? `BUYER: ${buyerLine.toUpperCase()}` : null,
+    entry.type === "trade" ? `SELLER BROKER: ${tradeSellerBroker}` : null,
+    entry.type === "trade" ? `BUYER BROKER: ${tradeBuyerBroker}` : null,
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
     entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim().toUpperCase() : null,
     formatQuantityLine(entry),
@@ -251,6 +261,21 @@ function normalizeCounterpartyName(value?: string | null) {
   if (!normalized) return null;
   if (normalized.toLowerCase() === "not specified") return null;
   return normalized.toUpperCase();
+}
+
+function formatTelegramBrokerIdentity(
+  telegramUsername?: string | null,
+  telegramUserId?: string | null,
+) {
+  const normalizedUsername = String(telegramUsername || "").trim().replace(/^@+/, "");
+  if (normalizedUsername) {
+    return `@${normalizedUsername.toLowerCase()}`;
+  }
+  const normalizedUserId = String(telegramUserId || "").trim();
+  if (normalizedUserId) {
+    return `tg:${normalizedUserId}`;
+  }
+  return "N/A";
 }
 
 function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow, includeBroker = true) {

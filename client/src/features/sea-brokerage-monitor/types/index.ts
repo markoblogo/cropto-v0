@@ -87,6 +87,10 @@ export interface BrokerageEntry {
   businessUnitCode?: string | null;
   sellerName?: string | null;
   buyerName?: string | null;
+  tradeSellerBrokerTelegramUserId?: string | null;
+  tradeSellerBrokerTelegramUsername?: string | null;
+  tradeBuyerBrokerTelegramUserId?: string | null;
+  tradeBuyerBrokerTelegramUsername?: string | null;
   originCountry?: string | null;
   originCountryCode?: string | null;
   commodity: CommodityCode;
@@ -121,6 +125,14 @@ export interface BrokerageEntry {
   likeCount?: number;
   likedByMe?: boolean;
   hasBossMatchLike?: boolean;
+}
+
+export interface BrokerDirectoryItem {
+  brokerCode: string;
+  brokerName: string;
+  companyName: string;
+  telegramUserId: string | null;
+  telegramUsername: string | null;
 }
 
 export interface MatchSuggestion {

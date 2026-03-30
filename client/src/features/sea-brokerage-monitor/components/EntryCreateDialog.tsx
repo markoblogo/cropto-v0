@@ -50,6 +50,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type {
   Basis,
+  BrokerDirectoryItem,
   BrokerageEntry,
   Commodity,
   CompanyOption,
@@ -74,6 +75,7 @@ type PeriodPreset =
   | "explicit_range";
 
 type QuantityPreset = "single" | "range";
+type TradeMyRole = "seller" | "buyer";
 
 const periodPresetOptions: SelectOption<PeriodPreset>[] = [
   { value: "spot", label: "SPOT" },
@@ -97,6 +99,8 @@ const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
 const entryFormSchema = z
   .object({
     quantityPreset: z.enum(["single", "range"]),
+    tradeMyRole: z.enum(["seller", "buyer"]).optional(),
+    tradeCounterpartyBrokerKey: z.string().optional(),
     sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
     buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
     periodPreset: z.enum([
@@ -234,6 +238,14 @@ const entryFormSchema = z
 type EntryFormValues = z.infer<typeof entryFormSchema>;
 type TelegramSessionHook = ReturnType<typeof useSeaBrokerageTelegramSession>;
 
+function normalizeTelegramIdentityKey(userId?: string | null, username?: string | null) {
+  const normalizedUserId = String(userId || "").trim();
+  if (normalizedUserId) return `id:${normalizedUserId}`;
+  const normalizedUsername = String(username || "").trim().replace(/^@+/, "").toLowerCase();
+  if (normalizedUsername) return `username:${normalizedUsername}`;
+  return "";
+}
+
 function normalizeLocationCityInput(value: string) {
   return value
     .trim()
@@ -252,6 +264,8 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
 
   return {
     quantityPreset: "single",
+    tradeMyRole: "seller",
+    tradeCounterpartyBrokerKey: "",
     sellerName: "",
     buyerName: "",
     periodPreset: "explicit_range",
@@ -292,6 +306,8 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
   return {
     quantityPreset,
+    tradeMyRole: "seller",
+    tradeCounterpartyBrokerKey: "",
     sellerName: entry.sellerName || "",
     buyerName: entry.buyerName || "",
     periodPreset,
@@ -587,6 +603,22 @@ export function EntryCreateDialog({
     },
     staleTime: 60_000,
   });
+  const { data: brokerDirectory = [] } = useQuery<BrokerDirectoryItem[]>({
+    queryKey: ["/api/sea-brokerage-monitor/broker-directory"],
+    enabled: open && !!session.monitorAuthToken,
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/broker-directory", {
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      });
+      if (response.status === 403) return [];
+      if (!response.ok) {
+        throw new Error(`Failed to load broker directory (${response.status})`);
+      }
+      const payload = (await response.json()) as { brokers?: BrokerDirectoryItem[] };
+      return Array.isArray(payload.brokers) ? payload.brokers : [];
+    },
+    staleTime: 60_000,
+  });
 
   const allPortOptions = useMemo(() => {
     const byCode = new Map<string, PortOption>();
@@ -663,6 +695,45 @@ export function EntryCreateDialog({
       `${option.displayLabel} ${option.compactDisplay}`.toLowerCase().includes(query),
     );
   }, [allCommodityOptions, commoditySearch]);
+  const authorBrokerIdentityKey = useMemo(
+    () =>
+      normalizeTelegramIdentityKey(
+        session.telegramIdentity.telegramUserId,
+        session.telegramIdentity.telegramUsername,
+      ),
+    [session.telegramIdentity.telegramUserId, session.telegramIdentity.telegramUsername],
+  );
+  const brokerDirectoryOptions = useMemo(() => {
+    return brokerDirectory
+      .map((broker) => {
+        const key = normalizeTelegramIdentityKey(broker.telegramUserId, broker.telegramUsername);
+        if (!key) return null;
+        const handle = broker.telegramUsername
+          ? `@${broker.telegramUsername.replace(/^@+/, "")}`
+          : broker.telegramUserId
+            ? `tg:${broker.telegramUserId}`
+            : "unknown";
+        return {
+          key,
+          handle,
+          brokerCode: broker.brokerCode,
+          brokerName: broker.brokerName,
+          companyName: broker.companyName,
+          telegramUserId: broker.telegramUserId || null,
+          telegramUsername: broker.telegramUsername || null,
+          label: `${broker.brokerCode} / ${broker.brokerName} (${handle})`,
+        };
+      })
+      .filter((option): option is NonNullable<typeof option> => !!option)
+      .sort((left, right) => left.brokerCode.localeCompare(right.brokerCode));
+  }, [brokerDirectory]);
+  const brokerDirectoryByKey = useMemo(() => {
+    const byKey = new Map<string, (typeof brokerDirectoryOptions)[number]>();
+    brokerDirectoryOptions.forEach((option) => {
+      byKey.set(option.key, option);
+    });
+    return byKey;
+  }, [brokerDirectoryOptions]);
 
   useEffect(() => {
     const nextDefaults =
@@ -692,6 +763,72 @@ export function EntryCreateDialog({
     setCommodityEditorMessage(null);
     setIsSavingCommodity(false);
   }, [entryType, form, initialEntry, mode, open]);
+
+  useEffect(() => {
+    if (!open || entryType !== "trade") return;
+    if (!authorBrokerIdentityKey) return;
+
+    const authorOption = brokerDirectoryByKey.get(authorBrokerIdentityKey);
+    const firstCounterparty = brokerDirectoryOptions.find(
+      (option) => option.key !== authorBrokerIdentityKey,
+    );
+    const currentRole = form.getValues("tradeMyRole");
+    const currentCounterparty = form.getValues("tradeCounterpartyBrokerKey");
+
+    if (!currentRole) {
+      form.setValue("tradeMyRole", "seller");
+    }
+
+    if (!currentCounterparty && firstCounterparty) {
+      form.setValue("tradeCounterpartyBrokerKey", firstCounterparty.key);
+    }
+
+    if (mode === "edit" && initialEntry) {
+      const sellerKey = normalizeTelegramIdentityKey(
+        initialEntry.tradeSellerBrokerTelegramUserId,
+        initialEntry.tradeSellerBrokerTelegramUsername,
+      );
+      const buyerKey = normalizeTelegramIdentityKey(
+        initialEntry.tradeBuyerBrokerTelegramUserId,
+        initialEntry.tradeBuyerBrokerTelegramUsername,
+      );
+      if (sellerKey && sellerKey === authorBrokerIdentityKey) {
+        form.setValue("tradeMyRole", "seller");
+        if (buyerKey && buyerKey !== authorBrokerIdentityKey) {
+          form.setValue("tradeCounterpartyBrokerKey", buyerKey);
+        }
+      } else if (buyerKey && buyerKey === authorBrokerIdentityKey) {
+        form.setValue("tradeMyRole", "buyer");
+        if (sellerKey && sellerKey !== authorBrokerIdentityKey) {
+          form.setValue("tradeCounterpartyBrokerKey", sellerKey);
+        }
+      } else if (initialEntry.tradeSellerBrokerTelegramUsername || initialEntry.tradeSellerBrokerTelegramUserId) {
+        form.setValue("tradeMyRole", "buyer");
+        if (sellerKey) {
+          form.setValue("tradeCounterpartyBrokerKey", sellerKey);
+        }
+      }
+    }
+
+    if (authorOption) {
+      const role = form.getValues("tradeMyRole") || "seller";
+      if (role === "seller" && !form.getValues("sellerName")?.trim()) {
+        form.setValue("sellerName", authorOption.companyName, { shouldValidate: true });
+      }
+      if (role === "buyer" && !form.getValues("buyerName")?.trim()) {
+        form.setValue("buyerName", authorOption.companyName, { shouldValidate: true });
+      }
+    }
+  }, [
+    authorBrokerIdentityKey,
+    brokerDirectoryByKey,
+    brokerDirectoryOptions,
+    entryType,
+    form,
+    initialEntry,
+    mode,
+    open,
+  ]);
 
   const canonicalPreview = useMemo(() => {
     if (!session.authorProfile) {
@@ -767,7 +904,48 @@ export function EntryCreateDialog({
       return;
     }
 
+    let tradeSellerBrokerTelegramUserId: string | null = null;
+    let tradeSellerBrokerTelegramUsername: string | null = null;
+    let tradeBuyerBrokerTelegramUserId: string | null = null;
+    let tradeBuyerBrokerTelegramUsername: string | null = null;
+
     if (entryType === "trade") {
+      const myRole = (formValues.tradeMyRole || "seller") as TradeMyRole;
+      const counterpartyKey = String(formValues.tradeCounterpartyBrokerKey || "").trim();
+      if (!authorBrokerIdentityKey) {
+        setSubmitMessage("Telegram broker identity is required for TRADE publishing.");
+        return;
+      }
+      if (!counterpartyKey) {
+        setSubmitMessage("Select the second broker for TRADE.");
+        return;
+      }
+      if (counterpartyKey === authorBrokerIdentityKey) {
+        setSubmitMessage("Counterparty broker must be different from your Telegram account.");
+        return;
+      }
+      const counterpartyBroker = brokerDirectoryByKey.get(counterpartyKey);
+      if (!counterpartyBroker) {
+        setSubmitMessage("Selected counterparty broker is not available.");
+        return;
+      }
+
+      const meTelegramUserId = session.telegramIdentity.telegramUserId || null;
+      const meTelegramUsername = session.telegramIdentity.telegramUsername
+        ? session.telegramIdentity.telegramUsername.replace(/^@+/, "")
+        : null;
+      if (myRole === "seller") {
+        tradeSellerBrokerTelegramUserId = meTelegramUserId;
+        tradeSellerBrokerTelegramUsername = meTelegramUsername;
+        tradeBuyerBrokerTelegramUserId = counterpartyBroker.telegramUserId;
+        tradeBuyerBrokerTelegramUsername = counterpartyBroker.telegramUsername;
+      } else {
+        tradeSellerBrokerTelegramUserId = counterpartyBroker.telegramUserId;
+        tradeSellerBrokerTelegramUsername = counterpartyBroker.telegramUsername;
+        tradeBuyerBrokerTelegramUserId = meTelegramUserId;
+        tradeBuyerBrokerTelegramUsername = meTelegramUsername;
+      }
+
       if (!formValues.sellerName?.trim()) {
         setSubmitMessage("Seller is required for TRADE.");
         return;
@@ -834,6 +1012,14 @@ export function EntryCreateDialog({
         brokerCode: session.authorProfile.brokerCode,
         brokerName: session.authorProfile.brokerName,
         companyName: session.authorProfile.companyName,
+        tradeSellerBrokerTelegramUserId:
+          entryType === "trade" ? tradeSellerBrokerTelegramUserId : null,
+        tradeSellerBrokerTelegramUsername:
+          entryType === "trade" ? tradeSellerBrokerTelegramUsername : null,
+        tradeBuyerBrokerTelegramUserId:
+          entryType === "trade" ? tradeBuyerBrokerTelegramUserId : null,
+        tradeBuyerBrokerTelegramUsername:
+          entryType === "trade" ? tradeBuyerBrokerTelegramUsername : null,
         canonicalView: canonicalPreview,
       };
 
@@ -1116,6 +1302,72 @@ export function EntryCreateDialog({
         <Form {...form}>
           <form className="space-y-3 overflow-x-hidden" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
+              {entryType === "trade" ? (
+                <FormField
+                  control={form.control}
+                  name="tradeMyRole"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>My role in trade</FormLabel>
+                      <Select
+                        value={field.value || "seller"}
+                        onValueChange={(value) => field.onChange(value as TradeMyRole)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="seller">Seller</SelectItem>
+                          <SelectItem value="buyer">Buyer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="text-[11px] text-muted-foreground">
+                        Your Telegram account is fixed to this side.
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
+              {entryType === "trade" ? (
+                <FormField
+                  control={form.control}
+                  name="tradeCounterpartyBrokerKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Counterparty broker (Telegram)</FormLabel>
+                      <Select
+                        value={field.value?.trim() ? field.value : "__none__"}
+                        onValueChange={(value) => {
+                          field.onChange(value === "__none__" ? "" : value);
+                        }}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select broker" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="__none__">Select broker</SelectItem>
+                          {brokerDirectoryOptions
+                            .filter((option) => option.key !== authorBrokerIdentityKey)
+                            .map((option) => (
+                              <SelectItem key={option.key} value={option.key}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="text-[11px] text-muted-foreground">
+                        Second side of TRADE for Telegram reporting.
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
               {entryType !== "bid" ? (
                 <FormField
                   control={form.control}
