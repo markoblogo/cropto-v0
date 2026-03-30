@@ -148,8 +148,11 @@ function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
 
 function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) {
   const ideaTag =
-    entry.type === "bid" ? "#bid_idea" : entry.type === "trade" ? "#trade_idea" : "#offer_idea";
+    entry.type === "bid" ? "#bid_idea" : entry.type === "trade" ? "#traded" : "#offer_idea";
   const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
+  if (entry.type === "trade") {
+    return [ideaTag, flag].filter(Boolean).join(" ");
+  }
   return [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
 }
 
@@ -181,6 +184,7 @@ function resolveCountryCodeAlpha2(entry: SeaBrokerageEntryRow, value: string | n
     if (normalized === "TUR") return "TR";
     if (normalized === "ROU") return "RO";
     if (normalized === "MDA") return "MD";
+    if (normalized === "DEU" || normalized === "GER") return "DE";
   }
   const destination = String(entry.destinationCountry || "").trim().toUpperCase();
   if (destination === "UKRAINE") return "UA";
@@ -189,6 +193,7 @@ function resolveCountryCodeAlpha2(entry: SeaBrokerageEntryRow, value: string | n
   if (destination === "TURKEY") return "TR";
   if (destination === "ROMANIA") return "RO";
   if (destination === "MOLDOVA") return "MD";
+  if (destination === "GERMANY") return "DE";
   return normalized || "N/A";
 }
 
@@ -197,13 +202,18 @@ function formatStandardTelegramMessage(
   brokerSignature?: string | null,
   includeBrokerSignature = true,
 ) {
+  const isTrade = entry.type === "trade";
   const header = formatTelegramHeader(
     entry,
-    includeBrokerSignature
+    includeBrokerSignature && !isTrade
       ? brokerSignature || entry.companyName || entry.brokerName || entry.brokerCode
-      : "BROKER DESK",
+      : "",
   );
-  const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
+  const originCountryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode);
+  const destinationCountryCode = resolveCountryCodeAlpha2(
+    entry,
+    entry.destinationCountryCode || entry.destinationCountry,
+  );
   const counterpartyLine = formatTelegramCounterparty(entry) || (entry.type === "offer" ? "SELLER" : "BUYER");
   const sellerLine =
     (entry.sellerName || "").trim() ||
@@ -223,19 +233,18 @@ function formatStandardTelegramMessage(
   const lines = [
     header,
     "------------------------------",
-    entry.type === "trade" ? `SELLER: ${sellerLine.toUpperCase()}` : counterpartyLine.toUpperCase(),
-    entry.type === "trade" ? `BUYER: ${buyerLine.toUpperCase()}` : null,
-    entry.type === "trade" ? `SELLER BROKER: ${tradeSellerBroker}` : null,
-    entry.type === "trade" ? `BUYER BROKER: ${tradeBuyerBroker}` : null,
-    `${formatTelegramCommodity(entry)}, ${countryCode}`,
+    isTrade ? `SELLER: ${sellerLine.toUpperCase()}` : counterpartyLine.toUpperCase(),
+    isTrade ? `BUYER: ${buyerLine.toUpperCase()}` : null,
+    `${formatTelegramCommodity(entry)}, ${originCountryCode}`,
     entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim().toUpperCase() : null,
     formatQuantityLine(entry),
-    `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
+    `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${destinationCountryCode}`,
     formatTelegramTransportCode(entry),
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
     entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,
     "------------------------------",
+    isTrade ? `${tradeSellerBroker} 🤝 ${tradeBuyerBroker}` : null,
   ];
 
   return lines.filter(Boolean).join("\n");
