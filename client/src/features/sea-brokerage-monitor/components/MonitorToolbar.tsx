@@ -84,7 +84,7 @@ export function MonitorToolbar({
   }
 
   const compactFilterTriggerClass =
-    "h-6 min-w-0 w-full justify-between rounded-md border border-input bg-background px-3 text-left text-[10.5px] font-normal text-foreground hover:bg-background sm:h-7 sm:text-[11px]";
+    "flex h-6 w-full min-w-0 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-[10.5px] font-normal text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:h-7 sm:text-[11px]";
 
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 px-1.5 py-1 shadow-sm sm:px-2.5 sm:py-1.5">
@@ -171,14 +171,13 @@ export function MonitorToolbar({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 className={compactFilterTriggerClass}
               >
                 <span className="truncate">{renderMultiLabel("origins", selectedOriginCountries.size)}</span>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
               {countryOptions.map((country) => {
@@ -246,16 +245,15 @@ export function MonitorToolbar({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 className={compactFilterTriggerClass}
               >
                 <span className="truncate">
                   {renderMultiLabel("business units", selectedBusinessUnits.size)}
                 </span>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
               {businessUnitOptions.map((option) => {
@@ -283,14 +281,13 @@ export function MonitorToolbar({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 className={compactFilterTriggerClass}
               >
                 <span className="truncate">{renderMultiLabel("currencies", selectedCurrencies.size)}</span>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[230px] max-w-[90vw]">
               {currencyOptions.map((currency) => {
@@ -318,16 +315,15 @@ export function MonitorToolbar({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 className={compactFilterTriggerClass}
               >
                 <span className="truncate">
                   {renderMultiLabel("transport types", selectedTransportModes.size)}
                 </span>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
               {transportModeOptions.map((option) => {
