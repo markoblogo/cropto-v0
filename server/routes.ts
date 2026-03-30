@@ -196,6 +196,85 @@ const seaBrokerageCommodityCreateSchema = z.object({
   group: z.enum(["grains", "oilseeds", "processed"]).optional(),
 });
 
+const seaBrokerageReportRequestSchema = z
+  .object({
+    commodity: z.string().trim().min(1),
+    basis: z.array(z.string().trim()).optional().default([]),
+    deliveryPlaces: z.array(z.string().trim()).optional().default([]),
+    periodMode: z.enum(["none", "month", "range"]).default("none"),
+    periodMonth: z.string().trim().optional().default(""),
+    periodStart: z.string().trim().optional().default(""),
+    periodEnd: z.string().trim().optional().default(""),
+    overlapDays: z.coerce.number().int().min(0).max(15).optional().default(0),
+    postedDateMode: z.enum(["last3", "last7", "last30", "custom"]).default("last7"),
+    postedFrom: z.string().trim().optional().default(""),
+    postedTo: z.string().trim().optional().default(""),
+    includeBids: z.coerce.boolean().optional().default(true),
+    includeOffers: z.coerce.boolean().optional().default(true),
+  })
+  .superRefine((value, ctx) => {
+    if (value.periodMode === "month" && !/^\d{4}-\d{2}$/.test(value.periodMonth)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodMonth"],
+        message: "Month must be in YYYY-MM format",
+      });
+    }
+    if (value.periodMode === "range") {
+      if (!value.periodStart) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["periodStart"],
+          message: "Period start is required",
+        });
+      }
+      if (!value.periodEnd) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["periodEnd"],
+          message: "Period end is required",
+        });
+      }
+      if (value.periodStart && value.periodEnd && value.periodEnd < value.periodStart) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["periodEnd"],
+          message: "Period end must be on or after period start",
+        });
+      }
+    }
+    if (value.postedDateMode === "custom") {
+      if (!value.postedFrom) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["postedFrom"],
+          message: "Posted from date is required",
+        });
+      }
+      if (!value.postedTo) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["postedTo"],
+          message: "Posted to date is required",
+        });
+      }
+      if (value.postedFrom && value.postedTo && value.postedTo < value.postedFrom) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["postedTo"],
+          message: "Posted to date must be on or after posted from date",
+        });
+      }
+    }
+    if (!value.includeBids && !value.includeOffers) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["includeBids"],
+        message: "Select at least one side (bids or offers)",
+      });
+    }
+  });
+
 type SeaBrokerageCustomLocation = {
   code: string;
   displayLabel: string;
@@ -833,6 +912,35 @@ function isSameSeaBrokerageBusinessDay(createdAt: Date | string, now = new Date(
   const createdKey = formatSeaBrokerageDateKeyInTimezone(createdAt, SEA_BROKERAGE_DEFAULT_TIMEZONE);
   const nowKey = formatSeaBrokerageDateKeyInTimezone(now, SEA_BROKERAGE_DEFAULT_TIMEZONE);
   return !!createdKey && !!nowKey && createdKey === nowKey;
+}
+
+function startOfUtcDay(dateIso: string) {
+  const date = new Date(dateIso);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+function endOfUtcDay(dateIso: string) {
+  const start = startOfUtcDay(dateIso);
+  if (!start) return null;
+  return new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
+}
+
+function buildMonthUtcRange(periodMonth: string) {
+  const [yearRaw, monthRaw] = periodMonth.split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return null;
+  const start = new Date(Date.UTC(year, month - 1, 1));
+  const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+  return { start, end };
+}
+
+function getDateOverlapDaysInclusive(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
+  const start = Math.max(aStart.getTime(), bStart.getTime());
+  const end = Math.min(aEnd.getTime(), bEnd.getTime());
+  if (end < start) return 0;
+  return Math.floor((end - start) / (24 * 60 * 60 * 1000)) + 1;
 }
 
 async function readSeaBrokerageFilterPresets(): Promise<SeaBrokerageFilterPreset[]> {
@@ -8203,6 +8311,188 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching sea brokerage monitor entries:", error);
       res.status(500).json({ error: "Failed to fetch sea brokerage monitor entries" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/report/send", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const parsed = seaBrokerageReportRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const payload = parsed.data;
+      const allEntries = await storage.listSeaBrokerageEntries();
+      const now = new Date();
+
+      const includeTypes = new Set<string>();
+      if (payload.includeBids) includeTypes.add("bid");
+      if (payload.includeOffers) includeTypes.add("offer");
+
+      const postedWindow = (() => {
+        if (payload.postedDateMode === "custom") {
+          const from = startOfUtcDay(payload.postedFrom);
+          const to = endOfUtcDay(payload.postedTo);
+          return from && to ? { from, to } : null;
+        }
+        const days =
+          payload.postedDateMode === "last3" ? 3 : payload.postedDateMode === "last30" ? 30 : 7;
+        const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+        return { from, to: now };
+      })();
+
+      if (!postedWindow) {
+        return res.status(400).json({ error: "Invalid posted date range" });
+      }
+
+      const reportPeriodRange = (() => {
+        if (payload.periodMode === "none") return null;
+        if (payload.periodMode === "month") {
+          return buildMonthUtcRange(payload.periodMonth);
+        }
+        const start = startOfUtcDay(payload.periodStart);
+        const end = endOfUtcDay(payload.periodEnd);
+        return start && end ? { start, end } : null;
+      })();
+
+      if (payload.periodMode !== "none" && !reportPeriodRange) {
+        return res.status(400).json({ error: "Invalid report period range" });
+      }
+
+      const basisSet = new Set(payload.basis.map((item) => item.toUpperCase()));
+      const placeSet = new Set(payload.deliveryPlaces.map((item) => item.toLowerCase()));
+      const overlapThreshold = Number(payload.overlapDays || 0);
+
+      const matched = allEntries
+        .filter((entry) => includeTypes.has(entry.type))
+        .filter((entry) => entry.commodity === payload.commodity)
+        .filter((entry) => {
+          const created = new Date(entry.createdAt);
+          if (Number.isNaN(created.getTime())) return false;
+          return created >= postedWindow.from && created <= postedWindow.to;
+        })
+        .filter((entry) => (basisSet.size ? basisSet.has(String(entry.basis || "").toUpperCase()) : true))
+        .filter((entry) =>
+          placeSet.size
+            ? placeSet.has(String(entry.destinationPortCode || "").toLowerCase()) ||
+              placeSet.has(String(entry.destinationPort || "").toLowerCase())
+            : true,
+        )
+        .filter((entry) => {
+          if (!reportPeriodRange) return true;
+          if (!entry.periodStart || !entry.periodEnd) return false;
+          const entryStart = startOfUtcDay(entry.periodStart);
+          const entryEnd = endOfUtcDay(entry.periodEnd);
+          if (!entryStart || !entryEnd) return false;
+          const overlapDays = getDateOverlapDaysInclusive(
+            entryStart,
+            entryEnd,
+            reportPeriodRange.start,
+            reportPeriodRange.end,
+          );
+          return overlapThreshold > 0 ? overlapDays >= overlapThreshold : overlapDays > 0;
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      const offers = matched.filter((entry) => entry.type === "offer");
+      const bids = matched.filter((entry) => entry.type === "bid");
+
+      const basisLabel = payload.basis.length ? payload.basis.join(", ") : "ALL";
+      const placeLabel = payload.deliveryPlaces.length ? payload.deliveryPlaces.join(", ") : "ALL";
+      const periodLabel =
+        payload.periodMode === "none"
+          ? "NOT IMPORTANT"
+          : payload.periodMode === "month"
+            ? payload.periodMonth
+            : `${payload.periodStart}..${payload.periodEnd}`;
+      const postedLabel =
+        payload.postedDateMode === "custom"
+          ? `${payload.postedFrom}..${payload.postedTo}`
+          : payload.postedDateMode.toUpperCase();
+      const overlapLabel = overlapThreshold > 0 ? `${overlapThreshold}+ days` : "ANY OVERLAP";
+
+      const headerLines = [
+        "#report_idea 📊",
+        "------------------------------",
+        `BROKER: ${authorizedBroker.brokerCode}`,
+        `COMMODITY: ${payload.commodity.toUpperCase()}`,
+        `BASIS: ${basisLabel}`,
+        `PLACE: ${placeLabel}`,
+        `PERIOD: ${periodLabel}`,
+        `OVERLAP: ${overlapLabel}`,
+        `POSTED: ${postedLabel}`,
+        `RESULT: ${matched.length} entries (offers ${offers.length}, bids ${bids.length})`,
+        "------------------------------",
+      ];
+
+      const offerLines = offers.map((entry) => `OFFER: ${entry.canonicalView}`);
+      const bidLines = bids.map((entry) => `BID: ${entry.canonicalView}`);
+      const reportLines = [
+        ...headerLines,
+        ...(offerLines.length ? ["OFFERS:", ...offerLines, "------------------------------"] : []),
+        ...(bidLines.length ? ["BIDS:", ...bidLines, "------------------------------"] : []),
+      ];
+      const message = reportLines.join("\n");
+
+      const targetChat =
+        authorizedBroker.telegramUserId ||
+        (authorizedBroker.telegramUsername
+          ? `@${authorizedBroker.telegramUsername.replace(/^@+/, "")}`
+          : null);
+
+      if (!targetChat) {
+        return res.status(400).json({
+          error: "No Telegram target found for broker. Ask admin to add Telegram id/username.",
+        });
+      }
+
+      const maxMessageLength = 3400;
+      const chunks: string[] = [];
+      let current = "";
+      for (const line of reportLines) {
+        const next = current ? `${current}\n${line}` : line;
+        if (next.length > maxMessageLength) {
+          if (current) chunks.push(current);
+          current = line;
+        } else {
+          current = next;
+        }
+      }
+      if (current) chunks.push(current);
+
+      let sentChunks = 0;
+      for (const chunk of chunks) {
+        const dm = await sendSeaBrokerageTelegramDirectMessage(targetChat, chunk);
+        if (!dm.ok) {
+          return res.status(502).json({
+            error:
+              dm.error ||
+              "Failed to deliver report in Telegram. Ensure broker started bot chat first.",
+            sentChunks,
+          });
+        }
+        sentChunks += 1;
+      }
+
+      return res.status(201).json({
+        ok: true,
+        sentChunks,
+        matchedEntries: matched.length,
+        offers: offers.length,
+        bids: bids.length,
+      });
+    } catch (error: any) {
+      console.error("Error sending sea brokerage report:", error);
+      return res.status(500).json({ error: "Failed to build/send report" });
     }
   });
 
