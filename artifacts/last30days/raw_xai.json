@@ -5,7 +5,7 @@
     "createdAt": "Sun Mar 29 11:38:34 +0000 2026",
     "replyCount": 1,
     "retweetCount": 0,
-    "likeCount": 1,
+    "likeCount": 0,
     "conversationId": "2038183598033875284",
     "inReplyToStatusId": "2038183598033875284",
     "author": {
@@ -123,7 +123,7 @@
       "createdAt": "Mon Mar 02 20:15:54 +0000 2026",
       "replyCount": 35,
       "retweetCount": 114,
-      "likeCount": 2580,
+      "likeCount": 2578,
       "conversationId": "2028564978987311272",
       "author": {
         "username": "RetrAshado",
