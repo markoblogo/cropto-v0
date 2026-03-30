@@ -198,73 +198,71 @@ const seaBrokerageCommodityCreateSchema = z.object({
 
 const seaBrokerageReportRequestSchema = z
   .object({
-    commodity: z.string().trim().min(1),
+    commodity: z.string().trim().optional().default(""),
+    commodities: z.array(z.string().trim()).optional().default([]),
     basis: z.array(z.string().trim()).optional().default([]),
     deliveryPlaces: z.array(z.string().trim()).optional().default([]),
-    periodMode: z.enum(["none", "month", "range"]).default("none"),
-    periodMonth: z.string().trim().optional().default(""),
     periodStart: z.string().trim().optional().default(""),
     periodEnd: z.string().trim().optional().default(""),
-    overlapDays: z.coerce.number().int().min(0).max(15).optional().default(0),
-    postedDateMode: z.enum(["last3", "last7", "last30", "custom"]).default("last7"),
+    overlapDays: z.coerce.number().int().min(1).max(15).optional().default(1),
     postedFrom: z.string().trim().optional().default(""),
     postedTo: z.string().trim().optional().default(""),
     includeBids: z.coerce.boolean().optional().default(true),
     includeOffers: z.coerce.boolean().optional().default(true),
   })
   .superRefine((value, ctx) => {
-    if (value.periodMode === "month" && !/^\d{4}-\d{2}$/.test(value.periodMonth)) {
+    const selectedCommodities = [
+      ...value.commodities,
+      ...(value.commodity ? [value.commodity] : []),
+    ].filter(Boolean);
+    if (!selectedCommodities.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["periodMonth"],
-        message: "Month must be in YYYY-MM format",
+        path: ["commodities"],
+        message: "Select at least one commodity",
       });
     }
-    if (value.periodMode === "range") {
-      if (!value.periodStart) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["periodStart"],
-          message: "Period start is required",
-        });
-      }
-      if (!value.periodEnd) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["periodEnd"],
-          message: "Period end is required",
-        });
-      }
-      if (value.periodStart && value.periodEnd && value.periodEnd < value.periodStart) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["periodEnd"],
-          message: "Period end must be on or after period start",
-        });
-      }
+    if (!value.postedFrom) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["postedFrom"],
+        message: "Posted from date is required",
+      });
     }
-    if (value.postedDateMode === "custom") {
-      if (!value.postedFrom) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["postedFrom"],
-          message: "Posted from date is required",
-        });
-      }
-      if (!value.postedTo) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["postedTo"],
-          message: "Posted to date is required",
-        });
-      }
-      if (value.postedFrom && value.postedTo && value.postedTo < value.postedFrom) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["postedTo"],
-          message: "Posted to date must be on or after posted from date",
-        });
-      }
+    if (!value.postedTo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["postedTo"],
+        message: "Posted to date is required",
+      });
+    }
+    if (value.postedFrom && value.postedTo && value.postedTo < value.postedFrom) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["postedTo"],
+        message: "Posted to date must be on or after posted from date",
+      });
+    }
+    if (!value.periodStart) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodStart"],
+        message: "Period start is required",
+      });
+    }
+    if (!value.periodEnd) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodEnd"],
+        message: "Period end is required",
+      });
+    }
+    if (value.periodStart && value.periodEnd && value.periodEnd < value.periodStart) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["periodEnd"],
+        message: "Period end must be on or after period start",
+      });
     }
     if (!value.includeBids && !value.includeOffers) {
       ctx.addIssue({
@@ -8332,22 +8330,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const payload = parsed.data;
       const allEntries = await storage.listSeaBrokerageEntries();
-      const now = new Date();
 
       const includeTypes = new Set<string>();
       if (payload.includeBids) includeTypes.add("bid");
       if (payload.includeOffers) includeTypes.add("offer");
 
       const postedWindow = (() => {
-        if (payload.postedDateMode === "custom") {
-          const from = startOfUtcDay(payload.postedFrom);
-          const to = endOfUtcDay(payload.postedTo);
-          return from && to ? { from, to } : null;
-        }
-        const days =
-          payload.postedDateMode === "last3" ? 3 : payload.postedDateMode === "last30" ? 30 : 7;
-        const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-        return { from, to: now };
+        const from = startOfUtcDay(payload.postedFrom);
+        const to = endOfUtcDay(payload.postedTo);
+        return from && to ? { from, to } : null;
       })();
 
       if (!postedWindow) {
@@ -8355,26 +8346,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const reportPeriodRange = (() => {
-        if (payload.periodMode === "none") return null;
-        if (payload.periodMode === "month") {
-          return buildMonthUtcRange(payload.periodMonth);
-        }
         const start = startOfUtcDay(payload.periodStart);
         const end = endOfUtcDay(payload.periodEnd);
         return start && end ? { start, end } : null;
       })();
 
-      if (payload.periodMode !== "none" && !reportPeriodRange) {
+      if (!reportPeriodRange) {
         return res.status(400).json({ error: "Invalid report period range" });
       }
 
+      const commoditySet = new Set(
+        [...payload.commodities, ...(payload.commodity ? [payload.commodity] : [])].map((item) =>
+          item.toLowerCase(),
+        ),
+      );
       const basisSet = new Set(payload.basis.map((item) => item.toUpperCase()));
       const placeSet = new Set(payload.deliveryPlaces.map((item) => item.toLowerCase()));
-      const overlapThreshold = Number(payload.overlapDays || 0);
+      const overlapThreshold = Math.max(1, Number(payload.overlapDays || 1));
 
       const matched = allEntries
         .filter((entry) => includeTypes.has(entry.type))
-        .filter((entry) => entry.commodity === payload.commodity)
+        .filter((entry) => commoditySet.has(String(entry.commodity || "").toLowerCase()))
         .filter((entry) => {
           const created = new Date(entry.createdAt);
           if (Number.isNaN(created.getTime())) return false;
@@ -8388,7 +8380,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : true,
         )
         .filter((entry) => {
-          if (!reportPeriodRange) return true;
           if (!entry.periodStart || !entry.periodEnd) return false;
           const entryStart = startOfUtcDay(entry.periodStart);
           const entryEnd = endOfUtcDay(entry.periodEnd);
@@ -8396,52 +8387,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const overlapDays = getDateOverlapDaysInclusive(
             entryStart,
             entryEnd,
-            reportPeriodRange.start,
-            reportPeriodRange.end,
+            reportPeriodRange!.start,
+            reportPeriodRange!.end,
           );
-          return overlapThreshold > 0 ? overlapDays >= overlapThreshold : overlapDays > 0;
+          return overlapDays >= overlapThreshold;
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       const offers = matched.filter((entry) => entry.type === "offer");
       const bids = matched.filter((entry) => entry.type === "bid");
 
-      const basisLabel = payload.basis.length ? payload.basis.join(", ") : "ALL";
-      const placeLabel = payload.deliveryPlaces.length ? payload.deliveryPlaces.join(", ") : "ALL";
-      const periodLabel =
-        payload.periodMode === "none"
-          ? "NOT IMPORTANT"
-          : payload.periodMode === "month"
-            ? payload.periodMonth
-            : `${payload.periodStart}..${payload.periodEnd}`;
-      const postedLabel =
-        payload.postedDateMode === "custom"
-          ? `${payload.postedFrom}..${payload.postedTo}`
-          : payload.postedDateMode.toUpperCase();
-      const overlapLabel = overlapThreshold > 0 ? `${overlapThreshold}+ days` : "ANY OVERLAP";
+      const commodityEmoji: Record<string, string> = {
+        corn: "🌽",
+        wheat: "🌾",
+        barley: "🌾",
+        soybean: "🌱",
+        soybeans: "🌱",
+        sunflower: "🌻",
+        rapeseed: "🌱",
+      };
+      const transportShort: Record<string, string> = {
+        vessel: "VSL",
+        truck: "TRUCK",
+        rail: "RAIL",
+        handysize: "VSL",
+        coaster: "VSL",
+      };
+      const toUpper = (value: string | null | undefined) => String(value || "").trim().toUpperCase();
+      const parsePrice = (value: unknown) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      };
+      const formatPriceRange = (values: Array<number | null>) => {
+        const numeric = values.filter((value): value is number => typeof value === "number");
+        if (!numeric.length) return "N/A";
+        const min = Math.min(...numeric);
+        const max = Math.max(...numeric);
+        return min === max ? `${min}$` : `${min}$-${max}$`;
+      };
+      const formatQtyRange = (entries: SeaBrokerageEntryRow[]) => {
+        const qtyValues = entries
+          .flatMap((entry) => {
+            const from = Number(entry.volumeFrom);
+            const to = Number(entry.volumeTo);
+            const qty = Number(entry.quantityMt);
+            return [from, to, qty].filter((n) => Number.isFinite(n) && n > 0);
+          })
+          .filter((n): n is number => typeof n === "number");
+        if (!qtyValues.length) return "";
+        const min = Math.min(...qtyValues);
+        const max = Math.max(...qtyValues);
+        if (min === max) return `${min.toLocaleString("en-US")} MT`;
+        return `${min.toLocaleString("en-US")}-${max.toLocaleString("en-US")} MT`;
+      };
+      const formatPeriodSummary = (entries: SeaBrokerageEntryRow[]) => {
+        const values = Array.from(
+          new Set(
+            entries
+              .map((entry) => String(entry.periodLabel || "").trim().toUpperCase())
+              .filter(Boolean),
+          ),
+        );
+        return values.slice(0, 2).join(" / ");
+      };
 
-      const headerLines = [
-        "#report_idea 📊",
-        "------------------------------",
-        `BROKER: ${authorizedBroker.brokerCode}`,
-        `COMMODITY: ${payload.commodity.toUpperCase()}`,
-        `BASIS: ${basisLabel}`,
-        `PLACE: ${placeLabel}`,
-        `PERIOD: ${periodLabel}`,
-        `OVERLAP: ${overlapLabel}`,
-        `POSTED: ${postedLabel}`,
-        `RESULT: ${matched.length} entries (offers ${offers.length}, bids ${bids.length})`,
-        "------------------------------",
-      ];
+      const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
+      for (const entry of matched) {
+        const key = toUpper(entry.commodityLabel || entry.commodity);
+        const bucket = byCommodity.get(key) || [];
+        bucket.push(entry);
+        byCommodity.set(key, bucket);
+      }
 
-      const offerLines = offers.map((entry) => `OFFER: ${entry.canonicalView}`);
-      const bidLines = bids.map((entry) => `BID: ${entry.canonicalView}`);
-      const reportLines = [
-        ...headerLines,
-        ...(offerLines.length ? ["OFFERS:", ...offerLines, "------------------------------"] : []),
-        ...(bidLines.length ? ["BIDS:", ...bidLines, "------------------------------"] : []),
-      ];
-      const message = reportLines.join("\n");
+      const reportLines: string[] = [];
+      const reportDate = new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+      });
+      reportLines.push(`SPIKE BROKERS DAILY UPDATE ${reportDate}`);
+      reportLines.push("-----------------------------");
+
+      for (const [commodityLabel, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
+        a[0].localeCompare(b[0]),
+      )) {
+        const commodityCode = commodityEntries[0]?.commodity?.toLowerCase?.() || "";
+        reportLines.push(`${commodityEmoji[commodityCode] || "•"}${commodityLabel}`);
+
+        const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
+        for (const entry of commodityEntries) {
+          const basis = toUpper(entry.basis);
+          const place = toUpper(entry.destinationPort || entry.destinationPortCode);
+          const transport = toUpper(transportShort[String(entry.transportType || "").toLowerCase()] || entry.transportType);
+          const key = `${basis}|${place}|${transport}`;
+          const bucket = byRoute.get(key) || [];
+          bucket.push(entry);
+          byRoute.set(key, bucket);
+        }
+
+        for (const [routeKey, routeEntries] of Array.from(byRoute.entries()).sort((a, b) =>
+          a[0].localeCompare(b[0]),
+        )) {
+          const [basis, place, transport] = routeKey.split("|");
+          const qtyLabel = formatQtyRange(routeEntries);
+          const headingParts = [basis, place];
+          if (qtyLabel) headingParts.push(qtyLabel);
+          if (transport) headingParts.push(transport);
+          reportLines.push(`${headingParts.join(" ")}:`);
+
+          const routeOffers = routeEntries.filter((entry) => entry.type === "offer");
+          const routeBids = routeEntries.filter((entry) => entry.type === "bid");
+          if (routeOffers.length) {
+            reportLines.push(
+              `> Sellers ${formatPriceRange(routeOffers.map((entry) => parsePrice(entry.price)))} ${formatPeriodSummary(routeOffers)}`.trim(),
+            );
+          }
+          if (routeBids.length) {
+            reportLines.push(
+              `> Buyers ${formatPriceRange(routeBids.map((entry) => parsePrice(entry.price)))} ${formatPeriodSummary(routeBids)}`.trim(),
+            );
+          }
+          reportLines.push("");
+        }
+        reportLines.push("-----------------------------");
+      }
+
+      if (!matched.length) {
+        reportLines.push("No entries matched selected filters.");
+        reportLines.push("-----------------------------");
+      }
 
       const targetChat =
         authorizedBroker.telegramUserId ||

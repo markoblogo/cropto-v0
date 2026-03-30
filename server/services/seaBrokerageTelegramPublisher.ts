@@ -347,6 +347,22 @@ function resolveSeaBrokerageRelayTargetsForMatch(match: SeaBrokerageMatchSuggest
   return resolveSeaBrokerageRelayTargets(match.bidEntry);
 }
 
+function resolveSeaBrokerageInternalRelayTargets(): RelayTarget[] {
+  const targets: RelayTarget[] = [];
+  appendChatIds(targets, "internal", [
+    process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID,
+    process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_IDS,
+    process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID,
+    process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS,
+  ]);
+  const deduped = new Map<string, RelayTarget>();
+  for (const target of targets) {
+    const key = `${target.channel}:${target.chatId}`;
+    if (!deduped.has(key)) deduped.set(key, target);
+  }
+  return Array.from(deduped.values());
+}
+
 async function sendTelegramMessages(
   internalMessage: string,
   externalMessage: string,
@@ -508,4 +524,11 @@ export async function sendSeaBrokerageTelegramDirectMessage(
       error: error instanceof Error ? error.message : "Unknown Telegram direct message error",
     };
   }
+}
+
+export async function sendSeaBrokerageTelegramInternalBroadcast(
+  text: string,
+): Promise<TelegramPublishResult> {
+  const targets = resolveSeaBrokerageInternalRelayTargets();
+  return sendTelegramMessages(text, text, targets);
 }

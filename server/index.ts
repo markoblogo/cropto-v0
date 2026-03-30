@@ -11,6 +11,7 @@ import { seedCommodityIndexes } from "./seed/commodityIndexes";
 import { db } from "./db";
 import { startFxIngestionScheduler } from "./ingestion/scheduler/fxIngestionJob";
 import { startMarketIngestionScheduler } from "./ingestion/scheduler/marketIngestionJob";
+import { startSeaBrokerageDailyReportScheduler } from "./services/seaBrokerageDailyReportScheduler";
 import { getRuntimeInfo } from "./runtimeInfo";
 import { registerMonitorRoutes } from "./monitor/routes";
 import path from "path";
@@ -160,6 +161,12 @@ app.use((req, res, next) => {
       }
     } else {
       console.log("[MarketIngestion] scheduler bootstrap disabled via START_INGESTION_SCHEDULER=0");
+    }
+
+    try {
+      startSeaBrokerageDailyReportScheduler();
+    } catch (error: any) {
+      console.error("⚠️  Warning: Failed to start sea brokerage daily report scheduler:", error?.message || error);
     }
   })().catch((err: any) => {
     console.error("⚠️  Warning: Background startup task failed:", err?.message || err);

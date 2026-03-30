@@ -72,6 +72,8 @@ function buildBrokerOptions(entries: BrokerageEntry[]) {
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
 
 export function SeaBrokerageMonitorPage() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const weekAgoIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const monitorState = useSeaBrokerageMonitorState();
   const session = useSeaBrokerageTelegramSession();
   const [createDialogType, setCreateDialogType] = useState<EntryType | null>(null);
@@ -93,31 +95,25 @@ export function SeaBrokerageMonitorPage() {
   const [reportSending, setReportSending] = useState(false);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
   const [reportForm, setReportForm] = useState<{
-    commodity: string;
+    commodities: string[];
     basis: string[];
     deliveryPlaces: string[];
-    periodMode: "none" | "month" | "range";
-    periodMonth: string;
     periodStart: string;
     periodEnd: string;
     overlapDays: number;
-    postedDateMode: "last3" | "last7" | "last30" | "custom";
     postedFrom: string;
     postedTo: string;
     includeBids: boolean;
     includeOffers: boolean;
   }>({
-    commodity: "corn",
+    commodities: ["corn"],
     basis: [],
     deliveryPlaces: [],
-    periodMode: "none",
-    periodMonth: "",
-    periodStart: "",
-    periodEnd: "",
-    overlapDays: 0,
-    postedDateMode: "last7",
-    postedFrom: "",
-    postedTo: "",
+    periodStart: weekAgoIso,
+    periodEnd: todayIso,
+    overlapDays: 1,
+    postedFrom: weekAgoIso,
+    postedTo: todayIso,
     includeBids: true,
     includeOffers: true,
   });
@@ -679,6 +675,18 @@ export function SeaBrokerageMonitorPage() {
     });
   }
 
+  function toggleReportCommodity(value: string) {
+    setReportForm((prev) => {
+      const exists = prev.commodities.includes(value);
+      return {
+        ...prev,
+        commodities: exists
+          ? prev.commodities.filter((item) => item !== value)
+          : [...prev.commodities, value],
+      };
+    });
+  }
+
   function toggleReportDeliveryPlace(value: string) {
     setReportForm((prev) => {
       const exists = prev.deliveryPlaces.includes(value);
@@ -820,9 +828,9 @@ export function SeaBrokerageMonitorPage() {
           <div className="flex items-center justify-between gap-2">
             <Button
               type="button"
-              variant="ghost"
+              variant="default"
               size="sm"
-              className="h-6 text-[10.5px] text-muted-foreground sm:h-6.5 sm:text-xs"
+              className="h-6 bg-emerald-600 px-3 text-[10.5px] font-medium text-white hover:bg-emerald-500 sm:h-6.5 sm:text-xs"
               onClick={() => {
                 setReportOpen(true);
                 setReportStatus(null);
@@ -976,73 +984,56 @@ export function SeaBrokerageMonitorPage() {
               Personal price digest by filters. Report will be sent to your Telegram DM.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Commodity</div>
-              <select
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={reportForm.commodity}
-                onChange={(event) => setReportForm((prev) => ({ ...prev, commodity: event.target.value }))}
-              >
-                {toolbarCommodityOptions.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.displayLabel}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Posted window</div>
-              <select
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={reportForm.postedDateMode}
-                onChange={(event) =>
-                  setReportForm((prev) => ({
-                    ...prev,
-                    postedDateMode: event.target.value as typeof prev.postedDateMode,
-                  }))
-                }
-              >
-                <option value="last3">Last 3 days</option>
-                <option value="last7">Last 7 days</option>
-                <option value="last30">Last 30 days</option>
-                <option value="custom">Custom range</option>
-              </select>
+          <div className="rounded-md border border-border/70 p-3">
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Commodities</div>
+            <div className="grid max-h-36 gap-2 overflow-auto pr-1 sm:grid-cols-2">
+              {toolbarCommodityOptions.map((option) => (
+                <label key={option.code} className="inline-flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={reportForm.commodities.includes(option.code)}
+                    onCheckedChange={() => toggleReportCommodity(option.code)}
+                  />
+                  {option.displayLabel}
+                </label>
+              ))}
             </div>
           </div>
 
-          {reportForm.postedDateMode === "custom" ? (
-            <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Posted from</div>
               <Input
                 type="date"
                 value={reportForm.postedFrom}
                 onChange={(event) => setReportForm((prev) => ({ ...prev, postedFrom: event.target.value }))}
               />
+            </div>
+            <div className="space-y-1.5">
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Posted to</div>
               <Input
                 type="date"
                 value={reportForm.postedTo}
                 onChange={(event) => setReportForm((prev) => ({ ...prev, postedTo: event.target.value }))}
               />
             </div>
-          ) : null}
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5 sm:col-span-1">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Period filter</div>
-              <select
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={reportForm.periodMode}
-                onChange={(event) =>
-                  setReportForm((prev) => ({
-                    ...prev,
-                    periodMode: event.target.value as typeof prev.periodMode,
-                  }))
-                }
-              >
-                <option value="none">Not important</option>
-                <option value="month">Month</option>
-                <option value="range">Exact range</option>
-              </select>
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Period from</div>
+              <Input
+                type="date"
+                value={reportForm.periodStart}
+                onChange={(event) => setReportForm((prev) => ({ ...prev, periodStart: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-1">
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Period to</div>
+              <Input
+                type="date"
+                value={reportForm.periodEnd}
+                onChange={(event) => setReportForm((prev) => ({ ...prev, periodEnd: event.target.value }))}
+              />
             </div>
             <div className="space-y-1.5 sm:col-span-1">
               <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Overlap</div>
@@ -1050,11 +1041,9 @@ export function SeaBrokerageMonitorPage() {
                 className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={String(reportForm.overlapDays)}
                 onChange={(event) =>
-                  setReportForm((prev) => ({ ...prev, overlapDays: Number(event.target.value) || 0 }))
+                  setReportForm((prev) => ({ ...prev, overlapDays: Number(event.target.value) || 1 }))
                 }
-                disabled={reportForm.periodMode === "none"}
               >
-                <option value="0">Any overlap</option>
                 <option value="1">1+ day</option>
                 <option value="5">5+ days</option>
                 <option value="10">10+ days</option>
@@ -1082,28 +1071,6 @@ export function SeaBrokerageMonitorPage() {
               </label>
             </div>
           </div>
-
-          {reportForm.periodMode === "month" ? (
-            <Input
-              type="month"
-              value={reportForm.periodMonth}
-              onChange={(event) => setReportForm((prev) => ({ ...prev, periodMonth: event.target.value }))}
-            />
-          ) : null}
-          {reportForm.periodMode === "range" ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Input
-                type="date"
-                value={reportForm.periodStart}
-                onChange={(event) => setReportForm((prev) => ({ ...prev, periodStart: event.target.value }))}
-              />
-              <Input
-                type="date"
-                value={reportForm.periodEnd}
-                onChange={(event) => setReportForm((prev) => ({ ...prev, periodEnd: event.target.value }))}
-              />
-            </div>
-          ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-md border border-border/70 p-3">
