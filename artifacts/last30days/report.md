@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-30T07:52:01.550184+00:00
+**Generated:** 2026-03-30T10:44:29.371719+00:00
 **Date Range:** 2026-02-28 to 2026-03-30
 **Mode:** all
 
@@ -96,7 +96,7 @@
 
 ## Web Results
 
-### W6: (PDF) Agricultural exports of Ukraine in the conditions of war.
+### W5: (PDF) Agricultural exports of Ukraine in the conditions of war.
 
 - **Source:** researchgate.net
 - **URL:** https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war
@@ -106,7 +106,7 @@
 
 > 
 
-### W10: A Code of Conduct to protect seafarers - Maritime Professionals
+### W9: A Code of Conduct to protect seafarers - Maritime Professionals
 
 - **Source:** maritime-professionals.com
 - **URL:** https://maritime-professionals.com/a-code-of-conduct-to-protect-seafarers/
@@ -116,27 +116,17 @@
 
 > 
 
-### W3: Nothing Personal: How China Replaced Almost All Agri-Imports From Ukraine — Latifundist.com
+### W14: Calaméo - №63 WDM «Chrematistic»
 
-- **Source:** latifundist.com
-- **URL:** https://latifundist.com/en/blog/read/3133-nichogo-osobistogo-yak-kitaj-zamistiv-majzhe-ves-agroimport-z-ukrayini
+- **Source:** calameo.com
+- **URL:** https://www.calameo.com/books/0023427246099ca151190
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W12: Pavlo Koval added a new photo.
-
-- **Source:** facebook.com
-- **URL:** https://www.facebook.com/pavlo.koval.ua/photos/d41d8cd9/10225148737304815/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W2: [PDF] ECONOMICS, LAW, SOCIETY: resume of 2016 - Публикации ВШЭ
+### W3: [PDF] ECONOMICS, LAW, SOCIETY: resume of 2016 - Публикации ВШЭ
 
 - **Source:** publications.hse.ru
 - **URL:** https://publications.hse.ru/pubs/share/folder/7tccaiv62h/198238734.pdf
@@ -146,7 +136,7 @@
 
 > 
 
-### W13: [PDF] НАПРЯМИ РОЗВИТКУ ТЕХНОЛОГІЧНИХ СИСТЕМ І ЛОГІСТИКИ ...
+### W10: [PDF] НАПРЯМИ РОЗВИТКУ ТЕХНОЛОГІЧНИХ СИСТЕМ І ЛОГІСТИКИ ...
 
 - **Source:** biotechuniv.edu.ua
 - **URL:** https://biotechuniv.edu.ua/wp-content/uploads/2025/07/conf-22-05-25-mater.pdf
@@ -156,40 +146,30 @@
 
 > 
 
-### W11: Врожай в Україні - експертка дала сумний прогноз по соняшнику на 2026 рік
+### W8: Експерти оцінили втрати України від зупинки експорту соняшникової олії – AgroNews
 
-- **Source:** unian.ua
-- **URL:** https://www.unian.ua/economics/agro/vrozhay-v-ukrajini-ekspertka-dala-sumniy-prognoz-po-sonyashniku-na-2026-rik-13249509.html
+- **Source:** agronews.ua
+- **URL:** https://agronews.ua/news/eksperty-oczinyly-vtraty-ukrayiny-vid-zupynky-eksportu-sonyashnykovoyi-oliyi/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W15: Головна - Оліяр
+### W12: Суттєвого подорожчання соняшникової олії очікувати не ...
 
-- **Source:** oliyar.com.ua
-- **URL:** https://oliyar.com.ua/
+- **Source:** ukr.net
+- **URL:** https://www.ukr.net/news/details/economics/115453372.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W9: Україна в лідерах постачання соняшникової олії в ЄС
+### W6: Україна в лідерах постачання соняшникової олії в ЄС
 
 - **Source:** 24tv.ua
 - **URL:** https://24tv.ua/agro24/ukrayinska-sonyashnikova-oliya-liderah-importu-yes_n3022834
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W14: Україна забезпечила майже 92% імпорту соняшникової олії до ЄС у 2025/26 МР
-
-- **Source:** interfax.com.ua
-- **URL:** https://interfax.com.ua/news/economic/1150124.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -206,7 +186,7 @@
 
 > 
 
-### W5: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+### W11: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
 
 - **Source:** forbes.ua
 - **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
@@ -216,7 +196,17 @@
 
 > 
 
-### W8: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
+### W2: Україна скоротить виробництво соняшникової олії на 10 ...
+
+- **Source:** ukragroconsult.com
+- **URL:** https://ukragroconsult.com/news/ukrayina-skorotyty-vyrobnycztvo-sonyashnykovoyi-oliyi-na-10-u-2025-26-mr/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W7: Україна у 2026 році збереже виробництво соняшникової олії на рівні близько 4 млн тонн | Аналітика | E-land
 
 - **Source:** e-land.ua
 - **URL:** https://e-land.ua/news/item/ukrayina-u-2026-rotsi-zberezhe-vyrobnytstvo-soniashnykovoyi-oliyi-na-rivni-blyzko-4-mln-tonn
@@ -226,10 +216,20 @@
 
 > 
 
-### W7: Україна утримує лідерство з постачання соняшникової ...
+### W13: Українська соняшникова олія втрачає ринок Китаю - Landlord
 
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/ukrayina-utrymuye-liderstvo-z-postachannya-sonyashnykovoyi-oliyi-do-yes/
+- **Source:** landlord.ua
+- **URL:** https://landlord.ua/news/ukrayinska-sonyashnykova-oliya-vtrachaye-rynok-kytayu-eksport-vpav-na-25/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W15: Ціна соняшникової олії 2026: роздріб, опт, тенденції
+
+- **Source:** eurofest.org.ua
+- **URL:** https://www.eurofest.org.ua/tsina-soniashnykovoi-olii-2026-rozdrib-opt-tendentsii/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
