@@ -62,9 +62,9 @@ export function BrokerWorkspacePane({
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
-      <CardHeader className="space-y-0.75 border-b border-border/60 px-1.5 py-0.75 sm:space-y-1 sm:px-3 sm:py-1.5">
-        <div className="flex min-w-0 items-center gap-1">
-          <div className="flex min-w-0 items-center gap-1.5">
+      <CardHeader className="space-y-1 border-b border-border/60 px-1.5 py-1 sm:space-y-1 sm:px-3 sm:py-1.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1 sm:flex-nowrap">
+          <div className="flex min-w-0 items-center gap-1">
             <CardTitle className="text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
               {title}
             </CardTitle>
@@ -74,14 +74,14 @@ export function BrokerWorkspacePane({
                 size="sm"
                 variant={createActionVariant}
                 onClick={onCreateAction}
-                className={`h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px] ${createActionClassName ?? ""}`}
+                className={`h-5.5 shrink-0 px-1.5 text-[10px] leading-none sm:h-6.5 sm:px-2 sm:text-[11px] ${createActionClassName ?? ""}`}
               >
                 <Plus className="mr-1 h-3 w-3" />
                 {createActionLabel}
               </Button>
             ) : null}
           </div>
-          <div className="ml-auto shrink-0 text-[9.5px] text-muted-foreground sm:text-[11px]">
+          <div className="w-full text-right text-[9.5px] text-muted-foreground sm:ml-auto sm:w-auto sm:shrink-0 sm:text-[11px]">
             {entries.length} visible
           </div>
         </div>

@@ -1100,7 +1100,7 @@ export function EntryCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] overflow-x-hidden overflow-y-auto px-3 sm:max-w-2xl sm:px-6">
         <DialogHeader>
           <DialogTitle>
             {mode === "edit"
@@ -1162,8 +1162,8 @@ export function EntryCreateDialog({
         ) : null}
 
         <Form {...form}>
-          <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-2.5 md:grid-cols-2">
+          <form className="space-y-3 overflow-x-hidden" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
               {entryType !== "bid" ? (
                 <FormField
                   control={form.control}
@@ -1552,7 +1552,7 @@ export function EntryCreateDialog({
               />
             </div>
 
-            <div className="grid gap-2.5 md:grid-cols-2">
+            <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="basis"
@@ -1658,7 +1658,7 @@ export function EntryCreateDialog({
               />
             </div>
 
-            <div className="grid gap-2.5 md:grid-cols-2">
+            <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="periodPreset"
@@ -1700,7 +1700,7 @@ export function EntryCreateDialog({
             {values.periodPreset === "full_month" ||
             values.periodPreset === "current_month_1h" ||
             values.periodPreset === "current_month_2h" ? (
-              <div className="grid gap-2.5 md:grid-cols-2">
+              <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="periodMonth"
@@ -1708,7 +1708,12 @@ export function EntryCreateDialog({
                     <FormItem>
                       <FormLabel>Month / year</FormLabel>
                       <FormControl>
-                        <Input type="month" value={field.value ?? ""} onChange={field.onChange} />
+                        <Input
+                          type="month"
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          className="min-w-0 w-full"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1718,7 +1723,7 @@ export function EntryCreateDialog({
             ) : null}
 
             {values.periodPreset === "explicit_range" ? (
-              <div className="grid gap-2.5 md:grid-cols-2">
+              <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="periodStart"
@@ -1726,7 +1731,12 @@ export function EntryCreateDialog({
                   <FormItem>
                     <FormLabel>Shipment / delivery from</FormLabel>
                     <FormControl>
-                      <Input type="date" value={field.value ?? ""} onChange={field.onChange} />
+                      <Input
+                        type="date"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        className="min-w-0 w-full"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1739,7 +1749,12 @@ export function EntryCreateDialog({
                   <FormItem>
                     <FormLabel>Shipment / delivery to</FormLabel>
                     <FormControl>
-                      <Input type="date" value={field.value ?? ""} onChange={field.onChange} />
+                      <Input
+                        type="date"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        className="min-w-0 w-full"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1748,7 +1763,7 @@ export function EntryCreateDialog({
               </div>
             ) : null}
 
-            <div className="grid gap-2.5 md:grid-cols-4">
+            <div className="grid min-w-0 gap-2.5 md:grid-cols-4">
               <FormField
                 control={form.control}
                 name="currency"
@@ -1764,6 +1779,7 @@ export function EntryCreateDialog({
                         }}
                         placeholder="Start typing currency"
                         autoComplete="off"
+                        className="min-w-0 w-full"
                       />
                     </FormControl>
                     <datalist id={currencyDatalistId}>
@@ -1858,17 +1874,17 @@ export function EntryCreateDialog({
             />
 
             <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
-              <div className="mb-1 flex items-center justify-between gap-3">
+              <div className="mb-1 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Tape preview</div>
-                <Badge variant="outline">
+                <Badge variant="outline" className="shrink-0">
                   {entryType === "bid" ? "BID IDEA" : entryType === "offer" ? "OFFER IDEA" : "TRADE IDEA"}
                 </Badge>
               </div>
-              <div className="text-sm leading-5 text-foreground">{canonicalPreview}</div>
+              <div className="break-words text-sm leading-5 text-foreground">{canonicalPreview}</div>
             </div>
 
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-[11px] leading-4 text-muted-foreground">
+              <div className="hidden text-[11px] leading-4 text-muted-foreground sm:block">
                 Single-price compact workflow.
               </div>
               <Button
