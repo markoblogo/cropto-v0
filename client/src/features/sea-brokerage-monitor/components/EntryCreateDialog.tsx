@@ -89,6 +89,8 @@ const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
   { value: "rail", label: "Rail" },
   { value: "truck/rail", label: "Truck/Rail" },
   { value: "vessel", label: "Vessel" },
+  { value: "barge", label: "Barge" },
+  { value: "container", label: "Container" },
 ];
 
 const entryFormSchema = z
@@ -122,7 +124,16 @@ const entryFormSchema = z
     currency: z.enum(["USD", "EUR", "UAH"]),
     price: z.coerce.number().nonnegative("Price must be 0 or greater"),
     paymentTerms: z.string().min(1, "Payment terms are required"),
-    transportType: z.enum(["handysize", "coaster", "truck", "rail", "truck/rail", "vessel"]),
+    transportType: z.enum([
+      "handysize",
+      "coaster",
+      "truck",
+      "rail",
+      "truck/rail",
+      "vessel",
+      "barge",
+      "container",
+    ]),
     note: z.string().max(500, "Note must be 500 characters or fewer").optional(),
   })
   .superRefine((values, ctx) => {
@@ -312,6 +323,46 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
   };
 }
 
+function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
+  const quantityPreset: QuantityPreset =
+    entry.quantityMt === null || entry.quantityMt === undefined ? "range" : "single";
+  const periodPreset: PeriodPreset =
+    entry.periodType === "spot"
+      ? "spot"
+      : entry.periodType === "prompt"
+        ? "prompt"
+        : entry.periodType === "month"
+          ? "full_month"
+          : "explicit_range";
+  const periodMonth =
+    entry.periodStart?.slice(0, 7) ||
+    entry.periodEnd?.slice(0, 7) ||
+    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+  return {
+    quantityPreset,
+    sellerName: entry.sellerName || "",
+    buyerName: entry.buyerName || "",
+    periodPreset,
+    commodity: entry.commodity,
+    harvestYear: (String(entry.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "",
+    originCountry: entry.originCountryCode || "UA",
+    quantityMt: entry.quantityMt ?? entry.volumeFrom ?? 0,
+    quantityFromMt: quantityPreset === "range" ? entry.volumeFrom : undefined,
+    quantityToMt: quantityPreset === "range" ? entry.volumeTo : undefined,
+    tolerancePct: entry.tolerancePct ?? 0,
+    basis: entry.basis,
+    destinationPortCode: entry.destinationPortCode || "",
+    periodMonth,
+    periodStart: entry.periodStart || "",
+    periodEnd: entry.periodEnd || "",
+    currency: entry.currency,
+    price: entry.price ?? entry.priceFrom ?? entry.priceTo ?? 0,
+    paymentTerms: entry.paymentTerms || "CAD",
+    transportType: entry.transportType,
+    note: entry.note || "",
+  };
+}
+
 function deriveVolumeRange(quantityMt: number, tolerancePct: number) {
   if (tolerancePct <= 0) {
     return { volumeFrom: quantityMt, volumeTo: quantityMt };
@@ -492,6 +543,9 @@ interface EntryCreateDialogProps {
   onOpenChange: (open: boolean) => void;
   entryType: EntryType;
   session: TelegramSessionHook;
+  mode?: "create" | "edit";
+  initialEntry?: BrokerageEntry | null;
+  onSubmitted?: (entry: BrokerageEntry) => void;
 }
 
 export function EntryCreateDialog({
@@ -499,6 +553,9 @@ export function EntryCreateDialog({
   onOpenChange,
   entryType,
   session,
+  mode = "create",
+  initialEntry = null,
+  onSubmitted,
 }: EntryCreateDialogProps) {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isAddingCompany, setIsAddingCompany] = useState(false);
@@ -656,7 +713,11 @@ export function EntryCreateDialog({
   }, [allCommodityOptions, commoditySearch]);
 
   useEffect(() => {
-    form.reset(getDefaultValues(entryType));
+    const nextDefaults =
+      mode === "edit" && initialEntry
+        ? getDefaultValuesFromEntry(initialEntry)
+        : getDefaultValues(entryType);
+    form.reset(nextDefaults);
     setSubmitMessage(null);
     setIsAddingCompany(false);
     setCompanyEditorTarget(entryType === "offer" ? "sellerName" : "buyerName");
@@ -678,7 +739,7 @@ export function EntryCreateDialog({
     setNewCommodityGroup("processed");
     setCommodityEditorMessage(null);
     setIsSavingCommodity(false);
-  }, [entryType, form, open]);
+  }, [entryType, form, initialEntry, mode, open]);
 
   const canonicalPreview = useMemo(() => {
     if (!session.authorProfile) {
@@ -824,17 +885,29 @@ export function EntryCreateDialog({
         canonicalView: canonicalPreview,
       };
 
-      await apiRequest("POST", "/api/sea-brokerage-monitor/entries", payload, {
+      const requestMethod = mode === "edit" && initialEntry?.id ? "PATCH" : "POST";
+      const requestPath =
+        mode === "edit" && initialEntry?.id
+          ? `/api/sea-brokerage-monitor/entries/${initialEntry.id}`
+          : "/api/sea-brokerage-monitor/entries";
+
+      const response = await apiRequest(requestMethod, requestPath, payload, {
         headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
       });
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
+      const savedEntry = (await response.json()) as BrokerageEntry;
 
       form.reset(getDefaultValues(entryType));
       setSubmitMessage(null);
+      onSubmitted?.(savedEntry);
       onOpenChange(false);
     } catch (error) {
       setSubmitMessage(
-        error instanceof Error ? error.message : "Failed to create the brokerage entry.",
+        error instanceof Error
+          ? error.message
+          : mode === "edit"
+            ? "Failed to update the brokerage entry."
+            : "Failed to create the brokerage entry.",
       );
     }
   }
@@ -1030,10 +1103,16 @@ export function EntryCreateDialog({
       <DialogContent className="max-h-[92vh] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] overflow-y-auto px-4 sm:max-w-2xl sm:px-6">
         <DialogHeader>
           <DialogTitle>
-            {entryType === "bid" ? "Create BID" : entryType === "offer" ? "Create OFFER" : "Create TRADE"}
+            {mode === "edit"
+              ? `Edit ${entryType.toUpperCase()}`
+              : entryType === "bid"
+                ? "Create BID"
+                : entryType === "offer"
+                  ? "Create OFFER"
+                  : "Create TRADE"}
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Compact broker entry workflow.
+            {mode === "edit" ? "Update broker entry details." : "Compact broker entry workflow."}
           </DialogDescription>
         </DialogHeader>
 
@@ -1800,10 +1879,16 @@ export function EntryCreateDialog({
                 {form.formState.isSubmitting
                   ? "Saving..."
                   : entryType === "bid"
-                    ? "Create BID"
+                    ? mode === "edit"
+                      ? "Save BID"
+                      : "Create BID"
                     : entryType === "offer"
-                      ? "Create OFFER"
-                      : "Create TRADE"}
+                      ? mode === "edit"
+                        ? "Save OFFER"
+                        : "Create OFFER"
+                      : mode === "edit"
+                        ? "Save TRADE"
+                        : "Create TRADE"}
               </Button>
             </div>
           </form>

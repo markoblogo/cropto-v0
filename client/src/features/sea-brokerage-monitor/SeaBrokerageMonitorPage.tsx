@@ -41,7 +41,7 @@ import type {
   PortOption,
   TransportMode,
 } from "./types";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const defaultPaneFilters: BrokerWorkspacePaneFilters = {
   brokerProfileId: "all",
@@ -68,10 +68,13 @@ function buildBrokerOptions(entries: BrokerageEntry[]) {
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
+const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
+
 export function SeaBrokerageMonitorPage() {
   const monitorState = useSeaBrokerageMonitorState();
   const session = useSeaBrokerageTelegramSession();
   const [createDialogType, setCreateDialogType] = useState<EntryType | null>(null);
+  const [editEntry, setEditEntry] = useState<BrokerageEntry | null>(null);
   const [filters, setFilters] = useState<FeedFilterState>(defaultFeedFilters);
   const [offerPaneFilters, setOfferPaneFilters] =
     useState<BrokerWorkspacePaneFilters>(defaultPaneFilters);
@@ -83,6 +86,8 @@ export function SeaBrokerageMonitorPage() {
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState("");
   const [magicLinkRequested, setMagicLinkRequested] = useState(false);
+  const [isDeletingEntry, setIsDeletingEntry] = useState(false);
+  const [isRepostingEntry, setIsRepostingEntry] = useState(false);
   const defaultPresetAppliedTokenRef = useRef<string | null>(null);
 
   const { data: filterPresets = [] } = useQuery<FilterPreset[]>({
@@ -298,6 +303,30 @@ export function SeaBrokerageMonitorPage() {
     setIsEntryDetailOpen(true);
   }
 
+  function isSameCalendarDay(dateIso: string) {
+    const date = new Date(dateIso);
+    const now = new Date();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  }
+
+  function canManageEntry(entry: BrokerageEntry | null) {
+    if (!entry || !session.authorProfile) return { canEdit: false, canDelete: false, canRepost: false };
+    const brokerCode = String(session.authorProfile.brokerCode || "").toUpperCase();
+    const isBoss = SEA_BROKERAGE_BOSS_CODES.has(brokerCode);
+    const isAuthor =
+      entry.brokerId === session.authorProfile.id ||
+      String(entry.brokerCode || "").toUpperCase() === brokerCode;
+    const canEdit = isAuthor || isBoss;
+    const sameDay = isSameCalendarDay(entry.createdAt);
+    const canDelete = canEdit && sameDay;
+    const canRepost = canEdit && !sameDay;
+    return { canEdit, canDelete, canRepost };
+  }
+
   function applyPreset(preset: FilterPreset) {
     setFilters((prev) => ({
       ...prev,
@@ -417,6 +446,52 @@ export function SeaBrokerageMonitorPage() {
     }
   }
 
+  async function handleDeleteEntry(entry: BrokerageEntry) {
+    if (!session.monitorAuthToken) {
+      setTelegramAuthOpen(true);
+      return;
+    }
+    if (!window.confirm("Delete this entry? Deletion is allowed only on publication day.")) {
+      return;
+    }
+    try {
+      setIsDeletingEntry(true);
+      await apiRequest("DELETE", `/api/sea-brokerage-monitor/entries/${entry.id}`, undefined, {
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
+      setIsEntryDetailOpen(false);
+      setSelectedEntry(null);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete entry");
+    } finally {
+      setIsDeletingEntry(false);
+    }
+  }
+
+  async function handleRepostEntry(entry: BrokerageEntry) {
+    if (!session.monitorAuthToken) {
+      setTelegramAuthOpen(true);
+      return;
+    }
+    if (!window.confirm("Repost this entry as a new publication now?")) {
+      return;
+    }
+    try {
+      setIsRepostingEntry(true);
+      await apiRequest("POST", `/api/sea-brokerage-monitor/entries/${entry.id}/repost`, undefined, {
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
+      setIsEntryDetailOpen(false);
+      setSelectedEntry(null);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to repost entry");
+    } finally {
+      setIsRepostingEntry(false);
+    }
+  }
+
   useEffect(() => {
     if (!selectedEntry) {
       return;
@@ -428,6 +503,18 @@ export function SeaBrokerageMonitorPage() {
       setIsEntryDetailOpen(false);
     }
   }, [bidEntries, offerEntries, selectedEntry, tradeEntries]);
+
+  useEffect(() => {
+    if (!editEntry) return;
+    const visibleEntry = [...offerEntries, ...bidEntries, ...tradeEntries].find(
+      (entry) => entry.id === editEntry.id,
+    );
+    if (!visibleEntry) {
+      setEditEntry(null);
+      return;
+    }
+    setEditEntry(visibleEntry);
+  }, [bidEntries, editEntry, offerEntries, tradeEntries]);
 
   useEffect(() => {
     function handleOpenTelegramAuth() {
@@ -682,6 +769,20 @@ export function SeaBrokerageMonitorPage() {
         entryType="trade"
         session={session}
       />
+      <EntryCreateDialog
+        open={!!editEntry}
+        onOpenChange={(open) => {
+          if (!open) setEditEntry(null);
+        }}
+        entryType={(editEntry?.type || "bid") as EntryType}
+        session={session}
+        mode="edit"
+        initialEntry={editEntry}
+        onSubmitted={(updated) => {
+          setSelectedEntry(updated);
+          setIsEntryDetailOpen(true);
+        }}
+      />
 
       <EntryDetailSheet
         entry={selectedEntry}
@@ -689,6 +790,17 @@ export function SeaBrokerageMonitorPage() {
         onOpenChange={(open) => {
           setIsEntryDetailOpen(open);
         }}
+        canEdit={canManageEntry(selectedEntry).canEdit}
+        canDelete={canManageEntry(selectedEntry).canDelete}
+        canRepost={canManageEntry(selectedEntry).canRepost}
+        isDeleting={isDeletingEntry}
+        isReposting={isRepostingEntry}
+        onEdit={(entry) => {
+          setEditEntry(entry);
+          setIsEntryDetailOpen(false);
+        }}
+        onDelete={(entry) => void handleDeleteEntry(entry)}
+        onRepost={(entry) => void handleRepostEntry(entry)}
       />
 
       <Dialog open={telegramAuthOpen} onOpenChange={setTelegramAuthOpen}>

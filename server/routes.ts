@@ -130,6 +130,8 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   canonicalView: z.string().min(1),
 });
 
+const updateSeaBrokerageEntryRequestSchema = createSeaBrokerageEntryRequestSchema;
+
 const upsertSeaBrokerageBrokerAuthSchema = z.object({
   authUserId: z.string().trim().nullable().optional(),
   authEmail: z.string().trim().email().nullable().optional(),
@@ -211,6 +213,7 @@ const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
+const SEA_BROKERAGE_DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_TIMEZONE || "Europe/Paris";
 
 type SeaBrokerageEntryLike = {
   entryId: string;
@@ -787,6 +790,51 @@ function resolveSeaBrokerageBrokerUserId(authorizedBroker: {
   );
 }
 
+function resolveSeaBrokerageActorContext(authorizedBroker: {
+  telegramUserId: string | null;
+  telegramUsername: string | null;
+  authUserId: string | null;
+  brokerCode: string;
+}) {
+  const actorUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker);
+  const actorCode = String(authorizedBroker.brokerCode || "").trim().toUpperCase();
+  return {
+    actorUserId,
+    actorCode,
+    isBoss: SEA_BROKERAGE_BOSS_CODES.has(actorCode),
+  };
+}
+
+function isSeaBrokerageEntryAuthor(
+  entry: SeaBrokerageEntryRow,
+  actor: { actorUserId: string; actorCode: string },
+) {
+  const entryBrokerUserId = String(entry.brokerUserId || "").trim().toLowerCase();
+  const actorUserId = String(actor.actorUserId || "").trim().toLowerCase();
+  const sameUserId = !!entryBrokerUserId && !!actorUserId && entryBrokerUserId === actorUserId;
+  const sameCode =
+    String(entry.brokerCode || "").trim().toUpperCase() === String(actor.actorCode || "").trim().toUpperCase();
+  return sameUserId || sameCode;
+}
+
+function formatSeaBrokerageDateKeyInTimezone(value: Date | string, timezone: string) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(date);
+}
+
+function isSameSeaBrokerageBusinessDay(createdAt: Date | string, now = new Date()) {
+  const createdKey = formatSeaBrokerageDateKeyInTimezone(createdAt, SEA_BROKERAGE_DEFAULT_TIMEZONE);
+  const nowKey = formatSeaBrokerageDateKeyInTimezone(now, SEA_BROKERAGE_DEFAULT_TIMEZONE);
+  return !!createdKey && !!nowKey && createdKey === nowKey;
+}
+
 async function readSeaBrokerageFilterPresets(): Promise<SeaBrokerageFilterPreset[]> {
   const raw = (await storage.getAppSetting(SEA_BROKERAGE_FILTER_PRESETS_KEY))?.value || "[]";
   try {
@@ -860,6 +908,83 @@ async function writeSeaBrokerageFilterPresets(presets: SeaBrokerageFilterPreset[
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
   return `sea_brokerage_match_notified:${bidEntryId}:${offerEntryId}`;
+}
+
+async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
+  const matchRelayEnabled = parseBooleanEnv(
+    process.env.SEA_BROKERAGE_TELEGRAM_MATCHES_ENABLED,
+    true,
+  );
+
+  if (!matchRelayEnabled) {
+    return;
+  }
+
+  const allEntries = await storage.listSeaBrokerageEntries();
+  const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries)
+    .filter((match) => match.bidEntry.id === updated.id || match.offerEntry.id === updated.id)
+    .sort(
+      (a, b) =>
+        new Date(b.bidEntry.createdAt).getTime() - new Date(a.bidEntry.createdAt).getTime(),
+    )
+    .slice(0, 20);
+
+  console.info(
+    "[SeaBrokerage][MatchRelayCandidates]",
+    JSON.stringify({
+      entryId: updated.id,
+      entryType: updated.type,
+      candidates: relatedMatches.length,
+    }),
+  );
+
+  for (const match of relatedMatches) {
+    const key = matchNotifiedKey(match.bidEntry.id, match.offerEntry.id);
+    const alreadyNotified = await storage.getAppSetting(key);
+    if (alreadyNotified?.value === "published") {
+      continue;
+    }
+
+    const matchRelayResult = await publishSeaBrokerageMatchToTelegram(match);
+    console.info(
+      "[SeaBrokerage][MatchRelay]",
+      JSON.stringify({
+        bidEntryId: match.bidEntry.id,
+        offerEntryId: match.offerEntry.id,
+        score: match.score,
+        status: matchRelayResult.status,
+        error: matchRelayResult.error || null,
+      }),
+    );
+
+    if (matchRelayResult.status === "published") {
+      await storage.upsertAppSetting(key, "published");
+      const compactBid = match.bidEntry.canonicalView;
+      const compactOffer = match.offerEntry.canonicalView;
+      const dmMessage = `#match_idea 🤝\nBID: ${compactBid}\nOFFER: ${compactOffer}`;
+      const buyerBrokerChat = match.bidEntry.brokerTelegramUsername
+        ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+        : match.bidEntry.brokerTelegramUserId
+          ? String(match.bidEntry.brokerTelegramUserId)
+          : null;
+      const sellerBrokerChat = match.offerEntry.brokerTelegramUsername
+        ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+        : match.offerEntry.brokerTelegramUserId
+          ? String(match.offerEntry.brokerTelegramUserId)
+          : null;
+      if (buyerBrokerChat) {
+        await sendSeaBrokerageTelegramDirectMessage(buyerBrokerChat, dmMessage);
+      }
+      if (sellerBrokerChat && sellerBrokerChat !== buyerBrokerChat) {
+        await sendSeaBrokerageTelegramDirectMessage(sellerBrokerChat, dmMessage);
+      }
+    } else {
+      await storage.upsertAppSetting(
+        `${key}:last_error`,
+        matchRelayResult.error || "unknown_match_relay_error",
+      );
+    }
+  }
 }
 
 async function getFeedbackAlertRecipients(): Promise<string[]> {
@@ -9156,84 +9281,299 @@ export async function registerRoutes(app: Express): Promise<Server> {
         telegramMessageId: relayResult.messageId ?? null,
       });
 
-      const matchRelayEnabled = parseBooleanEnv(
-        process.env.SEA_BROKERAGE_TELEGRAM_MATCHES_ENABLED,
-        true,
-      );
-
-      if (matchRelayEnabled) {
-        const allEntries = await storage.listSeaBrokerageEntries();
-        const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries)
-          .filter(
-            (match) =>
-              match.bidEntry.id === updated.id || match.offerEntry.id === updated.id,
-          )
-          .sort(
-            (a, b) =>
-              new Date(b.bidEntry.createdAt).getTime() - new Date(a.bidEntry.createdAt).getTime(),
-          )
-          .slice(0, 20);
-        console.info(
-          "[SeaBrokerage][MatchRelayCandidates]",
-          JSON.stringify({
-            entryId: updated.id,
-            entryType: updated.type,
-            candidates: relatedMatches.length,
-          }),
-        );
-
-        for (const match of relatedMatches) {
-          const key = matchNotifiedKey(match.bidEntry.id, match.offerEntry.id);
-          const alreadyNotified = await storage.getAppSetting(key);
-          if (alreadyNotified?.value === "published") {
-            continue;
-          }
-
-          const matchRelayResult = await publishSeaBrokerageMatchToTelegram(match);
-          console.info(
-            "[SeaBrokerage][MatchRelay]",
-            JSON.stringify({
-              bidEntryId: match.bidEntry.id,
-              offerEntryId: match.offerEntry.id,
-              score: match.score,
-              status: matchRelayResult.status,
-              error: matchRelayResult.error || null,
-            }),
-          );
-          if (matchRelayResult.status === "published") {
-            await storage.upsertAppSetting(key, "published");
-            const compactBid = match.bidEntry.canonicalView;
-            const compactOffer = match.offerEntry.canonicalView;
-            const dmMessage = `#match_idea 🤝\nBID: ${compactBid}\nOFFER: ${compactOffer}`;
-            const buyerBrokerChat = match.bidEntry.brokerTelegramUsername
-              ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
-              : match.bidEntry.brokerTelegramUserId
-                ? String(match.bidEntry.brokerTelegramUserId)
-                : null;
-            const sellerBrokerChat = match.offerEntry.brokerTelegramUsername
-              ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "")}`
-              : match.offerEntry.brokerTelegramUserId
-                ? String(match.offerEntry.brokerTelegramUserId)
-                : null;
-            if (buyerBrokerChat) {
-              await sendSeaBrokerageTelegramDirectMessage(buyerBrokerChat, dmMessage);
-            }
-            if (sellerBrokerChat && sellerBrokerChat !== buyerBrokerChat) {
-              await sendSeaBrokerageTelegramDirectMessage(sellerBrokerChat, dmMessage);
-            }
-          } else {
-            await storage.upsertAppSetting(
-              `${key}:last_error`,
-              matchRelayResult.error || "unknown_match_relay_error",
-            );
-          }
-        }
-      }
+      await relaySeaBrokerageMatchesForEntry(updated);
 
       res.status(201).json(mapSeaBrokerageEntryToClientShape(updated));
     } catch (error: any) {
       console.error("Error creating sea brokerage monitor entry:", error);
       res.status(500).json({ error: "Failed to create sea brokerage monitor entry" });
+    }
+  });
+
+  app.patch("/api/sea-brokerage-monitor/entries/:entryId", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const entryId = String(req.params.entryId || "").trim();
+      if (!entryId) return res.status(400).json({ error: "Entry id is required" });
+
+      const parsed = updateSeaBrokerageEntryRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const entries = await storage.listSeaBrokerageEntries();
+      const existing = entries.find((entry) => entry.id === entryId);
+      if (!existing) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+
+      const actor = resolveSeaBrokerageActorContext(authorizedBroker);
+      const isAuthor = isSeaBrokerageEntryAuthor(existing, actor);
+      if (!isAuthor && !actor.isBoss) {
+        return res.status(403).json({ error: "Only author or boss can edit this entry" });
+      }
+
+      const payload = parsed.data;
+      if (payload.type !== existing.type) {
+        return res.status(400).json({ error: "Entry type cannot be changed" });
+      }
+
+      const updated = await storage.updateSeaBrokerageEntry(entryId, {
+        sellerName: payload.sellerName ?? null,
+        buyerName: payload.buyerName ?? null,
+        originCountry: payload.originCountry ?? null,
+        originCountryCode: payload.originCountryCode ?? null,
+        commodity: payload.commodity,
+        commodityLabel: payload.commodityLabel,
+        gradeOrSpec: payload.gradeOrSpec ?? "",
+        quantityMt: payload.quantityMt ?? null,
+        tolerancePct: payload.tolerancePct ?? null,
+        volumeFrom: payload.volumeFrom,
+        volumeTo: payload.volumeTo,
+        volumeUnit: payload.volumeUnit,
+        basis: payload.basis,
+        paymentTerms: payload.paymentTerms ?? null,
+        destinationPortCode: payload.destinationPortCode ?? null,
+        destinationPort: payload.destinationPort,
+        destinationCountryCode: payload.destinationCountryCode ?? null,
+        destinationCountry: payload.destinationCountry,
+        periodType: payload.periodType,
+        periodLabel: payload.periodLabel,
+        periodStart: payload.periodStart ?? null,
+        periodEnd: payload.periodEnd ?? null,
+        price:
+          payload.price === null || payload.price === undefined ? null : String(payload.price),
+        priceFrom:
+          payload.priceFrom === null || payload.priceFrom === undefined
+            ? null
+            : String(payload.priceFrom),
+        priceTo:
+          payload.priceTo === null || payload.priceTo === undefined
+            ? null
+            : String(payload.priceTo),
+        currency: payload.currency,
+        transportType: payload.transportType,
+        note: payload.note ?? null,
+        canonicalView: payload.canonicalView,
+      });
+
+      if (!isAuthor && actor.isBoss) {
+        const authorChat = existing.brokerTelegramUserId
+          ? String(existing.brokerTelegramUserId)
+          : existing.brokerTelegramUsername
+            ? `@${existing.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null;
+        if (authorChat) {
+          await sendSeaBrokerageTelegramDirectMessage(
+            authorChat,
+            [
+              "#entry_update ✍️",
+              `${actor.actorCode} edited your ${existing.type.toUpperCase()} entry`,
+              updated.canonicalView,
+            ].join("\n"),
+          );
+        }
+      }
+
+      return res.json(mapSeaBrokerageEntryToClientShape(updated));
+    } catch (error: any) {
+      console.error("Error updating sea brokerage monitor entry:", error);
+      return res.status(500).json({ error: "Failed to update sea brokerage monitor entry" });
+    }
+  });
+
+  app.delete("/api/sea-brokerage-monitor/entries/:entryId", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const entryId = String(req.params.entryId || "").trim();
+      if (!entryId) return res.status(400).json({ error: "Entry id is required" });
+
+      const entries = await storage.listSeaBrokerageEntries();
+      const existing = entries.find((entry) => entry.id === entryId);
+      if (!existing) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+
+      const actor = resolveSeaBrokerageActorContext(authorizedBroker);
+      const isAuthor = isSeaBrokerageEntryAuthor(existing, actor);
+      if (!isAuthor && !actor.isBoss) {
+        return res.status(403).json({ error: "Only author or boss can delete this entry" });
+      }
+
+      if (!isSameSeaBrokerageBusinessDay(existing.createdAt, new Date())) {
+        return res.status(400).json({
+          error: "Entry can be deleted only on publication day. Next day use EDIT + REPOST.",
+        });
+      }
+
+      const deleted = await storage.deleteSeaBrokerageEntry(entryId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+
+      const [entryLikes, matchLikes] = await Promise.all([
+        readSeaBrokerageEntryLikes(),
+        readSeaBrokerageMatchLikes(),
+      ]);
+      const nextEntryLikes = entryLikes.filter((item) => item.entryId !== entryId);
+      const nextMatchLikes = matchLikes.filter(
+        (item) => item.bidEntryId !== entryId && item.offerEntryId !== entryId,
+      );
+      if (nextEntryLikes.length !== entryLikes.length) {
+        await writeSeaBrokerageEntryLikes(nextEntryLikes);
+      }
+      if (nextMatchLikes.length !== matchLikes.length) {
+        await writeSeaBrokerageMatchLikes(nextMatchLikes);
+      }
+
+      if (!isAuthor && actor.isBoss) {
+        const authorChat = existing.brokerTelegramUserId
+          ? String(existing.brokerTelegramUserId)
+          : existing.brokerTelegramUsername
+            ? `@${existing.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null;
+        if (authorChat) {
+          await sendSeaBrokerageTelegramDirectMessage(
+            authorChat,
+            [
+              "#entry_deleted 🗑️",
+              `${actor.actorCode} deleted your ${existing.type.toUpperCase()} entry`,
+              existing.canonicalView,
+            ].join("\n"),
+          );
+        }
+      }
+
+      return res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting sea brokerage monitor entry:", error);
+      return res.status(500).json({ error: "Failed to delete sea brokerage monitor entry" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/entries/:entryId/repost", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const entryId = String(req.params.entryId || "").trim();
+      if (!entryId) return res.status(400).json({ error: "Entry id is required" });
+
+      const entries = await storage.listSeaBrokerageEntries();
+      const source = entries.find((entry) => entry.id === entryId);
+      if (!source) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+
+      const actor = resolveSeaBrokerageActorContext(authorizedBroker);
+      const isAuthor = isSeaBrokerageEntryAuthor(source, actor);
+      if (!isAuthor && !actor.isBoss) {
+        return res.status(403).json({ error: "Only author or boss can repost this entry" });
+      }
+
+      if (isSameSeaBrokerageBusinessDay(source.createdAt, new Date())) {
+        return res.status(400).json({
+          error: "Use DELETE on publication day. REPOST is available starting next day.",
+        });
+      }
+
+      const created = await storage.createSeaBrokerageEntry({
+        type: source.type,
+        brokerUserId: source.brokerUserId,
+        brokerEmail: source.brokerEmail,
+        brokerTelegramUserId: source.brokerTelegramUserId,
+        brokerTelegramUsername: source.brokerTelegramUsername,
+        brokerCode: source.brokerCode,
+        brokerName: source.brokerName,
+        companyName: source.companyName,
+        sellerName: source.sellerName,
+        buyerName: source.buyerName,
+        originCountry: source.originCountry,
+        originCountryCode: source.originCountryCode,
+        commodity: source.commodity,
+        commodityLabel: source.commodityLabel,
+        gradeOrSpec: source.gradeOrSpec,
+        quantityMt: source.quantityMt,
+        tolerancePct: source.tolerancePct,
+        volumeFrom: source.volumeFrom,
+        volumeTo: source.volumeTo,
+        volumeUnit: source.volumeUnit,
+        basis: source.basis,
+        paymentTerms: source.paymentTerms,
+        destinationPortCode: source.destinationPortCode,
+        destinationPort: source.destinationPort,
+        destinationCountryCode: source.destinationCountryCode,
+        destinationCountry: source.destinationCountry,
+        periodType: source.periodType,
+        periodLabel: source.periodLabel,
+        periodStart: source.periodStart,
+        periodEnd: source.periodEnd,
+        price: source.price,
+        priceFrom: source.priceFrom,
+        priceTo: source.priceTo,
+        currency: source.currency,
+        transportType: source.transportType,
+        note: source.note,
+        canonicalView: source.canonicalView,
+        telegramRelayStatus: "queued",
+        telegramRelayMessage: null,
+        telegramMessageId: null,
+      });
+
+      const relayResult = await publishSeaBrokerageEntryToTelegram(created, {
+        brokerTelegramUsername: source.brokerTelegramUsername,
+      });
+      const updated = await storage.updateSeaBrokerageEntry(created.id, {
+        telegramRelayStatus: relayResult.status,
+        telegramRelayMessage: relayResult.messageText,
+        telegramMessageId: relayResult.messageId ?? null,
+      });
+      await relaySeaBrokerageMatchesForEntry(updated);
+
+      if (!isAuthor && actor.isBoss) {
+        const authorChat = source.brokerTelegramUserId
+          ? String(source.brokerTelegramUserId)
+          : source.brokerTelegramUsername
+            ? `@${source.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null;
+        if (authorChat) {
+          await sendSeaBrokerageTelegramDirectMessage(
+            authorChat,
+            [
+              "#entry_repost 🔁",
+              `${actor.actorCode} reposted your ${source.type.toUpperCase()} entry`,
+              updated.canonicalView,
+            ].join("\n"),
+          );
+        }
+      }
+
+      return res.status(201).json(mapSeaBrokerageEntryToClientShape(updated));
+    } catch (error: any) {
+      console.error("Error reposting sea brokerage monitor entry:", error);
+      return res.status(500).json({ error: "Failed to repost sea brokerage monitor entry" });
     }
   });
 

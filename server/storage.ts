@@ -124,6 +124,7 @@ export interface IStorage {
   listSeaBrokerageEntries(): Promise<SeaBrokerageEntryRow[]>;
   createSeaBrokerageEntry(entry: InsertSeaBrokerageEntry): Promise<SeaBrokerageEntryRow>;
   updateSeaBrokerageEntry(id: string, updates: Partial<SeaBrokerageEntryRow>): Promise<SeaBrokerageEntryRow>;
+  deleteSeaBrokerageEntry(id: string): Promise<boolean>;
   listSeaBrokerageBrokerAuth(): Promise<SeaBrokerageBrokerAuthRow[]>;
   findSeaBrokerageBrokerAuthByAuthUserId(authUserId: string): Promise<SeaBrokerageBrokerAuthRow | undefined>;
   findSeaBrokerageBrokerAuthByAuthEmail(authEmail: string): Promise<SeaBrokerageBrokerAuthRow | undefined>;
@@ -248,6 +249,14 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updated;
+  }
+
+  async deleteSeaBrokerageEntry(id: string): Promise<boolean> {
+    const deleted = await db
+      .delete(seaBrokerageEntries)
+      .where(eq(seaBrokerageEntries.id, id))
+      .returning({ id: seaBrokerageEntries.id });
+    return deleted.length > 0;
   }
 
   async listOptions(): Promise<Option[]> {

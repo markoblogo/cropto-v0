@@ -41,20 +41,69 @@ interface EntryDetailSheetProps {
   entry: BrokerageEntry | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canRepost?: boolean;
+  isDeleting?: boolean;
+  isReposting?: boolean;
+  onEdit?: (entry: BrokerageEntry) => void;
+  onDelete?: (entry: BrokerageEntry) => void;
+  onRepost?: (entry: BrokerageEntry) => void;
 }
 
-export function EntryDetailSheet({ entry, open, onOpenChange }: EntryDetailSheetProps) {
+export function EntryDetailSheet({
+  entry,
+  open,
+  onOpenChange,
+  canEdit = false,
+  canDelete = false,
+  canRepost = false,
+  isDeleting = false,
+  isReposting = false,
+  onEdit,
+  onDelete,
+  onRepost,
+}: EntryDetailSheetProps) {
   const harvestYear = entry ? extractHarvestYear(entry) : null;
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-[100vw] overflow-x-hidden overflow-y-auto sm:max-w-2xl">
         {entry ? (
           <div className="space-y-6">
-            <SheetHeader>
+            <SheetHeader className="gap-3">
               <SheetTitle className="pr-8">Feed Entry Detail</SheetTitle>
               <SheetDescription>
                 Structured sea brokerage entry detail with normalized canonical output.
               </SheetDescription>
+              {canEdit || canDelete || canRepost ? (
+                <div className="flex flex-wrap gap-2">
+                  {canEdit ? (
+                    <Button size="sm" variant="outline" onClick={() => onEdit?.(entry)}>
+                      Edit
+                    </Button>
+                  ) : null}
+                  {canDelete ? (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => onDelete?.(entry)}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  ) : null}
+                  {canRepost ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => onRepost?.(entry)}
+                      disabled={isReposting}
+                    >
+                      {isReposting ? "Reposting..." : "Repost"}
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
             </SheetHeader>
 
             <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
