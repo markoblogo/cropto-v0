@@ -69,6 +69,16 @@ function buildBrokerOptions(entries: BrokerageEntry[]) {
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
+function normalizeCommodityKey(value: string) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[,]/g, ".")
+    .replace(/[^a-z0-9.]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
 
 export function SeaBrokerageMonitorPage() {
@@ -217,22 +227,29 @@ export function SeaBrokerageMonitorPage() {
     return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
   }, [customPortOptions]);
   const toolbarCommodityOptions = useMemo(() => {
-    const byCode = new Map<string, Commodity>();
+    const byNormalized = new Map<string, Commodity>();
+    const register = (option: Commodity) => {
+      const normalizedKey =
+        normalizeCommodityKey(option.displayLabel) || normalizeCommodityKey(option.code);
+      if (!normalizedKey) return;
+      if (!byNormalized.has(normalizedKey)) {
+        byNormalized.set(normalizedKey, option);
+      }
+    };
     for (const option of [...defaultCommodityOptions, ...customCommodityOptions]) {
-      byCode.set(option.code, option);
+      register(option);
     }
     for (const entry of feedWithBusinessUnits) {
-      if (!byCode.has(entry.commodity)) {
-        byCode.set(entry.commodity, {
+      const option: Commodity = {
           code: entry.commodity,
           displayLabel: entry.commodityLabel || entry.commodity,
           compactDisplay: (entry.commodityLabel || entry.commodity).toUpperCase(),
           group: "processed",
           defaultVolumeUnit: "mt",
-        });
-      }
+        };
+      register(option);
     }
-    return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
+    return Array.from(byNormalized.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
   }, [customCommodityOptions, feedWithBusinessUnits]);
 
   const offerEntriesBase = useMemo(
@@ -705,23 +722,39 @@ export function SeaBrokerageMonitorPage() {
       setTelegramAuthOpen(true);
       return;
     }
+    if (!reportForm.postedFrom || !reportForm.postedTo || !reportForm.periodStart || !reportForm.periodEnd) {
+      setReportStatus("Please set all date ranges (posted and period).");
+      return;
+    }
+    const sortedPostedFrom = reportForm.postedFrom <= reportForm.postedTo ? reportForm.postedFrom : reportForm.postedTo;
+    const sortedPostedTo = reportForm.postedFrom <= reportForm.postedTo ? reportForm.postedTo : reportForm.postedFrom;
+    const sortedPeriodStart = reportForm.periodStart <= reportForm.periodEnd ? reportForm.periodStart : reportForm.periodEnd;
+    const sortedPeriodEnd = reportForm.periodStart <= reportForm.periodEnd ? reportForm.periodEnd : reportForm.periodStart;
+    const payload = {
+      ...reportForm,
+      postedFrom: sortedPostedFrom,
+      postedTo: sortedPostedTo,
+      periodStart: sortedPeriodStart,
+      periodEnd: sortedPeriodEnd,
+      commodities: Array.from(new Set(reportForm.commodities)),
+    };
     setReportStatus(null);
     setReportSending(true);
     try {
-      const response = await apiRequest("POST", "/api/sea-brokerage-monitor/report/send", reportForm, {
+      const response = await apiRequest("POST", "/api/sea-brokerage-monitor/report/send", payload, {
         headers: {
           "Content-Type": "application/json",
           ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
         },
       });
-      const payload = (await response.json()) as {
+      const responsePayload = (await response.json()) as {
         matchedEntries: number;
         offers: number;
         bids: number;
         sentChunks: number;
       };
       setReportStatus(
-        `Report sent in Telegram: ${payload.matchedEntries} entries (offers ${payload.offers}, bids ${payload.bids}), ${payload.sentChunks} message(s).`,
+        `Report sent in Telegram: ${responsePayload.matchedEntries} entries (offers ${responsePayload.offers}, bids ${responsePayload.bids}), ${responsePayload.sentChunks} message(s).`,
       );
     } catch (error) {
       setReportStatus(error instanceof Error ? error.message : "Failed to send report");
@@ -984,6 +1017,9 @@ export function SeaBrokerageMonitorPage() {
               Personal price digest by filters. Report will be sent to your Telegram DM.
             </DialogDescription>
           </DialogHeader>
+          <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+            Posted range = when BID/OFFER was published. Period range = shipment/delivery window inside entries.
+          </div>
           <div className="rounded-md border border-border/70 p-3">
             <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Commodities</div>
             <div className="grid max-h-36 gap-2 overflow-auto pr-1 sm:grid-cols-2">

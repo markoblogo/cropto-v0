@@ -236,13 +236,6 @@ const seaBrokerageReportRequestSchema = z
         message: "Posted to date is required",
       });
     }
-    if (value.postedFrom && value.postedTo && value.postedTo < value.postedFrom) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["postedTo"],
-        message: "Posted to date must be on or after posted from date",
-      });
-    }
     if (!value.periodStart) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -255,13 +248,6 @@ const seaBrokerageReportRequestSchema = z
         code: z.ZodIssueCode.custom,
         path: ["periodEnd"],
         message: "Period end is required",
-      });
-    }
-    if (value.periodStart && value.periodEnd && value.periodEnd < value.periodStart) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["periodEnd"],
-        message: "Period end must be on or after period start",
       });
     }
     if (!value.includeBids && !value.includeOffers) {
@@ -8329,6 +8315,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const payload = parsed.data;
+      const postedFrom = payload.postedFrom <= payload.postedTo ? payload.postedFrom : payload.postedTo;
+      const postedTo = payload.postedFrom <= payload.postedTo ? payload.postedTo : payload.postedFrom;
+      const periodStart = payload.periodStart <= payload.periodEnd ? payload.periodStart : payload.periodEnd;
+      const periodEnd = payload.periodStart <= payload.periodEnd ? payload.periodEnd : payload.periodStart;
       const allEntries = await storage.listSeaBrokerageEntries();
 
       const includeTypes = new Set<string>();
@@ -8336,8 +8326,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (payload.includeOffers) includeTypes.add("offer");
 
       const postedWindow = (() => {
-        const from = startOfUtcDay(payload.postedFrom);
-        const to = endOfUtcDay(payload.postedTo);
+        const from = startOfUtcDay(postedFrom);
+        const to = endOfUtcDay(postedTo);
         return from && to ? { from, to } : null;
       })();
 
@@ -8346,8 +8336,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const reportPeriodRange = (() => {
-        const start = startOfUtcDay(payload.periodStart);
-        const end = endOfUtcDay(payload.periodEnd);
+        const start = startOfUtcDay(periodStart);
+        const end = endOfUtcDay(periodEnd);
         return start && end ? { start, end } : null;
       })();
 
