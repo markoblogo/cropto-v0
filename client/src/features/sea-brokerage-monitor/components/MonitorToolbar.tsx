@@ -1,4 +1,4 @@
-import { Save, Search, Star, Trash2 } from "lucide-react";
+import { ChevronDown, Save, Search, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -83,12 +83,24 @@ export function MonitorToolbar({
     return `${selectedCount} ${baseLabel}`;
   }
 
+  const compactFilterTriggerClass =
+    "h-6 min-w-0 w-full justify-between rounded-md border border-input bg-background px-3 text-left text-[10.5px] font-normal text-foreground hover:bg-background sm:h-7 sm:text-[11px]";
+
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 px-1.5 py-1 shadow-sm sm:px-2.5 sm:py-1.5">
       <div className="flex min-w-0 flex-col gap-1 sm:gap-1.5">
         <div className="flex min-w-0 flex-wrap items-center gap-1 sm:gap-1.5">
           <div className="mr-auto min-w-0 text-[8.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:text-[11px] sm:tracking-[0.18em]">
             Spike Brokerage Monitor
+          </div>
+          <div className="relative min-w-[200px] flex-1 max-w-[360px]">
+            <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-2.5 sm:h-3.5 sm:w-3.5" />
+            <Input
+              className="h-6 min-w-0 pr-2 pl-7 text-[10.5px] sm:h-7 sm:pr-3 sm:pl-8.5 sm:text-xs"
+              value={filters.search}
+              onChange={(event) => onFilterChange("search", event.target.value)}
+              placeholder="Search market"
+            />
           </div>
           {canManagePresets ? (
             <div className="flex min-w-0 items-center gap-1">
@@ -162,10 +174,10 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
+                className={compactFilterTriggerClass}
               >
                 <span className="truncate">{renderMultiLabel("origins", selectedOriginCountries.size)}</span>
-                <span className="text-muted-foreground">▾</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
@@ -237,12 +249,12 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
+                className={compactFilterTriggerClass}
               >
                 <span className="truncate">
                   {renderMultiLabel("business units", selectedBusinessUnits.size)}
                 </span>
-                <span className="text-muted-foreground">▾</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
@@ -274,10 +286,10 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
+                className={compactFilterTriggerClass}
               >
                 <span className="truncate">{renderMultiLabel("currencies", selectedCurrencies.size)}</span>
-                <span className="text-muted-foreground">▾</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[230px] max-w-[90vw]">
@@ -309,12 +321,12 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
+                className={compactFilterTriggerClass}
               >
                 <span className="truncate">
                   {renderMultiLabel("transport types", selectedTransportModes.size)}
                 </span>
-                <span className="text-muted-foreground">▾</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
@@ -360,15 +372,6 @@ export function MonitorToolbar({
             </SelectContent>
           </Select>
 
-          <div className="relative min-w-0 w-full xl:col-span-8">
-            <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-2.5 sm:h-3.5 sm:w-3.5" />
-            <Input
-              className="h-6 min-w-0 pr-2 pl-7 text-[10.5px] sm:h-7 sm:pr-3 sm:pl-8.5 sm:text-xs"
-              value={filters.search}
-              onChange={(event) => onFilterChange("search", event.target.value)}
-              placeholder="Search market"
-            />
-          </div>
         </div>
       </div>
     </Card>
