@@ -18,6 +18,7 @@ import {
 import {
   commodityOptions as defaultCommodityOptions,
   countryOptions as defaultCountryOptions,
+  currencyOptions as defaultCurrencyOptions,
   portOptions as defaultPortOptions,
 } from "../mock/dictionaries";
 import { getCountryDisplayLabel } from "../services/displayStandards";
@@ -45,7 +46,7 @@ interface MonitorToolbarProps {
   countryOptions?: CountryOption[];
   deliveryPlaceOptions?: PortOption[];
   businessUnitOptions?: Array<{ value: string; label: string }>;
-  currencyOptions?: Currency[];
+  currencyOptions?: Array<{ value: Currency; label: string }>;
   transportModeOptions?: Array<{ value: TransportMode; label: string }>;
 }
 
@@ -64,7 +65,7 @@ export function MonitorToolbar({
   countryOptions = defaultCountryOptions,
   deliveryPlaceOptions = defaultPortOptions,
   businessUnitOptions = [],
-  currencyOptions = ["USD", "EUR", "UAH"],
+  currencyOptions = defaultCurrencyOptions,
   transportModeOptions = [],
 }: MonitorToolbarProps) {
   const selectedOriginCountries = new Set(
@@ -136,7 +137,7 @@ export function MonitorToolbar({
           ) : null}
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.95fr)_minmax(0,1.2fr)_minmax(220px,1.35fr)] xl:gap-1.5">
+        <div className="grid min-w-0 grid-cols-1 items-stretch gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,1.05fr)_minmax(0,1.15fr)] xl:gap-1.5">
           <Select
             value={filters.commodity}
             onValueChange={(value) =>
@@ -161,7 +162,7 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
               >
                 <span className="truncate">{renderMultiLabel("origins", selectedOriginCountries.size)}</span>
                 <span className="text-muted-foreground">▾</span>
@@ -236,7 +237,7 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
               >
                 <span className="truncate">
                   {renderMultiLabel("business units", selectedBusinessUnits.size)}
@@ -273,7 +274,7 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
               >
                 <span className="truncate">{renderMultiLabel("currencies", selectedCurrencies.size)}</span>
                 <span className="text-muted-foreground">▾</span>
@@ -281,10 +282,10 @@ export function MonitorToolbar({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[230px] max-w-[90vw]">
               {currencyOptions.map((currency) => {
-                const key = currency.toUpperCase();
+                const key = currency.value.toUpperCase();
                 return (
                   <DropdownMenuCheckboxItem
-                    key={currency}
+                    key={currency.value}
                     checked={selectedCurrencies.has(key)}
                     onCheckedChange={(checked) => {
                       const next = new Set(selectedCurrencies);
@@ -296,7 +297,7 @@ export function MonitorToolbar({
                       );
                     }}
                   >
-                    {currency}
+                    {currency.label}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -308,7 +309,7 @@ export function MonitorToolbar({
               <Button
                 type="button"
                 variant="outline"
-                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] font-normal sm:h-7 sm:text-[11px]"
               >
                 <span className="truncate">
                   {renderMultiLabel("transport types", selectedTransportModes.size)}
@@ -359,7 +360,7 @@ export function MonitorToolbar({
             </SelectContent>
           </Select>
 
-          <div className="relative min-w-0 w-full">
+          <div className="relative min-w-0 w-full xl:col-span-8">
             <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground sm:left-2.5 sm:h-3.5 sm:w-3.5" />
             <Input
               className="h-6 min-w-0 pr-2 pl-7 text-[10.5px] sm:h-7 sm:pr-3 sm:pl-8.5 sm:text-xs"

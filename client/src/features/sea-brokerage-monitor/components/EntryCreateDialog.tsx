@@ -34,6 +34,7 @@ import {
   brokers,
   commodityOptions,
   countryOptions,
+  currencyOptions,
   paymentTermOptions,
   portOptions,
 } from "../mock/dictionaries";
@@ -63,11 +64,6 @@ import type {
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
 const volumeUnitOptions: Array<{ value: VolumeUnit; label: string }> = [{ value: "mt", label: "MT" }];
-const currencyOptions: Array<{ value: Currency; label: string }> = [
-  { value: "USD", label: "USD ($)" },
-  { value: "EUR", label: "EUR (€)" },
-  { value: "UAH", label: "UAH (₴)" },
-];
 type PeriodPreset =
   | "spot"
   | "prompt"
@@ -527,6 +523,7 @@ export function EntryCreateDialog({
   const [newCommodityGroup, setNewCommodityGroup] = useState<"grains" | "oilseeds" | "processed">("processed");
   const [commodityEditorMessage, setCommodityEditorMessage] = useState<string | null>(null);
   const [isSavingCommodity, setIsSavingCommodity] = useState(false);
+  const currencyDatalistId = `sea-monitor-currency-options-${entryType}`;
   const form = useForm<EntryFormValues>({
     resolver: zodResolver(entryFormSchema),
     defaultValues: getDefaultValues(entryType),
@@ -1679,20 +1676,22 @@ export function EntryCreateDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Currency</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Currency" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {currencyOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        list={currencyDatalistId}
+                        value={field.value}
+                        onChange={(event) => {
+                          field.onChange(String(event.target.value || "").toUpperCase());
+                        }}
+                        placeholder="Start typing currency"
+                        autoComplete="off"
+                      />
+                    </FormControl>
+                    <datalist id={currencyDatalistId}>
+                      {currencyOptions.map((option) => (
+                        <option key={option.value} value={option.value} label={option.label} />
+                      ))}
+                    </datalist>
                     <FormMessage />
                   </FormItem>
                 )}

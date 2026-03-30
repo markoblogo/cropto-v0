@@ -4,6 +4,7 @@ import type {
   Commodity,
   CommodityCode,
   CountryOption,
+  Currency,
   PaymentTermCode,
   PaymentTermOption,
   PortOption,
@@ -89,6 +90,12 @@ export const basisOptions: SelectOption<Basis>[] = [
 export const paymentTermOptions: PaymentTermOption[] = [
   { code: "CAD", displayLabel: "Cash against documents", compactDisplay: "CAD" },
   { code: "CAFD", displayLabel: "Cash against fax copy documents", compactDisplay: "CAFD" },
+];
+
+export const currencyOptions: SelectOption<Currency>[] = [
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "UAH", label: "UAH (₴)" },
 ];
 
 export const countryOptions: CountryOption[] = [

@@ -17,6 +17,7 @@ import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState
 import {
   commodityOptions as defaultCommodityOptions,
   countryOptions as defaultCountryOptions,
+  currencyOptions as defaultCurrencyOptions,
   portOptions as defaultPortOptions,
 } from "./mock/dictionaries";
 import { buildSeaBrokerageMonitorAuthHeaders } from "./services/monitorAuth.service";
@@ -149,10 +150,10 @@ export function SeaBrokerageMonitorPage() {
     const active = new Set(feedWithBusinessUnits.map((entry) => String(entry.businessUnitCode || "")));
     return businessUnitOptions.filter((option) => active.has(option.value));
   }, [feedWithBusinessUnits]);
-  const toolbarCurrencyOptions = useMemo(() => {
-    const active = new Set<Currency>(feedWithBusinessUnits.map((entry) => entry.currency));
-    return (["USD", "EUR", "UAH"] as Currency[]).filter((currency) => active.has(currency));
-  }, [feedWithBusinessUnits]);
+  const toolbarCurrencyOptions = useMemo(
+    () => defaultCurrencyOptions,
+    [],
+  );
   const toolbarTransportModeOptions = useMemo(() => {
     const labels: Record<TransportMode, string> = {
       land: "Land (truck/rail)",
@@ -457,7 +458,9 @@ export function SeaBrokerageMonitorPage() {
 
   useEffect(() => {
     const validBusinessUnits = new Set(toolbarBusinessUnitOptions.map((option) => option.value.toLowerCase()));
-    const validCurrencies = new Set(toolbarCurrencyOptions.map((option) => option.toUpperCase()));
+    const validCurrencies = new Set(
+      toolbarCurrencyOptions.map((option) => option.value.toUpperCase()),
+    );
     const validTransportModes = new Set(toolbarTransportModeOptions.map((option) => option.value.toLowerCase()));
     const validOrigins = new Set(toolbarCountryOptions.map((option) => option.code.toLowerCase()));
 
