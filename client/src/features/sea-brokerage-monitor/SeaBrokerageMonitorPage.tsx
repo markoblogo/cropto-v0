@@ -14,12 +14,25 @@ import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
+import {
+  commodityOptions as defaultCommodityOptions,
+  countryOptions as defaultCountryOptions,
+  portOptions as defaultPortOptions,
+} from "./mock/dictionaries";
 import { buildSeaBrokerageMonitorAuthHeaders } from "./services/monitorAuth.service";
 import {
   defaultFeedFilters,
   filterBrokerageEntries,
 } from "./services/feedFilters.service";
-import type { BrokerageEntry, EntryType, FeedFilterState, FilterPreset } from "./types";
+import type {
+  BrokerageEntry,
+  Commodity,
+  CountryOption,
+  EntryType,
+  FeedFilterState,
+  FilterPreset,
+  PortOption,
+} from "./types";
 import { queryClient } from "@/lib/queryClient";
 
 const defaultPaneFilters: BrokerWorkspacePaneFilters = {
@@ -76,6 +89,36 @@ export function SeaBrokerageMonitorPage() {
       return response.json();
     },
   });
+  const { data: customCountryOptions = [] } = useQuery<CountryOption[]>({
+    queryKey: ["/api/sea-brokerage-monitor/countries"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/countries");
+      if (!response.ok) return [];
+      const payload = (await response.json()) as { countries?: CountryOption[] };
+      return Array.isArray(payload.countries) ? payload.countries : [];
+    },
+    staleTime: 60_000,
+  });
+  const { data: customPortOptions = [] } = useQuery<PortOption[]>({
+    queryKey: ["/api/sea-brokerage-monitor/locations"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/locations");
+      if (!response.ok) return [];
+      const payload = (await response.json()) as { locations?: PortOption[] };
+      return Array.isArray(payload.locations) ? payload.locations : [];
+    },
+    staleTime: 60_000,
+  });
+  const { data: customCommodityOptions = [] } = useQuery<Commodity[]>({
+    queryKey: ["/api/sea-brokerage-monitor/commodities"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/commodities");
+      if (!response.ok) return [];
+      const payload = (await response.json()) as { commodities?: Commodity[] };
+      return Array.isArray(payload.commodities) ? payload.commodities : [];
+    },
+    staleTime: 60_000,
+  });
 
   const filteredEntries = useMemo(
     () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
@@ -86,6 +129,38 @@ export function SeaBrokerageMonitorPage() {
     () => buildBrokerOptions(monitorState.standardizedFeed),
     [monitorState.standardizedFeed],
   );
+  const toolbarCountryOptions = useMemo(() => {
+    const byCode = new Map<string, CountryOption>();
+    for (const option of [...defaultCountryOptions, ...customCountryOptions]) {
+      byCode.set(option.code, option);
+    }
+    return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
+  }, [customCountryOptions]);
+  const toolbarDeliveryPlaceOptions = useMemo(() => {
+    const byCode = new Map<string, PortOption>();
+    for (const option of [...defaultPortOptions, ...customPortOptions]) {
+      byCode.set(option.code, option);
+    }
+    return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
+  }, [customPortOptions]);
+  const toolbarCommodityOptions = useMemo(() => {
+    const byCode = new Map<string, Commodity>();
+    for (const option of [...defaultCommodityOptions, ...customCommodityOptions]) {
+      byCode.set(option.code, option);
+    }
+    for (const entry of monitorState.standardizedFeed) {
+      if (!byCode.has(entry.commodity)) {
+        byCode.set(entry.commodity, {
+          code: entry.commodity,
+          displayLabel: entry.commodityLabel || entry.commodity,
+          compactDisplay: (entry.commodityLabel || entry.commodity).toUpperCase(),
+          group: "processed",
+          defaultVolumeUnit: "mt",
+        });
+      }
+    }
+    return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
+  }, [customCommodityOptions, monitorState.standardizedFeed]);
 
   const offerEntriesBase = useMemo(
     () =>
@@ -397,6 +472,9 @@ export function SeaBrokerageMonitorPage() {
           filters={filters}
           onFilterChange={updateFilter}
           brokerOptions={globalBrokerOptions}
+          commodityOptions={toolbarCommodityOptions}
+          countryOptions={toolbarCountryOptions}
+          deliveryPlaceOptions={toolbarDeliveryPlaceOptions}
           canManagePresets={session.canCreateEntries}
           presetOptions={filterPresets.map((preset) => ({
             value: preset.id,

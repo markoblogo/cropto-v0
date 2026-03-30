@@ -49,7 +49,9 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type {
   Basis,
   BrokerageEntry,
+  Commodity,
   CompanyOption,
+  CountryOption,
   Currency,
   EntryType,
   PeriodType,
@@ -74,6 +76,8 @@ type PeriodPreset =
   | "full_month"
   | "explicit_range";
 
+type QuantityPreset = "single" | "range";
+
 const periodPresetOptions: SelectOption<PeriodPreset>[] = [
   { value: "spot", label: "SPOT" },
   { value: "prompt", label: "PROMPT" },
@@ -93,6 +97,7 @@ const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
 
 const entryFormSchema = z
   .object({
+    quantityPreset: z.enum(["single", "range"]),
     sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
     buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
     periodPreset: z.enum([
@@ -107,6 +112,8 @@ const entryFormSchema = z
     harvestYear: z.string().trim().optional().default(""),
     originCountry: z.string().min(1, "Origin is required"),
     quantityMt: z.coerce.number().min(0, "Quantity must be 0 or greater"),
+    quantityFromMt: z.coerce.number().min(0, "Quantity from must be 0 or greater").optional(),
+    quantityToMt: z.coerce.number().min(0, "Quantity to must be 0 or greater").optional(),
     tolerancePct: z.coerce
       .number()
       .min(0, "Tolerance must be 0 or greater")
@@ -123,6 +130,36 @@ const entryFormSchema = z
     note: z.string().max(500, "Note must be 500 characters or fewer").optional(),
   })
   .superRefine((values, ctx) => {
+    if (values.quantityPreset === "range") {
+      if (values.quantityFromMt === null || values.quantityFromMt === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["quantityFromMt"],
+          message: "Quantity from is required",
+        });
+      }
+      if (values.quantityToMt === null || values.quantityToMt === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["quantityToMt"],
+          message: "Quantity to is required",
+        });
+      }
+      if (
+        values.quantityFromMt !== null &&
+        values.quantityFromMt !== undefined &&
+        values.quantityToMt !== null &&
+        values.quantityToMt !== undefined &&
+        values.quantityToMt < values.quantityFromMt
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["quantityToMt"],
+          message: "Quantity to must be greater than or equal to quantity from",
+        });
+      }
+    }
+
     if (
       (values.periodPreset === "full_month" ||
         values.periodPreset === "current_month_1h" ||
@@ -204,6 +241,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
   const periodMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   return {
+    quantityPreset: "single",
     sellerName: "",
     buyerName: "",
     periodPreset: "explicit_range",
@@ -211,6 +249,8 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     harvestYear: "",
     originCountry: "UA",
     quantityMt: entryType === "bid" ? 25000 : entryType === "trade" ? 22000 : 20000,
+    quantityFromMt: undefined,
+    quantityToMt: undefined,
     tolerancePct: 5,
     basis: "FOB",
     destinationPortCode: "odesa",
@@ -234,6 +274,29 @@ function deriveVolumeRange(quantityMt: number, tolerancePct: number) {
   return {
     volumeFrom: Math.round(quantityMt - spread),
     volumeTo: Math.round(quantityMt + spread),
+  };
+}
+
+function resolveVolumeRange(values: EntryFormValues) {
+  if (
+    values.quantityPreset === "range" &&
+    values.quantityFromMt !== null &&
+    values.quantityFromMt !== undefined &&
+    values.quantityToMt !== null &&
+    values.quantityToMt !== undefined
+  ) {
+    return {
+      quantityMt: null as number | null,
+      volumeFrom: values.quantityFromMt,
+      volumeTo: values.quantityToMt,
+    };
+  }
+
+  const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
+  return {
+    quantityMt: values.quantityMt,
+    volumeFrom,
+    volumeTo,
   };
 }
 
@@ -406,6 +469,19 @@ export function EntryCreateDialog({
   const [newLocationCountryCode, setNewLocationCountryCode] = useState("UA");
   const [locationEditorMessage, setLocationEditorMessage] = useState<string | null>(null);
   const [isSavingLocation, setIsSavingLocation] = useState(false);
+  const [isAddingCountry, setIsAddingCountry] = useState(false);
+  const [newCountryName, setNewCountryName] = useState("");
+  const [newCountryCode, setNewCountryCode] = useState("");
+  const [newCountryCodeAlpha3, setNewCountryCodeAlpha3] = useState("");
+  const [countryEditorMessage, setCountryEditorMessage] = useState<string | null>(null);
+  const [isSavingCountry, setIsSavingCountry] = useState(false);
+  const [commoditySearch, setCommoditySearch] = useState("");
+  const [isAddingCommodity, setIsAddingCommodity] = useState(false);
+  const [newCommodityName, setNewCommodityName] = useState("");
+  const [newCommodityCode, setNewCommodityCode] = useState("");
+  const [newCommodityGroup, setNewCommodityGroup] = useState<"grains" | "oilseeds" | "processed">("processed");
+  const [commodityEditorMessage, setCommodityEditorMessage] = useState<string | null>(null);
+  const [isSavingCommodity, setIsSavingCommodity] = useState(false);
   const form = useForm<EntryFormValues>({
     resolver: zodResolver(entryFormSchema),
     defaultValues: getDefaultValues(entryType),
@@ -436,6 +512,30 @@ export function EntryCreateDialog({
     },
     staleTime: 60_000,
   });
+  const { data: sharedCountryOptionsData = [] } = useQuery<CountryOption[]>({
+    queryKey: ["/api/sea-brokerage-monitor/countries"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/countries");
+      if (!response.ok) {
+        throw new Error(`Failed to load custom countries (${response.status})`);
+      }
+      const payload = (await response.json()) as { countries?: CountryOption[] };
+      return Array.isArray(payload.countries) ? payload.countries : [];
+    },
+    staleTime: 60_000,
+  });
+  const { data: sharedCommodityOptionsData = [] } = useQuery<Commodity[]>({
+    queryKey: ["/api/sea-brokerage-monitor/commodities"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/commodities");
+      if (!response.ok) {
+        throw new Error(`Failed to load custom commodities (${response.status})`);
+      }
+      const payload = (await response.json()) as { commodities?: Commodity[] };
+      return Array.isArray(payload.commodities) ? payload.commodities : [];
+    },
+    staleTime: 60_000,
+  });
 
   const allPortOptions = useMemo(() => {
     const byCode = new Map<string, PortOption>();
@@ -444,6 +544,31 @@ export function EntryCreateDialog({
     }
     return Array.from(byCode.values());
   }, [sharedPortOptionsData]);
+  const allCountryOptions = useMemo(() => {
+    const byCode = new Map<string, CountryOption>();
+    for (const option of [...countryOptions, ...sharedCountryOptionsData]) {
+      byCode.set(option.code, option);
+    }
+    return Array.from(byCode.values()).sort((left, right) =>
+      left.displayLabel.localeCompare(right.displayLabel),
+    );
+  }, [sharedCountryOptionsData]);
+  const allCommodityOptions = useMemo(() => {
+    const byCode = new Map<string, Commodity>();
+    for (const option of [...commodityOptions, ...sharedCommodityOptionsData]) {
+      byCode.set(option.code, option);
+    }
+    return Array.from(byCode.values()).sort((left, right) =>
+      left.displayLabel.localeCompare(right.displayLabel),
+    );
+  }, [sharedCommodityOptionsData]);
+  const countryByCode = useMemo(() => {
+    const map = new Map<string, CountryOption>();
+    for (const option of allCountryOptions) {
+      map.set(option.code, option);
+    }
+    return map;
+  }, [allCountryOptions]);
   const companyOptions = useMemo(() => {
     const byLabel = new Map<string, CompanyOption>();
     for (const option of companyOptionsData) {
@@ -476,6 +601,13 @@ export function EntryCreateDialog({
       formatPortPlaceLabel(option).toLowerCase().includes(query),
     );
   }, [allPortOptions, portSearch]);
+  const filteredCommodityOptions = useMemo(() => {
+    const query = commoditySearch.trim().toLowerCase();
+    if (!query) return allCommodityOptions;
+    return allCommodityOptions.filter((option) =>
+      `${option.displayLabel} ${option.compactDisplay}`.toLowerCase().includes(query),
+    );
+  }, [allCommodityOptions, commoditySearch]);
 
   useEffect(() => {
     form.reset(getDefaultValues(entryType));
@@ -491,6 +623,19 @@ export function EntryCreateDialog({
     setPortSearch("");
     setLocationEditorMessage(null);
     setIsSavingLocation(false);
+    setIsAddingCountry(false);
+    setNewCountryName("");
+    setNewCountryCode("");
+    setNewCountryCodeAlpha3("");
+    setCountryEditorMessage(null);
+    setIsSavingCountry(false);
+    setCommoditySearch("");
+    setIsAddingCommodity(false);
+    setNewCommodityName("");
+    setNewCommodityCode("");
+    setNewCommodityGroup("processed");
+    setCommodityEditorMessage(null);
+    setIsSavingCommodity(false);
   }, [entryType, form, open]);
 
   const canonicalPreview = useMemo(() => {
@@ -498,11 +643,15 @@ export function EntryCreateDialog({
       return "Author session required before a canonical broker line can be generated.";
     }
 
-    const commodity = commodityOptions.find((option) => option.code === values.commodity);
+    const commodity = allCommodityOptions.find((option) => option.code === values.commodity);
     const selectedPort = allPortOptions.find((option) => option.code === values.destinationPortCode);
-    const originCountry = getCountryDisplayLabel(values.originCountry);
-    const destinationCountry = getCountryDisplayLabel(selectedPort?.countryCode);
-    const { volumeFrom, volumeTo } = deriveVolumeRange(values.quantityMt, values.tolerancePct);
+    const originCountry =
+      countryByCode.get(values.originCountry)?.displayLabel ||
+      getCountryDisplayLabel(values.originCountry);
+    const destinationCountry =
+      countryByCode.get(selectedPort?.countryCode || "")?.displayLabel ||
+      getCountryDisplayLabel(selectedPort?.countryCode);
+    const { quantityMt, volumeFrom, volumeTo } = resolveVolumeRange(values);
     const harvestYear = String(values.harvestYear || "").trim();
     const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
     const resolvedPeriod = resolvePeriodValues(
@@ -527,7 +676,7 @@ export function EntryCreateDialog({
       commodity: values.commodity as BrokerageEntry["commodity"],
       commodityLabel: commodity?.displayLabel ?? values.commodity,
       gradeOrSpec,
-      quantityMt: values.quantityMt,
+      quantityMt,
       tolerancePct: values.tolerancePct,
       volumeFrom,
       volumeTo,
@@ -553,7 +702,7 @@ export function EntryCreateDialog({
       telegramRelayStatus: undefined,
       telegramRelayMessage: null,
     });
-  }, [allPortOptions, entryType, session.authorProfile, values]);
+  }, [allCommodityOptions, allPortOptions, countryByCode, entryType, session.authorProfile, values]);
 
   async function onSubmit(formValues: EntryFormValues) {
     if (!session.authorProfile || !session.canCreateEntries) {
@@ -575,12 +724,9 @@ export function EntryCreateDialog({
     }
 
     try {
-      const commodity = commodityOptions.find((option) => option.code === formValues.commodity);
+      const commodity = allCommodityOptions.find((option) => option.code === formValues.commodity);
       const selectedPort = allPortOptions.find((option) => option.code === formValues.destinationPortCode);
-      const { volumeFrom, volumeTo } = deriveVolumeRange(
-        formValues.quantityMt,
-        formValues.tolerancePct,
-      );
+      const { quantityMt, volumeFrom, volumeTo } = resolveVolumeRange(formValues);
       const harvestYear = String(formValues.harvestYear || "").trim();
       const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
       const resolvedPeriod = resolvePeriodValues(
@@ -600,12 +746,14 @@ export function EntryCreateDialog({
           entryType !== "offer" && formValues.buyerName?.trim()
             ? formValues.buyerName.trim()
             : null,
-        originCountry: getCountryDisplayLabel(formValues.originCountry),
+        originCountry:
+          countryByCode.get(formValues.originCountry)?.displayLabel ||
+          getCountryDisplayLabel(formValues.originCountry),
         originCountryCode: formValues.originCountry,
         commodity: formValues.commodity as BrokerageEntry["commodity"],
         commodityLabel: commodity?.displayLabel ?? formValues.commodity,
         gradeOrSpec,
-        quantityMt: formValues.quantityMt,
+        quantityMt,
         tolerancePct: formValues.tolerancePct,
         volumeFrom,
         volumeTo,
@@ -615,7 +763,9 @@ export function EntryCreateDialog({
         destinationPortCode: formValues.destinationPortCode,
         destinationPort: selectedPort?.displayLabel ?? formValues.destinationPortCode,
         destinationCountryCode: selectedPort?.countryCode ?? null,
-        destinationCountry: getCountryDisplayLabel(selectedPort?.countryCode),
+        destinationCountry:
+          countryByCode.get(selectedPort?.countryCode || "")?.displayLabel ||
+          getCountryDisplayLabel(selectedPort?.countryCode),
         periodType: resolvedPeriod.periodType,
         periodLabel: resolvedPeriod.periodLabel,
         periodStart: resolvedPeriod.periodStart,
@@ -650,7 +800,7 @@ export function EntryCreateDialog({
   async function addCustomLocation() {
     const city = normalizeLocationCityInput(newLocationCity);
     const countryCode = newLocationCountryCode;
-    const country = countryOptions.find((option) => option.code === countryCode);
+    const country = allCountryOptions.find((option) => option.code === countryCode);
 
     if (!country) {
       setLocationEditorMessage("Select country from the list.");
@@ -710,6 +860,112 @@ export function EntryCreateDialog({
       setLocationEditorMessage(error instanceof Error ? error.message : "Failed to add location.");
     } finally {
       setIsSavingLocation(false);
+    }
+  }
+
+  async function addCustomCountry() {
+    const displayLabel = normalizeLocationCityInput(newCountryName);
+    const countryCode = String(newCountryCode || "").trim().toUpperCase();
+    const countryCodeAlpha3 = String(newCountryCodeAlpha3 || "").trim().toUpperCase();
+
+    if (!/^[A-Za-z][A-Za-z\s'-]{1,79}$/.test(displayLabel)) {
+      setCountryEditorMessage("Use English country name.");
+      return;
+    }
+    if (!/^[A-Z]{2}$/.test(countryCode)) {
+      setCountryEditorMessage("Country code must be Alpha-2 (e.g. ES).");
+      return;
+    }
+    if (!/^[A-Z]{3}$/.test(countryCodeAlpha3)) {
+      setCountryEditorMessage("Country code must be Alpha-3 (e.g. ESP).");
+      return;
+    }
+
+    try {
+      setIsSavingCountry(true);
+      const response = await fetch("/api/sea-brokerage-monitor/countries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+        },
+        body: JSON.stringify({
+          displayLabel,
+          countryCode,
+          countryCodeAlpha3,
+        }),
+      });
+      if (!response.ok) {
+        const text = (await response.text()) || "Failed to add country";
+        throw new Error(text);
+      }
+
+      const payload = (await response.json()) as { country?: CountryOption; duplicate?: boolean };
+      const country = payload.country;
+      if (!country) {
+        throw new Error("Invalid country payload.");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/countries"] });
+      setNewLocationCountryCode(country.code);
+      form.setValue("originCountry", country.code, { shouldValidate: true });
+      setNewCountryName("");
+      setNewCountryCode("");
+      setNewCountryCodeAlpha3("");
+      setIsAddingCountry(false);
+      setCountryEditorMessage(payload.duplicate ? "Country already existed and was selected." : "Country added.");
+    } catch (error) {
+      setCountryEditorMessage(error instanceof Error ? error.message : "Failed to add country.");
+    } finally {
+      setIsSavingCountry(false);
+    }
+  }
+
+  async function addCustomCommodity() {
+    const displayLabel = normalizeLocationCityInput(newCommodityName);
+    const code = String(newCommodityCode || "").trim().toLowerCase();
+
+    if (!/^[A-Za-z0-9][A-Za-z0-9\s%.,()'\/-]{1,79}$/.test(displayLabel)) {
+      setCommodityEditorMessage("Use English commodity name.");
+      return;
+    }
+
+    try {
+      setIsSavingCommodity(true);
+      const response = await fetch("/api/sea-brokerage-monitor/commodities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+        },
+        body: JSON.stringify({
+          displayLabel,
+          code: code || undefined,
+          group: newCommodityGroup,
+        }),
+      });
+      if (!response.ok) {
+        const text = (await response.text()) || "Failed to add commodity";
+        throw new Error(text);
+      }
+
+      const payload = (await response.json()) as { commodity?: Commodity; duplicate?: boolean };
+      const commodity = payload.commodity;
+      if (!commodity) {
+        throw new Error("Invalid commodity payload.");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/commodities"] });
+      form.setValue("commodity", commodity.code, { shouldValidate: true });
+      setNewCommodityName("");
+      setNewCommodityCode("");
+      setNewCommodityGroup("processed");
+      setIsAddingCommodity(false);
+      setCommodityEditorMessage(payload.duplicate ? "Commodity already existed and was selected." : "Commodity added.");
+    } catch (error) {
+      setCommodityEditorMessage(error instanceof Error ? error.message : "Failed to add commodity.");
+    } finally {
+      setIsSavingCommodity(false);
     }
   }
 
@@ -1006,7 +1262,7 @@ export function EntryCreateDialog({
                       onValueChange={field.onChange}
                       value={field.value}
                       onOpenChange={(open) => {
-                        if (!open) setPortSearch("");
+                        if (!open) setCommoditySearch("");
                       }}
                     >
                       <FormControl>
@@ -1015,13 +1271,77 @@ export function EntryCreateDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {commodityOptions.map((option) => (
+                        <div className="px-2 pb-2">
+                          <Input
+                            placeholder="Type commodity..."
+                            value={commoditySearch}
+                            onChange={(event) => setCommoditySearch(event.target.value)}
+                            className="h-8 text-xs"
+                            onKeyDown={(event) => event.stopPropagation()}
+                          />
+                        </div>
+                        {filteredCommodityOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
                             {option.displayLabel}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant={isAddingCommodity ? "outline" : "secondary"}
+                        className={
+                          isAddingCommodity
+                            ? undefined
+                            : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
+                        }
+                        size="sm"
+                        onClick={() => {
+                          setIsAddingCommodity((prev) => !prev);
+                          setCommodityEditorMessage(null);
+                        }}
+                      >
+                        {isAddingCommodity ? "Cancel" : "Add commodity"}
+                      </Button>
+                    </div>
+                    {isAddingCommodity ? (
+                      <div className="mt-2 grid gap-2 md:grid-cols-2">
+                        <Input
+                          placeholder="Commodity name in English"
+                          value={newCommodityName}
+                          onChange={(event) => setNewCommodityName(event.target.value)}
+                        />
+                        <Input
+                          placeholder="Code (optional, e.g. sunmeal)"
+                          value={newCommodityCode}
+                          onChange={(event) => setNewCommodityCode(event.target.value)}
+                        />
+                        <Select
+                          value={newCommodityGroup}
+                          onValueChange={(value) =>
+                            setNewCommodityGroup(value as "grains" | "oilseeds" | "processed")
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Commodity group" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="grains">Grains</SelectItem>
+                            <SelectItem value="oilseeds">Oilseeds</SelectItem>
+                            <SelectItem value="processed">Processed products</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="md:col-span-2">
+                          <Button type="button" size="sm" onClick={addCustomCommodity}>
+                            {isSavingCommodity ? "Saving..." : "Save commodity"}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
+                    {commodityEditorMessage ? (
+                      <div className="mt-1 text-[11px] text-muted-foreground">{commodityEditorMessage}</div>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1039,7 +1359,7 @@ export function EntryCreateDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {countryOptions.map((option) => (
+                        {allCountryOptions.map((option) => (
                           <SelectItem key={option.code} value={option.code}>
                             {option.displayLabel}
                           </SelectItem>
@@ -1077,9 +1397,74 @@ export function EntryCreateDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Quantity, MT</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" step="1" {...field} />
-                    </FormControl>
+                    <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="quantityPreset"
+                        render={({ field: presetField }) => (
+                          <Select
+                            onValueChange={presetField.onChange}
+                            value={presetField.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Quantity mode" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="single">Exact quantity</SelectItem>
+                              <SelectItem value="range">Range (from-to)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {values.quantityPreset === "range" ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          <FormField
+                            control={form.control}
+                            name="quantityFromMt"
+                            render={({ field: rangeField }) => (
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  placeholder="From"
+                                  value={rangeField.value ?? ""}
+                                  onChange={(event) =>
+                                    rangeField.onChange(
+                                      event.target.value === "" ? undefined : Number(event.target.value),
+                                    )
+                                  }
+                                />
+                              </FormControl>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="quantityToMt"
+                            render={({ field: rangeField }) => (
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  placeholder="To"
+                                  value={rangeField.value ?? ""}
+                                  onChange={(event) =>
+                                    rangeField.onChange(
+                                      event.target.value === "" ? undefined : Number(event.target.value),
+                                    )
+                                  }
+                                />
+                              </FormControl>
+                            )}
+                          />
+                        </div>
+                      ) : (
+                        <FormControl>
+                          <Input type="number" min="0" step="1" {...field} />
+                        </FormControl>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1178,13 +1563,61 @@ export function EntryCreateDialog({
                             <SelectValue placeholder="Country" />
                           </SelectTrigger>
                           <SelectContent>
-                            {countryOptions.map((option) => (
+                            {allCountryOptions.map((option) => (
                               <SelectItem key={option.code} value={option.code}>
                                 {option.displayLabel}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        <div className="md:col-span-2 flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant={isAddingCountry ? "outline" : "secondary"}
+                            className={
+                              isAddingCountry
+                                ? undefined
+                                : "border-primary/60 bg-primary/20 text-primary hover:bg-primary/30"
+                            }
+                            size="sm"
+                            onClick={() => {
+                              setIsAddingCountry((prev) => !prev);
+                              setCountryEditorMessage(null);
+                            }}
+                          >
+                            {isAddingCountry ? "Cancel country editor" : "Add country"}
+                          </Button>
+                        </div>
+                        {isAddingCountry ? (
+                          <>
+                            <Input
+                              placeholder="Country name in English"
+                              value={newCountryName}
+                              onChange={(event) => setNewCountryName(event.target.value)}
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Alpha-2 (UA)"
+                                value={newCountryCode}
+                                maxLength={2}
+                                onChange={(event) => setNewCountryCode(event.target.value.toUpperCase())}
+                              />
+                              <Input
+                                placeholder="Alpha-3 (UKR)"
+                                value={newCountryCodeAlpha3}
+                                maxLength={3}
+                                onChange={(event) =>
+                                  setNewCountryCodeAlpha3(event.target.value.toUpperCase())
+                                }
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <Button type="button" size="sm" onClick={addCustomCountry}>
+                                {isSavingCountry ? "Saving..." : "Save country"}
+                              </Button>
+                            </div>
+                          </>
+                        ) : null}
                         <div className="md:col-span-2">
                           <Button type="button" size="sm" onClick={addCustomLocation}>
                             {isSavingLocation ? "Saving..." : "Save location"}
@@ -1194,6 +1627,9 @@ export function EntryCreateDialog({
                     ) : null}
                     {locationEditorMessage ? (
                       <div className="mt-1 text-[11px] text-muted-foreground">{locationEditorMessage}</div>
+                    ) : null}
+                    {countryEditorMessage ? (
+                      <div className="mt-1 text-[11px] text-muted-foreground">{countryEditorMessage}</div>
                     ) : null}
                     <FormMessage />
                   </FormItem>

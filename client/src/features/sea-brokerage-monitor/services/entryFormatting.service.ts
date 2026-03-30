@@ -104,6 +104,17 @@ export function formatEntryQuantityCompact(
 }
 
 export function formatEntryQuantityTape(entry: BrokerageEntry) {
+  if (
+    (entry.quantityMt === null || entry.quantityMt === undefined) &&
+    entry.volumeFrom !== null &&
+    entry.volumeTo !== null &&
+    entry.volumeFrom !== entry.volumeTo
+  ) {
+    const left = `${entry.volumeFrom}`.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+    const right = `${entry.volumeTo}`.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+    return `${left}-${right}`;
+  }
+
   const quantity =
     entry.quantityMt !== null && entry.quantityMt !== undefined
       ? entry.quantityMt

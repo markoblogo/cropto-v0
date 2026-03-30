@@ -10,12 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  commodityOptions,
-  countryOptions,
-  portOptions,
+  commodityOptions as defaultCommodityOptions,
+  countryOptions as defaultCountryOptions,
+  portOptions as defaultPortOptions,
 } from "../mock/dictionaries";
-import { getPortPlaceDisplayLabel } from "../services/displayStandards";
-import type { FeedFilterState } from "../types";
+import { getCountryDisplayLabel } from "../services/displayStandards";
+import type { Commodity, CountryOption, FeedFilterState, PortOption } from "../types";
 
 interface MonitorToolbarProps {
   filters: FeedFilterState;
@@ -28,6 +28,9 @@ interface MonitorToolbarProps {
   onSavePreset?: () => void;
   onSetDefaultPreset?: () => void;
   onDeletePreset?: () => void;
+  commodityOptions?: Commodity[];
+  countryOptions?: CountryOption[];
+  deliveryPlaceOptions?: PortOption[];
 }
 
 export function MonitorToolbar({
@@ -41,6 +44,9 @@ export function MonitorToolbar({
   onSavePreset,
   onSetDefaultPreset,
   onDeletePreset,
+  commodityOptions = defaultCommodityOptions,
+  countryOptions = defaultCountryOptions,
+  deliveryPlaceOptions = defaultPortOptions,
 }: MonitorToolbarProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 px-1.5 py-1 shadow-sm sm:px-2.5 sm:py-1.5">
@@ -165,9 +171,9 @@ export function MonitorToolbar({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All delivery places</SelectItem>
-              {portOptions.map((port) => (
+              {deliveryPlaceOptions.map((port) => (
                 <SelectItem key={port.code} value={port.code}>
-                  {getPortPlaceDisplayLabel(port.code)}
+                  {`${port.displayLabel}, ${getCountryDisplayLabel(port.countryCode)}`}
                 </SelectItem>
               ))}
             </SelectContent>

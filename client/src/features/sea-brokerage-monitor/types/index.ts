@@ -1,13 +1,6 @@
 export type EntryType = "bid" | "offer" | "trade";
 
-export type CommodityCode =
-  | "corn"
-  | "wheat_115"
-  | "wheat_125"
-  | "barley"
-  | "sunflower"
-  | "soybean"
-  | "rapeseed";
+export type CommodityCode = string;
 
 export type Basis = "FOB" | "CIF" | "CPT" | "DAP" | "FCA";
 
@@ -34,7 +27,7 @@ export interface Commodity {
   code: CommodityCode;
   displayLabel: string;
   compactDisplay: string;
-  group?: "grains" | "oilseeds";
+  group?: "grains" | "oilseeds" | "processed";
   defaultVolumeUnit?: VolumeUnit;
 }
 
@@ -154,7 +147,7 @@ export interface MatchLike {
 export interface FeedFilterState {
   // This reflects the live filter UI exactly, so the view state stays strongly typed.
   entryType: EntryType | "all";
-  commodity: CommodityCode | "all";
+  commodity: string | "all";
   basis: Basis | "all";
   brokerProfileId: string | "all";
   originCountry: string | "all";

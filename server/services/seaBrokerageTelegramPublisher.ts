@@ -154,6 +154,17 @@ function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) 
 }
 
 function formatQuantityLine(entry: SeaBrokerageEntryRow) {
+  if (
+    (entry.quantityMt === null || entry.quantityMt === undefined) &&
+    entry.volumeFrom !== null &&
+    entry.volumeTo !== null &&
+    entry.volumeFrom !== entry.volumeTo
+  ) {
+    const fromLabel = Number(entry.volumeFrom).toLocaleString("en-US").replace(/,/g, "'");
+    const toLabel = Number(entry.volumeTo).toLocaleString("en-US").replace(/,/g, "'");
+    return `${fromLabel}-${toLabel} MT`;
+  }
+
   const quantity = entry.quantityMt ?? entry.volumeTo ?? entry.volumeFrom;
   const tolerance = entry.tolerancePct ?? 0;
   const quantityLabel = Number(quantity).toLocaleString("en-US").replace(/,/g, "'");

@@ -182,6 +182,18 @@ const seaBrokerageCompanyCreateSchema = z.object({
   displayLabel: z.string().trim().min(2).max(120),
 });
 
+const seaBrokerageCountryCreateSchema = z.object({
+  displayLabel: z.string().trim().min(2).max(80),
+  countryCode: z.string().trim().length(2),
+  countryCodeAlpha3: z.string().trim().length(3),
+});
+
+const seaBrokerageCommodityCreateSchema = z.object({
+  displayLabel: z.string().trim().min(2).max(80),
+  code: z.string().trim().min(2).max(40).optional(),
+  group: z.enum(["grains", "oilseeds", "processed"]).optional(),
+});
+
 type SeaBrokerageCustomLocation = {
   code: string;
   displayLabel: string;
@@ -193,6 +205,8 @@ type SeaBrokerageCustomLocation = {
 
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
+const SEA_BROKERAGE_COUNTRIES_KEY = "sea_brokerage_countries_v1";
+const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
@@ -425,6 +439,20 @@ type SeaBrokerageCompanyDictionaryEntry = {
   compactDisplay: string;
 };
 
+type SeaBrokerageCountryDictionaryEntry = {
+  code: string;
+  displayLabel: string;
+  countryCodeAlpha3: string;
+  compactDisplay: string;
+};
+
+type SeaBrokerageCommodityDictionaryEntry = {
+  code: string;
+  displayLabel: string;
+  compactDisplay: string;
+  group?: "grains" | "oilseeds" | "processed";
+};
+
 function buildCompanyId(label: string) {
   const baseSlug = slugifyLocationLabel(label) || "company";
   return `company_${baseSlug}`;
@@ -451,6 +479,179 @@ async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionar
   } catch {
     return [];
   }
+}
+
+async function readSeaBrokerageCountries(): Promise<SeaBrokerageCountryDictionaryEntry[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_COUNTRIES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageCountryDictionaryEntry[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.code === "string" &&
+          typeof item.displayLabel === "string" &&
+          typeof item.countryCodeAlpha3 === "string" &&
+          typeof item.compactDisplay === "string",
+      )
+      .map((item) => ({
+        code: String(item.code).trim().toUpperCase(),
+        displayLabel: normalizeCityLabel(item.displayLabel),
+        countryCodeAlpha3: String(item.countryCodeAlpha3).trim().toUpperCase(),
+        compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function readSeaBrokerageCommodities(): Promise<SeaBrokerageCommodityDictionaryEntry[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_COMMODITIES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageCommodityDictionaryEntry[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.code === "string" &&
+          typeof item.displayLabel === "string" &&
+          typeof item.compactDisplay === "string",
+      )
+      .map((item) => ({
+        code: String(item.code).trim(),
+        displayLabel: normalizeCityLabel(item.displayLabel),
+        compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+        group:
+          item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
+            ? item.group
+            : undefined,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function countryAlpha3FromCode(code: string) {
+  const normalized = code.toUpperCase();
+  if (normalized === "UA") return "UKR";
+  if (normalized === "MD") return "MDA";
+  if (normalized === "BG") return "BGR";
+  if (normalized === "EG") return "EGY";
+  if (normalized === "IL") return "ISR";
+  if (normalized === "CY") return "CYP";
+  if (normalized === "LB") return "LBN";
+  if (normalized === "ES") return "ESP";
+  if (normalized === "IT") return "ITA";
+  if (normalized === "NL") return "NLD";
+  if (normalized === "RO") return "ROU";
+  if (normalized === "TR") return "TUR";
+  return "";
+}
+
+function deriveSeaBrokerageCountriesFromEntries(
+  entries: SeaBrokerageEntryRow[],
+): SeaBrokerageCountryDictionaryEntry[] {
+  const byCode = new Map<string, SeaBrokerageCountryDictionaryEntry>();
+  for (const entry of entries) {
+    const candidates = [
+      { code: entry.originCountryCode, label: entry.originCountry },
+      { code: entry.destinationCountryCode, label: entry.destinationCountry },
+    ];
+    for (const candidate of candidates) {
+      const code = String(candidate.code || "").trim().toUpperCase();
+      const label = normalizeCityLabel(String(candidate.label || ""));
+      if (!/^[A-Z]{2}$/.test(code) || !label) continue;
+      if (!byCode.has(code)) {
+        const alpha3 = countryAlpha3FromCode(code) || `${code}X`;
+        byCode.set(code, {
+          code,
+          displayLabel: label,
+          countryCodeAlpha3: alpha3,
+          compactDisplay: alpha3,
+        });
+      }
+    }
+  }
+  return Array.from(byCode.values());
+}
+
+function mergeSeaBrokerageCountries(
+  left: SeaBrokerageCountryDictionaryEntry[],
+  right: SeaBrokerageCountryDictionaryEntry[],
+): SeaBrokerageCountryDictionaryEntry[] {
+  const byCode = new Map<string, SeaBrokerageCountryDictionaryEntry>();
+  for (const item of [...left, ...right]) {
+    const code = String(item.code || "").trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(code)) continue;
+    if (!byCode.has(code)) {
+      byCode.set(code, {
+        code,
+        displayLabel: normalizeCityLabel(item.displayLabel),
+        countryCodeAlpha3: String(item.countryCodeAlpha3 || "").trim().toUpperCase(),
+        compactDisplay: String(item.compactDisplay || "").trim().toUpperCase(),
+      });
+    }
+  }
+  return Array.from(byCode.values()).sort((a, b) =>
+    a.displayLabel.localeCompare(b.displayLabel),
+  );
+}
+
+function buildCommodityCode(value: string) {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+  return slug || `commodity_${createHash("md5").update(value).digest("hex").slice(0, 8)}`;
+}
+
+function deriveSeaBrokerageCommoditiesFromEntries(
+  entries: SeaBrokerageEntryRow[],
+): SeaBrokerageCommodityDictionaryEntry[] {
+  const byCode = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+  for (const entry of entries) {
+    const code = String(entry.commodity || "").trim();
+    const label = normalizeCityLabel(String(entry.commodityLabel || ""));
+    if (!code || !label) continue;
+    if (!byCode.has(code)) {
+      byCode.set(code, {
+        code,
+        displayLabel: label,
+        compactDisplay: label.toUpperCase(),
+        group: "processed",
+      });
+    }
+  }
+  return Array.from(byCode.values());
+}
+
+function mergeSeaBrokerageCommodities(
+  left: SeaBrokerageCommodityDictionaryEntry[],
+  right: SeaBrokerageCommodityDictionaryEntry[],
+): SeaBrokerageCommodityDictionaryEntry[] {
+  const byCode = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+  for (const item of [...left, ...right]) {
+    const code = String(item.code || "").trim();
+    if (!code) continue;
+    if (!byCode.has(code)) {
+      byCode.set(code, {
+        code,
+        displayLabel: normalizeCityLabel(item.displayLabel),
+        compactDisplay: String(item.compactDisplay || "").trim().toUpperCase(),
+        group:
+          item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
+            ? item.group
+            : "processed",
+      });
+    }
+  }
+  return Array.from(byCode.values()).sort((a, b) =>
+    a.displayLabel.localeCompare(b.displayLabel),
+  );
 }
 
 function buildSeaBrokerageCompanyEntry(label: string): SeaBrokerageCompanyDictionaryEntry {
@@ -8509,6 +8710,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error listing sea brokerage custom locations:", error);
       return res.status(500).json({ error: "Failed to list custom locations" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/countries", async (_req, res) => {
+    try {
+      const [savedCountries, entries] = await Promise.all([
+        readSeaBrokerageCountries(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const derivedCountries = deriveSeaBrokerageCountriesFromEntries(entries);
+      const countries = mergeSeaBrokerageCountries(savedCountries, derivedCountries);
+      return res.json({ countries });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage countries:", error);
+      return res.status(500).json({ error: "Failed to list countries" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/countries", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error: "Broker is not authorized to add countries.",
+        });
+      }
+
+      const parsed = seaBrokerageCountryCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const label = normalizeCityLabel(parsed.data.displayLabel);
+      if (!/^[A-Za-z][A-Za-z\s'-]{1,79}$/.test(label)) {
+        return res.status(400).json({
+          error: "Country name must use English letters and can include spaces, apostrophe, or hyphen.",
+        });
+      }
+
+      const code = parsed.data.countryCode.toUpperCase();
+      const countryCodeAlpha3 = parsed.data.countryCodeAlpha3.toUpperCase();
+      if (!/^[A-Z]{2}$/.test(code) || !/^[A-Z]{3}$/.test(countryCodeAlpha3)) {
+        return res.status(400).json({ error: "Invalid country code format." });
+      }
+
+      const [savedCountries, entries] = await Promise.all([
+        readSeaBrokerageCountries(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const current = mergeSeaBrokerageCountries(
+        savedCountries,
+        deriveSeaBrokerageCountriesFromEntries(entries),
+      );
+
+      const duplicate = current.find(
+        (item) =>
+          item.code === code ||
+          item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+      );
+      if (duplicate) {
+        return res.status(200).json({ country: duplicate, duplicate: true });
+      }
+
+      const created: SeaBrokerageCountryDictionaryEntry = {
+        code,
+        displayLabel: label,
+        countryCodeAlpha3,
+        compactDisplay: countryCodeAlpha3,
+      };
+
+      const next = mergeSeaBrokerageCountries(savedCountries, [created]);
+      await storage.upsertAppSetting(SEA_BROKERAGE_COUNTRIES_KEY, JSON.stringify(next));
+      return res.status(201).json({ country: created, duplicate: false });
+    } catch (error: any) {
+      console.error("Error creating sea brokerage country:", error);
+      return res.status(500).json({ error: "Failed to create country" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/commodities", async (_req, res) => {
+    try {
+      const [savedCommodities, entries] = await Promise.all([
+        readSeaBrokerageCommodities(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const derivedCommodities = deriveSeaBrokerageCommoditiesFromEntries(entries);
+      const commodities = mergeSeaBrokerageCommodities(savedCommodities, derivedCommodities);
+      return res.json({ commodities });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage commodities:", error);
+      return res.status(500).json({ error: "Failed to list commodities" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/commodities", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error: "Broker is not authorized to add commodities.",
+        });
+      }
+
+      const parsed = seaBrokerageCommodityCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const label = normalizeCityLabel(parsed.data.displayLabel);
+      if (!/^[A-Za-z0-9][A-Za-z0-9\s%.,()'\/-]{1,79}$/.test(label)) {
+        return res.status(400).json({
+          error: "Commodity name must use English letters/numbers and basic punctuation.",
+        });
+      }
+
+      const requestedCode = String(parsed.data.code || "").trim().toLowerCase();
+      const code = buildCommodityCode(requestedCode || label);
+      const group = parsed.data.group || "processed";
+
+      const [savedCommodities, entries] = await Promise.all([
+        readSeaBrokerageCommodities(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const current = mergeSeaBrokerageCommodities(
+        savedCommodities,
+        deriveSeaBrokerageCommoditiesFromEntries(entries),
+      );
+
+      const duplicate = current.find(
+        (item) =>
+          item.code === code ||
+          item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+      );
+      if (duplicate) {
+        return res.status(200).json({ commodity: duplicate, duplicate: true });
+      }
+
+      const created: SeaBrokerageCommodityDictionaryEntry = {
+        code,
+        displayLabel: label,
+        compactDisplay: label.toUpperCase(),
+        group,
+      };
+
+      const next = mergeSeaBrokerageCommodities(savedCommodities, [created]);
+      await storage.upsertAppSetting(SEA_BROKERAGE_COMMODITIES_KEY, JSON.stringify(next));
+      return res.status(201).json({ commodity: created, duplicate: false });
+    } catch (error: any) {
+      console.error("Error creating sea brokerage commodity:", error);
+      return res.status(500).json({ error: "Failed to create commodity" });
     }
   });
 

@@ -125,12 +125,12 @@ export const portOptions: PortOption[] = [
   { code: "tarragona", displayLabel: "Tarragona", countryCode: "ES", countryCodeAlpha3: "ESP", compactDisplay: "TARRAGONA" },
 ];
 
-export const commodityOptionMap: Record<CommodityCode, Commodity> = commodityOptions.reduce(
+export const commodityOptionMap: Record<string, Commodity> = commodityOptions.reduce(
   (acc, commodity) => {
     acc[commodity.code] = commodity;
     return acc;
   },
-  {} as Record<CommodityCode, Commodity>,
+  {} as Record<string, Commodity>,
 );
 
 export const countryOptionMap: Record<string, CountryOption> = countryOptions.reduce(
