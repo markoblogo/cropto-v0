@@ -1,38 +1,34 @@
 {
-  "generatedAt": "2026-03-30T11:21:22.433047+00:00",
+  "generatedAt": "2026-03-30T13:19:03.932914+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-30T11:15:18.672479+00:00",
+  "sourceUpdatedAt": "2026-03-30T13:12:32.241597+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Global grains and oilseeds markets remain mixed with no significant price shifts reported yesterday. Wheat prices are supported by geopolitical tensions in the Middle East and rising crude oil prices, while soybeans and corn have rebounded from recent losses. Fertilizer shortages, especially in Australia, are causing concerns over reduced wheat plantings, adding supply uncertainty. What changed vs previous comparable period: Compared to the day before, there were no new headline events or price spikes, but ongoing factors such as Middle East tensions continue to underpin crude oil and grain prices. Demand for wheat remains strong in Australian ports, and market participants are cautious due to weather risks and input cost inflation. Actionable implications for trading/brokerage: Traders should monitor key support levels in wheat, corn, and soybeans amid potential sector rotation driven by energy price volatility. Fertilizer price trends will be critical for anticipating acreage shifts and supply tightness in coming quarters. Hedging strategies should consider geopolitical risk premiums and input cost pressures. \n\nKey facts:\n- Wheat prices in Victoria and Western Australia accounted for over 80% of traded grain volumes on ClearGrain Exchange on March 30.\n- Fertilizer prices have risen approximately 70%, impacting planting decisions, notably in Australia where wheat acreage is expected to decline.\n- Chicago wheat futures rose up to 1.2% early on March 30 due to Middle East conflict escalation and weather concerns.\n- Soybean and corn prices rebounded on March 30, supported by higher crude oil prices linked to geopolitical tensions.\n- The Australian dollar weakened by 0.39 cents against the US dollar on March 30, pressured by safe-haven demand and rising oil prices.\n- Ethanol and crush margins are improving, with THG quota prices rising from €250/t in 2025 to €430/t in Q3 2026, supporting biofuel-related demand for grains.",
+    "text": "General situation: Global grains and oilseeds markets showed mixed but stable price movements yesterday, with wheat, corn, and soybeans modestly supported by geopolitical tensions in the Middle East and energy price gains. Despite these factors, wheat prices remain under pressure due to ample global supplies and subdued government buying interest. Australian wheat planting is declining amid rising fertilizer costs and supply concerns, while U.S. farmers are shifting acreage from corn and wheat to soybeans due to input cost inflation and profitability challenges. What changed vs previous comparable period: Market activity increased notably with more trading volumes and bids for wheat in Australian ports, reflecting localized demand despite global surplus. Prices for Chicago wheat and soybeans rebounded from prior session losses, driven by escalating U.S.-Israel-Iran conflict and higher crude oil prices, contrasting with a quieter previous day. Actionable implications for trading/brokerage: Traders should monitor geopolitical developments closely as they continue to influence energy and grain prices. The shift in U.S. planting intentions suggests potential tightening in corn and wheat supplies later in the season, supporting selective long positions. Australian wheat demand and export bids may offer near-term trading opportunities amid fertilizer-driven production cuts. \n\nKey facts:\n- Chicago wheat futures rose up to 1.2% on March 30, supported by Middle East tensions and weather risks.\n- Australian wheat trading saw over 14,970 mt transacted across 21 grades, with wheat comprising over 80% of volumes in Victoria and Western Australia.\n- U.S. spring wheat plantings are at their lowest since 1970, with farmers favoring soybeans due to fertilizer and fuel cost pressures.\n- May 2026 wheat futures remained near $5.99½, supported by higher crude oil prices despite mixed U.S. weather outlooks.\n- Brazilian corn FOB Santos price was $112.72/mt as of March 12, with soybeans and wheat prices stable around $662.90/mt as of mid-March.\n- Energy-driven biofuel demand and geopolitical risks are adding upward pressure on global food commodity prices.",
     "chart": {
       "type": "event_mix",
-      "title": "Drivers of Grain Market Dynamics on 2026-03-30",
+      "title": "Drivers of Grain & Oilseed Market Dynamics on 2026-03-30",
       "points": [
         {
           "label": "Geopolitical Risk",
+          "value": 35
+        },
+        {
+          "label": "Energy Prices",
           "value": 30
         },
         {
-          "label": "Input Costs (Fertilizer/Diesel)",
-          "value": 25
-        },
-        {
-          "label": "Demand Strength",
+          "label": "Fertilizer Costs",
           "value": 20
         },
         {
-          "label": "Weather/Production Risk",
+          "label": "Demand & Trading Activity",
           "value": 15
-        },
-        {
-          "label": "Currency Movements",
-          "value": 10
         }
       ],
       "series": [
@@ -41,23 +37,19 @@
           "points": [
             {
               "label": "Geopolitical Risk",
+              "value": 35
+            },
+            {
+              "label": "Energy Prices",
               "value": 30
             },
             {
-              "label": "Input Costs (Fertilizer/Diesel)",
-              "value": 25
-            },
-            {
-              "label": "Demand Strength",
+              "label": "Fertilizer Costs",
               "value": 20
             },
             {
-              "label": "Weather/Production Risk",
+              "label": "Demand & Trading Activity",
               "value": 15
-            },
-            {
-              "label": "Currency Movements",
-              "value": 10
             }
           ]
         }
@@ -72,26 +64,26 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на українському ринку зернових та олійних 30 березня 2026 року характеризується зниженням виробництва соняшникової олії на 10% у сезоні 2025/2026, що може впливати на пропозицію та ціни. Порівняно з попереднім днем, активність інформаційного потоку зменшилася, але ціни на пальне в Україні продовжують зростати, дизель досяг 91 грн/л, що створює додатковий тиск на логістику та собівартість аграрної продукції. Ціни на кукурудзу на FOB Чорноморському порту залишаються стабільними в діапазоні 224,5-228 USD/т, що свідчить про збереження попиту на експорт. Відсутність суттєвих змін у закупівельних цінах зерна свідчить про стабільність ринку, але високі ціни на нафту та пальне можуть негативно впливати на агросектор у середньостроковій перспективі. Порівняно з попереднім днем, зменшилася кількість інформаційних сигналів, що може свідчити про тимчасове зниження волатильності на ринку.",
+    "text": "Загальна ситуація на українському ринку олійних культур демонструє суттєве зниження виробництва соняшникової олії у маркетинговому році 2025/26, що становить 4,6 млн тонн, на 10% менше, ніж у попередньому сезоні. Це пов’язано зі зниженням врожайності на 16,8% — найнижчим показником за останні 10 років, а також скороченням площі збирання на 7,8%. Зниження пропозиції соняшникової олії з України призводить до посилення попиту на пальмову, соєву та канолову олії, що може спричинити подальше зростання цін на рослинні олії у світі. На ринку кукурудзи ціни FOB у Чорноморському регіоні тримаються в діапазоні 224,5-228 USD/т, що свідчить про стабільний попит і пропозицію. Для трейдерів важливо враховувати потенційне подорожчання олійних культур та можливу волатильність через скорочення виробництва, а також моніторити цінові пропозиції на кукурудзу для оптимізації операцій.",
     "chart": {
       "type": "event_mix",
-      "title": "Фактори впливу на ринок 30.03.2026",
+      "title": "Основні драйвери ринку олійних та зернових (30 березня 2026)",
       "points": [
         {
           "label": "Логістика",
-          "value": 7
+          "value": 20
         },
         {
           "label": "Попит",
-          "value": 5
+          "value": 35
         },
         {
           "label": "Ціноутворення",
-          "value": 8
+          "value": 30
         },
         {
           "label": "Ризики виконання",
-          "value": 4
+          "value": 15
         }
       ],
       "series": [
@@ -100,19 +92,19 @@
           "points": [
             {
               "label": "Логістика",
-              "value": 7
+              "value": 20
             },
             {
               "label": "Попит",
-              "value": 5
+              "value": 35
             },
             {
               "label": "Ціноутворення",
-              "value": 8
+              "value": 30
             },
             {
               "label": "Ризики виконання",
-              "value": 4
+              "value": 15
             }
           ]
         }

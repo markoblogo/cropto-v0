@@ -1,137 +1,74 @@
 [
   {
-    "id": "R3",
-    "title": "The Black Sea Brief (July 4, 2024)",
-    "url": "https://www.reddit.com/r/Commodities/comments/1etoq3z",
-    "subreddit": "Commodities",
-    "date": "2024-08-16",
-    "why_relevant": "Discusses Black Sea wheat spot prices and export expectations.",
-    "relevance": 0.98
+    "id": "R4",
+    "title": "\u0427\u0438\u043c \u043a\u0440\u0430\u0449\u0435 \u0437\u0430\u043f\u0440\u0430\u0432\u043b\u044f\u0442\u0438 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043a\u0430\u043f\u0443\u0441\u0442\u0438?",
+    "url": "https://www.reddit.com/r/food_ua/comments/1rbjbyy/%D1%87%D0%B8%D0%BC_%D0%BA%D1%80%D0%B0%D1%89%D0%B5_%D0%B7%D0%B0%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D1%8F%D1%82%D0%B8_%D1%81%D0%B0%D0%BB%D0%B0%D1%82_%D0%B7_%D0%BA%D0%B0%D0%BF%D1%83%D1%81%D1%82%D0%B8/",
+    "subreddit": "food_ua",
+    "date": "2026-02-22",
+    "why_relevant": "Includes explicit mention of sunflower oil in comments; relevant to sunflower oil discussion in Ukraine.",
+    "relevance": 0.74
   },
   {
     "id": "R1",
-    "title": "The Black Sea Brief (September 26, 2024)",
-    "url": "https://www.reddit.com/r/Commodities/comments/1fq8olj",
-    "subreddit": "Commodities",
-    "date": "2024-09-26",
-    "why_relevant": "Direct discussion of Black Sea wheat prices and export flows.",
-    "relevance": 0.99
-  },
-  {
-    "id": "R5",
-    "title": "The Black Sea Brief (April 3, 2024)",
-    "url": "https://www.reddit.com/r/Commodities/comments/1bv6v4h",
-    "subreddit": "Commodities",
-    "date": "2024-04-03",
-    "why_relevant": "Contains Black Sea wheat price levels and market discussion tied to exports.",
-    "relevance": 0.97
+    "title": "\u041f\u0456\u0434\u043f\u0440\u0438\u0454\u043c\u0446\u0456, \u044f\u043a \u0432\u0438\u0436\u0438\u0432\u0430\u0442\u0438\u043c\u0435\u043c\u043e?",
+    "url": "https://www.reddit.com/r/reddit_ukr/comments/1r37el5/%D0%BF%D1%96%D0%B4%D0%BF%D1%80%D0%B8%D1%94%D0%BC%D1%86%D1%96_%D1%8F%D0%BA_%D0%B2%D0%B8%D0%B6%D0%B8%D0%B2%D0%B0%D1%82%D0%B8%D0%BC%D0%B5%D0%BC%D0%BE/",
+    "subreddit": "eddit_ukr",
+    "date": "2026-02-13",
+    "why_relevant": "Contains discussion of logistics in Ukraine; likely adjacent to supply-chain issues affecting goods such as sunflower oil.",
+    "relevance": 0.68
   },
   {
     "id": "R2",
-    "title": "The Black Sea Brief (August 29, 2024)",
-    "url": "https://www.reddit.com/r/Commodities/comments/1f4sxis",
-    "subreddit": "Commodities",
-    "date": "2024-08-30",
-    "why_relevant": "Covers Black Sea wheat prices, Ukraine/Russia export flows, and tenders.",
-    "relevance": 0.98
+    "title": "\u041f\u043e\u044f\u0441\u043d\u0456\u0442\u044c \u044f\u043a \u0442\u0430\u043a\u0435 \u0432\u0438\u0445\u043e\u0434\u0438\u0442\u044c!?(\u041e\u043f\u0438\u0441)",
+    "url": "https://www.reddit.com/r/reddit_ukr/comments/1qartc4/%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D1%96%D1%82%D1%8C_%D1%8F%D0%BA_%D1%82%D0%B0%D0%BA%D0%B5_%D0%B2%D0%B8%D1%85%D0%BE%D0%B4%D0%B8%D1%82%D1%8C%D0%BE%D0%BF%D0%B8%D1%81/",
+    "subreddit": "eddit_ukr",
+    "date": "2026-01-12",
+    "why_relevant": "Mentions a tanker of sunflower oil in Dnipro and discussion around it, which is directly related to sunflower oil as a logistics/transport topic in Ukraine.",
+    "relevance": 0.79
   },
   {
-    "id": "R4",
-    "title": "The Black Sea Brief (June 27, 2024)",
-    "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1",
-    "subreddit": "Commodities",
-    "date": "2024-06-28",
-    "why_relevant": "Focuses on Black Sea wheat offers, FOB pricing, and export dynamics.",
-    "relevance": 0.98
+    "id": "R5",
+    "title": "\u041a\u0443\u0440\u043a\u0430 \u0437 \u0430\u0440\u0430\u0445\u0456\u0441\u043e\u043c \u0442\u0430 \u043e\u0432\u043e\u0447\u0430\u043c\u0438",
+    "url": "https://www.reddit.com/r/food_ua/comments/1r5span/%D0%BA%D1%83%D1%80%D0%BA%D0%B0_%D0%B7_%D0%B0%D1%80%D0%B0%D1%85%D1%96%D1%81%D0%BE%D0%BC_%D1%82%D0%B0_%D0%BE%D0%B2%D0%BE%D1%87%D0%B0%D0%BC%D0%B8/",
+    "subreddit": "food_ua",
+    "date": "2026-02-15",
+    "why_relevant": "Recipe discussion mentions sunflower oil as an ingredient, relevant but less directly tied to logistics.",
+    "relevance": 0.61
+  },
+  {
+    "id": "R3",
+    "title": "\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?",
+    "url": "https://www.reddit.com/r/reddit_ukr/comments/1kln9eh/%D1%87%D0%BE%D0%BC%D1%83_%D0%B2_%D0%B2_%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%96_%D1%83_%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%D1%96_%D0%BD%D0%B5%D0%BC%D0%B0%D1%94_%D1%80%D1%96%D0%BF%D0%B0%D0%BA%D0%BE%D0%B2%D0%BE%D1%85/",
+    "subreddit": "eddit_ukr",
+    "date": "2025-05-13",
+    "why_relevant": "Discusses cooking oils in Ukraine and compares rapeseed oil with sunflower oil, useful adjacent discussion for sunflower oil supply and availability.",
+    "relevance": 0.83
   },
   {
     "id": "R6",
-    "title": "The Black Sea Brief (March 20, 2024)",
-    "url": "https://www.reddit.com/r/Commodities/comments/1bjrtbm",
-    "subreddit": "Commodities",
-    "date": "2024-03-20",
-    "why_relevant": "Discusses Black Sea wheat prices and export demand.",
-    "relevance": 0.97
+    "title": "\u042f\u043a\u0449\u043e \u0432\u0438 \u0434\u0443\u043c\u0430\u043b\u0438 \u043d\u0430\u0434 \u043f\u043e\u043a\u0443\u043f\u043a\u043e\u044e \u043d\u0430\u0432\u0456\u0442\u044c \u0441\u0430\u043c\u043e\u0457 \u0434\u0435\u0448\u0435\u0432\u043e\u0457 \u0444\u0440\u0438\u0442\u044e\u0440\u043d\u0438\u0446\u0456 - \u0411\u0435\u0440\u0456\u0442\u044c! \u0421\u043c\u0430\u043a\u043e\u0442\u0430!",
+    "url": "https://www.reddit.com/r/food_ua/comments/1rdr860/%D1%8F%D0%BA%D1%89%D0%BE_%D0%B2%D0%B8_%D0%B4%D1%83%D0%BC%D0%B0%D0%BB%D0%B8_%D0%BD%D0%B0%D0%B4_%D0%BF%D0%BE%D0%BA%D1%83%D0%BF%D0%BA%D0%BE%D1%8E_%D0%BD%D0%B0%D0%B2%D1%96%D1%82%D1%8C_%D1%81%D0%B0%D0%BC%D0%BE%D1%97_%D0%B4%D0%B5%D1%88%D0%B5%D0%B2%D0%BE%D1%97/",
+    "subreddit": "food_ua",
+    "date": "2026-02-24",
+    "why_relevant": "Comments discuss oil choices including sunflower oil, which is adjacent to the topic.",
+    "relevance": 0.6
   },
   {
     "id": "R7",
-    "title": "The Black Sea Brief (March 13, 2024)",
-    "url": "https://www.reddit.com/r/Agriculture/comments/1be2if8",
-    "subreddit": "Agriculture",
-    "date": "2024-03-13",
-    "why_relevant": "Black Sea wheat prices and export volumes are the main topic.",
-    "relevance": 0.97
-  },
-  {
-    "id": "R9",
-    "title": "What\u2019s everyone\u2019s opinion on Wheat right now?",
-    "url": "https://www.reddit.com/r/Commodities/comments/z1zw9r",
-    "subreddit": "Commodities",
-    "date": "2022-11-22",
-    "why_relevant": "Discusses wheat pricing and Black Sea export impacts.",
-    "relevance": 0.9
+    "title": "\"Kyiv directs Kazakhstan protests\", canvas, oil",
+    "url": "https://www.reddit.com/r/ukraine/comments/rxb1u9/kyiv_directs_kazakhstan_protests_canvas_oil/",
+    "subreddit": "ukraine",
+    "date": "2022-01-06",
+    "why_relevant": "Mentions oil in a Ukraine-related context, but relevance to sunflower oil logistics is weak.",
+    "relevance": 0.42
   },
   {
     "id": "R8",
-    "title": "Why wheat and corn underperformed other commodities since 2022?",
-    "url": "https://www.reddit.com/r/Commodities/comments/1ipb0cz",
-    "subreddit": "Commodities",
-    "date": "2025-02-14",
-    "why_relevant": "Mentions Ukraine war, wheat markets, and Black Sea-related export effects.",
-    "relevance": 0.9
-  },
-  {
-    "id": "R10",
-    "title": "Wheat price",
-    "url": "https://www.reddit.com/r/Commodities/comments/15hdqze",
-    "subreddit": "Commodities",
-    "date": "2023-08-03",
-    "why_relevant": "Thread about wheat prices with discussion of Ukraine/Black Sea exports.",
-    "relevance": 0.88
-  },
-  {
-    "id": "R13",
-    "title": "U.N., Turkey, Ukraine press ahead with Black Sea grain deal despite Russian pullout",
-    "url": "https://www.reddit.com/r/europe/comments/yhsxqq",
-    "subreddit": "europe",
-    "date": "2022-11-01",
-    "why_relevant": "Discusses Black Sea grain exports and resulting wheat price effects.",
-    "relevance": 0.86
-  },
-  {
-    "id": "R12",
-    "title": "Russia and Ukraine sign UN-backed deal to resume grain exports via the Black Sea",
-    "url": "https://www.reddit.com/r/wallstreetbets/comments/w5d7jv",
-    "subreddit": "wallstreetbets",
-    "date": "2022-07-22",
-    "why_relevant": "Black Sea grain export deal with wheat price discussion.",
-    "relevance": 0.87
-  },
-  {
-    "id": "R11",
-    "title": "Wheat Prices Soar as Black Sea Exports Stalled by Russia",
-    "url": "https://www.reddit.com/r/u_MainNewsHub/comments/154hgj0",
-    "subreddit": "u_MainNewsHub",
-    "date": "2023-07-20",
-    "why_relevant": "Directly about wheat prices rising due to Black Sea export disruption.",
-    "relevance": 0.88
-  },
-  {
-    "id": "R14",
-    "title": "De-mine your ports and we'll let grain exports out, Lavrov tells Ukraine.",
-    "url": "https://www.reddit.com/r/worldnews/comments/v8es2g",
-    "subreddit": "worldnews",
-    "date": "2022-06-09",
-    "why_relevant": "Black Sea grain export corridor discussion affecting wheat prices.",
-    "relevance": 0.86
-  },
-  {
-    "id": "R15",
-    "title": "Grain FOB Prices",
-    "url": "https://www.reddit.com/r/Commodities/comments/jp4aul",
-    "subreddit": "Commodities",
-    "date": "2020-11-06",
-    "why_relevant": "Includes Black Sea wheat FOB pricing discussion.",
-    "relevance": 0.84
+    "title": "\u0412\u0438\u0441\u043e\u043a\u0430 \u0432\u0430\u0440\u0442\u0456\u0441\u0442\u044c \u0435\u043d\u0435\u0440\u0433\u043e\u043d\u043e\u0441\u0456\u0457\u0432 \u043f\u0456\u0434\u0441\u0442\u044c\u043e\u0431\u043d\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u043e\u0432\u0443 \u0456\u043d\u0444\u043b\u044f\u0446\u0456\u044e",
+    "url": "https://www.reddit.com/r/u_kyrsa77/comments/qp7rje",
+    "subreddit": "u_kyrsa77",
+    "date": "2021-11-17",
+    "why_relevant": "Mentions sunflower oil pricing in Ukraine and broader food inflation, but is only indirectly related to logistics.",
+    "relevance": 0.57
   }
 ]

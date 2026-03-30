@@ -1,16 +1,102 @@
 {
-  "generatedAt": "2026-03-30T11:22:14.408909+00:00",
+  "generatedAt": "2026-03-30T13:19:56.888167+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-30T11:20:48.562483+00:00",
+  "sourceUpdatedAt": "2026-03-30T13:18:31.260921+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"General situation: Over the past 30 days, global grains and oilseeds markets have remained broadly stable with no directional price shocks or margin expansions. Brazilian soybean export offers to China have tightened due to freight and phytosanitary certification risks, despite strong crush margins and improving soybean meal sales in China. Black Sea wheat prices have risen 5-7% month-on-month, supported by freight parity enabling exports to ASEAN countries. Bunge’s crush margins are under pressure as soybean input prices rise faster than soy oil and meal outputs, compounded by high leverage post-Viterra merger and uncertainty over the 45Z biofuel tax credit. What changed vs previous comparable period: This 30-day window shows increased market activity and price inflation in Black Sea wheat compared to the prior month, which had no notable reports. Brazilian soybean export offers have become more cautious, contrasting with previously more fluid supply. Bunge’s valuation and margin risk have emerged as a focal point, a new development not highlighted earlier. Actionable implications for trading/brokerage: Traders should monitor Brazilian soybean export availability closely, as supply-side caution may tighten CFR China offers further. Black Sea wheat remains a viable export route to ASEAN, with price momentum supporting bids. Caution is warranted on Bunge exposure due to margin compression risk and high debt levels. Broker desks note corn CIF offers in Tarragona at 241 EUR for April and sunflower bids at 301 USD CPT Marmara, indicating active positioning in grains and oilseeds. \n\nKey facts:\n- Black Sea wheat FOB prices increased 5-7% month-on-month as of March 12, 2026.\n- Brazilian soybeans priced at 662.9 USD/MT on March 14, 2026, with export offers to China limited by freight and phytosanitary risks.\n- Bunge’s EV/EBITDA at 10x, highest in its peer group, with $12.2B debt post-Viterra merger as of March 18, 2026.\n- Chicago USDA wheat prices remain above $600/MT, supporting regional price levels.\n- Corn CIF offers at 241 EUR/MT for April shipments in Tarragona as of March 25, 2026.\n- Sunflower bids at 301 USD/MT CPT Marmara for early March deliveries, reflecting active market interest.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Price Trends for Key Commodities (Feb-Mar 2026)\",     \"points\": [       {\"label\": \"Week 1\", \"value\": 0},       {\"label\": \"Week 2\", \"value\": 0},       {\"label\": \"Week 3\", \"value\": 0},       {\"label\": \"Week 4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Brazil Soybeans (USD/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 660},           {\"label\": \"Week 2\", \"value\": 662},           {\"label\": \"Week 3\", \"value\": 663},           {\"label\": \"Week 4\", \"value\": 663}         ]       },       {         \"name\": \"Black Sea Wheat FOB (USD/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 620},           {\"label\": \"Week 2\", \"value\": 630},           {\"label\": \"Week 3\", \"value\": 650},           {\"label\": \"Week 4\", \"value\": 660}         ]       },       {         \"name\": \"Chicago USDA Wheat (USD/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 605},           {\"label\": \"Week 2\", \"value\": 610},           {\"label\": \"Week 3\", \"value\": 615},           {\"label\": \"Week 4\", \"value\": 620}         ]       },       {         \"name\": \"Corn CIF Tarragona (EUR/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 235},           {\"label\": \"Week 2\", \"value\": 238},           {\"label\": \"Week 3\", \"value\": 240},           {\"label",
-    "chart": null,
+    "text": "General situation: Over the past 30 days, the global sunflower oil and seeds market remained stable with no significant price or supply shocks outside Ukraine. Key supply shifts include Malaysia filling potential export gaps from Indonesia's CPO restrictions, while Brazil-Argentina soybean oil, EU rapeseed oil, and Ukrainian sunflower oil continue to complement global edible oil supplies. Market discussions highlight sunflower oil's diverse applications from food to cosmetics, with consumer awareness and product labeling gaining attention. What changed vs previous comparable period: This month saw a notable increase in market discourse around sunflower oil's role as a substitute in edible oils amid potential palm oil export restrictions, contrasting with no comparable data from the prior month. Broker desk activity shows a firm bid for sunflower oil in Marmara region at $301 CPT for early March delivery, indicating steady demand. Actionable implications for trading/brokerage: Traders should monitor Indonesian CPO export policies closely, as any tightening could boost demand for sunflower oil and other vegetable oils from Brazil, Argentina, and the EU. The firm bid levels in Marmara suggest opportunities for sellers to leverage current demand. Additionally, private-label sunflower oil offerings with lower landed costs may pressure margins but offer volume growth potential. \n\nKey facts:\n- Sunflower oil bid at $301 CPT Marmara for 1H March delivery (24 Mar)\n- Corn CIF offers at 241-241 EUR for 10-30 Apr Tarragona shipments (25 Mar)\n- Brazil soybean price at 662.9 USD/MT as of 14 Mar\n- RS 587: 2025 sunflower seeds specification published 30 Mar\n- Indonesia’s CPO export restrictions prompt Malaysia and others to fill supply gaps (30 Mar)\n- Diverse sunflower oil applications noted, including food, cosmetics, and baby formula ingredients (Mar)",
+    "chart": {
+      "type": "price_overlay_month",
+      "title": "Price Trends of Key Grains & Oilseeds (Mar 2026)",
+      "points": [
+        {
+          "label": "W1",
+          "value": 1
+        },
+        {
+          "label": "W2",
+          "value": 2
+        },
+        {
+          "label": "W3",
+          "value": 3
+        },
+        {
+          "label": "W4",
+          "value": 4
+        }
+      ],
+      "series": [
+        {
+          "name": "Sunflower Oil (USD/MT)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 300
+            },
+            {
+              "label": "W2",
+              "value": 301
+            },
+            {
+              "label": "W3",
+              "value": 301
+            },
+            {
+              "label": "W4",
+              "value": 301
+            }
+          ]
+        },
+        {
+          "name": "Brazil Soybeans (USD/MT)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 663
+            },
+            {
+              "label": "W2",
+              "value": 663
+            },
+            {
+              "label": "W3",
+              "value": 663
+            },
+            {
+              "label": "W4",
+              "value": 663
+            }
+          ]
+        },
+        {
+          "name": "Corn FOB Santos (USD/MT)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 113
+            },
+            {
+              "label": "W2",
+              "value": 113
+            },
+            {
+              "label": "W3",
+              "value": 113
+            },
+            {
+              "label": "W4",
+              "value": 113
+            }
+          ]
+        }
+      ]
+    },
     "inputCounts": {
       "last30days": 24,
       "monitor": 13
@@ -20,7 +106,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на українському ринку зернових і олійних за останні 30 днів залишається стабільною з нейтральним інформаційним фоном. Ціни на кукурудзу на експорті в порту Одеса демонструють незначне зростання, з торгів на рівні 224-228 USD/т у кінці березня, що свідчить про помірний попит. Соняшникова олія та соєвий шрот пропонуються за цінами близько 709 грн/т та 19700 грн/т відповідно, без суттєвих коливань. Порівняно з попереднім місяцем, коли даних не було, спостерігається активізація ринку з появою пропозицій і торгів. Відсутність суттєвих цінових шоків або негативних новин свідчить про відносну стабільність. Для трейдерів важливо враховувати, що ціни на кукурудзу мають потенціал для подальшого зростання, враховуючи світові тенденції зростання попиту при зниженні виробництва. Ключові факти свідчать про стабільний експортний попит і відсутність значних логістичних проблем у портах.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на основні зернові та олійні в Україні, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3},       {\"label\": \"W4\", \"value\": 4}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 214},           {\"label\": \"W2\", \"value\": 215},           {\"label\": \"W3\", \"value\": 223},           {\"label\": \"W4\", \"value\": 225}         ]       },       {         \"name\": \"Пшениця CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 220},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса (грн/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 710},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 448},           {\"label\": \"W4\", \"value\": 447}         ]       }     ]   },   \"key_facts\": [     \"Ціна кукурудзи FOB Чорноморськ 29.03.2026: 228 USD/т\",     \"Ціна кукурудзи CPT Одеса 27.03.2026: 214 USD/т\",     \"Ціна пшениці CPT Одеса 27.03.2026: 215 USD/т\",     \"Ціна соняшникової олії CPT Паритет Одеса 27.03.2026: 709 грн/т\",     \"Продаж шроту соєвого 26.03.",
+    "text": "{   \"summary\": \"Загальна ситуація на українському ринку олійних культур у березні 2026 року характеризується значним зниженням виробництва соняшникової олії. За сезон 2025/26 очікується падіння виробництва на 10% до 4,6 млн тонн, що пов’язано з найнижчими за 10 років врожайністю (-16,8%) та скороченням площі збирання на 7,8%. Це призводить до зменшення експорту до 4,4 млн тонн, що може викликати дефіцит на глобальному ринку рослинних олій і змусить покупців шукати альтернативи, такі як пальмова, соєва та рапсова олії. Порівняно з попереднім місяцем, активність інформаційного потоку зросла, що свідчить про посилення уваги до проблеми. На ринку кукурудзи ціни стабільні, з незначним коливанням в межах 224,5-230 USD/т FOB, що підтримує експортні позиції України. Для трейдерів важливо враховувати потенційне зростання цін на рослинні олії через дефіцит соняшникової олії та можливе збільшення попиту на альтернативні олії, а також моніторити цінові пропозиції на кукурудзу для оптимізації портфеля.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на ключові культури України, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3},       {\"label\": \"W4\", \"value\": 4}     ],     \"series\": [       {         \"name\": \"Кукурудза FOB (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 215},           {\"label\": \"W2\", \"value\": 224.5},           {\"label\": \"W3\", \"value\": 226.5},           {\"label\": \"W4\", \"value\": 228}         ]       },       {         \"name\": \"Соняшникова олія CPT (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 709},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя FOB (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 447},           {\"label\": \"W4\", \"value\": 447}         ]       }     ]   },   \"key_facts\": [     \"Виробництво соняшникової олії у сезоні 2025/26 прогнозується на рівні 4,6 млн тонн, що на 10% менше за попередній сезон (30.03.2026).\",     \"Врожайність соняшнику знизилась на 16,8%, найнижчий показник за останні 10 років (30.03.2026).\",     \"Площа збирання соняшнику скоротилась на 7,8% у порівнянні з попереднім сезоном (30.03.2026).\",     \"Експорт соняшникової олії очікується на рівні 4,4 млн тонн, що також є зниженням (30.03.2026).\",     \"Ціни на кукурудзу FOB",
     "chart": null,
     "inputCounts": {
       "last30days": 24,
