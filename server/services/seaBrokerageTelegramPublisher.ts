@@ -247,7 +247,6 @@ function formatStandardTelegramMessage(
     entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,
     formatOptionalOtherTerms(entry.note),
     "------------------------------",
-    isTrade ? `${tradeSellerBroker} 🤝 ${tradeBuyerBroker}` : null,
   ];
 
   return lines.filter(Boolean).join("\n");
