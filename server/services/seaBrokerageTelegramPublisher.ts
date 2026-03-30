@@ -360,10 +360,12 @@ async function sendTelegramMessages(
   const apiBase = `https://api.telegram.org/bot${botToken}/sendMessage`;
   let firstMessageId: string | null = null;
   const sentChannels: string[] = [];
+  const failedChannels: string[] = [];
+  const failedErrors: string[] = [];
 
-  try {
-    for (const target of targets) {
-      const text = target.channel === "internal" ? internalMessage : externalMessage;
+  for (const target of targets) {
+    const text = target.channel === "internal" ? internalMessage : externalMessage;
+    try {
       const response = await fetch(apiBase, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -374,40 +376,62 @@ async function sendTelegramMessages(
         }),
       });
 
-      const payload = (await response.json()) as {
+      let payload: {
         ok?: boolean;
         description?: string;
         result?: { message_id?: number };
-      };
+      } = {};
+      try {
+        payload = (await response.json()) as {
+          ok?: boolean;
+          description?: string;
+          result?: { message_id?: number };
+        };
+      } catch {
+        payload = {};
+      }
 
       if (!response.ok || !payload.ok) {
-        return {
-          status: "failed",
-          messageText: `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}`,
-          error:
-            payload.description ||
+        failedChannels.push(`${target.channel}:${target.chatId}`);
+        failedErrors.push(
+          payload.description ||
             `Telegram sendMessage failed (${target.channel}) with status ${response.status}`,
-        };
+        );
+        continue;
       }
 
       if (!firstMessageId && payload.result?.message_id) {
         firstMessageId = String(payload.result.message_id);
       }
       sentChannels.push(`${target.channel}:${target.chatId}`);
+    } catch (error) {
+      failedChannels.push(`${target.channel}:${target.chatId}`);
+      failedErrors.push(error instanceof Error ? error.message : "Unknown Telegram relay error");
     }
+  }
 
+  const messageText = [
+    `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}`,
+    sentChannels.length ? `sent:${sentChannels.join(",")}` : null,
+    failedChannels.length ? `failed:${failedChannels.join(",")}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  if (sentChannels.length > 0) {
     return {
       status: "published",
       messageId: firstMessageId,
-      messageText: `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}\n\nsent:${sentChannels.join(",")}`,
-    };
-  } catch (error) {
-    return {
-      status: "failed",
-      messageText: `internal:\n${internalMessage}\n\nexternal:\n${externalMessage}`,
-      error: error instanceof Error ? error.message : "Unknown Telegram relay error",
+      messageText,
+      error: failedErrors.length ? failedErrors.join(" | ") : undefined,
     };
   }
+
+  return {
+    status: "failed",
+    messageText,
+    error: failedErrors.join(" | ") || "Unknown Telegram relay error",
+  };
 }
 
 export async function publishSeaBrokerageEntryToTelegram(
