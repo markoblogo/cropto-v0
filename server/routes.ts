@@ -243,6 +243,10 @@ type SeaBrokerageFilterPreset = {
     commodity: string;
     basis: string;
     brokerProfileId: string;
+    businessUnits: string[];
+    originCountries: string[];
+    currencies: string[];
+    transportModes: string[];
     originCountry: string;
     deliveryPlace: string;
     search: string;
@@ -270,6 +274,10 @@ const seaBrokerageFilterPresetPayloadSchema = z.object({
     commodity: z.string().trim().default("all"),
     basis: z.string().trim().default("all"),
     brokerProfileId: z.string().trim().default("all"),
+    businessUnits: z.array(z.string().trim()).default([]),
+    originCountries: z.array(z.string().trim()).default([]),
+    currencies: z.array(z.string().trim()).default([]),
+    transportModes: z.array(z.string().trim()).default([]),
     originCountry: z.string().trim().default("all"),
     deliveryPlace: z.string().trim().default("all"),
     search: z.string().default(""),
@@ -810,6 +818,18 @@ async function readSeaBrokerageFilterPresets(): Promise<SeaBrokerageFilterPreset
           commodity: String(item.filters.commodity || "all"),
           basis: String(item.filters.basis || "all"),
           brokerProfileId: String(item.filters.brokerProfileId || "all"),
+          businessUnits: Array.isArray(item.filters.businessUnits)
+            ? item.filters.businessUnits.map((value) => String(value).toLowerCase()).filter(Boolean)
+            : [],
+          originCountries: Array.isArray(item.filters.originCountries)
+            ? item.filters.originCountries.map((value) => String(value).toLowerCase()).filter(Boolean)
+            : [],
+          currencies: Array.isArray(item.filters.currencies)
+            ? item.filters.currencies.map((value) => String(value).toUpperCase()).filter(Boolean)
+            : [],
+          transportModes: Array.isArray(item.filters.transportModes)
+            ? item.filters.transportModes.map((value) => String(value).toLowerCase()).filter(Boolean)
+            : [],
           originCountry: String(item.filters.originCountry || "all"),
           deliveryPlace: String(item.filters.deliveryPlace || "all"),
           search: String(item.filters.search || ""),

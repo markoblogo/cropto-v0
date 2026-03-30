@@ -14,6 +14,10 @@ export const defaultFeedFilters: FeedFilterState = {
   commodity: "all",
   basis: "all",
   brokerProfileId: "all",
+  businessUnits: [],
+  originCountries: [],
+  currencies: [],
+  transportModes: [],
   originCountry: "all",
   deliveryPlace: "all",
   search: "",
@@ -23,6 +27,28 @@ export const defaultFeedFilters: FeedFilterState = {
 
 function normalizeText(value: string | null | undefined) {
   return (value ?? "").toLowerCase().trim();
+}
+
+export function mapTransportTypeToMode(transportType: string | null | undefined) {
+  const normalized = String(transportType || "").toLowerCase();
+  if (normalized === "truck" || normalized === "rail" || normalized === "truck/rail") return "land";
+  if (normalized === "barge") return "river";
+  if (normalized === "container") return "container";
+  if (normalized === "vessel" || normalized === "coaster" || normalized === "handysize") return "bulk_sea";
+  return "land";
+}
+
+function normalizeCountryFilterCandidates(entry: BrokerageEntry) {
+  const candidates = new Set<string>();
+  const code = normalizeText(entry.originCountryCode);
+  const label = normalizeText(entry.originCountry);
+  if (code) {
+    candidates.add(code);
+  }
+  if (label) {
+    candidates.add(label);
+  }
+  return candidates;
 }
 
 export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedFilterState) {
@@ -67,8 +93,17 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       (filters.commodity === "all" || filters.commodity === entry.commodity) &&
       (filters.basis === "all" || filters.basis === entry.basis) &&
       (filters.brokerProfileId === "all" || filters.brokerProfileId === entry.brokerId) &&
-      (filters.originCountry === "all" ||
-        filters.originCountry === (entry.originCountryCode ?? entry.originCountry)) &&
+      (filters.businessUnits.length === 0 ||
+        filters.businessUnits.includes(normalizeText(entry.businessUnitCode))) &&
+      (filters.currencies.length === 0 || filters.currencies.includes(entry.currency)) &&
+      (filters.transportModes.length === 0 ||
+        filters.transportModes.includes(mapTransportTypeToMode(entry.transportType))) &&
+      (filters.originCountries.length === 0
+        ? filters.originCountry === "all" ||
+          filters.originCountry === (entry.originCountryCode ?? entry.originCountry)
+        : Array.from(normalizeCountryFilterCandidates(entry)).some((candidate) =>
+            filters.originCountries.includes(candidate),
+          )) &&
       (filters.deliveryPlace === "all" ||
         filters.deliveryPlace === (entry.destinationPortCode ?? entry.destinationPort) ||
         filters.deliveryPlace === (entry.destinationCountryCode ?? entry.destinationCountry)) &&

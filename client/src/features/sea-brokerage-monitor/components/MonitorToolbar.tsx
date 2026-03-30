@@ -10,12 +10,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   commodityOptions as defaultCommodityOptions,
   countryOptions as defaultCountryOptions,
   portOptions as defaultPortOptions,
 } from "../mock/dictionaries";
 import { getCountryDisplayLabel } from "../services/displayStandards";
-import type { Commodity, CountryOption, FeedFilterState, PortOption } from "../types";
+import type {
+  Commodity,
+  CountryOption,
+  Currency,
+  FeedFilterState,
+  PortOption,
+  TransportMode,
+} from "../types";
 
 interface MonitorToolbarProps {
   filters: FeedFilterState;
@@ -31,6 +44,9 @@ interface MonitorToolbarProps {
   commodityOptions?: Commodity[];
   countryOptions?: CountryOption[];
   deliveryPlaceOptions?: PortOption[];
+  businessUnitOptions?: Array<{ value: string; label: string }>;
+  currencyOptions?: Currency[];
+  transportModeOptions?: Array<{ value: TransportMode; label: string }>;
 }
 
 export function MonitorToolbar({
@@ -47,7 +63,25 @@ export function MonitorToolbar({
   commodityOptions = defaultCommodityOptions,
   countryOptions = defaultCountryOptions,
   deliveryPlaceOptions = defaultPortOptions,
+  businessUnitOptions = [],
+  currencyOptions = ["USD", "EUR", "UAH"],
+  transportModeOptions = [],
 }: MonitorToolbarProps) {
+  const selectedOriginCountries = new Set(
+    filters.originCountries.map((value) => String(value).toLowerCase()),
+  );
+  const selectedBusinessUnits = new Set(filters.businessUnits.map((value) => String(value).toLowerCase()));
+  const selectedCurrencies = new Set(filters.currencies.map((value) => String(value).toUpperCase()));
+  const selectedTransportModes = new Set(
+    filters.transportModes.map((value) => String(value).toLowerCase()),
+  );
+
+  function renderMultiLabel(baseLabel: string, selectedCount: number) {
+    if (selectedCount <= 0) return `All ${baseLabel}`;
+    if (selectedCount === 1) return `1 ${baseLabel.slice(0, -1)}`;
+    return `${selectedCount} ${baseLabel}`;
+  }
+
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 px-1.5 py-1 shadow-sm sm:px-2.5 sm:py-1.5">
       <div className="flex min-w-0 flex-col gap-1 sm:gap-1.5">
@@ -102,7 +136,7 @@ export function MonitorToolbar({
           ) : null}
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(220px,1.3fr)] xl:gap-1.5">
+        <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.95fr)_minmax(0,1.2fr)_minmax(220px,1.35fr)] xl:gap-1.5">
           <Select
             value={filters.commodity}
             onValueChange={(value) =>
@@ -122,24 +156,42 @@ export function MonitorToolbar({
             </SelectContent>
           </Select>
 
-          <Select
-            value={filters.originCountry}
-            onValueChange={(value) =>
-              onFilterChange("originCountry", value as FeedFilterState["originCountry"])
-            }
-          >
-            <SelectTrigger className="h-6 min-w-0 w-full text-[10.5px] sm:h-7 sm:text-[11px]">
-              <SelectValue placeholder="Origin" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All origins</SelectItem>
-              {countryOptions.map((country) => (
-                <SelectItem key={country.code} value={country.code}>
-                  {country.displayLabel}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+              >
+                <span className="truncate">{renderMultiLabel("origins", selectedOriginCountries.size)}</span>
+                <span className="text-muted-foreground">▾</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[280px] max-w-[90vw]">
+              {countryOptions.map((country) => {
+                const key = country.code.toLowerCase();
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={country.code}
+                    checked={selectedOriginCountries.has(key)}
+                    onCheckedChange={(checked) => {
+                      const next = new Set(selectedOriginCountries);
+                      if (checked) next.add(key);
+                      else next.delete(key);
+                      const values = Array.from(next);
+                      onFilterChange("originCountries", values as FeedFilterState["originCountries"]);
+                      onFilterChange(
+                        "originCountry",
+                        (values[0]?.toUpperCase() || "all") as FeedFilterState["originCountry"],
+                      );
+                    }}
+                  >
+                    {country.displayLabel}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Select
             value={filters.basis}
@@ -178,6 +230,115 @@ export function MonitorToolbar({
               ))}
             </SelectContent>
           </Select>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+              >
+                <span className="truncate">
+                  {renderMultiLabel("business units", selectedBusinessUnits.size)}
+                </span>
+                <span className="text-muted-foreground">▾</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[280px] max-w-[90vw]">
+              {businessUnitOptions.map((option) => {
+                const key = option.value.toLowerCase();
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={option.value}
+                    checked={selectedBusinessUnits.has(key)}
+                    onCheckedChange={(checked) => {
+                      const next = new Set(selectedBusinessUnits);
+                      if (checked) next.add(key);
+                      else next.delete(key);
+                      onFilterChange(
+                        "businessUnits",
+                        Array.from(next) as FeedFilterState["businessUnits"],
+                      );
+                    }}
+                  >
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+              >
+                <span className="truncate">{renderMultiLabel("currencies", selectedCurrencies.size)}</span>
+                <span className="text-muted-foreground">▾</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[230px] max-w-[90vw]">
+              {currencyOptions.map((currency) => {
+                const key = currency.toUpperCase();
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={currency}
+                    checked={selectedCurrencies.has(key)}
+                    onCheckedChange={(checked) => {
+                      const next = new Set(selectedCurrencies);
+                      if (checked) next.add(key);
+                      else next.delete(key);
+                      onFilterChange(
+                        "currencies",
+                        Array.from(next) as FeedFilterState["currencies"],
+                      );
+                    }}
+                  >
+                    {currency}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-6 min-w-0 w-full justify-between px-2 text-[10.5px] sm:h-7 sm:text-[11px]"
+              >
+                <span className="truncate">
+                  {renderMultiLabel("transport types", selectedTransportModes.size)}
+                </span>
+                <span className="text-muted-foreground">▾</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[280px] max-w-[90vw]">
+              {transportModeOptions.map((option) => {
+                const key = option.value.toLowerCase();
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={option.value}
+                    checked={selectedTransportModes.has(key)}
+                    onCheckedChange={(checked) => {
+                      const next = new Set(selectedTransportModes);
+                      if (checked) next.add(key);
+                      else next.delete(key);
+                      onFilterChange(
+                        "transportModes",
+                        Array.from(next) as FeedFilterState["transportModes"],
+                      );
+                    }}
+                  >
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Select
             value={filters.brokerProfileId}

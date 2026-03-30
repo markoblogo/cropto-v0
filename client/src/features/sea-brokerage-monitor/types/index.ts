@@ -10,7 +10,11 @@ export type TransportType =
   | "truck"
   | "rail"
   | "vessel"
-  | "truck/rail";
+  | "truck/rail"
+  | "barge"
+  | "container";
+
+export type TransportMode = "land" | "river" | "bulk_sea" | "container";
 
 export type Currency = "USD" | "EUR" | "UAH";
 export type PaymentTermCode = "CAD" | "CAFD";
@@ -80,6 +84,7 @@ export interface BrokerageEntry {
   brokerCode: string;
   brokerName: string;
   companyName: string;
+  businessUnitCode?: string | null;
   sellerName?: string | null;
   buyerName?: string | null;
   originCountry?: string | null;
@@ -150,6 +155,11 @@ export interface FeedFilterState {
   commodity: string | "all";
   basis: Basis | "all";
   brokerProfileId: string | "all";
+  businessUnits: string[];
+  originCountries: string[];
+  currencies: Currency[];
+  transportModes: TransportMode[];
+  // Legacy key kept for backward compatibility with older saved views.
   originCountry: string | "all";
   deliveryPlace: string | "all";
   search: string;
@@ -167,6 +177,10 @@ export interface FilterPreset {
     commodity: string;
     basis: string;
     brokerProfileId: string;
+    businessUnits?: string[];
+    originCountries?: string[];
+    currencies?: Currency[];
+    transportModes?: TransportMode[];
     originCountry: string;
     deliveryPlace: string;
     search: string;

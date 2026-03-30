@@ -23,15 +23,22 @@ import { buildSeaBrokerageMonitorAuthHeaders } from "./services/monitorAuth.serv
 import {
   defaultFeedFilters,
   filterBrokerageEntries,
+  mapTransportTypeToMode,
 } from "./services/feedFilters.service";
+import {
+  businessUnitOptions,
+  resolveEntryBusinessUnitCode,
+} from "./services/businessUnits.service";
 import type {
   BrokerageEntry,
   Commodity,
   CountryOption,
+  Currency,
   EntryType,
   FeedFilterState,
   FilterPreset,
   PortOption,
+  TransportMode,
 } from "./types";
 import { queryClient } from "@/lib/queryClient";
 
@@ -120,15 +127,46 @@ export function SeaBrokerageMonitorPage() {
     staleTime: 60_000,
   });
 
+  const feedWithBusinessUnits = useMemo(
+    () =>
+      monitorState.standardizedFeed.map((entry) => ({
+        ...entry,
+        businessUnitCode: resolveEntryBusinessUnitCode(entry),
+      })),
+    [monitorState.standardizedFeed],
+  );
+
   const filteredEntries = useMemo(
-    () => filterBrokerageEntries(monitorState.standardizedFeed, filters),
-    [monitorState.standardizedFeed, filters],
+    () => filterBrokerageEntries(feedWithBusinessUnits, filters),
+    [feedWithBusinessUnits, filters],
   );
 
   const globalBrokerOptions = useMemo(
-    () => buildBrokerOptions(monitorState.standardizedFeed),
-    [monitorState.standardizedFeed],
+    () => buildBrokerOptions(feedWithBusinessUnits),
+    [feedWithBusinessUnits],
   );
+  const toolbarBusinessUnitOptions = useMemo(() => {
+    const active = new Set(feedWithBusinessUnits.map((entry) => String(entry.businessUnitCode || "")));
+    return businessUnitOptions.filter((option) => active.has(option.value));
+  }, [feedWithBusinessUnits]);
+  const toolbarCurrencyOptions = useMemo(() => {
+    const active = new Set<Currency>(feedWithBusinessUnits.map((entry) => entry.currency));
+    return (["USD", "EUR", "UAH"] as Currency[]).filter((currency) => active.has(currency));
+  }, [feedWithBusinessUnits]);
+  const toolbarTransportModeOptions = useMemo(() => {
+    const labels: Record<TransportMode, string> = {
+      land: "Land (truck/rail)",
+      river: "River (barge)",
+      bulk_sea: "Bulk Sea (vessel)",
+      container: "Containers",
+    };
+    const active = new Set<TransportMode>(
+      feedWithBusinessUnits.map((entry) => mapTransportTypeToMode(entry.transportType)),
+    );
+    return (["land", "river", "bulk_sea", "container"] as TransportMode[])
+      .filter((value) => active.has(value))
+      .map((value) => ({ value, label: labels[value] }));
+  }, [feedWithBusinessUnits]);
   const toolbarCountryOptions = useMemo(() => {
     const byCode = new Map<string, CountryOption>();
     for (const option of [...defaultCountryOptions, ...customCountryOptions]) {
@@ -148,7 +186,7 @@ export function SeaBrokerageMonitorPage() {
     for (const option of [...defaultCommodityOptions, ...customCommodityOptions]) {
       byCode.set(option.code, option);
     }
-    for (const entry of monitorState.standardizedFeed) {
+    for (const entry of feedWithBusinessUnits) {
       if (!byCode.has(entry.commodity)) {
         byCode.set(entry.commodity, {
           code: entry.commodity,
@@ -160,7 +198,7 @@ export function SeaBrokerageMonitorPage() {
       }
     }
     return Array.from(byCode.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
-  }, [customCommodityOptions, monitorState.standardizedFeed]);
+  }, [customCommodityOptions, feedWithBusinessUnits]);
 
   const offerEntriesBase = useMemo(
     () =>
@@ -265,6 +303,12 @@ export function SeaBrokerageMonitorPage() {
       commodity: (preset.filters.commodity as FeedFilterState["commodity"]) || "all",
       basis: (preset.filters.basis as FeedFilterState["basis"]) || "all",
       brokerProfileId: preset.filters.brokerProfileId || "all",
+      businessUnits: (preset.filters.businessUnits || []).map((item) => String(item).toLowerCase()),
+      originCountries: (preset.filters.originCountries || []).map((item) => String(item).toLowerCase()),
+      currencies: (preset.filters.currencies || []).map((item) => String(item).toUpperCase()) as Currency[],
+      transportModes: (preset.filters.transportModes || []).map((item) =>
+        String(item).toLowerCase(),
+      ) as TransportMode[],
       originCountry: preset.filters.originCountry || "all",
       deliveryPlace: preset.filters.deliveryPlace || "all",
       search: preset.filters.search || "",
@@ -304,6 +348,10 @@ export function SeaBrokerageMonitorPage() {
           commodity: filters.commodity,
           basis: filters.basis,
           brokerProfileId: filters.brokerProfileId,
+          businessUnits: filters.businessUnits,
+          originCountries: filters.originCountries,
+          currencies: filters.currencies,
+          transportModes: filters.transportModes,
           originCountry: filters.originCountry,
           deliveryPlace: filters.deliveryPlace,
           search: filters.search,
@@ -408,6 +456,39 @@ export function SeaBrokerageMonitorPage() {
   }, [filters.brokerProfileId, globalBrokerOptions]);
 
   useEffect(() => {
+    const validBusinessUnits = new Set(toolbarBusinessUnitOptions.map((option) => option.value.toLowerCase()));
+    const validCurrencies = new Set(toolbarCurrencyOptions.map((option) => option.toUpperCase()));
+    const validTransportModes = new Set(toolbarTransportModeOptions.map((option) => option.value.toLowerCase()));
+    const validOrigins = new Set(toolbarCountryOptions.map((option) => option.code.toLowerCase()));
+
+    setFilters((prev) => {
+      const nextBusinessUnits = prev.businessUnits.filter((value) => validBusinessUnits.has(value.toLowerCase()));
+      const nextCurrencies = prev.currencies.filter((value) => validCurrencies.has(value.toUpperCase()));
+      const nextTransportModes = prev.transportModes.filter((value) =>
+        validTransportModes.has(value.toLowerCase()),
+      );
+      const nextOrigins = prev.originCountries.filter((value) => validOrigins.has(value.toLowerCase()));
+
+      if (
+        nextBusinessUnits.length === prev.businessUnits.length &&
+        nextCurrencies.length === prev.currencies.length &&
+        nextTransportModes.length === prev.transportModes.length &&
+        nextOrigins.length === prev.originCountries.length
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        businessUnits: nextBusinessUnits,
+        currencies: nextCurrencies,
+        transportModes: nextTransportModes as FeedFilterState["transportModes"],
+        originCountries: nextOrigins,
+      };
+    });
+  }, [toolbarBusinessUnitOptions, toolbarCountryOptions, toolbarCurrencyOptions, toolbarTransportModeOptions]);
+
+  useEffect(() => {
     if (
       offerPaneFilters.brokerProfileId !== "all" &&
       !offerBrokerOptions.some((option) => option.value === offerPaneFilters.brokerProfileId)
@@ -472,6 +553,9 @@ export function SeaBrokerageMonitorPage() {
           filters={filters}
           onFilterChange={updateFilter}
           brokerOptions={globalBrokerOptions}
+          businessUnitOptions={toolbarBusinessUnitOptions}
+          currencyOptions={toolbarCurrencyOptions}
+          transportModeOptions={toolbarTransportModeOptions}
           commodityOptions={toolbarCommodityOptions}
           countryOptions={toolbarCountryOptions}
           deliveryPlaceOptions={toolbarDeliveryPlaceOptions}
