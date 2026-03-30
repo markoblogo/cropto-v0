@@ -1,102 +1,16 @@
 {
-  "generatedAt": "2026-03-29T05:16:34.295567+00:00",
+  "generatedAt": "2026-03-30T11:22:14.408909+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-29T05:15:44.543008+00:00",
+  "sourceUpdatedAt": "2026-03-30T11:20:48.562483+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: In the last 30 days, global grains and oilseeds markets have shown stable but cautious dynamics, with no bullish or bearish shifts. Bunge (BG) remains under pressure due to soybean crush margin compression as soybean prices rise faster than soy oil and meal outputs, compounded by high debt post-Viterra merger and uncertain biofuel tax credits. Black Sea wheat prices have inflated by 5-7% compared to the previous month, supported by freight parity enabling exports to ASEAN. Brazilian soybean export offers to China are limited due to freight and phytosanitary certification risks, despite strong crush margins and improving meal sales in China. What changed vs previous comparable period: This period saw the emergence of these nuanced supply-side constraints and margin pressures, whereas the prior month had no significant market signals or reports. Actionable implications for trading/brokerage: Traders should monitor soybean crush margins closely, as margin compression may limit upside for processors like Bunge. The Black Sea wheat price increase and export opportunities to ASEAN suggest potential for selective wheat trade flows. Limited Brazilian soybean offers to China imply possible short-term supply tightness, warranting cautious buying. Broker desk data shows corn CIF offers at 241 EUR for April and sunflower bids at 301 USD in Marmara, indicating active price discovery in these segments. \n\nKey facts:\n- Bunge trades at 10x EV/EBITDA with $12.2B debt post-Viterra merger as of March 18, 2026.\n- Black Sea wheat FOB prices inflated 5-7% vs prior month, enabling ASEAN exports amid INR/USD at 93-94 (March 12, 2026).\n- Brazilian soybean offers to China are scarce this week due to freight and phytosanitary risks (March 11, 2026).\n- Chinese crushers maintain good crush margins and daily soybean meal sales are improving (March 11, 2026).\n- Corn CIF offers at 241 EUR for April shipments from Tarragona (March 25, 2026).\n- Sunflower bids at 301 USD CPT Marmara for early March delivery (March 24, 2026).",
-    "chart": {
-      "type": "price_overlay_month",
-      "title": "Price trends for key commodities (Feb-Mar 2026)",
-      "points": [
-        {
-          "label": "Week 1",
-          "value": 0
-        },
-        {
-          "label": "Week 2",
-          "value": 0
-        },
-        {
-          "label": "Week 3",
-          "value": 0
-        },
-        {
-          "label": "Week 4",
-          "value": 0
-        }
-      ],
-      "series": [
-        {
-          "name": "Brazil Soybeans (USD/ton)",
-          "points": [
-            {
-              "label": "Week 1",
-              "value": 660
-            },
-            {
-              "label": "Week 2",
-              "value": 662
-            },
-            {
-              "label": "Week 3",
-              "value": 663
-            },
-            {
-              "label": "Week 4",
-              "value": 663
-            }
-          ]
-        },
-        {
-          "name": "Brazil Wheat (USD/ton)",
-          "points": [
-            {
-              "label": "Week 1",
-              "value": 630
-            },
-            {
-              "label": "Week 2",
-              "value": 640
-            },
-            {
-              "label": "Week 3",
-              "value": 650
-            },
-            {
-              "label": "Week 4",
-              "value": 660
-            }
-          ]
-        },
-        {
-          "name": "US Corn (USD/ton)",
-          "points": [
-            {
-              "label": "Week 1",
-              "value": 390
-            },
-            {
-              "label": "Week 2",
-              "value": 392
-            },
-            {
-              "label": "Week 3",
-              "value": 393
-            },
-            {
-              "label": "Week 4",
-              "value": 394
-            }
-          ]
-        }
-      ]
-    },
+    "text": "{   \"summary\": \"General situation: Over the past 30 days, global grains and oilseeds markets have remained broadly stable with no directional price shocks or margin expansions. Brazilian soybean export offers to China have tightened due to freight and phytosanitary certification risks, despite strong crush margins and improving soybean meal sales in China. Black Sea wheat prices have risen 5-7% month-on-month, supported by freight parity enabling exports to ASEAN countries. Bunge’s crush margins are under pressure as soybean input prices rise faster than soy oil and meal outputs, compounded by high leverage post-Viterra merger and uncertainty over the 45Z biofuel tax credit. What changed vs previous comparable period: This 30-day window shows increased market activity and price inflation in Black Sea wheat compared to the prior month, which had no notable reports. Brazilian soybean export offers have become more cautious, contrasting with previously more fluid supply. Bunge’s valuation and margin risk have emerged as a focal point, a new development not highlighted earlier. Actionable implications for trading/brokerage: Traders should monitor Brazilian soybean export availability closely, as supply-side caution may tighten CFR China offers further. Black Sea wheat remains a viable export route to ASEAN, with price momentum supporting bids. Caution is warranted on Bunge exposure due to margin compression risk and high debt levels. Broker desks note corn CIF offers in Tarragona at 241 EUR for April and sunflower bids at 301 USD CPT Marmara, indicating active positioning in grains and oilseeds. \n\nKey facts:\n- Black Sea wheat FOB prices increased 5-7% month-on-month as of March 12, 2026.\n- Brazilian soybeans priced at 662.9 USD/MT on March 14, 2026, with export offers to China limited by freight and phytosanitary risks.\n- Bunge’s EV/EBITDA at 10x, highest in its peer group, with $12.2B debt post-Viterra merger as of March 18, 2026.\n- Chicago USDA wheat prices remain above $600/MT, supporting regional price levels.\n- Corn CIF offers at 241 EUR/MT for April shipments in Tarragona as of March 25, 2026.\n- Sunflower bids at 301 USD/MT CPT Marmara for early March deliveries, reflecting active market interest.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Price Trends for Key Commodities (Feb-Mar 2026)\",     \"points\": [       {\"label\": \"Week 1\", \"value\": 0},       {\"label\": \"Week 2\", \"value\": 0},       {\"label\": \"Week 3\", \"value\": 0},       {\"label\": \"Week 4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Brazil Soybeans (USD/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 660},           {\"label\": \"Week 2\", \"value\": 662},           {\"label\": \"Week 3\", \"value\": 663},           {\"label\": \"Week 4\", \"value\": 663}         ]       },       {         \"name\": \"Black Sea Wheat FOB (USD/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 620},           {\"label\": \"Week 2\", \"value\": 630},           {\"label\": \"Week 3\", \"value\": 650},           {\"label\": \"Week 4\", \"value\": 660}         ]       },       {         \"name\": \"Chicago USDA Wheat (USD/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 605},           {\"label\": \"Week 2\", \"value\": 610},           {\"label\": \"Week 3\", \"value\": 615},           {\"label\": \"Week 4\", \"value\": 620}         ]       },       {         \"name\": \"Corn CIF Tarragona (EUR/MT)\",         \"points\": [           {\"label\": \"Week 1\", \"value\": 235},           {\"label\": \"Week 2\", \"value\": 238},           {\"label\": \"Week 3\", \"value\": 240},           {\"label",
+    "chart": null,
     "inputCounts": {
       "last30days": 24,
       "monitor": 13
@@ -106,7 +20,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів характеризується стабільністю цін та відсутністю суттєвих коливань. Ціни на кукурудзу CPT Одеса тримаються в діапазоні 214-226 USD/т, а соняшникова олія CPT Партієт Одеса – близько 709 USD/т. Порівняно з попереднім місяцем, коли дані відсутні, спостерігається активізація торгівлі та пропозицій, зокрема продаж шроту соєвого за 19 700 грн/т. Відсутність негативних чи позитивних сигналів свідчить про баланс попиту та пропозиції. Важливо враховувати, що екологічні наслідки обстрілів портових терміналів у грудні 2025 року досі впливають на логістику соняшникової олії. Торгові заявки на кукурудзу демонструють тісний коридор між бідом 215-226 USD/т та оферами 220-225 USD/т, що вказує на помірну волатильність і готовність ринку до активних угод. \\n\\nЩо змінилося порівняно з попереднім періодом: за відсутності даних за лютий 2026 року, березень показав збільшення активності на ринку, з появою пропозицій і торгів, особливо в сегменті кукурудзи та соєвого шроту. Цінова стабільність зберігається, але з тенденцією до невеликого підвищення в сегменті кукурудзи. \\n\\nТоргові рекомендації: варто звернути увагу на кукурудзу як на найбільш ліквідний товар з чітко визначеним ціновим коридором, а також на шрот соєвий, де є пропозиції за конкурентною ціною. Соняшникова олія залишається важливим експортним товаром, але логістичні ризики через наслідки обстрілів можуть впливати на поставки. Рекомендується моніторити заявки на купівлю-продаж для оптимізації моменту входу в угоди. \\n\\n\n\nКлючові факти:\n\\n- Ціна кукурудзи CPT Одеса коливається між 214-226 USD/т (станом на 27-28 березня 2026)\\n- Пропозиція шроту соєвого 100 т за 19 700 грн/т у Кіровоградській області (26 березня 2026)\\n- Соняшникова олія CPT Партієт Одеса стабільна на рівні 709 USD/т (27 березня 2026)\\n- Офери на кукурудзу FOB Одеса у квітні 2026 року – 223-225 USD/т\\n- Екологічні наслідки обстрілу порту в грудні 2025 року впливають на логістику олії\\n- Відсутність суттєвих цінових коливань та баланс попиту-пропозиції у березні 2026 року\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на ключові культури в Україні, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3},       {\"label\": \"W4\", \"value\": 4}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (USD/т)\",         \"points\": [",
+    "text": "{   \"summary\": \"Загальна ситуація на українському ринку зернових і олійних за останні 30 днів залишається стабільною з нейтральним інформаційним фоном. Ціни на кукурудзу на експорті в порту Одеса демонструють незначне зростання, з торгів на рівні 224-228 USD/т у кінці березня, що свідчить про помірний попит. Соняшникова олія та соєвий шрот пропонуються за цінами близько 709 грн/т та 19700 грн/т відповідно, без суттєвих коливань. Порівняно з попереднім місяцем, коли даних не було, спостерігається активізація ринку з появою пропозицій і торгів. Відсутність суттєвих цінових шоків або негативних новин свідчить про відносну стабільність. Для трейдерів важливо враховувати, що ціни на кукурудзу мають потенціал для подальшого зростання, враховуючи світові тенденції зростання попиту при зниженні виробництва. Ключові факти свідчать про стабільний експортний попит і відсутність значних логістичних проблем у портах.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на основні зернові та олійні в Україні, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3},       {\"label\": \"W4\", \"value\": 4}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 214},           {\"label\": \"W2\", \"value\": 215},           {\"label\": \"W3\", \"value\": 223},           {\"label\": \"W4\", \"value\": 225}         ]       },       {         \"name\": \"Пшениця CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 220},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса (грн/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 710},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса (USD/т)\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 448},           {\"label\": \"W4\", \"value\": 447}         ]       }     ]   },   \"key_facts\": [     \"Ціна кукурудзи FOB Чорноморськ 29.03.2026: 228 USD/т\",     \"Ціна кукурудзи CPT Одеса 27.03.2026: 214 USD/т\",     \"Ціна пшениці CPT Одеса 27.03.2026: 215 USD/т\",     \"Ціна соняшникової олії CPT Паритет Одеса 27.03.2026: 709 грн/т\",     \"Продаж шроту соєвого 26.03.",
     "chart": null,
     "inputCounts": {
       "last30days": 24,

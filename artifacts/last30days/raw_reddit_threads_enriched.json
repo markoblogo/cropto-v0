@@ -1,119 +1,137 @@
 [
   {
-    "id": "R1",
-    "title": "Financial Market Update - Tuesday, March 17, 2026 - Top 1 Stories You Need to Know",
-    "url": "https://www.reddit.com/r/financialbooklet/comments/1rvwsvj/financial_market_update_tuesday_march_17_2026_top/",
-    "subreddit": "financialbooklet",
-    "date": "2026-03-17",
-    "why_relevant": "Discusses corn futures, export outlook, and cash corn prices as part of a market outlook update.",
-    "relevance": 0.92
-  },
-  {
-    "id": "R4",
-    "title": "USDA's reputation suffers after massive revisions in US corn acres",
-    "url": "https://www.reddit.com/r/fednews/comments/1r1y3s9/usdas_reputation_suffers_after_massive_revisions/",
-    "subreddit": "fednews",
-    "date": "2026-02-11",
-    "why_relevant": "A second matching Reddit thread surfaced for the same USDA corn acreage revision discussion.",
-    "relevance": 0.88
-  },
-  {
     "id": "R3",
-    "title": "Corn futures plunge as USDA reports record 17 billion bushel crop",
-    "url": "https://www.reddit.com/r/farming/comments/1qbtflc/corn_futures_plunge_as_usda_reports_record_17/",
-    "subreddit": "farming",
-    "date": "2026-01-13",
-    "why_relevant": "Highly relevant corn market thread centered on USDA supply estimates and corn futures.",
+    "title": "The Black Sea Brief (July 4, 2024)",
+    "url": "https://www.reddit.com/r/Commodities/comments/1etoq3z",
+    "subreddit": "Commodities",
+    "date": "2024-08-16",
+    "why_relevant": "Discusses Black Sea wheat spot prices and export expectations.",
+    "relevance": 0.98
+  },
+  {
+    "id": "R1",
+    "title": "The Black Sea Brief (September 26, 2024)",
+    "url": "https://www.reddit.com/r/Commodities/comments/1fq8olj",
+    "subreddit": "Commodities",
+    "date": "2024-09-26",
+    "why_relevant": "Direct discussion of Black Sea wheat prices and export flows.",
+    "relevance": 0.99
+  },
+  {
+    "id": "R5",
+    "title": "The Black Sea Brief (April 3, 2024)",
+    "url": "https://www.reddit.com/r/Commodities/comments/1bv6v4h",
+    "subreddit": "Commodities",
+    "date": "2024-04-03",
+    "why_relevant": "Contains Black Sea wheat price levels and market discussion tied to exports.",
     "relevance": 0.97
   },
   {
-    "id": "R1",
-    "title": "USDA's reputation suffers after massive revisions in US corn acres",
-    "url": "https://www.reddit.com/r/fednews/comments/1r1y3s9/usdas_reputation_suffers_after_massive_revisions/",
-    "subreddit": "fednews",
-    "date": "2026-02-11",
-    "why_relevant": "Discusses USDA corn acreage revisions, USDA data reliability, and implications for corn markets.",
-    "relevance": 0.9
-  },
-  {
     "id": "R2",
-    "title": "US farmers to sow more soybeans in 2026, less corn, USDA says",
-    "url": "https://www.reddit.com/r/LeopardsAteMyFarm/comments/1r99lks/us_farmers_to_sow_more_soybeans_in_2026_less_corn/",
-    "subreddit": "LeopardsAteMyFarm",
-    "date": "2026-02-20",
-    "why_relevant": "Directly about USDA crop outlook and reduced corn planting expectations.",
-    "relevance": 0.88
-  },
-  {
-    "id": "R2",
-    "title": "Financial Market Update - Sunday, February 22, 2026 - Top 4 Stories You Need to Know",
-    "url": "https://www.reddit.com/r/financialbooklet/comments/1rbjscn/financial_market_update_sunday_february_22_2026/",
-    "subreddit": "financialbooklet",
-    "date": "2026-02-22",
-    "why_relevant": "Includes a corn price rally and broader corn market commentary.",
-    "relevance": 0.9
-  },
-  {
-    "id": "R3",
-    "title": "Financial Market Update - Monday, March 2, 2026 - Top 2 Stories You Need to Know",
-    "url": "https://www.reddit.com/r/financialbooklet/comments/1rihcym/financial_market_update_monday_march_2_2026_top_2/",
-    "subreddit": "financialbooklet",
-    "date": "2026-03-02",
-    "why_relevant": "Mentions corn futures, ethanol demand, weaker USD, and USDA crop outlook.",
-    "relevance": 0.89
-  },
-  {
-    "id": "R6",
-    "title": "Corn Yields at 181 Make Sense. Corn Overview to Start 2025 Campaign.",
-    "url": "https://www.reddit.com/r/Agriculture/comments/1klhdmx/",
-    "subreddit": "Agriculture",
-    "date": "2025-05-13",
-    "why_relevant": "Contains an explicit corn overview, yield expectations, demand, and price outlook.",
+    "title": "The Black Sea Brief (August 29, 2024)",
+    "url": "https://www.reddit.com/r/Commodities/comments/1f4sxis",
+    "subreddit": "Commodities",
+    "date": "2024-08-30",
+    "why_relevant": "Covers Black Sea wheat prices, Ukraine/Russia export flows, and tenders.",
     "relevance": 0.98
   },
   {
     "id": "R4",
-    "title": "Since MARKETS DON\u2019T EXIST for corn yields of this size, corn prices, which are already at five-year lows, will only continue to plummet.",
-    "url": "https://www.reddit.com/r/Agriculture/comments/1nbod81/since_markets_dont_exist_for_corn_yields_of_this/",
-    "subreddit": "Agriculture",
-    "date": "2025-09-08",
-    "why_relevant": "Directly discusses corn prices, yields, and market outlook.",
+    "title": "The Black Sea Brief (June 27, 2024)",
+    "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1",
+    "subreddit": "Commodities",
+    "date": "2024-06-28",
+    "why_relevant": "Focuses on Black Sea wheat offers, FOB pricing, and export dynamics.",
+    "relevance": 0.98
+  },
+  {
+    "id": "R6",
+    "title": "The Black Sea Brief (March 20, 2024)",
+    "url": "https://www.reddit.com/r/Commodities/comments/1bjrtbm",
+    "subreddit": "Commodities",
+    "date": "2024-03-20",
+    "why_relevant": "Discusses Black Sea wheat prices and export demand.",
     "relevance": 0.97
   },
   {
-    "id": "R5",
-    "title": "A bearish November WASDE led by larger corn yields & ending stocks.",
-    "url": "https://www.reddit.com/r/Agriculture/comments/17rps26/",
-    "subreddit": "Agriculture",
-    "date": "2023-11-09",
-    "why_relevant": "Commodity market discussion focused on corn yields, ending stocks, and price outlook.",
-    "relevance": 0.96
-  },
-  {
     "id": "R7",
-    "title": "Corn",
-    "url": "https://www.reddit.com/r/Vitards/comments/n8m21q",
-    "subreddit": "Vitards",
-    "date": "2021-05-10",
-    "why_relevant": "Investment discussion of corn exposure via ETFs, futures, and related equities.",
-    "relevance": 0.88
+    "title": "The Black Sea Brief (March 13, 2024)",
+    "url": "https://www.reddit.com/r/Agriculture/comments/1be2if8",
+    "subreddit": "Agriculture",
+    "date": "2024-03-13",
+    "why_relevant": "Black Sea wheat prices and export volumes are the main topic.",
+    "relevance": 0.97
   },
   {
     "id": "R9",
-    "title": "Corn Gluten Feed Market 2026: Report Highlights the Competitive Scenario with Impact of Drivers and Challenges",
-    "url": "https://www.reddit.com/r/u_pmrfood/comments/gndneg",
-    "subreddit": "u_pmrfood",
-    "date": "2020-05-01",
-    "why_relevant": "Corn market report thread related to feed demand and regional outlook.",
-    "relevance": 0.7
+    "title": "What\u2019s everyone\u2019s opinion on Wheat right now?",
+    "url": "https://www.reddit.com/r/Commodities/comments/z1zw9r",
+    "subreddit": "Commodities",
+    "date": "2022-11-22",
+    "why_relevant": "Discusses wheat pricing and Black Sea export impacts.",
+    "relevance": 0.9
   },
   {
     "id": "R8",
-    "title": "Corn Based Ingredients Market 2026 Provides Growth Forecast and Upcoming Trends Opportunities by Types, Development Factors",
-    "url": "https://www.reddit.com/r/u_pmrfood/comments/g17lv7",
-    "subreddit": "u_pmrfood",
-    "date": "2020-05-01",
-    "why_relevant": "Market-oriented corn discussion, though more about ingredients than futures or grain prices.",
-    "relevance": 0.72
+    "title": "Why wheat and corn underperformed other commodities since 2022?",
+    "url": "https://www.reddit.com/r/Commodities/comments/1ipb0cz",
+    "subreddit": "Commodities",
+    "date": "2025-02-14",
+    "why_relevant": "Mentions Ukraine war, wheat markets, and Black Sea-related export effects.",
+    "relevance": 0.9
+  },
+  {
+    "id": "R10",
+    "title": "Wheat price",
+    "url": "https://www.reddit.com/r/Commodities/comments/15hdqze",
+    "subreddit": "Commodities",
+    "date": "2023-08-03",
+    "why_relevant": "Thread about wheat prices with discussion of Ukraine/Black Sea exports.",
+    "relevance": 0.88
+  },
+  {
+    "id": "R13",
+    "title": "U.N., Turkey, Ukraine press ahead with Black Sea grain deal despite Russian pullout",
+    "url": "https://www.reddit.com/r/europe/comments/yhsxqq",
+    "subreddit": "europe",
+    "date": "2022-11-01",
+    "why_relevant": "Discusses Black Sea grain exports and resulting wheat price effects.",
+    "relevance": 0.86
+  },
+  {
+    "id": "R12",
+    "title": "Russia and Ukraine sign UN-backed deal to resume grain exports via the Black Sea",
+    "url": "https://www.reddit.com/r/wallstreetbets/comments/w5d7jv",
+    "subreddit": "wallstreetbets",
+    "date": "2022-07-22",
+    "why_relevant": "Black Sea grain export deal with wheat price discussion.",
+    "relevance": 0.87
+  },
+  {
+    "id": "R11",
+    "title": "Wheat Prices Soar as Black Sea Exports Stalled by Russia",
+    "url": "https://www.reddit.com/r/u_MainNewsHub/comments/154hgj0",
+    "subreddit": "u_MainNewsHub",
+    "date": "2023-07-20",
+    "why_relevant": "Directly about wheat prices rising due to Black Sea export disruption.",
+    "relevance": 0.88
+  },
+  {
+    "id": "R14",
+    "title": "De-mine your ports and we'll let grain exports out, Lavrov tells Ukraine.",
+    "url": "https://www.reddit.com/r/worldnews/comments/v8es2g",
+    "subreddit": "worldnews",
+    "date": "2022-06-09",
+    "why_relevant": "Black Sea grain export corridor discussion affecting wheat prices.",
+    "relevance": 0.86
+  },
+  {
+    "id": "R15",
+    "title": "Grain FOB Prices",
+    "url": "https://www.reddit.com/r/Commodities/comments/jp4aul",
+    "subreddit": "Commodities",
+    "date": "2020-11-06",
+    "why_relevant": "Includes Black Sea wheat FOB pricing discussion.",
+    "relevance": 0.84
   }
 ]

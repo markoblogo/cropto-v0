@@ -1,55 +1,63 @@
 {
-  "generatedAt": "2026-03-29T05:15:57.979169+00:00",
+  "generatedAt": "2026-03-30T11:21:22.433047+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-29T05:10:06.624005+00:00",
+  "sourceUpdatedAt": "2026-03-30T11:15:18.672479+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Global grains and oilseeds markets showed no new significant developments yesterday outside Ukraine-related issues. Market sentiment remains mixed with neutral impact, reflecting ongoing concerns about supply chain risks, energy costs, and regional procurement policies. What changed vs previous comparable period: No new market-moving events or price shifts were recorded yesterday compared to the previous day, maintaining a steady state in global pricing and logistics conditions. Actionable implications for trading/brokerage: Traders should maintain cautious positioning given persistent uncertainties around Middle East tensions affecting fertilizer and energy costs, while monitoring regional procurement initiatives like Sindh's wheat policy that support local prices and farmer incomes. \n\nKey facts:\n- Sindh government launched a wheat procurement plan to buy 1 million tons at Rs 3,500 per maund benefiting over 330,000 farmers, aiming to stabilize flour prices (announced 2026-03-28).\n- Global wheat prices eased recently due to improved harvest prospects in Europe and Russia, despite US Plains dryness and high fertilizer costs (noted 2026-03-28).\n- Corn FOB Santos price was 112.7 USD/ton as of 2026-03-12, showing no fresh volatility.\n- Soybeans and wheat prices in Brazil remained stable around 662.9 USD/ton as of 2026-03-14.\n- No new price or logistics disruptions reported on 2026-03-29 compared to 2026-03-28.\n- Fertilizer shortages and energy cost spikes linked to Middle East conflict continue to pressure input costs globally, impacting margins but not yet triggering price spikes.",
+    "text": "General situation: Global grains and oilseeds markets remain mixed with no significant price shifts reported yesterday. Wheat prices are supported by geopolitical tensions in the Middle East and rising crude oil prices, while soybeans and corn have rebounded from recent losses. Fertilizer shortages, especially in Australia, are causing concerns over reduced wheat plantings, adding supply uncertainty. What changed vs previous comparable period: Compared to the day before, there were no new headline events or price spikes, but ongoing factors such as Middle East tensions continue to underpin crude oil and grain prices. Demand for wheat remains strong in Australian ports, and market participants are cautious due to weather risks and input cost inflation. Actionable implications for trading/brokerage: Traders should monitor key support levels in wheat, corn, and soybeans amid potential sector rotation driven by energy price volatility. Fertilizer price trends will be critical for anticipating acreage shifts and supply tightness in coming quarters. Hedging strategies should consider geopolitical risk premiums and input cost pressures. \n\nKey facts:\n- Wheat prices in Victoria and Western Australia accounted for over 80% of traded grain volumes on ClearGrain Exchange on March 30.\n- Fertilizer prices have risen approximately 70%, impacting planting decisions, notably in Australia where wheat acreage is expected to decline.\n- Chicago wheat futures rose up to 1.2% early on March 30 due to Middle East conflict escalation and weather concerns.\n- Soybean and corn prices rebounded on March 30, supported by higher crude oil prices linked to geopolitical tensions.\n- The Australian dollar weakened by 0.39 cents against the US dollar on March 30, pressured by safe-haven demand and rising oil prices.\n- Ethanol and crush margins are improving, with THG quota prices rising from €250/t in 2025 to €430/t in Q3 2026, supporting biofuel-related demand for grains.",
     "chart": {
       "type": "event_mix",
-      "title": "Market Drivers Impact Yesterday",
+      "title": "Drivers of Grain Market Dynamics on 2026-03-30",
       "points": [
         {
-          "label": "Logistics",
-          "value": 0
+          "label": "Geopolitical Risk",
+          "value": 30
         },
         {
-          "label": "Demand",
-          "value": 0
+          "label": "Input Costs (Fertilizer/Diesel)",
+          "value": 25
         },
         {
-          "label": "Pricing",
-          "value": 0
+          "label": "Demand Strength",
+          "value": 20
         },
         {
-          "label": "Execution Risk",
-          "value": 0
+          "label": "Weather/Production Risk",
+          "value": 15
+        },
+        {
+          "label": "Currency Movements",
+          "value": 10
         }
       ],
       "series": [
         {
-          "name": "Impact",
+          "name": "Impact Drivers",
           "points": [
             {
-              "label": "Logistics",
-              "value": 0
+              "label": "Geopolitical Risk",
+              "value": 30
             },
             {
-              "label": "Demand",
-              "value": 0
+              "label": "Input Costs (Fertilizer/Diesel)",
+              "value": 25
             },
             {
-              "label": "Pricing",
-              "value": 0
+              "label": "Demand Strength",
+              "value": 20
             },
             {
-              "label": "Execution Risk",
-              "value": 0
+              "label": "Weather/Production Risk",
+              "value": 15
+            },
+            {
+              "label": "Currency Movements",
+              "value": 10
             }
           ]
         }
@@ -64,10 +72,10 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних в Україні залишається стабільною, проте на фоні зростання цін на пальне спостерігається тиск на логістику та собівартість експорту. Вчора не зафіксовано нових інформаційних сигналів, тоді як напередодні ціни на кукурудзу на умовах CPT Одеса трималися на рівні 214-226 USD/т, а пшениця – близько 215-223 USD/т. Ціни на соняшникову олію залишаються високими – 709 USD/т CPT, що підтримує експортний попит. Порівняно з попереднім днем, активність інформаційного потоку знизилася, але зростання цін на дизель до 90-91 грн/л створює додаткові ризики для перевезень. Це може призвести до збільшення логістичних витрат і вплинути на маржу трейдерів. Рекомендовано уважно моніторити динаміку цін на пальне та коригувати цінові пропозиції з урахуванням зростаючих витрат на доставку. \n\nКлючові факти:\n 1) Кукурудза CPT Одеса – 214-226 USD/т (станом на 28.03); 2) Пшениця FOB Одеса – 223 USD/т (28.03); 3) Соняшникова олія CPT – 709 USD/т (27.03); 4) Дизельне пальне в Україні – 90-91 грн/л (28-29.03); 5) Відсутність нових інформаційних сигналів 29.03; 6) Зниження інформаційної активності порівняно з 28.03.",
+    "text": "Загальна ситуація на українському ринку зернових та олійних 30 березня 2026 року характеризується зниженням виробництва соняшникової олії на 10% у сезоні 2025/2026, що може впливати на пропозицію та ціни. Порівняно з попереднім днем, активність інформаційного потоку зменшилася, але ціни на пальне в Україні продовжують зростати, дизель досяг 91 грн/л, що створює додатковий тиск на логістику та собівартість аграрної продукції. Ціни на кукурудзу на FOB Чорноморському порту залишаються стабільними в діапазоні 224,5-228 USD/т, що свідчить про збереження попиту на експорт. Відсутність суттєвих змін у закупівельних цінах зерна свідчить про стабільність ринку, але високі ціни на нафту та пальне можуть негативно впливати на агросектор у середньостроковій перспективі. Порівняно з попереднім днем, зменшилася кількість інформаційних сигналів, що може свідчити про тимчасове зниження волатильності на ринку.",
     "chart": {
       "type": "event_mix",
-      "title": "Вплив факторів на ринок зернових та олійних 29.03",
+      "title": "Фактори впливу на ринок 30.03.2026",
       "points": [
         {
           "label": "Логістика",
@@ -79,7 +87,7 @@
         },
         {
           "label": "Ціноутворення",
-          "value": 6
+          "value": 8
         },
         {
           "label": "Ризики виконання",
@@ -100,7 +108,7 @@
             },
             {
               "label": "Ціноутворення",
-              "value": 6
+              "value": 8
             },
             {
               "label": "Ризики виконання",

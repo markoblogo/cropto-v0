@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-30T10:44:29.371719+00:00
+**Generated:** 2026-03-30T11:20:48.284803+00:00
 **Date Range:** 2026-02-28 to 2026-03-30
 **Mode:** all
 
@@ -96,50 +96,30 @@
 
 ## Web Results
 
-### W5: (PDF) Agricultural exports of Ukraine in the conditions of war.
+### W15: [PDF] PROCEEDINGS EUROPEAN DIMENSIONS OF SUSTAINABLE ...
 
-- **Source:** researchgate.net
-- **URL:** https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war
+- **Source:** ec.europa.eu
+- **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/4311b9cb-a656-44e3-b488-1b70211a7ab8/Proceedings_2020____________________________________.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W9: A Code of Conduct to protect seafarers - Maritime Professionals
+### W3: [PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...
 
-- **Source:** maritime-professionals.com
-- **URL:** https://maritime-professionals.com/a-code-of-conduct-to-protect-seafarers/
+- **Source:** ec.europa.eu
+- **URL:** https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W14: Calaméo - №63 WDM «Chrematistic»
+### W5: [PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...
 
-- **Source:** calameo.com
-- **URL:** https://www.calameo.com/books/0023427246099ca151190
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W3: [PDF] ECONOMICS, LAW, SOCIETY: resume of 2016 - Публикации ВШЭ
-
-- **Source:** publications.hse.ru
-- **URL:** https://publications.hse.ru/pubs/share/folder/7tccaiv62h/198238734.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W10: [PDF] НАПРЯМИ РОЗВИТКУ ТЕХНОЛОГІЧНИХ СИСТЕМ І ЛОГІСТИКИ ...
-
-- **Source:** biotechuniv.edu.ua
-- **URL:** https://biotechuniv.edu.ua/wp-content/uploads/2025/07/conf-22-05-25-mater.pdf
+- **Source:** vsau.org
+- **URL:** https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -156,7 +136,17 @@
 
 > 
 
-### W12: Суттєвого подорожчання соняшникової олії очікувати не ...
+### W13: Соняшник продовжує дорожчати у лютому 2026
+
+- **Source:** 24tv.ua
+- **URL:** https://24tv.ua/agro24/sonyashnik-prodovzhuye-dorozhchati-lyutomu-2026_n3011290
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W10: Суттєвого подорожчання соняшникової олії очікувати не ...
 
 - **Source:** ukr.net
 - **URL:** https://www.ukr.net/news/details/economics/115453372.html
@@ -186,7 +176,7 @@
 
 > 
 
-### W11: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
+### W9: Україна залишається найбільшим постачальником соняшникової олії до ЄС – частка ринку 92% — Forbes.ua
 
 - **Source:** forbes.ua
 - **URL:** https://forbes.ua/news/ukraina-zberigae-liderstvo-na-rinku-sonyashnikovoi-olii-v-es-iz-chastkoyu-mayzhe-92-09032026-36927
@@ -216,7 +206,7 @@
 
 > 
 
-### W13: Українська соняшникова олія втрачає ринок Китаю - Landlord
+### W11: Українська соняшникова олія втрачає ринок Китаю - Landlord
 
 - **Source:** landlord.ua
 - **URL:** https://landlord.ua/news/ukrayinska-sonyashnykova-oliya-vtrachaye-rynok-kytayu-eksport-vpav-na-25/
@@ -226,10 +216,20 @@
 
 > 
 
-### W15: Ціна соняшникової олії 2026: роздріб, опт, тенденції
+### W12: Ціна соняшникової олії 2026: роздріб, опт, тенденції
 
 - **Source:** eurofest.org.ua
 - **URL:** https://www.eurofest.org.ua/tsina-soniashnykovoi-olii-2026-rozdrib-opt-tendentsii/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W14: 📍#Індія повертає собі статус ключового імпортера ...
+
+- **Source:** instagram.com
+- **URL:** https://www.instagram.com/p/DNm6nEdMOj2/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
