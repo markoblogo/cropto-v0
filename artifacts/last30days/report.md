@@ -1,6 +1,6 @@
 # соняшникова олія логістика україна - Last 30 Days Research Report
 
-**Generated:** 2026-03-31T10:55:42.165327+00:00
+**Generated:** 2026-03-31T12:05:32.540041+00:00
 **Date Range:** 2026-03-01 to 2026-03-31
 **Mode:** all
 
@@ -10,7 +10,7 @@
 
 ## Web Results
 
-### W9: (PDF) Agricultural exports of Ukraine in the conditions of war.
+### W8: (PDF) Agricultural exports of Ukraine in the conditions of war.
 
 - **Source:** researchgate.net
 - **URL:** https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war
@@ -20,7 +20,7 @@
 
 > 
 
-### W10: In December 2025, Ukraine's agricultural export capacity ... - Instagram
+### W5: In December 2025, Ukraine's agricultural export capacity ... - Instagram
 
 - **Source:** instagram.com
 - **URL:** https://www.instagram.com/p/DS2Sfkbj0N1/
@@ -30,7 +30,7 @@
 
 > 
 
-### W5: Russia Opens New Grain Trade Route to East Africa. A major ...
+### W3: Russia Opens New Grain Trade Route to East Africa. A major ...
 
 - **Source:** instagram.com
 - **URL:** https://www.instagram.com/p/DTfLhLXEi9s/
@@ -50,50 +50,10 @@
 
 > 
 
-### W11: Ukraine - Coordination Meeting Minutes, Kyiv, 19 March 2026
-
-- **Source:** logcluster.org
-- **URL:** https://logcluster.org/es/document/ukraine-coordination-meeting-minutes-kyiv-19-march-2026
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W4: Ukraine - Coordination Meeting Minutes, Odesa, 12 March 2026
-
-- **Source:** logcluster.org
-- **URL:** https://logcluster.org/en/documents/ukraine-coordination-meeting-minutes-odesa-12-march-2026
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W8: Ukraine adds 10 logistics companies to Russia sanctions list | Global Sanctions
-
-- **Source:** globalsanctions.com
-- **URL:** https://globalsanctions.com/2026/03/ukraine-adds-10-logistics-companies-to-russia-sanctions-list/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W3: Ukraine needs to increase its presence in sub-Saharan Africa and ...
+### W11: Ukraine needs to increase its presence in sub-Saharan Africa and ...
 
 - **Source:** instagram.com
 - **URL:** https://www.instagram.com/p/DVapnbHCBEk/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W15: [PDF] Moderni-aspekty-vedy-XXX-Czech-Republic.pdf - ResearchGate
-
-- **Source:** researchgate.net
-- **URL:** https://www.researchgate.net/profile/Nataliia-Trushkina/publication/373492896_Moderni_aspekty_vedy_XXX_Czech_Republic/links/64ef30020f7ab20a86654871/Moderni-aspekty-vedy-XXX-Czech-Republic.pdf
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -110,20 +70,10 @@
 
 > 
 
-### W6: [PDF] Відбудова України: принципи та політика - CEPR
+### W4: [PDF] Відбудова України: принципи та політика - CEPR
 
 - **Source:** cepr.org
 - **URL:** https://cepr.org/system/files/2022-12/reconstruction%2520book_Ukrainian_0.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W12: [PDF] МІНІСТРЕСТВО О СВІТИ І НАУКИ УКРАЇНИ
-
-- **Source:** google.com
-- **URL:** http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=http://vsed.oneu.edu.ua/collections/2016/61/pdf/vsed_61-2016.pdf&ved=2ahUKEwjd8bLv_MmTAxWAF1kFHZvhHVQQFnoECA8QAg&usg=AOvVaw2yNQzUlQTk84fSePAh89Qx
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
@@ -140,10 +90,60 @@
 
 > 
 
-### W7: Ринок соняшникової олії на порозі великих глобальних змін
+### W6: Ринок соняшникової олії на порозі великих глобальних змін
 
 - **Source:** ukragroconsult.com
 - **URL:** https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W7: Україна зберегла світове лідерство з експорту соняшникової олії у 2024 році
+
+- **Source:** agravery.com
+- **URL:** https://agravery.com/uk/posts/show/ukraina-zberegla-svitove-liderstvo-z-eksportu-sonasnikovoi-olii-u-2024-roci
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W9: Україна у 34 рази наростила експорт ріпакової олії - Nfront
+
+- **Source:** nfront.org.ua
+- **URL:** https://nfront.org.ua/ukraina-u-34-razy-narostyla-eksport-ripakovoi-olii/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W10: Ціна соняшникової олії 2026: роздріб, опт, тенденції - EuroFest
+
+- **Source:** eurofest.org.ua
+- **URL:** https://www.eurofest.org.ua/tsina-soniashnykovoi-olii-2026-rozdrib-opt-tendentsii/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: Ціни на олію в Україні: повний огляд ринку та прогнозів на 2026 рік - Duflu
+
+- **Source:** duflu.org.ua
+- **URL:** https://duflu.org.ua/cziny-na-oliyu-v-ukrayini-povnyj-oglyad-rynku-ta-prognoziv-na-2026-rik/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W15: Які товари з України відправляють за кордон: повний огляд ...
+
+- **Source:** engage.org.ua
+- **URL:** https://engage.org.ua/yaki-tovary-z-ukrayiny-vidpravlyayut-za-kordon-povnyj-oglyad-eksportu/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 

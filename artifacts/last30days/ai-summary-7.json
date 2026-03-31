@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-03-31T10:56:31.467429+00:00",
+  "generatedAt": "2026-03-31T12:06:31.990054+00:00",
   "filters": {
     "days": 7
   },
-  "sourceUpdatedAt": "2026-03-31T10:53:02.260847+00:00",
+  "sourceUpdatedAt": "2026-03-31T12:02:48.291520+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Global corn markets show cautious sentiment amid ongoing geopolitical tensions, with discussions around potential growth in corn production despite war-related uncertainties. What changed vs previous comparable period: This week saw the emergence of a new neutral outlook on corn prospects, contrasting with no notable signals in the prior week. Actionable implications for trading/brokerage: Traders should monitor corn export offers from European ports like Tarragona (CIF at 241 EUR/ton for April shipments) and watch for shifts in sunflower seed oil bids in the Marmara region, which may influence oilseed spreads. The rapeseed market shows stable DAP pricing around 500 EUR/ton for August delivery in Herzlake, indicating steady fertilizer demand. \n\nKey facts:\n Corn FOB Santos price was 112.7 USD/ton on March 12, 2026; Brazilian soybeans and wheat prices stood at 662.9 USD/ton on March 14, 2026; US spot corn and soybeans were priced at 394.45 USD/ton as of February 4, 2026; Recent broker offers include corn CIF at 241 EUR/ton for April 10-30 from Tarragona and sunflower CPT bids at 301 USD/ton for early March in Marmara; Rapeseed DAP trades fixed at 500 EUR/ton for August 2026 in Herzlake. Overall, the market awaits clearer signals on crop growth potential amid war impacts, with stable fertilizer and oilseed trade flows supporting current price levels.",
+    "text": "General situation: The global grains and oilseeds market remains stable with no significant new developments or shocks reported in the past week. Market sentiment continues to be neutral, reflecting steady production expectations and unchanged trade dynamics outside Ukraine. What changed vs previous comparable period: There were no new reports or impactful events from March 24 to March 30, 2026, maintaining the status quo compared to the prior week. Actionable implications for trading/brokerage: Traders should maintain cautious positioning given the lack of fresh market drivers and stable fundamentals. Focus should remain on monitoring upcoming planting intentions and export demand shifts, especially in major producers like the US and Brazil.\n\nKey facts:\n- US farmers plan to sow more soybeans and fewer corn acres in 2026 as of February 20, indicating a potential shift in crop supply balance.\n- USDA reported a record 17 billion bushel corn crop in January 2026, pressuring corn futures earlier in the year.\n- China’s zero US soybean purchases during the 2025 harvest season triggered a $13 billion market impact, highlighting geopolitical trade risks.\n- India’s wheat harvest exceeded expectations by 4 million tons year-on-year as of May 2025, pressuring global wheat prices.\n- Brazilian corn FOB Santos price was 112.7 in mid-March 2026, providing context for South American export competitiveness.\n- No new market-moving events or price volatility were recorded in the last week, confirming a stable market environment.",
     "chart": {
       "type": "price_overlay_week",
-      "title": "Weekly Price Trends for Key Commodities",
+      "title": "Grains & Oilseeds Prices Last 7 Days",
       "points": [
         {
           "label": "Mar 24",
@@ -45,7 +45,7 @@
       ],
       "series": [
         {
-          "name": "Corn FOB Santos (USD/ton)",
+          "name": "Brazil Corn FOB Santos",
           "points": [
             {
               "label": "Mar 24",
@@ -78,7 +78,7 @@
           ]
         },
         {
-          "name": "Soybeans Brazil (USD/ton)",
+          "name": "Brazil Soybeans",
           "points": [
             {
               "label": "Mar 24",
@@ -111,7 +111,7 @@
           ]
         },
         {
-          "name": "Wheat Brazil (USD/ton)",
+          "name": "Brazil Wheat",
           "points": [
             {
               "label": "Mar 24",
@@ -154,7 +154,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку олійних та зернових в Україні залишається стабільною, проте зберігаються ризики через військові дії, зокрема дронові удари по великих сховищах соняшникової олії в Одеському регіоні. Порівняно з попереднім тижнем, активність інформаційного потоку зросла, але цінові тренди залишаються без суттєвих змін. Ціни на кукурудзу, пшеницю, сою та соняшникову олію демонструють незначні коливання, зберігаючи стабільний експортний попит. Пропозиції на ринку кукурудзи та ріпаку залишаються конкурентними, що підтримує торгівельну активність. Водночас, зниження виробництва соняшникової олії на 10% у маркетинговому році 2025/26 може створити тиск на пропозицію в середньостроковій перспективі. Для трейдерів важливо враховувати геополітичні ризики та підтримувати гнучкість у логістиці, особливо в Одеському регіоні, де зберігаються загрози для інфраструктури. Цінові пропозиції на кукурудзу в портах Чорноморська та Південного коливаються в межах 224,5-229 USD/т, що свідчить про стабільний попит і пропозицію. Ріпак торгується в діапазоні 500-510 EUR/т, а соя – близько 448 USD/т, що відображає помірний інтерес імпортерів. Загалом, ринок демонструє стійкість, але потребує уважного моніторингу військових подій та логістичних викликів.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Цінова динаміка основних культур в Україні (тиждень)\",     \"points\": [       {\"label\": \"День 1\", \"value\": 0},       {\"label\": \"День 2\", \"value\": 0},       {\"label\": \"День 3\", \"value\": 0},       {\"label\": \"День 4\", \"value\": 0},       {\"label\": \"День 5\", \"value\": 0},       {\"label\": \"День 6\", \"value\": 0},       {\"label\": \"День 7\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза (USD/т)\",         \"points\": [           {\"label\": \"День 1\", \"value\": 215},           {\"label\": \"День 2\", \"value\": 224.5},           {\"label\": \"День 3\", \"value\": 225},           {\"label\": \"День 4\", \"value\": 226},           {\"label\": \"День 5\", \"value\": 227},           {\"label\": \"День 6\", \"value\": 228},           {\"label\": \"День 7\", \"value\": 229}         ]       },       {         \"name\": \"Ріпак (EUR/т)\",         \"points\": [           {\"label\": \"День 1\", \"value\": 500},           {\"label\": \"День 2\", \"value\": 500},           {\"label\": \"День 3\", \"value\": 505},           {\"label\": \"День 4\", \"value\": 510},           {\"label\": \"День 5\", \"value\": 510},           {\"label\": \"День 6\", \"value\": 505},           {\"label\": \"День 7\", \"value\": 500}         ]       },       {         \"name\": \"Соняшникова олія (USD/т)\",",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України залишається стабільною без суттєвих змін упродовж останнього тижня. Прогноз Gartner щодо ринку ПК на 2026 рік не вплинув на аграрний сектор, що відображає відсутність нових драйверів у зерновому сегменті. Порівняно з попереднім тижнем, кількість новин та їх вплив залишилися незмінними, що свідчить про відсутність значних шоків у торгівлі чи логістиці. Ціни на основні культури, такі як пшениця, кукурудза, соняшник та соя, стабільні, без різких коливань. Пропозиції на ринку насіння сої GMO за ціною 500-500 USD CIF на квітень 2026 року додають коливань у сегменті насіння, але не змінюють загальної картини. Для трейдерів та брокерів це означає збереження поточних позицій з акцентом на моніторинг потенційних змін у глобальному попиті та логістиці, особливо у контексті експорту соняшникової олії та зернових з Чорноморського регіону.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Динаміка цін на ключові культури (25.02-03.03.2026)\",     \"points\": [       {\"label\": \"25.02\", \"value\": 0},       {\"label\": \"26.02\", \"value\": 0},       {\"label\": \"27.02\", \"value\": 0},       {\"label\": \"28.02\", \"value\": 0},       {\"label\": \"29.02\", \"value\": 0},       {\"label\": \"01.03\", \"value\": 0},       {\"label\": \"02.03\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Пшениця CPT Одеса\",         \"points\": [           {\"label\": \"25.02\", \"value\": 216},           {\"label\": \"26.02\", \"value\": 216},           {\"label\": \"27.02\", \"value\": 216},           {\"label\": \"28.02\", \"value\": 216},           {\"label\": \"29.02\", \"value\": 216},           {\"label\": \"01.03\", \"value\": 216},           {\"label\": \"02.03\", \"value\": 216}         ]       },       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"25.02\", \"value\": 215},           {\"label\": \"26.02\", \"value\": 215},           {\"label\": \"27.02\", \"value\": 215},           {\"label\": \"28.02\", \"value\": 215},           {\"label\": \"29.02\", \"value\": 215},           {\"label\": \"01.03\", \"value\": 215},           {\"label\": \"02.03\", \"value\": 215}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса\",         \"points\": [           {\"label\": \"25.02\", \"value\": 709},           {\"label\": \"26.02\", \"value\": 709},           {\"label\": \"27.02\", \"value\": 709},           {\"label\": \"28.02\", \"value\": 709},           {\"label\": \"29.02\", \"value\": 709},           {\"label\": \"01.03\", \"value\": 709},           {\"label\": \"02.03\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса\",         \"points\": [           {\"label\": \"25.02\", \"value\": 448},           {\"label\": \"26.02\",",
     "chart": null,
     "inputCounts": {
       "last30days": 24,

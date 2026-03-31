@@ -1,13 +1,13 @@
 {
-  "id": "resp_079d6b2ef36b24aa0069cba819f9308194aa850dfd2944c36a",
+  "id": "resp_0be3032f3b5378170069cbb87d14a88194aade37598c135e03",
   "object": "response",
-  "created_at": 1774954522,
+  "created_at": 1774958717,
   "status": "completed",
   "background": false,
   "billing": {
     "payer": "openai"
   },
-  "completed_at": 1774954524,
+  "completed_at": 1774958719,
   "error": null,
   "frequency_penalty": 0.0,
   "incomplete_details": null,
@@ -17,7 +17,7 @@
   "model": "gpt-5.4-mini-2026-03-17",
   "output": [
     {
-      "id": "ws_079d6b2ef36b24aa0069cba81a4e288194b3c2892fb3e75320",
+      "id": "ws_0be3032f3b5378170069cbb87d59dc8194a2deb97a9837fbc9",
       "type": "web_search_call",
       "status": "completed",
       "action": {
@@ -59,25 +59,21 @@
           },
           {
             "type": "url",
-            "url": "https://us.reddit.com/user/TulsisTavern/"
-          },
-          {
-            "type": "url",
-            "url": "https://ns.reddit.com/user/sushipoptarts/"
-          },
-          {
-            "type": "url",
             "url": "https://www.business.reddit.com/conversations/holiday-travel-on-reddit"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/trends/technology-reddit-insights"
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era"
+          },
+          {
+            "type": "url",
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era-vancouver"
           }
         ]
       }
     },
     {
-      "id": "msg_079d6b2ef36b24aa0069cba81b8c8881949ed7da6a41d6d54e",
+      "id": "msg_0be3032f3b5378170069cbb87e653c8194bde9e5edd8fde6e9",
       "type": "message",
       "status": "completed",
       "content": [
@@ -85,7 +81,7 @@
           "type": "output_text",
           "annotations": [],
           "logprobs": [],
-          "text": "{\n  \"items\": [\n    {\n      \"title\": \"\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?\",\n      \"url\": \"https://www.reddit.com/r/reddit_ukr/comments/1kln9eh\",\n      \"subreddit\": \"reddit_ukr\",\n      \"date\": \"2025-05-13\",\n      \"why_relevant\": \"Discussion about edible oils in Ukraine, including sunflower oil and rapeseed oil availability and consumer preference, which is adjacent to sunflower oil logistics in Ukraine.\",\n      \"relevance\": 0.42\n    }\n  ]\n}"
+          "text": "{\n  \"items\": [\n    {\n      \"title\": \"\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?\",\n      \"url\": \"https://www.reddit.com/r/reddit_ukr/comments/1kln9eh\",\n      \"subreddit\": \"reddit_ukr\",\n      \"date\": \"2025-05-13\",\n      \"why_relevant\": \"Ukrainian-language thread about cooking oils in Ukraine, including sunflower oil and alternatives; closely related to oil supply, availability, and logistics discussions.\",\n      \"relevance\": 0.72\n    }\n  ]\n}"
         }
       ],
       "phase": "final_answer",
@@ -134,7 +130,7 @@
   "top_p": 0.98,
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 8838,
+    "input_tokens": 8819,
     "input_tokens_details": {
       "cached_tokens": 4608
     },
@@ -142,7 +138,7 @@
     "output_tokens_details": {
       "reasoning_tokens": 93
     },
-    "total_tokens": 9066
+    "total_tokens": 9047
   },
   "user": null,
   "metadata": {}

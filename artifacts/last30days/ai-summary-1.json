@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-03-31T10:56:03.768481+00:00",
+  "generatedAt": "2026-03-31T12:05:59.762630+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-31T10:50:20.289737+00:00",
+  "sourceUpdatedAt": "2026-03-31T12:00:14.086380+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: The global corn market remains in a holding pattern with no significant bullish or bearish shifts reported yesterday. Discussions around corn growth potential amid ongoing geopolitical tensions continue to surface, reflecting cautious market sentiment. What changed vs previous comparable period: Compared to the prior day, there was an emergence of a neutral signal focused on corn's growth prospects during wartime, marking a slight increase in market discourse but no immediate price or supply impact. Actionable implications for trading/brokerage: Traders should monitor developments around corn acreage and geopolitical factors influencing supply chains, while broker desks can note steady rapeseed DAP bids at 500 EUR for August 2026 delivery, indicating stable demand in the oilseeds segment. \n\nKey facts:\n- On March 30, 2026, a neutral market signal highlighted corn's potential growth amid war conditions.\n- Brazilian corn FOB Santos price was 112.72 as of March 12, 2026.\n- Brazilian soybeans and wheat prices stood at 662.90 on March 14, 2026.\n- US corn spot price was 394.45 on February 4, 2026.\n- Rapeseed DAP bids held firm at 500 EUR for August 2026 delivery in Herzlake as of March 30, 2026.\n- No price or supply disruptions were reported compared to the previous day, maintaining market equilibrium.",
+    "text": "General situation: The global grains and oilseeds market remained stable yesterday with no new impactful developments reported outside Ukraine. Market sentiment continues to reflect a cautious stance amid ongoing structural shifts such as US farmers' changing crop acreage preferences and record production levels. What changed vs previous comparable period: Compared to the previous day, there were no new reports or market-moving events, maintaining a neutral tone. However, looking back over the last month, notable trends include US farmers planning to increase soybean planting at the expense of corn, and a record US corn crop reported earlier in January, which continue to influence market expectations. Actionable implications for trading/brokerage: Traders should maintain a watchful approach given the absence of fresh catalysts yesterday, focusing on monitoring acreage shifts and production revisions in the US that could affect supply fundamentals. The stable environment suggests limited short-term volatility, favoring strategic positioning ahead of seasonal planting and export updates.\n\nKey facts:\n- On February 20, 2026, US farmers announced intentions to sow more soybeans and less corn for the 2026 season, signaling a shift in crop mix.\n- USDA reported a record 17 billion bushel US corn crop in January 2026, pressuring corn futures earlier in the year.\n- Brazil's corn FOB Santos price was last recorded at 112.7 in mid-March 2026, reflecting steady export competitiveness.\n- Indian wheat harvest exceeded expectations with a 4 million ton year-on-year increase reported in May 2025, pressuring global wheat prices.\n- ADM announced closure of a soybean crush plant in April 2025, indicating structural adjustments in processing capacity.\n- No new market-moving headlines or broker desk insights were recorded yesterday, maintaining a neutral market tone.",
     "chart": {
       "type": "event_mix",
-      "title": "Market Drivers Impact Yesterday",
+      "title": "Market Drivers Yesterday",
       "points": [
         {
           "label": "Logistics",
@@ -33,7 +33,7 @@
       ],
       "series": [
         {
-          "name": "Impact",
+          "name": "Impact Level",
           "points": [
             {
               "label": "Logistics",
@@ -64,26 +64,26 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних України залишається стабільною без суттєвих змін у новинах за вчорашній день. Ціни на основні культури на експортних терміналах Одеси демонструють незначні коливання: кукурудза торгується близько 215 USD/т, пшениця — 216 USD/т, соя — 448 USD/т, а соняшникова олія — 709 USD/т. Порівняно з попереднім днем, активність на ринку зберігається на тому ж рівні, без нових суттєвих сигналів або змін у балансі попиту та пропозиції. Торгові пропозиції на ринку кукурудзи та ріпаку свідчать про стабільний інтерес, з пропозиціями на FOB кукурудзу в діапазоні 224.5-229 USD/т та ріпак у районі 500-510 EUR/т на поставки в другому кварталі 2026 року. Відсутність нових інформаційних драйверів свідчить про консолідацію ринку перед весняною посівною кампанією. Для трейдерів це означає збереження поточної цінової волатильності та можливість планування угод з урахуванням стабільного попиту на українську сільгосппродукцію, особливо соняшникову олію, яка залишається ключовим експортним товаром України.",
+    "text": "Загальна ситуація на ринку зернових та олійних культур України залишається стабільною без суттєвих змін у новинах за вчорашній день. Порівняно з попереднім днем, з'явилася одна нейтральна новина, яка не вплинула на ринкові настрої. Ціни на основні культури (соняшник, кукурудза, соя, пшениця) залишаються на стабільному рівні, без різких коливань. Водночас, на ринку спостерігається активність у сегменті насіння сої GMO з пропозиціями за ціною 500-500 USD CIF на квітень 2026 року, що може свідчити про підвищений інтерес трейдерів до цього сегменту. Порівняно з попереднім днем, відсутність нових значущих подій свідчить про тимчасову паузу у впливі зовнішніх факторів на ринок. Для трейдерів це означає можливість утримання позицій без значних ризиків, зосереджуючись на моніторингу пропозицій насіння сої та стабільності цін на олійні культури. Ключові факти включають стабільність цін, відсутність нових шоків у логістиці чи виробництві, а також активність у сегменті GMO насіння сої, що може стати драйвером торгів найближчим часом.",
     "chart": {
       "type": "event_mix",
-      "title": "Вплив факторів на ринок зернових та олійних (вчора)",
+      "title": "Вплив драйверів ринку зернових та олійних (22.02.2026)",
       "points": [
         {
           "label": "Логістика",
-          "value": 20
+          "value": 0
         },
         {
           "label": "Попит",
-          "value": 25
+          "value": 0
         },
         {
           "label": "Ціноутворення",
-          "value": 30
+          "value": 0
         },
         {
           "label": "Ризики виконання",
-          "value": 25
+          "value": 0
         }
       ],
       "series": [
@@ -92,19 +92,19 @@
           "points": [
             {
               "label": "Логістика",
-              "value": 20
+              "value": 0
             },
             {
               "label": "Попит",
-              "value": 25
+              "value": 0
             },
             {
               "label": "Ціноутворення",
-              "value": 30
+              "value": 0
             },
             {
               "label": "Ризики виконання",
-              "value": 25
+              "value": 0
             }
           ]
         }
