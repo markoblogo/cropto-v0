@@ -20,6 +20,7 @@ TOPICS_UK_RAW="${LAST30DAYS_TOPICS_UK:-ціни на пшеницю чорном
 SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
 ORIGINAL_SEARCH_SOURCES="$SEARCH_SOURCES"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-60}"
+QUERY_DEADLINE_SECS="${LAST30DAYS_QUERY_DEADLINE_SECS:-95}"
 BLUESKY_PUBLIC_FALLBACK=0
 BSKY_FALLBACK_QUERY="${LAST30DAYS_BSKY_FALLBACK_QUERY:-grain wheat corn soybeans sunflower rapeseed ukraine black sea export logistics}"
 BSKY_FALLBACK_QUERY_UK="${LAST30DAYS_BSKY_FALLBACK_QUERY_UK:-зерно пшениця кукурудза соя соняшник ріпак україна експорт логістика}"
@@ -133,7 +134,11 @@ run_bluesky_public_query() {
   local days="$1"
   local topic="$2"
   local out_file="$3"
-  python3 "$ROOT_DIR/scripts/fetch_bluesky_public.py" "$topic" --days="$days" --limit=25 > "$out_file"
+  if command -v timeout >/dev/null 2>&1; then
+    timeout 30s python3 "$ROOT_DIR/scripts/fetch_bluesky_public.py" "$topic" --days="$days" --limit=25 > "$out_file"
+  else
+    python3 "$ROOT_DIR/scripts/fetch_bluesky_public.py" "$topic" --days="$days" --limit=25 > "$out_file"
+  fi
 }
 
 count_json_items() {
@@ -162,13 +167,24 @@ run_query() {
   local topic="$2"
   local out_file="$3"
   local err_file="$4"
-  python3 "$SCRIPT_PATH" "$topic" \
-    --days="$days" \
-    --emit=json \
-    --store \
-    --include-web \
-    --search "$SEARCH_SOURCES" \
-    --timeout "$TIMEOUT_SECS" > "$out_file" 2> "$err_file"
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "${QUERY_DEADLINE_SECS}s" \
+      python3 "$SCRIPT_PATH" "$topic" \
+        --days="$days" \
+        --emit=json \
+        --store \
+        --include-web \
+        --search "$SEARCH_SOURCES" \
+        --timeout "$TIMEOUT_SECS" > "$out_file" 2> "$err_file"
+  else
+    python3 "$SCRIPT_PATH" "$topic" \
+      --days="$days" \
+      --emit=json \
+      --store \
+      --include-web \
+      --search "$SEARCH_SOURCES" \
+      --timeout "$TIMEOUT_SECS" > "$out_file" 2> "$err_file"
+  fi
 }
 
 write_empty_payload() {
