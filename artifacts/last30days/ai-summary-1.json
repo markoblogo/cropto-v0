@@ -1,59 +1,37 @@
 {
-  "generatedAt": "2026-03-31T02:01:12.455571+00:00",
+  "generatedAt": "2026-03-31T05:07:05.380417+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-31T02:00:14Z",
+  "sourceUpdatedAt": "2026-03-31T05:06:10Z",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Yesterday's grains and oilseeds markets outside Ukraine showed stable price levels with no significant new data or market shifts. Brazilian corn and soybeans remain priced at 112.72 USD/ton and 662.90 USD/ton respectively, reflecting steady export conditions. US spot prices for corn, soybeans, and wheat held at 394.45 USD/ton, indicating no immediate volatility. What changed vs previous comparable period: There were no recorded price changes or market events compared to the previous day, maintaining a status quo in supply-demand dynamics. However, broker desk activity in rapeseed for August 2026 delivery at 500 EUR/ton in Herzlake suggests ongoing firm demand and price stability in European oilseeds. Actionable implications for trading/brokerage: Traders should maintain current positions given the lack of price movement and stable fundamentals. The rapeseed trade signals a potential opportunity to engage in forward contracts at established price levels, supporting portfolio diversification into European oilseeds. \n\nKey facts:\n- Brazilian corn FOB Santos priced at 112.72 USD/ton as of March 12, 2026\n- Brazilian soybeans and wheat both at 662.90 USD/ton as of March 14, 2026\n- US spot prices for corn, soybeans, and wheat steady at 394.45 USD/ton as of February 4, 2026\n- Argentine barley Grade 2 Up River at 212 USD/ton with no recent price update\n- Rapeseed traded at 500 EUR/ton for August 2026 delivery in Herzlake on March 30, 2026\n- No temporal price changes or market events recorded yesterday",
+    "text": "General situation: Yesterday's grains and oilseeds markets outside Ukraine showed stable price levels with no significant new data or market shifts. Brazilian corn FOB Santos was priced at 112.72 USD/ton as of March 12, 2026, while Brazilian soybeans and wheat both stood at 662.90 USD/ton on March 14, 2026. US spot prices for corn, soybeans, and wheat remained steady at 394.45 USD/ton as of February 4, 2026. What changed vs previous comparable period: There were no recorded price changes or new market developments compared to the previous day, reflecting a lack of fresh market drivers or disruptions. Actionable implications for trading/brokerage: Traders should maintain current positions given the stable pricing environment but monitor the rapeseed DAP trade in Herzlake for August 2026 delivery at 500 EUR/ton, which may signal emerging interest or pricing benchmarks in European oilseeds. \n\nKey facts:\n- Brazilian corn FOB Santos at 112.72 USD/ton (March 12, 2026)\n- Brazilian soybeans and wheat at 662.90 USD/ton (March 14, 2026)\n- US spot corn, soybeans, and wheat at 394.45 USD/ton (February 4, 2026)\n- Argentine barley Grade 2 Up River at 212 USD/ton (December 31, 2025)\n- US barley No 2 HRW at 239 USD/ton (December 31, 2025)\n- Rapeseed DAP traded at 500 EUR/ton for August 2026 delivery in Herzlake (March 30, 2026)",
     "chart": {
       "type": "event_mix",
-      "title": "Yesterday's Market Drivers",
+      "title": "Market Drivers Yesterday",
       "points": [
         {
+          "label": "Pricing",
+          "value": 70
+        },
+        {
           "label": "Logistics",
-          "value": 2
+          "value": 10
         },
         {
           "label": "Demand",
-          "value": 3
-        },
-        {
-          "label": "Pricing",
-          "value": 1
+          "value": 10
         },
         {
           "label": "Execution Risk",
-          "value": 1
+          "value": 10
         }
       ],
-      "series": [
-        {
-          "name": "Market Drivers",
-          "points": [
-            {
-              "label": "Logistics",
-              "value": 2
-            },
-            {
-              "label": "Demand",
-              "value": 3
-            },
-            {
-              "label": "Pricing",
-              "value": 1
-            },
-            {
-              "label": "Execution Risk",
-              "value": 1
-            }
-          ]
-        }
-      ]
+      "series": []
     },
     "inputCounts": {
       "last30days": 0,
@@ -64,29 +42,51 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних культур України вчора характеризувалась стабільністю цін на кукурудзу з незначними коливаннями в межах 224,5-229 USD/т FOB на різних термінах поставки. Ціни на соняшник та сою залишаються високими, що підтримує інтерес до експорту. Ріпак демонструє активність у сегменті DAP з цінами близько 500-510 EUR/т, що свідчить про стабільний попит на переробку. Порівняно з попереднім днем, ціни на кукурудзу дещо знизились на короткострокових термінах, але залишаються на рівні близько 225 USD/т, що вказує на баланс попиту та пропозиції. Для трейдерів важливо враховувати ціновий коридор та активність заявок, особливо на короткі терміни, що може впливати на швидкість укладання контрактів. Відсутність значних змін у логістиці та експортних маршрутах підтримує стабільність ринку. \n\nКлючові факти:\n ціна кукурудзи FOB 229 USD/т (SPOT, 30.03), пропозиції кукурудзи FOB 226-227 USD/т (10-25.04), заявки на кукурудзу FOB 224,5-225 USD/т (1-2H квітня), ріпак DAP 500-510 EUR/т (серпень-червень), соняшник CPT 709 USD/т (30.03), соя CPT 448 USD/т (30.03).",
+    "text": "Загальна ситуація на ринку зернових та олійних культур України вчора характеризувалась стабільністю цін на кукурудзу з незначними коливаннями в пропозиціях на експортних терміналах. Ціни на соняшник та сою залишаються на високому рівні, що підтримує інтерес переробників. Рапс демонструє активність у сегменті DAP з пропозиціями на серпень та травень-червень, що свідчить про планування поставок у довгостроковій перспективі. Порівняно з попереднім днем, ціни на кукурудзу FOB знизилися на 1-2 долари за тонну, а BID-пропозиції залишаються нижчими за оферти, що створює потенціал для торгів. Відсутність нових даних за останні 30 днів ускладнює глибший аналіз трендів, проте поточні котирування вказують на збалансований попит і пропозицію. Для трейдерів важливо враховувати ціновий розрив між BID та OFFER на кукурудзу, що може бути використано для короткострокових угод, а також активність на ринку рапсу для планування поставок. Ключові факти підтверджують стабільність цін на пшеницю та соняшник, а також активність брокерів у сегменті кукурудзи та рапсу.",
     "chart": {
       "type": "event_mix",
-      "title": "Drivers of Ukrainian Grain & Oilseeds Market Yesterday",
+      "title": "Вплив драйверів на ринок зернових та олійних (30 березня 2026)",
       "points": [
         {
-          "label": "Pricing",
-          "value": 40
+          "label": "Логістика",
+          "value": 3
         },
         {
-          "label": "Demand",
-          "value": 25
+          "label": "Попит",
+          "value": 4
         },
         {
-          "label": "Logistics",
-          "value": 20
+          "label": "Ціноутворення",
+          "value": 5
         },
         {
-          "label": "Execution Risk",
-          "value": 15
+          "label": "Ризик виконання",
+          "value": 2
         }
       ],
-      "series": []
+      "series": [
+        {
+          "name": "Вплив факторів",
+          "points": [
+            {
+              "label": "Логістика",
+              "value": 3
+            },
+            {
+              "label": "Попит",
+              "value": 4
+            },
+            {
+              "label": "Ціноутворення",
+              "value": 5
+            },
+            {
+              "label": "Ризик виконання",
+              "value": 2
+            }
+          ]
+        }
+      ]
     },
     "inputCounts": {
       "last30days": 0,
