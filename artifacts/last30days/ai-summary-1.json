@@ -1,55 +1,55 @@
 {
-  "generatedAt": "2026-03-31T13:17:37.074143+00:00",
+  "generatedAt": "2026-03-31T13:35:08.083510+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-31T13:11:05.384896+00:00",
+  "sourceUpdatedAt": "2026-03-31T13:28:47.494964+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: The global grains and oilseeds market remains stable with no significant new developments reported yesterday outside Ukraine. The focus continues on US planting intentions and production forecasts, with mixed signals on acreage shifts between corn and soybeans. What changed vs previous comparable period: There were no new impactful events or market-moving news yesterday compared to the previous day, maintaining a steady outlook. Actionable implications for trading/brokerage: Traders should maintain a cautious stance, monitoring US acreage reports and global supply-demand fundamentals, as no fresh catalysts emerged to drive price volatility.\n\nKey facts:\n- On February 20, 2026, USDA indicated US farmers plan to sow more soybeans and less corn in 2026, signaling a potential shift in crop supply balance.\n- On January 13, 2026, corn futures plunged following USDA's report of a record 17 billion bushel US corn crop, pressuring prices.\n- Brazil's corn FOB Santos price was last recorded at 112.7 on March 12, 2026, providing regional price context.\n- Brazil's soybean and wheat prices stood at 662.9 as of March 14, 2026, reflecting stable market conditions.\n- US spot cash corn and soybeans were both at 394.45 on February 4, 2026, showing no recent price spikes.\n- No new reports or market-moving events were recorded on March 17, 2026, confirming a quiet market day.",
+    "text": "General situation: Global grains and oilseeds markets outside Ukraine remain influenced by geopolitical tensions, notably the Iran conflict impacting oil and fertilizer costs, which in turn pressure agricultural supply chains. Australian wheat prices reached multi-month highs driven by diesel and fertilizer supply constraints, while US winter wheat futures edged up due to dryness threatening yields. Corn and soybean prices softened amid lagged market reactions and shifting investor sentiment. What changed vs previous comparable period: Compared to the prior day, there was no significant change in market impact or sentiment, but ongoing supply-side pressures from fuel and fertilizer tightness intensified. Australian wheat prices notably climbed to a 20-month high, reflecting escalating input costs. Actionable implications for trading/brokerage: Traders should monitor upstream cost inflation risks, especially fertilizer and fuel, which may sustain wheat price support in Australia and the US. Corn and soybean markets show cautious bearish shifts, suggesting selective exposure with attention to planting reports and export demand. Logistics bottlenecks and geopolitical risks warrant close observation for potential volatility spikes.\n\nKey facts:\n- Australian ASW wheat hit a 20-month high of $259/mt due to diesel and fertilizer supply squeeze as of March 31, 2026.\n- Brent crude oil surged to $112/barrel amid Iran Strait of Hormuz tensions, elevating shipping and input costs.\n- US Chicago wheat futures gained for a second session on March 31, 2026, amid Plains dryness threatening winter crop yields.\n- Corn and soybean prices declined slightly on March 31, 2026, reflecting lagged effects and bearish investor repositioning.\n- Upstream agricultural inputs show tightening flows beneath stable prices, with fertilizer leading and feed softening.\n- Global export dynamics remain fragile with dominant exporters like US, Brazil, Russia, India, and Australia under pressure from geopolitical and supply chain disruptions.",
     "chart": {
       "type": "event_mix",
-      "title": "Market Drivers Yesterday",
+      "title": "Market Drivers Impacting Grains & Oilseeds Yesterday",
       "points": [
         {
           "label": "Logistics",
-          "value": 0
+          "value": 7
         },
         {
           "label": "Demand",
-          "value": 0
+          "value": 5
         },
         {
           "label": "Pricing",
-          "value": 0
+          "value": 6
         },
         {
           "label": "Execution Risk",
-          "value": 0
+          "value": 4
         }
       ],
       "series": [
         {
-          "name": "Impact",
+          "name": "Impact Scores",
           "points": [
             {
               "label": "Logistics",
-              "value": 0
+              "value": 7
             },
             {
               "label": "Demand",
-              "value": 0
+              "value": 5
             },
             {
               "label": "Pricing",
-              "value": 0
+              "value": 6
             },
             {
               "label": "Execution Risk",
-              "value": 0
+              "value": 4
             }
           ]
         }
@@ -64,7 +64,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних України залишається стабільною без суттєвих змін у порівнянні з попереднім днем. Вчора не зафіксовано нових значущих подій, які б вплинули на ціни або логістику експорту. Порівняно з попереднім днем, відсутність нових сигналів свідчить про тимчасове затишшя на ринку. Проте, на фоні збереження високого попиту на соняшникову олію в ЄС та зниження виробництва ріпакової олії в сезоні 2025/26, трейдерам варто звернути увагу на можливі коливання пропозиції найближчим часом. Оперативні пропозиції на ринку соєвих бобів та соняшникової олії свідчать про активність у сегменті експорту, що може підтримати цінову стабільність. Відсутність нових ударів по інфраструктурі або логістичних обмежень також позитивно впливає на ринок.\",   \"chart\": {     \"type\": \"event_mix\",     \"title\": \"Вплив факторів на ринок зернових та олійних (2025-12-26)\",     \"points\": [       { \"label\": \"Логістика\", \"value\": 2 },       { \"label\": \"Попит\", \"value\": 3 },       { \"label\": \"Ціни\", \"value\": 1 },       { \"label\": \"Ризики виконання\", \"value\": 1 }     ],     \"series\": [       {         \"name\": \"Вплив факторів\",         \"points\": [           { \"label\": \"Логістика\", \"value\": 2 },           { \"label\": \"Попит\", \"value\": 3 },           { \"label\": \"Ціни\", \"value\": 1 },           { \"label\": \"Ризики виконання\", \"value\": 1 }         ]       }     ]   },   \"summary_details\": {     \"General situation\": \"Ринок зернових та олійних в Україні демонструє стабільність без нових суттєвих подій, що впливають на ціни чи логістику, зберігається високий попит на соняшникову олію в ЄС.\",     \"What changed vs previous comparable period\": \"Відсутність нових сигналів або подій у порівнянні з попереднім днем свідчить про тимчасове затишшя на ринку, без змін у логістиці чи ціновій динаміці.\",     \"Actionable implications for trading/brokerage\": \"Рекомендується слідкувати за потенційним впливом зниження виробництва ріпакової олії у сезоні 2025/26 та активністю експорту соєвих бобів і соняшникової олії, що може створити торгові можливості на фоні стабільного попиту.\",     \"Key facts\": [       \"Вчора (2025-12-26) не зафіксовано нових значущих подій, що впливають на ринок зернових та олійних в Україні.\",       \"Україна залишається провідним постачальником соняшникової олії до ЄС, забезпечуючи близько 92% імпорту.\",       \"Очікується зниження виробництва соняшникової олії на 10% у маркетинговому році 2025/26.\",       \"Ціни на кукурудзу на базарі залишаються стабільними, близько 10 грн за кг (станом на 2025-09-05).\",       \"Пропозиції на ринку: соєві боби CPT Одеський порт – 448 USD, соняш",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України залишається стабільною, проте спостерігається зростання цін на соняшникове насіння через підвищений попит з боку переробників. Водночас виробництво соняшникової олії прогнозується знизитись на 10% у 2025/26 маркетинговому році, що може обмежити експортні можливості. Порівняно з попереднім днем, з'явилась пропозиція на продаж соєвого шроту в Дніпропетровській області за ціною 21000 грн/т, що свідчить про активізацію торгівлі. Ціни на основні зернові культури (кукурудза, пшениця, соя) залишаються на стабільному рівні, але зберігається тиск через глобальні ризики, зокрема вплив війни та порушень у ланцюгах постачання добрив. \\n\\nПорівняно з попереднім днем, ринок отримав нову пропозицію по соєвому шроту, що може вплинути на баланс попиту та пропозиції в сегменті олійних. Зростання цін на соняшникове насіння підтримує переробників, які нарощують виробництво рапсової та соєвої олії, що частково компенсує зниження експорту сирої сировини. \\n\\nДля трейдерів і брокерів важливо враховувати активізацію пропозиції соєвого шроту та зростаючий попит на соняшникове насіння, що може створити можливості для укладання контрактів на переробку та експорт. Враховуючи прогнози зниження виробництва соняшникової олії, варто звернути увагу на диверсифікацію портфеля олійних культур, зокрема рапсу та сої. \\n\\n\n\nКлючові факти:\n\\n- Прогноз зниження виробництва соняшникової олії в Україні на 10% у 2025/26 МР.\\n- Експорт соняшникової олії очікується на рівні 4,4 млн тонн, що на 6,4% менше за попередній період.\\n- Ціни на соняшникове насіння зросли через підвищений попит переробників.\\n- Пропозиція соєвого шроту в Дніпропетровській області: 300 тонн за 21000 грн/т (31 березня 2026).\\n- Ціни на кукурудзу, пшеницю та сою залишаються стабільними, відповідно 215, 216 та 448 доларів за тонну CPT Одеса.\\n- Переробка рапсу та сої зростає, експорт рапсової олії вже подвоївся.\",   \"chart\": {     \"type\": \"event_mix\",     \"title\": \"Драйвери ринку зернових та олійних культур України (31 березня 2026)\",     \"points\": [       { \"label\": \"Логістика\", \"value\": 2 },       { \"label\": \"Попит\", \"value\": 4 },       { \"label\": \"Ціни\", \"value\": 3 },       { \"label\": \"Ризики виконання\", \"value\": 1 }     ],     \"series\": [       {         \"name\": \"Вплив факторів\",         \"points\": [           { \"label\": \"Логістика\", \"value\": 2 },           { \"label\": \"Попит\", \"value\": 4 },           { \"label\": \"Ціни\", \"value\": 3 },           { \"label\": \"Ризики виконання\",",
     "chart": null,
     "inputCounts": {
       "last30days": 24,

@@ -1,34 +1,2563 @@
 {
-  "generatedAt": "2026-03-31T13:11:05.384896+00:00",
+  "generatedAt": "2026-03-31T13:28:47.494964+00:00",
   "items": [
     {
-      "id": "R5",
-      "title": "CORN and a chance to have growth during war?",
-      "url": "https://www.reddit.com/r/stocks/comments/1s805w7/corn_and_a_chance_to_have_growth_during_war/",
-      "subreddit": "stocks",
+      "id": "X10",
+      "text": "@calvinfroedge Since the US has plenty, we may have to do export controls to keep prices low for our farmers. Let the Wheat go up to $3000/Bu and export as much as we can. India's F'd too, it may go to 5000...",
+      "url": "https://x.com/subach/status/2038807258885238910",
+      "author_handle": "subach",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 54,
+      "source": "x",
+      "title": "@calvinfroedge Since the US has plenty, we may have to do export controls to keep prices low for our farmers. Let the Wheat go up to $3000/Bu and export as much as we can. India's F'd too, it may go to 5000..."
+    },
+    {
+      "id": "X5",
+      "text": "@Sherlockbalaji Global wheat prices??",
+      "url": "https://x.com/adarshk42052143/status/2038883870066753939",
+      "author_handle": "adarshk42052143",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.36,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 36,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 48,
+      "source": "x",
+      "title": "@Sherlockbalaji Global wheat prices??"
+    },
+    {
+      "id": "X9",
+      "text": "Australian #wheat prices are responding to the conflict overseas, however not as sharply as the US, which is quite typical / US HRW has a production story which is helping push prices north🌾\n\nNew season APW1 prices are trading around $20-30/t higher than current crop markets. https://t.co/YzZtJFP1XG",
+      "url": "https://x.com/MarketCheck1/status/2038829811406442687",
+      "author_handle": "MarketCheck1",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 3,
+        "reposts": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 32
+      },
+      "score": 48,
+      "source": "x",
+      "title": "Australian #wheat prices are responding to the conflict overseas, however not as sharply as the US, which is quite typical / US HRW has a production story which is helping push prices north🌾\n\nNew season APW1 prices are trading around $20-30/t higher than current crop markets. https://t.co/YzZtJFP1XG"
+    },
+    {
+      "id": "X12",
+      "text": "$WEAT:  Time to play food commodities, including wheat, after years of suppressed and falling prices. https://t.co/PCE9fynra5",
+      "url": "https://x.com/TBeit07/status/2038799754105119050",
+      "author_handle": "TBeit07",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "$WEAT:  Time to play food commodities, including wheat, after years of suppressed and falling prices. https://t.co/PCE9fynra5"
+    },
+    {
+      "id": "X3",
+      "text": "@JnglJourney Who are the \"reluctant beneficiaries\" of Iran weaponising energy?\n\nRussia weaponised food 👇\n\"Australian grain growers are reluctant beneficiaries of Russia's war in Ukraine with higher wheat prices following the collapse of the ... grain deal.\"\nABC, The Business 2/8/2023",
+      "url": "https://x.com/HighlyRusskey/status/2038925274503664005",
+      "author_handle": "HighlyRusskey",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@JnglJourney Who are the \"reluctant beneficiaries\" of Iran weaponising energy?\n\nRussia weaponised food 👇\n\"Australian grain growers are reluctant beneficiaries of Russia's war in Ukraine with higher wheat prices following the collapse of the ... grain deal.\"\nABC, The Business 2/8/2023"
+    },
+    {
+      "id": "X6",
+      "text": "@reformexposed @colder_sarcasm So an arable farmer wants wheat prices to double…",
+      "url": "https://x.com/KathyEPearson/status/2038880448542101505",
+      "author_handle": "KathyEPearson",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.31,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 31,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@reformexposed @colder_sarcasm So an arable farmer wants wheat prices to double…"
+    },
+    {
+      "id": "X4",
+      "text": "Australian wheat prices hit multi-month highs amid diesel, fertilizer supply squeeze\n\n- ASW hits 20-month high of $259/mt\n- Diesel tightness drives internal freight higher\n\nLink: https://t.co/AiHjWNCO1x https://t.co/7p9tJL4aoB",
+      "url": "https://x.com/SPGEnergyAg/status/2038919295967576240",
+      "author_handle": "SPGEnergyAg",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2,
+        "reposts": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 26
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Australian wheat prices hit multi-month highs amid diesel, fertilizer supply squeeze\n\n- ASW hits 20-month high of $259/mt\n- Diesel tightness drives internal freight higher\n\nLink: https://t.co/AiHjWNCO1x https://t.co/7p9tJL4aoB"
+    },
+    {
+      "id": "X11",
+      "text": "Upstream agri accelerates while flows stay uneven. \n\n#Fertilizer leads, #feed soft, #logistics under pressure. System is tightening beneath stable prices.\n\n#Commodities #Agri #EcoModities #soja #soyoil #soymeal #palmoil #corn #wheat #grains https://t.co/kKv02rgBaA",
+      "url": "https://x.com/LmGold34/status/2038803942201524613",
+      "author_handle": "LmGold34",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Upstream agri accelerates while flows stay uneven. \n\n#Fertilizer leads, #feed soft, #logistics under pressure. System is tightening beneath stable prices.\n\n#Commodities #Agri #EcoModities #soja #soyoil #soymeal #palmoil #corn #wheat #grains https://t.co/kKv02rgBaA"
+    },
+    {
+      "id": "X7",
+      "text": "Yeah, the Iran conflict's choking the Strait of Hormuz—cutting ~20% of global oil/gas supply. Brent crude hit $112/barrel, spiking shipping, fuel & fertilizer costs that ripple through everything.\n\nWhat else? Gas prices, wheat, soybean/palm oil, corn, pistachios/walnuts/dates from the region, plus broader groceries & airline tickets. EU olive oil tariffs (15% now) pile on too. Mediterranean harvests were already tight from climate stuff. Wild times for the pantry!",
+      "url": "https://x.com/grok/status/2038875472235204758",
+      "author_handle": "grok",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Yeah, the Iran conflict's choking the Strait of Hormuz—cutting ~20% of global oil/gas supply. Brent crude hit $112/barrel, spiking shipping, fuel & fertilizer costs that ripple through everything.\n\nWhat else? Gas prices, wheat, soybean/palm oil, corn, pistachios/walnuts/dates from the region, plus broader groceries & airline tickets. EU olive oil tariffs (15% now) pile on too. Mediterranean harvests were already tight from climate stuff. Wild times for the pantry!"
+    },
+    {
+      "id": "X8",
+      "text": "Much needed, not just for markets, but for mankind.\n\nInflation risks are rising.\nCrude disruptions don’t stay in energy, it impacts everything.\n\nWe saw wheat prices spike during the Ukraine war.\n\nThis time, fertilizer disruption could hit agriculture harder.\n\nThe impact may be broader, deeper, and more severe.",
+      "url": "https://x.com/growth_edge_/status/2038859839766753784",
+      "author_handle": "growth_edge_",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 3
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 22
+      },
+      "score": 45,
+      "source": "x",
+      "title": "Much needed, not just for markets, but for mankind.\n\nInflation risks are rising.\nCrude disruptions don’t stay in energy, it impacts everything.\n\nWe saw wheat prices spike during the Ukraine war.\n\nThis time, fertilizer disruption could hit agriculture harder.\n\nThe impact may be broader, deeper, and more severe."
+    },
+    {
+      "id": "X2",
+      "text": "Chicago #wheat futures ticked higher on Tuesday, gaining for a second session as persistent dryness in the US Plains threatened to curb winter crop yields. #Soybean and #corn prices fell.\n\nhttps://t.co/Tqb7q8sMLM",
+      "url": "https://x.com/FarmPolicy/status/2038938103763603626",
+      "author_handle": "FarmPolicy",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "reposts": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 18
+      },
+      "score": 43,
+      "source": "x",
+      "title": "Chicago #wheat futures ticked higher on Tuesday, gaining for a second session as persistent dryness in the US Plains threatened to curb winter crop yields. #Soybean and #corn prices fell.\n\nhttps://t.co/Tqb7q8sMLM"
+    },
+    {
+      "id": "X3",
+      "text": "🙌Looking forward to joining fellow agricultural analysts and market watchers for the upcoming industry outlook conference on April 23 in Kansas City, MO focused on future production trends, price forecasts and issues pertinent to the industry.\n\n🚜With planting decisions, global supply growth, #China dependent demand, and #biofuel policy all colliding, this is a valuable opportunity to compare perspectives, challenge assumptions, and sharpen our outlook for the months ahead.\n\n🧠If you enjoy thought",
+      "url": "https://x.com/BBaatz1983/status/2038960753626268083",
+      "author_handle": "BBaatz1983",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.7,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 70,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 64,
+      "source": "x",
+      "title": "🙌Looking forward to joining fellow agricultural analysts and market watchers for the upcoming industry outlook conference on April 23 in Kansas City, MO focused on future production trends, price forecasts and issues pertinent to the industry.\n\n🚜With planting decisions, global supply growth, #China dependent demand, and #biofuel policy all colliding, this is a valuable opportunity to compare perspectives, challenge assumptions, and sharpen our outlook for the months ahead.\n\n🧠If you enjoy thought"
+    },
+    {
+      "id": "X12",
+      "text": "@Stugloverlives Have to say, aside from the nice-ish Bigg Market facade, I haven't seen a photo of the old Town Hall in which it looks anything other than an incredibly awkward Victorian hodge-podge of the original Corn Exchange and the later adaptation",
+      "url": "https://x.com/Alex_Niven/status/2038926737279484387",
+      "author_handle": "Alex_Niven",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 12
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 54
+      },
+      "score": 54,
+      "source": "x",
+      "title": "@Stugloverlives Have to say, aside from the nice-ish Bigg Market facade, I haven't seen a photo of the old Town Hall in which it looks anything other than an incredibly awkward Victorian hodge-podge of the original Corn Exchange and the later adaptation"
+    },
+    {
+      "id": "X10",
+      "text": "Global Corn Starch Market Outlook\n\n📊 Market Size (2025): 90.32 Million Tons \n📈 Forecast (2034): 109.38 Million Tons \n📊 CAGR (2026–2034): 2.15%\n\nExplore the full report: https://t.co/6iAm7GgZZp\n\n#CornStarchMarket #FoodIngredients #IndustrialStarch",
+      "url": "https://x.com/s_imarcgroup/status/2038945504403640415",
+      "author_handle": "s_imarcgroup",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 54,
+      "source": "x",
+      "title": "Global Corn Starch Market Outlook\n\n📊 Market Size (2025): 90.32 Million Tons \n📈 Forecast (2034): 109.38 Million Tons \n📊 CAGR (2026–2034): 2.15%\n\nExplore the full report: https://t.co/6iAm7GgZZp\n\n#CornStarchMarket #FoodIngredients #IndustrialStarch"
+    },
+    {
+      "id": "X8",
+      "text": "🪙 #SILVER\n\n📊 Analysis:\nCorn futures fell as USDA planting report awaits, Iran conflict affects costs, and export demand remains strong.\n\n📈 Market Metrics:\n🔥 Importance: 85.0/100\n🟢 Sentiment: 60.3% Bullish / 39.7% Bearish\n🌟 Popularity: 8.0\n\n💎 Key Insight:\nStrong export demand\n\n🟢 Bullish Factors:\n  • Strong export demand\n  • USDA report insights\n\n🔴 Bearish Factors:\n  • Higher fuel costs\n  • Iran conflict impact\n\n⚡️ Signalyze | Real-time Crypto Intelligence\n\nhttps://t.co/YWCVPzpURq",
+      "url": "https://x.com/signalyzevip/status/2038947696287920348",
+      "author_handle": "signalyzevip",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 54,
+      "source": "x",
+      "title": "🪙 #SILVER\n\n📊 Analysis:\nCorn futures fell as USDA planting report awaits, Iran conflict affects costs, and export demand remains strong.\n\n📈 Market Metrics:\n🔥 Importance: 85.0/100\n🟢 Sentiment: 60.3% Bullish / 39.7% Bearish\n🌟 Popularity: 8.0\n\n💎 Key Insight:\nStrong export demand\n\n🟢 Bullish Factors:\n  • Strong export demand\n  • USDA report insights\n\n🔴 Bearish Factors:\n  • Higher fuel costs\n  • Iran conflict impact\n\n⚡️ Signalyze | Real-time Crypto Intelligence\n\nhttps://t.co/YWCVPzpURq"
+    },
+    {
+      "id": "X5",
+      "text": "@CheechAintShit The tequilas they market to us arent even technically tequila, its corn liqour like mfs used to drink on plantation days. All them little bottles we put on our head getting sued rn for it.",
+      "url": "https://x.com/MsNarcissism/status/2038954996599853300",
+      "author_handle": "MsNarcissism",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 10
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 50
+      },
+      "score": 53,
+      "source": "x",
+      "title": "@CheechAintShit The tequilas they market to us arent even technically tequila, its corn liqour like mfs used to drink on plantation days. All them little bottles we put on our head getting sued rn for it."
+    },
+    {
+      "id": "X9",
+      "text": "🌾 Global Market Reports – Preview (Mar 31, 2026) 📊\n\n📰 Prospex*Agro Weekly Reports cover:\n🌾 Grains (wheat | corn | barley);\n🌱 Oilseeds (soybeans | rapeseed | sunflower | meals | veg oils).\n\n📌 Each report delivers a structured, practical market view:\nℹ️ physical market insights;\n✅ key drivers (bullish vs bearish);\n📊 key statistics & trend snapshots;\n💬 real bid/offer indications;\n📑 tenders overview;\n🚢 freight market context (Black Sea focus).\n\n📅 Publishing schedule: Weekly.\n\nWant full access to the",
+      "url": "https://x.com/ProspexAgro/status/2038946911948783653",
+      "author_handle": "ProspexAgro",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2
+      },
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 100,
+        "engagement": 18
+      },
+      "score": 52,
+      "source": "x",
+      "title": "🌾 Global Market Reports – Preview (Mar 31, 2026) 📊\n\n📰 Prospex*Agro Weekly Reports cover:\n🌾 Grains (wheat | corn | barley);\n🌱 Oilseeds (soybeans | rapeseed | sunflower | meals | veg oils).\n\n📌 Each report delivers a structured, practical market view:\nℹ️ physical market insights;\n✅ key drivers (bullish vs bearish);\n📊 key statistics & trend snapshots;\n💬 real bid/offer indications;\n📑 tenders overview;\n🚢 freight market context (Black Sea focus).\n\n📅 Publishing schedule: Weekly.\n\nWant full access to the"
+    },
+    {
+      "id": "X7",
+      "text": "@AngelMD1103 but its not just fb market place... we once all got sick and tired of every single person asking how much the pop corn was... so we made more signs... and than more signs and more signs.. we had signs everywhere!!  guess what we still got asked.... yep, how much is the popcorn.",
+      "url": "https://x.com/autumn72846803/status/2038953815060181283",
+      "author_handle": "autumn72846803",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@AngelMD1103 but its not just fb market place... we once all got sick and tired of every single person asking how much the pop corn was... so we made more signs... and than more signs and more signs.. we had signs everywhere!!  guess what we still got asked.... yep, how much is the popcorn."
+    },
+    {
+      "id": "X2",
+      "text": "@OrcaKoan We base monthly “need” on our assessment of Ukrainian market activity, price levels, and the uncovered needs of key importers.\n\nI.e, UA corn has a limited market (predominantly Mediterranean), and this demand will be even more limited with the arrival of Safrinha corn in Brazil",
+      "url": "https://x.com/BarvaInvest/status/2038965326159704253",
+      "author_handle": "BarvaInvest",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@OrcaKoan We base monthly “need” on our assessment of Ukrainian market activity, price levels, and the uncovered needs of key importers.\n\nI.e, UA corn has a limited market (predominantly Mediterranean), and this demand will be even more limited with the arrival of Safrinha corn in Brazil"
+    },
+    {
+      "id": "X21",
+      "text": "@kiratachibana never tasted it in here...\nonly chocolate and Corn taste is in my market...",
+      "url": "https://x.com/Errorien157/status/2038796064707518931",
+      "author_handle": "Errorien157",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@kiratachibana never tasted it in here...\nonly chocolate and Corn taste is in my market..."
+    },
+    {
+      "id": "X24",
+      "text": "@kmcsween I bet the sunshine sure feels good too.\nKevin, Farmers Market will be here before you know it.\nWe go every Saturday to hours.\nSweet Corn, Watermelon, Canaloupe some our weekly buys!",
+      "url": "https://x.com/WeddleBart/status/2038770429012156623",
+      "author_handle": "WeddleBart",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 3
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 25
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@kmcsween I bet the sunshine sure feels good too.\nKevin, Farmers Market will be here before you know it.\nWe go every Saturday to hours.\nSweet Corn, Watermelon, Canaloupe some our weekly buys!"
+    },
+    {
+      "id": "X23",
+      "text": "@ramahluwalia Why do you think soft ags haven’t moved that much yet? Corn in particular. Lagged effects and market still in denial?",
+      "url": "https://x.com/FishyAccounting/status/2038788439538106743",
+      "author_handle": "FishyAccounting",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@ramahluwalia Why do you think soft ags haven’t moved that much yet? Corn in particular. Lagged effects and market still in denial?"
+    },
+    {
+      "id": "X16",
+      "text": "A handful of countries control most of what the world eats.\n\n• US and Brazil dominate corn, soy, and sugar exports\n• Russia supplies roughly a fifth of global wheat\n• India controls 40% of the global rice export market\n• Australia fills critical gaps across the Asia-Pacific\n\nThese five countries together determine whether most of the world’s population can afford to eat.\n\nThis is already a fragile system. And right now it is under serious new pressure.\n\nSince the US and Israel launched strikes o",
+      "url": "https://x.com/Healthdptdegen/status/2038880914973896917",
+      "author_handle": "Healthdptdegen",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "A handful of countries control most of what the world eats.\n\n• US and Brazil dominate corn, soy, and sugar exports\n• Russia supplies roughly a fifth of global wheat\n• India controls 40% of the global rice export market\n• Australia fills critical gaps across the Asia-Pacific\n\nThese five countries together determine whether most of the world’s population can afford to eat.\n\nThis is already a fragile system. And right now it is under serious new pressure.\n\nSince the US and Israel launched strikes o"
+    },
+    {
+      "id": "X20",
+      "text": "Like est. local market price on late planted corn &amp; soy  in central Il shit. Guess the droughts over.  I don’t have time ass",
+      "url": "https://x.com/tyoung_5/status/2038819038046920889",
+      "author_handle": "tyoung_5",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Like est. local market price on late planted corn &amp; soy  in central Il shit. Guess the droughts over.  I don’t have time ass"
+    },
+    {
+      "id": "X15",
+      "text": "Market shift alert 🚨 Investors cut bullish bets on corn &amp; turn bearish on soybeans, signaling changing agri-market sentiment. \n#AgriNews #Corn #Soybeans #Commodities #Farming #MarketTrends #PlaneteyeFarmAI",
+      "url": "https://x.com/planeteyefarmai/status/2038881480395432228",
+      "author_handle": "planeteyefarmai",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Market shift alert 🚨 Investors cut bullish bets on corn &amp; turn bearish on soybeans, signaling changing agri-market sentiment. \n#AgriNews #Corn #Soybeans #Commodities #Farming #MarketTrends #PlaneteyeFarmAI"
+    },
+    {
+      "id": "X19",
+      "text": "Sizzling street corn! Buttery, cheesy, spicy—perfect bite after bite. Grab yours at the downtown night market tonight https://t.co/iVWbGKiJks",
+      "url": "https://x.com/qianqia43048051/status/2038838314858426482",
+      "author_handle": "qianqia43048051",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Sizzling street corn! Buttery, cheesy, spicy—perfect bite after bite. Grab yours at the downtown night market tonight https://t.co/iVWbGKiJks"
+    },
+    {
+      "id": "X4",
+      "text": "The peasant who grows corn for all, starves with his family, the weaver who supplies the world market with textile fabrics, has not enough to cover his own and his children's bodies, masons, smiths and carpenters who raise magnificent palaces, live like pariahs in the slums.",
+      "url": "https://x.com/disha_telangana/status/2038960663612244258",
+      "author_handle": "disha_telangana",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "The peasant who grows corn for all, starves with his family, the weaver who supplies the world market with textile fabrics, has not enough to cover his own and his children's bodies, masons, smiths and carpenters who raise magnificent palaces, live like pariahs in the slums."
+    },
+    {
+      "id": "X11",
+      "text": "[ Crispy street corn dog + iced lemon tea = Summer street snack perfection!  Grab yours at the downtown night market—juicy, crunchy, so satisfying. #StreetFoodJoy] https://t.co/20KDMmh4md",
+      "url": "https://x.com/DIANDYSouleyma2/status/2038942223182536792",
+      "author_handle": "DIANDYSouleyma2",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "[ Crispy street corn dog + iced lemon tea = Summer street snack perfection!  Grab yours at the downtown night market—juicy, crunchy, so satisfying. #StreetFoodJoy] https://t.co/20KDMmh4md"
+    },
+    {
+      "id": "X14",
+      "text": "🎉🚀 Market Momentum Alert 🚀🎉\n🧪 Pump Fully Loaded ✨ $CORN 💰\n［🟢🟢🟢🟢🟢🟢🟢］100%✅\n\n💎 97Gqfg8NoAt3DW7C57YTHndFYzKto7daohQbL3udpump\n\n🔊Signal &amp; 🏆 Check 👉👉 https://t.co/GREAl8VPa6 💎\n🏅- Anti-Scam – Detect red flags before you buy -🏅 https://t.co/Y3cnAeP6EX",
+      "url": "https://x.com/QuentinBROHET/status/2038883801557057844",
+      "author_handle": "QuentinBROHET",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "🎉🚀 Market Momentum Alert 🚀🎉\n🧪 Pump Fully Loaded ✨ $CORN 💰\n［🟢🟢🟢🟢🟢🟢🟢］100%✅\n\n💎 97Gqfg8NoAt3DW7C57YTHndFYzKto7daohQbL3udpump\n\n🔊Signal &amp; 🏆 Check 👉👉 https://t.co/GREAl8VPa6 💎\n🏅- Anti-Scam – Detect red flags before you buy -🏅 https://t.co/Y3cnAeP6EX"
+    },
+    {
+      "id": "X22",
+      "text": "@CDMorlock The mercenary market was occupied by Russia and North Korea\nSugar industry was replaced by American corn syrup.\nCuba's domestic maintenance also depends on the cold war pattern and needs foreign input assistance.",
+      "url": "https://x.com/liangyuesan/status/2038795024427864167",
+      "author_handle": "liangyuesan",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 13
+      },
+      "score": 42,
+      "source": "x",
+      "title": "@CDMorlock The mercenary market was occupied by Russia and North Korea\nSugar industry was replaced by American corn syrup.\nCuba's domestic maintenance also depends on the cold war pattern and needs foreign input assistance."
+    },
+    {
+      "id": "X1",
+      "text": "Market Insider TV Opening Commentary https://t.co/D3ikhuXaSB via @YouTube #oatt #corn #soybeans #cattle #wheat",
+      "url": "https://x.com/BrianHoops/status/2038966409242304868",
+      "author_handle": "BrianHoops",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "reposts": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 38,
+      "source": "x",
+      "title": "Market Insider TV Opening Commentary https://t.co/D3ikhuXaSB via @YouTube #oatt #corn #soybeans #cattle #wheat"
+    },
+    {
+      "id": "X17",
+      "text": "✈️ Market Cap Surges ✈️\n\n📈 FDV 5min 💹 +$7721.7461(+311.3%) \n💪 - $CORN\n🔮 - 7z9kkuLgr53MpbZ8DUcPFVi1WGATfn9PBnWrMuKPpump\n🌈 - TXs/Vol: 538/$20.7K\n🤖 Check 👉 https://t.co/A2IS4nKPzl 💎\n―Features you want, performance you need― https://t.co/GZKT6ZRqLn",
+      "url": "https://x.com/AmeliaClas52615/status/2038877473761575348",
+      "author_handle": "AmeliaClas52615",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "reposts": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 38,
+      "source": "x",
+      "title": "✈️ Market Cap Surges ✈️\n\n📈 FDV 5min 💹 +$7721.7461(+311.3%) \n💪 - $CORN\n🔮 - 7z9kkuLgr53MpbZ8DUcPFVi1WGATfn9PBnWrMuKPpump\n🌈 - TXs/Vol: 538/$20.7K\n🤖 Check 👉 https://t.co/A2IS4nKPzl 💎\n―Features you want, performance you need― https://t.co/GZKT6ZRqLn"
+    },
+    {
+      "id": "X14",
+      "text": "🌻 Ukraine’s sunflower oil output may drop 10% in 2025/26 on a lower harvest. Exports are projected 6.4% lower at 4.4 MMT.\n\nCrushers are increasingly expanding rapeseed and soybean processing while reducing raw material exports.\n\n⏫ Exports of rapeseed oil have already doubled. https://t.co/2VC14yNoFf",
+      "url": "https://x.com/LatifundistCom/status/2038872657169379764",
+      "author_handle": "LatifundistCom",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 3,
+        "reposts": 1
+      },
+      "relevance": 0.64,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 64,
+        "recency": 100,
+        "engagement": 51
+      },
+      "score": 69,
+      "cross_refs": [
+        "W4"
+      ],
+      "source": "x",
+      "title": "🌻 Ukraine’s sunflower oil output may drop 10% in 2025/26 on a lower harvest. Exports are projected 6.4% lower at 4.4 MMT.\n\nCrushers are increasingly expanding rapeseed and soybean processing while reducing raw material exports.\n\n⏫ Exports of rapeseed oil have already doubled. https://t.co/2VC14yNoFf"
+    },
+    {
+      "id": "X5",
+      "text": "💰#Sunseed #prices have risen in #Ukraine\n\nStrong demand from processors in the sunflower seed market is driving prices higher, despite relatively stable prices in the oil market.\n\nMore details 👉https://t.co/wZSudIdvWO\nGet a demo access 👉 https://t.co/O52SxK3hp3 https://t.co/4MBHRW4n07",
+      "url": "https://x.com/UkrAgroConsult/status/2038906030847905908",
+      "author_handle": "UkrAgroConsult",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.64,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 64,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 61,
+      "source": "x",
+      "title": "💰#Sunseed #prices have risen in #Ukraine\n\nStrong demand from processors in the sunflower seed market is driving prices higher, despite relatively stable prices in the oil market.\n\nMore details 👉https://t.co/wZSudIdvWO\nGet a demo access 👉 https://t.co/O52SxK3hp3 https://t.co/4MBHRW4n07"
+    },
+    {
+      "id": "X7",
+      "text": "@TshephoSes @nasiphim @CityTshwane So you think they run on sunflower oil 🤨🤡",
+      "url": "https://x.com/NubianLes7381/status/2038885659834773991",
+      "author_handle": "NubianLes7381",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 6
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 60
+      },
+      "score": 60,
+      "source": "x",
+      "title": "@TshephoSes @nasiphim @CityTshwane So you think they run on sunflower oil 🤨🤡"
+    },
+    {
+      "id": "X13",
+      "text": "@LADemKim @FellaBoston @CaliforniaActi2 @stevesi28838948 @ALJWS @dale_dsll @JackRyanlives @FrancaRose33 @Gonz67Ricky @jgmac1106 @revengehugh @MikeR498 Furthermore, the Belarusian economy was completely devastated at that time. Vodka was cheaper than cola or sunflower oil.\n\nThat was in 1998. However, they then experienced high economic growth in the 2000s and 2010s, sometimes reaching 10%.",
+      "url": "https://x.com/EU_Bureaucrat/status/2038873817221611762",
+      "author_handle": "EU_Bureaucrat",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 53,
+      "source": "x",
+      "title": "@LADemKim @FellaBoston @CaliforniaActi2 @stevesi28838948 @ALJWS @dale_dsll @JackRyanlives @FrancaRose33 @Gonz67Ricky @jgmac1106 @revengehugh @MikeR498 Furthermore, the Belarusian economy was completely devastated at that time. Vodka was cheaper than cola or sunflower oil.\n\nThat was in 1998. However, they then experienced high economic growth in the 2000s and 2010s, sometimes reaching 10%."
+    },
+    {
+      "id": "X25",
+      "text": "25 hour coconut oil, squeezed about 900ml the 2.75 oz i put in sponged up some, will run again and get what is left from it when needed in future\nI put mct oil in and sunflower lecithin, everything this oil is made from was organic, no irradiation needed.\nHoping it helps nights https://t.co/BTCJnNh8xF",
+      "url": "https://x.com/drnope/status/2038787881850823068",
+      "author_handle": "drnope",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "25 hour coconut oil, squeezed about 900ml the 2.75 oz i put in sponged up some, will run again and get what is left from it when needed in future\nI put mct oil in and sunflower lecithin, everything this oil is made from was organic, no irradiation needed.\nHoping it helps nights https://t.co/BTCJnNh8xF"
+    },
+    {
+      "id": "X12",
+      "text": "@GymShaman0805 @Heroiam_Slava Does Cuban fertiliser make the sunflower oil taste different ?",
+      "url": "https://x.com/northerngoat/status/2038875062732829139",
+      "author_handle": "northerngoat",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@GymShaman0805 @Heroiam_Slava Does Cuban fertiliser make the sunflower oil taste different ?"
+    },
+    {
+      "id": "X26",
+      "text": "@KingVelesI Some seed oils are strictly excluded from my family's diet: Cottonseed &amp; soybean, canola &amp; anything sold as \"vegetable oil.\"  Grapeseed oil is perfect for fried bitter cucumber. Sunflower oil can be ok. High-oleic safflower oil for stir-fries. Peanut oil for french fries.",
+      "url": "https://x.com/otter_blues/status/2038776244901224460",
+      "author_handle": "otter_blues",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@KingVelesI Some seed oils are strictly excluded from my family's diet: Cottonseed &amp; soybean, canola &amp; anything sold as \"vegetable oil.\"  Grapeseed oil is perfect for fried bitter cucumber. Sunflower oil can be ok. High-oleic safflower oil for stir-fries. Peanut oil for french fries."
+    },
+    {
+      "id": "X17",
+      "text": "@VSReddy_MP @JoshiPralhad Suddenly woke up. Not just Global brands, even our own brands sell same low quality products (Palmolien oil instead of Sunflower/Better quality oil). The biggest joke is we even import palmolien oil costing exchequer.",
+      "url": "https://x.com/ajaypeddi/status/2038825095284809798",
+      "author_handle": "ajaypeddi",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "reposts": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 25
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@VSReddy_MP @JoshiPralhad Suddenly woke up. Not just Global brands, even our own brands sell same low quality products (Palmolien oil instead of Sunflower/Better quality oil). The biggest joke is we even import palmolien oil costing exchequer."
+    },
+    {
+      "id": "X24",
+      "text": "@a_fareed_o A set of spaghetti \n1 litre of sunflower oil \nUr det",
+      "url": "https://x.com/adenike_pretty/status/2038788035312046524",
+      "author_handle": "adenike_pretty",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@a_fareed_o A set of spaghetti \n1 litre of sunflower oil \nUr det"
+    },
+    {
+      "id": "X18",
+      "text": "@galets @DTinWV @SeedOilDsrspctr Sunflower oil is in fact a seed oil.",
+      "url": "https://x.com/mental_steak/status/2038808519273586761",
+      "author_handle": "mental_steak",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.4,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 40,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@galets @DTinWV @SeedOilDsrspctr Sunflower oil is in fact a seed oil."
+    },
+    {
+      "id": "X19",
+      "text": "@galets @SeedOilDsrspctr &gt; Sunflower oil is made from sunflower seeds  and it's not considered \"seed oil\"\n\nIt definitely is considered a seed oil \n\nOlive oil comes from the fruit not the seed. So not a seed oil.",
+      "url": "https://x.com/TimJosling/status/2038806531127517658",
+      "author_handle": "TimJosling",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@galets @SeedOilDsrspctr &gt; Sunflower oil is made from sunflower seeds  and it's not considered \"seed oil\"\n\nIt definitely is considered a seed oil \n\nOlive oil comes from the fruit not the seed. So not a seed oil."
+    },
+    {
+      "id": "X15",
+      "text": "@oldtoons_ Mmmm. Cornbread muffins. I'm going to make some.\nYou can get the mix at Trader Joes for around $3 and it takes 4 minutes to make. Can add lemon zest, blackberries or blueberries to the mix. Can use olive oil or fresh organic sunflower seed oil and organic milk. Very yummy.",
+      "url": "https://x.com/VisionQuestress/status/2038845705821831225",
+      "author_handle": "VisionQuestress",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@oldtoons_ Mmmm. Cornbread muffins. I'm going to make some.\nYou can get the mix at Trader Joes for around $3 and it takes 4 minutes to make. Can add lemon zest, blackberries or blueberries to the mix. Can use olive oil or fresh organic sunflower seed oil and organic milk. Very yummy."
+    },
+    {
+      "id": "X9",
+      "text": "@philreed777 @KingVelesI Yeah bro, engines are lubricated with sunflower oil. That's exactly how cars work lmao. Where do you guys come up with this stuff?",
+      "url": "https://x.com/Kude42/status/2038883564809257152",
+      "author_handle": "Kude42",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "@philreed777 @KingVelesI Yeah bro, engines are lubricated with sunflower oil. That's exactly how cars work lmao. Where do you guys come up with this stuff?"
+    },
+    {
+      "id": "X3",
+      "text": "A great dish doesn’t just happen — it sizzles into perfection with the right oil! Global Futura Sunflower Oil makes every bite crisp, light, and full of taste.\n\nEnquire now for bulk orders\n\n#sunfloweroil #cookinglove #chefcooking #kitchensecrets #globalfutura https://t.co/lQ2Jj9J5KO",
+      "url": "https://x.com/globalfuturainc/status/2038919447126446199",
+      "author_handle": "globalfuturainc",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "A great dish doesn’t just happen — it sizzles into perfection with the right oil! Global Futura Sunflower Oil makes every bite crisp, light, and full of taste.\n\nEnquire now for bulk orders\n\n#sunfloweroil #cookinglove #chefcooking #kitchensecrets #globalfutura https://t.co/lQ2Jj9J5KO"
+    },
+    {
+      "id": "X23",
+      "text": "Deal Price : ₹887.00 ✅\nRegular Price : ₹1,075.00 ❌\n\nhttps://t.co/fxowEiKFMS\n\nDhara Refined Sunflower Oil 5L (4.55Kg/ 4.20Kg, Weight May Vary)",
+      "url": "https://x.com/dealsnofferhub/status/2038795921698259334",
+      "author_handle": "dealsnofferhub",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "Deal Price : ₹887.00 ✅\nRegular Price : ₹1,075.00 ❌\n\nhttps://t.co/fxowEiKFMS\n\nDhara Refined Sunflower Oil 5L (4.55Kg/ 4.20Kg, Weight May Vary)"
+    },
+    {
+      "id": "X8",
+      "text": "Lavrov will gift 2ton sunflower oil loose as stock clearrence on 90 days credit to uzesbek &amp; afganistan , to sell and pay,\nLoose belarus fresh potato 1 kg foc on 2 litre sunflower oil, 15 days offer,",
+      "url": "https://x.com/ManzHussain482/status/2038884928302276759",
+      "author_handle": "ManzHussain482",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "Lavrov will gift 2ton sunflower oil loose as stock clearrence on 90 days credit to uzesbek &amp; afganistan , to sell and pay,\nLoose belarus fresh potato 1 kg foc on 2 litre sunflower oil, 15 days offer,"
+    },
+    {
+      "id": "X6",
+      "text": "Mr lavrov offer for april  1st week\n60 90 days sell &amp; pay minimum 2 ton,\n\nKrygistan shalgum, belarus potato\nrussian loose sunflower oil, yemani wheat, pakistani rice, afgan pomogrante, sri lankan coconut, lebanon oilves, irani dry fruits,\nChinese  wheat noodles, beef bangaladesh",
+      "url": "https://x.com/ManzHussain482/status/2038894260414751029",
+      "author_handle": "ManzHussain482",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "Mr lavrov offer for april  1st week\n60 90 days sell &amp; pay minimum 2 ton,\n\nKrygistan shalgum, belarus potato\nrussian loose sunflower oil, yemani wheat, pakistani rice, afgan pomogrante, sri lankan coconut, lebanon oilves, irani dry fruits,\nChinese  wheat noodles, beef bangaladesh"
+    },
+    {
+      "id": "X4",
+      "text": "Seed oils include sunflower, soybean, corn, and canola oil. These are not traditional fats. They are highly processed industrial oils, extracted using heat, pressure, and chemical solvents. Yet, media convinces you they are completely fine.",
+      "url": "https://x.com/JustinAsperen/status/2038907788869411178",
+      "author_handle": "JustinAsperen",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "Seed oils include sunflower, soybean, corn, and canola oil. These are not traditional fats. They are highly processed industrial oils, extracted using heat, pressure, and chemical solvents. Yet, media convinces you they are completely fine."
+    },
+    {
+      "id": "X20",
+      "text": "Sunflower oil is made from seeds and it poison.\nBut eating the sunflower seeds is different because even roasted seeds Russian style does not put them through and industrial oil refinery.\nOlive oil does not come from seeds, it comes from the fruit, like avocado oil. Coconut oil is the only ambiguous one. It is very healthy but technically does come from a seed of a primitive plant, But even with that, people who care only by cold-pressed virgin coconut oil. People who follow Udo Erasmus, eat som",
+      "url": "https://x.com/wavetossed/status/2038806289145590060",
+      "author_handle": "wavetossed",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "Sunflower oil is made from seeds and it poison.\nBut eating the sunflower seeds is different because even roasted seeds Russian style does not put them through and industrial oil refinery.\nOlive oil does not come from seeds, it comes from the fruit, like avocado oil. Coconut oil is the only ambiguous one. It is very healthy but technically does come from a seed of a primitive plant, But even with that, people who care only by cold-pressed virgin coconut oil. People who follow Udo Erasmus, eat som"
+    },
+    {
+      "id": "X21",
+      "text": "That is mostly correct. No restaurants. No food from packages that have canola or sunflower seed or other seed oils on the label. No salad dressing or sauces that I did not make, except I buy mayonnaise made of avocado oil. Often I just use balsamic vinegar and extra virgin olive oil. I don't eat that many vegetables. Mostly Greek salad, or potatoes cubed and fried in olive oil and butter with 3 eggs stirred in after the potatoes are cooked. Makes a nice potato omelette.\nI don't boil cabbage, I ",
+      "url": "https://x.com/wavetossed/status/2038804261119963405",
+      "author_handle": "wavetossed",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "That is mostly correct. No restaurants. No food from packages that have canola or sunflower seed or other seed oils on the label. No salad dressing or sauces that I did not make, except I buy mayonnaise made of avocado oil. Often I just use balsamic vinegar and extra virgin olive oil. I don't eat that many vegetables. Mostly Greek salad, or potatoes cubed and fried in olive oil and butter with 3 eggs stirred in after the potatoes are cooked. Makes a nice potato omelette.\nI don't boil cabbage, I "
+    },
+    {
+      "id": "X22",
+      "text": "Weijian's best-selling sunflower seed oil press has been tested and put into use. If you are interested in our machines, please feel free to contact me.\nwhatsapp:+86 13336380491\nE-mail: info@weijianoilpress.com\n#oilpress\n#weijianoilpress\n#oilpressing\n#Soybeanoil\n#Oliveoil https://t.co/zC7FiHXzMN",
+      "url": "https://x.com/weijianoilpress/status/2038804182417699276",
+      "author_handle": "weijianoilpress",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "Weijian's best-selling sunflower seed oil press has been tested and put into use. If you are interested in our machines, please feel free to contact me.\nwhatsapp:+86 13336380491\nE-mail: info@weijianoilpress.com\n#oilpress\n#weijianoilpress\n#oilpressing\n#Soybeanoil\n#Oliveoil https://t.co/zC7FiHXzMN"
+    },
+    {
+      "id": "X2",
+      "text": "@NVLO__ Shame on us,I don't even know why we use things like olive and sunflower oil when we've got our own marula oil.",
+      "url": "https://x.com/Kulture_na_/status/2038943107534746074",
+      "author_handle": "Kulture_na_",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 13
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@NVLO__ Shame on us,I don't even know why we use things like olive and sunflower oil when we've got our own marula oil."
+    },
+    {
+      "id": "X16",
+      "text": "@galets @SeedOilDsrspctr You are still confused. Sunflower oil is a seed oil.",
+      "url": "https://x.com/jjjreisss/status/2038843618916479124",
+      "author_handle": "jjjreisss",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.4,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 40,
+        "recency": 100,
+        "engagement": 13
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@galets @SeedOilDsrspctr You are still confused. Sunflower oil is a seed oil."
+    },
+    {
+      "id": "X10",
+      "text": "Buyer is seeking good quality, certified sunflower oil suitable for bulk supply and international standards.\nRequired quantity: 28 tons\nContact: https://t.co/wYZkeFkZah|\nEmail: customerservice@tradethiopia.com\nhttps://t.co/XlDVpLQNrp https://t.co/noXleZVAcG",
+      "url": "https://x.com/trade_ethiopia/status/2038878293613584796",
+      "author_handle": "trade_ethiopia",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 13
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Buyer is seeking good quality, certified sunflower oil suitable for bulk supply and international standards.\nRequired quantity: 28 tons\nContact: https://t.co/wYZkeFkZah|\nEmail: customerservice@tradethiopia.com\nhttps://t.co/XlDVpLQNrp https://t.co/noXleZVAcG"
+    },
+    {
+      "id": "X11",
+      "text": "Sunflower Oil Wanted for Purchase\nBuyer is seeking good quality, certified sunflower oil suitable for bulk supply and international standards.\nRequired quantity: 28 tons\nContact: https://t.co/5IYCPDh1SX|\nEmail: customerservice@tradethiopia.com\nhttps://t.co/TAMN7U8inK https://t.co/7xqf47Kv76",
+      "url": "https://x.com/AmanuelDer63347/status/2038878209693909398",
+      "author_handle": "AmanuelDer63347",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 13
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Sunflower Oil Wanted for Purchase\nBuyer is seeking good quality, certified sunflower oil suitable for bulk supply and international standards.\nRequired quantity: 28 tons\nContact: https://t.co/5IYCPDh1SX|\nEmail: customerservice@tradethiopia.com\nhttps://t.co/TAMN7U8inK https://t.co/7xqf47Kv76"
+    },
+    {
+      "id": "X1",
+      "text": "Under President Yoweri Museveni, oil expellers for sunflower &amp; simsim create edible oil at village level. #WhyUgDecidedM7 https://t.co/TdVissKurn",
+      "url": "https://x.com/AnkundaMag/status/2038946705668730921",
+      "author_handle": "AnkundaMag",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "reposts": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 42,
+      "source": "x",
+      "title": "Under President Yoweri Museveni, oil expellers for sunflower &amp; simsim create edible oil at village level. #WhyUgDecidedM7 https://t.co/TdVissKurn"
+    },
+    {
+      "id": "X7",
+      "text": "⚡️⚡️⚡️⚡️⚡️ У Львові помічений російськомовний\n\nЦіни на квартири переведені в бойову готовність.",
+      "url": "https://x.com/smak__media/status/2038945703083335950",
+      "author_handle": "smak__media",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 56,
+        "reposts": 4,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 100
+      },
+      "score": 68,
+      "source": "x",
+      "title": "⚡️⚡️⚡️⚡️⚡️ У Львові помічений російськомовний\n\nЦіни на квартири переведені в бойову готовність."
+    },
+    {
+      "id": "X26",
+      "text": "🤯 Коротко про ціни на ягоди та фрукти у столичних супермаркетах\n\nЧерешня там коштує до 1 900 грн/кг, лохина — близько 1 000 грн, полуниця — понад 400 грн/кг, а ананас — майже 570 грн. Навіть звичайні банани можуть коштувати понад 150 грн за кіло. https://t.co/TSCWa8rJW5",
+      "url": "https://x.com/breakingUAnews/status/2038914572057219552",
+      "author_handle": "breakingUAnews",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 26,
+        "reposts": 6,
+        "replies": 13
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 98
+      },
+      "score": 67,
+      "source": "x",
+      "title": "🤯 Коротко про ціни на ягоди та фрукти у столичних супермаркетах\n\nЧерешня там коштує до 1 900 грн/кг, лохина — близько 1 000 грн, полуниця — понад 400 грн/кг, а ананас — майже 570 грн. Навіть звичайні банани можуть коштувати понад 150 грн за кіло. https://t.co/TSCWa8rJW5"
+    },
+    {
+      "id": "X17",
+      "text": "Ціни на ліки величезні. Не знаю, на якому рівні відірваності від реальності – при наших пенсіях, мінімальних (і навіть середніх) зарплатах – треба бути, щоб це не помічати. Так, є програма Доступні ліки, і це добре. Але вона поширюється на дуже обмежену кількість ліків.",
+      "url": "https://x.com/redhead_ophelia/status/2038922454081368566",
+      "author_handle": "redhead_ophelia",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 34,
+        "reposts": 4,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 89
+      },
+      "score": 65,
+      "source": "x",
+      "title": "Ціни на ліки величезні. Не знаю, на якому рівні відірваності від реальності – при наших пенсіях, мінімальних (і навіть середніх) зарплатах – треба бути, щоб це не помічати. Так, є програма Доступні ліки, і це добре. Але вона поширюється на дуже обмежену кількість ліків."
+    },
+    {
+      "id": "X19",
+      "text": "«це не ціни на ліки великі, це у вас гаманці з грошима маленькі, тому ви їх не можете купити» щось що сказав би сео фарма компанії",
+      "url": "https://x.com/maximileonium/status/2038921092593541305",
+      "author_handle": "maximileonium",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 44,
+        "reposts": 3
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 88
+      },
+      "score": 64,
+      "source": "x",
+      "title": "«це не ціни на ліки великі, це у вас гаманці з грошима маленькі, тому ви їх не можете купити» щось що сказав би сео фарма компанії"
+    },
+    {
+      "id": "X28",
+      "text": "Війна з Іраном та посушлива погода у США штовхають догори ціни на американську пшеницю, але їх обмежує значна пропозиція \n\nМинулого тижня пшеничні котирування на біржах США виросли ще на 3-3,6% на тлі посушливої погоди в березні, яка погіршує стан по...  \n\nhttps://t.co/osR8GDzqSO",
+      "url": "https://x.com/GrainTradeUA/status/2038904325125165232",
+      "author_handle": "GrainTradeUA",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 54,
+      "source": "x",
+      "title": "Війна з Іраном та посушлива погода у США штовхають догори ціни на американську пшеницю, але їх обмежує значна пропозиція \n\nМинулого тижня пшеничні котирування на біржах США виросли ще на 3-3,6% на тлі посушливої погоди в березні, яка погіршує стан по...  \n\nhttps://t.co/osR8GDzqSO"
+    },
+    {
+      "id": "X1",
+      "text": "дуже сумую за зароблянням грошей \n\nчоловік класно забезпечує всім необхідним, на ціни не дивлюсь в магазинах, купляю все що треба. ще скидає окремо гроші типу зп за те що сижу в декреті\n\nале це не то взагалі🤔 оце відчуття коли ти вмієш і можеш заробити сама, це зовсім інше 😭😭",
+      "url": "https://x.com/darialutsuyk/status/2038968042512650717",
+      "author_handle": "darialutsuyk",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 5,
+        "replies": 3
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 39
+      },
+      "score": 50,
+      "source": "x",
+      "title": "дуже сумую за зароблянням грошей \n\nчоловік класно забезпечує всім необхідним, на ціни не дивлюсь в магазинах, купляю все що треба. ще скидає окремо гроші типу зп за те що сижу в декреті\n\nале це не то взагалі🤔 оце відчуття коли ти вмієш і можеш заробити сама, це зовсім інше 😭😭"
+    },
+    {
+      "id": "X6",
+      "text": "@ALharbi_soud68 Іран продає нафту майже вдвічі дорожче, ніж до війни.\nНині країна експортує 2,4-2,8 млн барелів нафти й нафтопродуктів на добу, це відповідає торішнім середнім показникам, проте ціни значно вищі\nГоловним покупцем іранської нафти є Китай,який отримує понад 90% цих поставок",
+      "url": "https://x.com/Olena7824/status/2038949733675282797",
+      "author_handle": "Olena7824",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@ALharbi_soud68 Іран продає нафту майже вдвічі дорожче, ніж до війни.\nНині країна експортує 2,4-2,8 млн барелів нафти й нафтопродуктів на добу, це відповідає торішнім середнім показникам, проте ціни значно вищі\nГоловним покупцем іранської нафти є Китай,який отримує понад 90% цих поставок"
+    },
+    {
+      "id": "X11",
+      "text": "@DmytroGurinMP А те що ціни на ліки кожного дня під час війни повзуть вверх вам не смішно?! Що зробив конретно ваш комітет для зупинення цього?",
+      "url": "https://x.com/proud_cat80/status/2038936277400125446",
+      "author_handle": "proud_cat80",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@DmytroGurinMP А те що ціни на ліки кожного дня під час війни повзуть вверх вам не смішно?! Що зробив конретно ваш комітет для зупинення цього?"
+    },
+    {
+      "id": "X4",
+      "text": "@FeaverUA @katalina_ada rikshoes в інсті. хороші ціни на дане взуття",
+      "url": "https://x.com/vashujopik/status/2038953272380203034",
+      "author_handle": "vashujopik",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@FeaverUA @katalina_ada rikshoes в інсті. хороші ціни на дане взуття"
+    },
+    {
+      "id": "X16",
+      "text": "@IhorMarshall Яйця порошенка🤣🤣\nА як вони кричали про ціни на курячі яйця, пам'ятаєте? А ця херня, значить, нормально, не дорого??",
+      "url": "https://x.com/avgustasof/status/2038924299973664918",
+      "author_handle": "avgustasof",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@IhorMarshall Яйця порошенка🤣🤣\nА як вони кричали про ціни на курячі яйця, пам'ятаєте? А ця херня, значить, нормально, не дорого??"
+    },
+    {
+      "id": "X9",
+      "text": "@Jesika1912857 @breakingUAnews Там не справа в тому, що на той самий товар, наприклад як в атб просто більші ціни поставили. Там справа, що то екзотичні товари від країн з яких до нас зазвичай не возять, бо так дорожче, але воно смачніше. Від того і ціна вища. Це ж не той ананас, що зараз в метро по 100 грн/шт",
+      "url": "https://x.com/PKurylenko/status/2038939458590880249",
+      "author_handle": "PKurylenko",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@Jesika1912857 @breakingUAnews Там не справа в тому, що на той самий товар, наприклад як в атб просто більші ціни поставили. Там справа, що то екзотичні товари від країн з яких до нас зазвичай не возять, бо так дорожче, але воно смачніше. Від того і ціна вища. Це ж не той ананас, що зараз в метро по 100 грн/шт"
+    },
+    {
+      "id": "X3",
+      "text": "@cryptocrocodeal @Info_teymushka @censor_net Дуже швидко якщо врахувати ціни на газ, електр, воду, і все інше. І вони назавжди + санаторне лікування + квитки і тд.",
+      "url": "https://x.com/alex_s_technics/status/2038958596629639427",
+      "author_handle": "alex_s_technics",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@cryptocrocodeal @Info_teymushka @censor_net Дуже швидко якщо врахувати ціни на газ, електр, воду, і все інше. І вони назавжди + санаторне лікування + квитки і тд."
+    },
+    {
+      "id": "X30",
+      "text": "@gozefinagold В Європі ціни на їжу і одяг ниже. А зарплатня більша в рази.",
+      "url": "https://x.com/thebravebenya/status/2038880671767179705",
+      "author_handle": "thebravebenya",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@gozefinagold В Європі ціни на їжу і одяг ниже. А зарплатня більша в рази."
+    },
+    {
+      "id": "X14",
+      "text": "@thenihiin @JustDirmax Ти ціни на паливо бачила? Тут відповідь очевидна",
+      "url": "https://x.com/DenisSlatin/status/2038929825180586038",
+      "author_handle": "DenisSlatin",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "@thenihiin @JustDirmax Ти ціни на паливо бачила? Тут відповідь очевидна"
+    },
+    {
+      "id": "X24",
+      "text": "Дізнайтеся актуальні ціни на борошно, цукор та дріжджі для великодньої паски у Харкові\nhttps://t.co/3ELBS6d81o https://t.co/XiN5bEXnI5",
+      "url": "https://x.com/SQbroadcast/status/2038916818505457665",
+      "author_handle": "SQbroadcast",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Дізнайтеся актуальні ціни на борошно, цукор та дріжджі для великодньої паски у Харкові\nhttps://t.co/3ELBS6d81o https://t.co/XiN5bEXnI5"
+    },
+    {
+      "id": "X12",
+      "text": "Закупівельні ціни на зерно в Україні на 31 березня 2026 року\n\nСередньозважені ціни закупівлі зернових та олійних культур в Україні на умовах CPT термінали, EXW елеватори, CPT переробники, FCA, CPT долар, FOB, DAF, CIF  Закупівельні ціни в Україні    ...  \n\nhttps://t.co/FK8WPqgBZx",
+      "url": "https://x.com/GrainTradeUA/status/2038934763063414997",
+      "author_handle": "GrainTradeUA",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Закупівельні ціни на зерно в Україні на 31 березня 2026 року\n\nСередньозважені ціни закупівлі зернових та олійних культур в Україні на умовах CPT термінали, EXW елеватори, CPT переробники, FCA, CPT долар, FOB, DAF, CIF  Закупівельні ціни в Україні    ...  \n\nhttps://t.co/FK8WPqgBZx"
+    },
+    {
+      "id": "X23",
+      "text": "Ремонт квартири під ключ у Києві – це просто! 🛠️ З NSD Group ви отримаєте професійний підхід на всіх етапах: від проєкту до завершення. Які ціни? Гарантії? Все є! 🤔 Хочете дізнатися більше? Завітайте на наш сайт! https://t.co/esb9wlhwEP https://t.co/kp8YQtnyFl",
+      "url": "https://x.com/nsd_group/status/2038916830593442300",
+      "author_handle": "nsd_group",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Ремонт квартири під ключ у Києві – це просто! 🛠️ З NSD Group ви отримаєте професійний підхід на всіх етапах: від проєкту до завершення. Які ціни? Гарантії? Все є! 🤔 Хочете дізнатися більше? Завітайте на наш сайт! https://t.co/esb9wlhwEP https://t.co/kp8YQtnyFl"
+    },
+    {
+      "id": "X22",
+      "text": "У Нафтогазовій асоціації розповіли що відбувається з цінами на пальне: у німців по 113, у поляків — по 96, у нас з кешбеком — по 72 грн/л. Чому так?\n\n⭕️В Європі стрімко зростають ціни на пальне через ситуацію в Ормузькій протоці. https://t.co/ZP74n1VMb1",
+      "url": "https://x.com/SVETLAN88519811/status/2038917752686026790",
+      "author_handle": "SVETLAN88519811",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "У Нафтогазовій асоціації розповіли що відбувається з цінами на пальне: у німців по 113, у поляків — по 96, у нас з кешбеком — по 72 грн/л. Чому так?\n\n⭕️В Європі стрімко зростають ціни на пальне через ситуацію в Ормузькій протоці. https://t.co/ZP74n1VMb1"
+    },
+    {
+      "id": "X18",
+      "text": "Укрзалізниця виставила на Прозорро.Продажі понад 212 тонн відпрацьованих мастил. Торги відбудуться за англійським типом на підвищення ціни. Перші п’ять аукціонів із початковою ціною 4,48 млн грн заплановані на 7 квітня. https://t.co/AogxLfLAZx",
+      "url": "https://x.com/dipfo_com/status/2038922058885677162",
+      "author_handle": "dipfo_com",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Укрзалізниця виставила на Прозорро.Продажі понад 212 тонн відпрацьованих мастил. Торги відбудуться за англійським типом на підвищення ціни. Перші п’ять аукціонів із початковою ціною 4,48 млн грн заплановані на 7 квітня. https://t.co/AogxLfLAZx"
+    },
+    {
+      "id": "X2",
+      "text": "Ціни на бензин, дизпаливо та газ в Україні | Autodosug https://t.co/ELI4v7leON",
+      "url": "https://x.com/Autodosug152541/status/2038964177973182762",
+      "author_handle": "Autodosug152541",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "Ціни на бензин, дизпаливо та газ в Україні | Autodosug https://t.co/ELI4v7leON"
+    },
+    {
+      "id": "X29",
+      "text": "⛽ У Польщі почали діяти нові граничні ціни на пальне. Скільки коштує літр бензину і дизелю?\n\nhttps://t.co/nWrd9XlmPD",
+      "url": "https://x.com/Slawa_tv/status/2038904139929784345",
+      "author_handle": "Slawa_tv",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "⛽ У Польщі почали діяти нові граничні ціни на пальне. Скільки коштує літр бензину і дизелю?\n\nhttps://t.co/nWrd9XlmPD"
+    },
+    {
+      "id": "X25",
+      "text": "🫐У Києві зафіксували високі ціни на ягоди\n\nЧерешня коштує до 1900 грн за кг, полуниця понад 400 грн за кг, а лохина близько 1000 грн за кг.\nАнанас продають майже за 570 грн за кг, банани — понад 150 грн за кг. https://t.co/bWhOkdRAYp",
+      "url": "https://x.com/kyivtime_ua/status/2038916243931963458",
+      "author_handle": "kyivtime_ua",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 46,
+      "source": "x",
+      "title": "🫐У Києві зафіксували високі ціни на ягоди\n\nЧерешня коштує до 1900 грн за кг, полуниця понад 400 грн за кг, а лохина близько 1000 грн за кг.\nАнанас продають майже за 570 грн за кг, банани — понад 150 грн за кг. https://t.co/bWhOkdRAYp"
+    },
+    {
+      "id": "X20",
+      "text": "⛽ Вперше за понад 3 роки ціни на паливо у Штатах перевищують $4 за галон. Це може стати справжньою проблемою для Трампа https://t.co/IIiyEYxS23",
+      "url": "https://x.com/24tvua/status/2038919585055821850",
+      "author_handle": "24tvua",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 20
+      },
+      "score": 44,
+      "source": "x",
+      "title": "⛽ Вперше за понад 3 роки ціни на паливо у Штатах перевищують $4 за галон. Це може стати справжньою проблемою для Трампа https://t.co/IIiyEYxS23"
+    },
+    {
+      "id": "X21",
+      "text": "Розклад деяких автобусів дуже пічальний тому їдемо на таксі ( добре що в не час пік більш менш адекватні ціни і швидко беруть замовлення) 😅",
+      "url": "https://x.com/stark_mood/status/2038917863621230808",
+      "author_handle": "stark_mood",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 16
+      },
+      "score": 43,
+      "source": "x",
+      "title": "Розклад деяких автобусів дуже пічальний тому їдемо на таксі ( добре що в не час пік більш менш адекватні ціни і швидко беруть замовлення) 😅"
+    },
+    {
+      "id": "X27",
+      "text": "Нові правила у будівництві передбачають створення державної бази цін на матеріали та обмеження вартості у проєктах, що фінансуються з бюджету. До запуску бази замовники мають самостійно визначати ринкові ціни, зокрема через аналіз пропозицій постачальників.",
+      "url": "https://x.com/Vox_UA/status/2038913110799532080",
+      "author_handle": "Vox_UA",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 12
+      },
+      "score": 42,
+      "source": "x",
+      "title": "Нові правила у будівництві передбачають створення державної бази цін на матеріали та обмеження вартості у проєктах, що фінансуються з бюджету. До запуску бази замовники мають самостійно визначати ринкові ціни, зокрема через аналіз пропозицій постачальників."
+    },
+    {
+      "id": "X10",
+      "text": "@stepanska_m Сьогодні на ринку є вибір продавців, і він величезний. Ціни теж майже на одному рівні — відповідно, єдиний спосіб здобувати клієнтів і щоб вони залишалися з тобою — це чудовий сервіс. В цьому немає нічого дивного.",
+      "url": "https://x.com/uhem_/status/2038936701570035786",
+      "author_handle": "uhem_",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 8
+      },
+      "score": 40,
+      "source": "x",
+      "title": "@stepanska_m Сьогодні на ринку є вибір продавців, і він величезний. Ціни теж майже на одному рівні — відповідно, єдиний спосіб здобувати клієнтів і щоб вони залишалися з тобою — це чудовий сервіс. В цьому немає нічого дивного."
+    },
+    {
+      "id": "X13",
+      "text": "Коли побачила ціни на всі нові книжки, і така \"скільки-скільки?\"",
+      "url": "https://x.com/CurlyND/status/2038933622246261003",
+      "author_handle": "CurlyND",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 8
+      },
+      "score": 40,
+      "source": "x",
+      "title": "Коли побачила ціни на всі нові книжки, і така \"скільки-скільки?\""
+    },
+    {
+      "id": "X5",
+      "text": "Литва вдвічі знизить ціни на залізничні перевезення на тлі зростання цін на пальне\nhttps://t.co/YqzNKcVvmd",
+      "url": "https://x.com/EuropeanPravda/status/2038949803279659475",
+      "author_handle": "EuropeanPravda",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 8
+      },
+      "score": 40,
+      "source": "x",
+      "title": "Литва вдвічі знизить ціни на залізничні перевезення на тлі зростання цін на пальне\nhttps://t.co/YqzNKcVvmd"
+    },
+    {
+      "id": "X15",
+      "text": "Просто беремо і закладаємо в ціну замовлення комісії. Замовнику/покупцю зазвичай поє**ть, шо там і як розраховано. Вони дивляться на ціну і погоджуються із нею у випадку оформлення замовлення. Тому танці із надбавками навколо приємної ціни виглядають недоцільно.",
+      "url": "https://x.com/MerkademVN/status/2038926401701646592",
+      "author_handle": "MerkademVN",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 8
+      },
+      "score": 40,
+      "source": "x",
+      "title": "Просто беремо і закладаємо в ціну замовлення комісії. Замовнику/покупцю зазвичай поє**ть, шо там і як розраховано. Вони дивляться на ціну і погоджуються із нею у випадку оформлення замовлення. Тому танці із надбавками навколо приємної ціни виглядають недоцільно."
+    },
+    {
+      "id": "X8",
+      "text": "Через війну на Близькому Сході світові ціни на пальне рекордно зростають. Як уряд намагається послабити удар і що чекає на Україну та світ – читайте у матеріалі:\n\nhttps://t.co/XoSFc303yD",
+      "url": "https://x.com/slovoidilo/status/2038939481387020513",
+      "author_handle": "slovoidilo",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "reposts": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 100,
+        "engagement": 0
+      },
+      "score": 38,
+      "source": "x",
+      "title": "Через війну на Близькому Сході світові ціни на пальне рекордно зростають. Як уряд намагається послабити удар і що чекає на Україну та світ – читайте у матеріалі:\n\nhttps://t.co/XoSFc303yD"
+    },
+    {
+      "id": "X3",
+      "text": "📷 Оголошення📷\n📷 Продається: пшениця, ярий ячмінь та кукурудза 📷\n📷 Можлива доставка.\n📷 Телефонуйте: 0968142799 https://t.co/0pEq3R28sK",
+      "url": "https://x.com/online_brody/status/2038942880547393708",
+      "author_handle": "online_brody",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.17,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 17,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 40,
+      "source": "x",
+      "title": "📷 Оголошення📷\n📷 Продається: пшениця, ярий ячмінь та кукурудза 📷\n📷 Можлива доставка.\n📷 Телефонуйте: 0968142799 https://t.co/0pEq3R28sK"
+    },
+    {
+      "id": "X12",
+      "text": "@stepanska_m Ну, кукурудза, сонях десь так само, але ж ростять.",
+      "url": "https://x.com/anetina_l/status/2038853167169823219",
+      "author_handle": "anetina_l",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 3,
+        "replies": 1
+      },
+      "relevance": 0.17,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 17,
+        "recency": 100,
+        "engagement": 17
+      },
+      "score": 37,
+      "source": "x",
+      "title": "@stepanska_m Ну, кукурудза, сонях десь так само, але ж ростять."
+    },
+    {
+      "id": "X1",
+      "text": "Продам шрот соєвий, Агро Еко Протеїн (№292024)\n\nПродам шрот соєвий 300 тон за ціною 21000 грн за тонну Агро Еко Протеїн в Дніпропетровській області, Дніпропетровськ район, Дніпропетровськ (Пропозиція №292024)  https://t.co/fPaN6f1VZE",
+      "url": "https://x.com/GrainTradeUA/status/2038920954592530880",
+      "author_handle": "GrainTradeUA",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 100,
+        "engagement": 50
+      },
+      "score": 54,
+      "source": "x",
+      "title": "Продам шрот соєвий, Агро Еко Протеїн (№292024)\n\nПродам шрот соєвий 300 тон за ціною 21000 грн за тонну Агро Еко Протеїн в Дніпропетровській області, Дніпропетровськ район, Дніпропетровськ (Пропозиція №292024)  https://t.co/fPaN6f1VZE"
+    },
+    {
+      "id": "X24",
+      "text": "As we move into a month of higher fuel prices in South Africa, with a large share of our food products transported by road, we will see some upside pressure on distribution costs. Still, this shouldn’t lead to an immediate uptick in food prices, as some products were already distributed at relatively lower fuel prices. There normally is a lag on these issues. We should also not underestimate the fact that we are generally in an environment of lower agricultural product prices due to ample suppli",
+      "url": "https://x.com/WandileSihlobo/status/2038607180090290187",
+      "author_handle": "WandileSihlobo",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 28,
+        "reposts": 17,
+        "replies": 4
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 100
+      },
+      "score": 67,
+      "source": "x",
+      "title": "As we move into a month of higher fuel prices in South Africa, with a large share of our food products transported by road, we will see some upside pressure on distribution costs. Still, this shouldn’t lead to an immediate uptick in food prices, as some products were already distributed at relatively lower fuel prices. There normally is a lag on these issues. We should also not underestimate the fact that we are generally in an environment of lower agricultural product prices due to ample suppli"
+    },
+    {
+      "id": "X16",
+      "text": "Lots of world leaders have been talking about being unable to sleep. Because they know wheat the actual picture is. Oil prices and stocnmarket are being heavily manipulated.\n\nBut if you want actual crude oil in your custody then it’s $150+.",
+      "url": "https://x.com/DThucydides/status/2038734662416150982",
+      "author_handle": "DThucydides",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 37,
+        "reposts": 7,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 92
+      },
+      "score": 65,
+      "source": "x",
+      "title": "Lots of world leaders have been talking about being unable to sleep. Because they know wheat the actual picture is. Oil prices and stocnmarket are being heavily manipulated.\n\nBut if you want actual crude oil in your custody then it’s $150+."
+    },
+    {
+      "id": "X27",
+      "text": "This so evident that government does not want to buy wheat this year. Market is bound to go further down if international export prices don't go up.",
+      "url": "https://x.com/Agrinfo101/status/2038599315653099939",
+      "author_handle": "Agrinfo101",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 8,
+        "replies": 1
+      },
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 96,
+        "engagement": 43
+      },
+      "score": 58,
+      "source": "x",
+      "title": "This so evident that government does not want to buy wheat this year. Market is bound to go further down if international export prices don't go up."
+    },
+    {
+      "id": "X29",
+      "text": "@MDC12345678 It's not going to happen, wheat prices are still in mass surplus territory and if you want Beef, they'll increase imports from Brazil that gets its's diesel from Russia.",
+      "url": "https://x.com/TU_144_/status/2038594523756966291",
+      "author_handle": "TU_144_",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "@MDC12345678 It's not going to happen, wheat prices are still in mass surplus territory and if you want Beef, they'll increase imports from Brazil that gets its's diesel from Russia."
+    },
+    {
+      "id": "X17",
+      "text": "@MahiraA67566583 @KhawajaHaroon17 @SabeeKazmi786 Let you check the figures, his first year the prices of wheat which is basic necessity of Asian human went from 30 rupees to 90 per kg it wasn’t lockdown.\nAnd where was the loot 💰? When three man on one page with great struggles created aqama from panama 🤣🤣🤣",
+      "url": "https://x.com/_me786/status/2038709219042660386",
+      "author_handle": "_me786",
       "date": "2026-03-30",
       "date_confidence": "high",
       "engagement": null,
-      "top_comments": [],
-      "comment_insights": [],
-      "relevance": 0.78,
-      "why_relevant": "Discusses CORN ETF and corn price drivers, which is related to corn market outlook.",
+      "relevance": 0.3,
+      "why_relevant": "",
       "subs": {
-        "relevance": 78,
+        "relevance": 30,
         "recency": 96,
-        "engagement": 50
+        "engagement": 35
       },
-      "score": 71,
-      "source": "reddit"
+      "score": 45,
+      "source": "x",
+      "title": "@MahiraA67566583 @KhawajaHaroon17 @SabeeKazmi786 Let you check the figures, his first year the prices of wheat which is basic necessity of Asian human went from 30 rupees to 90 per kg it wasn’t lockdown.\nAnd where was the loot 💰? When three man on one page with great struggles created aqama from panama 🤣🤣🤣"
     },
     {
-      "id": "R2",
-      "title": "Наближається крах російської економіки (хронологія)",
-      "url": "https://www.reddit.com/r/RedditUATalks/comments/1rpw2zn/%D0%BD%D0%B0%D0%B1%D0%BB%D0%B8%D0%B6%D0%B0%D1%94%D1%82%D1%8C%D1%81%D1%8F_%D0%BA%D1%80%D0%B0%D1%85_%D1%80%D0%BE%D1%81%D1%96%D0%B9%D1%81%D1%8C%D0%BA%D0%BE%D1%97_%D0%B5%D0%BA%D0%BE%D0%BD%D0%BE%D0%BC%D1%96%D0%BA%D0%B8_%D1%85%D1%80%D0%BE%D0%BD%D0%BE%D0%BB%D0%BE%D0%B3%D1%96%D1%8F/",
-      "subreddit": "RedditUATalks",
-      "date": "2026-03-10",
-      "why_relevant": "Mentions corn in a discussion about economic conditions, but only tangentially relevant to corn market/projection/tenders.",
-      "relevance": 0.42
+      "id": "X30",
+      "text": "@PeterdMartinson @philosophymeme0 It isn’t a special case. Marx is talking about reproducible commodities produced under capitalism. For goods that can be reproduced (cars, phones, wheat, clothes), long-run prices tend to track average production costs, which ultimately depend on labour time.",
+      "url": "https://x.com/psr_is_slow/status/2038593836956701112",
+      "author_handle": "psr_is_slow",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "@PeterdMartinson @philosophymeme0 It isn’t a special case. Marx is talking about reproducible commodities produced under capitalism. For goods that can be reproduced (cars, phones, wheat, clothes), long-run prices tend to track average production costs, which ultimately depend on labour time."
+    },
+    {
+      "id": "X25",
+      "text": "@marketswithmay Appreciate the response and all your great content. My concern though is that post-COVID wheat prices exploded higher, incentivizing more supply (maybe also because Mr. Market saw lower inventories). Rn, wheat prices aren’t responding similarly, disincentivizing production?",
+      "url": "https://x.com/Blackjack155361/status/2038604188263788648",
+      "author_handle": "Blackjack155361",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "@marketswithmay Appreciate the response and all your great content. My concern though is that post-COVID wheat prices exploded higher, incentivizing more supply (maybe also because Mr. Market saw lower inventories). Rn, wheat prices aren’t responding similarly, disincentivizing production?"
+    },
+    {
+      "id": "X18",
+      "text": "As I pointed out before all those companies except the wheat board are limited companies whose shareholders decided to sell, farmers were glad to see the communist style Wheat Board go so now they can sell their crops for more money instead of having to accept the Board's prices. And corrupt WEF puppet Trudeau ratified FIPA in 2016.",
+      "url": "https://x.com/IreneNewstead/status/2038708431117582792",
+      "author_handle": "IreneNewstead",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "As I pointed out before all those companies except the wheat board are limited companies whose shareholders decided to sell, farmers were glad to see the communist style Wheat Board go so now they can sell their crops for more money instead of having to accept the Board's prices. And corrupt WEF puppet Trudeau ratified FIPA in 2016."
+    },
+    {
+      "id": "X26",
+      "text": "At the pause...\n\nCorn is following energy prices higher. Soybeans are up  on soy oil gains while wheat gained from crop concerns in the Southern Plains and tighter supplies\n\nMay CORN down 1 cent at $4.61\nMay SOYBEANS up 3½ cents at $11.62¾\nMay WHEAT down 5½ cents at $5.99½ https://t.co/wMwBgWVbNM",
+      "url": "https://x.com/HedgePlusWI/status/2038600253025259647",
+      "author_handle": "HedgePlusWI",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "At the pause...\n\nCorn is following energy prices higher. Soybeans are up  on soy oil gains while wheat gained from crop concerns in the Southern Plains and tighter supplies\n\nMay CORN down 1 cent at $4.61\nMay SOYBEANS up 3½ cents at $11.62¾\nMay WHEAT down 5½ cents at $5.99½ https://t.co/wMwBgWVbNM"
+    },
+    {
+      "id": "X28",
+      "text": "Look for sustained demand for U.S. corn, soybeans, and wheat, complemented by steady manufacturing signals and pending prices data that affirm domestic demand resilience. Tomorrow’s stocks and plantings reports point to more bean acres, less corn acres and significant supplies https://t.co/j7wk1lDKGA",
+      "url": "https://x.com/HedgePlusWI/status/2038596070754668766",
+      "author_handle": "HedgePlusWI",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "Look for sustained demand for U.S. corn, soybeans, and wheat, complemented by steady manufacturing signals and pending prices data that affirm domestic demand resilience. Tomorrow’s stocks and plantings reports point to more bean acres, less corn acres and significant supplies https://t.co/j7wk1lDKGA"
+    },
+    {
+      "id": "X20",
+      "text": "🍸 Is Grey Goose Vodka actually worth the premium?\n\nMade in France from single-origin wheat with a clean, smooth finish—but prices, flavors, and bottle sizes matter.\n\n👉 Read the full buying guide: https://t.co/crZNto9iDP https://t.co/TXF0luWfkH",
+      "url": "https://x.com/usalovescotch/status/2038671889036419087",
+      "author_handle": "usalovescotch",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "🍸 Is Grey Goose Vodka actually worth the premium?\n\nMade in France from single-origin wheat with a clean, smooth finish—but prices, flavors, and bottle sizes matter.\n\n👉 Read the full buying guide: https://t.co/crZNto9iDP https://t.co/TXF0luWfkH"
+    },
+    {
+      "id": "X21",
+      "text": "Forget about Namma metro fare hike. Whole of India is paying high prices for every every thing. Be it vegetable, fruits, rice, wheat, milk, oil, petrol, diesel, LPG due an incompetent pm",
+      "url": "https://x.com/BeingShaila/status/2038660950400881013",
+      "author_handle": "BeingShaila",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 16
+      },
+      "score": 42,
+      "source": "x",
+      "title": "Forget about Namma metro fare hike. Whole of India is paying high prices for every every thing. Be it vegetable, fruits, rice, wheat, milk, oil, petrol, diesel, LPG due an incompetent pm"
+    },
+    {
+      "id": "X14",
+      "text": "@revenant_MMXX How about constitutionality? The CSA depends on the SCOTUS opinion Wickard v Filburn which effectively says the 11 acres of wheat that never left an Ohio farm impacted interstate commerce because it “might” have influenced prices in Indiana! Utter horse manure.",
+      "url": "https://x.com/tntorpedo1943/status/2038753608187953299",
+      "author_handle": "tntorpedo1943",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 11
+      },
+      "score": 40,
+      "source": "x",
+      "title": "@revenant_MMXX How about constitutionality? The CSA depends on the SCOTUS opinion Wickard v Filburn which effectively says the 11 acres of wheat that never left an Ohio farm impacted interstate commerce because it “might” have influenced prices in Indiana! Utter horse manure."
+    },
+    {
+      "id": "X22",
+      "text": "Argentina spot prices (Precio Pizarra) valued at CCL dollar\nVariations:\nProduct    Daily      Weekly     Monthly   \nCorn       -1.71%     -3.27%     -5.08%    \nWheat      -0.76%     -1.56%     +0.43%    \nSoybean    -10.74%    -9.68%     -4.89%    \n\n#oatt argentina https://t.co/nACAHqT3CZ",
+      "url": "https://x.com/UpriverAnalytic/status/2038659365398348060",
+      "author_handle": "UpriverAnalytic",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 7
+      },
+      "score": 39,
+      "source": "x",
+      "title": "Argentina spot prices (Precio Pizarra) valued at CCL dollar\nVariations:\nProduct    Daily      Weekly     Monthly   \nCorn       -1.71%     -3.27%     -5.08%    \nWheat      -0.76%     -1.56%     +0.43%    \nSoybean    -10.74%    -9.68%     -4.89%    \n\n#oatt argentina https://t.co/nACAHqT3CZ"
+    },
+    {
+      "id": "X13",
+      "text": "Rising corn and wheat prices in Al Jazirah \nDeclining production and water shortages are putting pressure on markets amid fears of further increases.\n#Sudan https://t.co/ic7oCiBp4k",
+      "url": "https://x.com/layan034osman/status/2038766379868856736",
+      "author_handle": "layan034osman",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 7
+      },
+      "score": 39,
+      "source": "x",
+      "title": "Rising corn and wheat prices in Al Jazirah \nDeclining production and water shortages are putting pressure on markets amid fears of further increases.\n#Sudan https://t.co/ic7oCiBp4k"
+    },
+    {
+      "id": "X23",
+      "text": "Totally helpful. Many thanks. 🙏 \n\nI was thinking that the low prices/low inventories in 2019/20 created the setup for the subsequent spike in wheat prices. Taking what you said, I’m thinking that we have the “potential” for the same setup - dependent on weather, etc. But you’re right - too early to say.",
+      "url": "https://x.com/Blackjack155361/status/2038648465450786879",
+      "author_handle": "Blackjack155361",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 7
+      },
+      "score": 39,
+      "source": "x",
+      "title": "Totally helpful. Many thanks. 🙏 \n\nI was thinking that the low prices/low inventories in 2019/20 created the setup for the subsequent spike in wheat prices. Taking what you said, I’m thinking that we have the “potential” for the same setup - dependent on weather, etc. But you’re right - too early to say."
+    },
+    {
+      "id": "X19",
+      "text": "Closing Prices  3/30:\nCORN: May26 🔴6 1/4 @ $4.55  Dec26🔴6 1/4 @ $4.84      \n\nBEANS: May26🟢 1/2  @ $11.59, Nov26 @ $11.44\n\nKC WHEAT: May26🔴6 1/2 @ $6.26, Jul26🔴6 3/4 @ $6.40",
+      "url": "https://x.com/AgWest/status/2038686044829213009",
+      "author_handle": "AgWest",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "reposts": 1
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 0
+      },
+      "score": 37,
+      "source": "x",
+      "title": "Closing Prices  3/30:\nCORN: May26 🔴6 1/4 @ $4.55  Dec26🔴6 1/4 @ $4.84      \n\nBEANS: May26🟢 1/2  @ $11.59, Nov26 @ $11.44\n\nKC WHEAT: May26🔴6 1/2 @ $6.26, Jul26🔴6 3/4 @ $6.40"
+    },
+    {
+      "id": "X26",
+      "text": "USDA March Acres & Stocks Tomorrow 🌽\n\nHow big of a market mover is it?\n\nCorn has actually traded higher the day of this report 5 years in a row now.\n\nPast 10 Years Price Change:\n\n🟢 2025: +4\n🟢 2024: +15 1/4\n🟢 2023: +11\n🟢 2022: +10 3/4\n🟢 2021: +25\n🔴 2020: -1/2\n🔴 2019: -17 1/2\n🟢 2018: +14 1/4\n🟢 2017: +6 3/4\n🔴 2016: -15 1/2\n\nAverage Move Past 10 Years = 12 cents\n\n***\nNeed some help deciding when to take risk off the table in grain marketing?\n\nTry our updates & signals free\n👉 https://t.co/JvQ1KIpXXU",
+      "url": "https://x.com/MarketMinuteLLC/status/2038743300782399883",
+      "author_handle": "MarketMinuteLLC",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 29,
+        "reposts": 9
+      },
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 96,
+        "engagement": 100
+      },
+      "score": 76,
+      "source": "x",
+      "title": "USDA March Acres & Stocks Tomorrow 🌽\n\nHow big of a market mover is it?\n\nCorn has actually traded higher the day of this report 5 years in a row now.\n\nPast 10 Years Price Change:\n\n🟢 2025: +4\n🟢 2024: +15 1/4\n🟢 2023: +11\n🟢 2022: +10 3/4\n🟢 2021: +25\n🔴 2020: -1/2\n🔴 2019: -17 1/2\n🟢 2018: +14 1/4\n🟢 2017: +6 3/4\n🔴 2016: -15 1/2\n\nAverage Move Past 10 Years = 12 cents\n\n***\nNeed some help deciding when to take risk off the table in grain marketing?\n\nTry our updates & signals free\n👉 https://t.co/JvQ1KIpXXU"
+    },
+    {
+      "id": "X28",
+      "text": "Daily Commodities Wrap-Up: March 30, 2026\n\nGrains\nThe grain market is in a \"holding pattern\" ahead of tomorrow’s high-stakes USDA Prospective Plantings report. Corn futures drifted lower today as traders braced for potentially higher-than-expected acreage, despite the soaring cost of nitrogen. Soybeans managed a small gain, supported by a record-breaking Renewable Volume Obligation (RVO) announcement from the EPA, which signaled a massive long-term boost for soybean oil in the biofuel sector. Ho",
+      "url": "https://x.com/MCreekFutures/status/2038727122701750295",
+      "author_handle": "MCreekFutures",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.49,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 49,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 53,
+      "source": "x",
+      "title": "Daily Commodities Wrap-Up: March 30, 2026\n\nGrains\nThe grain market is in a \"holding pattern\" ahead of tomorrow’s high-stakes USDA Prospective Plantings report. Corn futures drifted lower today as traders braced for potentially higher-than-expected acreage, despite the soaring cost of nitrogen. Soybeans managed a small gain, supported by a record-breaking Renewable Volume Obligation (RVO) announcement from the EPA, which signaled a massive long-term boost for soybean oil in the biofuel sector. Ho"
+    },
+    {
+      "id": "X25",
+      "text": "@Joshua_Newman Halibut Oscar-style from Market street, fresh local corn on the cob (so this has to be in July), au gratin potatoes with lots of cheese, a chocolate brownie cookie from Cutlers in Bountiful, and a cold Mt Dew.",
+      "url": "https://x.com/ChrisRenrut99/status/2038762063955161406",
+      "author_handle": "ChrisRenrut99",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "@Joshua_Newman Halibut Oscar-style from Market street, fresh local corn on the cob (so this has to be in July), au gratin potatoes with lots of cheese, a chocolate brownie cookie from Cutlers in Bountiful, and a cold Mt Dew."
+    },
+    {
+      "id": "X27",
+      "text": "Last week, the ARM club took a look at what’s happening in the cattle and grain markets—from beef price seasonality during grilling season to rising corn prices and the ethanol market. We also kicked off a trading challenge.\n#govandals #uidahocommodity https://t.co/Amntr6AZ0V",
+      "url": "https://x.com/uidahocommodity/status/2038741290045878534",
+      "author_handle": "uidahocommodity",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 45,
+      "source": "x",
+      "title": "Last week, the ARM club took a look at what’s happening in the cattle and grain markets—from beef price seasonality during grilling season to rising corn prices and the ethanol market. We also kicked off a trading challenge.\n#govandals #uidahocommodity https://t.co/Amntr6AZ0V"
+    },
+    {
+      "id": "X29",
+      "text": "Watch today's Closing grain market commentary with Dawson Evers: https://t.co/rmHiXj5JVI — #soybeans #wheat #corn https://t.co/Sl9vkWS1bU",
+      "url": "https://x.com/Andersons_GS/status/2038722960144449739",
+      "author_handle": "Andersons_GS",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2
+      },
+      "relevance": 0.3,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 30,
+        "recency": 96,
+        "engagement": 18
+      },
+      "score": 42,
+      "source": "x",
+      "title": "Watch today's Closing grain market commentary with Dawson Evers: https://t.co/rmHiXj5JVI — #soybeans #wheat #corn https://t.co/Sl9vkWS1bU"
+    },
+    {
+      "id": "X7",
+      "text": "The global protein market is no longer just about supply and demand. \n\nIt is a complex web of geopolitics, cybersecurity, and genomic innovation. 🌐\n\nOur latest feature explores why Soybean Meal futures serve as a critical barometer for the global economy. \n\nWe analyze:\nStrategic Patents: The race for genomic supremacy in seeds.\nESG Leadership: How sustainable models drive corporate value.\nCyber Resilience: Protecting the heart of the food supply chain.\nStrategic investors must look beyond the tr",
+      "url": "https://x.com/The5ersFutures/status/2038538286596042850",
+      "author_handle": "The5ersFutures",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 5,
+        "reposts": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 100
+      },
+      "score": 71,
+      "source": "x",
+      "title": "The global protein market is no longer just about supply and demand. \n\nIt is a complex web of geopolitics, cybersecurity, and genomic innovation. 🌐\n\nOur latest feature explores why Soybean Meal futures serve as a critical barometer for the global economy. \n\nWe analyze:\nStrategic Patents: The race for genomic supremacy in seeds.\nESG Leadership: How sustainable models drive corporate value.\nCyber Resilience: Protecting the heart of the food supply chain.\nStrategic investors must look beyond the tr"
+    },
+    {
+      "id": "X1",
+      "text": "\"Chicken and eggs could end up cheaper because of new high-protein [15% vs 10%] sorghum variety\"\n\n•It could replace or reduce the amount of soybean meal added to livestock feed mixes and result in lower costs for growers and consumers.\n\nhttps://t.co/tujy57bBaR",
+      "url": "https://x.com/AndrewW66619812/status/2038740218711249393",
+      "author_handle": "AndrewW66619812",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "\"Chicken and eggs could end up cheaper because of new high-protein [15% vs 10%] sorghum variety\"\n\n•It could replace or reduce the amount of soybean meal added to livestock feed mixes and result in lower costs for growers and consumers.\n\nhttps://t.co/tujy57bBaR"
+    },
+    {
+      "id": "X2",
+      "text": "@Fagalex_Insight Dog Feed Formulation (26% Crude Protein) \nTotal Batch: 100kg \n•Yellow Maize (Ground): 45.0 kg (45.0%)\n•Soybean Meal (Toasted): 20.0 kg \n•Fish Meal (60-65% CP): 15.0 kg (15.0%)\n•Rice Bran or Polish: 10.0 kg (10.0%)\n•Vegetable or Poultry Oil: 4.0 kg (4.0%)",
+      "url": "https://x.com/ThebrothrmanAyo/status/2038714405429371033",
+      "author_handle": "ThebrothrmanAyo",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "@Fagalex_Insight Dog Feed Formulation (26% Crude Protein) \nTotal Batch: 100kg \n•Yellow Maize (Ground): 45.0 kg (45.0%)\n•Soybean Meal (Toasted): 20.0 kg \n•Fish Meal (60-65% CP): 15.0 kg (15.0%)\n•Rice Bran or Polish: 10.0 kg (10.0%)\n•Vegetable or Poultry Oil: 4.0 kg (4.0%)"
+    },
+    {
+      "id": "X5",
+      "text": "ANSWER (AG QUIZ 3/27): We asked a \"deeper one\" but told you it was two.  Which of the following are mostly Globulin protein in the seed? Soybean and Sunflower - amaze the family with that one over the evening meal. https://t.co/UyfmSBEeAy",
+      "url": "https://x.com/matt_montgo/status/2038592090402078793",
+      "author_handle": "matt_montgo",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "ANSWER (AG QUIZ 3/27): We asked a \"deeper one\" but told you it was two.  Which of the following are mostly Globulin protein in the seed? Soybean and Sunflower - amaze the family with that one over the evening meal. https://t.co/UyfmSBEeAy"
+    },
+    {
+      "id": "X4",
+      "text": "Catch &amp; Culture Review: Evaluating various soybean meal types and animal protein in diets for Pacific white shrimp | by Darryl E. Jory, Ph.D. \nhttps://t.co/p8h9uSWOHJ",
+      "url": "https://x.com/GSA_Advocate/status/2038610882142388423",
+      "author_handle": "GSA_Advocate",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "Catch &amp; Culture Review: Evaluating various soybean meal types and animal protein in diets for Pacific white shrimp | by Darryl E. Jory, Ph.D. \nhttps://t.co/p8h9uSWOHJ"
+    },
+    {
+      "id": "X3",
+      "text": "🌱 Starting TOMORROW! Producer Shop Talks: Real Conversations, Right Where You Farm 🚜 \n\nJoin us for casual, farmer-focused gatherings across North Dakota. Grab a meal, hear updates from the ND Soybean Growers Association and ND Soybean Council, and connect with fellow farmers and ag experts.\n\n📍 Spring 2026 Dates\nMarch 31 – Berthold | 8:30 a.m. | Cody Hansen’s Farm\nApril 1 – Fort Ransom | 2:30 p.m. | Thrill Hills\nApril 2 – Grand Forks | 11:30 a.m. | Evan Montgomery’s Farm\nApril 8 – Harvey | 11:30 ",
+      "url": "https://x.com/NDSoybean/status/2038639942138486952",
+      "author_handle": "NDSoybean",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "🌱 Starting TOMORROW! Producer Shop Talks: Real Conversations, Right Where You Farm 🚜 \n\nJoin us for casual, farmer-focused gatherings across North Dakota. Grab a meal, hear updates from the ND Soybean Growers Association and ND Soybean Council, and connect with fellow farmers and ag experts.\n\n📍 Spring 2026 Dates\nMarch 31 – Berthold | 8:30 a.m. | Cody Hansen’s Farm\nApril 1 – Fort Ransom | 2:30 p.m. | Thrill Hills\nApril 2 – Grand Forks | 11:30 a.m. | Evan Montgomery’s Farm\nApril 8 – Harvey | 11:30 "
+    },
+    {
+      "id": "X6",
+      "text": "🌱 Soybeans Market Overview 🌱\nA brief overview of Soybean, Soybean Meal, and Soybean Oil futures, featuring historical price data and COT report insights.\n#Soybean #SoybeanOil #SoybeanMeal #Commodity #Commodities #COTreport #CommodityReport",
+      "url": "https://x.com/quant_reports/status/2038557283680920029",
+      "author_handle": "quant_reports",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "reposts": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 22
+      },
+      "score": 48,
+      "source": "x",
+      "title": "🌱 Soybeans Market Overview 🌱\nA brief overview of Soybean, Soybean Meal, and Soybean Oil futures, featuring historical price data and COT report insights.\n#Soybean #SoybeanOil #SoybeanMeal #Commodity #Commodities #COTreport #CommodityReport"
+    },
+    {
+      "id": "X8",
+      "text": "The July-December 2026 Soybean Meal ( $ZM ) spread (ZMN26-ZMZ26) signals a shift in global protein demand. 🌾\n\nFrom AI-driven yields to geopolitical trade wars, the landscape is changing fast. Read our deep dive into the future of agribusiness.\n\n#SoybeanMeal #FuturesTrading #AgTech #Commodities #Macroeconomics",
+      "url": "https://x.com/UdiThe5ers/status/2038515448220668291",
+      "author_handle": "UdiThe5ers",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 0
+      },
+      "score": 41,
+      "source": "x",
+      "title": "The July-December 2026 Soybean Meal ( $ZM ) spread (ZMN26-ZMZ26) signals a shift in global protein demand. 🌾\n\nFrom AI-driven yields to geopolitical trade wars, the landscape is changing fast. Read our deep dive into the future of agribusiness.\n\n#SoybeanMeal #FuturesTrading #AgTech #Commodities #Macroeconomics"
+    },
+    {
+      "id": "X27",
+      "text": "This White Throated Sparrow was eating black oil sunflower seeds under my bird feeder.\n#Birds\n#Sparrow\n#Nature\n#Photography\n#Naturephotography https://t.co/hQOhQ0exSE",
+      "url": "https://x.com/Spctrm72/status/2038763643353858498",
+      "author_handle": "Spctrm72",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 16,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 100
+      },
+      "score": 71,
+      "source": "x",
+      "title": "This White Throated Sparrow was eating black oil sunflower seeds under my bird feeder.\n#Birds\n#Sparrow\n#Nature\n#Photography\n#Naturephotography https://t.co/hQOhQ0exSE"
+    },
+    {
+      "id": "X30",
+      "text": "@TonyCleveland15 The sunnie brand below is made w/avocado oil, not seed oils, &amp; very clean ingred list. No grains/gluten. \n\nSimple Mills brand crackers are also grain free &amp; all made w/out leaven &amp; are organic. But, do have organic sunflower oil if you're ok w/lil bit. \n\nSeveral organic gluten👇🏼 https://t.co/ZA4YosFIw8",
+      "url": "https://x.com/MrMrsTrumpet/status/2038739721074180096",
+      "author_handle": "MrMrsTrumpet",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "@TonyCleveland15 The sunnie brand below is made w/avocado oil, not seed oils, &amp; very clean ingred list. No grains/gluten. \n\nSimple Mills brand crackers are also grain free &amp; all made w/out leaven &amp; are organic. But, do have organic sunflower oil if you're ok w/lil bit. \n\nSeveral organic gluten👇🏼 https://t.co/ZA4YosFIw8"
+    },
+    {
+      "id": "X29",
+      "text": "Check out the prices of Frytol Sunflower Cooking Oil 0.9L! https://t.co/EL6ykoAZiC",
+      "url": "https://x.com/price_alt/status/2038743751166742991",
+      "author_handle": "price_alt",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 49,
+      "source": "x",
+      "title": "Check out the prices of Frytol Sunflower Cooking Oil 0.9L! https://t.co/EL6ykoAZiC"
+    },
+    {
+      "id": "X28",
+      "text": "🌻 I see people that look like they have a Vitamin E deficiency and it apparently affects meat-eaters just as much as vegetarians. Unless I eat sunflower seeds or butter, I drink a shot of organic sunflower oil each day to get my RDA of Vitamin E. #food #vitamins #health #usa",
+      "url": "https://x.com/jasonpatricklaw/status/2038757339411701997",
+      "author_handle": "jasonpatricklaw",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 96,
+        "engagement": 13
+      },
+      "score": 45,
+      "source": "x",
+      "title": "🌻 I see people that look like they have a Vitamin E deficiency and it apparently affects meat-eaters just as much as vegetarians. Unless I eat sunflower seeds or butter, I drink a shot of organic sunflower oil each day to get my RDA of Vitamin E. #food #vitamins #health #usa"
+    },
+    {
+      "id": "X22",
+      "text": "@rastyapa_boi А пахлави нема, токо кукурудза?",
+      "url": "https://x.com/nordic_hysteria/status/2038635668897771871",
+      "author_handle": "nordic_hysteria",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": {
+        "replies": 1
+      },
+      "relevance": 0.19,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 19,
+        "recency": 96,
+        "engagement": 35
+      },
+      "score": 40,
+      "source": "x",
+      "title": "@rastyapa_boi А пахлави нема, токо кукурудза?"
+    },
+    {
+      "id": "R12",
+      "title": "Financial Market Update - Tuesday, March 17, 2026 - Top 1 Stories You Need to Know",
+      "url": "https://www.reddit.com/r/financialbooklet/comments/1rvwsvj/financial_market_update_tuesday_march_17_2026_top/",
+      "subreddit": "financialbooklet",
+      "date": "2026-03-17",
+      "why_relevant": "Contains a corn market headline about USDA export outlook and cash corn prices.",
+      "relevance": 0.72
     },
     {
       "id": "R2",
@@ -36,8 +2565,8 @@
       "url": "https://www.reddit.com/r/LeopardsAteMyFarm/comments/1r99lks/us_farmers_to_sow_more_soybeans_in_2026_less_corn/",
       "subreddit": "LeopardsAteMyFarm",
       "date": "2026-02-20",
-      "why_relevant": "Relevant to USDA crop outlook and corn acreage expectations.",
-      "relevance": 0.88
+      "why_relevant": "Contains USDA acreage outlook and direct discussion of reduced corn planting.",
+      "relevance": 0.96
     },
     {
       "id": "R3",
@@ -45,8 +2574,17 @@
       "url": "https://www.reddit.com/r/farming/comments/1r869wn/as_us_agriculture_flails_farmers_see_big_corn/",
       "subreddit": "farming",
       "date": "2026-02-18",
-      "why_relevant": "Directly about corn acreage economics and market outlook for U.S. farmers.",
-      "relevance": 0.94
+      "why_relevant": "Thread about corn acreage decisions, profitability, and market outlook.",
+      "relevance": 0.95
+    },
+    {
+      "id": "R4",
+      "title": "Soy on soy",
+      "url": "https://www.reddit.com/r/vegan/comments/1r408n0/soy_on_soy/",
+      "subreddit": "vegan",
+      "date": "2026-02-13",
+      "why_relevant": "Weakly relevant: mentions multiple soy products but is mostly a food joke thread, not about soy meal or processing margins.",
+      "relevance": 0.18
     },
     {
       "id": "R1",
@@ -54,7 +2592,25 @@
       "url": "https://www.reddit.com/r/fednews/comments/1r1y3s9/usdas_reputation_suffers_after_massive_revisions/",
       "subreddit": "fednews",
       "date": "2026-02-11",
-      "why_relevant": "Discusses USDA corn acreage revisions and their impact on corn prices and market outlook.",
+      "why_relevant": "Discusses USDA corn acreage revisions, grain prices, and market impact.",
+      "relevance": 0.97
+    },
+    {
+      "id": "R3",
+      "title": "At what point is soy bad?",
+      "url": "https://www.reddit.com/r/vegan/comments/1qp7qwk/at_what_point_is_soy_bad/",
+      "subreddit": "vegan",
+      "date": "2026-01-28",
+      "why_relevant": "Not about trading margins directly, but it includes repeated discussion of soy processing and soy products, which is adjacent to soymeal economics.",
+      "relevance": 0.55
+    },
+    {
+      "id": "R5",
+      "title": "Corn futures plunge as USDA reports record 17 billion bushel crop",
+      "url": "https://www.reddit.com/r/climateskeptics/comments/1qcainu/corn_futures_plunge_as_usda_reports_record_17/",
+      "subreddit": "climateskeptics",
+      "date": "2026-01-14",
+      "why_relevant": "Same market-moving USDA corn supply story discussed in another subreddit.",
       "relevance": 0.92
     },
     {
@@ -63,53 +2619,44 @@
       "url": "https://www.reddit.com/r/farming/comments/1qbtflc/corn_futures_plunge_as_usda_reports_record_17/",
       "subreddit": "farming",
       "date": "2026-01-13",
-      "why_relevant": "Covers USDA supply estimates and corn futures price reaction.",
+      "why_relevant": "Directly about corn futures and USDA supply estimates affecting the market.",
       "relevance": 0.95
     },
     {
-      "id": "R6",
+      "id": "R5",
       "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
       "url": "https://www.reddit.com/r/UkraineRussiaReport/comments/1pvw1c1/ua_pov_the_scenery_at_one_of_ukraines_largest/",
       "subreddit": "UkraineRussiaReport",
       "date": "2025-12-26",
-      "why_relevant": "Directly about sunflower oil storage infrastructure in Ukraine and its disruption.",
-      "relevance": 0.79
+      "why_relevant": "Discusses damage to a major sunflower oil storage facility in Ukraine, relevant to logistics and storage.",
+      "relevance": 0.9
     },
     {
-      "id": "R3",
-      "title": "Which crops can replace soybeans for the 2026 season?",
-      "url": "https://www.reddit.com/r/Agriculture/comments/1o0ij1k",
-      "subreddit": "Agriculture",
-      "date": "2025-10-07",
-      "why_relevant": "Includes a discussion of soy crush margins when comparing crop alternatives.",
-      "relevance": 0.72
-    },
-    {
-      "id": "R1",
-      "title": "Кукурудза на базарі по 10 грн",
-      "url": "https://www.reddit.com/r/food_ua/comments/1n91rod",
-      "subreddit": "food_ua",
-      "date": "2025-09-05",
-      "why_relevant": "Discusses corn pricing in a market/bazaar, directly related to corn market conditions.",
-      "relevance": 0.93
-    },
-    {
-      "id": "R2",
+      "id": "R10",
       "title": "I try to undestand Soybean and Soybean oil.",
       "url": "https://www.reddit.com/r/Commodities/comments/1lgcwan",
       "subreddit": "Commodities",
       "date": "2025-06-20",
-      "why_relevant": "Talks about soybeans, soybean meal, soybean oil, and crush economics in commodity markets.",
-      "relevance": 0.92
+      "why_relevant": "Talks about soybeans being crushed into oil, meal, and side products, including meal demand.",
+      "relevance": 0.95
     },
     {
-      "id": "R5",
+      "id": "R7",
+      "title": "Corn Yields at 181 Make Sense. Corn Overview to Start 2025 Campaign.",
+      "url": "https://www.reddit.com/r/Agriculture/comments/1klhdmx",
+      "subreddit": "Agriculture",
+      "date": "2025-05-13",
+      "why_relevant": "Analyzes corn yield outlook, demand, exports, ethanol, and pricing.",
+      "relevance": 0.91
+    },
+    {
+      "id": "R6",
       "title": "Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
       "url": "https://www.reddit.com/r/ValueInvesting/comments/1km0ka0",
       "subreddit": "ValueInvesting",
       "date": "2025-05-13",
-      "why_relevant": "Discusses Ukraine's largest sunflower oil producer and export routes blocked by war logistics.",
-      "relevance": 0.8
+      "why_relevant": "Contains discussion of Ukraine's sunflower oil producer and how the war blocked exports through Black Sea ports, with logistics via Danube terminals.",
+      "relevance": 0.89
     },
     {
       "id": "R1",
@@ -117,71 +2664,107 @@
       "url": "https://www.reddit.com/r/reddit_ukr/comments/1kln9eh",
       "subreddit": "eddit_ukr",
       "date": "2025-05-13",
-      "why_relevant": "Discussion compares rapeseed oil with sunflower oil in Ukraine, which is directly related to cooking oil supply and local market availability.",
-      "relevance": 0.91
+      "why_relevant": "Discusses vegetable oil availability in Ukraine and mentions sunflower oil directly; relevant to logistics/supply context around sunflower oil.",
+      "relevance": 0.71
     },
     {
-      "id": "R10",
+      "id": "R8",
       "title": "ADM closing soybean crush plant",
       "url": "https://www.reddit.com/r/farming/comments/1k2ci0h",
       "subreddit": "farming",
       "date": "2025-04-18",
-      "why_relevant": "Discusses soybean meal oversupply and crush plant economics.",
-      "relevance": 0.76
+      "why_relevant": "Directly about soybean crush plant closures and soybean meal market oversupply.",
+      "relevance": 0.96
     },
     {
-      "id": "R12",
+      "id": "R6",
+      "title": "What USDA Corn and Soybean Acreage Estimates Would Shock the Market On Monday?",
+      "url": "https://www.reddit.com/r/farming/comments/1jlxxj2",
+      "subreddit": "farming",
+      "date": "2025-03-28",
+      "why_relevant": "Discussion of USDA acreage estimates and potential market shock for corn.",
+      "relevance": 0.91
+    },
+    {
+      "id": "R1",
       "title": "The Black Sea Brief (September 26, 2024)",
       "url": "https://www.reddit.com/r/Commodities/comments/1fq8olj",
       "subreddit": "Commodities",
       "date": "2024-09-26",
-      "why_relevant": "Contains Black Sea wheat prices and export competitiveness updates.",
-      "relevance": 0.94
+      "why_relevant": "Discusses Black Sea wheat prices and export flows.",
+      "relevance": 0.98
     },
     {
-      "id": "R11",
+      "id": "R10",
+      "title": "Corn Futures Structure",
+      "url": "https://www.reddit.com/r/Commodities/comments/1f5b9uk",
+      "subreddit": "Commodities",
+      "date": "2024-08-31",
+      "why_relevant": "Focused on corn futures curve structure and spreads, relevant to market outlook.",
+      "relevance": 0.81
+    },
+    {
+      "id": "R8",
       "title": "The Black Sea Brief (August 29, 2024)",
       "url": "https://www.reddit.com/r/Commodities/comments/1f4sxis",
       "subreddit": "Commodities",
       "date": "2024-08-30",
-      "why_relevant": "Discusses Black Sea wheat prices and export flow trends.",
+      "why_relevant": "Contains Black Sea wheat prices and export flow updates.",
       "relevance": 0.94
     },
     {
-      "id": "R10",
+      "id": "R3",
+      "title": "The Black Sea Brief (August 29, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1f4sxis",
+      "subreddit": "Commodities",
+      "date": "2024-08-30",
+      "why_relevant": "Includes wheat export prices and flows in the Black Sea region, including Ukraine.",
+      "relevance": 0.96
+    },
+    {
+      "id": "R9",
       "title": "The Black Sea Brief (July 4, 2024)",
       "url": "https://www.reddit.com/r/Commodities/comments/1etoq3z",
       "subreddit": "Commodities",
       "date": "2024-08-16",
-      "why_relevant": "Black Sea wheat export and pricing brief with market analysis.",
+      "why_relevant": "Includes discussion of wheat market support and Black Sea export activity.",
       "relevance": 0.94
     },
     {
-      "id": "R2",
-      "title": "\"I just found out that the price of wheat right now is about the same as it was in 1972. $4.86 a bushel. A loaf of bread in 1972 cost 25 cents. Bread has gone up by a factor of ten since then, but the farmer has gotten none of that money. Something is seriously wrong\"",
-      "url": "https://www.reddit.com/r/economy/comments/1eo7rh3",
-      "subreddit": "economy",
-      "date": "2024-08-09",
-      "why_relevant": "Thread explicitly discusses wheat prices and how they relate to bread costs.",
-      "relevance": 0.98
-    },
-    {
-      "id": "R9",
-      "title": "The Black Sea Brief (June 27, 2024)",
-      "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1",
+      "id": "R4",
+      "title": "The Black Sea Brief (July 4, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1etoq3z",
       "subreddit": "Commodities",
-      "date": "2024-06-28",
-      "why_relevant": "Focuses on Black Sea wheat prices, export pace, and market demand.",
+      "date": "2024-08-16",
+      "why_relevant": "Discusses Black Sea wheat market prices and export activity from Ukraine and nearby origins.",
       "relevance": 0.95
     },
     {
       "id": "R5",
+      "title": "The Black Sea Brief (June 27, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1",
+      "subreddit": "Commodities",
+      "date": "2024-06-28",
+      "why_relevant": "Mentions Black Sea wheat prices and export prospects.",
+      "relevance": 0.96
+    },
+    {
+      "id": "R2",
+      "title": "The Black Sea Brief (June 27, 2024)",
+      "url": "https://www.reddit.com/r/Commodities/comments/1dqivj1",
+      "subreddit": "Commodities",
+      "date": "2024-06-28",
+      "why_relevant": "Covers Black Sea wheat pricing and export conditions involving Ukraine and Russia.",
+      "relevance": 0.97
+    },
+    {
+      "id": "R4",
       "title": "[MEGATHREAD] How to navigate the global soybean market from feed to fuel",
       "url": "https://www.reddit.com/r/u_cmegroup/comments/1czrfmn",
       "subreddit": "u_cmegroup",
       "date": "2024-05-24",
-      "why_relevant": "Discusses soybean meal, oil, and crush economics in the global soybean market.",
-      "relevance": 0.9
+      "why_relevant": "Covers soybean crush dynamics, including meal demand, crush margins, and the soybean complex.",
+      "relevance": 0.97
     },
     {
       "id": "R3",
@@ -189,35 +2772,35 @@
       "url": "https://www.reddit.com/r/plantdoctor/comments/1ctf2bn",
       "subreddit": "plantdoctor",
       "date": "2024-05-16",
-      "why_relevant": "Mentions soybean meal directly, though the discussion is about gardening rather than processing margins.",
-      "relevance": 0.48
+      "why_relevant": "Mentions soybean meal directly, though in a gardening/fertilizer context rather than commodity crush markets.",
+      "relevance": 0.72
     },
     {
-      "id": "R11",
-      "title": "Concerns raised that U.S. soy crush capacity is overbuilt",
-      "url": "https://www.reddit.com/r/farming/comments/1bwrpu9",
-      "subreddit": "farming",
-      "date": "2024-04-05",
-      "why_relevant": "Talks about crush margins being depressed due to overbuilt capacity.",
-      "relevance": 0.78
+      "id": "R5",
+      "title": "Soybean Meal As Soil Additive / Fertilizer?",
+      "url": "https://www.reddit.com/r/houseplants/comments/1ctf0p7",
+      "subreddit": "houseplants",
+      "date": "2024-05-16",
+      "why_relevant": "Direct mention of soybean meal; not a market discussion but still a relevant thread on the term.",
+      "relevance": 0.7
     },
     {
-      "id": "R8",
+      "id": "R4",
       "title": "The Black Sea Brief (April 3, 2024)",
       "url": "https://www.reddit.com/r/Commodities/comments/1bv6v4h",
       "subreddit": "Commodities",
       "date": "2024-04-03",
-      "why_relevant": "Black Sea wheat pricing and export movement commentary.",
-      "relevance": 0.95
+      "why_relevant": "Discusses Black Sea wheat pricing and export/tender activity.",
+      "relevance": 0.96
     },
     {
-      "id": "R7",
+      "id": "R3",
       "title": "The Black Sea Brief (March 20, 2024)",
       "url": "https://www.reddit.com/r/Commodities/comments/1bjrtbm",
       "subreddit": "Commodities",
       "date": "2024-03-20",
-      "why_relevant": "Detailed Black Sea grain brief covering wheat prices and exports.",
-      "relevance": 0.95
+      "why_relevant": "Covers RF wheat prices and Black Sea trade flows.",
+      "relevance": 0.96
     },
     {
       "id": "R6",
@@ -225,71 +2808,62 @@
       "url": "https://www.reddit.com/r/Agriculture/comments/1be2if8",
       "subreddit": "Agriculture",
       "date": "2024-03-13",
-      "why_relevant": "Black Sea wheat prices, export flows, and grain market discussion.",
+      "why_relevant": "Contains Black Sea wheat price and export commentary.",
       "relevance": 0.95
     },
     {
-      "id": "R4",
-      "title": "History of Soybean Crushing: Soy Oil and Soybean Meal (980-2016)",
-      "url": "https://www.reddit.com/r/StopEatingSeedOils/comments/17vwcma",
-      "subreddit": "StopEatingSeedOils",
-      "date": "2023-11-15",
-      "why_relevant": "Covers soybean crushing and soybean meal as part of the broader soy processing chain.",
-      "relevance": 0.63
+      "id": "R7",
+      "title": "The Black Sea Brief (March 13, 2024)",
+      "url": "https://www.reddit.com/r/Agriculture/comments/1be2if8",
+      "subreddit": "Agriculture",
+      "date": "2024-03-13",
+      "why_relevant": "Mentions Black Sea wheat prices and export volumes, including Ukraine and Russia.",
+      "relevance": 0.92
     },
     {
-      "id": "R7",
+      "id": "R1",
+      "title": "Most soy is used to feed livestock",
+      "url": "https://www.reddit.com/r/AntiVegan/comments/171dya3",
+      "subreddit": "AntiVegan",
+      "date": "2023-10-06",
+      "why_relevant": "Discusses soybean meal/soymeal as a byproduct of soy oil extraction and its end use, which is closely related to soy meal processing and margins.",
+      "relevance": 0.86
+    },
+    {
+      "id": "R2",
       "title": "Is soy that bad?",
       "url": "https://www.reddit.com/r/exvegans/comments/16s6pkm",
       "subreddit": "exvegans",
       "date": "2023-09-25",
-      "why_relevant": "Includes discussion of soybean meal and how soy is processed and used in animal feed.",
-      "relevance": 0.74
+      "why_relevant": "Contains discussion of soybean oil extraction and soymeal, touching the same core commodity-processing topic.",
+      "relevance": 0.82
     },
     {
-      "id": "R13",
-      "title": "Report shows soybeans provide $124 billion to the US economy.",
-      "url": "https://www.reddit.com/r/Agriculture/comments/16bvugg",
-      "subreddit": "Agriculture",
-      "date": "2023-09-06",
-      "why_relevant": "References NOPA and soybean processing economics tied to crush activity.",
-      "relevance": 0.66
-    },
-    {
-      "id": "R12",
-      "title": "Farmers in the US should benefit from challenges for Argentina's soy industry",
-      "url": "https://www.reddit.com/r/farming/comments/15q0v6c",
-      "subreddit": "farming",
-      "date": "2023-08-13",
-      "why_relevant": "Mentions crush margins and soybean meal/oil market pressure.",
-      "relevance": 0.8
-    },
-    {
-      "id": "R5",
+      "id": "R7",
       "title": "Wheat price",
       "url": "https://www.reddit.com/r/Commodities/comments/15hdqze",
       "subreddit": "Commodities",
-      "date": "2023-08-03",
-      "why_relevant": "A trading discussion about wheat price and Ukraine/Black Sea export uncertainty.",
-      "relevance": 0.95
+      "date": "2023-08-04",
+      "why_relevant": "Thread discusses wheat pricing and links it to Black Sea exports.",
+      "relevance": 0.94
     },
     {
-      "id": "R1",
-      "title": "Wheat price",
-      "url": "https://www.reddit.com/r/Commodities/comments/15hdqze",
-      "subreddit": "Commodities",
-      "date": "2023-08-03",
-      "why_relevant": "Direct discussion of wheat prices and near-term price expectations.",
-      "relevance": 0.99
-    },
-    {
-      "id": "R1",
+      "id": "R2",
       "title": "Wheat Prices Soar as Black Sea Exports Stalled by Russia",
       "url": "https://www.reddit.com/r/u_MainNewsHub/comments/154hgj0",
       "subreddit": "u_MainNewsHub",
       "date": "2023-07-20",
-      "why_relevant": "Directly about wheat prices and stalled Black Sea exports.",
-      "relevance": 0.99
+      "why_relevant": "Directly about wheat prices and Black Sea export disruption.",
+      "relevance": 0.97
+    },
+    {
+      "id": "R5",
+      "title": "Wheat Prices Soar as Black Sea Exports Stalled by Russia",
+      "url": "https://www.reddit.com/r/u_MainNewsHub/comments/154hgj0",
+      "subreddit": "u_MainNewsHub",
+      "date": "2023-07-20",
+      "why_relevant": "Directly about wheat prices rising due to Black Sea export disruptions.",
+      "relevance": 0.94
     },
     {
       "id": "R9",
@@ -297,8 +2871,8 @@
       "url": "https://www.reddit.com/r/farming/comments/14v2hmq",
       "subreddit": "farming",
       "date": "2023-07-09",
-      "why_relevant": "Explains soybean crush economics and value of oil and meal.",
-      "relevance": 0.69
+      "why_relevant": "Discusses why soybeans are crushed and the value of soybean oil and meal.",
+      "relevance": 0.88
     },
     {
       "id": "R2",
@@ -306,8 +2880,8 @@
       "url": "https://www.reddit.com/r/worldnews/comments/14997mm",
       "subreddit": "worldnews",
       "date": "2023-06-14",
-      "why_relevant": "Covers Ukraine sunflower oil exports and logistics moving stock into India.",
-      "relevance": 0.91
+      "why_relevant": "Directly about Ukraine exporting sunflower oil and the logistics of moving stock to India.",
+      "relevance": 0.95
     },
     {
       "id": "R3",
@@ -315,62 +2889,44 @@
       "url": "https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy",
       "subreddit": "GeopoliticsIndia",
       "date": "2023-06-14",
-      "why_relevant": "Same core topic: sunflower oil exports from Ukraine and supply/logistics effects.",
-      "relevance": 0.9
+      "why_relevant": "Same news topic, reposted in a geopolitics discussion thread about Ukraine sunflower oil shipments.",
+      "relevance": 0.93
     },
     {
-      "id": "R2",
-      "title": "Soybean crush margins plummet in wake of EPA ruling",
-      "url": "https://www.reddit.com/r/farming/comments/11bmgn8",
-      "subreddit": "farming",
-      "date": "2023-02-25",
-      "why_relevant": "Directly about soybean crush margins.",
-      "relevance": 0.99
+      "id": "R7",
+      "title": "If soybean meal is typically 7-1.5-1, what would whole soybeans be?",
+      "url": "https://www.reddit.com/r/OrganicGardening/comments/12ufbfm",
+      "subreddit": "OrganicGardening",
+      "date": "2023-04-21",
+      "why_relevant": "Mentions soybean meal and how it is produced from soybean oil extraction.",
+      "relevance": 0.68
     },
     {
-      "id": "R1",
-      "title": "Soybean crush margins plummet in wake of EPA ruling",
-      "url": "https://www.reddit.com/r/farming/comments/11bmgn8",
-      "subreddit": "farming",
-      "date": "2023-02-25",
-      "why_relevant": "Discusses soybean crushing margins, which is directly related to soybean meal and processing margin economics.",
-      "relevance": 0.95
-    },
-    {
-      "id": "R3",
-      "title": "Inflation has really hit wheat .. first hand experience ..",
-      "url": "https://www.reddit.com/r/preppers/comments/104400o",
-      "subreddit": "preppers",
-      "date": "2023-01-05",
-      "why_relevant": "Mentions wheat prices doubling and discusses real-world impacts.",
-      "relevance": 0.97
-    },
-    {
-      "id": "R2",
-      "title": "Wheat prices climb nearly six percent after Russia pulls out of Black Sea deal (via WION)",
-      "url": "https://www.reddit.com/r/newswall/comments/yieifb",
-      "subreddit": "newswall",
-      "date": "2022-10-31",
-      "why_relevant": "Discusses wheat prices reacting to Russia's Black Sea grain deal exit.",
-      "relevance": 0.98
-    },
-    {
-      "id": "R4",
+      "id": "R10",
       "title": "U.N., Turkey, Ukraine press ahead with Black Sea grain deal despite Russian pullout",
       "url": "https://www.reddit.com/r/europe/comments/yhsxqq",
       "subreddit": "europe",
       "date": "2022-10-31",
-      "why_relevant": "Mentions the Black Sea grain deal and wheat price impact.",
-      "relevance": 0.96
+      "why_relevant": "About the Black Sea grain deal and its impact on wheat prices.",
+      "relevance": 0.93
     },
     {
-      "id": "R9",
+      "id": "R11",
+      "title": "Wheat prices climb nearly six percent after Russia pulls out of Black Sea deal (via WION)",
+      "url": "https://www.reddit.com/r/newswall/comments/yieifb",
+      "subreddit": "newswall",
+      "date": "2022-10-31",
+      "why_relevant": "Directly ties wheat prices to Black Sea export deal disruption.",
+      "relevance": 0.92
+    },
+    {
+      "id": "R8",
       "title": "Sunflower oil ⚡️ OFFER ⚡️",
       "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
       "subreddit": "u_Sunflower-Oil-Offers",
       "date": "2022-10-20",
-      "why_relevant": "Commercial thread about Ukrainian sunflower oil with FOB logistics locations.",
-      "relevance": 0.74
+      "why_relevant": "Offer thread mentioning sunflower oil shipments from Ukraine and FOB logistics points.",
+      "relevance": 0.82
     },
     {
       "id": "R4",
@@ -378,98 +2934,53 @@
       "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7",
       "subreddit": "ukraine",
       "date": "2022-10-17",
-      "why_relevant": "Relevant to Ukraine sunflower oil storage, transport, and infrastructure/logistics impacts.",
-      "relevance": 0.82
+      "why_relevant": "About sunflower oil storage, transport infrastructure, and war-related disruption in Ukraine.",
+      "relevance": 0.91
     },
     {
-      "id": "R8",
+      "id": "R9",
       "title": "100% Refined Sunflower Oil 🌻 in Europe, direct from the factory.",
       "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
       "subreddit": "u_Sunflower-Oil-Offers",
       "date": "2022-10-11",
-      "why_relevant": "Includes Ukraine origin and FOB shipping/logistics details for sunflower oil.",
-      "relevance": 0.74
-    },
-    {
-      "id": "R3",
-      "title": "Wheat prices drop to pre-war levels after Ukraine and Russia strike deal to unblock shipments",
-      "url": "https://www.reddit.com/r/autotldr/comments/w5e6wk",
-      "subreddit": "autotldr",
-      "date": "2022-07-22",
-      "why_relevant": "Covers wheat prices and Black Sea shipment unblock deal.",
-      "relevance": 0.98
-    },
-    {
-      "id": "R1",
-      "title": "Sunflower Oil ‘Vanishes’ as Ukraine War Grinds On",
-      "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
-      "subreddit": "autotldr",
-      "date": "2022-04-30",
-      "why_relevant": "Discusses sunflower oil shortages caused by the Ukraine war and resulting supply-chain disruption.",
-      "relevance": 0.93
-    },
-    {
-      "id": "R8",
-      "title": "Global Food Shortage is accelerating - Wheat to 4000",
-      "url": "https://www.reddit.com/r/wallstreetbets/comments/tnm2up",
-      "subreddit": "wallstreetbets",
-      "date": "2022-03-20",
-      "why_relevant": "Speculates on wheat price spikes and futures.",
-      "relevance": 0.94
-    },
-    {
-      "id": "R4",
-      "title": "$WEAT - The Big Short",
-      "url": "https://www.reddit.com/r/wallstreetbets/comments/t99slf",
-      "subreddit": "wallstreetbets",
-      "date": "2022-03-08",
-      "why_relevant": "Talks about wheat pricing, futures, and the WEAT ETF.",
-      "relevance": 0.96
-    },
-    {
-      "id": "R5",
-      "title": "Highest Wheat Prices of All Time",
-      "url": "https://www.reddit.com/r/collapse/comments/t6ybgd",
-      "subreddit": "collapse",
-      "date": "2022-03-05",
-      "why_relevant": "Explicitly about record wheat prices and their causes.",
-      "relevance": 0.96
-    },
-    {
-      "id": "R9",
-      "title": "Wheat prices shot past their prior 2008 record by almost 30% in a single week",
-      "url": "https://www.reddit.com/r/collapse/comments/t6ybgd",
-      "subreddit": "collapse",
-      "date": "2022-03-05",
-      "why_relevant": "Same topic area: wheat prices and market shock.",
-      "relevance": 0.94
-    },
-    {
-      "id": "R6",
-      "title": "Wheat futures are soaring, and food prices could be next..FERTILIZER PRICES HAVE TRIPLED SINCE 2020",
-      "url": "https://www.reddit.com/r/economy/comments/t4ng2l",
-      "subreddit": "economy",
-      "date": "2022-03-02",
-      "why_relevant": "Discusses wheat futures and downstream food price effects.",
-      "relevance": 0.95
-    },
-    {
-      "id": "R7",
-      "title": "WEAT",
-      "url": "https://www.reddit.com/r/wallstreetbets/comments/t4a6sn",
-      "subreddit": "wallstreetbets",
-      "date": "2022-03-01",
-      "why_relevant": "Thread about wheat prices soaring and the WEAT ticker.",
-      "relevance": 0.95
+      "why_relevant": "Lists Ukraine origin, warehouse, FOB locations, and transport/payment terms for sunflower oil.",
+      "relevance": 0.82
     },
     {
       "id": "R10",
-      "title": "Wheat prices soar to highest since 2008, trade 'limit up' on potential Russia supply hit",
-      "url": "https://www.reddit.com/r/wallstreetbets/comments/t4a6sn",
+      "title": "Sunfloweer Oil 🌻 - wholesale price reduction",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-09-12",
+      "why_relevant": "Wholesale sunflower oil thread mentioning Ukraine origin and logistics costs.",
+      "relevance": 0.81
+    },
+    {
+      "id": "R6",
+      "title": "Russia and Ukraine sign UN-backed deal to resume grain exports via the Black Sea",
+      "url": "https://www.reddit.com/r/wallstreetbets/comments/w5d7jv",
       "subreddit": "wallstreetbets",
-      "date": "2022-03-01",
-      "why_relevant": "Explicitly about wheat prices and supply-driven price movement.",
-      "relevance": 0.94
+      "date": "2022-07-22",
+      "why_relevant": "Discusses grain exports through the Black Sea and market impact on wheat prices.",
+      "relevance": 0.93
+    },
+    {
+      "id": "R1",
+      "title": "Sunflower Oil 'Vanishes' as Ukraine War Grinds On",
+      "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
+      "subreddit": "autotldr",
+      "date": "2022-04-30",
+      "why_relevant": "Discusses sunflower oil shortages caused by the war in Ukraine and resulting supply-chain disruption.",
+      "relevance": 0.97
+    },
+    {
+      "id": "R11",
+      "title": "Corn stocks",
+      "url": "https://www.reddit.com/r/corn/comments/ubdbnc",
+      "subreddit": "corn",
+      "date": "2022-04-25",
+      "why_relevant": "Lightweight but relevant corn market/futures discussion in a Reddit thread.",
+      "relevance": 0.74
     },
     {
       "id": "R7",
@@ -477,89 +2988,107 @@
       "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
       "subreddit": "u_lt10plimited",
       "date": "2022-02-10",
-      "why_relevant": "Mentions sourcing sunflower seeds from Ukraine and Russia and bulk oil supply logistics.",
-      "relevance": 0.75
+      "why_relevant": "Sales post about sunflower oil sourcing from Ukraine and related bulk supply/logistics.",
+      "relevance": 0.83
+    },
+    {
+      "id": "R8",
+      "title": "Економічне везіння закінчилося. Належить затягнути пояси",
+      "url": "https://www.reddit.com/r/u_kyrsa77/comments/pwbamm",
+      "subreddit": "u_kyrsa77",
+      "date": "2021-09-29",
+      "why_relevant": "Contains discussion of Ukrainian wheat export prices and links them to broader market conditions.",
+      "relevance": 0.9
+    },
+    {
+      "id": "R9",
+      "title": "Економічне везіння закінчилося. Належить затягнути пояси",
+      "url": "https://www.reddit.com/r/u_kyrsa77/comments/pwbet1",
+      "subreddit": "u_kyrsa77",
+      "date": "2021-09-29",
+      "why_relevant": "Duplicate thread variant discussing Ukrainian wheat export prices.",
+      "relevance": 0.89
+    },
+    {
+      "id": "R10",
+      "title": "Економічне везіння закінчилося. Належить затягнути пояси",
+      "url": "https://www.reddit.com/r/u_kyrsa77/comments/pwbbaj",
+      "subreddit": "u_kyrsa77",
+      "date": "2021-09-29",
+      "why_relevant": "Duplicate thread variant discussing wheat export prices in Ukraine.",
+      "relevance": 0.89
     },
     {
       "id": "R1",
       "title": "Request for help understanding an industry at the macro level: Is anyone active in the Bean Oil markets, physical or derivative?",
       "url": "https://www.reddit.com/r/Commodities/comments/nxkzq8",
       "subreddit": "Commodities",
-      "date": "2021-06-25",
-      "why_relevant": "Discusses soybean crush margins and how bean oil/meal economics affect crushing decisions.",
-      "relevance": 0.94
+      "date": "2021-06-17",
+      "why_relevant": "Discusses the soybean crush complex, including soybean meal demand driving crush and the relationship between meal, oil, and beans.",
+      "relevance": 0.98
     },
     {
-      "id": "R7",
-      "title": "Weekly Ag Commodity Market Thread - Discussion and Questions",
-      "url": "https://www.reddit.com/r/Commodities/comments/nkr0jl",
-      "subreddit": "Commodities",
-      "date": "2021-05-18",
-      "why_relevant": "Contains discussion of soybean oil, meal, and firming crush margins.",
-      "relevance": 0.81
-    },
-    {
-      "id": "R4",
+      "id": "R6",
       "title": "\"soybeans are grown for their oil. we only feed it to livestock because it would be wasted otherwise\" a financial analysis debunks this claim",
       "url": "https://www.reddit.com/r/vegan/comments/n9tsnx",
       "subreddit": "vegan",
       "date": "2021-05-11",
-      "why_relevant": "Contains detailed soybean meal and crush-margin economics.",
-      "relevance": 0.71
-    },
-    {
-      "id": "R5",
-      "title": "\"soybeans are grown for their oil. we only feed it to livestock because it would be wasted otherwise\" a financial analysis debunks this claim",
-      "url": "https://www.reddit.com/r/vegan/comments/n9tsnx",
-      "subreddit": "vegan",
-      "date": "2021-05-11",
-      "why_relevant": "Long discussion of soybean meal, soybean oil, and the economics/profitability of crushing soybeans.",
+      "why_relevant": "Discusses the economics of crushing soybeans into meal and oil, with detailed soybean meal references.",
       "relevance": 0.9
     },
     {
       "id": "R8",
-      "title": "Soybean and soybean oil",
-      "url": "https://www.reddit.com/r/Commodities/comments/n0d9vx",
+      "title": "Corn",
+      "url": "https://www.reddit.com/r/Vitards/comments/n8m21q",
+      "subreddit": "Vitards",
+      "date": "2021-05-08",
+      "why_relevant": "Commodity investing thread discussing corn futures exposure and market drivers.",
+      "relevance": 0.84
+    },
+    {
+      "id": "R9",
+      "title": "Corn",
+      "url": "https://www.reddit.com/r/Commodities/comments/mi9ge4",
       "subreddit": "Commodities",
-      "date": "2021-04-28",
-      "why_relevant": "Discussion of soybean trading fundamentals, including crush margins.",
-      "relevance": 0.77
+      "date": "2021-04-02",
+      "why_relevant": "General corn commodity market discussion with futures and outlook commentary.",
+      "relevance": 0.82
     },
     {
-      "id": "R15",
-      "title": "I found a very interesting post about how much soy goes to humans and animals. I thought I post it here to hear some more opinions.",
-      "url": "https://www.reddit.com/r/DebateAVegan/comments/mdubgu",
-      "subreddit": "DebateAVegan",
-      "date": "2021-03-31",
-      "why_relevant": "Includes discussion of soybean meal, crush yields, and feed economics.",
-      "relevance": 0.61
-    },
-    {
-      "id": "R14",
-      "title": "A vegan commenter here just said: \"77% of soy grown globally is fed to livestock...\"",
-      "url": "https://www.reddit.com/r/exvegans/comments/mb1j4h",
-      "subreddit": "exvegans",
-      "date": "2021-03-30",
-      "why_relevant": "Contains a long discussion of soybean meal and soybean crush economics.",
-      "relevance": 0.62
-    },
-    {
-      "id": "R6",
+      "id": "R2",
       "title": "A vegan commenter here just said: \"77% of soy grown globally is fed to livestock. Humans are so greedy.\" However, it's soybean meal - the leftovers from grinding out the oil from the beans - that are fed to animals as a waste product because few people buy soy flour or soy protein.",
       "url": "https://www.reddit.com/r/exvegans/comments/mb1j4h",
       "subreddit": "exvegans",
       "date": "2021-03-22",
-      "why_relevant": "Contains an extended explanation of soybean meal and soy processing economics.",
-      "relevance": 0.86
+      "why_relevant": "Explains soybean crushing and soybean meal as the co-product, with discussion of meal use and crush outputs.",
+      "relevance": 0.92
     },
     {
-      "id": "R6",
-      "title": "SBM Futures",
-      "url": "https://www.reddit.com/r/Commodities/comments/lmvwmx",
+      "id": "R11",
+      "title": "Primer on soybean meal",
+      "url": "https://www.reddit.com/r/Commodities/comments/lolsgo",
       "subreddit": "Commodities",
-      "date": "2021-02-18",
-      "why_relevant": "About soybean meal futures and mentions crush margins directly.",
-      "relevance": 0.83
+      "date": "2021-02-21",
+      "why_relevant": "A direct request for a primer on the soybean meal market.",
+      "relevance": 0.99
+    },
+    {
+      "id": "W14",
+      "title": "2705a__crnt.txt",
+      "url": "https://dpor.am.virginia.gov/sites/default/files/Records%20and%20Documents/Regulant%20List/2705a__crnt.txt",
+      "source_domain": "dpor.am.virginia.gov",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
     },
     {
       "id": "W11",
@@ -580,7 +3109,25 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W8",
+      "title": "Agricultural Futures - Total Grain Marketing",
+      "url": "https://www.totalgrainmarketing.com/grain-marketing/barchart-futures?j1_module=futureDetail&popup=1&0=news&j1_storyID=640216&j1_symbol=KEH26&j1_selected=news",
+      "source_domain": "totalgrainmarketing.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
       "title": "AgroPortal Bulgaria | LinkedIn",
       "url": "https://www.linkedin.com/company/agroportal-bulgaria",
       "source_domain": "linkedin.com",
@@ -598,7 +3145,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W15",
       "title": "Black Sea & Danube Wheat Market 2026: Weather Risks, Trade ...",
       "url": "https://ukragroconsult.com/en/news/black-sea-danube-wheat-market-2026-weather-risks-trade-shifts-and-regional-repricing/",
       "source_domain": "ukragroconsult.com",
@@ -616,7 +3163,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W7",
       "title": "Black Sea Regional Analysis",
       "url": "https://www.worldperspectives.com/articles/black-sea-regional-analysis-03252026",
       "source_domain": "worldperspectives.com",
@@ -652,7 +3199,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
       "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
       "source_domain": "spglobal.com",
@@ -670,7 +3217,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W3",
       "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
@@ -724,46 +3271,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Global Ag News For March 30.2026",
-      "url": "https://www.admis.com/global-ag-news-for-march-30-2026/",
-      "source_domain": "admis.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W13",
       "title": "Russian Wheat Exports Rally Despite Black Sea Delays",
       "url": "https://algoran-agro.com/2026/02/11/russian-wheat-exports-update/",
       "source_domain": "algoran-agro.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "Wheat Futures Attempt Breakout as Black Sea Risks and",
-      "url": "https://www.totalgrainmarketing.com/grain-marketing/barchart-futures?j1_module=futureDetail&popup=1&0=news&j1_storyID=640216&j1_symbol=KEH26&j1_selected=news",
-      "source_domain": "totalgrainmarketing.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -868,7 +3379,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W10",
       "title": "Feed Outlook: March 2026 - Economic Research Service",
       "url": "https://www.ers.usda.gov/publications/pub-details?pubid=113942",
       "source_domain": "ers.usda.gov",
@@ -1030,7 +3541,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W9",
       "title": "[PDF] Feed Outlook: January 2026 - ERS USDA",
       "url": "https://ers.usda.gov/sites/default/files/_laserfiche/outlooks/113683/FDS-26A.pdf?v=32048",
       "source_domain": "ers.usda.gov",
@@ -1066,7 +3577,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W14",
       "title": "2026 Soybean Summit Breakout: Developing New Markets",
       "url": "https://www.youtube.com/watch?v=V8qd4QNR1jw",
       "source_domain": "youtube.com",
@@ -1120,7 +3631,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W3",
       "title": "OILEX - International Multi Oil Extraction Company | LinkedIn",
       "url": "https://www.linkedin.com/company/oilex-international-oil-extraction-company",
       "source_domain": "linkedin.com",
@@ -1174,7 +3685,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W5",
       "title": "Soybean Futures Calendar - CME Group",
       "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.calendar.html%3Futm_source%3Dlinkedin%26utm_medium%3Dpaid_social%26utm_campaign%3Dsoybean_records%26utm_kxconfid%3Dvnl4uf4pq%26videoId%3D6389206444112",
       "source_domain": "cmegroup.com",
@@ -1210,7 +3721,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
+      "id": "W15",
       "title": "Soybean Options Calendar - CME Group",
       "url": "https://www.cmegroup.com/markets/agriculture/oilseeds/soybean.calendar.options.html%3Fredirect%3D/soybeans%26videoId%3D6380160688112",
       "source_domain": "cmegroup.com",
@@ -1228,7 +3739,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W4",
       "title": "Soymeal Steals Spotlight in March 2026 WASDE - American Soybean Association",
       "url": "https://soygrowers.com/news-releases/soymeal-steals-spotlight-in-march-2026-wasde/",
       "source_domain": "soygrowers.com",
@@ -1246,7 +3757,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
+      "id": "W13",
       "title": "Stable trade relations key to an improved soybean outlook in 2026",
       "url": "https://www.farmprogress.com/soybean/what-key-soybean-events-last-year-mean-for-2026",
       "source_domain": "farmprogress.com",
@@ -1549,6 +4060,9 @@
         "engagement": 0
       },
       "score": 3,
+      "cross_refs": [
+        "X14"
+      ],
       "source": "web"
     },
     {
@@ -1606,7 +4120,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "[PDF] україна – європейський союз: від партнерства до асоціації",
       "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/214ad5ec-4061-4273-84f3-a06e38aebf9c/Ukrayinskyj-SHHorichnyk-z-YEvropejskyh-Integraczijnyh-Studij.-Vypusk-III.pdf",
       "source_domain": "ec.europa.eu",
@@ -1624,7 +4138,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "ЦІНИ НА ЗЕРНО НЕ БУДЕ? ЕКСПОРТ СТОЇТЬ. ...",
       "url": "https://www.youtube.com/watch?v=uz0szuybon0",
       "source_domain": "youtube.com",
@@ -1660,25 +4174,7 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "Агроновости Украины и мира - новости АПК | «АПК-Информ»",
-      "url": "https://www.apk-inform.com/ru/news/amp",
-      "source_domain": "apk-inform.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W7",
       "title": "Кукуруза. Цены, новости, аналитика. - Зерно Он-Лайн",
       "url": "https://www.zol.ru/kukuruza.htm",
       "source_domain": "zol.ru",
@@ -1697,27 +4193,9 @@
     },
     {
       "id": "W5",
-      "title": "Мировой рынок зерна и масличных: пшеница и соя подорожали в среду, кукуруза подешевела - OilWorld.ru - все масла мира",
-      "url": "https://www.oilworld.ru/news/forage/366163",
-      "source_domain": "oilworld.ru",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Мировой рынок зерна и масличных: пшеница подорожала в пятницу, кукуруза и соя подешевели - OilWorld.ru - все масла мира",
-      "url": "https://www.oilworld.ru/news/forage/367283",
-      "source_domain": "oilworld.ru",
+      "title": "Мировой рынок зерна и масличных: пшеница подорожала в ...",
+      "url": "https://graininfo.ru/news/mirovoy-rynok-zerna-i-maslichnykh-pshenitsa-podorozhala-v-pyatnitsu-kukuruza-i-soya-podesheveli/",
+      "source_domain": "graininfo.ru",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1750,7 +4228,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W8",
       "title": "Названа тройка компаний-лидеров на рынке разминирования сельхозземель — AgroPortal.ua",
       "url": "https://agroportal.ua/ru/news/novosti-kompanii/nazvano-triyku-kompaniy-lideriv-na-rinku-rozminuvannya-silgospzemel",
       "source_domain": "agroportal.ua",
@@ -1768,10 +4246,10 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Накормить и помочь заработать. Чем интересны решения ...",
-      "url": "https://minsknews.by/nakormit-i-pomoch-zarabotat-chem-interesny-resheniya-vzrashhivaemye-predpriyatiem-globalprodservis/",
-      "source_domain": "minsknews.by",
+      "id": "W12",
+      "title": "Рынок кукурузы держится: появились премии за быструю поставку",
+      "url": "https://24tv.ua/agro24/ru/ceny-na-kukuruzu-stabilnye-jeksport-i-spros-v-marte-2026-goda_n3039402",
+      "source_domain": "24tv.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -1822,7 +4300,7 @@
       "source": "web"
     },
     {
-      "id": "W11",
+      "id": "W10",
       "title": "Соя на Чикагской бирже дешевеет на фоне слабого экспорта и ...",
       "url": "https://ukragroconsult.com/ru/news/soya-na-chikagskoj-birzhe-desheveet-na-fone-slabogo-eksporta-i-rosta-zapasov/",
       "source_domain": "ukragroconsult.com",
@@ -1840,7 +4318,25 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W11",
+      "title": "Увеличение экспорта российской кукурузы в Турцию - Graininfo",
+      "url": "https://graininfo.ru/news/uvelichenie-eksporta-rossiyskoy-kukuruzy-v-turtsiyu-trendy-i-prognozy/",
+      "source_domain": "graininfo.ru",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
       "title": "пшеница и соя подорожали в четверг, цены на кукурузу были ...",
       "url": "https://dalekayaokraina.ru/news/ekonomika/mirovoy-rynok-zerna-i-maslichnykh-pshenitsa-i-soya-podorozhali-v-chetverg-tseny-na-kukuruzu-byli-sme/",
       "source_domain": "dalekayaokraina.ru",
@@ -1858,7 +4354,7 @@
       "source": "web"
     },
     {
-      "id": "W8",
+      "id": "W9",
       "title": "пшеница подорожала в пятницу, кукуруза и соя подешевели",
       "url": "https://m.bizon.ru/newsm/777208",
       "source_domain": "m.bizon.ru",
@@ -1876,7 +4372,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W3",
       "title": "�� � ���� ���� ��������� ������� �������� � ������ � 7 ��� - �� \"���������\"",
       "url": "http://www.finmarket.ru/news/6588849",
       "source_domain": "finmarket.ru",
@@ -1894,136 +4390,10 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "Маржа переробки сої падає через зниження цін на соєвий шрот — аналітики — Latifundist.com",
-      "url": "https://latifundist.com/novosti/66621-marzha-pererobki-soyi-padaye-cherez-znizhennya-tsin-na-soyevij-shrot--analitiki",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
-      "title": "Мед, субпродукти та курячі лапки: чим Україна годуватиме Китай з 2020 року - AgroPortal.ua",
-      "url": "https://agroportal.ua/news/eksklyuzivy/med-subprodukty-i-kurinye-lapki-chem-ukraina-budet-kormit-kitai-s-2020-goda",
-      "source_domain": "agroportal.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "Низькі ціни на соєвий шрот знижують маржу переробки ...",
-      "url": "https://ukragroconsult.com/news/nyzyki-cziny-na-soyevyj-shrot-znyzhuyuty-marzhu-pererobky-v-pivdennij-ameryczi/",
+      "id": "W10",
+      "title": "Ukraine to reduce sunflower oil production by 10% in MY 2025/26",
+      "url": "https://ukragroconsult.com/en/news/ukraine-to-reduce-sunflower-oil-production-by-10-in-my-2025-26/",
       "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Україна скоротила експорт соняшникової олії на 24% внаслідок високих цін на сировину та низьких цін на олію",
-      "url": "https://graintrade.com.ua/novosti/ukraina-skorotila-eksport-sonyashnikovoi-olii-na-24-vnaslidok-visokih-tcin-na-sirovinu-ta-.html",
-      "source_domain": "graintrade.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
-      "title": "Цена Жито за тонну в Украине сегодня. Закупочные цены трейдеров 2024",
-      "url": "https://agrotender.com.ua/traders/region_ukraine/roj",
-      "source_domain": "agrotender.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W5",
-      "title": "️ Маржа переробки сої падає через зниження вартості ...",
-      "url": "https://www.facebook.com/story.php?story_fbid=1016699813810388&id=100064111358557",
-      "source_domain": "facebook.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "In December 2025, Ukraine's agricultural export capacity ... - Instagram",
-      "url": "https://www.instagram.com/p/DS2Sfkbj0N1/",
-      "source_domain": "instagram.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W14",
-      "title": "Компанія UKROLIYA - професійна та органічна високоолеїнова олія",
-      "url": "https://www.ukroliya.com/",
-      "source_domain": "ukroliya.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -2039,171 +4409,9 @@
     },
     {
       "id": "W15",
-      "title": "Натуральна соняшникова олія від ТМ БІРЮША | TikTok",
-      "url": "https://www.tiktok.com/%40zernozbud/video/7477889146971835653",
-      "source_domain": "tiktok.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W10",
-      "title": "Обсяги виробництва соняшникової олії впадуть на 10% - AgroTimes",
-      "url": "https://agrotimes.ua/agromarket/obsyagy-vyrobnycztva-sonyashnykovoyi-oliyi-vpadut-na-10/",
-      "source_domain": "agrotimes.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W13",
-      "title": "Олія соняшникова – ціна в Україні, скільки продають іншим країнам під час вторгнення » Слово і Діло",
-      "url": "https://www.slovoidilo.ua/2026/02/13/infografika/ekonomika/ridke-zoloto-yak-zminyuvalysya-obsyahy-eksportu-ta-cziny-ukrayinskoyi-oliyi",
-      "source_domain": "slovoidilo.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Публікації - Верхівцевський Олійноекстракційний Завод",
-      "url": "https://voez.com.ua/publikacziyi/",
-      "source_domain": "voez.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W6",
-      "title": "Соняшник 2022. Посіви. Залишки. Переробні можливості. Умови зберігання під час війни — Latifundist.com",
-      "url": "https://latifundist.com/spetsproekt/963-olijni-v-umovah-vijni-posiv-zalishki-pererobka-umovi-zberigannya",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
-      "title": "Соняшникова олія: Вирощування та користь - TikTok",
-      "url": "https://www.tiktok.com/%40volodymyrbrus/video/7547735737840585989",
-      "source_domain": "tiktok.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
-      "title": "Соняшникова олія: чому її варто полюбити | TikTok",
-      "url": "https://www.tiktok.com/%40klopotenko_chef/video/7596329272290168076",
-      "source_domain": "tiktok.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W2",
-      "title": "Україна залишається найбільшим експортером соняшникової олії до Європи, незначна частка — ще у двох країн — Latifundist.com",
-      "url": "https://latifundist.com/novosti/69697-ukrayina-zalishayetsya-najbilshim-eksporterom-sonyashnikovoyi-oliyi-do-yevropi-neznachna-chastka--shche-u-dvoh-krayin",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W4",
-      "title": "Українська соняшникова олія в глобальному масштабі: Логістичні ...",
-      "url": "https://ukragroconsult.com/news/ukrayinska-sonyashnykova-oliya-v-globalnomu-masshtabi-logistychni-marshruty-sezonu-2023-2024/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W7",
-      "title": "Українська соняшникова олія поступається позиціями рф на ...",
-      "url": "https://www.facebook.com/latifundistcom/posts/-%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-%D1%81%D0%BE%D0%BD%D1%8F%D1%88%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0-%D0%BE%D0%BB%D1%96%D1%8F-%D0%BF%D0%BE%D1%81%D1%82%D1%83%D0%BF%D0%B0%D1%94%D1%82%D1%8C%D1%81%D1%8F-%D0%BF%D0%BE%D0%B7%D0%B8%D1%86%D1%96%D1%8F%D0%BC%D0%B8-%D1%80%D1%84-%D0%BD%D0%B0-%D1%80%D0%B8%D0%BD%D0%BA%D1%83-%D0%BA%D0%B8%D1%82%D0%B0%D1%8E-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%81%D0%BA%D0%BB%D0%B0/1107219321425103/",
-      "source_domain": "facebook.com",
+      "title": "Індекс борщу у грудні 2025 року — Гроші - ТСН",
+      "url": "https://tsn.ua/groshi/indeks-borshchu-skilky-u-hrudni-2025-roku-koshtuye-pryhotuvaty-tsiu-stravu-2982167.html",
+      "source_domain": "tsn.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -2219,9 +4427,27 @@
     },
     {
       "id": "W5",
-      "title": "Ціна соняшникової олії 2026: роздріб, опт, тенденції - EuroFest",
-      "url": "https://www.eurofest.org.ua/tsina-soniashnykovoi-olii-2026-rozdrib-opt-tendentsii/",
-      "source_domain": "eurofest.org.ua",
+      "title": "В Індії протести фермерів переросли у масштабний ...",
+      "url": "https://agroportal.ua/news/mir/v-indiji-protesti-fermeriv-pererosli-u-masshtabniy-antiuryadoviy-protest",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Вартість соняшнику досягла $709/т | Ринок зерна та насіння",
+      "url": "https://e-land.ua/news/item/vartist-soniashnyku-dosiahla-709-t",
+      "source_domain": "e-land.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -2237,9 +4463,171 @@
     },
     {
       "id": "W8",
-      "title": "Ціни на соняшник в Україні зростають швидше, ніж на олію",
-      "url": "https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-zrostayuty-shvydshe-nizh-na-oliyu-marzha-pererobky-skorochuyetysya/",
+      "title": "З Аргентини до ЄС надходить соняшник з перевищенням пестицидів — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/mir/z-argentini-do-yes-nadhodit-sonyashnik-z-perevishchennnyam-pesticidiv",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Запеклий хліб із прифронтових полів привезли до ...",
+      "url": "https://agroportal.ua/multimedia/zapekliy-hlib-iz-prifrontovih-poliv-privezli-do-londona",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "Свіжі агроновини України — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "Соняшникова олія може здорожчати до 100 гривень за літр",
+      "url": "https://www.volynnews.com/news/all/soniashnykova-oliia-mozhe-zdorozhchaty-do-100-hryven-za-litr/",
+      "source_domain": "volynnews.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "Соняшникова олія на експорт подорожчала на третину — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina/sonyashnikova-oliya-na-eksport-podorozhchala-na-tretinu",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "Украина сократит производство подсолнечного масла на 10% в ...",
+      "url": "https://ukragroconsult.com/ru/news/ukraina-sokratit-proizvodstvo-podsolnechnogo-masla-na-10-v-2025-26-mg/",
       "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Україна скоротить виробництво соняшникової олії на 10% у 2025 ...",
+      "url": "https://ukragroconsult.com/news/ukrayina-skorotyty-vyrobnycztvo-sonyashnykovoyi-oliyi-na-10-u-2025-26-mr/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "Хмельницька макаронна фабрика першою в Україні ...",
+      "url": "https://agroportal.ua/news/novosti-kompanii/hmelnicka-makaronna-fabrika-pershoyu-v-ukrajini-otrimala-sertifikat-kosher",
+      "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Хрустка правда про улюблений картопляний снек",
+      "url": "https://business.rayon.in.ua/blogs/775245-khrustka-pravda-pro-ulyubleniy-kartoplyaniy-snek/",
+      "source_domain": "business.rayon.in.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Ціни на хліб в Україні підуть вгору: чого чекати споживачам",
+      "url": "https://agroconf.org/content/cini-na-hlib-v-ukrayini-pidut-vgoru-chogo-chekati-spozhivacham",
+      "source_domain": "agroconf.org",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -2256,6 +4644,6 @@
   ],
   "meta": {
     "inputFiles": 16,
-    "itemCount": 155
+    "itemCount": 271
   }
 }

@@ -1,47 +1,47 @@
 {
-  "generatedAt": "2026-03-31T13:18:34.406605+00:00",
+  "generatedAt": "2026-03-31T13:36:13.457797+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-31T13:17:07.616521+00:00",
+  "sourceUpdatedAt": "2026-03-31T13:34:28.399763+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Over the past 30 days, global grains and oilseeds markets have experienced a stable environment with no significant bullish or bearish shifts. Recent headlines highlight US farmers' intentions to increase soybean plantings in 2026 while reducing corn acreage, reflecting a strategic adjustment amid ongoing agricultural challenges. What changed vs previous comparable period: Compared to the prior month, the volume of market-relevant news increased, but the overall market sentiment remained unchanged, with no directional bias emerging. Notably, USDA's earlier revisions to US corn acreage and record corn crop projections have not triggered market volatility recently. Actionable implications for trading/brokerage: Traders should monitor US planting intentions closely, as the shift toward more soybeans and fewer corn acres could influence supply balances and pricing dynamics later in the season. Given the current neutral tone and absence of shocks outside Ukraine, a cautious approach focusing on fundamental developments is advisable.\n\nKey facts:\n- On February 20, 2026, USDA reported US farmers plan to sow more soybeans and less corn in 2026, signaling a crop mix shift.\n- On February 18, 2026, farmers viewed large corn acreage as a break-even strategy amid agricultural difficulties.\n- USDA's reputation was questioned on February 11, 2026, after major revisions in US corn acreage data.\n- Corn futures plunged on January 13, 2026, following USDA's announcement of a record 17 billion bushel crop.\n- Market data as of March 14, 2026, shows Brazilian soybeans and wheat prices stable, supporting a neutral market stance.\n- No new export or policy shocks reported outside Ukraine in the last 30 days, maintaining steady global supply expectations.",
+    "text": "General situation: The global grains and oilseeds market remains stable with no significant bullish or bearish shifts, despite some operational challenges in Brazil and Black Sea regions. Bunge’s valuation and margin pressures highlight risks in the soybean crush business amid rising soybean input costs. Black Sea wheat prices have increased by 5-7% month-on-month, supported by freight parity enabling exports to ASEAN. Chinese crushers maintain strong crush margins and improving soybean meal sales, but Brazilian exporters are cautious due to freight and phytosanitary certification risks. What changed vs previous comparable period: This month saw a re-emergence of market commentary after a quiet prior month, with new concerns about supply chain risks in Brazil and price inflation in Black Sea wheat. The soybean crush margin pressure at Bunge is a fresh highlight, contrasting with previously stable crush margin narratives. Actionable implications for trading/brokerage: Traders should monitor Bunge’s margin compression risk as a signal for potential soybean complex volatility. The Black Sea wheat price inflation and export opportunities to ASEAN suggest selective buying interest in wheat. Caution is warranted on Brazilian soybean offers due to logistical and certification uncertainties, potentially limiting supply availability.\n\nKey facts:\n- Bunge trades at 10x EV/EBITDA with $12.2B debt post-Viterra merger, facing margin compression as soybean input prices rise faster than outputs (March 18, 2026).\n- Black Sea wheat FOB prices inflated by 5-7% month-on-month, enabling meaningful exports to ASEAN via freight parity (March 12, 2026).\n- Chinese crushers report good crush margins and improving soybean meal sales, but Brazilian exporters offer limited CFR China shipments due to freight and phytosanitary risks (March 11, 2026).\n- INR/USD exchange rate steady at 93/94, supporting export competitiveness for Black Sea wheat (March 12, 2026).\n- Chicago USDA wheat prices remain above $600, underpinning regional price support (March 12, 2026).",
     "chart": {
       "type": "price_overlay_month",
-      "title": "Grains & Oilseeds Prices Last 4 Weeks",
+      "title": "Price Trends for Key Commodities (Feb-Mar 2026)",
       "points": [
         {
           "label": "W1",
-          "value": 0
+          "value": 1
         },
         {
           "label": "W2",
-          "value": 0
+          "value": 2
         },
         {
           "label": "W3",
-          "value": 0
+          "value": 3
         },
         {
           "label": "W4",
-          "value": 0
+          "value": 4
         }
       ],
       "series": [
         {
-          "name": "Brazil Soybeans",
+          "name": "Brazil Soybeans FOB (USD/ton)",
           "points": [
             {
               "label": "W1",
-              "value": 660
+              "value": 655
             },
             {
               "label": "W2",
-              "value": 663
+              "value": 660
             },
             {
               "label": "W3",
@@ -54,44 +54,44 @@
           ]
         },
         {
-          "name": "Brazil Wheat",
+          "name": "Brazil Wheat FOB (USD/ton)",
           "points": [
             {
               "label": "W1",
-              "value": 660
+              "value": 630
             },
             {
               "label": "W2",
-              "value": 663
+              "value": 640
             },
             {
               "label": "W3",
-              "value": 663
+              "value": 660
             },
             {
               "label": "W4",
-              "value": 663
+              "value": 662
             }
           ]
         },
         {
-          "name": "US Corn",
+          "name": "Chicago USDA Wheat (USD/ton)",
           "points": [
             {
               "label": "W1",
-              "value": 395
+              "value": 605
             },
             {
               "label": "W2",
-              "value": 395
+              "value": 610
             },
             {
               "label": "W3",
-              "value": 395
+              "value": 615
             },
             {
               "label": "W4",
-              "value": 395
+              "value": 620
             }
           ]
         }
@@ -106,7 +106,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку України за останні 30 днів характеризується стабільністю без суттєвих цінових коливань, проте з помітними подіями у сфері логістики та безпеки. 26 грудня 2025 року зафіксовано удар дрона по одному з найбільших сховищ соняшникової олії в Одеській області, що потенційно може вплинути на експортні потоки та зберігання продукції. Порівняно з попереднім місяцем, коли подібних інцидентів не було, це створює додаткові ризики для постачання. Ціни на основні зернові та олійні культури залишаються стабільними, без значних змін у попиті чи пропозиції. Для трейдерів важливо враховувати можливі перебої у логістиці через безпекові виклики, а також слідкувати за пропозиціями на ринку, зокрема за оферами на сою та соняшникову олію, які демонструють активність у квітні 2026 року. Ринок залишається чутливим до геополітичних подій, що можуть вплинути на експортний потенціал України.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Цінова динаміка основних культур в Україні за 30 днів\",     \"points\": [       {\"label\": \"W1\", \"value\": 0},       {\"label\": \"W2\", \"value\": 0},       {\"label\": \"W3\", \"value\": 0},       {\"label\": \"W4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 214},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Пшениця CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 214},           {\"label\": \"W4\", \"value\": 216}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 707},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 447},           {\"label\": \"W4\", \"value\": 448}         ]       }     ]   },   \"key_facts\": [     \"26 грудня 2025 року зафіксовано удар дрона по одному з найбільших сховищ соняшникової олії в Одеській області, що може ускладнити логістику.\",     \"За останні 30 днів ціни на кукурудзу в порту Одеси зросли до 215 грн/т, пшениця – до 216 грн/т, соняшник – до 709 грн/т, соя – до 448 грн/т.\",     \"Порівняно з попереднім місяцем, кількість інцидентів, що впливають на ринок, збільшилась, тоді як цінова вол",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку України за останні 30 днів характеризується стабільністю у сегменті соєвого шроту та соняшникової олії. Пропозиції соєвого шроту збільшилися, зокрема від Агро Еко Протеїн та Благодарагро, що свідчить про відсутність дефіциту. Соняшникова олія залишається важливим продуктом, але її ринок не зазнав суттєвих змін, хоча екологічні наслідки обстрілів портових терміналів у грудні 2025 року ще відчутні. Порівняно з попереднім періодом, коли даних не було, активність у сегменті значно зросла, але без зміни цінових трендів. Торгові пропозиції на ринку CIF свідчать про стабільний попит і пропозицію, з цінами на соняшникову олію близько 1410-1425 USD за тонну та соєві насіння GMO по 500 USD. \\n\\nЩо змінилося порівняно з попереднім періодом: за відсутності даних за попередній місяць, у березні відзначено активізацію пропозицій соєвого шроту, що свідчить про покращення доступності. Водночас, інформація про екологічні наслідки обстрілів нагадує про ризики для логістики та зберігання соняшникової олії. Цінові рівні залишаються стабільними, без значних коливань. \\n\\nПрактичні наслідки для трейдингу та брокерської діяльності: слід звернути увагу на збільшену пропозицію соєвого шроту, що може знизити маржу переробників, а також на стабільний попит на соняшникову олію з пропозиціями CIF, які можна використовувати для формування конкурентних пропозицій. Враховуючи екологічні ризики, варто моніторити ситуацію з портовою інфраструктурою для уникнення логістичних затримок. \\n\\n\n\nКлючові факти:\n\\n- 31 березня 2026 року Агро Еко Протеїн пропонує 300 тонн соєвого шроту за 21000 грн/т у Дніпропетровській області.\\n- 26 березня 2026 року пп Благодарагро пропонує 100 тонн соєвого шроту за 19700 грн/т у Кіровоградській області.\\n- 18 березня 2026 року екологи пов’язують наслідки обстрілу портового терміналу 20 грудня 2025 року з витоками соняшникової олії.\\n- Пропозиції CIF соняшникової олії на кінець березня 2026 року коливаються в межах 1410-1425 USD/т.\\n- Пропозиції соєвих насіння GMO CIF у квітні 2026 року зафіксовані на рівні 500 USD/т.\\n- Ціни на основні зернові та олійні культури (кукурудза, пшениця, ріпак, соя, соняшник) залишаються стабільними, без значних цінових стрибків у березні 2026 року.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Цінова динаміка основних культур в Україні, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3",
     "chart": null,
     "inputCounts": {
       "last30days": 24,

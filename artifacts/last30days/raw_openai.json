@@ -1,13 +1,13 @@
 {
-  "id": "resp_08c0083802d4f0750069cbc93ea844819493d8610db59eb37a",
+  "id": "resp_0dfaafa62fb01a930069cbcd522924819398ea80d0f58e18d5",
   "object": "response",
-  "created_at": 1774963006,
+  "created_at": 1774964050,
   "status": "completed",
   "background": false,
   "billing": {
     "payer": "openai"
   },
-  "completed_at": 1774963012,
+  "completed_at": 1774964052,
   "error": null,
   "frequency_penalty": 0.0,
   "incomplete_details": null,
@@ -17,17 +17,17 @@
   "model": "gpt-5.4-mini-2026-03-17",
   "output": [
     {
-      "id": "ws_08c0083802d4f0750069cbc93eee68819498d289bb0cce0d7e",
+      "id": "ws_0dfaafa62fb01a930069cbcd526f448193bd6ffdb15aa32957",
       "type": "web_search_call",
       "status": "completed",
       "action": {
         "type": "search",
         "queries": [
-          "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com reddit",
+          "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com",
           "reddit \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430",
           "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 reddit"
         ],
-        "query": "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com reddit",
+        "query": "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com",
         "sources": [
           {
             "type": "url",
@@ -59,73 +59,21 @@
           },
           {
             "type": "url",
-            "url": "https://us.reddit.com/user/TulsisTavern/"
-          },
-          {
-            "type": "url",
             "url": "https://www.business.reddit.com/conversations/holiday-travel-on-reddit"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/trends/technology-reddit-insights"
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/recommendation-simulator"
+            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era-vancouver"
           }
         ]
       }
     },
     {
-      "id": "ws_08c0083802d4f0750069cbc93ffb508194b68db98fbdd9e2aa",
-      "type": "web_search_call",
-      "status": "completed",
-      "action": {
-        "type": "search",
-        "queries": [
-          "\"\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f\" site:reddit.com/r/ /comments/",
-          "\"sunflower oil\" Ukraine logistics site:reddit.com/r/ /comments/",
-          "\"sunflower oil\" logistics Ukraine reddit site:reddit.com/r/ /comments/"
-        ],
-        "query": "\"\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f\" site:reddit.com/r/ /comments/",
-        "sources": [
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/worldnews/comments/14997mm"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw"
-          },
-          {
-            "type": "url",
-            "url": "https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy"
-          }
-        ]
-      }
-    },
-    {
-      "id": "msg_08c0083802d4f0750069cbc941031c8194a5c277fc137c6072",
+      "id": "msg_0dfaafa62fb01a930069cbcd537a688193b0521304c26e88ac",
       "type": "message",
       "status": "completed",
       "content": [
@@ -133,7 +81,7 @@
           "type": "output_text",
           "annotations": [],
           "logprobs": [],
-          "text": "{\n  \"items\": [\n    {\n      \"title\": \"Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each\",\n      \"url\": \"https://www.reddit.com/r/ukraine/comments/y6cpf7/\",\n      \"subreddit\": \"ukraine\",\n      \"date\": \"2022-10-17\",\n      \"why_relevant\": \"Directly about sunflower oil in Ukraine and the logistics/storage infrastructure hit in Mykolaiv.\",\n      \"relevance\": 0.96\n    },\n    {\n      \"title\": \"Sunflower oil prices fall as Ukraine ships stock to India\",\n      \"url\": \"https://www.reddit.com/r/worldnews/comments/14997mm/\",\n      \"subreddit\": \"worldnews\",\n      \"date\": \"2023-06-14\",\n      \"why_relevant\": \"Discusses Ukraine exporting/shipping sunflower oil stock and the resulting market/logistics impact.\",\n      \"relevance\": 0.93\n    },\n    {\n      \"title\": \"Sunflower Oil \u2018Vanishes\u2019 as Ukraine War Grinds On\",\n      \"url\": \"https://www.reddit.com/r/autotldr/comments/uf8tkw/\",\n      \"subreddit\": \"autotldr\",\n      \"date\": \"2022-04-30\",\n      \"why_relevant\": \"About sunflower oil supply-chain disruption caused by the war in Ukraine.\",\n      \"relevance\": 0.91\n    },\n    {\n      \"title\": \"Sunflower oil prices fall as Ukraine ships stock to India\",\n      \"url\": \"https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy/\",\n      \"subreddit\": \"GeopoliticsIndia\",\n      \"date\": \"2023-06-14\",\n      \"why_relevant\": \"Same underlying thread topic as above, with discussion of Ukraine shipping sunflower oil abroad.\",\n      \"relevance\": 0.9\n    },\n    {\n      \"title\": \"Crude and Refined Sunflower Oil\",\n      \"url\": \"https://www.reddit.com/r/u_lt10plimited/comments/sp4soo/\",\n      \"subreddit\": \"u_lt10plimited\",\n      \"date\": \"2022-02-10\",\n      \"why_relevant\": \"Commercial post about sunflower oil sourced from Ukraine and related supply/logistics details.\",\n      \"relevance\": 0.85\n    },\n    {\n      \"title\": \"100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.\",\n      \"url\": \"https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz/\",\n      \"subreddit\": \"u_Sunflower-Oil-Offers\",\n      \"date\": \"2022-10-11\",\n      \"why_relevant\": \"Commercial thread mentioning Ukraine origin, FOB locations, and transport/shipping arrangements.\",\n      \"relevance\": 0.84\n    },\n    {\n      \"title\": \"Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f\",\n      \"url\": \"https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg/\",\n      \"subreddit\": \"u_Sunflower-Oil-Offers\",\n      \"date\": \"2022-10-20\",\n      \"why_relevant\": \"Wholesale sunflower oil offer with Ukraine/Lithuania/Poland logistics references.\",\n      \"relevance\": 0.83\n    },\n    {\n      \"title\": \"\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?\",\n      \"url\": \"https://www.reddit.com/r/reddit_ukr/comments/1kln9eh/\",\n      \"subreddit\": \"reddit_ukr\",\n      \"date\": \"2025-05-13\",\n      \"why_relevant\": \"Ukrainian discussion mentioning sunflower oil as a standard cooking oil in Ukraine.\",\n      \"relevance\": 0.74\n    }\n  ]\n}"
+          "text": "{\n  \"items\": [\n    {\n      \"title\": \"\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?\",\n      \"url\": \"https://www.reddit.com/r/reddit_ukr/comments/1kln9eh\",\n      \"subreddit\": \"reddit_ukr\",\n      \"date\": \"2025-05-13\",\n      \"why_relevant\": \"Discusses cooking oil availability in Ukraine and explicitly compares rapeseed oil with sunflower oil, which is closely related to your topic.\",\n      \"relevance\": 0.89\n    }\n  ]\n}"
         }
       ],
       "phase": "final_answer",
@@ -182,15 +130,15 @@
   "top_p": 0.98,
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 12613,
+    "input_tokens": 8800,
     "input_tokens_details": {
       "cached_tokens": 4608
     },
-    "output_tokens": 1038,
+    "output_tokens": 205,
     "output_tokens_details": {
-      "reasoning_tokens": 191
+      "reasoning_tokens": 74
     },
-    "total_tokens": 13651
+    "total_tokens": 9005
   },
   "user": null,
   "metadata": {}

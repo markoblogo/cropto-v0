@@ -1,119 +1,18 @@
 {
-  "generatedAt": "2026-03-31T13:18:03.498166+00:00",
+  "generatedAt": "2026-03-31T13:35:47.846736+00:00",
   "filters": {
     "days": 7
   },
-  "sourceUpdatedAt": "2026-03-31T13:14:09.217434+00:00",
+  "sourceUpdatedAt": "2026-03-31T13:31:31.183011+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: The global grains and oilseeds market showed limited activity this week, with no significant production, export, or policy shocks outside Ukraine. Market sentiment remained stable, reflecting a lack of new drivers. What changed vs previous comparable period: This week recorded a slight increase in market commentary with one neutral global update on March 17, compared to no reports the previous week, indicating a pause in market-moving events. Actionable implications for trading/brokerage: Traders should maintain a cautious stance given the absence of fresh fundamental catalysts and monitor for emerging signals from US planting intentions and South American crop developments.\n\nKey facts:\n- On March 17, 2026, a global financial market update was released with neutral impact.\n- US farmers plan to sow more soybeans and fewer corn acres in 2026, as reported on February 20, 2026.\n- USDA’s corn acreage estimates faced credibility challenges due to massive revisions in February 2026.\n- Brazilian soybean prices stood near 663 USD/ton as of March 14, 2026, with corn FOB Santos at 113 USD/ton on March 12, 2026.\n- Argentine grain prices have not updated since 2021 or 2025, limiting recent regional price signals.\n- No new Black Sea or Ukraine-related disruptions were reported in the last 30 days, maintaining stable export conditions outside Ukraine.",
-    "chart": {
-      "type": "price_overlay_week",
-      "title": "Grains & Oilseeds Price Trends (Mar 14-20, 2026)",
-      "points": [
-        {
-          "label": "Mar 14",
-          "value": 662.9
-        },
-        {
-          "label": "Mar 15",
-          "value": 662.9
-        },
-        {
-          "label": "Mar 16",
-          "value": 662.9
-        },
-        {
-          "label": "Mar 17",
-          "value": 662.9
-        },
-        {
-          "label": "Mar 18",
-          "value": 662.9
-        },
-        {
-          "label": "Mar 19",
-          "value": 662.9
-        },
-        {
-          "label": "Mar 20",
-          "value": 662.9
-        }
-      ],
-      "series": [
-        {
-          "name": "Brazil Soybeans (USD/ton)",
-          "points": [
-            {
-              "label": "Mar 14",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 15",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 16",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 17",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 18",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 19",
-              "value": 662.9
-            },
-            {
-              "label": "Mar 20",
-              "value": 662.9
-            }
-          ]
-        },
-        {
-          "name": "Brazil Corn FOB Santos (USD/ton)",
-          "points": [
-            {
-              "label": "Mar 14",
-              "value": 112.7
-            },
-            {
-              "label": "Mar 15",
-              "value": 112.7
-            },
-            {
-              "label": "Mar 16",
-              "value": 112.7
-            },
-            {
-              "label": "Mar 17",
-              "value": 112.7
-            },
-            {
-              "label": "Mar 18",
-              "value": 112.7
-            },
-            {
-              "label": "Mar 19",
-              "value": 112.7
-            },
-            {
-              "label": "Mar 20",
-              "value": 112.7
-            }
-          ]
-        }
-      ]
-    },
+    "text": "{   \"summary\": \"General situation: The global grains and oilseeds market remains stable with no significant new developments or price shocks in the past week. Sunflower oil-related content continues to circulate but without market-moving impact. Brazilian and US corn and soybean prices show steady trends, reflecting balanced supply-demand conditions. What changed vs previous comparable period: There were no new reports or events compared to the prior week, maintaining a status quo in market sentiment and price levels. Actionable implications for trading/brokerage: Traders should maintain current positions, focusing on monitoring logistical and geopolitical developments outside Ukraine that could disrupt supply chains. Given the absence of fresh market drivers, cautious stance on speculative moves is advised.\n\nKey facts:\n- No new market-impacting news or price changes recorded between 2026-03-12 and 2026-03-18.\n- Brazilian corn FOB Santos price stands at approximately 112.7 as of 2026-03-12.\n- Brazilian soybeans price remains around 662.9 as of 2026-03-14.\n- US corn and soybean spot prices are steady near 394.5 as of early February 2026.\n- No fresh export or production shocks reported in Argentina or Brazil during the week.\n- Sunflower oil-related web content from October 2025 and earlier remains informational without market impact.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Grains & Oilseeds Prices Weekly Overlay\",     \"points\": [       {\"label\": \"2026-03-12\", \"value\": 112.7},       {\"label\": \"2026-03-13\", \"value\": 112.7},       {\"label\": \"2026-03-14\", \"value\": 112.7},       {\"label\": \"2026-03-15\", \"value\": 112.7},       {\"label\": \"2026-03-16\", \"value\": 112.7},       {\"label\": \"2026-03-17\", \"value\": 112.7},       {\"label\": \"2026-03-18\", \"value\": 112.7}     ],     \"series\": [       {         \"name\": \"Brazil Corn FOB Santos\",         \"points\": [           {\"label\": \"2026-03-12\", \"value\": 112.7},           {\"label\": \"2026-03-13\", \"value\": 112.7},           {\"label\": \"2026-03-14\", \"value\": 112.7},           {\"label\": \"2026-03-15\", \"value\": 112.7},           {\"label\": \"2026-03-16\", \"value\": 112.7},           {\"label\": \"2026-03-17\", \"value\": 112.7},           {\"label\": \"2026-03-18\", \"value\": 112.7}         ]       },       {         \"name\": \"Brazil Soybeans\",         \"points\": [           {\"label\": \"2026-03-12\", \"value\": 662.9},           {\"label\": \"2026-03-13\", \"value\": 662.9},           {\"label\": \"2026-03-14\", \"value\": 662.9},           {\"label\": \"2026-03-15\", \"value\": 662.9},           {\"label\": \"2026-03-16\", \"value\": 662.9},           {\"label\": \"2026-03-17\", \"value\": 662.9},           {\"label\": \"2026-03-18\", \"value\": 662.9}         ]       },       {         \"name\": \"US Corn Spot\",         \"points\": [           {\"label\": \"2026-03-12\", \"value\": 394.5},           {\"label\": \"2026-03-13\", \"value\": 394.5},           {\"label\": \"2026-03-14\", \"value\": 394.5},           {\"label\": \"2026-03-15\", \"value\": 394.5},           {\"label\": \"2026-03-16\", \"value\": 394.5},           {\"label\": \"2026-03",
+    "chart": null,
     "inputCounts": {
-      "last30days": 24,
+      "last30days": 6,
       "monitor": 13
     }
   },
@@ -121,10 +20,10 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку олійних культур України залишається напруженою через військові удари по інфраструктурі зберігання соняшникової олії в Одеському регіоні. Це створює додаткові ризики для логістики та експорту, незважаючи на стабільність цінового рівня. Порівняно з попереднім тижнем, коли повідомлень не було, з'явився сигнал про безпосередній вплив бойових дій на ключові потужності зберігання. Відсутність суттєвих змін у ціновій динаміці свідчить про збереження балансу попиту та пропозиції, але потенційні перебої у постачанні можуть призвести до волатильності найближчим часом. Для трейдерів важливо враховувати підвищені ризики логістики та можливі коливання пропозиції соняшникової олії, а також слідкувати за розвитком подій у південних регіонах.\n\nКлючові факти:\n 1) 26 грудня 2025 року зафіксовано удар дрона по одному з найбільших сховищ соняшникової олії в Одеській області; 2) Ціни на соняшникову олію залишаються стабільними, без значних змін у порівнянні з попереднім тижнем; 3) Відсутність повідомлень про зміни у виробництві чи експорті за останній тиждень; 4) Ціна CPT соняшникової олії в Одесі на 30 березня 2026 року становить 709 USD/т; 5) Пропозиції на ринку соєвих бобів та кукурудзи також стабільні, що підтримує загальний баланс на ринку олійних культур; 6) Відсутність нових угод або тендерів, що могли б суттєво вплинути на ринок у короткостроковій перспективі.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Динаміка цін на ключові культури (20-26 грудня 2025)\",     \"points\": [       {\"label\": \"20 грудня\", \"value\": 0},       {\"label\": \"21 грудня\", \"value\": 0},       {\"label\": \"22 грудня\", \"value\": 0},       {\"label\": \"23 грудня\", \"value\": 0},       {\"label\": \"24 грудня\", \"value\": 0},       {\"label\": \"25 грудня\", \"value\": 0},       {\"label\": \"26 грудня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Соняшникова олія CPT Одеса\",         \"points\": [           {\"label\": \"20 грудня\", \"value\": 709},           {\"label\": \"21 грудня\", \"value\": 709},           {\"label\": \"22 грудня\", \"value\": 709},           {\"label\": \"23 грудня\", \"value\": 709},           {\"label\": \"24 грудня\", \"value\": 709},           {\"label\": \"25 грудня\", \"value\": 709},           {\"label\": \"26 грудня\", \"value\": 709}         ]       },       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"20 грудня\", \"value\": 215},           {\"label\": \"21 грудня\", \"value\": 215},           {\"label\": \"22 грудня\", \"value\": 215},           {\"label\": \"23 грудня\", \"value\": 215},           {\"label\": \"24 грудня\", \"value\": 215},           {\"label\": \"25 грудня\", \"value\": 215},           {\"label\": \"26 грудня\",",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку України характеризується стабільним пропозицією соєвого шроту, що підтверджується продажами у Дніпропетровській та Кіровоградській областях за цінами близько 19700-21000 грн/т. Порівняно з попереднім тижнем, кількість пропозицій зросла, що свідчить про профіцит на ринку та зниження маржі переробки сої. Соняшникова олія залишається під тиском, хоча її експортні ціни зросли, а кукурудза та пшениця утримують стабільні позиції на експортних ринках. Пропозиції брокерів на сою та кукурудзу CIF свідчать про активність у сегменті експортних поставок на квітень-травень. Зростання пропозицій шроту та стабільність цін на олійні культури вказують на збереження балансу попиту та пропозиції, без суттєвих цінових шоків. Відсутність змін у цінових трендах порівняно з минулим тижнем підкреслює стабільність ринку.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Ціни на ключові зернові та олійні в Україні (25-31 березня 2026)\",     \"points\": [       {\"label\": \"25 березня\", \"value\": 0},       {\"label\": \"26 березня\", \"value\": 0},       {\"label\": \"27 березня\", \"value\": 0},       {\"label\": \"28 березня\", \"value\": 0},       {\"label\": \"29 березня\", \"value\": 0},       {\"label\": \"30 березня\", \"value\": 0},       {\"label\": \"31 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"25 березня\", \"value\": 215},           {\"label\": \"26 березня\", \"value\": 215},           {\"label\": \"27 березня\", \"value\": 215},           {\"label\": \"28 березня\", \"value\": 215},           {\"label\": \"29 березня\", \"value\": 215},           {\"label\": \"30 березня\", \"value\": 215},           {\"label\": \"31 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соя CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"25 березня\", \"value\": 448},           {\"label\": \"26 березня\", \"value\": 448},           {\"label\": \"27 березня\", \"value\": 448},           {\"label\": \"28 березня\", \"value\": 448},           {\"label\": \"29 березня\", \"value\": 448},           {\"label\": \"30 березня\", \"value\": 448},           {\"label\": \"31 березня\", \"value\": 448}         ]       },       {         \"name\": \"Соняшникова олія CPT Паритет Одеса (переробка)\",         \"points\": [           {\"label\": \"25 березня\", \"value\": 709},           {\"label\": \"26 березня\", \"value\": 709},           {\"label\": \"27 березня\", \"value\": 709},           {\"label\": \"28 березня\", \"value\": 709},           {\"label\": \"29 березня\", \"value\": 709},           {\"label\": \"30 березня\", \"value\": 709},           {\"label\": \"31 березня\", \"value\": 709}         ]       },       {         \"name\": \"Пш",
     "chart": null,
     "inputCounts": {
-      "last30days": 24,
+      "last30days": 21,
       "monitor": 5
     }
   },

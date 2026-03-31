@@ -4,13 +4,204 @@
     "from": "2026-03-01",
     "to": "2026-03-31"
   },
-  "generated_at": "2026-03-31T13:17:07.181755+00:00",
+  "generated_at": "2026-03-31T13:34:28.174895+00:00",
   "mode": "all",
   "openai_model_used": "gpt-5.4-mini",
   "xai_model_used": null,
   "reddit": [],
-  "x": [],
+  "x": [
+    {
+      "id": "X5",
+      "text": "@homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d",
+      "url": "https://x.com/Seal_Di/status/2033761745131471304",
+      "author_handle": "Seal_Di",
+      "date": "2026-03-17",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 26
+      },
+      "relevance": 0.41,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 41,
+        "recency": 53,
+        "engagement": 100
+      },
+      "score": 61
+    },
+    {
+      "id": "X4",
+      "text": "@homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f\u0443 \u0448\u043a\u0456\u0434\u043b\u0438\u0432\u0430, \u0430 \u0436\u0438\u0440 \u0445\u0435\u0440 \u043f\u043e\u0439\u043c\u0438 \u0447\u043e\u0433\u043e \u043a\u043e\u0440\u0438\u0441\u043d\u0438\u0439?\n\u0417 \u0448\u043e\u043a\u043e\u043b\u0430\u0434\u043e\u043c - \u0446\u0435 \u0434\u0432\u0430 \u0420\u0406\u0417\u041d\u0406 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0438: \u043a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u0430 \u043f\u043e\u0436\u0438\u0432\u0430 \u0442\u0430 \u0441\u0442\u0438\u043c\u0443\u043b\u044f\u0442\u043e\u0440 (\u0442\u0435\u043e\u0431\u0440\u043e\u043c\u0456\u043d+\u043a\u043e\u0444\u0435\u0457\u043d)\n\u0417\u0430 \u0439\u043e\u0433\u0443\u0440\u0442\u0438 \u0437\u0433\u043e\u0434\u0435\u043d, \u0430\u043b\u0435 \u0442\u043e\u043c\u0443 \u0449\u043e \u043d\u0435 \u043b\u044e\u0431\u043b\u044e \u0430\u0440\u043e\u043c\u0430\u0442\u0438\u0437\u0430\u0442\u043e\u0440\u0430\u0432 \u0442\u0430 \u043f\u0456\u0434\u0441\u043e\u043b\u043e\u0434\u0436\u0443\u0432\u0430\u0447\u0456\u0432 - \u044f \u043a\u0440\u0430\u0449\u0435 \u0432\u0430\u0440\u0435\u043d\u043d\u044f \u0443 \u0431\u0456\u043b\u0438\u0439 \u0434\u043e\u0434\u0430\u043c.",
+      "url": "https://x.com/shved_y73778/status/2033782692169285813",
+      "author_handle": "shved_y73778",
+      "date": "2026-03-17",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 16
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 53,
+        "engagement": 82
+      },
+      "score": 55
+    },
+    {
+      "id": "X1",
+      "text": "@CloakLady \u0417 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0456\u0432: \u043c\u043e\u043b\u043e\u043a\u043e \u0432 \u0442\u0440\u0438\u043a\u0443\u0442\u043d\u0438\u0445 \u043f\u0430\u043a\u0435\u0442\u0430\u0445 (\u0441\u0438\u043d\u044c\u043e\u0433\u043e \u043a\u043e\u043b\u044c\u043e\u0440\u0443 - \u0432\u0438\u0449\u043e\u0433\u043e \u0433\u0430\u0442\u0443\u043d\u043a\u0443), \u0434\u043e\u043c\u0430\u0448\u043d\u044f \u043a\u043e\u0432\u0431\u0430\u0441\u0430 \u0456\u0437 \u0441\u0435\u043b\u0430, \u0431\u043e\u0440\u0449 \u0456\u0437 \u043f\u0435\u0447\u0456, \u0447\u0435\u0440\u0435\u0448\u043d\u044f \u043f\u0440\u044f\u043c\u043e \u0437 \u0434\u0435\u0440\u0435\u0432\u0430, \u043a\u0430\u0432\u0443\u043d\u0438 \u043f\u043e 5 \u043a\u043e\u043f., \u043f\u0440\u0430\u0437\u044c\u043a\u0438\u0439 \u0442\u043e\u0440\u0442, \u0442\u044e\u043b\u044c\u043a\u0430 \u0437 \u043a\u0430\u0440\u0442\u043e\u043f\u043b\u0435\u044e,  \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0456\u0437 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0430 \u0437\u0430 50 \u043a\u043e\u043f., \u0432 \u0441\u0442\u043e\u043b\u043e\u0432\u0438\u0445 \u0431\u0435\u0437\u043a\u043e\u0448\u0442\u043e\u0432\u043d\u0438\u0439 \u0445\u043b\u0456\u0431 + \u0433\u0456\u0440\u0447\u0438\u0446\u044f.",
+      "url": "https://x.com/Andriy_Zas/status/2038219258727911734",
+      "author_handle": "Andriy_Zas",
+      "date": "2026-03-29",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 93,
+        "engagement": 7
+      },
+      "score": 42
+    },
+    {
+      "id": "X8",
+      "text": "\u0441\u044e\u0434\u0438 \u0449\u0435 \u043a\u0430\u043f\u0443\u0441\u0442\u0443 \u043a\u0432\u0430\u0448\u0430\u043d\u0443 \u0430\u0431\u043e \u0441\u0432\u0456\u0436\u0438\u0439 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043c\u043e\u043b\u043e\u0434\u043e\u0457 \u0442\u043e\u043d\u043a\u043e \u043f\u043e\u0441\u0456\u0447\u0435\u043d\u043e\u0457 \u043a\u0430\u043f\u0443\u0441\u0442\u0438 \u043a\u0440\u0456\u043f \u0446\u0438\u0431\u0443\u043b\u044f \u0456 \u043e\u043b\u0456\u044f \u043f\u0440\u044f\u043c\u043e\u0433\u043e \u0432\u0456\u0434\u0436\u0438\u043c\u0443 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 - \u0456 \u0432\u0437\u0430\u0433\u0430\u043b\u0456 \u043a\u0440\u0430\u0441\u043e\u0442\u0430",
+      "url": "https://x.com/soncesonce/status/2029333867136458950",
+      "author_handle": "soncesonce",
+      "date": "2026-03-04",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 9
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 9,
+        "engagement": 61
+      },
+      "score": 38
+    },
+    {
+      "id": "X6",
+      "text": "@o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f",
+      "url": "https://x.com/busia09/status/2033221717665935676",
+      "author_handle": "busia09",
+      "date": "2026-03-15",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 2,
+        "replies": 1
+      },
+      "relevance": 0.4,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 40,
+        "recency": 46,
+        "engagement": 22
+      },
+      "score": 36
+    },
+    {
+      "id": "X2",
+      "text": "@locpell \u0422\u0435\u0444\u043b\u043e\u043d \u0434\u0430\u0454 \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 \u043f\u0440\u0438 \u0433\u043e\u0442\u0443\u0432\u0430\u043d\u043d\u0456, \u0432\u0456\u0434\u043f\u043e\u0432\u0456\u0434\u043d\u043e \u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044e \u043a\u0430\u043b\u043e\u0440\u0456\u0439 \u0443 \u0457\u0436\u0456.  \u0421\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0434\u0443\u0436\u0435 \u043a\u0430\u043b\u043e\u0440\u0456\u0439\u043d\u0430 \u0456 \u043d\u0430\u043f\u0440\u0438\u043a\u043b\u0430\u0434 \u0443 \u0447\u0443\u0433\u0443\u043d\u0456 \u0430\u0431\u043e \u0441\u0442\u0430\u043b\u0456 \u043a\u0430\u043b\u043e\u0440\u0456\u0457 \u0457\u0436\u0456 \u0432\u0438\u0439\u0434\u0443\u0442\u044c \u0443 \u0440\u0430\u0437\u0438 \u0431\u0456\u043b\u044c\u0448\u0435. \n\u0429\u043e \u0440\u043e\u0431\u0438\u0442\u0438 =&gt; \u0432\u0438\u043a\u0438\u043d\u0443\u0442\u0438",
+      "url": "https://x.com/mmx88mhz/status/2035535595850641535",
+      "author_handle": "mmx88mhz",
+      "date": "2026-03-22",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 70,
+        "engagement": 0
+      },
+      "score": 35
+    },
+    {
+      "id": "X3",
+      "text": "\u0415\u043a\u043e\u043b\u043e\u0433\u0438 \u043f\u0440\u0438\u043f\u0443\u0441\u043a\u0430\u044e\u0442\u044c, \u0449\u043e \u0446\u0435 \u043d\u0430\u0441\u043b\u0456\u0434\u043a\u0438 \u043e\u0431\u0441\u0442\u0440\u0456\u043b\u0443 \u0440\u043e\u0441\u0456\u044f\u043d\u0430\u043c\u0438 \u043f\u043e\u0440\u0442\u043e\u0432\u043e\u0433\u043e \u0442\u0435\u0440\u043c\u0456\u043d\u0430\u043b\u0443 20 \u0433\u0440\u0443\u0434\u043d\u044f: \u0442\u043e\u0434\u0456 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0431\u0443\u043a\u0432\u0430\u043b\u044c\u043d\u043e \u0442\u0435\u043a\u043b\u0430 \u0432\u0443\u043b\u0438\u0446\u044f\u043c\u0438.",
+      "url": "https://x.com/hmaro4os/status/2034315069845107095",
+      "author_handle": "hmaro4os",
+      "date": "2026-03-18",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 56,
+        "engagement": 7
+      },
+      "score": 33
+    },
+    {
+      "id": "X7",
+      "text": "@gramm_football \u041c'\u044f\u0441\u043e \u2013 \u0442\u0435, \u044f\u043a\u0435 \u0454)\n\u0422\u0430\u043c \u0433\u043e\u0442\u0443\u044e\u0442\u044c \u0447\u0430\u0441\u0442\u0456\u0448\u0435 \u0437 \u044f\u043b\u043e\u0432\u0438\u0447\u0438\u043d\u0438. \u0422\u0443\u0442 \u0432 \u043c\u0435\u043d\u0435 \u0431\u0443\u043b\u0430 \u0441\u0432\u0438\u043d\u0438\u043d\u0430. \u041e\u043b\u0456\u044f \u0442\u0430\u043c \u0431\u0430\u0436\u0430\u043d\u043e \u0448\u043e\u0431 \u0431\u0443\u043b\u0430 \u0431\u0430\u0432\u043e\u0432\u043d\u044f\u043d\u0430, \u0442\u0443\u0442 \u0432 \u043c\u0435\u043d\u0435 \u0440\u0430\u0444\u0456\u043d\u043e\u0432\u0430\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430. \u0422\u0440\u043e\u0445\u0438 \u043a\u0438\u043d\u0443\u0432 \u043c\u0430\u0441\u043b\u0430, \u0431\u043e \u0442\u0440\u0435\u0431\u0430 \u0431\u0443\u043b\u043e \u0439\u043e\u0433\u043e \u0432\u0436\u0435 \u043a\u0443\u0434\u0438\u0441\u044c \u043f\u0443\u0441\u0442\u0438\u0442\u0438, \u0448\u043e\u0431 \u043d\u0435 \u0441\u0442\u0430\u0440\u0456\u043b\u043e. \u041a\u0430\u0436\u0443\u0442\u044c, \u0448\u043e \u043a\u0443\u0440\u0434\u044e\u0447\u043d\u0435 \u0441\u0430\u043b\u043e \u0434\u0430\u0454 \u0433\u0430\u0440\u043d\u0438\u0439 \u0441\u043c\u0430\u043a.",
+      "url": "https://x.com/ihor_kho/status/2029639411609076109",
+      "author_handle": "ihor_kho",
+      "date": "2026-03-05",
+      "date_confidence": "high",
+      "engagement": {
+        "likes": 1,
+        "replies": 1
+      },
+      "relevance": 0.39,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 39,
+        "recency": 13,
+        "engagement": 7
+      },
+      "score": 22
+    }
+  ],
   "web": [
+    {
+      "id": "W8",
+      "title": "(PDF) Agricultural exports of Ukraine in the conditions of war.",
+      "url": "https://www.researchgate.net/publication/377741514_Agricultural_exports_of_Ukraine_in_the_conditions_of_war",
+      "source_domain": "researchgate.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
+    {
+      "id": "W4",
+      "title": "In December 2025, Ukraine's agricultural export capacity ... - Instagram",
+      "url": "https://www.instagram.com/p/DS2Sfkbj0N1/",
+      "source_domain": "instagram.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3
+    },
     {
       "id": "W3",
       "title": "Russia Opens New Grain Trade Route to East Africa. A major ...",
@@ -29,7 +220,7 @@
       "score": 3
     },
     {
-      "id": "W12",
+      "id": "W13",
       "title": "USDA \u043f\u0456\u0434\u0432\u0438\u0449\u0438\u0432 \u043f\u0440\u043e\u0433\u043d\u043e\u0437 \u043f\u043e\u043f\u0438\u0442\u0443 \u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0443 \u0422\u0443\u0440\u0435\u0447\u0447\u0438\u043d\u0456 \u0434\u043e ...",
       "url": "https://ukragroconsult.com/news/usda-pidvyshhyv-prognoz-popytu-na-sonyashnyk-u-turechchyni-do-shestyrichnyh-maksymumiv/",
       "source_domain": "ukragroconsult.com",
@@ -46,7 +237,7 @@
       "score": 3
     },
     {
-      "id": "W9",
+      "id": "W10",
       "title": "Ukraine needs to increase its presence in sub-Saharan Africa and ...",
       "url": "https://www.instagram.com/p/DVapnbHCBEk/",
       "source_domain": "instagram.com",
@@ -84,40 +275,6 @@
       "title": "[PDF] \u0410\u0433\u0440\u043e\u0422\u0435\u0440\u0440\u0430 2(9)'2020 - NMC VFPO",
       "url": "https://nmc-vfpo.gov.ua/wp-content/uploads/2020/12/agroterra-29-2020.pdf",
       "source_domain": "nmc-vfpo.gov.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W4",
-      "title": "[PDF] \u0412\u0456\u0434\u0431\u0443\u0434\u043e\u0432\u0430 \u0423\u043a\u0440\u0430\u0457\u043d\u0438: \u043f\u0440\u0438\u043d\u0446\u0438\u043f\u0438 \u0442\u0430 \u043f\u043e\u043b\u0456\u0442\u0438\u043a\u0430 - CEPR",
-      "url": "https://cepr.org/system/files/2022-12/reconstruction%2520book_Ukrainian_0.pdf",
-      "source_domain": "cepr.org",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3
-    },
-    {
-      "id": "W15",
-      "title": "[PDF] \u0423\u041a\u0420\u0410\u0407\u041d\u0421\u042c\u041a\u0418\u0419 \u0415\u041a\u041e\u041d\u041e\u041c\u0406\u0427\u041d\u0418\u0419 \u0427\u0410\u0421\u041e\u041f\u0418\u0421",
-      "url": "https://eprints.cdu.edu.ua/7248/1/%25D0%25A3%25D0%2595%25D0%25A7%2520%25E2%2584%25969%25E2%2580%25992025.pdf",
-      "source_domain": "eprints.cdu.edu.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -199,7 +356,7 @@
       "score": 3
     },
     {
-      "id": "W8",
+      "id": "W9",
       "title": "\u0426\u0456\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u043e\u043b\u0456\u0457 2026: \u0440\u043e\u0437\u0434\u0440\u0456\u0431, \u043e\u043f\u0442, \u0442\u0435\u043d\u0434\u0435\u043d\u0446\u0456\u0457 - EuroFest",
       "url": "https://www.eurofest.org.ua/tsina-soniashnykovoi-olii-2026-rozdrib-opt-tendentsii/",
       "source_domain": "eurofest.org.ua",
@@ -216,7 +373,7 @@
       "score": 3
     },
     {
-      "id": "W10",
+      "id": "W12",
       "title": "\u0426\u0456\u043d\u0438 \u043d\u0430 \u043e\u043b\u0456\u044e \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456: \u043f\u043e\u0432\u043d\u0438\u0439 \u043e\u0433\u043b\u044f\u0434 \u0440\u0438\u043d\u043a\u0443 \u0442\u0430 \u043f\u0440\u043e\u0433\u043d\u043e\u0437\u0456\u0432 \u043d\u0430 2026 \u0440\u0456\u043a - Duflu",
       "url": "https://duflu.org.ua/cziny-na-oliyu-v-ukrayini-povnyj-oglyad-rynku-ta-prognoziv-na-2026-rik/",
       "source_domain": "duflu.org.ua",
@@ -233,7 +390,7 @@
       "score": 3
     },
     {
-      "id": "W13",
+      "id": "W15",
       "title": "\u042f\u043a\u0456 \u0442\u043e\u0432\u0430\u0440\u0438 \u0437 \u0423\u043a\u0440\u0430\u0457\u043d\u0438 \u0432\u0456\u0434\u043f\u0440\u0430\u0432\u043b\u044f\u044e\u0442\u044c \u0437\u0430 \u043a\u043e\u0440\u0434\u043e\u043d: \u043f\u043e\u0432\u043d\u0438\u0439 \u043e\u0433\u043b\u044f\u0434 ...",
       "url": "https://engage.org.ua/yaki-tovary-z-ukrayiny-vidpravlyayut-za-kordon-povnyj-oglyad-eksportu/",
       "source_domain": "engage.org.ua",
@@ -259,6 +416,6 @@
   "polymarket": [],
   "best_practices": [],
   "prompt_pack": [],
-  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 (Last 30 Days)\n\n*Generated: 2026-03-31 | Sources: all*\n\n## Key Sources\n\n- [Web] Russia Opens New Grain Trade Route to East Africa....\n- [Web] USDA \u043f\u0456\u0434\u0432\u0438\u0449\u0438\u0432 \u043f\u0440\u043e\u0433\u043d\u043e\u0437 \u043f\u043e\u043f\u0438\u0442\u0443 \u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a \u0443 \u0422\u0443\u0440\u0435\u0447\u0447\u0438...\n- [Web] Ukraine needs to increase its presence in sub-Saha...\n- [Web] [PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTA...\n- [Web] [PDF] \u0410\u0433\u0440\u043e\u0422\u0435\u0440\u0440\u0430 2(9)'2020 - NMC VFPO...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
+  "context_snippet_md": "# Context: \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 (Last 30 Days)\n\n*Generated: 2026-03-31 | Sources: all*\n\n## Key Sources\n\n- [X] @homobanderivka \u0449\u043e \u0457\u043c \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0437\u0440\u043e\u0431\u0438\u043b\u0430\ud83d\ude2d\ud83d\ude2d\ud83d\ude2d...\n- [X] @homobanderivka \u0422\u043e\u0431\u0442\u043e \u043f\u0440\u0435\u0441\u043e\u0432\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u0442\u0438\u043f...\n- [X] @CloakLady \u0417 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u0456\u0432: \u043c\u043e\u043b\u043e\u043a\u043e \u0432 \u0442\u0440\u0438\u043a\u0443\u0442\u043d\u0438\u0445 \u043f\u0430\u043a\u0435\u0442\u0430\u0445...\n- [X] \u0441\u044e\u0434\u0438 \u0449\u0435 \u043a\u0430\u043f\u0443\u0441\u0442\u0443 \u043a\u0432\u0430\u0448\u0430\u043d\u0443 \u0430\u0431\u043e \u0441\u0432\u0456\u0436\u0438\u0439 \u0441\u0430\u043b\u0430\u0442 \u0437 \u043c\u043e\u043b\u043e\u0434\u043e\u0457...\n- [X] @o_zhab \u0437\u0430\u0437\u0432\u0438\u0447\u0430\u0439 \u0434\u043e\u0431\u0440\u0435 \u0434\u043e\u043f\u043e\u043c\u0430\u0433\u0430\u0454 \u0437\u0432\u0438\u0447\u0430\u0439\u043d\u0430 \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a...\n- [Web] (PDF) Agricultural exports of Ukraine in the condi...\n- [Web] In December 2025, Ukraine's agricultural export ca...\n\n## Summary\n\n*See full report for best practices, prompt pack, and detailed sources.*\n",
   "bluesky_error": "Bluesky search failed: HTTP 403: Forbidden"
 }
