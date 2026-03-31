@@ -274,7 +274,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     buyerName: "",
     periodPreset: "explicit_range",
     commodity: "corn",
-    harvestYear: "",
+    harvestYear: "2026",
     isNewCrop: false,
     originCountry: "UA",
     quantityMt: entryType === "bid" ? 25000 : entryType === "trade" ? 22000 : 20000,
@@ -1664,7 +1664,24 @@ export function EntryCreateDialog({
                 name="harvestYear"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Harvest year</FormLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FormLabel>Harvest year</FormLabel>
+                      {entryType === "bid" || entryType === "offer" ? (
+                        <FormField
+                          control={form.control}
+                          name="isNewCrop"
+                          render={({ field: cropField }) => (
+                            <label className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                              <Checkbox
+                                checked={!!cropField.value}
+                                onCheckedChange={(checked) => cropField.onChange(!!checked)}
+                              />
+                              NEW CROP
+                            </label>
+                          )}
+                        />
+                      ) : null}
+                    </div>
                     <FormControl>
                       <Input
                         type="number"
@@ -1680,20 +1697,6 @@ export function EntryCreateDialog({
                   </FormItem>
                 )}
               />
-              {entryType === "bid" || entryType === "offer" ? (
-                <FormField
-                  control={form.control}
-                  name="isNewCrop"
-                  render={({ field }) => (
-                    <FormItem className="flex items-end pb-1">
-                      <label className="flex cursor-pointer items-center gap-2 rounded-md border border-border/70 px-3 py-2 text-sm">
-                        <Checkbox checked={!!field.value} onCheckedChange={(checked) => field.onChange(!!checked)} />
-                        <span className="font-medium">NEW CROP</span>
-                      </label>
-                    </FormItem>
-                  )}
-                />
-              ) : null}
               <FormField
                 control={form.control}
                 name="quantityMt"
