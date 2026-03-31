@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-03-31T12:06:57.784621+00:00",
+  "generatedAt": "2026-03-31T13:18:34.406605+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-31T12:05:32.785193+00:00",
+  "sourceUpdatedAt": "2026-03-31T13:17:07.616521+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "The global grains and oilseeds market over the past 30 days has been characterized by stable sentiment despite notable shifts in US crop planting intentions and USDA data revisions. US farmers are expected to increase soybean acreage in 2026 while reducing corn plantings, signaling a strategic pivot in crop focus. Concurrently, USDA's credibility faced scrutiny following significant downward revisions in US corn acreage, which has injected uncertainty but not immediate price volatility. Compared to the previous month, the volume of market-relevant events doubled, though overall market impact remained neutral. This environment suggests cautious positioning among traders, with attention on evolving US planting trends and data accuracy. For brokers and traders, monitoring USDA updates and planting intentions will be critical for anticipating supply-side shifts, while price levels remain steady without strong directional cues. Key facts highlight the evolving US crop landscape and stable global market conditions.",
+    "text": "General situation: Over the past 30 days, global grains and oilseeds markets have experienced a stable environment with no significant bullish or bearish shifts. Recent headlines highlight US farmers' intentions to increase soybean plantings in 2026 while reducing corn acreage, reflecting a strategic adjustment amid ongoing agricultural challenges. What changed vs previous comparable period: Compared to the prior month, the volume of market-relevant news increased, but the overall market sentiment remained unchanged, with no directional bias emerging. Notably, USDA's earlier revisions to US corn acreage and record corn crop projections have not triggered market volatility recently. Actionable implications for trading/brokerage: Traders should monitor US planting intentions closely, as the shift toward more soybeans and fewer corn acres could influence supply balances and pricing dynamics later in the season. Given the current neutral tone and absence of shocks outside Ukraine, a cautious approach focusing on fundamental developments is advisable.\n\nKey facts:\n- On February 20, 2026, USDA reported US farmers plan to sow more soybeans and less corn in 2026, signaling a crop mix shift.\n- On February 18, 2026, farmers viewed large corn acreage as a break-even strategy amid agricultural difficulties.\n- USDA's reputation was questioned on February 11, 2026, after major revisions in US corn acreage data.\n- Corn futures plunged on January 13, 2026, following USDA's announcement of a record 17 billion bushel crop.\n- Market data as of March 14, 2026, shows Brazilian soybeans and wheat prices stable, supporting a neutral market stance.\n- No new export or policy shocks reported outside Ukraine in the last 30 days, maintaining steady global supply expectations.",
     "chart": {
       "type": "price_overlay_month",
-      "title": "Grains & Oilseeds Prices Last 30 Days",
+      "title": "Grains & Oilseeds Prices Last 4 Weeks",
       "points": [
         {
           "label": "W1",
-          "value": 1
+          "value": 0
         },
         {
           "label": "W2",
-          "value": 2
+          "value": 0
         },
         {
           "label": "W3",
-          "value": 3
+          "value": 0
         },
         {
           "label": "W4",
-          "value": 4
+          "value": 0
         }
       ],
       "series": [
@@ -37,13 +37,13 @@
           "points": [
             {
               "label": "W1",
-              "value": 655
-            },
-            {
-              "label": "W2",
               "value": 660
             },
             {
+              "label": "W2",
+              "value": 663
+            },
+            {
               "label": "W3",
               "value": 663
             },
@@ -54,28 +54,28 @@
           ]
         },
         {
-          "name": "Brazil Corn FOB Santos",
+          "name": "Brazil Wheat",
           "points": [
             {
               "label": "W1",
-              "value": 113
+              "value": 660
             },
             {
               "label": "W2",
-              "value": 113
+              "value": 663
             },
             {
               "label": "W3",
-              "value": 113
+              "value": 663
             },
             {
               "label": "W4",
-              "value": 113
+              "value": 663
             }
           ]
         },
         {
-          "name": "US Corn Spot",
+          "name": "US Corn",
           "points": [
             {
               "label": "W1",
@@ -87,32 +87,11 @@
             },
             {
               "label": "W3",
-              "value": 394
-            },
-            {
-              "label": "W4",
-              "value": 394
-            }
-          ]
-        },
-        {
-          "name": "US Soybeans Spot",
-          "points": [
-            {
-              "label": "W1",
               "value": 395
             },
             {
-              "label": "W2",
-              "value": 395
-            },
-            {
-              "label": "W3",
-              "value": 394
-            },
-            {
               "label": "W4",
-              "value": 394
+              "value": 395
             }
           ]
         }
@@ -127,7 +106,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів залишається стабільною без суттєвих змін у ціновій динаміці чи торговельних обмеженнях. Порівняно з попереднім місяцем, кількість інформаційних сигналів збільшилась, але вони не мали впливу на ринок. Відсутність значних новин щодо логістики чи політики дозволяє очікувати подальшу стабільність у постачаннях та експорті. Пропозиції на ринку насіння сої з ціновим діапазоном 500-500 USD CIF на квітень 2026 року свідчать про активність у сегменті насіннєвого матеріалу. Для трейдерів та брокерів важливо зберігати увагу на потенційних змінах у логістиці, оскільки минулі роки показали їх критичний вплив на експорт. Ключові факти підтверджують відсутність суттєвих шоків, що дозволяє планувати операції з урахуванням поточної стабільності.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на основні культури в Україні за 4 тижні\",     \"points\": [       {\"label\": \"W1\", \"value\": 0},       {\"label\": \"W2\", \"value\": 0},       {\"label\": \"W3\", \"value\": 0},       {\"label\": \"W4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 214},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Пшениця CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 213},           {\"label\": \"W2\", \"value\": 214},           {\"label\": \"W3\", \"value\": 215},           {\"label\": \"W4\", \"value\": 216}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 707},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 447},           {\"label\": \"W4\", \"value\": 448}         ]       }     ]   },   \"key_facts\": [     \"30.03.2026: Кукурудза CPT Одеса торгується на рівні 215 грн, що є незначним зростанням порівняно з початком місяця.\",     \"30.03.2026: Пшениця CPT Одеса досягла 216 грн, демонструючи стабільність цінового тренду.\",     \"30.03.2026: Соняшникова олія CPT Паритет Одеса зросла до 709 грн, підтверджуючи помірне підвищення цін на олійні.\",     \"30.03.2026: Соя CPT Одеса торгується на рівні 448 грн, що свідчить про стабільний попит на експортному ринку.\",     \"2026-02-22: Відсутність нових",
+    "text": "{   \"summary\": \"Загальна ситуація на ринку України за останні 30 днів характеризується стабільністю без суттєвих цінових коливань, проте з помітними подіями у сфері логістики та безпеки. 26 грудня 2025 року зафіксовано удар дрона по одному з найбільших сховищ соняшникової олії в Одеській області, що потенційно може вплинути на експортні потоки та зберігання продукції. Порівняно з попереднім місяцем, коли подібних інцидентів не було, це створює додаткові ризики для постачання. Ціни на основні зернові та олійні культури залишаються стабільними, без значних змін у попиті чи пропозиції. Для трейдерів важливо враховувати можливі перебої у логістиці через безпекові виклики, а також слідкувати за пропозиціями на ринку, зокрема за оферами на сою та соняшникову олію, які демонструють активність у квітні 2026 року. Ринок залишається чутливим до геополітичних подій, що можуть вплинути на експортний потенціал України.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Цінова динаміка основних культур в Україні за 30 днів\",     \"points\": [       {\"label\": \"W1\", \"value\": 0},       {\"label\": \"W2\", \"value\": 0},       {\"label\": \"W3\", \"value\": 0},       {\"label\": \"W4\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 214},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Пшениця CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 210},           {\"label\": \"W2\", \"value\": 212},           {\"label\": \"W3\", \"value\": 214},           {\"label\": \"W4\", \"value\": 216}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 700},           {\"label\": \"W2\", \"value\": 705},           {\"label\": \"W3\", \"value\": 707},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Соя CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 440},           {\"label\": \"W2\", \"value\": 445},           {\"label\": \"W3\", \"value\": 447},           {\"label\": \"W4\", \"value\": 448}         ]       }     ]   },   \"key_facts\": [     \"26 грудня 2025 року зафіксовано удар дрона по одному з найбільших сховищ соняшникової олії в Одеській області, що може ускладнити логістику.\",     \"За останні 30 днів ціни на кукурудзу в порту Одеси зросли до 215 грн/т, пшениця – до 216 грн/т, соняшник – до 709 грн/т, соя – до 448 грн/т.\",     \"Порівняно з попереднім місяцем, кількість інцидентів, що впливають на ринок, збільшилась, тоді як цінова вол",
     "chart": null,
     "inputCounts": {
       "last30days": 24,
