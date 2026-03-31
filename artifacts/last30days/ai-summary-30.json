@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-03-31T05:07:51.983206+00:00",
+  "generatedAt": "2026-03-31T07:09:42.788392+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-31T05:06:47Z",
+  "sourceUpdatedAt": "2026-03-31T07:08:21Z",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: In the last 30 days, Brazilian corn FOB Santos prices have remained elevated at approximately 112.7 USD/ton as of March 12, 2026, while Brazilian soybeans and wheat prices stood at around 662.9 USD/ton on March 14, 2026. US spot prices for corn, soybeans, and wheat were stable at 394.45 USD/ton as of early February 2026, with no recent updates indicating significant shifts. Argentine grain prices are outdated, with last records from 2021 or 2025, limiting current market insights. What changed vs previous comparable period: No new temporal metrics or recent price changes were recorded in the last 30 days, indicating a stable price environment with no major volatility or supply disruptions outside Ukraine. Actionable implications for trading/brokerage: Traders should monitor Brazilian corn and soybean prices for potential export opportunities given their relatively high levels, while US prices appear steady but dated. Broker desk activity shows a firm rapeseed DAP offer at 500 EUR/ton for August 2026 delivery and a corn CIF offer at 241 EUR/ton for April shipments, suggesting active positioning in European rapeseed and corn markets. \n\nKey facts:\n- Brazilian corn FOB Santos at 112.7 USD/ton on 12 March 2026\n- Brazilian soybeans and wheat at 662.9 USD/ton on 14 March 2026\n- US corn, soybeans, and wheat spot prices steady at 394.45 USD/ton as of 4 February 2026\n- Argentine barley Grade 2 Up River at 212 USD/ton (2025 data)\n- Rapeseed DAP offers at 500 EUR/ton for August 2026 (30 March 2026)\n- Corn CIF offers at 241 EUR/ton for April 2026 shipments (25 March 2026)",
+    "text": "General situation: In the last 30 days, Brazilian corn FOB Santos prices stood at approximately 112.7 USD/ton as of March 12, while Brazilian soybeans and wheat prices were both near 662.9 USD/ton by mid-March. US spot prices for corn, soybeans, and wheat were aligned at around 394.5 USD/ton as of early February, indicating a significant price gap compared to Brazilian levels. Argentine barley and rice prices remained stable at 212 USD/ton, with no recent updates for corn, soybeans, or wheat since early 2021. What changed vs previous comparable period: No new temporal metrics or direct month-over-month price changes are available, limiting precise trend analysis. However, broker desk activity shows active rapeseed trading at 500 EUR/ton for August delivery and corn CIF offers at 241 EUR/ton for April shipments, suggesting ongoing demand and supply negotiations in European markets. Actionable implications for trading/brokerage: Traders should monitor the stable but divergent price levels between South American and US markets, with Brazilian grains commanding premium prices. The active rapeseed bids and corn offers in Europe indicate potential arbitrage or hedging opportunities, especially given the firm pricing in rapeseed for late summer delivery. \n\nKey facts:\n- Brazilian corn FOB Santos at 112.7 USD/ton on March 12, 2026\n- Brazilian soybeans and wheat at 662.9 USD/ton on March 14, 2026\n- US spot corn, soybeans, and wheat prices at 394.5 USD/ton as of February 4, 2026\n- Argentine barley and rice stable at 212 USD/ton as of December 31, 2025\n- Rapeseed traded at 500 EUR/ton for August 2026 delivery on March 30, 2026\n- Corn CIF offers at 241 EUR/ton for April 10-30 shipment as of March 25, 2026",
     "chart": {
       "type": "price_overlay_month",
-      "title": "Price Trends Last 30 Days",
+      "title": "30-Day Price Trends for Key Grains",
       "points": [
         {
           "label": "W1",
@@ -33,7 +33,7 @@
       ],
       "series": [
         {
-          "name": "Brazil Corn FOB Santos",
+          "name": "Brazil Corn FOB Santos (USD/ton)",
           "points": [
             {
               "label": "W1",
@@ -54,7 +54,7 @@
           ]
         },
         {
-          "name": "Brazil Soybeans",
+          "name": "Brazil Soybeans (USD/ton)",
           "points": [
             {
               "label": "W1",
@@ -75,23 +75,44 @@
           ]
         },
         {
-          "name": "US Corn Spot",
+          "name": "US Corn Spot (USD/ton)",
           "points": [
             {
               "label": "W1",
-              "value": 394.45
+              "value": 394.5
             },
             {
               "label": "W2",
-              "value": 394.45
+              "value": 394.5
             },
             {
               "label": "W3",
-              "value": 394.45
+              "value": 394.5
             },
             {
               "label": "W4",
-              "value": 394.45
+              "value": 394.5
+            }
+          ]
+        },
+        {
+          "name": "Argentine Barley (USD/ton)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 212
+            },
+            {
+              "label": "W2",
+              "value": 212
+            },
+            {
+              "label": "W3",
+              "value": 212
+            },
+            {
+              "label": "W4",
+              "value": 212
             }
           ]
         }
@@ -106,8 +127,98 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів демонструє стабільність цін на основні експортні позиції, зокрема кукурудзу, пшеницю, сою та соняшник. Ціни на кукурудзу на умовах CPT Одеса тримаються на рівні близько 215 USD/т, пшениця – 216 USD/т, соя – 448 USD/т, соняшник – 709 USD/т, а ріпак на умовах CPT Паритет Одеса для переробки – 593 EUR/т. Порівняно з попереднім місяцем, відсутні значні коливання, що свідчить про відносну цінову стабільність. Торгові пропозиції та заявки на кукурудзу FOB Чорноморськ та Південний коливаються в діапазоні 224.5-229 USD/т, що відображає активний попит і пропозицію на короткострокові контракти. Відсутність нових даних за попередній період ускладнює глибший часовий аналіз, але поточні котирування свідчать про збалансований ринок без суттєвих цінових шоків. Для трейдерів важливо враховувати, що ціни на ріпак залишаються високими, що може стимулювати збільшення пропозиції для переробки, а активність на ринку кукурудзи з фокусом на FOB контракти вказує на можливі короткострокові спекулятивні операції. Ключові факти підтверджують стабільність цін і активність торгівлі на експортних напрямках, що є важливим для планування експорту та логістики.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Ціни на основні культури, USD/т (або EUR/т для ріпаку), березень 2026\",     \"points\": [],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 215},           {\"label\": \"W2\", \"value\": 215},           {\"label\": \"W3\", \"value\": 215},           {\"label\": \"W4\", \"value\": 215}         ]       },       {         \"name\": \"Пшениця CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 216},           {\"label\": \"W2\", \"value\": 216},           {\"label\": \"W3\", \"value\": 216},           {\"label\": \"W4\", \"value\": 216}         ]       },       {         \"name\": \"Соя CPT Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 448},           {\"label\": \"W2\", \"value\": 448},           {\"label\": \"W3\", \"value\": 448},           {\"label\": \"W4\", \"value\": 448}         ]       },       {         \"name\": \"Соняшник CPT Паритет Одеса\",         \"points\": [           {\"label\": \"W1\", \"value\": 709},           {\"label\": \"W2\", \"value\": 709},           {\"label\": \"W3\", \"value\": 709},           {\"label\": \"W4\", \"value\": 709}         ]       },       {         \"name\": \"Ріпак CPT Паритет Одеса (EUR)\",         \"points\": [           {\"label\": \"W1\", \"value\": 593},           {\"label\": \"W2\", \"value\": 593},           {\"label\": \"W3\", \"value\": 593},           {\"label\": \"W4\", \"value\": 593}         ]       }     ]",
-    "chart": null,
+    "text": "Загальна ситуація на ринку зернових та олійних культур України за останні 30 днів характеризується стабільністю цін на основні експортні позиції, з незначними коливаннями в межах 1-2 доларів США за тонну. Ціни на кукурудзу на FOB Чорноморськ тримаються в діапазоні 224,5-229 USD/т, що свідчить про відсутність суттєвих змін у попиті та пропозиції. Ціна на соняшник на рівні 709 USD/т CPT Паритет Одеса залишається на високому рівні, що підтримує інтерес до переробки. Ріпак демонструє ціну 593 EUR/т CPT Паритет Одеса, а соя – 448 USD/т CPT Одеса, що також не зазнало значних змін. Пшениця утримує ціну близько 216 USD/т CPT Одеса. Порівняно з попереднім місяцем, відсутність значних змін у ціновій динаміці свідчить про стабільність ринку, без суттєвих логістичних або торговельних обмежень. Торгові заявки та пропозиції на кукурудзу свідчать про активний попит на поставки у квітні та травні, з невеликим розривом між бідом і оффером, що вказує на збалансований ринок. Для трейдерів це означає можливість планування поставок без суттєвих ризиків цінових коливань, а брокерам – підтримку стабільного потоку угод. Відсутність нових даних за останній місяць не дозволяє оцінити тренди, але поточні ціни та заявки свідчать про відсутність критичних змін у ринковій кон’юнктурі.",
+    "chart": {
+      "type": "price_overlay_month",
+      "title": "Ціни на основні культури, USD/т (30 днів)",
+      "points": [],
+      "series": [
+        {
+          "name": "Кукурудза FOB Чорноморськ",
+          "points": [
+            {
+              "label": "W1",
+              "value": 225
+            },
+            {
+              "label": "W2",
+              "value": 226
+            },
+            {
+              "label": "W3",
+              "value": 227
+            },
+            {
+              "label": "W4",
+              "value": 228
+            }
+          ]
+        },
+        {
+          "name": "Соняшник CPT Паритет Одеса",
+          "points": [
+            {
+              "label": "W1",
+              "value": 709
+            },
+            {
+              "label": "W2",
+              "value": 709
+            },
+            {
+              "label": "W3",
+              "value": 709
+            },
+            {
+              "label": "W4",
+              "value": 709
+            }
+          ]
+        },
+        {
+          "name": "Ріпак CPT Паритет Одеса (EUR/т)",
+          "points": [
+            {
+              "label": "W1",
+              "value": 593
+            },
+            {
+              "label": "W2",
+              "value": 593
+            },
+            {
+              "label": "W3",
+              "value": 593
+            },
+            {
+              "label": "W4",
+              "value": 593
+            }
+          ]
+        },
+        {
+          "name": "Пшениця CPT Одеса",
+          "points": [
+            {
+              "label": "W1",
+              "value": 216
+            },
+            {
+              "label": "W2",
+              "value": 216
+            },
+            {
+              "label": "W3",
+              "value": 216
+            },
+            {
+              "label": "W4",
+              "value": 216
+            }
+          ]
+        }
+      ]
+    },
     "inputCounts": {
       "last30days": 0,
       "monitor": 5
