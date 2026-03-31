@@ -255,8 +255,15 @@ run_window() {
   local days="$1"
   local label="$2"
   local output_file="$OUT_DIR/${label}.json"
+  local backup_file="$OUT_DIR/.${label}.previous.json"
   local input_files=()
   local i=0
+
+  if [[ -s "$output_file" ]]; then
+    cp "$output_file" "$backup_file"
+  else
+    rm -f "$backup_file"
+  fi
 
   echo "[last30days] Running ${label} (${days}d) across ${#TOPICS[@]} topics..."
   for topic in "${TOPICS[@]}"; do
@@ -283,6 +290,9 @@ run_window() {
       done
     else
       echo "[last30days] WARN: query failed for ${label} topic #$((i + 1))" >&2
+      if [[ -s "$err_file" ]]; then
+        echo "[last30days] WARN: ${label} topic #$((i + 1)) error: $(tail -n 2 "$err_file" | tr '\n' ' ')" >&2
+      fi
       rm -f "$tmp_file"
     fi
 
@@ -303,13 +313,43 @@ run_window() {
   done
 
   if [[ ${#input_files[@]} -eq 0 ]]; then
-    echo "[last30days] WARN: no successful queries for ${label}, writing empty payload" >&2
-    write_empty_payload "$output_file" "$label"
+    if [[ -s "$backup_file" ]]; then
+      echo "[last30days] WARN: no successful queries for ${label}, preserving previous snapshot" >&2
+      cp "$backup_file" "$output_file"
+    else
+      echo "[last30days] WARN: no successful queries for ${label}, writing empty payload" >&2
+      write_empty_payload "$output_file" "$label"
+    fi
     return
   fi
 
   merge_payloads "$output_file" "${input_files[@]}"
+
+  # If all sources returned empty arrays, keep previous snapshot instead of blanking the feed.
+  local merged_count
+  merged_count="$(python3 - "$output_file" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+except Exception:
+    print(-1)
+    raise SystemExit(0)
+
+items = payload.get("items") if isinstance(payload, dict) else None
+print(len(items) if isinstance(items, list) else -1)
+PY
+)"
+  if [[ "$merged_count" == "0" && -s "$backup_file" ]]; then
+    echo "[last30days] WARN: merged ${label} payload has 0 items, restoring previous snapshot" >&2
+    cp "$backup_file" "$output_file"
+  fi
+
   rm -f "${input_files[@]}"
+  rm -f "$backup_file"
 }
 
 run_window 1 "yesterday"
