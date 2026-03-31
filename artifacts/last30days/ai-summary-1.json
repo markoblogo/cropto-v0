@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-03-31T07:08:47.294496+00:00",
+  "generatedAt": "2026-03-31T10:03:44.424140+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-31T07:07:45Z",
+  "sourceUpdatedAt": "2026-03-31T10:02:48Z",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Yesterday's grains and oilseeds markets outside Ukraine showed stable price levels with no significant new data or market shifts. Brazilian corn FOB Santos was priced at 112.72 USD/ton as of March 12, 2026, while Brazilian soybeans and wheat both stood at 662.90 USD/ton as of March 14, 2026. US spot/cash prices for corn, soybeans, and wheat remained steady at 394.45 USD/ton as of February 4, 2026. What changed vs previous comparable period: There were no recorded price changes or new market developments compared to the previous day or recent weeks, indicating a lack of fresh market drivers. Actionable implications for trading/brokerage: Traders should maintain current positions given the absence of volatility or new fundamental shifts. The recent rapeseed trade in Germany at 500 EUR/ton for August 2026 delivery suggests stable demand and pricing in European oilseeds, which could be monitored for future cross-commodity arbitrage opportunities. \n\nKey facts:\n- Brazilian corn FOB Santos at 112.72 USD/ton on March 12, 2026\n- Brazilian soybeans and wheat both at 662.90 USD/ton on March 14, 2026\n- US spot/cash corn, soybeans, and wheat prices steady at 394.45 USD/ton as of February 4, 2026\n- Argentine barley Grade 2 Up River priced at 212 USD/ton with a 2025-12-31 date\n- US barley No 2 HRW at 239 USD/ton with a 2025-12-31 date\n- Rapeseed traded at 500 EUR/ton for August 2026 delivery in Herzlake, Germany, on March 30, 2026",
+    "text": "General situation: Yesterday's grains and oilseeds markets outside Ukraine showed stable price levels with no significant new data or market-moving events. Brazilian corn FOB Santos was priced at 112.72 USD/ton as of March 12, 2026, while Brazilian soybeans and wheat both stood at 662.90 USD/ton as of March 14, 2026. US spot prices for corn, soybeans, and wheat remained aligned at 394.45 USD/ton as of February 4, 2026. What changed vs previous comparable period: There were no recorded price changes or new market developments compared to the previous day, reflecting a continuation of the existing price environment. Actionable implications for trading/brokerage: Traders should maintain current positions given the lack of volatility and await fresh fundamental triggers. The recent rapeseed trade in Germany at 500 EUR/ton for August 2026 delivery indicates stable demand and pricing in European oilseed markets, which could influence nearby rapeseed contracts. \n\nKey facts:\n- Brazilian corn FOB Santos at 112.72 USD/ton (March 12, 2026)\n- Brazilian soybeans and wheat both at 662.90 USD/ton (March 14, 2026)\n- US corn, soybeans, and wheat spot prices at 394.45 USD/ton (February 4, 2026)\n- Argentine barley Grade 2 Up River at 212 USD/ton (December 31, 2025)\n- US barley No 2 HRW at 239 USD/ton (December 31, 2025)\n- Rapeseed traded at 500 EUR/ton for August 2026 delivery in Herzlake, Germany, indicating firm bid levels",
     "chart": {
       "type": "event_mix",
-      "title": "Market Drivers Yesterday",
+      "title": "Yesterday's Market Drivers",
       "points": [
         {
           "label": "Logistics",
@@ -20,40 +20,18 @@
         },
         {
           "label": "Demand",
-          "value": 2
+          "value": 3
         },
         {
           "label": "Pricing",
-          "value": 3
+          "value": 2
         },
         {
           "label": "Execution Risk",
           "value": 1
         }
       ],
-      "series": [
-        {
-          "name": "Impact Level",
-          "points": [
-            {
-              "label": "Logistics",
-              "value": 2
-            },
-            {
-              "label": "Demand",
-              "value": 2
-            },
-            {
-              "label": "Pricing",
-              "value": 3
-            },
-            {
-              "label": "Execution Risk",
-              "value": 1
-            }
-          ]
-        }
-      ]
+      "series": []
     },
     "inputCounts": {
       "last30days": 0,
@@ -64,26 +42,30 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на ринку зернових та олійних в Україні вчора характеризувалась стабільністю цін на кукурудзу з незначними коливаннями в межах 224.5-229 USD/т FOB, що свідчить про збалансований попит та пропозицію на експортних позиціях. Ціни на соняшник та соєві боби залишаються високими, що підтримує інтерес переробників. Ріпак демонструє активність у сегменті DAP з цінами близько 500-510 EUR/т, що вказує на стабільний попит на внутрішньому ринку. Порівняно з попереднім днем, ціни на кукурудзу дещо знизились у сегменті BID, що може свідчити про тимчасове зниження активності покупців. Для трейдерів важливо враховувати вузький ціновий коридор та активність пропозицій на різні терміни поставки, що дозволяє гнучко реагувати на зміни попиту. Ключові факти підтверджують стабільність ринку з незначними коливаннями, що створює умови для планування короткострокових операцій з мінімальними ризиками.",
+    "text": "Загальна ситуація на ринку зернових та олійних в Україні вчора характеризувалась стабільністю цін на кукурудзу та соняшник, з незначними коливаннями в пропозиціях на експорт. Ціни на кукурудзу FOB Чорноморськ залишались у діапазоні 225-229 USD/т, що свідчить про збереження попиту на експортному напрямку. Ціна на соняшник CPT Паритет Одеса становила 709 USD/т, що відповідає поточному рівню. Ріпак демонстрував активність у внутрішньому сегменті переробки з ціною 593 USD/т, а соя на експорті оцінювалась у 448 USD/т. Порівняно з попереднім днем, ціни на кукурудзу залишились стабільними, а пропозиції на ринку були більш диференційовані за термінами поставки, що свідчить про активізацію торгів. Для трейдерів важливо враховувати стабільність цін та наявність пропозицій з різними термінами поставки, що дозволяє гнучко планувати операції. Ключові факти включають: ціна кукурудзи FOB Чорноморськ 229 USD/т (30.03), пропозиції кукурудзи FOB 225-226.5 USD/т на квітень-травень, ціна соняшника CPT 709 USD/т (30.03), ріпак CPT 593 USD/т (28.11), соя CPT 448 USD/т (30.03), а також активні торги ріпаком DAP 500-510 EUR/т з поставкою в серпні та травні-червні.",
     "chart": {
       "type": "event_mix",
-      "title": "Вплив факторів на ринок кукурудзи вчора",
+      "title": "Вплив драйверів на ринок вчора",
       "points": [
         {
-          "label": "Логістика",
+          "label": "Ціноутворення",
           "value": 70
         },
         {
           "label": "Попит",
-          "value": 80
-        },
-        {
-          "label": "Ціноутворення",
-          "value": 75
-        },
-        {
-          "label": "Ризик виконання",
           "value": 60
+        },
+        {
+          "label": "Пропозиція",
+          "value": 65
+        },
+        {
+          "label": "Логістика",
+          "value": 50
+        },
+        {
+          "label": "Ризики виконання",
+          "value": 40
         }
       ],
       "series": []
