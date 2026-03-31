@@ -1,62 +1,62 @@
 {
-  "generatedAt": "2026-03-31T10:36:17.361726+00:00",
+  "generatedAt": "2026-03-31T10:56:03.768481+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-03-31T10:02:48Z",
+  "sourceUpdatedAt": "2026-03-31T10:50:20.289737+00:00",
   "warnings": [],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: Yesterday's grains and oilseeds markets outside Ukraine showed stable pricing with limited new data for temporal comparison. Brazilian corn FOB Santos was priced at 112.72 USD/ton as of March 12, 2026, while Brazilian soybeans and wheat were both at 662.90 USD/ton as of March 14, 2026. US spot prices for corn, soybeans, and wheat remained at 394.45 USD/ton as of February 4, 2026, indicating no recent price shifts. Argentine barley and rice Grade 2 Up River were priced at 212 USD/ton with a 2025 year-end date, showing no immediate change. What changed vs previous comparable period: No new temporal metrics or recent price changes were recorded yesterday compared to prior days, reflecting a stable market environment. However, the broker desk reported rapeseed trades at 500 EUR/ton for August 2026 delivery in Herzlake, signaling active demand and firm pricing in European rapeseed futures. Actionable implications for trading/brokerage: Traders should monitor Brazilian and US corn and soybean prices for any emerging volatility given the current price stability. The firm rapeseed bids at 500 EUR/ton suggest potential opportunities in European rapeseed contracts for August delivery. Limited price movement elsewhere advises cautious positioning until fresh market signals emerge. \n\nKey facts:\n- Brazilian corn FOB Santos at 112.72 USD/ton (March 12, 2026)\n- Brazilian soybeans and wheat at 662.90 USD/ton (March 14, 2026)\n- US corn, soybeans, and wheat spot prices steady at 394.45 USD/ton (February 4, 2026)\n- Argentine barley and rice Grade 2 Up River at 212 USD/ton (December 31, 2025)\n- Rapeseed traded at 500 EUR/ton for August 2026 delivery in Herzlake (March 30, 2026)\n- No new temporal price changes or market disruptions reported yesterday",
+    "text": "General situation: The global corn market remains in a holding pattern with no significant bullish or bearish shifts reported yesterday. Discussions around corn growth potential amid ongoing geopolitical tensions continue to surface, reflecting cautious market sentiment. What changed vs previous comparable period: Compared to the prior day, there was an emergence of a neutral signal focused on corn's growth prospects during wartime, marking a slight increase in market discourse but no immediate price or supply impact. Actionable implications for trading/brokerage: Traders should monitor developments around corn acreage and geopolitical factors influencing supply chains, while broker desks can note steady rapeseed DAP bids at 500 EUR for August 2026 delivery, indicating stable demand in the oilseeds segment. \n\nKey facts:\n- On March 30, 2026, a neutral market signal highlighted corn's potential growth amid war conditions.\n- Brazilian corn FOB Santos price was 112.72 as of March 12, 2026.\n- Brazilian soybeans and wheat prices stood at 662.90 on March 14, 2026.\n- US corn spot price was 394.45 on February 4, 2026.\n- Rapeseed DAP bids held firm at 500 EUR for August 2026 delivery in Herzlake as of March 30, 2026.\n- No price or supply disruptions were reported compared to the previous day, maintaining market equilibrium.",
     "chart": {
       "type": "event_mix",
-      "title": "Market Drivers Yesterday",
+      "title": "Market Drivers Impact Yesterday",
       "points": [
         {
           "label": "Logistics",
-          "value": 2
+          "value": 0
         },
         {
           "label": "Demand",
-          "value": 3
+          "value": 0
         },
         {
           "label": "Pricing",
-          "value": 2
+          "value": 0
         },
         {
           "label": "Execution Risk",
-          "value": 1
+          "value": 0
         }
       ],
       "series": [
         {
-          "name": "Market Drivers",
+          "name": "Impact",
           "points": [
             {
               "label": "Logistics",
-              "value": 2
+              "value": 0
             },
             {
               "label": "Demand",
-              "value": 3
+              "value": 0
             },
             {
               "label": "Pricing",
-              "value": 2
+              "value": 0
             },
             {
               "label": "Execution Risk",
-              "value": 1
+              "value": 0
             }
           ]
         }
       ]
     },
     "inputCounts": {
-      "last30days": 0,
+      "last30days": 24,
       "monitor": 13
     }
   },
@@ -64,32 +64,54 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація на українському ринку зернових та олійних 30 березня 2026 року характеризується стабільністю цін на основні культури з незначними коливаннями в межах кількох доларів. Ціна на кукурудзу FOB Чорноморськ коливалась у діапазоні 224,5-229 USD за тонну, що свідчить про збереження попиту на експортному напрямку. Ріпак демонструє активність у сегменті DAP з цінами 500-510 EUR за тонну на поставки в серпні та травні-червні 2026 року, що вказує на стабільний інтерес переробників. Соняшник CPT Одеський порт утримує ціну на рівні 709 грн/т, а соя – 448 грн/т, що відповідає попереднім показникам. Пшениця CPT Одеcа торгується близько 216 грн/т. У порівнянні з 29 березня, ціни на кукурудзу зафіксували незначне зниження на 1-2 USD, що може бути пов’язано з корекцією попиту та пропозиції на короткостроковому горизонті. Активність брокерів свідчить про збереження ліквідності та готовність до угод у найближчі місяці. Для трейдерів важливо враховувати невеликі цінові коливання та орієнтуватися на пропозиції FOB з різних портів для оптимізації логістики та маржинальності. Ключовим драйвером залишається експортний попит і сезонні фактори, що впливають на ціноутворення та доступність вантажів.",
+    "text": "Загальна ситуація на ринку зернових та олійних України залишається стабільною без суттєвих змін у новинах за вчорашній день. Ціни на основні культури на експортних терміналах Одеси демонструють незначні коливання: кукурудза торгується близько 215 USD/т, пшениця — 216 USD/т, соя — 448 USD/т, а соняшникова олія — 709 USD/т. Порівняно з попереднім днем, активність на ринку зберігається на тому ж рівні, без нових суттєвих сигналів або змін у балансі попиту та пропозиції. Торгові пропозиції на ринку кукурудзи та ріпаку свідчать про стабільний інтерес, з пропозиціями на FOB кукурудзу в діапазоні 224.5-229 USD/т та ріпак у районі 500-510 EUR/т на поставки в другому кварталі 2026 року. Відсутність нових інформаційних драйверів свідчить про консолідацію ринку перед весняною посівною кампанією. Для трейдерів це означає збереження поточної цінової волатильності та можливість планування угод з урахуванням стабільного попиту на українську сільгосппродукцію, особливо соняшникову олію, яка залишається ключовим експортним товаром України.",
     "chart": {
       "type": "event_mix",
-      "title": "Драйвери ринку 30.03.2026",
+      "title": "Вплив факторів на ринок зернових та олійних (вчора)",
       "points": [
         {
           "label": "Логістика",
-          "value": 70
+          "value": 20
         },
         {
           "label": "Попит",
-          "value": 80
+          "value": 25
         },
         {
           "label": "Ціноутворення",
-          "value": 75
+          "value": 30
         },
         {
           "label": "Ризики виконання",
-          "value": 60
+          "value": 25
         }
       ],
-      "series": []
+      "series": [
+        {
+          "name": "Вплив факторів",
+          "points": [
+            {
+              "label": "Логістика",
+              "value": 20
+            },
+            {
+              "label": "Попит",
+              "value": 25
+            },
+            {
+              "label": "Ціноутворення",
+              "value": 30
+            },
+            {
+              "label": "Ризики виконання",
+              "value": 25
+            }
+          ]
+        }
+      ]
     },
     "inputCounts": {
-      "last30days": 0,
+      "last30days": 24,
       "monitor": 5
     }
   },
