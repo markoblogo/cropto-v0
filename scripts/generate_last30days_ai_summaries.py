@@ -533,10 +533,23 @@ def summary_too_generic(text):
     marker_hits = sum(1 for marker in generic_markers if marker in plain)
     return (not has_numbers) or marker_hits >= 2
 
+def summary_too_price_centric(text: str, language: str) -> bool:
+    plain = (text or "").strip().lower()
+    if not plain:
+        return True
+    if language == "uk":
+        price_hits = len(re.findall(r"\b(ціна|ціни|usd|eur|грн|cpt|fob|fca|тонн|т)\b", plain))
+        event_hits = len(re.findall(r"\b(експорт|врожай|логістик|мито|квот|попит|пропозиці|заборон|санкц|порт|коридор|перероб|марж)\w*\b", plain))
+    else:
+        price_hits = len(re.findall(r"\b(price|prices|usd|eur|cpt|fob|fca|ton|tons|mt)\b", plain))
+        event_hits = len(re.findall(r"\b(export|yield|logistic|tariff|quota|demand|supply|sanction|port|corridor|processing|margin)\w*\b", plain))
+    return price_hits >= 6 and event_hits <= 3
+
 def cleanup_summary_text(text: str, language: str) -> str:
     raw = (text or "").strip()
     if not raw:
         return raw
+    raw = re.sub(r"^\s*summary\s*[:\-]?\s*", "", raw, flags=re.IGNORECASE).strip()
     banned_patterns = [
         r"\bneutral-impact report[s]?\b",
         r"\bnumber of (market )?reports\b",
@@ -571,6 +584,32 @@ def cleanup_summary_text(text: str, language: str) -> str:
         seen.add(key)
         deduped_blocks.append(block)
     return "\n\n".join(deduped_blocks).strip() or raw
+
+def normalize_openai_payload(parsed: dict, language: str) -> dict:
+    if not isinstance(parsed, dict):
+        return {"summary": "", "chart": None}
+    summary = str(parsed.get("summary") or "").strip()
+    chart = parsed.get("chart")
+    if not summary:
+        return {"summary": "", "chart": chart}
+
+    candidates = [summary]
+    brace_index = summary.find("{")
+    if brace_index > 0:
+        candidates.append(summary[brace_index:])
+
+    for candidate in candidates:
+        obj = extract_json_object(candidate)
+        if isinstance(obj, dict) and isinstance(obj.get("summary"), str):
+            return {
+                "summary": cleanup_summary_text(str(obj.get("summary") or ""), language),
+                "chart": obj.get("chart") if isinstance(obj.get("chart"), dict) else chart,
+            }
+
+    return {
+        "summary": cleanup_summary_text(summary, language),
+        "chart": chart,
+    }
 
 def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, brokerage_lines, days):
     system_prompt = (
@@ -620,7 +659,7 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             "6) Keep total summary length 900-1400 characters.",
             "7) Forbidden: mention counts of reports/signals/messages, phrases like 'neutral-impact reports', or repeated restatement of the same fact.",
             "8) Prioritize event-driven narrative from yesterday/week/month headlines: policy/logistics/production/export shocks first, not price recap first.",
-            "9) Max one sentence with absolute price levels unless there is a material move; treat prices as context, not main story.",
+            "9) Max one sentence with absolute price levels unless there is a material move >2% day-over-day; treat prices as context, not main story.",
             "10) In 'Key facts', at least 3 bullets must be event facts (what happened + why market-relevant), not index-level price restatements.",
             "11) No duplicated sentences or duplicated paragraphs across sections.",
             "12) If broker desk entries are present, use them as live market color for yesterday and mention bid/offer positioning only when it adds trading value.",
@@ -631,9 +670,9 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
         ]
     )
 
-    parsed = _call_openai_once(system_prompt, user_prompt)
+    parsed = normalize_openai_payload(_call_openai_once(system_prompt, user_prompt), language)
     summary = str(parsed.get("summary") or "").strip()
-    if summary_too_generic(summary):
+    if summary_too_generic(summary) or summary_too_price_centric(summary, language):
         retry_prompt = "\n".join(
             [
                 user_prompt,
@@ -641,13 +680,12 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
                 "Previous draft was too generic. Rewrite with tighter factual grounding.",
                 "Mandatory: include at least 4 numeric values and at least 2 explicit dates from window/context.",
                 "Mandatory: explicitly describe one change versus previous comparable period.",
+                "Mandatory: avoid price-centric recap; lead with concrete events and causal market impact.",
             ]
         )
-        retried = _call_openai_once(system_prompt, retry_prompt)
+        retried = normalize_openai_payload(_call_openai_once(system_prompt, retry_prompt), language)
         if str(retried.get("summary") or "").strip():
-            retried["summary"] = cleanup_summary_text(str(retried.get("summary") or ""), language)
             return retried
-    parsed["summary"] = cleanup_summary_text(str(parsed.get("summary") or ""), language)
     return parsed
 
 
@@ -658,8 +696,8 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
     items = normalize_items(src)
     en_items, en_lines = build_last30_lines(items, "en")
     uk_items, uk_lines = build_last30_lines(items, "uk")
-    en_monitor_lines = market_dashboard_lines(monitor_payload, "en")
-    uk_monitor_lines = market_dashboard_lines(monitor_payload, "uk")
+    en_monitor_lines = [] if days == 1 else market_dashboard_lines(monitor_payload, "en")
+    uk_monitor_lines = [] if days == 1 else market_dashboard_lines(monitor_payload, "uk")
     en_scope_all = scope_filter(all_items_month, "en")
     uk_scope_all = scope_filter(all_items_month, "uk")
     en_metrics = build_period_comparison_metrics(all_items_month, "en", days)
