@@ -10,6 +10,7 @@ set -euo pipefail
 #   LAST30DAYS_TOPICS_UK     (default: UKR grain/oilseeds themes, separated by "||")
 #   LAST30DAYS_SEARCH        (default: reddit,x,bluesky,hn,youtube,web)
 #   LAST30DAYS_TIMEOUT       (default: 60)
+#   LAST30DAYS_BSKY_FALLBACK_QUERY (default broad market query)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${LAST30DAYS_OUTPUT_DIR:-$ROOT_DIR/artifacts/last30days}"
@@ -20,6 +21,7 @@ SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
 ORIGINAL_SEARCH_SOURCES="$SEARCH_SOURCES"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-60}"
 BLUESKY_PUBLIC_FALLBACK=0
+BSKY_FALLBACK_QUERY="${LAST30DAYS_BSKY_FALLBACK_QUERY:-grain wheat corn soybeans sunflower rapeseed ukraine black sea export logistics}"
 
 if [[ ! -f "$SCRIPT_PATH" ]]; then
   echo "ERROR: last30days script not found: $SCRIPT_PATH" >&2
@@ -131,6 +133,27 @@ run_bluesky_public_query() {
   local topic="$2"
   local out_file="$3"
   python3 "$ROOT_DIR/scripts/fetch_bluesky_public.py" "$topic" --days="$days" --limit=25 > "$out_file"
+}
+
+count_json_items() {
+  local path="$1"
+  python3 - "$path" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+except Exception:
+    print(0)
+    raise SystemExit(0)
+
+if isinstance(payload, list):
+    print(len(payload))
+else:
+    print(0)
+PY
 }
 
 run_query() {
@@ -278,6 +301,7 @@ run_window() {
   local output_file="$OUT_DIR/${label}.json"
   local backup_file="$OUT_DIR/.${label}.previous.json"
   local input_files=()
+  local bluesky_hits=0
   local i=0
 
   if [[ -s "$output_file" ]]; then
@@ -323,6 +347,11 @@ run_window() {
       local bluesky_rc=$?
       set -e
       if [[ $bluesky_rc -eq 0 && -s "$bluesky_tmp" ]]; then
+        local bluesky_count
+        bluesky_count="$(count_json_items "$bluesky_tmp")"
+        if [[ "$bluesky_count" -gt 0 ]]; then
+          bluesky_hits=$((bluesky_hits + bluesky_count))
+        fi
         input_files+=("$bluesky_tmp")
       else
         rm -f "$bluesky_tmp"
@@ -332,6 +361,26 @@ run_window() {
     rm -f "$err_file"
     i=$((i + 1))
   done
+
+  if [[ ",$ORIGINAL_SEARCH_SOURCES," == *",bluesky,"* ]] && [[ "$bluesky_hits" -eq 0 ]]; then
+    local fallback_tmp="$OUT_DIR/.${label}.bluesky-fallback.json"
+    set +e
+    run_bluesky_public_query "$days" "$BSKY_FALLBACK_QUERY" "$fallback_tmp"
+    local fallback_rc=$?
+    set -e
+    if [[ $fallback_rc -eq 0 && -s "$fallback_tmp" ]]; then
+      local fallback_count
+      fallback_count="$(count_json_items "$fallback_tmp")"
+      if [[ "$fallback_count" -gt 0 ]]; then
+        echo "[last30days] Bluesky fallback query added ${fallback_count} posts for ${label}."
+        input_files+=("$fallback_tmp")
+      else
+        rm -f "$fallback_tmp"
+      fi
+    else
+      rm -f "$fallback_tmp"
+    fi
+  fi
 
   if [[ ${#input_files[@]} -eq 0 ]]; then
     if [[ -s "$backup_file" ]]; then
