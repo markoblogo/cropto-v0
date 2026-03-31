@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-31T13:31:31.183011+00:00",
+  "generatedAt": "2026-03-31T15:12:32.310617+00:00",
   "items": [
     {
       "id": "X1",
@@ -62,90 +62,108 @@
       "title": "Продам шрот соєвий, пп Благодарагро (№291935)\n\nПродам шрот соєвий 100 тон за ціною 19700 грн за тонну пп Благодарагро в Кіровоградській області, Світловодський район, Світловодськ (Пропозиція №291935)  https://t.co/SdflUcNapS"
     },
     {
-      "id": "R6",
-      "title": "Why is sunflower oil unhealthy ?",
-      "url": "https://www.reddit.com/r/ScientificNutrition/comments/1o3r7hn/why_is_sunflower_oil_unhealthy/",
-      "subreddit": "ScientificNutrition",
-      "date": "2025-10-12",
-      "why_relevant": "Directly about sunflower oil; may include discussion of refinement, transport, and industrial processing.",
-      "relevance": 0.41
+      "id": "R1",
+      "title": "Прогноз Gartner щодо ринку ПК на 2026 рік",
+      "url": "https://www.reddit.com/r/PCbuild_ua/comments/1rjek2g/%D0%BF%D1%80%D0%BE%D0%B2%D1%96%D0%B4%D0%BD%D0%B0_%D0%B0%D0%BD%D0%B0%D0%BB%D1%96%D1%82%D0%B8%D1%87%D0%BD%D0%B0_%D0%BA%D0%BE%D0%BC%D0%BF%D0%B0%D0%BD%D1%96%D1%8F_gartner_%D0%BF%D1%80%D0%BE%D0%B3%D0%BD%D0%BE%D0%B7%D1%83%D1%94_%D1%89%D0%BE/",
+      "subreddit": "PCbuild_ua",
+      "date": "2026-03-03",
+      "why_relevant": "Contains 'прогноз' and 'ринок', but the visible text is about the PC market rather than corn; only loosely relevant if you meant market forecasts in Ukrainian generally.",
+      "relevance": 0.22
     },
     {
-      "id": "R1",
+      "id": "R2",
       "title": "Кукурудза на базарі по 10 грн",
       "url": "https://www.reddit.com/r/food_ua/comments/1n91rod",
       "subreddit": "food_ua",
       "date": "2025-09-05",
-      "why_relevant": "Direct discussion of corn pricing in a market/bazaar context, which matches the core topic around corn and market dynamics.",
-      "relevance": 0.97
-    },
-    {
-      "id": "R2",
-      "title": "Хот доги з вершковою кукурудзою",
-      "url": "https://www.reddit.com/r/food_ua/comments/1mqr00s",
-      "subreddit": "food_ua",
-      "date": "2025-08-15",
-      "why_relevant": "Contains a discussion centered on corn, though more culinary than market-oriented.",
-      "relevance": 0.64
-    },
-    {
-      "id": "R1",
-      "title": "Чому в в Україні у магазині немає ріпаковох олії?",
-      "url": "https://www.reddit.com/r/reddit_ukr/comments/1kln9eh",
-      "subreddit": "eddit_ukr",
-      "date": "2025-05-13",
-      "why_relevant": "Discusses cooking oil availability in Ukraine and compares rapeseed oil with sunflower oil, which is closely related to the search topic.",
-      "relevance": 0.74
+      "why_relevant": "Directly about corn ('кукурудза') and pricing/market discussion, but not a forecast thread.",
+      "relevance": 0.88
     },
     {
       "id": "R3",
-      "title": "Sunflower oil extraction",
-      "url": "https://www.reddit.com/r/toolgifs/comments/18xk220",
-      "subreddit": "toolgifs",
-      "date": "2024-01-03",
-      "why_relevant": "About sunflower oil production/extraction, which can overlap with logistics and processing discussions.",
-      "relevance": 0.63
-    },
-    {
-      "id": "R1",
-      "title": "Is sunflower oil bad?",
-      "url": "https://www.reddit.com/r/StopEatingSeedOils/comments/166x1m2/is_sunflower_oil_bad/",
-      "subreddit": "StopEatingSeedOils",
-      "date": "2023-09-01",
-      "why_relevant": "Discusses sunflower oil directly; may be relevant to logistics only indirectly through sourcing/supply-chain context.",
-      "relevance": 0.32
-    },
-    {
-      "id": "R5",
-      "title": "𝐒𝐮𝐧𝐟𝐥𝐨𝐰𝐞𝐫 𝐎𝐢𝐥 🌻 𝐩𝐫𝐢𝐜𝐞 ➔ 🔻𝐌𝐚𝐬𝐬𝐢𝐯𝐞 𝐑𝐞𝐝𝐮𝐜𝐭𝐢𝐨𝐧🔻 💥 New PRICE OFFER -14%! 💥 1000 liters cost ONLY 1.510€ - ☎️ +370 610 630 90 👨‍💼 Eddie - https://sunflower-oil-offers.com",
-      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
-      "subreddit": "u_Sunflower-Oil-Offers",
-      "date": "2022-09-12",
-      "why_relevant": "Wholesale sunflower oil sales post that explicitly mentions logistics, CIF/FOB terms, and delivery.",
-      "relevance": 0.91
+      "title": "Sunflower oil prices fall as Ukraine ships stock to India",
+      "url": "https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy",
+      "subreddit": "GeopoliticsIndia",
+      "date": "2023-06-14",
+      "why_relevant": "Same logistics-and-export story discussed in another subreddit.",
+      "relevance": 0.9
     },
     {
       "id": "R2",
-      "title": "Sunflower oil: from seeds harvested end summer, shortage in winter/spring because of invasion of Ukraine. Who is making profits?",
-      "url": "https://www.reddit.com/r/AskReddit/comments/thqw6f",
-      "subreddit": "AskReddit",
-      "date": "2022-03-19",
-      "why_relevant": "Mentions sunflower oil shortages, harvest timing, warehouses, and market flow issues tied to supply/logistics.",
-      "relevance": 0.86
+      "title": "Sunflower oil prices fall as Ukraine ships stock to India",
+      "url": "https://www.reddit.com/r/worldnews/comments/14997mm",
+      "subreddit": "worldnews",
+      "date": "2023-06-14",
+      "why_relevant": "Directly about Ukraine's sunflower oil exports/shipping and price effects, which relates to logistics.",
+      "relevance": 0.91
+    },
+    {
+      "id": "R9",
+      "title": "Sunflower oil ⚡️ OFFER ⚡️",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-10-20",
+      "why_relevant": "Wholesale sunflower oil offer with Ukraine/Lithuania/Poland logistics references.",
+      "relevance": 0.81
+    },
+    {
+      "id": "R1",
+      "title": "Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each",
+      "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7",
+      "subreddit": "ukraine",
+      "date": "2022-10-17",
+      "why_relevant": "Discusses sunflower oil infrastructure in Ukraine and a logistics/supply-chain disruption caused by an attack.",
+      "relevance": 0.93
+    },
+    {
+      "id": "R8",
+      "title": "100% Refined Sunflower Oil 🌻 in Europe, direct from the factory.",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-10-11",
+      "why_relevant": "Contains Ukraine origin, FOB shipping locations, and logistics/payment details.",
+      "relevance": 0.81
+    },
+    {
+      "id": "R5",
+      "title": "𝐒𝐮𝐧𝐟𝐥𝐨𝐰𝐞𝐫 𝐎𝐢𝐥 🌻 𝐩𝐫𝐢𝐜𝐞 ➔ 🔻𝐌𝐚𝐬𝐬𝐢𝐯𝐞 𝐑𝐞𝐝𝐮𝐜𝐭𝐢𝐨𝐧🔻 💥 New PRICE OFFER -14%! 💥 1000 liters cost ONLY 1.510€",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-09-12",
+      "why_relevant": "Wholesale sunflower oil post mentioning Ukraine origin and logistics/shipping terms.",
+      "relevance": 0.84
+    },
+    {
+      "id": "R7",
+      "title": "OFFERS - 🌻 SUNFLOWER OIL A QUALITY! 🌻",
+      "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/wxnfnd",
+      "subreddit": "u_Sunflower-Oil-Offers",
+      "date": "2022-08-25",
+      "why_relevant": "Wholesale sunflower oil listing with direct delivery from Ukraine.",
+      "relevance": 0.82
     },
     {
       "id": "R4",
-      "title": "How do you get sunflower oil?",
-      "url": "https://www.reddit.com/r/NoStupidQuestions/comments/fckit6",
-      "subreddit": "NoStupidQuestions",
-      "date": "2020-03-02",
-      "why_relevant": "General explanation of how sunflower oil is produced and obtained; relevant background for supply-chain/logistics queries.",
-      "relevance": 0.55
+      "title": "Sunflower Oil ‘Vanishes’ as Ukraine War Grinds On",
+      "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
+      "subreddit": "autotldr",
+      "date": "2022-04-30",
+      "why_relevant": "Covers war-related sunflower oil shortages and supply-chain/logistics disruption in Ukraine-linked markets.",
+      "relevance": 0.89
     },
     {
-      "id": "W15",
-      "title": "Latifundist.com - Соєвий шрот більше не дефіцит",
-      "url": "https://www.facebook.com/latifundistcom/photos/-%25D1%2581%25D0%25BE%25D1%2594%25D0%25B2%25D0%25B8%25D0%25B9-%25D1%2588%25D1%2580%25D0%25BE%25D1%2582-%25D0%25B1%25D1%2596%25D0%25BB%25D1%258C%25D1%2588%25D0%25B5-%25D0%25BD%25D0%25B5-%25D0%25B4%25D0%25B5%25D1%2584%25D1%2596%25D1%2586%25D0%25B8%25D1%2582-%25D1%2580%25D0%25B8%25D0%25BD%25D0%25BE%25D0%25BA-%25D1%2580%25D0%25BE%25D0%25B7%25D0%25B2%25D0%25B5%25D1%2580%25D1%2582%25D0%25B0%25D1%2594%25D1%2582%25D1%258C%25D1%2581%25D1%258F%25D0%25B3%25D0%25BB%25D0%25BE%25D0%25B1%25D0%25B0%25D0%25BB%25D1%258C%25D0%25BD%25D0%25B8%25D0%25B9-%25D1%2580%25D0%25B8%25D0%25BD%25D0%25BE%25D0%25BA-%25D1%2581%25D0%25BE%25D1%2594%25D0%25B2%25D0%25BE%25D0%25B3%25D0%25BE-%25D1%2588%25D1%2580%25D0%25BE%25D1%2582%25D1%2583/1349492390531127/",
+      "id": "R6",
+      "title": "Crude and Refined Sunflower Oil",
+      "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
+      "subreddit": "u_lt10plimited",
+      "date": "2022-02-10",
+      "why_relevant": "Supplier post about sunflower oil sourced from Ukraine, relevant to trade and logistics.",
+      "relevance": 0.82
+    },
+    {
+      "id": "W9",
+      "title": "Latifundist.com - Соєвий шрот більше не дефіцит: ринок ...",
+      "url": "https://www.facebook.com/photo.php?fbid=1349492390531127&set=a.465812945565747&type=3",
       "source_domain": "facebook.com",
       "snippet": "",
       "date": null,
@@ -161,7 +179,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W5",
       "title": "Porta Maris Logistics (@portamaris_logistics)",
       "url": "https://www.instagram.com/portamaris_logistics/",
       "source_domain": "instagram.com",
@@ -197,42 +215,6 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "[PDF] УКРАЇНСЬКИЙ ЕКОНОМІЧНИЙ ЧАСОПИС",
-      "url": "https://eprints.cdu.edu.ua/7248/1/%25D0%25A3%25D0%2595%25D0%25A7%2520%25E2%2584%25969%25E2%2580%25992025.pdf",
-      "source_domain": "eprints.cdu.edu.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W14",
-      "title": "Маржа переробки сої падає через зниження цін на соєвий шрот — аналітики — Latifundist.com",
-      "url": "https://latifundist.com/novosti/66621-marzha-pererobki-soyi-padaye-cherez-znizhennya-tsin-na-soyevij-shrot--analitiki",
-      "source_domain": "latifundist.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W11",
       "title": "Низькі ціни на соєвий шрот знижують маржу переробки в ...",
       "url": "https://ukragroconsult.com/news/nyzyki-cziny-na-soyevyj-shrot-znyzhuyuty-marzhu-pererobky-v-pivdennij-ameryczi/",
@@ -251,7 +233,7 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W15",
       "title": "Обсяг переробки сої в Україні у 2025/26 становитиме 2,9 млн тонн",
       "url": "https://www.apk-inform.com/uk/news/1553603",
       "source_domain": "apk-inform.com",
@@ -269,7 +251,7 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W8",
       "title": "Особливості олійного сезону: соя конкурує із соняшником у переробці — AgroPortal.ua",
       "url": "https://agroportal.ua/publishing/analitika/osoblivosti-oliynogo-sezonu-soya-konkuruye-iz-sonyashnikom-u-pererobci",
       "source_domain": "agroportal.ua",
@@ -325,7 +307,7 @@
     {
       "id": "W12",
       "title": "Соя 2025/26: Коли правила гри змінює... бак автомобіля ...",
-      "url": "https://www.instagram.com/p/DWf4gEiiKtR/",
+      "url": "https://www.instagram.com/p/DWbQEhFiP9E/",
       "source_domain": "instagram.com",
       "snippet": "",
       "date": null,
@@ -359,7 +341,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W7",
       "title": "Соєвий ринок України: шрот зростає, олія під тиском - UKR.NET",
       "url": "https://www.ukr.net/news/details/economics/116645569.html",
       "source_domain": "ukr.net",
@@ -377,9 +359,27 @@
       "source": "web"
     },
     {
-      "id": "W8",
-      "title": "Ф'ючерси на сою на Чиказькій біржі продовжили зростання",
-      "url": "https://ukragroconsult.com/news/fyuchersy-na-soyu-na-chykazykij-birzhi-prodovzhyly-zrostannya/",
+      "id": "W2",
+      "title": "УКРАЇНСЬКИЙ ЕКОНОМІЧНИЙ ЧАСОПИС",
+      "url": "https://eprints.cdu.edu.ua/7248/1/%D0%A3%D0%95%D0%A7%20%E2%84%969%E2%80%992025.pdf",
+      "source_domain": "eprints.cdu.edu.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "Ціни на соняшник в Україні зростають швидше, ніж на олію",
+      "url": "https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-zrostayuty-shvydshe-nizh-na-oliyu-marzha-pererobky-skorochuyetysya/",
       "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
@@ -395,10 +395,262 @@
       "source": "web"
     },
     {
-      "id": "W2",
-      "title": "Соняшникова олія на експорт подорожчала на третину — AgroPortal.ua",
-      "url": "https://agroportal.ua/news/ukraina/sonyashnikova-oliya-na-eksport-podorozhchala-na-tretinu",
+      "id": "W14",
+      "title": "у січні переробка сої в Україні збільшилась до 260 тис. т ...",
+      "url": "https://www.facebook.com/latifundistcom/photos/%EF%B8%8F-%D0%BC%D0%B0%D1%80%D0%B6%D0%B0-%D0%BF%D0%B5%D1%80%D0%B5%D1%80%D0%BE%D0%B1%D0%BA%D0%B8-%D1%81%D0%BE%D1%97-%D0%BF%D0%B0%D0%B4%D0%B0%D1%94-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%B7%D0%BD%D0%B8%D0%B6%D0%B5%D0%BD%D0%BD%D1%8F-%D0%B2%D0%B0%D1%80%D1%82%D0%BE%D1%81%D1%82%D1%96-%D1%81%D0%BE%D1%94%D0%B2%D0%BE%D0%B3%D0%BE-%D1%88%D1%80%D0%BE%D1%82%D1%83-%D0%B7%D0%B0-%D0%B4%D0%B0%D0%BD%D0%B8%D0%BC%D0%B8-%D0%B0%D0%BF%D0%BA-/1016699737143729/",
+      "source_domain": "facebook.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W3",
+      "title": "[PDF] SELECTED PAPERS EUROPEAN DIMENSIONS OF SUSTAINABLE ...",
+      "url": "https://ec.europa.eu/programmes/erasmus-plus/project-result-content/b35d7d2a-1db9-493b-8885-e774090f0b2b/_______________II____________________-__________________________________________________________.pdf",
+      "source_domain": "ec.europa.eu",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "[PDF] Відбудова України: принципи та політика - CEPR",
+      "url": "https://cepr.org/system/files/2022-12/reconstruction%20book_Ukrainian_0.pdf",
+      "source_domain": "cepr.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
+      "title": "[PDF] МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ ВІННИЦЬКИЙ ...",
+      "url": "https://vsau.org/assets/images/content/nauka/specrady/Beskypska_dusertaciua.pdf",
+      "source_domain": "vsau.org",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W15",
+      "title": "[PDF] МАРКЕТИНГ ТА ЛОГІСТИКА В АГРОБІЗНЕСІ - ResearchGate",
+      "url": "https://www.researchgate.net/profile/Galina-Studinska/publication/377217800_Fenomen_ukrainskogo_volonterstva_v_socialnomu_marketingu/links/659aaa5f6f6e450f19d3f0ee/Fenomen-ukrainskogo-volonterstva-v-socialnomu-marketingu.pdf",
+      "source_domain": "researchgate.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
+      "title": "Ринок соняшникової олії на порозі великих глобальних змін",
+      "url": "https://ukragroconsult.com/news/rynok-sonyashnykovoyi-oliyi-na-porozi-velykyh-globalynyh-zmin-dumka/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W5",
+      "title": "Соняшникова олія в портах України зросла в ціні через дефіцит і високий попит | Аналітика | E-land",
+      "url": "https://e-land.ua/news/item/soniashnykova-oliia-v-portakh-ukrayiny-zrosla-v-tsini-cherez-defitsyt-i-vysokyi-popyt",
+      "source_domain": "e-land.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W9",
+      "title": "Україна втратила значну частину ринку соняшникової ...",
+      "url": "https://agronews.ua/news/ukrayina-vtratyla-znachnu-chastynu-rynku-sonyashnykovoyi-oliyi-v-kytayi/",
+      "source_domain": "agronews.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "Україна втратила значну частину ринку соняшникової олії в Китаї ...",
+      "url": "https://www.instagram.com/p/DVlUw-BjG8K/",
+      "source_domain": "instagram.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W8",
+      "title": "Україна забезпечила майже весь імпорт одного з продуктів до ЄС — це обурює місцевих виробників / NV",
+      "url": "https://biz.nv.ua/ukr/markets/ukrajina-zabezpechila-mayzhe-ves-import-odnogo-z-produktiv-do-yes-ce-oburyuye-miscevih-virobnikiv-50590116.html",
+      "source_domain": "biz.nv.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
+      "title": "Україна забезпечує обсяги соняшникової олії до ...",
+      "url": "https://www.zerno-ua.com/news/ukrayina-zabezpechuye-obsyagy-sonyashnykovoyi-oliyi-do-yevrosoyuzu/",
+      "source_domain": "zerno-ua.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Україна конкурує з росією на ринку соняшникової олії — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/mir/ukrajina-konkuruye-z-rosiyeyu-na-rinku-sonyashnikovoji-oliji",
       "source_domain": "agroportal.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W2",
+      "title": "Україна скоротить виробництво соняшникової олії на 10 ...",
+      "url": "https://ukragroconsult.com/news/ukrayina-skorotyty-vyrobnycztvo-sonyashnykovoyi-oliyi-na-10-u-2025-26-mr/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
+      "title": "Ціни на соняшник в Україні зростають швидше, ніж на ...",
+      "url": "https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-zrostayuty-shvydshe-nizh-na-oliyu-marzha-pererobky-skorochuyetysya/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W13",
+      "title": "Чому в Україні дорожчає соняшникова олія і коли чекати ...",
+      "url": "https://agronews.ua/news/chomu-v-ukrayini-dorozhchaye-sonyashnykova-oliya-i-koly-chekaty-znyzhennya-czin/",
+      "source_domain": "agronews.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -415,6 +667,6 @@
   ],
   "meta": {
     "inputFiles": 4,
-    "itemCount": 27
+    "itemCount": 42
   }
 }

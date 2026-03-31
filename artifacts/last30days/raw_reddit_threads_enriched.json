@@ -1,11 +1,92 @@
 [
   {
-    "id": "R1",
-    "title": "\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?",
-    "url": "https://www.reddit.com/r/reddit_ukr/comments/1kln9eh",
-    "subreddit": "eddit_ukr",
+    "id": "R5",
+    "title": "Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
+    "url": "https://www.reddit.com/r/ValueInvesting/comments/1km0ka0",
+    "subreddit": "ValueInvesting",
     "date": "2025-05-13",
-    "why_relevant": "Discusses cooking oil availability in Ukraine and explicitly compares rapeseed oil with sunflower oil, which is closely related to your topic.",
+    "why_relevant": "Discusses Ukrainian sunflower oil production and export logistics through river terminals.",
+    "relevance": 0.93
+  },
+  {
+    "id": "R3",
+    "title": "100% Refined Sunflower Oil \ud83c\udf3b in Europe, direct from the factory.",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y1aybz",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-10-11",
+    "why_relevant": "Contains sunflower oil supply info, Ukrainian origin, and FOB/logistics locations.",
+    "relevance": 0.96
+  },
+  {
+    "id": "R2",
+    "title": "Crude and Refined Sunflower Oil",
+    "url": "https://www.reddit.com/r/u_lt10plimited/comments/sp4soo",
+    "subreddit": "u_lt10plimited",
+    "date": "2022-02-10",
+    "why_relevant": "Discusses sunflower oil sourcing from Ukraine/Russia and bulk supply logistics.",
+    "relevance": 0.92
+  },
+  {
+    "id": "R1",
+    "title": "Sunfloweer Oil \ud83c\udf3b - wholesale price reduction",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/xckasu",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-09-12",
+    "why_relevant": "Mentions sunflower oil originating in Ukraine and includes logistics/shipping details, directly matching the topic.",
+    "relevance": 0.97
+  },
+  {
+    "id": "R4",
+    "title": "Sunflower oil \u26a1\ufe0f OFFER \u26a1\ufe0f",
+    "url": "https://www.reddit.com/r/u_Sunflower-Oil-Offers/comments/y8yszg",
+    "subreddit": "u_Sunflower-Oil-Offers",
+    "date": "2022-10-20",
+    "why_relevant": "Explicitly lists FOB locations including Lviv, Ukraine and shipping terms.",
+    "relevance": 0.96
+  },
+  {
+    "id": "R6",
+    "title": "Sunflower oil prices fall as Ukraine ships stock to India",
+    "url": "https://www.reddit.com/r/worldnews/comments/14997mm",
+    "subreddit": "worldnews",
+    "date": "2023-06-14",
+    "why_relevant": "Directly about Ukraine sunflower oil shipments and export logistics.",
+    "relevance": 0.95
+  },
+  {
+    "id": "R7",
+    "title": "Sunflower oil prices fall as Ukraine ships stock to India",
+    "url": "https://www.reddit.com/r/GeopoliticsIndia/comments/149kcsy",
+    "subreddit": "GeopoliticsIndia",
+    "date": "2023-06-14",
+    "why_relevant": "Same core story, discussed in a geopolitics context with Ukraine export flows.",
+    "relevance": 0.95
+  },
+  {
+    "id": "R9",
+    "title": "Sunflower Oil \u2018Vanishes\u2019 as Ukraine War Grinds On",
+    "url": "https://www.reddit.com/r/autotldr/comments/uf8tkw",
+    "subreddit": "autotldr",
+    "date": "2022-04-30",
+    "why_relevant": "Summarizes shortages and supply-chain/logistics issues for sunflower oil caused by the Ukraine war.",
+    "relevance": 0.9
+  },
+  {
+    "id": "R8",
+    "title": "Sunflower oil runs down the streets of Mykolaiv after Russian drone attack damages 2 tanks holding 7,500 tons of oil each",
+    "url": "https://www.reddit.com/r/ukraine/comments/y6cpf7",
+    "subreddit": "ukraine",
+    "date": "2022-10-17",
+    "why_relevant": "About Ukrainian sunflower oil storage/logistics infrastructure and disruption.",
+    "relevance": 0.9
+  },
+  {
+    "id": "R10",
+    "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
+    "url": "https://www.reddit.com/r/UkraineRussiaReport/comments/1pvw1c1/ua_pov_the_scenery_at_one_of_ukraines_largest/",
+    "subreddit": "UkraineRussiaReport",
+    "date": "2025-12-26",
+    "why_relevant": "Targets a Ukrainian sunflower oil storage facility, clearly tied to logistics and infrastructure.",
     "relevance": 0.89
   }
 ]

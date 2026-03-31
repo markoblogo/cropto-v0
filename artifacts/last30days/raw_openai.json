@@ -1,13 +1,13 @@
 {
-  "id": "resp_0dfaafa62fb01a930069cbcd522924819398ea80d0f58e18d5",
+  "id": "resp_09f2fa622d77492d0069cbe4e1034c819591b15a971b37ea1f",
   "object": "response",
-  "created_at": 1774964050,
+  "created_at": 1774970081,
   "status": "completed",
   "background": false,
   "billing": {
-    "payer": "openai"
+    "payer": "developer"
   },
-  "completed_at": 1774964052,
+  "completed_at": 1774970082,
   "error": null,
   "frequency_penalty": 0.0,
   "incomplete_details": null,
@@ -17,63 +17,67 @@
   "model": "gpt-5.4-mini-2026-03-17",
   "output": [
     {
-      "id": "ws_0dfaafa62fb01a930069cbcd526f448193bd6ffdb15aa32957",
+      "id": "ws_09f2fa622d77492d0069cbe4e1524881959e6752f17b705513",
       "type": "web_search_call",
       "status": "completed",
       "action": {
         "type": "search",
         "queries": [
-          "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com",
-          "reddit \u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430",
-          "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 reddit"
+          "\u0441\u043e\u0454\u0432\u0438\u0439 \u0448\u0440\u043e\u0442 \u043c\u0430\u0440\u0436\u0430 \u043f\u0435\u0440\u0435\u0440\u043e\u0431\u043a\u0438 site:reddit.com",
+          "reddit \u0441\u043e\u0454\u0432\u0438\u0439 \u0448\u0440\u043e\u0442 \u043c\u0430\u0440\u0436\u0430 \u043f\u0435\u0440\u0435\u0440\u043e\u0431\u043a\u0438",
+          "\u0441\u043e\u0454\u0432\u0438\u0439 \u0448\u0440\u043e\u0442 \u043c\u0430\u0440\u0436\u0430 \u043f\u0435\u0440\u0435\u0440\u043e\u0431\u043a\u0438 reddit"
         ],
-        "query": "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a\u043e\u0432\u0430 \u043e\u043b\u0456\u044f \u043b\u043e\u0433\u0456\u0441\u0442\u0438\u043a\u0430 \u0443\u043a\u0440\u0430\u0457\u043d\u0430 site:reddit.com",
+        "query": "\u0441\u043e\u0454\u0432\u0438\u0439 \u0448\u0440\u043e\u0442 \u043c\u0430\u0440\u0436\u0430 \u043f\u0435\u0440\u0435\u0440\u043e\u0431\u043a\u0438 site:reddit.com",
         "sources": [
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/learn/what-is-reddit"
+            "url": "https://developers.reddit.com/docs/introduction/intro-mod-tools"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/conversations/how-super-bowl-lx-played-out-on-reddit"
+            "url": "https://developers.reddit.com/docs/next/introduction/intro-games"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/conversations/skoda-case-study"
+            "url": "https://developers.reddit.com/docs/interactive_posts"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/trends/beauty-reddit-insights"
+            "url": "https://developers.reddit.com/docs/0.13/introduction/intro-games"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/trends/skincare-reddit-insights"
+            "url": "https://www.reddit.com/policies/cookies"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/industries/healthcare-pharma"
+            "url": "https://developers.reddit.com/docs/capabilities/server/reddit-api"
           },
           {
             "type": "url",
-            "url": "https://www.reddit.com/r/reddit_ukr/comments/1kln9eh"
+            "url": "https://developers.reddit.com/docs/0.10/reddit_developer_funds"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/conversations/holiday-travel-on-reddit"
+            "url": "https://old.reddit.com/user/moosesgunsmithing"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era"
+            "url": "https://old.reddit.com/user/Lux_Erebus"
           },
           {
             "type": "url",
-            "url": "https://www.business.reddit.com/reddit-events/reddit-the-performance-era-vancouver"
+            "url": "https://old.reddit.com/user/Catastrophe_xxvi"
+          },
+          {
+            "type": "url",
+            "url": "https://old.reddit.com/user/Discardedt"
           }
         ]
       }
     },
     {
-      "id": "msg_0dfaafa62fb01a930069cbcd537a688193b0521304c26e88ac",
+      "id": "msg_09f2fa622d77492d0069cbe4e242ec8195b0283fab0a83034c",
       "type": "message",
       "status": "completed",
       "content": [
@@ -81,7 +85,7 @@
           "type": "output_text",
           "annotations": [],
           "logprobs": [],
-          "text": "{\n  \"items\": [\n    {\n      \"title\": \"\u0427\u043e\u043c\u0443 \u0432 \u0432 \u0423\u043a\u0440\u0430\u0457\u043d\u0456 \u0443 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0456 \u043d\u0435\u043c\u0430\u0454 \u0440\u0456\u043f\u0430\u043a\u043e\u0432\u043e\u0445 \u043e\u043b\u0456\u0457?\",\n      \"url\": \"https://www.reddit.com/r/reddit_ukr/comments/1kln9eh\",\n      \"subreddit\": \"reddit_ukr\",\n      \"date\": \"2025-05-13\",\n      \"why_relevant\": \"Discusses cooking oil availability in Ukraine and explicitly compares rapeseed oil with sunflower oil, which is closely related to your topic.\",\n      \"relevance\": 0.89\n    }\n  ]\n}"
+          "text": "{\n  \"items\": []\n}"
         }
       ],
       "phase": "final_answer",
@@ -130,15 +134,15 @@
   "top_p": 0.98,
   "truncation": "disabled",
   "usage": {
-    "input_tokens": 8800,
+    "input_tokens": 8544,
     "input_tokens_details": {
       "cached_tokens": 4608
     },
-    "output_tokens": 205,
+    "output_tokens": 82,
     "output_tokens_details": {
-      "reasoning_tokens": 74
+      "reasoning_tokens": 71
     },
-    "total_tokens": 9005
+    "total_tokens": 8626
   },
   "user": null,
   "metadata": {}
