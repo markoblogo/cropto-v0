@@ -289,7 +289,19 @@ def build_period_comparison_metrics(all_items, scope, days):
     }
 
 def top_headlines(rows, limit=6):
-    ranked = sorted(rows, key=lambda r: float(r.get("impact") or 0), reverse=True)[:limit]
+    def is_price_only(title: str) -> bool:
+        low = (title or "").lower()
+        return bool(
+            re.search(
+                r"\b(ціна|ціни|price|prices|котирув|usd\/t|usd\/т|eur\/t|cpt|fob|fca)\b",
+                low,
+            )
+        )
+
+    ranked = sorted(
+        rows,
+        key=lambda r: (is_price_only(str(r.get("title") or "")), -float(r.get("impact") or 0)),
+    )[:limit]
     out = []
     for row in ranked:
         out.append(
@@ -545,7 +557,20 @@ def cleanup_summary_text(text: str, language: str) -> str:
     cleaned = cleaned.replace("Key facts:", "\n\nKey facts:\n").replace("Ключові факти:", "\n\nКлючові факти:\n")
     cleaned = re.sub(r"\s+[•\-]\s+", "\n- ", cleaned)
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
-    return cleaned or raw
+    if not cleaned:
+        return raw
+
+    # Drop exact duplicate paragraphs/blocks so sections don't repeat each other.
+    blocks = [b.strip() for b in re.split(r"\n{2,}", cleaned) if b.strip()]
+    deduped_blocks = []
+    seen = set()
+    for block in blocks:
+        key = re.sub(r"\s+", " ", block.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped_blocks.append(block)
+    return "\n\n".join(deduped_blocks).strip() or raw
 
 def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, brokerage_lines, days):
     system_prompt = (
@@ -594,8 +619,11 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
             "5) If Spike weekly note exists (especially for UK and week/month), integrate 1-2 concrete operational insights from it.",
             "6) Keep total summary length 900-1400 characters.",
             "7) Forbidden: mention counts of reports/signals/messages, phrases like 'neutral-impact reports', or repeated restatement of the same fact.",
-            "8) Prefer concrete market outcomes: prices, logistics constraints, margin pressure, spread behavior, export route changes.",
-            "9) If broker desk entries are present, use them as live market color for yesterday and mention bid/offer positioning only when it adds trading value.",
+            "8) Prioritize event-driven narrative from yesterday/week/month headlines: policy/logistics/production/export shocks first, not price recap first.",
+            "9) Max one sentence with absolute price levels unless there is a material move; treat prices as context, not main story.",
+            "10) In 'Key facts', at least 3 bullets must be event facts (what happened + why market-relevant), not index-level price restatements.",
+            "11) No duplicated sentences or duplicated paragraphs across sections.",
+            "12) If broker desk entries are present, use them as live market color for yesterday and mention bid/offer positioning only when it adds trading value.",
             "",
             "Return STRICT JSON with this schema:",
             '{ "summary": "text", "chart": { "type": "event_mix|price_overlay_week|price_overlay_month|bars|line|weekly_bars", "title": "short", "points": [ {"label":"...", "value": number } ], "series": [ {"name":"...", "points":[{"label":"...","value":number}]} ] } }',
