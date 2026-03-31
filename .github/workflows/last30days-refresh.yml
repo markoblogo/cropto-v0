@@ -48,8 +48,10 @@ jobs:
       - name: Refresh snapshots
         env:
           LAST30DAYS_OUTPUT_DIR: artifacts/last30days
-          LAST30DAYS_TOPICS: wheat prices black sea export||corn market outlook usda tenders||soybean meal crush margins||sunflower oil ukraine logistics
-          LAST30DAYS_TOPICS_UK: ціни на пшеницю чорноморський експорт||кукурудза ринок прогноз тендери||соєвий шрот маржа переробки||соняшникова олія логістика україна
+          LAST30DAYS_TOPICS: wheat black sea export corridor||corn market usda tenders logistics||soybean sunflower crush margins europe
+          LAST30DAYS_TOPICS_UK: пшениця чорне море експорт коридор||кукурудза тендери логістика дунай порти||соя соняшник переробка маржа олія
+          LAST30DAYS_TIMEOUT: 20
+          LAST30DAYS_QUERY_DEADLINE_SECS: 30
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
           CT0: ${{ secrets.CT0 }}
