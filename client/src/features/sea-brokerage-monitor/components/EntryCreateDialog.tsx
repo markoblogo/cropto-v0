@@ -129,6 +129,8 @@ const entryFormSchema = z
     currency: z.enum(["USD", "EUR", "UAH"]),
     price: z.coerce.number().nonnegative("Price must be 0 or greater"),
     paymentTerms: z.string().min(1, "Payment terms are required"),
+    sellerCommission: z.coerce.number().nonnegative("Seller commission must be 0 or greater").optional(),
+    buyerCommission: z.coerce.number().nonnegative("Buyer commission must be 0 or greater").optional(),
     transportType: z.enum([
       "handysize",
       "coaster",
@@ -284,6 +286,8 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     currency: "USD",
     price: entryType === "bid" ? 225 : entryType === "trade" ? 224 : 223,
     paymentTerms: entryType === "bid" ? "CAD" : "CAFD",
+    sellerCommission: undefined,
+    buyerCommission: undefined,
     transportType: "vessel",
     note: "",
   };
@@ -326,6 +330,8 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     currency: entry.currency,
     price: entry.price ?? entry.priceFrom ?? entry.priceTo ?? 0,
     paymentTerms: entry.paymentTerms || "CAD",
+    sellerCommission: entry.sellerCommission ?? undefined,
+    buyerCommission: entry.buyerCommission ?? undefined,
     transportType: entry.transportType,
     note: entry.note || "",
   };
@@ -875,6 +881,8 @@ export function EntryCreateDialog({
       volumeUnit: volumeUnitOptions[0].value,
       basis: values.basis as Basis,
       paymentTerms: values.paymentTerms,
+      sellerCommission: entryType === "trade" ? values.sellerCommission ?? null : null,
+      buyerCommission: entryType === "trade" ? values.buyerCommission ?? null : null,
       destinationPortCode: values.destinationPortCode,
       destinationPort: selectedPort?.displayLabel ?? values.destinationPortCode,
       destinationCountryCode: selectedPort?.countryCode ?? null,
@@ -993,6 +1001,8 @@ export function EntryCreateDialog({
         volumeUnit: volumeUnitOptions[0].value,
         basis: formValues.basis,
         paymentTerms: formValues.paymentTerms,
+        sellerCommission: entryType === "trade" ? formValues.sellerCommission ?? null : null,
+        buyerCommission: entryType === "trade" ? formValues.buyerCommission ?? null : null,
         destinationPortCode: formValues.destinationPortCode,
         destinationPort: selectedPort?.displayLabel ?? formValues.destinationPortCode,
         destinationCountryCode: selectedPort?.countryCode ?? null,
@@ -2057,6 +2067,55 @@ export function EntryCreateDialog({
                 )}
               />
             </div>
+
+            {entryType === "trade" ? (
+              <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="sellerCommission"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Seller commission</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={field.value ?? ""}
+                          onChange={(event) => {
+                            const next = String(event.target.value || "").trim();
+                            field.onChange(next === "" ? undefined : Number(next));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="buyerCommission"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Buyer commission</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={field.value ?? ""}
+                          onChange={(event) => {
+                            const next = String(event.target.value || "").trim();
+                            field.onChange(next === "" ? undefined : Number(next));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : null}
 
             <FormField
               control={form.control}

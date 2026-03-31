@@ -514,6 +514,8 @@ export const seaBrokerageEntries = pgTable("sea_brokerage_entries", {
   volumeUnit: text("volume_unit").notNull().default("mt"),
   basis: text("basis").notNull(),
   paymentTerms: text("payment_terms"),
+  sellerCommission: decimal("seller_commission", { precision: 18, scale: 4 }),
+  buyerCommission: decimal("buyer_commission", { precision: 18, scale: 4 }),
   destinationPortCode: text("destination_port_code"),
   destinationPort: text("destination_port").notNull(),
   destinationCountryCode: text("destination_country_code"),

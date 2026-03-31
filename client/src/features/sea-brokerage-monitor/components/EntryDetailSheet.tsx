@@ -179,6 +179,26 @@ export function EntryDetailSheet({
                     : "Not set"
                 }
               />
+              {entry.type === "trade" ? (
+                <DetailRow
+                  label="Seller commission"
+                  value={
+                    entry.sellerCommission !== null && entry.sellerCommission !== undefined
+                      ? `${entry.sellerCommission} ${entry.currency}`
+                      : "Not set"
+                  }
+                />
+              ) : null}
+              {entry.type === "trade" ? (
+                <DetailRow
+                  label="Buyer commission"
+                  value={
+                    entry.buyerCommission !== null && entry.buyerCommission !== undefined
+                      ? `${entry.buyerCommission} ${entry.currency}`
+                      : "Not set"
+                  }
+                />
+              ) : null}
               <DetailRow
                 label="Port / Place"
                 value={`${formatEntryDestination(entry)} (${formatEntryDestinationCompact(entry)})`}

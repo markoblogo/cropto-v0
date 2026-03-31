@@ -117,6 +117,8 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   volumeUnit: z.string().min(1),
   basis: z.string().min(1),
   paymentTerms: z.string().trim().nullable().optional(),
+  sellerCommission: z.coerce.number().nonnegative().nullable().optional(),
+  buyerCommission: z.coerce.number().nonnegative().nullable().optional(),
   destinationPortCode: z.string().trim().nullable().optional(),
   destinationPort: z.string().min(1),
   destinationCountryCode: z.string().trim().nullable().optional(),
@@ -408,6 +410,8 @@ function mapSeaBrokerageEntryToClientShape(
     volumeUnit: entry.volumeUnit,
     basis: entry.basis,
     paymentTerms: entry.paymentTerms,
+    sellerCommission: decimalToNumber(entry.sellerCommission),
+    buyerCommission: decimalToNumber(entry.buyerCommission),
     destinationPortCode: entry.destinationPortCode,
     destinationPort: entry.destinationPort,
     destinationCountryCode: entry.destinationCountryCode,
@@ -9676,6 +9680,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parsed.data.priceTo === null || parsed.data.priceTo === undefined
             ? null
             : String(parsed.data.priceTo),
+        sellerCommission:
+          parsed.data.sellerCommission === null || parsed.data.sellerCommission === undefined
+            ? null
+            : String(parsed.data.sellerCommission),
+        buyerCommission:
+          parsed.data.buyerCommission === null || parsed.data.buyerCommission === undefined
+            ? null
+            : String(parsed.data.buyerCommission),
         telegramRelayStatus: "queued",
       });
 
@@ -9763,6 +9775,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volumeUnit: payload.volumeUnit,
         basis: payload.basis,
         paymentTerms: payload.paymentTerms ?? null,
+        sellerCommission:
+          payload.sellerCommission === null || payload.sellerCommission === undefined
+            ? null
+            : String(payload.sellerCommission),
+        buyerCommission:
+          payload.buyerCommission === null || payload.buyerCommission === undefined
+            ? null
+            : String(payload.buyerCommission),
         destinationPortCode: payload.destinationPortCode ?? null,
         destinationPort: payload.destinationPort,
         destinationCountryCode: payload.destinationCountryCode ?? null,
@@ -9948,6 +9968,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volumeUnit: source.volumeUnit,
         basis: source.basis,
         paymentTerms: source.paymentTerms,
+        sellerCommission: source.sellerCommission,
+        buyerCommission: source.buyerCommission,
         destinationPortCode: source.destinationPortCode,
         destinationPort: source.destinationPort,
         destinationCountryCode: source.destinationCountryCode,
