@@ -247,12 +247,6 @@ function formatStandardTelegramMessage(
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
     entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,
-    isTrade
-      ? formatOptionalCommissionLine("SELLER COMMISSION", entry.sellerCommission, entry.currency)
-      : null,
-    isTrade
-      ? formatOptionalCommissionLine("BUYER COMMISSION", entry.buyerCommission, entry.currency)
-      : null,
     formatOptionalOtherTerms(entry.note),
     "------------------------------",
   ];
@@ -316,18 +310,6 @@ function formatOptionalOtherTerms(value?: string | null) {
   const hasMeaningfulContent = /[\p{L}\p{N}]/u.test(raw);
   if (!hasMeaningfulContent) return null;
   return `OTHER TERMS: ${raw}`;
-}
-
-function formatOptionalCommissionLine(
-  label: "SELLER COMMISSION" | "BUYER COMMISSION",
-  value: unknown,
-  currency: string,
-) {
-  if (value === null || value === undefined) return null;
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric < 0) return null;
-  const compact = Number.isInteger(numeric) ? `${numeric}` : numeric.toFixed(2);
-  return `${label}: ${compact}${formatCurrencySymbol(currency)}`;
 }
 
 function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow, includeBroker = true) {
