@@ -9,7 +9,7 @@ set -euo pipefail
 #   LAST30DAYS_TOPICS        (default: EN grain/oilseeds themes, separated by "||")
 #   LAST30DAYS_TOPICS_UK     (default: UKR grain/oilseeds themes, separated by "||")
 #   LAST30DAYS_SEARCH        (default: reddit,x,bluesky,hn,youtube,web)
-#   LAST30DAYS_TIMEOUT       (default: 240)
+#   LAST30DAYS_TIMEOUT       (default: 60)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${LAST30DAYS_OUTPUT_DIR:-$ROOT_DIR/artifacts/last30days}"
@@ -18,7 +18,7 @@ TOPICS_RAW="${LAST30DAYS_TOPICS:-${LAST30DAYS_TOPIC:-grain market wheat corn soy
 TOPICS_UK_RAW="${LAST30DAYS_TOPICS_UK:-ціни на пшеницю чорноморський експорт||україна зерновий коридор дунай порти логістика||соняшникова олія ріпак соя європа ринок}"
 SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
 ORIGINAL_SEARCH_SOURCES="$SEARCH_SOURCES"
-TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-240}"
+TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-60}"
 BLUESKY_PUBLIC_FALLBACK=0
 
 if [[ ! -f "$SCRIPT_PATH" ]]; then
