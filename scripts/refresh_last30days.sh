@@ -29,6 +29,26 @@ fi
 
 mkdir -p "$OUT_DIR"
 
+hotfix_last30days_script() {
+  # Upstream last30days currently crashes when INCLUDE_SOURCES is present but null.
+  # Normalize to empty string to avoid NoneType.split failures in CI runs.
+  python3 - "$SCRIPT_PATH" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+if not path.exists():
+    raise SystemExit(0)
+
+before = path.read_text(encoding="utf-8")
+needle = "config.get('INCLUDE_SOURCES', '').split(',')"
+patched = "(config.get('INCLUDE_SOURCES') or '').split(',')"
+after = before.replace(needle, patched)
+if after != before:
+    path.write_text(after, encoding="utf-8")
+PY
+}
+
 split_topics() {
   local raw="$1"
   mapfile -t TOPICS < <(printf "%s\n" "$raw" | sed 's/||/\n/g; s/^ *//; s/ *$//')
@@ -250,6 +270,7 @@ with open(out_file, "w", encoding="utf-8") as f:
 PY
 }
 
+hotfix_last30days_script
 configure_optional_sources
 configure_bluesky
 
