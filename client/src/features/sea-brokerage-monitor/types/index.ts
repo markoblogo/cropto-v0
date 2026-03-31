@@ -103,6 +103,7 @@ export interface BrokerageEntry {
   volumeUnit: VolumeUnit;
   basis: Basis;
   paymentTerms?: string | null;
+  isNewCrop?: boolean;
   sellerCommission?: number | null;
   buyerCommission?: number | null;
   destinationPortCode?: string | null;

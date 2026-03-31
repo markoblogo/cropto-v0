@@ -117,6 +117,7 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   volumeUnit: z.string().min(1),
   basis: z.string().min(1),
   paymentTerms: z.string().trim().nullable().optional(),
+  isNewCrop: z.coerce.boolean().optional().default(false),
   sellerCommission: z.coerce.number().nonnegative().nullable().optional(),
   buyerCommission: z.coerce.number().nonnegative().nullable().optional(),
   destinationPortCode: z.string().trim().nullable().optional(),
@@ -410,6 +411,7 @@ function mapSeaBrokerageEntryToClientShape(
     volumeUnit: entry.volumeUnit,
     basis: entry.basis,
     paymentTerms: entry.paymentTerms,
+    isNewCrop: !!entry.isNewCrop,
     sellerCommission: decimalToNumber(entry.sellerCommission),
     buyerCommission: decimalToNumber(entry.buyerCommission),
     destinationPortCode: entry.destinationPortCode,
@@ -8485,7 +8487,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
       for (const entry of matched) {
-        const key = toUpper(entry.commodityLabel || entry.commodity);
+        const commodityLabel = toUpper(entry.commodityLabel || entry.commodity);
+        const cropKey = entry.isNewCrop ? "NEW" : "STD";
+        const key = `${commodityLabel}|${cropKey}`;
         const bucket = byCommodity.get(key) || [];
         bucket.push(entry);
         byCommodity.set(key, bucket);
@@ -8499,11 +8503,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       reportLines.push(`SPIKE BROKERS DAILY UPDATE ${reportDate}`);
       reportLines.push("-----------------------------");
 
-      for (const [commodityLabel, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
+      for (const [commodityKey, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
         a[0].localeCompare(b[0]),
       )) {
+        const [commodityLabel, cropKey] = commodityKey.split("|");
+        const commodityTitle = cropKey === "NEW" ? `${commodityLabel} (NEW CROP)` : commodityLabel;
         const commodityCode = commodityEntries[0]?.commodity?.toLowerCase?.() || "";
-        reportLines.push(`${commodityEmoji[commodityCode] || "•"}${commodityLabel}`);
+        reportLines.push(`${commodityEmoji[commodityCode] || "•"}${commodityTitle}`);
 
         const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
         for (const entry of commodityEntries) {
@@ -9680,6 +9686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parsed.data.priceTo === null || parsed.data.priceTo === undefined
             ? null
             : String(parsed.data.priceTo),
+        isNewCrop: !!parsed.data.isNewCrop,
         sellerCommission:
           parsed.data.sellerCommission === null || parsed.data.sellerCommission === undefined
             ? null
@@ -9775,6 +9782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volumeUnit: payload.volumeUnit,
         basis: payload.basis,
         paymentTerms: payload.paymentTerms ?? null,
+        isNewCrop: !!payload.isNewCrop,
         sellerCommission:
           payload.sellerCommission === null || payload.sellerCommission === undefined
             ? null
@@ -9968,6 +9976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volumeUnit: source.volumeUnit,
         basis: source.basis,
         paymentTerms: source.paymentTerms,
+        isNewCrop: !!source.isNewCrop,
         sellerCommission: source.sellerCommission,
         buyerCommission: source.buyerCommission,
         destinationPortCode: source.destinationPortCode,

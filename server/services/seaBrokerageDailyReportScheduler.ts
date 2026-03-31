@@ -122,7 +122,9 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
 
   const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
   for (const entry of target) {
-    const key = normalizeCommodityLabel(entry);
+    const commodityLabel = normalizeCommodityLabel(entry);
+    const cropKey = entry.isNewCrop ? "NEW" : "STD";
+    const key = `${commodityLabel}|${cropKey}`;
     const bucket = byCommodity.get(key) || [];
     bucket.push(entry);
     byCommodity.set(key, bucket);
@@ -132,10 +134,12 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
   lines.push(`SPIKE BROKERS daily update ${reportDateLabel}`);
   lines.push("-----------------------------");
 
-  for (const [commodity, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
+  for (const [commodityKey, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
     a[0].localeCompare(b[0]),
   )) {
-    lines.push(`${commodityEmoji(commodityEntries[0])}${commodity}`);
+    const [commodity, cropKey] = commodityKey.split("|");
+    const commodityTitle = cropKey === "NEW" ? `${commodity} (NEW CROP)` : commodity;
+    lines.push(`${commodityEmoji(commodityEntries[0])}${commodityTitle}`);
 
     const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
     for (const entry of commodityEntries) {
@@ -225,4 +229,3 @@ export function startSeaBrokerageDailyReportScheduler() {
     )}:${String(DEFAULT_MINUTE).padStart(2, "0")})`,
   );
 }
-

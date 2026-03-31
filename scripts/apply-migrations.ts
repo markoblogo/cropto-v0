@@ -96,6 +96,7 @@ async function main() {
       '020_sea_brokerage_broker_auth.sql',
       '021_sea_brokerage_trade_broker_telegram_ids.sql',
       '022_sea_brokerage_trade_commissions.sql',
+      '023_sea_brokerage_new_crop_flag.sql',
     ];
 
     let successCount = 0;

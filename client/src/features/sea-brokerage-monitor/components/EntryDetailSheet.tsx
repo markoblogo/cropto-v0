@@ -132,6 +132,9 @@ export function EntryDetailSheet({
                 label="Commodity"
                 value={`${entry.commodityLabel} (${formatEntryCommodityCompact(entry)})`}
               />
+              {(entry.type === "bid" || entry.type === "offer") ? (
+                <DetailRow label="Crop cycle" value={entry.isNewCrop ? "NEW CROP" : "Current crop"} />
+              ) : null}
               <DetailRow label="Seller" value={entry.sellerName ?? "Not set"} />
               <DetailRow label="Buyer" value={entry.buyerName ?? "Not set"} />
               {entry.type === "trade" ? (

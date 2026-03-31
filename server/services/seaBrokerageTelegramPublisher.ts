@@ -239,6 +239,7 @@ function formatStandardTelegramMessage(
       ? formatTradePartyLine("SELLER", sellerLine, tradeSellerBroker)
       : counterpartyLine.toUpperCase(),
     isTrade ? formatTradePartyLine("BUYER", buyerLine, tradeBuyerBroker) : null,
+    !isTrade && entry.isNewCrop ? "NEW CROP" : null,
     `${formatTelegramCommodity(entry)}, ${originCountryCode}`,
     entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim().toUpperCase() : null,
     formatQuantityLine(entry),

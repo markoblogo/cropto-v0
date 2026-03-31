@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -113,6 +114,7 @@ const entryFormSchema = z
     ]),
     commodity: z.string().min(1, "Commodity is required"),
     harvestYear: z.string().trim().optional().default(""),
+    isNewCrop: z.boolean().optional().default(false),
     originCountry: z.string().min(1, "Origin is required"),
     quantityMt: z.coerce.number().min(0, "Quantity must be 0 or greater"),
     quantityFromMt: z.coerce.number().min(0, "Quantity from must be 0 or greater").optional(),
@@ -273,6 +275,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     periodPreset: "explicit_range",
     commodity: "corn",
     harvestYear: "",
+    isNewCrop: false,
     originCountry: "UA",
     quantityMt: entryType === "bid" ? 25000 : entryType === "trade" ? 22000 : 20000,
     quantityFromMt: undefined,
@@ -317,6 +320,7 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     periodPreset,
     commodity: entry.commodity,
     harvestYear: (String(entry.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "",
+    isNewCrop: !!entry.isNewCrop,
     originCountry: entry.originCountryCode || "UA",
     quantityMt: entry.quantityMt ?? entry.volumeFrom ?? 0,
     quantityFromMt: quantityPreset === "range" ? entry.volumeFrom : undefined,
@@ -881,6 +885,7 @@ export function EntryCreateDialog({
       volumeUnit: volumeUnitOptions[0].value,
       basis: values.basis as Basis,
       paymentTerms: values.paymentTerms,
+      isNewCrop: entryType === "bid" || entryType === "offer" ? !!values.isNewCrop : false,
       sellerCommission: entryType === "trade" ? values.sellerCommission ?? null : null,
       buyerCommission: entryType === "trade" ? values.buyerCommission ?? null : null,
       destinationPortCode: values.destinationPortCode,
@@ -1001,6 +1006,8 @@ export function EntryCreateDialog({
         volumeUnit: volumeUnitOptions[0].value,
         basis: formValues.basis,
         paymentTerms: formValues.paymentTerms,
+        isNewCrop:
+          entryType === "bid" || entryType === "offer" ? !!formValues.isNewCrop : false,
         sellerCommission: entryType === "trade" ? formValues.sellerCommission ?? null : null,
         buyerCommission: entryType === "trade" ? formValues.buyerCommission ?? null : null,
         destinationPortCode: formValues.destinationPortCode,
@@ -1673,6 +1680,20 @@ export function EntryCreateDialog({
                   </FormItem>
                 )}
               />
+              {entryType === "bid" || entryType === "offer" ? (
+                <FormField
+                  control={form.control}
+                  name="isNewCrop"
+                  render={({ field }) => (
+                    <FormItem className="flex items-end pb-1">
+                      <label className="flex cursor-pointer items-center gap-2 rounded-md border border-border/70 px-3 py-2 text-sm">
+                        <Checkbox checked={!!field.value} onCheckedChange={(checked) => field.onChange(!!checked)} />
+                        <span className="font-medium">NEW CROP</span>
+                      </label>
+                    </FormItem>
+                  )}
+                />
+              ) : null}
               <FormField
                 control={form.control}
                 name="quantityMt"
