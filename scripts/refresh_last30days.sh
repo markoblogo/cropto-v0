@@ -106,6 +106,13 @@ configure_bluesky() {
   SEARCH_SOURCES="$(strip_source_from_search "bluesky" "$SEARCH_SOURCES")"
 }
 
+configure_optional_sources() {
+  if [[ ",$SEARCH_SOURCES," == *",x,"* ]] && [[ -z "${XAI_API_KEY:-}" ]]; then
+    echo "[last30days] WARN: XAI_API_KEY is missing, disabling x source for this run." >&2
+    SEARCH_SOURCES="$(strip_source_from_search "x" "$SEARCH_SOURCES")"
+  fi
+}
+
 run_bluesky_public_query() {
   local days="$1"
   local topic="$2"
@@ -243,6 +250,7 @@ with open(out_file, "w", encoding="utf-8") as f:
 PY
 }
 
+configure_optional_sources
 configure_bluesky
 
 COMBINED_TOPICS_RAW="$TOPICS_RAW"
