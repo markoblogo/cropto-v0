@@ -22,6 +22,7 @@ ORIGINAL_SEARCH_SOURCES="$SEARCH_SOURCES"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-60}"
 BLUESKY_PUBLIC_FALLBACK=0
 BSKY_FALLBACK_QUERY="${LAST30DAYS_BSKY_FALLBACK_QUERY:-grain wheat corn soybeans sunflower rapeseed ukraine black sea export logistics}"
+BSKY_FALLBACK_QUERY_UK="${LAST30DAYS_BSKY_FALLBACK_QUERY_UK:-зерно пшениця кукурудза соя соняшник ріпак україна експорт логістика}"
 
 if [[ ! -f "$SCRIPT_PATH" ]]; then
   echo "ERROR: last30days script not found: $SCRIPT_PATH" >&2
@@ -363,22 +364,44 @@ run_window() {
   done
 
   if [[ ",$ORIGINAL_SEARCH_SOURCES," == *",bluesky,"* ]] && [[ "$bluesky_hits" -eq 0 ]]; then
-    local fallback_tmp="$OUT_DIR/.${label}.bluesky-fallback.json"
+    local fallback_en_tmp="$OUT_DIR/.${label}.bluesky-fallback-en.json"
+    local fallback_uk_tmp="$OUT_DIR/.${label}.bluesky-fallback-uk.json"
+    local fallback_en_count=0
+    local fallback_uk_count=0
+
     set +e
-    run_bluesky_public_query "$days" "$BSKY_FALLBACK_QUERY" "$fallback_tmp"
-    local fallback_rc=$?
+    run_bluesky_public_query "$days" "$BSKY_FALLBACK_QUERY" "$fallback_en_tmp"
+    local fallback_en_rc=$?
     set -e
-    if [[ $fallback_rc -eq 0 && -s "$fallback_tmp" ]]; then
-      local fallback_count
-      fallback_count="$(count_json_items "$fallback_tmp")"
-      if [[ "$fallback_count" -gt 0 ]]; then
-        echo "[last30days] Bluesky fallback query added ${fallback_count} posts for ${label}."
-        input_files+=("$fallback_tmp")
+    if [[ $fallback_en_rc -eq 0 && -s "$fallback_en_tmp" ]]; then
+      fallback_en_count="$(count_json_items "$fallback_en_tmp")"
+      if [[ "$fallback_en_count" -gt 0 ]]; then
+        input_files+=("$fallback_en_tmp")
       else
-        rm -f "$fallback_tmp"
+        rm -f "$fallback_en_tmp"
       fi
     else
-      rm -f "$fallback_tmp"
+      rm -f "$fallback_en_tmp"
+    fi
+
+    set +e
+    run_bluesky_public_query "$days" "$BSKY_FALLBACK_QUERY_UK" "$fallback_uk_tmp"
+    local fallback_uk_rc=$?
+    set -e
+    if [[ $fallback_uk_rc -eq 0 && -s "$fallback_uk_tmp" ]]; then
+      fallback_uk_count="$(count_json_items "$fallback_uk_tmp")"
+      if [[ "$fallback_uk_count" -gt 0 ]]; then
+        input_files+=("$fallback_uk_tmp")
+      else
+        rm -f "$fallback_uk_tmp"
+      fi
+    else
+      rm -f "$fallback_uk_tmp"
+    fi
+
+    local fallback_total=$((fallback_en_count + fallback_uk_count))
+    if [[ "$fallback_total" -gt 0 ]]; then
+      echo "[last30days] Bluesky fallback queries added ${fallback_total} posts for ${label}."
     fi
   fi
 

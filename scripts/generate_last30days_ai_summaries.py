@@ -539,16 +539,69 @@ def summary_too_price_centric(text: str, language: str) -> bool:
         return True
     if language == "uk":
         price_hits = len(re.findall(r"\b(ціна|ціни|usd|eur|грн|cpt|fob|fca|тонн|т)\b", plain))
-        event_hits = len(re.findall(r"\b(експорт|врожай|логістик|мито|квот|попит|пропозиці|заборон|санкц|порт|коридор|перероб|марж)\w*\b", plain))
+        event_hits = len(re.findall(r"\b(експорт|врожай|логістик|мито|квот|попит|пропозиці|заборон|санкц|порт|коридор|перероб|марж|бойов|обстр|тариф|мит)\w*\b", plain))
+        stable_opening = plain.startswith("загальна ситуація") and ("залишається стабільною" in plain or "без суттєвих змін" in plain)
     else:
         price_hits = len(re.findall(r"\b(price|prices|usd|eur|cpt|fob|fca|ton|tons|mt)\b", plain))
-        event_hits = len(re.findall(r"\b(export|yield|logistic|tariff|quota|demand|supply|sanction|port|corridor|processing|margin)\w*\b", plain))
-    return price_hits >= 6 and event_hits <= 3
+        event_hits = len(re.findall(r"\b(export|yield|logistic|tariff|quota|demand|supply|sanction|port|corridor|processing|margin|strike|attack|restriction|ban)\w*\b", plain))
+        stable_opening = plain.startswith("general situation") and ("remain stable" in plain or "without major changes" in plain)
+    return (price_hits >= 5 and event_hits <= 4) or (stable_opening and event_hits <= 5)
+
+
+def extract_summary_from_jsonish_text(raw: str) -> str:
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    m = re.search(r'"summary"\s*:\s*"(?P<body>.*?)"\s*,\s*"chart"\s*:', text, flags=re.IGNORECASE | re.DOTALL)
+    if not m:
+        m = re.search(r'"summary"\s*:\s*"(?P<body>.*?)"\s*(?:,|\})', text, flags=re.IGNORECASE | re.DOTALL)
+    if not m:
+        return ""
+    body = m.group("body")
+    body = body.replace('\\"', '"').replace("\\n", "\n").replace("\\t", " ").replace("\\r", "")
+    body = re.sub(r"\\u([0-9a-fA-F]{4})", lambda g: chr(int(g.group(1), 16)), body)
+    return body.strip()
+
+
+def enforce_section_layout(text: str, language: str) -> str:
+    raw = (text or "").strip()
+    if not raw:
+        return raw
+    if language == "uk":
+        raw = re.sub(r"(?i)\bзагальна ситуація\b\s*:?", "Загальна ситуація:", raw)
+        raw = re.sub(r"(?i)\bщо змінилося\b\s*:?", "Що змінилося:", raw)
+        raw = re.sub(r"(?i)\bпрактичні наслідки.*?\b\s*:?", "Практичні наслідки для трейдингу/брокериджу:", raw)
+        raw = re.sub(r"(?i)\bключові факти\b\s*:?", "Ключові факти:", raw)
+        order = [
+            "Загальна ситуація:",
+            "Що змінилося:",
+            "Практичні наслідки для трейдингу/брокериджу:",
+            "Ключові факти:",
+        ]
+    else:
+        raw = re.sub(r"(?i)\bgeneral situation\b\s*:?", "General situation:", raw)
+        raw = re.sub(r"(?i)\bwhat changed vs previous comparable period\b\s*:?", "What changed vs previous comparable period:", raw)
+        raw = re.sub(r"(?i)\bactionable implications for trading/brokerage\b\s*:?", "Actionable implications for trading/brokerage:", raw)
+        raw = re.sub(r"(?i)\bkey facts\b\s*:?", "Key facts:", raw)
+        order = [
+            "General situation:",
+            "What changed vs previous comparable period:",
+            "Actionable implications for trading/brokerage:",
+            "Key facts:",
+        ]
+
+    for label in order:
+        raw = raw.replace(label, f"\n\n{label}")
+    raw = re.sub(r"\n{3,}", "\n\n", raw).strip()
+    return raw
 
 def cleanup_summary_text(text: str, language: str) -> str:
     raw = (text or "").strip()
     if not raw:
         return raw
+    jsonish_summary = extract_summary_from_jsonish_text(raw)
+    if jsonish_summary:
+        raw = jsonish_summary
     raw = re.sub(r"^\s*summary\s*[:\-]?\s*", "", raw, flags=re.IGNORECASE).strip()
     banned_patterns = [
         r"\bneutral-impact report[s]?\b",
@@ -583,7 +636,8 @@ def cleanup_summary_text(text: str, language: str) -> str:
             continue
         seen.add(key)
         deduped_blocks.append(block)
-    return "\n\n".join(deduped_blocks).strip() or raw
+    normalized = "\n\n".join(deduped_blocks).strip() or raw
+    return enforce_section_layout(normalized, language)
 
 def normalize_openai_payload(parsed: dict, language: str) -> dict:
     if not isinstance(parsed, dict):
@@ -605,6 +659,13 @@ def normalize_openai_payload(parsed: dict, language: str) -> dict:
                 "summary": cleanup_summary_text(str(obj.get("summary") or ""), language),
                 "chart": obj.get("chart") if isinstance(obj.get("chart"), dict) else chart,
             }
+
+    fallback_summary = extract_summary_from_jsonish_text(summary)
+    if fallback_summary:
+        return {
+            "summary": cleanup_summary_text(fallback_summary, language),
+            "chart": chart,
+        }
 
     return {
         "summary": cleanup_summary_text(summary, language),
