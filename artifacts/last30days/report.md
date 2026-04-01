@@ -1,6 +1,6 @@
 # зернові олійні україна експорт логістика дунай порти - Last 30 Days Research Report
 
-**Generated:** 2026-04-01T13:00:58.162599+00:00
+**Generated:** 2026-04-01T13:12:45.743789+00:00
 **Date Range:** 2026-03-02 to 2026-04-01
 **Mode:** all
 
@@ -23,7 +23,7 @@
 
 ## Web Results
 
-### W6: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
+### W5: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu
@@ -93,7 +93,7 @@
 
 > 
 
-### W9: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
+### W8: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
 
 - **Source:** elevatorist.com
 - **URL:** https://elevatorist.com/blog/read/840-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-2
@@ -133,7 +133,7 @@
 
 > 
 
-### W5: Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів
+### W6: Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів
 
 - **Source:** ukrinform.ua
 - **URL:** https://www.ukrinform.ua/rubric-economy/4101487-ukrainski-porti-cogoric-vze-obrobili-ponad-15-miljoniv-tonn-vantaziv.html
@@ -153,7 +153,7 @@
 
 > 
 
-### W8: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
+### W9: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
 
 - **Source:** interfax.com.ua
 - **URL:** https://interfax.com.ua/news/blog/1147202.html
