@@ -714,7 +714,14 @@ function buildFallbackAiBlock(params: {
   const facts =
     top.length > 0
       ? top
-          .map((row) => `- ${row.publishedAt.slice(0, 10)}: ${row.headline}`)
+          .map((row) => {
+            const title =
+              row.headline ||
+              (row as any).title ||
+              (typeof (row as any).raw?.title === "string" ? (row as any).raw.title : "") ||
+              "headline unavailable";
+            return `- ${row.publishedAt.slice(0, 10)}: ${title}`;
+          })
           .join("\n")
       : language === "uk"
       ? "- У поточному вікні не знайдено релевантних подій."
