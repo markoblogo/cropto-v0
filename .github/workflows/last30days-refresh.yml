@@ -50,7 +50,12 @@ jobs:
           LAST30DAYS_OUTPUT_DIR: artifacts/last30days
           LAST30DAYS_TOPICS: wheat black sea export corridor logistics
           LAST30DAYS_TOPICS_UK: зернові олійні україна експорт логістика дунай порти
-          LAST30DAYS_SEARCH: web
+          LAST30DAYS_ENABLE_WEB: 1
+          LAST30DAYS_ENABLE_X: 1
+          LAST30DAYS_ENABLE_BSKY: 0
+          LAST30DAYS_ENABLE_REDDIT: 0
+          LAST30DAYS_ENABLE_HN: 0
+          LAST30DAYS_ENABLE_YT: 0
           LAST30DAYS_TIMEOUT: 60
           LAST30DAYS_QUERY_DEADLINE_SECS: 70
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

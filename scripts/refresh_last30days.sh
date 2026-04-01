@@ -8,7 +8,13 @@ set -euo pipefail
 #   LAST30DAYS_SCRIPT_PATH   (default: ~/.agents/skills/last30days/scripts/last30days.py)
 #   LAST30DAYS_TOPICS        (default: EN grain/oilseeds themes, separated by "||")
 #   LAST30DAYS_TOPICS_UK     (default: UKR grain/oilseeds themes, separated by "||")
-#   LAST30DAYS_SEARCH        (default: reddit,x,bluesky,hn,youtube,web)
+#   LAST30DAYS_SEARCH        (optional explicit source CSV override)
+#   LAST30DAYS_ENABLE_WEB    (default: 1)
+#   LAST30DAYS_ENABLE_X      (default: 1)
+#   LAST30DAYS_ENABLE_BSKY   (default: 0)
+#   LAST30DAYS_ENABLE_REDDIT (default: 0)
+#   LAST30DAYS_ENABLE_HN     (default: 0)
+#   LAST30DAYS_ENABLE_YT     (default: 0)
 #   LAST30DAYS_TIMEOUT       (default: 60)
 #   LAST30DAYS_BSKY_FALLBACK_QUERY (default broad market query)
 
@@ -17,7 +23,17 @@ OUT_DIR="${LAST30DAYS_OUTPUT_DIR:-$ROOT_DIR/artifacts/last30days}"
 SCRIPT_PATH="${LAST30DAYS_SCRIPT_PATH:-$HOME/.agents/skills/last30days/scripts/last30days.py}"
 TOPICS_RAW="${LAST30DAYS_TOPICS:-${LAST30DAYS_TOPIC:-grain market wheat corn soybeans sunflower rapeseed black sea export||ukraine grain export corridor black sea logistics||europe oilseeds crush biodiesel rapeseed sunflower imports}}"
 TOPICS_UK_RAW="${LAST30DAYS_TOPICS_UK:-ціни на пшеницю чорноморський експорт||україна зерновий коридор дунай порти логістика||соняшникова олія ріпак соя європа ринок}"
-SEARCH_SOURCES="${LAST30DAYS_SEARCH:-reddit,x,bluesky,hn,youtube,web}"
+if [[ -n "${LAST30DAYS_SEARCH:-}" ]]; then
+  SEARCH_SOURCES="$LAST30DAYS_SEARCH"
+else
+  SEARCH_SOURCES=""
+  [[ "${LAST30DAYS_ENABLE_WEB:-1}" == "1" ]] && SEARCH_SOURCES="${SEARCH_SOURCES:+$SEARCH_SOURCES,}web"
+  [[ "${LAST30DAYS_ENABLE_X:-1}" == "1" ]] && SEARCH_SOURCES="${SEARCH_SOURCES:+$SEARCH_SOURCES,}x"
+  [[ "${LAST30DAYS_ENABLE_BSKY:-0}" == "1" ]] && SEARCH_SOURCES="${SEARCH_SOURCES:+$SEARCH_SOURCES,}bluesky"
+  [[ "${LAST30DAYS_ENABLE_REDDIT:-0}" == "1" ]] && SEARCH_SOURCES="${SEARCH_SOURCES:+$SEARCH_SOURCES,}reddit"
+  [[ "${LAST30DAYS_ENABLE_HN:-0}" == "1" ]] && SEARCH_SOURCES="${SEARCH_SOURCES:+$SEARCH_SOURCES,}hn"
+  [[ "${LAST30DAYS_ENABLE_YT:-0}" == "1" ]] && SEARCH_SOURCES="${SEARCH_SOURCES:+$SEARCH_SOURCES,}youtube"
+fi
 ORIGINAL_SEARCH_SOURCES="$SEARCH_SOURCES"
 TIMEOUT_SECS="${LAST30DAYS_TIMEOUT:-60}"
 QUERY_DEADLINE_SECS="${LAST30DAYS_QUERY_DEADLINE_SECS:-95}"
