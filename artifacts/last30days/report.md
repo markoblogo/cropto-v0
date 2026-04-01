@@ -1,173 +1,149 @@
-# соєвий шрот маржа переробки - Last 30 Days Research Report
+# зернові олійні україна експорт логістика дунай порти - Last 30 Days Research Report
 
-**Generated:** 2026-03-31T15:14:47.625069+00:00
-**Date Range:** 2026-03-01 to 2026-03-31
+**Generated:** 2026-04-01T12:44:39.344926+00:00
+**Date Range:** 2026-03-02 to 2026-04-01
 **Mode:** all
 
 ## Models Used
 
 - **OpenAI:** gpt-5.4-mini
 
-## X Posts
-
-### X1: @GrainTradeUA
-
-- **URL:** https://x.com/GrainTradeUA/status/2038920954592530880
-- **Date:** 2026-03-31 (confidence: high)
-- **Score:** 54/100
-- **Relevance:** 
-
-> Продам шрот соєвий, Агро Еко Протеїн (№292024)
-
-Продам шрот соєвий 300 тон за ціною 21000 грн за тонну Агро Еко Протеїн в Дніпропетровській області, Дніпропетровськ район, Дніпропетровськ (Пропозиція №292024)  https://t.co/fPaN6f1VZE
-
-### X2: @GrainTradeUA
-
-- **URL:** https://x.com/GrainTradeUA/status/2037094124130578624
-- **Date:** 2026-03-26 (confidence: high)
-- **Score:** 50/100
-- **Relevance:** 
-
-> Продам шрот соєвий, пп Благодарагро (№291935)
-
-Продам шрот соєвий 100 тон за ціною 19700 грн за тонну пп Благодарагро в Кіровоградській області, Світловодський район, Світловодськ (Пропозиція №291935)  https://t.co/SdflUcNapS
-
 ## Web Results
 
-### W2: Latifundist.com - Соєвий шрот більше не дефіцит: ринок ...
-
-- **Source:** facebook.com
-- **URL:** https://www.facebook.com/photo.php?fbid=1349492390531127&set=a.465812945565747&type=3
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W5: [PDF] УКРАЇНСЬКИЙ ЕКОНОМІЧНИЙ ЧАСОПИС
-
-- **Source:** eprints.cdu.edu.ua
-- **URL:** https://eprints.cdu.edu.ua/7248/1/%D0%A3%D0%95%D0%A7%20%E2%84%969%E2%80%992025.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W3: [PDF] Фінансово-економічний потенціал країни і регіонів: механізми ...
-
-- **Source:** onu.edu.ua
-- **URL:** https://onu.edu.ua/pub/bank/userfiles/files/fmvps/kaf_svit_gos_mij_eko_vidnosin/mijnarodni_proekti/finansovo-ekonomichnyi-potentsial.pdf
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W13: Маржа переробки сої падає через зниження цін на соєвий шрот — аналітики — Latifundist.com
+### W5: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
 
 - **Source:** latifundist.com
-- **URL:** https://latifundist.com/novosti/66621-marzha-pererobki-soyi-padaye-cherez-znizhennya-tsin-na-soyevij-shrot--analitiki
+- **URL:** https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W12: Низькі ціни на соєвий шрот знижують маржу переробки в ...
+### W11: Агроекспорт України у 2025 році: логістика під тиском ризиків
 
 - **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/nyzyki-cziny-na-soyevyj-shrot-znyzhuyuty-marzhu-pererobky-v-pivdennij-ameryczi/
+- **URL:** https://ukragroconsult.com/news/agroeksport-ukrayiny-u-2025-roczi-logistyka-pid-tyskom-ryzykiv/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W15: Обсяг переробки сої в Україні у 2025/26 становитиме 2,9 млн тонн
+### W4: Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів
 
-- **Source:** apk-inform.com
-- **URL:** https://www.apk-inform.com/uk/news/1553603
+- **Source:** ndu.kr.ua
+- **URL:** https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W4: Ринок соєвого шроту 2025/26: профіцит, ціни, експорт України — Latifundist.com
-
-- **Source:** latifundist.com
-- **URL:** https://latifundist.com/blog/read/3194-rinok-soyevogo-shrotu-vhodit-u-fazu-profitsitu-chomu-tsini-pid-tiskom-i-shcho-tse-oznachaye-dlya-ukrayini
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W11: Соя 2025/26: Коли правила гри змінює... бак автомобіля ...
-
-- **Source:** instagram.com
-- **URL:** https://www.instagram.com/p/DWbQEhFiP9E/
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W14: Соєвий комплекс: шрот зростає, олія під тиском - Agronews
-
-- **Source:** agronews.com
-- **URL:** https://agronews.com/ua/ua/news/analytics/2026-03-26/81820
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W9: Соєвий ринок України: шрот зростає, олія під тиском - UKR.NET
+### W14: Дунай складніше повністю заблокувати, ніж морські порти
 
 - **Source:** ukr.net
-- **URL:** https://www.ukr.net/news/details/economics/116645569.html
+- **URL:** https://www.ukr.net/news/details/economics/116189041.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W7: Соєвий шрот готується до рекорду — ціни під тиском Світове ...
+### W3: Дунай став дуже цінним в умовах війни - Агрополіт
 
-- **Source:** instagram.com
-- **URL:** https://www.instagram.com/p/DWTdbYij7oS/
+- **Source:** agropolit.com
+- **URL:** https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W8: Соєво-ріпакові правки можуть збільшити переробку олійних, але несуттєво — AgroPortal.ua
+### W7: Дунайська логістика стійкіша до атак завдяки розосередженій ...
+
+- **Source:** ukr.net
+- **URL:** https://www.ukr.net/news/details/economics/116188056.html
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W2: Експорт зерна через порти зберігає домінування, але попит на ...
+
+- **Source:** usm.media
+- **URL:** https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W9: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
+
+- **Source:** elevatorist.com
+- **URL:** https://elevatorist.com/blog/read/840-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-2
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W12: Названо чинники, які стримують експорт зерна через порти Дунаю — AgroPortal.ua
 
 - **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/soyevo-ripakovi-pravki-mozhut-zbilshiti-pererobku-oliynih-ale-nesuttyevo
+- **URL:** https://agroportal.ua/news/ukraina/nazvano-chinniki-yaki-strimuyut-eksport-zerna-cherez-porti-dunayu
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W10: Торгівля олійними: немає потреби шукати попит, є завдання добре продати — AgroPortal.ua
+### W10: Перспективи портової та автологістики: Дунай, Велика Одеса, кордони з ЄС — Центр транспортних стратегій
 
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/publishing/lichnyi-vzglyad/torgivlya-oliynimi-nemaye-potrebi-shukati-popit-ye-zavdannya-dobre-prodati
+- **Source:** cfts.org.ua
+- **URL:** https://cfts.org.ua/blogs/perspektivi_portovo_ta_avtologistiki_dunay_velika_odesa_kordoni_z_es_693
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W6: Ціни на соняшник в Україні зростають швидше, ніж на олію
+### W13: УЗА: експорт зерна в 2025/2026 МР потенційно міг би скласти 49 ...
 
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/cziny-na-sonyashnyk-v-ukrayini-zrostayuty-shvydshe-nizh-na-oliyu-marzha-pererobky-skorochuyetysya/
+- **Source:** uga.ua
+- **URL:** https://uga.ua/news/uza-eksport-zerna-v-2025-2026-mr-potentsijno-mig-by-sklasty-49-mln-t-pry-vrozhayi-v-81-4-mln-t/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W6: Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів
+
+- **Source:** ukrinform.ua
+- **URL:** https://www.ukrinform.ua/rubric-economy/4101487-ukrainski-porti-cogoric-vze-obrobili-ponad-15-miljoniv-tonn-vantaziv.html
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W15: Управління державною власністю і дунайські порти — Інституційна реформа і роль наглядових рад / NV
+
+- **Source:** biz.nv.ua
+- **URL:** https://biz.nv.ua/ukr/experts/upravlinnya-derzhavnoyu-vlasnistyu-i-dunayski-porti-instituciyna-reforma-i-rol-naglyadovih-rad-50591152.html
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W8: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
+
+- **Source:** interfax.com.ua
+- **URL:** https://interfax.com.ua/news/blog/1147202.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
