@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-01T18:56:04.725122+00:00",
+  "generatedAt": "2026-04-01T21:38:15.817766+00:00",
   "items": [
     {
-      "id": "X3",
+      "id": "X5",
       "text": "The international market has the U.S. corn price rising $1.97/MT while Argentina's rose by $0.79/MT. U.S. soybeans increased by $0.46/MT, with Brazil's rising by $3.03/MT and U.S. SRW wheat went up by $3.40/MT and the Black Sea's price remained unchanged https://t.co/DdswbMSQIi",
       "url": "https://x.com/HedgePlusWI/status/2039351493573136735",
       "author_handle": "HedgePlusWI",
@@ -130,7 +130,7 @@
       "relevance": 0.92
     },
     {
-      "id": "W8",
+      "id": "W2",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -166,7 +166,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W15",
       "title": "Black Sea Wheat Market — March 2026 Analysis - Medisca",
       "url": "https://medisca.com.tr/black-sea-wheat-market-march-2026-repriced-higher-demand-holding/",
       "source_domain": "medisca.com.tr",
@@ -184,8 +184,8 @@
       "source": "web"
     },
     {
-      "id": "W11",
-      "title": "Black Sea may hold back world wheat supplies into 2026 - Reuters",
+      "id": "W7",
+      "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
       "snippet": "",
@@ -202,7 +202,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -220,25 +220,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Export Logistics Reset 2026: Rail Tariffs, Capacity ...",
-      "url": "https://ukragroconsult.com/en/news/export-logistics-reset-2026-rail-tariffs-capacity-pressure-and-new-trade-reality/",
-      "source_domain": "ukragroconsult.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W9",
+      "id": "W11",
       "title": "FinancialContent - The Great Wheat Divide: U.S. Exports Stumble as Geopolitical Risk Turns Grain into the New Gold",
       "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-3-23-the-great-wheat-divide-us-exports-stumble-as-geopolitical-risk-turns-grain-into-the-new-gold",
       "source_domain": "markets.financialcontent.com",
@@ -256,7 +238,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
+      "id": "W12",
       "title": "Global Ag News For Jan 20.2026 - ADM Investor Services",
       "url": "https://www.admis.com/global-ag-news-for-jan-20-2026-2/",
       "source_domain": "admis.com",
@@ -274,10 +256,10 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "Russian Strikes Create ‘Extreme Uncertainty’ for Ukraine’s Grain Exporters, Doubling Logistics Costs",
-      "url": "https://www.kyivpost.com/post/72043",
-      "source_domain": "kyivpost.com",
+      "id": "W9",
+      "title": "Over 106 mln tons of grain passed through the Ukrainian Black Sea grain corridor",
+      "url": "https://ukragroconsult.com/en/news/over-106-mln-tons-of-grain-passed-through-the-ukrainian-black-sea-grain-corridor/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -292,10 +274,28 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "Solidarity Lanes: Latest figures – February 2026 - Mobility and Transport",
-      "url": "https://transport.ec.europa.eu/news-events/news/solidarity-lanes-latest-figures-february-2026-2026-03-16_en",
-      "source_domain": "transport.ec.europa.eu",
+      "id": "W10",
+      "title": "The Black Sea Grain Initiative - Edam",
+      "url": "https://edam.org.tr/en/blog/the-black-sea-grain-initiative",
+      "source_domain": "edam.org.tr",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W14",
+      "title": "Turkey Grain Market-2026: Trade Flows, Price Dynamics & Black Sea Competition",
+      "url": "https://ukragroconsult.com/en/news/turkey-grain-market-2026-trade-flows-price-dynamics-black-sea-competition/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -311,7 +311,7 @@
     },
     {
       "id": "W6",
-      "title": "U.S. Wheat Export Costs Fall Across Key Routes - RFD",
+      "title": "U.S. Wheat Export Costs Fall Across Key Routes - RFD-TV",
       "url": "https://www.rfdtv.com/u-s-wheat-export-costs-fall-across-key-routes",
       "source_domain": "rfdtv.com",
       "snippet": "",
@@ -328,26 +328,8 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Ukraine broke Russia's blockade—10 million tons of grain still stuck",
-      "url": "https://euromaidanpress.com/2026/02/09/ukraine-grain-stuck-russian-port-strikes/",
-      "source_domain": "euromaidanpress.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Weekly Analysis 16.03.2026 - 20.03.2026",
+      "id": "W4",
+      "title": "Weekly Analysis 16.03.2026 - 20.03.2026 - Grains Prices",
       "url": "https://grainsprices.com/article/19550",
       "source_domain": "grainsprices.com",
       "snippet": "",
@@ -364,7 +346,7 @@
       "source": "web"
     },
     {
-      "id": "W12",
+      "id": "W13",
       "title": "Will Ukraine be able to export all of its grain in 2026?",
       "url": "https://sfs.org.au/article/will-ukraine-be-able-to-export-all-of-its-grain-in-2026",
       "source_domain": "sfs.org.au",
@@ -382,7 +364,25 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W8",
+      "title": "World Grain and Pulses Forum 2026: More supply, tougher competition, higher execution risk | Miller Magazine",
+      "url": "https://millermagazine.com/blog/world-grain-and-pulses-forum-2026-more-supply-tougher-competition-higher-execution-risk-6610",
+      "source_domain": "millermagazine.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W6",
       "title": "«Хліб» замість «металу»: як Україна намагається втриматися на міжнародних товарних ринках",
       "url": "https://www.ukrinform.ua/rubric-economy/3863981-hlib-zamist-metalu-ak-ukraina-namagaetsa-vtrimatisa-na-miznarodnih-tovarnih-rinkah.html",
       "source_domain": "ukrinform.ua",
@@ -400,7 +400,25 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W2",
+      "title": "Агроекспорт України у 2025 році: логістика під тиском ...",
+      "url": "https://ukragroconsult.com/news/agroeksport-ukrayiny-u-2025-roczi-logistyka-pid-tyskom-ryzykiv/",
+      "source_domain": "ukragroconsult.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W7",
       "title": "Архив | - Бессарабия.UA",
       "url": "https://bessarabia.ua/ua/arhiv/",
       "source_domain": "bessarabia.ua",
@@ -418,7 +436,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W4",
       "title": "Підсумки агроекспорту-2023: куди і скільки агропродукції відправила за кордон Україна — Elevatorist.com",
       "url": "https://elevatorist.com/spetsproekt/210-agrarniy-eksport-2023-skilki-i-kudi-prodali-zerna-ta-oliyi",
       "source_domain": "elevatorist.com",
@@ -436,7 +454,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "УЗА збільшила прогноз врожаю в 2023 році майже на 8 ...",
       "url": "https://uga.ua/news/uza-zbilshila-prognoz-vrozhayu-v-2023-rotsi-majzhe-na-8-mln-t-do-76-8-mln-t-zernovih-ta-olijnih/",
       "source_domain": "uga.ua",
@@ -454,7 +472,7 @@
       "source": "web"
     },
     {
-      "id": "W4",
+      "id": "W5",
       "title": "Україна відновила судноплавство каналом Бистре",
       "url": "https://www.agravery.com/uk/posts/show/ukraina-vidnovila-sudnoplavstvo-kanalom-bistre",
       "source_domain": "agravery.com",
@@ -474,6 +492,6 @@
   ],
   "meta": {
     "inputFiles": 4,
-    "itemCount": 31
+    "itemCount": 32
   }
 }

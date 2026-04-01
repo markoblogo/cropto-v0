@@ -1,6 +1,6 @@
 # зернові олійні україна експорт логістика дунай порти - Last 30 Days Research Report
 
-**Generated:** 2026-04-01T18:56:28.019354+00:00
+**Generated:** 2026-04-01T21:38:41.061905+00:00
 **Date Range:** 2026-03-02 to 2026-04-01
 **Mode:** all
 
@@ -23,7 +23,7 @@
 
 ## Web Results
 
-### W7: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
+### W3: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu
@@ -33,17 +33,27 @@
 
 > 
 
-### W5: Агроекспорт України у 2025 році: логістика під тиском ...
+### W6: Є перспективи здешевлення логістики у Дунайських портах
 
-- **Source:** ukragroconsult.com
-- **URL:** https://ukragroconsult.com/news/agroeksport-ukrayiny-u-2025-roczi-logistyka-pid-tyskom-ryzykiv/
+- **Source:** ukr.net
+- **URL:** https://www.ukr.net/ru/news/details/economics/102493251.html
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W14: Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів
+### W5: ЄС обговорив підтримку логістики у 2026 році — AgroPortal.ua
+
+- **Source:** agroportal.ua
+- **URL:** https://agroportal.ua/news/ukraina/v-izmajili-obgovorili-pidtrimku-dunayskogo-logistichnogo-marshrutu
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W13: Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів
 
 - **Source:** ndu.kr.ua
 - **URL:** https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv
@@ -53,7 +63,7 @@
 
 > 
 
-### W2: Дунай став дуже цінним в умовах війни - Агрополіт
+### W9: Дунай став дуже цінним в умовах війни - Агрополіт
 
 - **Source:** agropolit.com
 - **URL:** https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert
@@ -63,17 +73,17 @@
 
 > 
 
-### W9: Дунайська логістика стійкіша до атак завдяки розосередженій ...
+### W4: Дунайські порти збільшили логістику втричі, головний вантаж
 
-- **Source:** ukr.net
-- **URL:** https://www.ukr.net/news/details/economics/116188056.html
+- **Source:** propozitsiya.com
+- **URL:** https://propozitsiya.com/news/dunayski-porty-zbilshyly-lohistyku-vtrychi-holovnyy-vantazh-zerno
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W3: Експорт зерна через порти зберігає домінування, але ...
+### W2: Експорт зерна через порти зберігає домінування, але попит на ...
 
 - **Source:** usm.media
 - **URL:** https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/
@@ -83,17 +93,17 @@
 
 > 
 
-### W11: Експорт зерна через порти зберігає домінування, але попит на ...
+### W10: Контінентал Фармерз Груп відкрила ринок у Румунії — AgroPortal.ua
 
-- **Source:** ukrport.org.ua
-- **URL:** https://ukrport.org.ua/%D0%B5%D0%BA%D1%81%D0%BF%D0%BE%D1%80%D1%82-%D0%B7%D0%B5%D1%80%D0%BD%D0%B0-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%BF%D0%BE%D1%80%D1%82%D0%B8-%D0%B7%D0%B1%D0%B5%D1%80%D1%96%D0%B3%D0%B0%D1%94-%D0%B4%D0%BE/
+- **Source:** agroportal.ua
+- **URL:** https://agroportal.ua/news/novosti-kompanii/kontinental-farmerz-grup-chastinu-zerna-eksportuvatime-cherez-dunay
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W10: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
+### W7: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
 
 - **Source:** elevatorist.com
 - **URL:** https://elevatorist.com/blog/read/840-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-2
@@ -103,27 +113,7 @@
 
 > 
 
-### W15: Названо чинники, які стримують експорт зерна через порти Дунаю — AgroPortal.ua
-
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/nazvano-chinniki-yaki-strimuyut-eksport-zerna-cherez-porti-dunayu
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W8: Огляд ринку України на 25.01.2026 р
-
-- **Source:** graintrade.com.ua
-- **URL:** https://graintrade.com.ua/novosti/oglyad-rinku-ukraini-na-25012026-r.html
-- **Date:** Unknown (confidence: low)
-- **Score:** 3/100
-- **Relevance:** 
-
-> 
-
-### W12: Перспективи портової та автологістики: Дунай, Велика Одеса, кордони з ЄС — Центр транспортних стратегій
+### W11: Перспективи портової та автологістики: Дунай, Велика Одеса, кордони з ЄС — Центр транспортних стратегій
 
 - **Source:** cfts.org.ua
 - **URL:** https://cfts.org.ua/blogs/perspektivi_portovo_ta_avtologistiki_dunay_velika_odesa_kordoni_z_es_693
@@ -133,27 +123,37 @@
 
 > 
 
-### W4: Україна домовилась із ЄС, Румунією та Молдовою про розвиток логістики до портів Дунаю — AgroPortal.ua
+### W12: Торік порти Дунаю обробили майже 9 млн т вантажів
 
-- **Source:** agroportal.ua
-- **URL:** https://agroportal.ua/news/ukraina/ukrajina-domovilis-z-yes-rumuniyeyu-ta-moldovoyu-pro-rozvitok-logistiki-do-portiv-dunayu
+- **Source:** ukragroconsult.com
+- **URL:** https://ukragroconsult.com/news/torik-porty-dunayu-obrobyly-majzhe-9-mln-t-vantazhiv/
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W13: Українські морські порти у вогні. Чи вдасться вивезти товари та що буде з цінами на продукти | hromadske
+### W15: У портах Дунаю шукають «кешове зерно». Як це вплине на експорт? — Latifundist.com
 
-- **Source:** hromadske.ua
-- **URL:** https://hromadske.ua/ekonomika/257922-ukrayinski-morski-porty-u-vohni-chy-vdastsia-vyvezty-tovary-ta-shcho-bude-z-tsinamy-na-produkty
+- **Source:** latifundist.com
+- **URL:** https://latifundist.com/spetsproekt/1044-u-dunajskih-portah-shukayut-keshove-zerno-shcho-bude-z-eksportom
 - **Date:** Unknown (confidence: low)
 - **Score:** 3/100
 - **Relevance:** 
 
 > 
 
-### W6: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
+### W14: УЗА: експорт зерна в 2025/2026 МР потенційно міг би скласти 49 ...
+
+- **Source:** uga.ua
+- **URL:** https://uga.ua/news/uza-eksport-zerna-v-2025-2026-mr-potentsijno-mig-by-sklasty-49-mln-t-pry-vrozhayi-v-81-4-mln-t/
+- **Date:** Unknown (confidence: low)
+- **Score:** 3/100
+- **Relevance:** 
+
+> 
+
+### W8: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
 
 - **Source:** interfax.com.ua
 - **URL:** https://interfax.com.ua/news/blog/1147202.html

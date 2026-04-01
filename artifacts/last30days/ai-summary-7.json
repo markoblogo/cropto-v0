@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-04-01T18:56:54.053699+00:00",
+  "generatedAt": "2026-04-01T21:39:07.152465+00:00",
   "filters": {
     "days": 7
   },
-  "sourceUpdatedAt": "2026-04-01T18:56:15.645376+00:00",
+  "sourceUpdatedAt": "2026-04-01T21:38:28.803006+00:00",
   "warnings": [
     "en_failed: HTTP Error 429: Too Many Requests",
     "uk_failed: HTTP Error 429: Too Many Requests",
@@ -21,7 +21,7 @@
       "points": []
     },
     "inputCounts": {
-      "last30days": 19,
+      "last30days": 21,
       "monitor": 13
     }
   },
@@ -36,7 +36,7 @@
       "points": []
     },
     "inputCounts": {
-      "last30days": 21,
+      "last30days": 19,
       "monitor": 5
     }
   },
