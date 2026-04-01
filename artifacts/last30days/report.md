@@ -1,6 +1,6 @@
 # зернові олійні україна експорт логістика дунай порти - Last 30 Days Research Report
 
-**Generated:** 2026-04-01T16:08:32.562588+00:00
+**Generated:** 2026-04-01T18:56:28.019354+00:00
 **Date Range:** 2026-03-02 to 2026-04-01
 **Mode:** all
 
@@ -23,7 +23,7 @@
 
 ## Web Results
 
-### W6: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
+### W7: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu
@@ -53,7 +53,7 @@
 
 > 
 
-### W2: Дунай став дуже цінним в умовах війни — АГРОПОЛІТ
+### W2: Дунай став дуже цінним в умовах війни - Агрополіт
 
 - **Source:** agropolit.com
 - **URL:** https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert
@@ -63,7 +63,7 @@
 
 > 
 
-### W8: Дунайська логістика стійкіша до атак завдяки розосередженій ...
+### W9: Дунайська логістика стійкіша до атак завдяки розосередженій ...
 
 - **Source:** ukr.net
 - **URL:** https://www.ukr.net/news/details/economics/116188056.html
@@ -73,7 +73,7 @@
 
 > 
 
-### W4: Експорт зерна через порти зберігає домінування, але ...
+### W3: Експорт зерна через порти зберігає домінування, але ...
 
 - **Source:** usm.media
 - **URL:** https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/
@@ -93,7 +93,7 @@
 
 > 
 
-### W9: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
+### W10: Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com
 
 - **Source:** elevatorist.com
 - **URL:** https://elevatorist.com/blog/read/840-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-2
@@ -113,7 +113,7 @@
 
 > 
 
-### W10: Огляд ринку України на 25.01.2026 р
+### W8: Огляд ринку України на 25.01.2026 р
 
 - **Source:** graintrade.com.ua
 - **URL:** https://graintrade.com.ua/novosti/oglyad-rinku-ukraini-na-25012026-r.html
@@ -133,7 +133,7 @@
 
 > 
 
-### W3: Україна домовилась із ЄС, Румунією та Молдовою про розвиток логістики до портів Дунаю — AgroPortal.ua
+### W4: Україна домовилась із ЄС, Румунією та Молдовою про розвиток логістики до портів Дунаю — AgroPortal.ua
 
 - **Source:** agroportal.ua
 - **URL:** https://agroportal.ua/news/ukraina/ukrajina-domovilis-z-yes-rumuniyeyu-ta-moldovoyu-pro-rozvitok-logistiki-do-portiv-dunayu
@@ -153,7 +153,7 @@
 
 > 
 
-### W7: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
+### W6: Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України
 
 - **Source:** interfax.com.ua
 - **URL:** https://interfax.com.ua/news/blog/1147202.html
