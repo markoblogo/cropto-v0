@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-01T12:44:39.396107+00:00",
+  "generatedAt": "2026-04-01T12:48:50.525349+00:00",
   "items": [
     {
       "id": "R10",
@@ -92,7 +92,7 @@
       "relevance": 0.92
     },
     {
-      "id": "W3",
+      "id": "W5",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -128,10 +128,10 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Black Sea & Danube Wheat Market 2026: Weather Risks ...",
-      "url": "https://ukragroconsult.com/en/news/black-sea-danube-wheat-market-2026-weather-risks-trade-shifts-and-regional-repricing/",
-      "source_domain": "ukragroconsult.com",
+      "id": "W12",
+      "title": "Balkans & Black Sea Grain 2026: Grain Trade and ...",
+      "url": "https://www.linkedin.com/posts/globenty_grainexport-agrologistics-grainmarket-activity-7424450394229194753-vpPI",
+      "source_domain": "linkedin.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -146,7 +146,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W6",
       "title": "Black Sea Cereal Company | LinkedIn",
       "url": "https://www.linkedin.com/company/black-sea-cereal-company",
       "source_domain": "linkedin.com",
@@ -164,28 +164,10 @@
       "source": "web"
     },
     {
-      "id": "W15",
-      "title": "Black Sea Region Sees Stability in 2026 Outlook",
-      "url": "https://www.linkedin.com/posts/fastmarkets-agriculture_black-sea-wheat-and-corn-price-outlook-activity-7406606601220165632--gzg",
-      "source_domain": "linkedin.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
       "id": "W8",
-      "title": "Black Sea Wheat Market — March 2026 Analysis - Medisca",
-      "url": "https://medisca.com.tr/black-sea-wheat-market-march-2026-repriced-higher-demand-holding/",
-      "source_domain": "medisca.com.tr",
+      "title": "Black Sea Export Strategies Within the Pressure of ...",
+      "url": "https://ukragroconsult.com/en/news/black-sea-export-strategies-within-the-pressure-of-the-global-food-market/",
+      "source_domain": "ukragroconsult.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -200,7 +182,25 @@
       "source": "web"
     },
     {
-      "id": "W7",
+      "id": "W3",
+      "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
+      "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
+      "source_domain": "spglobal.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W4",
       "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
@@ -237,9 +237,9 @@
     },
     {
       "id": "W14",
-      "title": "Grain Trade Developments and Implications of U.S.–Russia Negotiations for Black Sea Shipping — Breakwave Advisors",
-      "url": "https://www.breakwaveadvisors.com/insights/2026/1/28/grain-trade-developments-and-implications-of-usrussia-negotiations-for-black-sea-shipping",
-      "source_domain": "breakwaveadvisors.com",
+      "title": "EuroGrainExchange Bucharest 2026 | The European Spring ...",
+      "url": "https://eurograinevents.com/",
+      "source_domain": "eurograinevents.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -254,10 +254,10 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Kyiv hosts BLACK SEA GRAIN.KYIV-2026 on April 22–23 ...",
-      "url": "https://odessa-journal.com/public/kyiv-hosts-black-sea-grainkyiv-2026-on-april-2223-with-focus-on-future-agro-strategies",
-      "source_domain": "odessa-journal.com",
+      "id": "W10",
+      "title": "International Grain Forum 2026",
+      "url": "https://internationalgrainforum.vfairs.com/",
+      "source_domain": "internationalgrainforum.vfairs.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -273,9 +273,9 @@
     },
     {
       "id": "W11",
-      "title": "Solidarity Lanes: Latest figures – February 2026 - Mobility and Transport",
-      "url": "https://transport.ec.europa.eu/news-events/news/solidarity-lanes-latest-figures-february-2026-2026-03-16_en",
-      "source_domain": "transport.ec.europa.eu",
+      "title": "Strong ruble and Black Sea bottlenecks curb Russia’s wheat export pace | Miller Magazine",
+      "url": "https://millermagazine.com/blog/strong-ruble-and-black-sea-bottlenecks-curb-russias-wheat-export-pace-6632",
+      "source_domain": "millermagazine.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -290,10 +290,10 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
-      "url": "https://markets.financialcontent.com/wral/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
-      "source_domain": "markets.financialcontent.com",
+      "id": "W13",
+      "title": "User | chroniclejournal.com - The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
+      "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
+      "source_domain": "markets.chroniclejournal.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -308,7 +308,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W15",
       "title": "User | times-online.com - Fragile Stability: Navigating the 2026 Black Sea Grain Outlook Amidst Shifting Geopolitics",
       "url": "http://business.times-online.com/times-online/article/marketminute-2026-1-28-fragile-stability-navigating-the-2026-black-sea-grain-outlook-amidst-shifting-geopolitics",
       "source_domain": "business.times-online.com",
@@ -326,10 +326,10 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "Weekly Analysis 16.03.2026 - 20.03.2026",
-      "url": "https://grainsprices.com/article/19550",
-      "source_domain": "grainsprices.com",
+      "id": "W7",
+      "title": "Wheat Futures Attempt Breakout as Black Sea Risks ...",
+      "url": "https://www.theglobeandmail.com/investing/markets/commodities/KCY00/pressreleases/640218/wheat-futures-attempt-breakout-as-black-sea-risks-and-weather-concerns-reenter-the-market/",
+      "source_domain": "theglobeandmail.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -344,7 +344,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W6",
       "title": "«Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com",
       "url": "https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu",
       "source_domain": "latifundist.com",
@@ -453,7 +453,7 @@
     },
     {
       "id": "W2",
-      "title": "Експорт зерна через порти зберігає домінування, але попит на ...",
+      "title": "Експорт зерна через порти зберігає домінування, але ...",
       "url": "https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/",
       "source_domain": "usm.media",
       "snippet": "",
@@ -542,7 +542,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W5",
       "title": "Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів",
       "url": "https://www.ukrinform.ua/rubric-economy/4101487-ukrainski-porti-cogoric-vze-obrobili-ponad-15-miljoniv-tonn-vantaziv.html",
       "source_domain": "ukrinform.ua",

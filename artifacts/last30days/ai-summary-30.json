@@ -1,104 +1,27 @@
 {
-  "generatedAt": "2026-03-31T13:36:13.457797+00:00",
+  "generatedAt": "2026-04-01T12:49:32.006111+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-03-31T13:34:28.399763+00:00",
-  "warnings": [],
+  "sourceUpdatedAt": "2026-04-01T12:48:50.525349+00:00",
+  "warnings": [
+    "en_failed: HTTP Error 429: Too Many Requests",
+    "uk_failed: HTTP Error 429: Too Many Requests",
+    "en_fallback_used",
+    "uk_fallback_used"
+  ],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation: The global grains and oilseeds market remains stable with no significant bullish or bearish shifts, despite some operational challenges in Brazil and Black Sea regions. Bunge’s valuation and margin pressures highlight risks in the soybean crush business amid rising soybean input costs. Black Sea wheat prices have increased by 5-7% month-on-month, supported by freight parity enabling exports to ASEAN. Chinese crushers maintain strong crush margins and improving soybean meal sales, but Brazilian exporters are cautious due to freight and phytosanitary certification risks. What changed vs previous comparable period: This month saw a re-emergence of market commentary after a quiet prior month, with new concerns about supply chain risks in Brazil and price inflation in Black Sea wheat. The soybean crush margin pressure at Bunge is a fresh highlight, contrasting with previously stable crush margin narratives. Actionable implications for trading/brokerage: Traders should monitor Bunge’s margin compression risk as a signal for potential soybean complex volatility. The Black Sea wheat price inflation and export opportunities to ASEAN suggest selective buying interest in wheat. Caution is warranted on Brazilian soybean offers due to logistical and certification uncertainties, potentially limiting supply availability.\n\nKey facts:\n- Bunge trades at 10x EV/EBITDA with $12.2B debt post-Viterra merger, facing margin compression as soybean input prices rise faster than outputs (March 18, 2026).\n- Black Sea wheat FOB prices inflated by 5-7% month-on-month, enabling meaningful exports to ASEAN via freight parity (March 12, 2026).\n- Chinese crushers report good crush margins and improving soybean meal sales, but Brazilian exporters offer limited CFR China shipments due to freight and phytosanitary risks (March 11, 2026).\n- INR/USD exchange rate steady at 93/94, supporting export competitiveness for Black Sea wheat (March 12, 2026).\n- Chicago USDA wheat prices remain above $600, underpinning regional price support (March 12, 2026).",
+    "text": "General situation:\nOperational read for 30 days contains 1 relevant items. Market attention is concentrated on mixed (1); main regions: global (1). Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords +1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
     "chart": {
-      "type": "price_overlay_month",
-      "title": "Price Trends for Key Commodities (Feb-Mar 2026)",
-      "points": [
-        {
-          "label": "W1",
-          "value": 1
-        },
-        {
-          "label": "W2",
-          "value": 2
-        },
-        {
-          "label": "W3",
-          "value": 3
-        },
-        {
-          "label": "W4",
-          "value": 4
-        }
-      ],
-      "series": [
-        {
-          "name": "Brazil Soybeans FOB (USD/ton)",
-          "points": [
-            {
-              "label": "W1",
-              "value": 655
-            },
-            {
-              "label": "W2",
-              "value": 660
-            },
-            {
-              "label": "W3",
-              "value": 663
-            },
-            {
-              "label": "W4",
-              "value": 663
-            }
-          ]
-        },
-        {
-          "name": "Brazil Wheat FOB (USD/ton)",
-          "points": [
-            {
-              "label": "W1",
-              "value": 630
-            },
-            {
-              "label": "W2",
-              "value": 640
-            },
-            {
-              "label": "W3",
-              "value": 660
-            },
-            {
-              "label": "W4",
-              "value": 662
-            }
-          ]
-        },
-        {
-          "name": "Chicago USDA Wheat (USD/ton)",
-          "points": [
-            {
-              "label": "W1",
-              "value": 605
-            },
-            {
-              "label": "W2",
-              "value": 610
-            },
-            {
-              "label": "W3",
-              "value": 615
-            },
-            {
-              "label": "W4",
-              "value": 620
-            }
-          ]
-        }
-      ]
+      "type": "event_mix",
+      "title": "Desk Snapshot",
+      "points": []
     },
     "inputCounts": {
-      "last30days": 24,
+      "last30days": 20,
       "monitor": 13
     }
   },
@@ -106,10 +29,14 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку України за останні 30 днів характеризується стабільністю у сегменті соєвого шроту та соняшникової олії. Пропозиції соєвого шроту збільшилися, зокрема від Агро Еко Протеїн та Благодарагро, що свідчить про відсутність дефіциту. Соняшникова олія залишається важливим продуктом, але її ринок не зазнав суттєвих змін, хоча екологічні наслідки обстрілів портових терміналів у грудні 2025 року ще відчутні. Порівняно з попереднім періодом, коли даних не було, активність у сегменті значно зросла, але без зміни цінових трендів. Торгові пропозиції на ринку CIF свідчать про стабільний попит і пропозицію, з цінами на соняшникову олію близько 1410-1425 USD за тонну та соєві насіння GMO по 500 USD. \\n\\nЩо змінилося порівняно з попереднім періодом: за відсутності даних за попередній місяць, у березні відзначено активізацію пропозицій соєвого шроту, що свідчить про покращення доступності. Водночас, інформація про екологічні наслідки обстрілів нагадує про ризики для логістики та зберігання соняшникової олії. Цінові рівні залишаються стабільними, без значних коливань. \\n\\nПрактичні наслідки для трейдингу та брокерської діяльності: слід звернути увагу на збільшену пропозицію соєвого шроту, що може знизити маржу переробників, а також на стабільний попит на соняшникову олію з пропозиціями CIF, які можна використовувати для формування конкурентних пропозицій. Враховуючи екологічні ризики, варто моніторити ситуацію з портовою інфраструктурою для уникнення логістичних затримок. \\n\\n\n\nКлючові факти:\n\\n- 31 березня 2026 року Агро Еко Протеїн пропонує 300 тонн соєвого шроту за 21000 грн/т у Дніпропетровській області.\\n- 26 березня 2026 року пп Благодарагро пропонує 100 тонн соєвого шроту за 19700 грн/т у Кіровоградській області.\\n- 18 березня 2026 року екологи пов’язують наслідки обстрілу портового терміналу 20 грудня 2025 року з витоками соняшникової олії.\\n- Пропозиції CIF соняшникової олії на кінець березня 2026 року коливаються в межах 1410-1425 USD/т.\\n- Пропозиції соєвих насіння GMO CIF у квітні 2026 року зафіксовані на рівні 500 USD/т.\\n- Ціни на основні зернові та олійні культури (кукурудза, пшениця, ріпак, соя, соняшник) залишаються стабільними, без значних цінових стрибків у березні 2026 року.\",   \"chart\": {     \"type\": \"price_overlay_month\",     \"title\": \"Цінова динаміка основних культур в Україні, березень 2026\",     \"points\": [       {\"label\": \"W1\", \"value\": 1},       {\"label\": \"W2\", \"value\": 2},       {\"label\": \"W3\", \"value\": 3",
-    "chart": null,
+    "text": "Загальна ситуація:\nОперативний зріз за період 30 days містить 1 релевантних матеріалів. Фокус ринку зосереджений на: mixed (1); регіони впливу: ukraine (1). Середній індекс впливу: 0.0.\n\nЩо змінилося:\nПорівняно з попереднім співставним періодом: Δматеріалів +1, Δсереднього впливу +0.00.\n\nПрактичні наслідки для трейдингу/брокериджу:\nРекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\nКлючові факти:\n- UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
+    "chart": {
+      "type": "event_mix",
+      "title": "Desk Snapshot",
+      "points": []
+    },
     "inputCounts": {
-      "last30days": 24,
+      "last30days": 18,
       "monitor": 5
     }
   },

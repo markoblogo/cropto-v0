@@ -1,18 +1,27 @@
 {
-  "generatedAt": "2026-03-31T13:35:47.846736+00:00",
+  "generatedAt": "2026-04-01T12:49:21.043304+00:00",
   "filters": {
     "days": 7
   },
-  "sourceUpdatedAt": "2026-03-31T13:31:31.183011+00:00",
-  "warnings": [],
+  "sourceUpdatedAt": "2026-04-01T12:48:42.036533+00:00",
+  "warnings": [
+    "en_failed: HTTP Error 429: Too Many Requests",
+    "uk_failed: HTTP Error 429: Too Many Requests",
+    "en_fallback_used",
+    "uk_fallback_used"
+  ],
   "en": {
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"General situation: The global grains and oilseeds market remains stable with no significant new developments or price shocks in the past week. Sunflower oil-related content continues to circulate but without market-moving impact. Brazilian and US corn and soybean prices show steady trends, reflecting balanced supply-demand conditions. What changed vs previous comparable period: There were no new reports or events compared to the prior week, maintaining a status quo in market sentiment and price levels. Actionable implications for trading/brokerage: Traders should maintain current positions, focusing on monitoring logistical and geopolitical developments outside Ukraine that could disrupt supply chains. Given the absence of fresh market drivers, cautious stance on speculative moves is advised.\n\nKey facts:\n- No new market-impacting news or price changes recorded between 2026-03-12 and 2026-03-18.\n- Brazilian corn FOB Santos price stands at approximately 112.7 as of 2026-03-12.\n- Brazilian soybeans price remains around 662.9 as of 2026-03-14.\n- US corn and soybean spot prices are steady near 394.5 as of early February 2026.\n- No fresh export or production shocks reported in Argentina or Brazil during the week.\n- Sunflower oil-related web content from October 2025 and earlier remains informational without market impact.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Grains & Oilseeds Prices Weekly Overlay\",     \"points\": [       {\"label\": \"2026-03-12\", \"value\": 112.7},       {\"label\": \"2026-03-13\", \"value\": 112.7},       {\"label\": \"2026-03-14\", \"value\": 112.7},       {\"label\": \"2026-03-15\", \"value\": 112.7},       {\"label\": \"2026-03-16\", \"value\": 112.7},       {\"label\": \"2026-03-17\", \"value\": 112.7},       {\"label\": \"2026-03-18\", \"value\": 112.7}     ],     \"series\": [       {         \"name\": \"Brazil Corn FOB Santos\",         \"points\": [           {\"label\": \"2026-03-12\", \"value\": 112.7},           {\"label\": \"2026-03-13\", \"value\": 112.7},           {\"label\": \"2026-03-14\", \"value\": 112.7},           {\"label\": \"2026-03-15\", \"value\": 112.7},           {\"label\": \"2026-03-16\", \"value\": 112.7},           {\"label\": \"2026-03-17\", \"value\": 112.7},           {\"label\": \"2026-03-18\", \"value\": 112.7}         ]       },       {         \"name\": \"Brazil Soybeans\",         \"points\": [           {\"label\": \"2026-03-12\", \"value\": 662.9},           {\"label\": \"2026-03-13\", \"value\": 662.9},           {\"label\": \"2026-03-14\", \"value\": 662.9},           {\"label\": \"2026-03-15\", \"value\": 662.9},           {\"label\": \"2026-03-16\", \"value\": 662.9},           {\"label\": \"2026-03-17\", \"value\": 662.9},           {\"label\": \"2026-03-18\", \"value\": 662.9}         ]       },       {         \"name\": \"US Corn Spot\",         \"points\": [           {\"label\": \"2026-03-12\", \"value\": 394.5},           {\"label\": \"2026-03-13\", \"value\": 394.5},           {\"label\": \"2026-03-14\", \"value\": 394.5},           {\"label\": \"2026-03-15\", \"value\": 394.5},           {\"label\": \"2026-03-16\", \"value\": 394.5},           {\"label\": \"2026-03",
-    "chart": null,
+    "text": "General situation:\nOperational read for week contains 1 relevant items. Market attention is concentrated on mixed (1); main regions: global (1). Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords +1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
+    "chart": {
+      "type": "event_mix",
+      "title": "Desk Snapshot",
+      "points": []
+    },
     "inputCounts": {
-      "last30days": 6,
+      "last30days": 20,
       "monitor": 13
     }
   },
@@ -20,10 +29,14 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "{   \"summary\": \"Загальна ситуація на ринку України характеризується стабільним пропозицією соєвого шроту, що підтверджується продажами у Дніпропетровській та Кіровоградській областях за цінами близько 19700-21000 грн/т. Порівняно з попереднім тижнем, кількість пропозицій зросла, що свідчить про профіцит на ринку та зниження маржі переробки сої. Соняшникова олія залишається під тиском, хоча її експортні ціни зросли, а кукурудза та пшениця утримують стабільні позиції на експортних ринках. Пропозиції брокерів на сою та кукурудзу CIF свідчать про активність у сегменті експортних поставок на квітень-травень. Зростання пропозицій шроту та стабільність цін на олійні культури вказують на збереження балансу попиту та пропозиції, без суттєвих цінових шоків. Відсутність змін у цінових трендах порівняно з минулим тижнем підкреслює стабільність ринку.\",   \"chart\": {     \"type\": \"price_overlay_week\",     \"title\": \"Ціни на ключові зернові та олійні в Україні (25-31 березня 2026)\",     \"points\": [       {\"label\": \"25 березня\", \"value\": 0},       {\"label\": \"26 березня\", \"value\": 0},       {\"label\": \"27 березня\", \"value\": 0},       {\"label\": \"28 березня\", \"value\": 0},       {\"label\": \"29 березня\", \"value\": 0},       {\"label\": \"30 березня\", \"value\": 0},       {\"label\": \"31 березня\", \"value\": 0}     ],     \"series\": [       {         \"name\": \"Кукурудза CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"25 березня\", \"value\": 215},           {\"label\": \"26 березня\", \"value\": 215},           {\"label\": \"27 березня\", \"value\": 215},           {\"label\": \"28 березня\", \"value\": 215},           {\"label\": \"29 березня\", \"value\": 215},           {\"label\": \"30 березня\", \"value\": 215},           {\"label\": \"31 березня\", \"value\": 215}         ]       },       {         \"name\": \"Соя CPT Одеса (експорт)\",         \"points\": [           {\"label\": \"25 березня\", \"value\": 448},           {\"label\": \"26 березня\", \"value\": 448},           {\"label\": \"27 березня\", \"value\": 448},           {\"label\": \"28 березня\", \"value\": 448},           {\"label\": \"29 березня\", \"value\": 448},           {\"label\": \"30 березня\", \"value\": 448},           {\"label\": \"31 березня\", \"value\": 448}         ]       },       {         \"name\": \"Соняшникова олія CPT Паритет Одеса (переробка)\",         \"points\": [           {\"label\": \"25 березня\", \"value\": 709},           {\"label\": \"26 березня\", \"value\": 709},           {\"label\": \"27 березня\", \"value\": 709},           {\"label\": \"28 березня\", \"value\": 709},           {\"label\": \"29 березня\", \"value\": 709},           {\"label\": \"30 березня\", \"value\": 709},           {\"label\": \"31 березня\", \"value\": 709}         ]       },       {         \"name\": \"Пш",
-    "chart": null,
+    "text": "Загальна ситуація:\nОперативний зріз за період week містить 1 релевантних матеріалів. Фокус ринку зосереджений на: mixed (1); регіони впливу: ukraine (1). Середній індекс впливу: 0.0.\n\nЩо змінилося:\nПорівняно з попереднім співставним періодом: Δматеріалів +1, Δсереднього впливу +0.00.\n\nПрактичні наслідки для трейдингу/брокериджу:\nРекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\nКлючові факти:\n- UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
+    "chart": {
+      "type": "event_mix",
+      "title": "Desk Snapshot",
+      "points": []
+    },
     "inputCounts": {
-      "last30days": 21,
+      "last30days": 18,
       "monitor": 5
     }
   },

@@ -1,6 +1,6 @@
 # зернові олійні україна експорт логістика дунай порти - Last 30 Days Research Report
 
-**Generated:** 2026-04-01T12:44:39.344926+00:00
+**Generated:** 2026-04-01T12:48:50.476437+00:00
 **Date Range:** 2026-03-02 to 2026-04-01
 **Mode:** all
 
@@ -10,7 +10,7 @@
 
 ## Web Results
 
-### W5: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
+### W6: «Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com
 
 - **Source:** latifundist.com
 - **URL:** https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu
@@ -70,7 +70,7 @@
 
 > 
 
-### W2: Експорт зерна через порти зберігає домінування, але попит на ...
+### W2: Експорт зерна через порти зберігає домінування, але ...
 
 - **Source:** usm.media
 - **URL:** https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/
@@ -120,7 +120,7 @@
 
 > 
 
-### W6: Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів
+### W5: Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів
 
 - **Source:** ukrinform.ua
 - **URL:** https://www.ukrinform.ua/rubric-economy/4101487-ukrainski-porti-cogoric-vze-obrobili-ponad-15-miljoniv-tonn-vantaziv.html
