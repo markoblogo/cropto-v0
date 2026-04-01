@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-01T13:13:00.917456+00:00",
+  "generatedAt": "2026-04-01T16:08:46.742106+00:00",
   "items": [
     {
       "date": "2025-12-26",
@@ -21,6 +21,13 @@
       "en": "General situation:\nOperational read for yesterday contains 0 relevant items. Market attention is concentrated on mixed; main regions: global. Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords -1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- Event list in this window requires manual validation.",
       "uk": "Загальна ситуація:\nОперативний зріз за період yesterday містить 1 релевантних матеріалів. Фокус ринку зосереджений на: mixed (1); регіони впливу: global (1). Середній індекс впливу: 0.0.\n\nЩо змінилося:\nПорівняно з попереднім співставним періодом: Δматеріалів +1, Δсереднього впливу +0.00.\n\nПрактичні наслідки для трейдингу/брокериджу:\nРекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\nКлючові факти:\n- 📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu",
       "sourceUpdatedAt": "2026-04-01T13:12:22.137984+00:00"
+    },
+    {
+      "date": "2026-04-01",
+      "generatedAt": "2026-04-01T16:08:46.742106+00:00",
+      "en": "General situation:\nOperational read for yesterday contains 1 relevant items. Market attention is concentrated on mixed (1); main regions: black_sea (1). Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords +1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- The international market has the U.S. corn price rising $1.97/MT while Argentina's rose by $0.79/MT. U.S. soybeans increased by $0.46/MT, with Brazil's rising by $3.03/MT and U.S. SRW wheat went up by $3.40/MT and the Black Sea's price remained unchanged https://t.co/DdswbMSQIi",
+      "uk": "Загальна ситуація:\nОперативний зріз за період yesterday містить 1 релевантних матеріалів. Фокус ринку зосереджений на: mixed (1); регіони впливу: global (1). Середній індекс впливу: 0.0.\n\nЩо змінилося:\nПорівняно з попереднім співставним періодом: Δматеріалів +1, Δсереднього впливу +0.00.\n\nПрактичні наслідки для трейдингу/брокериджу:\nРекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\nКлючові факти:\n- 📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu",
+      "sourceUpdatedAt": "2026-04-01T16:08:05.377192+00:00"
     }
   ]
 }

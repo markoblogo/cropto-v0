@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-04-01T13:13:23.707870+00:00",
+  "generatedAt": "2026-04-01T16:09:10.356641+00:00",
   "filters": {
     "days": 30
   },
-  "sourceUpdatedAt": "2026-04-01T13:12:45.798950+00:00",
+  "sourceUpdatedAt": "2026-04-01T16:08:32.618982+00:00",
   "warnings": [
     "en_failed: HTTP Error 429: Too Many Requests",
     "uk_failed: HTTP Error 429: Too Many Requests",
@@ -14,7 +14,7 @@
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation:\nOperational read for 30 days contains 1 relevant items. Market attention is concentrated on mixed (1); main regions: black_sea (1). Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords +1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- Wheat Sentiment: 6/10 Mildly Bullish\n\nWheat maintains firmer undertones from worsening drought and declining crop conditions across the U.S. Southern and Central Plains. Abundant global supplies and competitive origins limit rallies despite ongoing Black Sea logistics risks https://t.co/CuwFgUOPlf",
+    "text": "General situation:\nOperational read for 30 days contains 1 relevant items. Market attention is concentrated on mixed (1); main regions: black_sea (1). Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords +1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- The international market has the U.S. corn price rising $1.97/MT while Argentina's rose by $0.79/MT. U.S. soybeans increased by $0.46/MT, with Brazil's rising by $3.03/MT and U.S. SRW wheat went up by $3.40/MT and the Black Sea's price remained unchanged https://t.co/DdswbMSQIi",
     "chart": {
       "type": "event_mix",
       "title": "Desk Snapshot",

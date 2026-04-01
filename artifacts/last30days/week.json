@@ -1,6 +1,25 @@
 {
-  "generatedAt": "2026-04-01T13:12:33.673028+00:00",
+  "generatedAt": "2026-04-01T16:08:19.212297+00:00",
   "items": [
+    {
+      "id": "X2",
+      "text": "The international market has the U.S. corn price rising $1.97/MT while Argentina's rose by $0.79/MT. U.S. soybeans increased by $0.46/MT, with Brazil's rising by $3.03/MT and U.S. SRW wheat went up by $3.40/MT and the Black Sea's price remained unchanged https://t.co/DdswbMSQIi",
+      "url": "https://x.com/HedgePlusWI/status/2039351493573136735",
+      "author_handle": "HedgePlusWI",
+      "date": "2026-04-01",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.4,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 40,
+        "recency": 100,
+        "engagement": 35
+      },
+      "score": 50,
+      "source": "x",
+      "title": "The international market has the U.S. corn price rising $1.97/MT while Argentina's rose by $0.79/MT. U.S. soybeans increased by $0.46/MT, with Brazil's rising by $3.03/MT and U.S. SRW wheat went up by $3.40/MT and the Black Sea's price remained unchanged https://t.co/DdswbMSQIi"
+    },
     {
       "id": "X1",
       "text": "📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu",
@@ -19,25 +38,6 @@
       "score": 45,
       "source": "x",
       "title": "📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu"
-    },
-    {
-      "id": "X30",
-      "text": "Wheat Sentiment: 6/10 Mildly Bullish\n\nWheat maintains firmer undertones from worsening drought and declining crop conditions across the U.S. Southern and Central Plains. Abundant global supplies and competitive origins limit rallies despite ongoing Black Sea logistics risks https://t.co/CuwFgUOPlf",
-      "url": "https://x.com/HedgePlusWI/status/2038575416927982073",
-      "author_handle": "HedgePlusWI",
-      "date": "2026-03-30",
-      "date_confidence": "high",
-      "engagement": null,
-      "relevance": 0.56,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 56,
-        "recency": 93,
-        "engagement": 35
-      },
-      "score": 55,
-      "source": "x",
-      "title": "Wheat Sentiment: 6/10 Mildly Bullish\n\nWheat maintains firmer undertones from worsening drought and declining crop conditions across the U.S. Southern and Central Plains. Abundant global supplies and competitive origins limit rallies despite ongoing Black Sea logistics risks https://t.co/CuwFgUOPlf"
     },
     {
       "id": "R10",
@@ -130,10 +130,28 @@
       "relevance": 0.92
     },
     {
-      "id": "W3",
+      "id": "W2",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
+      "title": "ANALYSIS: Black Sea Wheat Exports Face Logistical and Weather Challenges",
+      "url": "https://www.mintecglobal.com/top-stories/analysis-black-sea-wheat-exports-face-logistical-and-weather-challenges",
+      "source_domain": "mintecglobal.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -166,7 +184,7 @@
       "source": "web"
     },
     {
-      "id": "W13",
+      "id": "W12",
       "title": "Balkans & Black Sea Grain 2026: Grain Trade and ...",
       "url": "https://www.linkedin.com/posts/globenty_grainexport-agrologistics-grainmarket-activity-7424450394229194753-vpPI",
       "source_domain": "linkedin.com",
@@ -184,7 +202,7 @@
       "source": "web"
     },
     {
-      "id": "W6",
+      "id": "W5",
       "title": "Black Sea Cereal Company | LinkedIn",
       "url": "https://www.linkedin.com/company/black-sea-cereal-company",
       "source_domain": "linkedin.com",
@@ -220,10 +238,28 @@
       "source": "web"
     },
     {
-      "id": "W5",
-      "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
-      "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
-      "source_domain": "spglobal.com",
+      "id": "W14",
+      "title": "Black Sea Grain Market Analysis",
+      "url": "https://grainsprices.com/article/19274",
+      "source_domain": "grainsprices.com",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Black Sea Wheat Market — March 2026 Analysis - Medisca",
+      "url": "https://medisca.com.tr/black-sea-wheat-market-march-2026-repriced-higher-demand-holding/",
+      "source_domain": "medisca.com.tr",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -239,7 +275,7 @@
     },
     {
       "id": "W4",
-      "title": "Black Sea may hold back world wheat supplies into 2026 | Reuters",
+      "title": "Black Sea may hold back world wheat supplies into 2026 - Reuters",
       "url": "https://www.reuters.com/markets/commodities/black-sea-may-hold-back-world-wheat-supplies-into-2026-2025-04-23/",
       "source_domain": "reuters.com",
       "snippet": "",
@@ -256,7 +292,7 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W3",
       "title": "Black Sea prices enter 2026 low; oversupply and logistics keep  markets range-bound | Miller Magazine",
       "url": "https://millermagazine.com/blog/black-sea-prices-enter-2026-low-oversupply-and-logistics-keep-markets-range-bound-6616",
       "source_domain": "millermagazine.com",
@@ -274,10 +310,10 @@
       "source": "web"
     },
     {
-      "id": "W14",
-      "title": "EuroGrainExchange Bucharest 2026 | The European Spring Grain Exchange",
-      "url": "https://eurograinevents.com/",
-      "source_domain": "eurograinevents.com",
+      "id": "W15",
+      "title": "The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
+      "url": "https://markets.financialcontent.com/wral/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
+      "source_domain": "markets.financialcontent.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -292,43 +328,7 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "International Grain Forum 2026",
-      "url": "https://internationalgrainforum.vfairs.com/",
-      "source_domain": "internationalgrainforum.vfairs.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Strong ruble and Black Sea bottlenecks curb Russia’s wheat export pace | Miller Magazine",
-      "url": "https://millermagazine.com/blog/strong-ruble-and-black-sea-bottlenecks-curb-russias-wheat-export-pace-6632",
-      "source_domain": "millermagazine.com",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W12",
+      "id": "W13",
       "title": "User | chroniclejournal.com - The Frozen Granary: Black Sea Wheat and Corn Face New Volatility in 2026",
       "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-1-16-the-frozen-granary-black-sea-wheat-and-corn-face-new-volatility-in-2026",
       "source_domain": "markets.chroniclejournal.com",
@@ -346,7 +346,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
+      "id": "W7",
       "title": "User | times-online.com - Fragile Stability: Navigating the 2026 Black Sea Grain Outlook Amidst Shifting Geopolitics",
       "url": "http://business.times-online.com/times-online/article/marketminute-2026-1-28-fragile-stability-navigating-the-2026-black-sea-grain-outlook-amidst-shifting-geopolitics",
       "source_domain": "business.times-online.com",
@@ -364,8 +364,8 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Wheat Futures Attempt Breakout as Black Sea Risks ...",
+      "id": "W6",
+      "title": "Wheat Futures Attempt Breakout as Black Sea Risks and Weather ...",
       "url": "https://www.theglobeandmail.com/investing/markets/commodities/KCY00/pressreleases/640218/wheat-futures-attempt-breakout-as-black-sea-risks-and-weather-concerns-reenter-the-market/",
       "source_domain": "theglobeandmail.com",
       "snippet": "",
@@ -382,10 +382,10 @@
       "source": "web"
     },
     {
-      "id": "W12",
-      "title": "\"Моряків замінили зерновики\". Як війна і міграція експорту ...",
-      "url": "https://epravda.com.ua/publications/2023/07/11/702085/",
-      "source_domain": "epravda.com.ua",
+      "id": "W9",
+      "title": "Expert Talks: «Дунай – Логістика по-новому». Яке майбутє цього ...",
+      "url": "https://ua.sudohodstvo.org/expert-talks-dunaj-logistyka-po-novomu-yake-majbutye-czogo-napryamku/",
+      "source_domain": "ua.sudohodstvo.org",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -400,7 +400,7 @@
       "source": "web"
     },
     {
-      "id": "W5",
+      "id": "W6",
       "title": "«Валіза без ручки» чи стратегічний актив? Річкова логістика очима «НІБУЛОНу» — Latifundist.com",
       "url": "https://latifundist.com/interview/836-sergij-kalkutin-dunajska-logistika--maye-buti-povnotsinnim-planom-b-ukrayinskogo-agroeksportu",
       "source_domain": "latifundist.com",
@@ -418,10 +418,10 @@
       "source": "web"
     },
     {
-      "id": "W13",
-      "title": "Агробізнес вибудує стратегію майбутнього на 2026-2030 роки — AgroPortal.ua",
-      "url": "https://agroportal.ua/news/ukraina/black-sea-grain-kyiv-strategiya-maybutnogo-agrobiznesu",
-      "source_domain": "agroportal.ua",
+      "id": "W4",
+      "title": "Інтеграція України в транспортну систему ЄС: розвиток коридору Рейн-Дунай: Бенуа Плеска | Новини України | LIGA.net",
+      "url": "https://www.liga.net/ua/economics/opinion/dunay-vzhe-intehrovanyy-v-yes-ale-ukraina-dosi-spryymaie-yoho-iak-peryferiiu",
+      "source_domain": "liga.net",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -436,7 +436,7 @@
       "source": "web"
     },
     {
-      "id": "W15",
+      "id": "W5",
       "title": "Агроекспорт України у 2025 році: логістика під тиском ризиків",
       "url": "https://ukragroconsult.com/news/agroeksport-ukrayiny-u-2025-roczi-logistyka-pid-tyskom-ryzykiv/",
       "source_domain": "ukragroconsult.com",
@@ -454,44 +454,8 @@
       "source": "web"
     },
     {
-      "id": "W4",
-      "title": "Альтернативні логістичні маршрути: забезпечення експорту під час блокади портів",
-      "url": "https://ndu.kr.ua/904-alternativni-logistichni-marshruti-zabezpechennya-eksportu-pid-chas-blokadi-portiv",
-      "source_domain": "ndu.kr.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W8",
-      "title": "Дунай залишається найбільш недооціненим ...",
-      "url": "https://www.ukr.net/news/details/economics/116184494.html",
-      "source_domain": "ukr.net",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W3",
-      "title": "Дунай став дуже цінним в умовах війни — АГРОПОЛІТ",
+      "id": "W2",
+      "title": "Дунай став дуже цінним в умовах війни - Агрополіт",
       "url": "https://agropolit.com/news/31167-v-umovah-viyni-eksport-dunayem-skladnishe-zablokuvati-nij-morski-perevezennya--ekspert",
       "source_domain": "agropolit.com",
       "snippet": "",
@@ -508,7 +472,43 @@
       "source": "web"
     },
     {
-      "id": "W2",
+      "id": "W7",
+      "title": "Дунайська логістика стійкіша до атак завдяки розосередженій ...",
+      "url": "https://www.ukr.net/news/details/economics/116188056.html",
+      "source_domain": "ukr.net",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W11",
+      "title": "Дунайські порти України перебувають на межі застою",
+      "url": "https://usm.media/dunajsjki-porty-ukrajiny-perebuvajutj-na-merzsi-zastoju/",
+      "source_domain": "usm.media",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W12",
       "title": "Експорт зерна через порти зберігає домінування, але попит на ...",
       "url": "https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/",
       "source_domain": "usm.media",
@@ -526,10 +526,10 @@
       "source": "web"
     },
     {
-      "id": "W10",
-      "title": "Зерновий ринок: як змінився трейдинг та логістика в Україні за два роки повномасштабної війни — AgroPortal.ua",
-      "url": "https://agroportal.ua/blogs/zernoviy-rinok-yak-zminivsya-treyding-ta-logistika-v-ukrajini-za-dva-roki-povnomasshtabnoji-viyni",
-      "source_domain": "agroportal.ua",
+      "id": "W15",
+      "title": "Логістика та перевалка зернових на Дунаї у 2022 та перспективи 2023 року. Частина 2 — Elevatorist.com",
+      "url": "https://elevatorist.com/blog/read/840-logistika-ta-perevalka-zernovih-na-dunayi-u-2022-ta-perspektivi-2023-roku-chastina-2",
+      "source_domain": "elevatorist.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -545,9 +545,9 @@
     },
     {
       "id": "W14",
-      "title": "УЗА: експорт зерна в 2025/2026 МР потенційно міг би скласти 49 ...",
-      "url": "https://uga.ua/news/uza-eksport-zerna-v-2025-2026-mr-potentsijno-mig-by-sklasty-49-mln-t-pry-vrozhayi-v-81-4-mln-t/",
-      "source_domain": "uga.ua",
+      "title": "Новий експортний маршрут з України Дунаєм - Haski.ua",
+      "url": "https://haski.ua/pl/blog/novyj-eksportnyj-marshrut-z-ukrayiny-dunayem",
+      "source_domain": "haski.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -562,10 +562,10 @@
       "source": "web"
     },
     {
-      "id": "W6",
-      "title": "Українські порти цьогоріч вже обробили понад 15 мільйонів тонн вантажів",
-      "url": "https://www.ukrinform.ua/rubric-economy/4101487-ukrainski-porti-cogoric-vze-obrobili-ponad-15-miljoniv-tonn-vantaziv.html",
-      "source_domain": "ukrinform.ua",
+      "id": "W8",
+      "title": "Огляд ринку України на 25.01.2026 р",
+      "url": "https://graintrade.com.ua/novosti/oglyad-rinku-ukraini-na-25012026-r.html",
+      "source_domain": "graintrade.com.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -580,10 +580,10 @@
       "source": "web"
     },
     {
-      "id": "W7",
-      "title": "Управління державною власністю і дунайські порти — Інституційна реформа і роль наглядових рад / NV",
-      "url": "https://biz.nv.ua/ukr/experts/upravlinnya-derzhavnoyu-vlasnistyu-i-dunayski-porti-instituciyna-reforma-i-rol-naglyadovih-rad-50591152.html",
-      "source_domain": "biz.nv.ua",
+      "id": "W3",
+      "title": "Україна домовилась із ЄС, Румунією та Молдовою про розвиток логістики до портів Дунаю — AgroPortal.ua",
+      "url": "https://agroportal.ua/news/ukraina/ukrajina-domovilis-z-yes-rumuniyeyu-ta-moldovoyu-pro-rozvitok-logistiki-do-portiv-dunayu",
+      "source_domain": "agroportal.ua",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
@@ -598,28 +598,28 @@
       "source": "web"
     },
     {
-      "id": "W9",
+      "id": "W13",
+      "title": "Українські морські порти у вогні. Чи вдасться вивезти товари та що буде з цінами на продукти | hromadske",
+      "url": "https://hromadske.ua/ekonomika/257922-ukrayinski-morski-porty-u-vohni-chy-vdastsia-vyvezty-tovary-ta-shcho-bude-z-tsinamy-na-produkty",
+      "source_domain": "hromadske.ua",
+      "snippet": "",
+      "date": null,
+      "date_confidence": "low",
+      "relevance": 0.6,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 60,
+        "recency": 0,
+        "engagement": 0
+      },
+      "score": 3,
+      "source": "web"
+    },
+    {
+      "id": "W10",
       "title": "Чому Дунай залишається найбільш недооціненим стратегічним ресурсом України",
       "url": "https://interfax.com.ua/news/blog/1147202.html",
       "source_domain": "interfax.com.ua",
-      "snippet": "",
-      "date": null,
-      "date_confidence": "low",
-      "relevance": 0.6,
-      "why_relevant": "",
-      "subs": {
-        "relevance": 60,
-        "recency": 0,
-        "engagement": 0
-      },
-      "score": 3,
-      "source": "web"
-    },
-    {
-      "id": "W11",
-      "title": "Які українські агрохолдинги мають власні судна для перевезення продукції — Elevatorist.com",
-      "url": "https://elevatorist.com/blog/read/955-morska-logistika-hto-z-ukrayinskih-agroholdingiv-volodiye-sudnami-dlya-perevezennya-produktsiyi",
-      "source_domain": "elevatorist.com",
       "snippet": "",
       "date": null,
       "date_confidence": "low",
