@@ -684,6 +684,96 @@ function hasAiText(block: Last30DaysAiSummaryBlock | null | undefined): boolean 
   return Boolean(block?.text && String(block.text).trim().length > 0);
 }
 
+function buildFallbackAiBlock(params: {
+  language: "en" | "uk";
+  periodLabel: string;
+  scopeDescription: string;
+  last30Items: Last30DaysRecord[];
+  monitorItems: MonitorNewsItem[];
+}): Last30DaysAiSummaryBlock {
+  const language = params.language;
+  const rows = Array.isArray(params.last30Items) ? params.last30Items : [];
+  const monitorRows = Array.isArray(params.monitorItems) ? params.monitorItems : [];
+  const sorted = [...rows].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+  const top = sorted.slice(0, 4);
+  const commodityCounts = new Map<string, number>();
+  const regionCounts = new Map<string, number>();
+  let impactSum = 0;
+  for (const row of sorted) {
+    const commodity = row.commodity || "mixed";
+    const region = row.region || "global";
+    commodityCounts.set(commodity, (commodityCounts.get(commodity) || 0) + 1);
+    regionCounts.set(region, (regionCounts.get(region) || 0) + 1);
+    impactSum += Number(row.impact || 0);
+  }
+  const topCommodity = [...commodityCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "mixed";
+  const topRegion = [...regionCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "global";
+  const avgImpact = sorted.length ? Number((impactSum / sorted.length).toFixed(2)) : 0;
+  const monitorHint = monitorRows.length > 0 ? monitorRows.slice(0, 2).map((row) => row.title).filter(Boolean) : [];
+
+  const facts =
+    top.length > 0
+      ? top
+          .map((row) => `- ${row.publishedAt.slice(0, 10)}: ${row.headline}`)
+          .join("\n")
+      : language === "uk"
+      ? "- У поточному вікні не знайдено релевантних подій."
+      : "- No relevant events found in current scope.";
+
+  const monitorFacts =
+    monitorHint.length > 0
+      ? monitorHint.map((title) => `- ${title}`).join("\n")
+      : language === "uk"
+      ? "- Моніторинговий контекст без додаткових тригерів."
+      : "- Monitor context has no additional triggers.";
+
+  const text =
+    language === "uk"
+      ? [
+          "Загальна ситуація:",
+          `Оперативний fallback-звіт за ${params.periodLabel.toLowerCase()}: ${sorted.length} матеріалів, ключовий товар — ${topCommodity}, ключовий регіон — ${topRegion}, середній вплив ${avgImpact}.`,
+          "",
+          "Що змінилося:",
+          "Рекомендовано перевірити динаміку проти попереднього вікна після відновлення повноцінної AI-генерації.",
+          "",
+          "Практичні наслідки для трейдингу/брокериджу:",
+          "Працювати від подійних тригерів (експорт, логістика, регуляторика), а не лише від цінового шуму.",
+          "",
+          "Ключові факти:",
+          facts,
+          "",
+          "Контекст моніторингу:",
+          monitorFacts,
+        ].join("\n")
+      : [
+          "General situation:",
+          `Operational fallback note for ${params.periodLabel.toLowerCase()}: ${sorted.length} items, top commodity ${topCommodity}, top region ${topRegion}, average impact ${avgImpact}.`,
+          "",
+          "What changed vs previous comparable period:",
+          "Re-run full AI generation once quota/network is healthy to restore full comparative narrative.",
+          "",
+          "Actionable implications for trading/brokerage:",
+          "Prioritize event-driven triggers (exports, logistics, policy) over price-only noise.",
+          "",
+          "Key facts:",
+          facts,
+          "",
+          "Monitor context:",
+          monitorFacts,
+        ].join("\n");
+
+  return {
+    language,
+    scope: params.scopeDescription,
+    model: "fallback",
+    text,
+    inputCounts: {
+      last30days: rows.length,
+      monitor: monitorRows.length,
+    },
+  };
+}
+
 function sanitizeAiWarnings(warnings: string[] | undefined, hasContent: boolean): string[] {
   const list = Array.isArray(warnings) ? warnings : [];
   if (hasContent) return list;
@@ -907,10 +997,30 @@ export function registerMonitorRoutes(app: Express): void {
         }),
       ]);
 
-      const en = enResult.status === "fulfilled" ? enResult.value : null;
-      const uk = ukResult.status === "fulfilled" ? ukResult.value : null;
+      let en = enResult.status === "fulfilled" ? enResult.value : null;
+      let uk = ukResult.status === "fulfilled" ? ukResult.value : null;
       if (enResult.status === "rejected") warnings.push(`en_summary_failed: ${String(enResult.reason?.message || enResult.reason)}`);
       if (ukResult.status === "rejected") warnings.push(`uk_summary_failed: ${String(ukResult.reason?.message || ukResult.reason)}`);
+      if (!hasAiText(en)) {
+        en = buildFallbackAiBlock({
+          language: "en",
+          periodLabel,
+          scopeDescription: "English language + non-Ukraine markets",
+          last30Items: enLast30,
+          monitorItems: enMonitor,
+        });
+        warnings.push("en_fallback_used");
+      }
+      if (!hasAiText(uk)) {
+        uk = buildFallbackAiBlock({
+          language: "uk",
+          periodLabel,
+          scopeDescription: "Ukraine market context",
+          last30Items: ukLast30,
+          monitorItems: ukMonitor,
+        });
+        warnings.push("uk_fallback_used");
+      }
       const hasContent = hasAiText(en) || hasAiText(uk);
 
       const payload = {
