@@ -1,6 +1,44 @@
 {
-  "generatedAt": "2026-04-01T12:48:50.525349+00:00",
+  "generatedAt": "2026-04-01T13:00:58.217494+00:00",
   "items": [
+    {
+      "id": "X1",
+      "text": "📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu",
+      "url": "https://x.com/bip_in_ua/status/2038926665280102826",
+      "author_handle": "bip_in_ua",
+      "date": "2026-03-31",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.21,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 21,
+        "recency": 96,
+        "engagement": 50
+      },
+      "score": 45,
+      "source": "x",
+      "title": "📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu"
+    },
+    {
+      "id": "X30",
+      "text": "Wheat Sentiment: 6/10 Mildly Bullish\n\nWheat maintains firmer undertones from worsening drought and declining crop conditions across the U.S. Southern and Central Plains. Abundant global supplies and competitive origins limit rallies despite ongoing Black Sea logistics risks https://t.co/CuwFgUOPlf",
+      "url": "https://x.com/HedgePlusWI/status/2038575416927982073",
+      "author_handle": "HedgePlusWI",
+      "date": "2026-03-30",
+      "date_confidence": "high",
+      "engagement": null,
+      "relevance": 0.56,
+      "why_relevant": "",
+      "subs": {
+        "relevance": 56,
+        "recency": 93,
+        "engagement": 35
+      },
+      "score": 55,
+      "source": "x",
+      "title": "Wheat Sentiment: 6/10 Mildly Bullish\n\nWheat maintains firmer undertones from worsening drought and declining crop conditions across the U.S. Southern and Central Plains. Abundant global supplies and competitive origins limit rallies despite ongoing Black Sea logistics risks https://t.co/CuwFgUOPlf"
+    },
     {
       "id": "R10",
       "title": "UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
@@ -92,7 +130,7 @@
       "relevance": 0.92
     },
     {
-      "id": "W5",
+      "id": "W3",
       "title": "A Black Sea wheat and corn price outlook for 2026 - Fastmarkets",
       "url": "https://www.fastmarkets.com/insights/the-black-sea-wheat-and-corn-price-outlook-for-2026/",
       "source_domain": "fastmarkets.com",
@@ -182,7 +220,7 @@
       "source": "web"
     },
     {
-      "id": "W3",
+      "id": "W5",
       "title": "Black Sea market hits 3-month high amid bad weather, logistics challenges | S&P Global",
       "url": "https://www.spglobal.com/energy/en/news-research/latest-news/agriculture/020426-black-sea-market-hits-3-month-high-amid-bad-weather-logistics-challenges",
       "source_domain": "spglobal.com",
@@ -453,7 +491,7 @@
     },
     {
       "id": "W2",
-      "title": "Експорт зерна через порти зберігає домінування, але ...",
+      "title": "Експорт зерна через порти зберігає домінування, але попит на ...",
       "url": "https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/",
       "source_domain": "usm.media",
       "snippet": "",
@@ -598,6 +636,6 @@
   ],
   "meta": {
     "inputFiles": 4,
-    "itemCount": 38
+    "itemCount": 40
   }
 }

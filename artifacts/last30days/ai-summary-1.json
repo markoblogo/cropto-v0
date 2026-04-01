@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-04-01T12:49:10.837526+00:00",
+  "generatedAt": "2026-04-01T13:01:18.175987+00:00",
   "filters": {
     "days": 1
   },
-  "sourceUpdatedAt": "2026-04-01T12:48:32.698827+00:00",
+  "sourceUpdatedAt": "2026-04-01T13:00:30.075077+00:00",
   "warnings": [
     "en_failed: HTTP Error 429: Too Many Requests",
     "uk_failed: HTTP Error 429: Too Many Requests",
@@ -14,14 +14,14 @@
     "language": "en",
     "scope": "English + non-Ukraine markets",
     "model": "gpt-4.1-mini",
-    "text": "General situation:\nOperational read for yesterday contains 1 relevant items. Market attention is concentrated on mixed (1); main regions: global (1). Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords +1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- Kernel - Ukrainian sunflower seed oil producer at 5X earnings",
+    "text": "General situation:\nOperational read for yesterday contains 0 relevant items. Market attention is concentrated on mixed; main regions: global. Average impact score is 0.0.\n\nWhat changed vs previous comparable period:\nCompared with prior window: Δrecords -1, Δavg impact +0.00.\n\nActionable implications for trading/brokerage:\nPrioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\nKey facts:\n- Event list in this window requires manual validation.",
     "chart": {
       "type": "event_mix",
       "title": "Desk Snapshot",
       "points": []
     },
     "inputCounts": {
-      "last30days": 19,
+      "last30days": 23,
       "monitor": 0
     }
   },
@@ -29,7 +29,7 @@
     "language": "uk",
     "scope": "Ukraine market context",
     "model": "gpt-4.1-mini",
-    "text": "Загальна ситуація:\nОперативний зріз за період yesterday містить 1 релевантних матеріалів. Фокус ринку зосереджений на: mixed (1); регіони впливу: ukraine (1). Середній індекс впливу: 0.0.\n\nЩо змінилося:\nПорівняно з попереднім співставним періодом: Δматеріалів +1, Δсереднього впливу +0.00.\n\nПрактичні наслідки для трейдингу/брокериджу:\nРекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\nКлючові факти:\n- UA POV: The scenery at one of Ukraine's largest sunflower oil storage facilities in the Southern Odesa region after a drone strikes",
+    "text": "Загальна ситуація:\nОперативний зріз за період yesterday містить 1 релевантних матеріалів. Фокус ринку зосереджений на: mixed (1); регіони впливу: global (1). Середній індекс впливу: 0.0.\n\nЩо змінилося:\nПорівняно з попереднім співставним періодом: Δматеріалів +1, Δсереднього впливу +0.00.\n\nПрактичні наслідки для трейдингу/брокериджу:\nРекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\nКлючові факти:\n- 📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.\n\nЧитати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu",
     "chart": {
       "type": "event_mix",
       "title": "Desk Snapshot",

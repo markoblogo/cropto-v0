@@ -1,12 +1,25 @@
 # зернові олійні україна експорт логістика дунай порти - Last 30 Days Research Report
 
-**Generated:** 2026-04-01T12:48:50.476437+00:00
+**Generated:** 2026-04-01T13:00:58.162599+00:00
 **Date Range:** 2026-03-02 to 2026-04-01
 **Mode:** all
 
 ## Models Used
 
 - **OpenAI:** gpt-5.4-mini
+
+## X Posts
+
+### X1: @bip_in_ua
+
+- **URL:** https://x.com/bip_in_ua/status/2038926665280102826
+- **Date:** 2026-03-31 (confidence: high)
+- **Score:** 45/100
+- **Relevance:** 
+
+> 📦За даними Єврокомісії з травня 2022 року через «Шляхи солідарності» транспортували 209 млн тонн вантажів, зокрема 98 млн тонн агропродукції (з них 91 млн тонн — зернові та олійні) та 111 млн тонн промислових товарів.
+
+Читати 👉 https://t.co/CCy5RIMuaZ https://t.co/6KHyXMZPXu
 
 ## Web Results
 
@@ -70,7 +83,7 @@
 
 > 
 
-### W2: Експорт зерна через порти зберігає домінування, але ...
+### W2: Експорт зерна через порти зберігає домінування, але попит на ...
 
 - **Source:** usm.media
 - **URL:** https://usm.media/eksport-zerna-czerez-porty-zberihaje-dominuvannia-ale-popyt-na-oliju-poslabywsia/
