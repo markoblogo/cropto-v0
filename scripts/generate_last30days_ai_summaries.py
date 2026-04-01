@@ -672,6 +672,50 @@ def normalize_openai_payload(parsed: dict, language: str) -> dict:
         "chart": chart,
     }
 
+
+def build_emergency_fallback_summary(language: str, period_label: str, fact_pack: dict) -> str:
+    window = fact_pack.get("window") if isinstance(fact_pack, dict) else {}
+    changes = fact_pack.get("changes") if isinstance(fact_pack, dict) else {}
+    headlines = fact_pack.get("headlines") if isinstance(fact_pack, dict) else []
+
+    records = int(window.get("records") or 0)
+    avg_impact = window.get("avg_impact", 0)
+    top_commodities = window.get("top_commodities") or []
+    top_regions = window.get("top_regions") or []
+    delta_records = int(changes.get("delta_records") or 0)
+    delta_impact = changes.get("delta_avg_impact", 0)
+
+    commodity_text = ", ".join(f"{name} ({count})" for name, count in top_commodities[:3]) if top_commodities else "mixed"
+    region_text = ", ".join(f"{name} ({count})" for name, count in top_regions[:3]) if top_regions else "global"
+    top_events = [str(row.get("title") or "").strip() for row in headlines[:4] if isinstance(row, dict) and str(row.get("title") or "").strip()]
+
+    if language == "uk":
+        event_lines = "\n".join(f"- {title}" for title in top_events) if top_events else "- Ключові події у поточному вікні потребують ручної валідації."
+        return (
+            f"Загальна ситуація:\n"
+            f"Оперативний зріз за період {period_label.lower()} містить {records} релевантних матеріалів. "
+            f"Фокус ринку зосереджений на: {commodity_text}; регіони впливу: {region_text}. "
+            f"Середній індекс впливу: {avg_impact}.\n\n"
+            f"Що змінилося:\n"
+            f"Порівняно з попереднім співставним періодом: Δматеріалів {delta_records:+d}, Δсереднього впливу {delta_impact:+.2f}.\n\n"
+            f"Практичні наслідки для трейдингу/брокериджу:\n"
+            f"Рекомендується працювати від подійного фону (логістика/експорт/регуляторика) і уникати рішень лише за ціною в моменті.\n\n"
+            f"Ключові факти:\n{event_lines}"
+        )
+
+    event_lines = "\n".join(f"- {title}" for title in top_events) if top_events else "- Event list in this window requires manual validation."
+    return (
+        f"General situation:\n"
+        f"Operational read for {period_label.lower()} contains {records} relevant items. "
+        f"Market attention is concentrated on {commodity_text}; main regions: {region_text}. "
+        f"Average impact score is {avg_impact}.\n\n"
+        f"What changed vs previous comparable period:\n"
+        f"Compared with prior window: Δrecords {delta_records:+d}, Δavg impact {delta_impact:+.2f}.\n\n"
+        f"Actionable implications for trading/brokerage:\n"
+        f"Prioritize event-driven positioning (logistics/export/policy) and avoid relying on price-only recaps.\n\n"
+        f"Key facts:\n{event_lines}"
+    )
+
 def call_openai(language, period_label, scope_label, last30_lines, monitor_lines, period_metrics, fact_pack, spike_lines, brokerage_lines, days):
     system_prompt = (
         "You are a senior grains & oilseeds analyst. Write in Ukrainian."
@@ -747,6 +791,8 @@ def call_openai(language, period_label, scope_label, last30_lines, monitor_lines
         retried = normalize_openai_payload(_call_openai_once(system_prompt, retry_prompt), language)
         if str(retried.get("summary") or "").strip():
             return retried
+    if not str(parsed.get("summary") or "").strip():
+        parsed["summary"] = build_emergency_fallback_summary(language, period_label, fact_pack)
     return parsed
 
 
@@ -803,6 +849,19 @@ def write_window(window_name, days, period_label, monitor_payload, monitor_news_
         )
     except Exception as error:
         warnings.append(f"uk_failed: {error}")
+
+    if not (en_payload and str(en_payload.get("summary", "")).strip()):
+        en_payload = {
+            "summary": build_emergency_fallback_summary("en", period_label, en_fact_pack),
+            "chart": {"type": "event_mix", "title": "Desk Snapshot", "points": []},
+        }
+        warnings.append("en_fallback_used")
+    if not (uk_payload and str(uk_payload.get("summary", "")).strip()):
+        uk_payload = {
+            "summary": build_emergency_fallback_summary("uk", period_label, uk_fact_pack),
+            "chart": {"type": "event_mix", "title": "Desk Snapshot", "points": []},
+        }
+        warnings.append("uk_fallback_used")
 
     if not (en_payload and str(en_payload.get("summary", "")).strip()) and not (uk_payload and str(uk_payload.get("summary", "")).strip()):
         # Keep previously generated file intact if fresh generation failed for both languages.
