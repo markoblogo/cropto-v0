@@ -87,6 +87,8 @@ export const basisOptions: SelectOption<Basis>[] = [
   { value: "DAP", label: "DAP" },
   { value: "FCA", label: "FCA" },
   { value: "EXW", label: "EXW" },
+  { value: "FAS", label: "FAS" },
+  { value: "CFR", label: "CFR" },
 ];
 
 export const paymentTermOptions: PaymentTermOption[] = [

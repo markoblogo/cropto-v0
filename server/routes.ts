@@ -302,6 +302,7 @@ const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
 const SEA_BROKERAGE_COUNTRIES_KEY = "sea_brokerage_countries_v1";
 const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
+const SEA_BROKERAGE_BASIS_KEY = "sea_brokerage_basis_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
@@ -567,6 +568,8 @@ type SeaBrokerageCommodityDictionaryEntry = {
   group?: "grains" | "oilseeds" | "processed";
 };
 
+const SEA_BROKERAGE_DEFAULT_BASIS = ["FOB", "CIF", "CPT", "DAP", "FCA", "EXW", "FAS", "CFR"];
+
 function buildCompanyId(label: string) {
   const baseSlug = slugifyLocationLabel(label) || "company";
   return `company_${baseSlug}`;
@@ -645,6 +648,41 @@ async function readSeaBrokerageCommodities(): Promise<SeaBrokerageCommodityDicti
   } catch {
     return [];
   }
+}
+
+async function readSeaBrokerageBasis(): Promise<string[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_BASIS_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => String(item || "").trim().toUpperCase())
+      .filter((item) => !!item && /^[A-Z0-9 .+\-\/]{2,24}$/.test(item));
+  } catch {
+    return [];
+  }
+}
+
+function deriveSeaBrokerageBasisFromEntries(entries: SeaBrokerageEntryRow[]): string[] {
+  const values = new Set<string>();
+  for (const entry of entries) {
+    const basis = String(entry.basis || "").trim().toUpperCase();
+    if (!basis) continue;
+    values.add(basis);
+  }
+  return Array.from(values);
+}
+
+function mergeSeaBrokerageBasis(...groups: string[][]): string[] {
+  const values = new Set<string>();
+  for (const group of groups) {
+    for (const item of group) {
+      const basis = String(item || "").trim().toUpperCase();
+      if (!basis || !/^[A-Z0-9 .+\-\/]{2,24}$/.test(basis)) continue;
+      values.add(basis);
+    }
+  }
+  return Array.from(values).sort((a, b) => a.localeCompare(b));
 }
 
 function countryAlpha3FromCode(code: string) {
@@ -9406,6 +9444,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error listing sea brokerage commodities:", error);
       return res.status(500).json({ error: "Failed to list commodities" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/basis", async (_req, res) => {
+    try {
+      const [savedBasis, entries] = await Promise.all([
+        readSeaBrokerageBasis(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const derivedBasis = deriveSeaBrokerageBasisFromEntries(entries);
+      const basis = mergeSeaBrokerageBasis(SEA_BROKERAGE_DEFAULT_BASIS, savedBasis, derivedBasis);
+      return res.json({ basis });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage basis:", error);
+      return res.status(500).json({ error: "Failed to list basis" });
     }
   });
 

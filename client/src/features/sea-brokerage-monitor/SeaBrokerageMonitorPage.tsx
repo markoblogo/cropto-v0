@@ -184,6 +184,16 @@ export function SeaBrokerageMonitorPage() {
     },
     staleTime: 60_000,
   });
+  const { data: sharedBasisOptions = [] } = useQuery<string[]>({
+    queryKey: ["/api/sea-brokerage-monitor/basis"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/basis");
+      if (!response.ok) return [];
+      const payload = (await response.json()) as { basis?: string[] };
+      return Array.isArray(payload.basis) ? payload.basis : [];
+    },
+    staleTime: 60_000,
+  });
 
   const feedWithBusinessUnits = useMemo(
     () =>
@@ -225,6 +235,18 @@ export function SeaBrokerageMonitorPage() {
       .filter((value) => active.has(value))
       .map((value) => ({ value, label: labels[value] }));
   }, [feedWithBusinessUnits]);
+  const toolbarBasisOptions = useMemo(() => {
+    const values = new Set<string>(["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"]);
+    for (const value of sharedBasisOptions) {
+      const normalized = String(value || "").trim().toUpperCase();
+      if (normalized) values.add(normalized);
+    }
+    for (const entry of feedWithBusinessUnits) {
+      const normalized = String(entry.basis || "").trim().toUpperCase();
+      if (normalized) values.add(normalized);
+    }
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [sharedBasisOptions, feedWithBusinessUnits]);
   const toolbarCountryOptions = useMemo(() => {
     const byCode = new Map<string, CountryOption>();
     for (const option of [...isoCountryOptionsEn, ...defaultCountryOptions, ...customCountryOptions]) {
@@ -908,6 +930,7 @@ export function SeaBrokerageMonitorPage() {
           businessUnitOptions={toolbarBusinessUnitOptions}
           currencyOptions={toolbarCurrencyOptions}
           transportModeOptions={toolbarTransportModeOptions}
+          basisOptions={toolbarBasisOptions}
           commodityOptions={toolbarCommodityOptions}
           countryOptions={toolbarCountryOptions}
           deliveryPlaceOptions={toolbarDeliveryPlaceOptions}
@@ -1274,7 +1297,7 @@ export function SeaBrokerageMonitorPage() {
             <div className="rounded-md border border-border/70 p-3">
               <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Basis</div>
               <div className="grid max-h-36 gap-2 overflow-auto pr-1">
-                {["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"].map((basis) => (
+                {toolbarBasisOptions.map((basis) => (
                   <label key={basis} className="inline-flex items-center gap-2 text-sm">
                     <Checkbox
                       checked={reportForm.basis.includes(basis)}

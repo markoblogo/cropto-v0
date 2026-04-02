@@ -48,6 +48,7 @@ interface MonitorToolbarProps {
   businessUnitOptions?: Array<{ value: string; label: string }>;
   currencyOptions?: Array<{ value: Currency; label: string }>;
   transportModeOptions?: Array<{ value: TransportMode; label: string }>;
+  basisOptions?: string[];
 }
 
 export function MonitorToolbar({
@@ -67,6 +68,7 @@ export function MonitorToolbar({
   businessUnitOptions = [],
   currencyOptions = defaultCurrencyOptions,
   transportModeOptions = [],
+  basisOptions = ["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"],
 }: MonitorToolbarProps) {
   const selectedOriginCountries = new Set(
     filters.originCountries.map((value) => String(value).toLowerCase()),
@@ -216,7 +218,7 @@ export function MonitorToolbar({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All basis</SelectItem>
-              {["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"].map((basis) => (
+              {basisOptions.map((basis) => (
                 <SelectItem key={basis} value={basis}>
                   {basis}
                 </SelectItem>

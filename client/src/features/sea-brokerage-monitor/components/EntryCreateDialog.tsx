@@ -124,7 +124,7 @@ const entryFormSchema = z
       .number()
       .min(0, "Tolerance must be 0 or greater")
       .max(25, "Tolerance must be 25% or lower"),
-    basis: z.enum(["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"]),
+    basis: z.string().trim().min(1, "Delivery basis is required"),
     destinationPortCodes: z.array(z.string().min(1)).min(1, "Port / place is required"),
     periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),
@@ -639,6 +639,18 @@ export function EntryCreateDialog({
     },
     staleTime: 60_000,
   });
+  const { data: sharedBasisOptionsData = [] } = useQuery<string[]>({
+    queryKey: ["/api/sea-brokerage-monitor/basis"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/basis");
+      if (!response.ok) {
+        throw new Error(`Failed to load basis list (${response.status})`);
+      }
+      const payload = (await response.json()) as { basis?: string[] };
+      return Array.isArray(payload.basis) ? payload.basis : [];
+    },
+    staleTime: 60_000,
+  });
   const { data: brokerDirectory = [] } = useQuery<BrokerDirectoryItem[]>({
     queryKey: ["/api/sea-brokerage-monitor/broker-directory"],
     enabled: open && !!session.monitorAuthToken,
@@ -685,6 +697,20 @@ export function EntryCreateDialog({
       left.displayLabel.localeCompare(right.displayLabel),
     );
   }, [sharedCommodityOptionsData]);
+  const allBasisOptions = useMemo(() => {
+    const values = new Set<string>();
+    for (const option of basisOptions) {
+      const normalized = String(option.value || "").trim().toUpperCase();
+      if (normalized) values.add(normalized);
+    }
+    for (const option of sharedBasisOptionsData) {
+      const normalized = String(option || "").trim().toUpperCase();
+      if (normalized) values.add(normalized);
+    }
+    return Array.from(values)
+      .sort((a, b) => a.localeCompare(b))
+      .map((value) => ({ value, label: value }));
+  }, [sharedBasisOptionsData]);
   const countryByCode = useMemo(() => {
     const map = new Map<string, CountryOption>();
     for (const option of allCountryOptions) {
@@ -1912,7 +1938,7 @@ export function EntryCreateDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {basisOptions.map((option) => (
+                        {allBasisOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

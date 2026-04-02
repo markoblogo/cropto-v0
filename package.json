@@ -33,7 +33,8 @@
     "i18n:check": "tsx scripts/i18n-check.ts",
     "data:backfill:usda": "tsx scripts/backfillUsdaAmsArchives.ts",
     "data:audit:index-contract": "tsx scripts/auditIndexContract.ts",
-    "auth:sync-legacy-users": "tsx scripts/syncLegacyUsersToSupabase.ts"
+    "auth:sync-legacy-users": "tsx scripts/syncLegacyUsersToSupabase.ts",
+    "sea-brokerage:dictionaries:import": "tsx scripts/import_sea_brokerage_dictionaries_from_sheet.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
