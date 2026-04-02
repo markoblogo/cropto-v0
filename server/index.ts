@@ -140,7 +140,9 @@ app.use((req, res, next) => {
     server.close((err) => {
       if (err) {
         console.error("[server] graceful shutdown failed:", err);
-        process.exit(1);
+        // In managed runtimes (Railway), SIGTERM usually means instance replacement.
+        // Exit 0 to avoid noisy "crash" semantics on controlled shutdown.
+        process.exit(signal === "SIGTERM" ? 0 : 1);
       }
       console.log("[server] shutdown complete");
       process.exit(0);
@@ -148,7 +150,7 @@ app.use((req, res, next) => {
     // Force-exit fallback in case hanging handles keep event loop alive.
     setTimeout(() => {
       console.warn("[server] forced shutdown timeout reached");
-      process.exit(1);
+      process.exit(signal === "SIGTERM" ? 0 : 1);
     }, 10_000).unref();
   };
 
