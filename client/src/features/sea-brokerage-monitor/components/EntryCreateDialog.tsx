@@ -240,6 +240,7 @@ const entryFormSchema = z
   });
 
 type EntryFormValues = z.infer<typeof entryFormSchema>;
+export type EntryCreateFormPrefill = Partial<EntryFormValues>;
 type TelegramSessionHook = ReturnType<typeof useSeaBrokerageTelegramSession>;
 
 function normalizeTelegramIdentityKey(userId?: string | null, username?: string | null) {
@@ -523,6 +524,7 @@ interface EntryCreateDialogProps {
   session: TelegramSessionHook;
   mode?: "create" | "edit";
   initialEntry?: BrokerageEntry | null;
+  initialFormValues?: EntryCreateFormPrefill | null;
   onSubmitted?: (entry: BrokerageEntry) => void;
 }
 
@@ -533,6 +535,7 @@ export function EntryCreateDialog({
   session,
   mode = "create",
   initialEntry = null,
+  initialFormValues = null,
   onSubmitted,
 }: EntryCreateDialogProps) {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
@@ -749,7 +752,7 @@ export function EntryCreateDialog({
     const nextDefaults =
       mode === "edit" && initialEntry
         ? getDefaultValuesFromEntry(initialEntry)
-        : getDefaultValues(entryType);
+        : { ...getDefaultValues(entryType), ...(initialFormValues ?? {}) };
     form.reset(nextDefaults);
     setSubmitMessage(null);
     setIsAddingCompany(false);
@@ -772,7 +775,7 @@ export function EntryCreateDialog({
     setNewCommodityGroup("processed");
     setCommodityEditorMessage(null);
     setIsSavingCommodity(false);
-  }, [entryType, form, initialEntry, mode, open]);
+  }, [entryType, form, initialEntry, initialFormValues, mode, open]);
 
   useEffect(() => {
     if (!open || entryType !== "trade") return;

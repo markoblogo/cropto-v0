@@ -10,7 +10,7 @@ import { ChevronDown } from "lucide-react";
 import { BrokerWorkspacePane, type BrokerWorkspacePaneFilters } from "./components/BrokerWorkspacePane";
 import { ContextualMatchingPanel } from "./components/ContextualMatchingPanel";
 import { EntryDetailSheet } from "./components/EntryDetailSheet";
-import { EntryCreateDialog } from "./components/EntryCreateDialog";
+import { EntryCreateDialog, type EntryCreateFormPrefill } from "./components/EntryCreateDialog";
 import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
@@ -40,6 +40,7 @@ import type {
   EntryType,
   FeedFilterState,
   FilterPreset,
+  MatchSuggestion,
   PortOption,
   TransportMode,
 } from "./types";
@@ -103,6 +104,7 @@ export function SeaBrokerageMonitorPage() {
   const [isDeletingEntry, setIsDeletingEntry] = useState(false);
   const [isRepostingEntry, setIsRepostingEntry] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [tradePrefillFormValues, setTradePrefillFormValues] = useState<EntryCreateFormPrefill | null>(null);
   const [reportSending, setReportSending] = useState(false);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
   const [reportForm, setReportForm] = useState<{
@@ -324,6 +326,50 @@ export function SeaBrokerageMonitorPage() {
       }),
     [tradeEntriesBase, tradePaneFilters],
   );
+
+  function buildTradePrefillFromMatch(suggestion: MatchSuggestion): EntryCreateFormPrefill {
+    const offer = suggestion.offerEntry;
+    const bid = suggestion.bidEntry;
+    const periodMonth = offer.periodStart?.slice(0, 7) || offer.periodEnd?.slice(0, 7) || "";
+    const periodPreset =
+      offer.periodType === "spot"
+        ? "spot"
+        : offer.periodType === "prompt"
+          ? "prompt"
+          : offer.periodType === "month"
+            ? "full_month"
+            : offer.periodLabel?.toUpperCase().startsWith("1H")
+              ? "current_month_1h"
+              : offer.periodLabel?.toUpperCase().startsWith("2H")
+                ? "current_month_2h"
+                : "explicit_range";
+
+    return {
+      sellerName: offer.sellerName || offer.companyName || "",
+      buyerName: bid.buyerName || bid.companyName || "",
+      commodity: offer.commodity,
+      harvestYear: (String(offer.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "2026",
+      isNewCrop: !!offer.isNewCrop || !!bid.isNewCrop,
+      originCountry: offer.originCountryCode || bid.originCountryCode || "UA",
+      quantityPreset:
+        offer.quantityMt === null || offer.quantityMt === undefined ? "range" : "single",
+      quantityMt: offer.quantityMt ?? offer.volumeFrom ?? bid.quantityMt ?? bid.volumeFrom ?? 0,
+      quantityFromMt: offer.quantityMt == null ? (offer.volumeFrom ?? undefined) : undefined,
+      quantityToMt: offer.quantityMt == null ? (offer.volumeTo ?? undefined) : undefined,
+      tolerancePct: offer.tolerancePct ?? bid.tolerancePct ?? 0,
+      basis: offer.basis,
+      destinationPortCode: offer.destinationPortCode || bid.destinationPortCode || "",
+      periodPreset,
+      periodMonth,
+      periodStart: offer.periodStart || "",
+      periodEnd: offer.periodEnd || "",
+      currency: offer.currency,
+      price: offer.price ?? offer.priceFrom ?? bid.price ?? bid.priceFrom ?? 0,
+      paymentTerms: offer.paymentTerms || bid.paymentTerms || "CAD",
+      transportType: offer.transportType,
+      note: "",
+    };
+  }
 
   function handleOfferPaneFiltersChange(next: BrokerWorkspacePaneFilters) {
     setActivePresetId(null);
@@ -839,6 +885,10 @@ export function SeaBrokerageMonitorPage() {
             canLikeMatches={session.canCreateEntries}
             currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             onRequireAuth={() => setTelegramAuthOpen(true)}
+            onCreateTradeFromMatch={(suggestion) => {
+              setTradePrefillFormValues(buildTradePrefillFromMatch(suggestion));
+              setCreateDialogType("trade");
+            }}
           />
           <BrokerWorkspacePane
             title="Trades"
@@ -854,7 +904,10 @@ export function SeaBrokerageMonitorPage() {
             createActionLabel="Create TRADE"
             createActionVariant="default"
             createActionClassName="bg-teal-500/85 text-white hover:bg-teal-400 border border-teal-300/70"
-            onCreateAction={() => setCreateDialogType("trade")}
+            onCreateAction={() => {
+              setTradePrefillFormValues(null);
+              setCreateDialogType("trade");
+            }}
           />
         </section>
 
@@ -904,10 +957,14 @@ export function SeaBrokerageMonitorPage() {
       <EntryCreateDialog
         open={createDialogType === "trade"}
         onOpenChange={(open) => {
-          if (!open) setCreateDialogType(null);
+          if (!open) {
+            setCreateDialogType(null);
+            setTradePrefillFormValues(null);
+          }
         }}
         entryType="trade"
         session={session}
+        initialFormValues={tradePrefillFormValues}
       />
       <EntryCreateDialog
         open={!!editEntry}

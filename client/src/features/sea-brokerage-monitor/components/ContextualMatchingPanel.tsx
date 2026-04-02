@@ -33,6 +33,7 @@ interface ContextualMatchingPanelProps {
   canLikeMatches?: boolean;
   currentBrokerCode?: string | null;
   onRequireAuth?: () => void;
+  onCreateTradeFromMatch?: (suggestion: MatchSuggestion) => void;
 }
 
 type MatchingFocusState = {
@@ -141,6 +142,7 @@ export function ContextualMatchingPanel({
   canLikeMatches = false,
   currentBrokerCode = null,
   onRequireAuth,
+  onCreateTradeFromMatch,
 }: ContextualMatchingPanelProps) {
   const queryClient = useQueryClient();
   const [detailEntry, setDetailEntry] = useState<BrokerageEntry | null>(null);
@@ -428,6 +430,15 @@ export function ContextualMatchingPanel({
                           </button>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-5.5 px-1.5 text-[9.5px] sm:h-6 sm:text-[10px]"
+                            onClick={() => onCreateTradeFromMatch?.(suggestion)}
+                          >
+                            TO TRADE
+                          </Button>
                           <Button
                             type="button"
                             variant="outline"
