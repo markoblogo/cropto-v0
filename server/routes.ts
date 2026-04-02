@@ -74,6 +74,7 @@ import {
   issueSeaBrokerageTelegramOtp,
   verifySeaBrokerageTelegramOtp,
 } from "./services/seaBrokerageTelegramOtp";
+import { formatSeaBrokerageBasisRoute } from "./services/seaBrokerageBasisFormat";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -8571,16 +8572,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
         for (const entry of commodityEntries) {
-          const basis = toUpper(entry.basis);
-          const place = toUpper(
-            String(entry.destinationPort || "")
-              .split("|")
-              .map((part) => part.trim())
-              .filter(Boolean)
-              .join(" / ") || entry.destinationPortCode,
-          );
+          const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
           const transport = toUpper(transportShort[String(entry.transportType || "").toLowerCase()] || entry.transportType);
-          const key = `${basis}|${place}|${transport}`;
+          const key = `${route}|${transport}`;
           const bucket = byRoute.get(key) || [];
           bucket.push(entry);
           byRoute.set(key, bucket);
@@ -8589,9 +8583,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const [routeKey, routeEntries] of Array.from(byRoute.entries()).sort((a, b) =>
           a[0].localeCompare(b[0]),
         )) {
-          const [basis, place, transport] = routeKey.split("|");
+          const [route, transport] = routeKey.split("|");
           const qtyLabel = formatQtyRange(routeEntries);
-          const headingParts = [basis, place];
+          const headingParts = [route];
           if (qtyLabel) headingParts.push(qtyLabel);
           if (transport) headingParts.push(transport);
           reportLines.push(`${headingParts.join(" ")}:`);

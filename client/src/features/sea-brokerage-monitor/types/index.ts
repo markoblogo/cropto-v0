@@ -2,7 +2,7 @@ export type EntryType = "bid" | "offer" | "trade";
 
 export type CommodityCode = string;
 
-export type Basis = "FOB" | "CIF" | "CPT" | "DAP" | "FCA";
+export type Basis = "FOB" | "CIF" | "CPT" | "DAP" | "FCA" | "EXW";
 
 export type TransportType =
   | "handysize"

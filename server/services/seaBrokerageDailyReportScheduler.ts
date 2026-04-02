@@ -1,6 +1,7 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
 import { storage } from "../storage";
 import { sendSeaBrokerageTelegramInternalBroadcast } from "./seaBrokerageTelegramPublisher";
+import { formatSeaBrokerageBasisRoute } from "./seaBrokerageBasisFormat";
 
 const DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_DAILY_REPORT_TIMEZONE || "Europe/Paris";
 const DEFAULT_HOUR = Number(process.env.SEA_BROKERAGE_DAILY_REPORT_HOUR || "17");
@@ -143,9 +144,8 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
 
     const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
     for (const entry of commodityEntries) {
-      const basis = toUpper(entry.basis);
-      const place = toUpper(entry.destinationPort);
-      const key = `${basis}|${place}|${transportShort(entry)}`;
+      const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
+      const key = `${route}|${transportShort(entry)}`;
       const bucket = byRoute.get(key) || [];
       bucket.push(entry);
       byRoute.set(key, bucket);
@@ -154,9 +154,9 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
     for (const [routeKey, routeEntries] of Array.from(byRoute.entries()).sort((a, b) =>
       a[0].localeCompare(b[0]),
     )) {
-      const [basis, place, transport] = routeKey.split("|");
+      const [route, transport] = routeKey.split("|");
       const qty = quantityRangeK(routeEntries);
-      const heading = [basis, place, qty, transport].filter(Boolean).join(" ");
+      const heading = [route, qty, transport].filter(Boolean).join(" ");
       lines.push(`${heading}:`);
 
       const sellers = routeEntries.filter((entry) => entry.type === "offer");

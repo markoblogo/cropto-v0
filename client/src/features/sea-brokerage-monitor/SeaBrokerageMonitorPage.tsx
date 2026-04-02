@@ -1274,7 +1274,7 @@ export function SeaBrokerageMonitorPage() {
             <div className="rounded-md border border-border/70 p-3">
               <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Basis</div>
               <div className="grid max-h-36 gap-2 overflow-auto pr-1">
-                {["FOB", "CIF", "CPT", "DAP", "FCA"].map((basis) => (
+                {["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"].map((basis) => (
                   <label key={basis} className="inline-flex items-center gap-2 text-sm">
                     <Checkbox
                       checked={reportForm.basis.includes(basis)}

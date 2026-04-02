@@ -124,7 +124,7 @@ const entryFormSchema = z
       .number()
       .min(0, "Tolerance must be 0 or greater")
       .max(25, "Tolerance must be 25% or lower"),
-    basis: z.enum(["FOB", "CIF", "CPT", "DAP", "FCA"]),
+    basis: z.enum(["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"]),
     destinationPortCodes: z.array(z.string().min(1)).min(1, "Port / place is required"),
     periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),

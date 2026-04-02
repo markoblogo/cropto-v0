@@ -1,5 +1,9 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
 import type { SeaBrokerageMatchSuggestion } from "./seaBrokerageMatching";
+import {
+  formatSeaBrokerageBasisRoute,
+  resolveSeaBrokerageCountryAlpha2,
+} from "./seaBrokerageBasisFormat";
 
 type TelegramPublishResult = {
   status: "published" | "failed";
@@ -176,29 +180,6 @@ function formatQuantityLine(entry: SeaBrokerageEntryRow) {
   return tolerance > 0 ? `${quantityLabel} MT ${tolerance}%` : `${quantityLabel} MT`;
 }
 
-function resolveCountryCodeAlpha2(entry: SeaBrokerageEntryRow, value: string | null | undefined) {
-  const normalized = String(value || "").trim().toUpperCase();
-  if (/^[A-Z]{2}$/.test(normalized)) return normalized;
-  if (/^[A-Z]{3}$/.test(normalized)) {
-    if (normalized === "UKR") return "UA";
-    if (normalized === "ESP") return "ES";
-    if (normalized === "EGY") return "EG";
-    if (normalized === "TUR") return "TR";
-    if (normalized === "ROU") return "RO";
-    if (normalized === "MDA") return "MD";
-    if (normalized === "DEU" || normalized === "GER") return "DE";
-  }
-  const destination = String(entry.destinationCountry || "").trim().toUpperCase();
-  if (destination === "UKRAINE") return "UA";
-  if (destination === "SPAIN") return "ES";
-  if (destination === "EGYPT") return "EG";
-  if (destination === "TURKEY") return "TR";
-  if (destination === "ROMANIA") return "RO";
-  if (destination === "MOLDOVA") return "MD";
-  if (destination === "GERMANY") return "DE";
-  return normalized || "N/A";
-}
-
 function formatStandardTelegramMessage(
   entry: SeaBrokerageEntryRow,
   brokerSignature?: string | null,
@@ -211,11 +192,7 @@ function formatStandardTelegramMessage(
       ? brokerSignature || entry.companyName || entry.brokerName || entry.brokerCode
       : "",
   );
-  const originCountryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode);
-  const destinationCountryCode = resolveCountryCodeAlpha2(
-    entry,
-    entry.destinationCountryCode || entry.destinationCountry,
-  );
+  const originCountryCode = resolveSeaBrokerageCountryAlpha2(entry, entry.originCountryCode);
   const counterpartyLine = formatTelegramCounterparty(entry) || (entry.type === "offer" ? "SELLER" : "BUYER");
   const sellerLine =
     (entry.sellerName || "").trim() ||
@@ -243,7 +220,7 @@ function formatStandardTelegramMessage(
     `${formatTelegramCommodity(entry)}, ${originCountryCode}`,
     entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim().toUpperCase() : null,
     formatQuantityLine(entry),
-    `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${destinationCountryCode}`,
+    formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" }),
     formatTelegramTransportCode(entry),
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
@@ -317,7 +294,10 @@ function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow
   const brokerHandle = entry.brokerTelegramUsername
     ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
     : entry.brokerCode;
-  const countryCode = resolveCountryCodeAlpha2(entry, entry.originCountryCode || entry.destinationCountryCode);
+  const countryCode = resolveSeaBrokerageCountryAlpha2(
+    entry,
+    entry.originCountryCode || entry.destinationCountryCode,
+  );
   const brokerPart = includeBroker ? ` ${brokerHandle}` : "";
   const counterparty = label === "BID"
     ? normalizeCounterpartyName(entry.buyerName)
@@ -326,7 +306,13 @@ function formatMatchSideLine(label: "BID" | "OFFER", entry: SeaBrokerageEntryRow
     `${label}${brokerPart}`,
     `${formatTelegramCommodity(entry)}, ${countryCode}`,
     formatQuantityInline(entry),
-    `${entry.basis.toUpperCase()} ${entry.destinationPort.toUpperCase()}, ${countryCode}`,
+    formatSeaBrokerageBasisRoute(
+      {
+        ...entry,
+        destinationCountryCode: countryCode,
+      },
+      { uppercase: true, countryMode: "alpha2" },
+    ),
     `${formatPeriodInline(entry)} @ ${formatPriceInline(entry)}`,
     counterparty || entry.companyName || entry.brokerName || entry.brokerCode,
   ]

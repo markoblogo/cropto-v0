@@ -216,7 +216,7 @@ export function MonitorToolbar({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All basis</SelectItem>
-              {["FOB", "CIF", "CPT", "DAP", "FCA"].map((basis) => (
+              {["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"].map((basis) => (
                 <SelectItem key={basis} value={basis}>
                   {basis}
                 </SelectItem>
