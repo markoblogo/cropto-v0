@@ -157,11 +157,11 @@ export function BrokerWorkspacePane({
                         : "border-l-transparent hover:bg-muted/16"
                     }`}
                   >
-                    <div className="flex w-full min-w-0 items-start gap-2 overflow-hidden">
+                    <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 overflow-hidden">
                       <div className="min-w-0 flex-1 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
-                      <div className="ml-auto flex shrink-0 items-center gap-1">
+                      <div className="flex shrink-0 items-center gap-1 justify-self-end">
                         {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
                           <span
                             role={isOwnEntry || entry.likedByMe ? undefined : "button"}
