@@ -135,7 +135,7 @@ export function BrokerWorkspacePane({
           </div>
         ) : (
           <ScrollArea className="h-[236px] sm:h-[248px] lg:h-[262px] xl:h-[274px]">
-            <div className="divide-y divide-border/50">
+            <div className="divide-y divide-border/50 pr-2 sm:pr-3">
               {entries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
                 const isOwnEntry =
