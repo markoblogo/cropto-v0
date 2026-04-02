@@ -779,9 +779,7 @@ export function EntryCreateDialog({
     if (!authorBrokerIdentityKey) return;
 
     const authorOption = brokerDirectoryByKey.get(authorBrokerIdentityKey);
-    const firstCounterparty = brokerDirectoryOptions.find(
-      (option) => option.key !== authorBrokerIdentityKey,
-    );
+    const firstCounterparty = brokerDirectoryOptions[0];
     const currentRole = form.getValues("tradeMyRole");
     const currentCounterparty = form.getValues("tradeCounterpartyBrokerKey");
 
@@ -804,12 +802,12 @@ export function EntryCreateDialog({
       );
       if (sellerKey && sellerKey === authorBrokerIdentityKey) {
         form.setValue("tradeMyRole", "seller");
-        if (buyerKey && buyerKey !== authorBrokerIdentityKey) {
+        if (buyerKey) {
           form.setValue("tradeCounterpartyBrokerKey", buyerKey);
         }
       } else if (buyerKey && buyerKey === authorBrokerIdentityKey) {
         form.setValue("tradeMyRole", "buyer");
-        if (sellerKey && sellerKey !== authorBrokerIdentityKey) {
+        if (sellerKey) {
           form.setValue("tradeCounterpartyBrokerKey", sellerKey);
         }
       } else if (initialEntry.tradeSellerBrokerTelegramUsername || initialEntry.tradeSellerBrokerTelegramUserId) {
@@ -952,9 +950,6 @@ export function EntryCreateDialog({
       }
       if (!counterpartyKey) {
         throw new Error("Select the second broker for TRADE.");
-      }
-      if (counterpartyKey === authorBrokerIdentityKey) {
-        throw new Error("Counterparty broker must be different from your Telegram account.");
       }
       const counterpartyBroker = brokerDirectoryByKey.get(counterpartyKey);
       if (!counterpartyBroker) {
@@ -1453,13 +1448,11 @@ export function EntryCreateDialog({
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="__none__">Select broker</SelectItem>
-                          {brokerDirectoryOptions
-                            .filter((option) => option.key !== authorBrokerIdentityKey)
-                            .map((option) => (
-                              <SelectItem key={option.key} value={option.key}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
+                          {brokerDirectoryOptions.map((option) => (
+                            <SelectItem key={option.key} value={option.key}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <div className="text-[11px] text-muted-foreground">
