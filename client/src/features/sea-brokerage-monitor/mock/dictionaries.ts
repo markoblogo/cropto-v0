@@ -10,6 +10,7 @@ import type {
   PortOption,
   SelectOption,
 } from "../types";
+import { isoCurrencyOptionsEn } from "./isoCurrencyOptions.en";
 
 export const brokers: BrokerUser[] = [
   {
@@ -92,10 +93,23 @@ export const paymentTermOptions: PaymentTermOption[] = [
   { code: "CAFD", displayLabel: "Cash against fax copy documents", compactDisplay: "CAFD" },
 ];
 
-export const currencyOptions: SelectOption<Currency>[] = [
+const preferredCurrencyOptions: SelectOption<Currency>[] = [
   { value: "USD", label: "USD ($)" },
   { value: "EUR", label: "EUR (€)" },
   { value: "UAH", label: "UAH (₴)" },
+  { value: "USD INCL. VAT", label: "USD incl. VAT" },
+  { value: "USD + VAT", label: "USD + VAT" },
+  { value: "EUR INCL. VAT", label: "EUR incl. VAT" },
+  { value: "EUR + VAT", label: "EUR + VAT" },
+];
+
+const preferredCurrencyCodes = new Set(
+  preferredCurrencyOptions.map((option) => option.value.toUpperCase()),
+);
+
+export const currencyOptions: SelectOption<Currency>[] = [
+  ...preferredCurrencyOptions,
+  ...isoCurrencyOptionsEn.filter((option) => !preferredCurrencyCodes.has(option.value.toUpperCase())),
 ];
 
 export const countryOptions: CountryOption[] = [

@@ -7,10 +7,35 @@ import {
 } from "./displayStandards";
 import type { BrokerageEntry, Currency } from "../types";
 
-function getCurrencySymbol(currency: Currency) {
-  if (currency === "EUR") return "€";
-  if (currency === "UAH") return "₴";
-  return "$";
+function resolveCurrencyDisplaySuffix(currency: Currency) {
+  const normalized = String(currency || "").trim().toUpperCase();
+  if (!normalized) return "$";
+
+  // Keep explicit VAT flavors readable in compact tape formatting.
+  if (normalized.includes("VAT")) {
+    return ` ${normalized}`;
+  }
+
+  try {
+    const parts = new Intl.NumberFormat("en", {
+      style: "currency",
+      currency: normalized,
+      currencyDisplay: "narrowSymbol",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).formatToParts(1);
+    const symbol = parts.find((part) => part.type === "currency")?.value;
+    if (symbol && symbol !== normalized) {
+      return symbol;
+    }
+  } catch {
+    // Fall through to explicit fallback map below.
+  }
+
+  if (normalized === "EUR") return "€";
+  if (normalized === "UAH") return "₴";
+  if (normalized === "USD") return "$";
+  return ` ${normalized}`;
 }
 
 function parseValidDate(value: string) {
@@ -186,7 +211,7 @@ export function formatEntryPriceTape(entry: BrokerageEntry) {
     return "@ subject";
   }
 
-  const currencySymbol = getCurrencySymbol(entry.currency);
+  const currencySymbol = resolveCurrencyDisplaySuffix(entry.currency);
 
   if (
     entry.price === null &&

@@ -16,7 +16,7 @@ export type TransportType =
 
 export type TransportMode = "land" | "river" | "bulk_sea" | "container";
 
-export type Currency = "USD" | "EUR" | "UAH";
+export type Currency = string;
 export type PaymentTermCode = "CAD" | "CAFD";
 
 export type VolumeUnit = "mt";
