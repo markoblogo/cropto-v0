@@ -1157,6 +1157,34 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
   }
 }
 
+async function processSeaBrokerageEntryRelay(
+  entry: SeaBrokerageEntryRow,
+  brokerTelegramUsername?: string | null,
+) {
+  try {
+    const relayResult = await publishSeaBrokerageEntryToTelegram(entry, {
+      brokerTelegramUsername: brokerTelegramUsername ?? null,
+    });
+    const updated = await storage.updateSeaBrokerageEntry(entry.id, {
+      telegramRelayStatus: relayResult.status,
+      telegramRelayMessage: relayResult.messageText,
+      telegramMessageId: relayResult.messageId ?? null,
+    });
+    await relaySeaBrokerageMatchesForEntry(updated);
+  } catch (error) {
+    console.error("[SeaBrokerage] Async relay failed:", error);
+    try {
+      await storage.updateSeaBrokerageEntry(entry.id, {
+        telegramRelayStatus: "failed",
+        telegramRelayMessage:
+          error instanceof Error ? error.message : "Unknown async relay error",
+      });
+    } catch (updateError) {
+      console.error("[SeaBrokerage] Failed to update relay status after async error:", updateError);
+    }
+  }
+}
+
 async function getFeedbackAlertRecipients(): Promise<string[]> {
   const configured = process.env.FEEDBACK_ALERT_EMAILS || process.env.FEEDBACK_ALERT_EMAIL || "";
   const envRecipients = configured
@@ -9823,18 +9851,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         telegramRelayStatus: "queued",
       });
 
-      const relayResult = await publishSeaBrokerageEntryToTelegram(created, {
-        brokerTelegramUsername: authorizedBroker.telegramUsername,
-      });
-      const updated = await storage.updateSeaBrokerageEntry(created.id, {
-        telegramRelayStatus: relayResult.status,
-        telegramRelayMessage: relayResult.messageText,
-        telegramMessageId: relayResult.messageId ?? null,
-      });
-
-      await relaySeaBrokerageMatchesForEntry(updated);
-
-      res.status(201).json(mapSeaBrokerageEntryToClientShape(updated));
+      void processSeaBrokerageEntryRelay(created, authorizedBroker.telegramUsername);
+      res.status(201).json(mapSeaBrokerageEntryToClientShape(created));
     } catch (error: any) {
       console.error("Error creating sea brokerage monitor entry:", error);
       res.status(500).json({ error: "Failed to create sea brokerage monitor entry" });
@@ -10135,15 +10153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         telegramMessageId: null,
       });
 
-      const relayResult = await publishSeaBrokerageEntryToTelegram(created, {
-        brokerTelegramUsername: source.brokerTelegramUsername,
-      });
-      const updated = await storage.updateSeaBrokerageEntry(created.id, {
-        telegramRelayStatus: relayResult.status,
-        telegramRelayMessage: relayResult.messageText,
-        telegramMessageId: relayResult.messageId ?? null,
-      });
-      await relaySeaBrokerageMatchesForEntry(updated);
+      void processSeaBrokerageEntryRelay(created, source.brokerTelegramUsername);
 
       if (!isAuthor && actor.isBoss) {
         const authorChat = source.brokerTelegramUserId
@@ -10157,13 +10167,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             [
               "#entry_repost 🔁",
               `${actor.actorCode} reposted your ${source.type.toUpperCase()} entry`,
-              updated.canonicalView,
+              created.canonicalView,
             ].join("\n"),
           );
         }
       }
 
-      return res.status(201).json(mapSeaBrokerageEntryToClientShape(updated));
+      return res.status(201).json(mapSeaBrokerageEntryToClientShape(created));
     } catch (error: any) {
       console.error("Error reposting sea brokerage monitor entry:", error);
       return res.status(500).json({ error: "Failed to repost sea brokerage monitor entry" });

@@ -23,6 +23,25 @@ type RelayTarget = {
   chatId: string;
 };
 
+const TELEGRAM_REQUEST_TIMEOUT_MS = Math.max(
+  1000,
+  Number(process.env.SEA_BROKERAGE_TELEGRAM_TIMEOUT_MS || "8000"),
+);
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = TELEGRAM_REQUEST_TIMEOUT_MS,
+) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 function countryFlagEmoji(countryCode: string | null | undefined) {
   const normalizedRaw = (countryCode || "").trim().toUpperCase();
   const normalized =
@@ -439,7 +458,7 @@ async function sendTelegramMessages(
   for (const target of targets) {
     const text = target.channel === "internal" ? internalMessage : externalMessage;
     try {
-      const response = await fetch(apiBase, {
+      const response = await fetchWithTimeout(apiBase, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -541,7 +560,7 @@ export async function sendSeaBrokerageTelegramDirectMessage(
   }
 
   try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const response = await fetchWithTimeout(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
