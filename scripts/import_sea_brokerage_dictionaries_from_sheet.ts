@@ -47,6 +47,14 @@ function normalizeText(value: unknown) {
     .trim();
 }
 
+function normalizeHeaderKey(value: unknown) {
+  return String(value ?? "")
+    .trim()
+    .replace(/[Сс]/g, "c")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 function slugify(value: string) {
   return normalizeText(value)
     .toLowerCase()
@@ -102,6 +110,21 @@ function classifyCommodityGroup(label: string) {
     return "oilseeds" as const;
   }
   return "processed" as const;
+}
+
+function pickRowValuesByHeader(
+  row: Record<string, unknown>,
+  expectedHeaders: string[],
+): string[] {
+  const normalizedExpected = new Set(expectedHeaders.map((item) => normalizeHeaderKey(item)));
+  const values: string[] = [];
+  for (const [key, value] of Object.entries(row)) {
+    if (!normalizedExpected.has(normalizeHeaderKey(key))) continue;
+    const normalizedValue = normalizeText(value);
+    if (!normalizedValue) continue;
+    values.push(normalizedValue);
+  }
+  return values;
 }
 
 async function main() {
@@ -205,9 +228,21 @@ async function main() {
     basisSet.add(basis);
   };
 
-  for (const row of buyers) registerCompany(row["Company Group"]);
-  for (const row of sellers) registerCompany(row["Company Group"]);
-  for (const row of entities) registerCompany(row["Company Group"]);
+  for (const row of buyers) {
+    for (const value of pickRowValuesByHeader(row, ["Company Group", "Company name (EN)"])) {
+      registerCompany(value);
+    }
+  }
+  for (const row of sellers) {
+    for (const value of pickRowValuesByHeader(row, ["Company Group", "Company name (EN)"])) {
+      registerCompany(value);
+    }
+  }
+  for (const row of entities) {
+    for (const value of pickRowValuesByHeader(row, ["Company Group", "Company name (EN)"])) {
+      registerCompany(value);
+    }
+  }
 
   for (const row of bids) {
     registerCompany(row["Buyer"]);
