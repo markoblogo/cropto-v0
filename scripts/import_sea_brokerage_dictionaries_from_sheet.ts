@@ -3,6 +3,8 @@ import { storage } from "../server/storage";
 import { isoCountryOptionsEn } from "../client/src/features/sea-brokerage-monitor/mock/isoCountryOptions.en";
 
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
+const SEA_BROKERAGE_BUYER_COMPANIES_KEY = "sea_brokerage_buyer_companies_v1";
+const SEA_BROKERAGE_SELLER_COMPANIES_KEY = "sea_brokerage_seller_companies_v1";
 const SEA_BROKERAGE_COUNTRIES_KEY = "sea_brokerage_countries_v1";
 const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
@@ -47,7 +49,7 @@ function normalizeText(value: unknown) {
     .trim();
 }
 
-const COMPANY_LABEL_REGEX = /^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/;
+const COMPANY_LABEL_REGEX = /^(?=.{2,120}$)[A-Za-z0-9"'&().,\/-][A-Za-z0-9\s'"&().,\/-]*$/;
 
 function normalizeHeaderKey(value: unknown) {
   return String(value ?? "")
@@ -153,6 +155,8 @@ async function main() {
   );
 
   const companiesByLabel = new Map<string, CompanyEntry>();
+  const buyerCompaniesByLabel = new Map<string, CompanyEntry>();
+  const sellerCompaniesByLabel = new Map<string, CompanyEntry>();
   const commoditiesByCode = new Map<string, CommodityEntry>();
   const countriesByCode = new Map<string, CountryEntry>();
   const locationsByCode = new Map<string, LocationEntry>();
@@ -169,6 +173,32 @@ async function main() {
       displayLabel: label,
       compactDisplay: label.toUpperCase(),
     });
+  };
+  const registerBuyerCompany = (raw: unknown) => {
+    const label = normalizeText(raw);
+    if (!label) return;
+    if (!COMPANY_LABEL_REGEX.test(label)) return;
+    const key = label.toLowerCase();
+    if (buyerCompaniesByLabel.has(key)) return;
+    buyerCompaniesByLabel.set(key, {
+      id: buildCompanyId(label),
+      displayLabel: label,
+      compactDisplay: label.toUpperCase(),
+    });
+    registerCompany(label);
+  };
+  const registerSellerCompany = (raw: unknown) => {
+    const label = normalizeText(raw);
+    if (!label) return;
+    if (!COMPANY_LABEL_REGEX.test(label)) return;
+    const key = label.toLowerCase();
+    if (sellerCompaniesByLabel.has(key)) return;
+    sellerCompaniesByLabel.set(key, {
+      id: buildCompanyId(label),
+      displayLabel: label,
+      compactDisplay: label.toUpperCase(),
+    });
+    registerCompany(label);
   };
 
   const registerCommodity = (raw: unknown) => {
@@ -233,29 +263,29 @@ async function main() {
 
   for (const row of buyers) {
     for (const value of pickRowValuesByHeader(row, ["Company Group", "Company name (EN)"])) {
-      registerCompany(value);
+      registerBuyerCompany(value);
     }
   }
   for (const row of sellers) {
     for (const value of pickRowValuesByHeader(row, ["Company Group", "Company name (EN)"])) {
-      registerCompany(value);
+      registerSellerCompany(value);
     }
   }
   for (const row of entities) {
     for (const value of pickRowValuesByHeader(row, ["Company Group", "Company name (EN)"])) {
-      registerCompany(value);
+      registerSellerCompany(value);
     }
   }
 
   for (const row of bids) {
-    registerCompany(row["Buyer"]);
+    registerBuyerCompany(row["Buyer"]);
     registerCommodity(row["Commodity"]);
     registerCountry(row["Country"]);
     registerDestination(row["Destination"], row["Country"]);
     registerBasis(row["Basis"]);
   }
   for (const row of offers) {
-    registerCompany(row["Seller"] || row["Buyer"]);
+    registerSellerCompany(row["Seller"] || row["Buyer"]);
     registerCommodity(row["Commodity"]);
     registerCountry(row["Country"]);
     registerDestination(row["Destination"], row["Country"]);
@@ -269,6 +299,12 @@ async function main() {
   }
 
   const companies = Array.from(companiesByLabel.values()).sort((a, b) =>
+    a.displayLabel.localeCompare(b.displayLabel),
+  );
+  const buyerCompanies = Array.from(buyerCompaniesByLabel.values()).sort((a, b) =>
+    a.displayLabel.localeCompare(b.displayLabel),
+  );
+  const sellerCompanies = Array.from(sellerCompaniesByLabel.values()).sort((a, b) =>
     a.displayLabel.localeCompare(b.displayLabel),
   );
   const commodities = Array.from(commoditiesByCode.values()).sort((a, b) =>
@@ -285,6 +321,14 @@ async function main() {
   const basis = Array.from(basisSet.values()).sort();
 
   await storage.upsertAppSetting(SEA_BROKERAGE_COMPANIES_KEY, JSON.stringify(companies));
+  await storage.upsertAppSetting(
+    SEA_BROKERAGE_BUYER_COMPANIES_KEY,
+    JSON.stringify(buyerCompanies),
+  );
+  await storage.upsertAppSetting(
+    SEA_BROKERAGE_SELLER_COMPANIES_KEY,
+    JSON.stringify(sellerCompanies),
+  );
   await storage.upsertAppSetting(SEA_BROKERAGE_COMMODITIES_KEY, JSON.stringify(commodities));
   await storage.upsertAppSetting(SEA_BROKERAGE_COUNTRIES_KEY, JSON.stringify(countries));
   await storage.upsertAppSetting(SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY, JSON.stringify(locations));

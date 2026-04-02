@@ -381,7 +381,7 @@ function collectDailyDictionaryValues(entries: SeaBrokerageEntryRow[]) {
   const buyers = entries.map((entry) => String(entry.buyerName || "").trim()).filter(Boolean);
   const sellers = entries.map((entry) => String(entry.sellerName || "").trim()).filter(Boolean);
   const entities = entries
-    .flatMap((entry) => [entry.companyName, entry.sellerName, entry.buyerName])
+    .flatMap((entry) => [entry.companyName, entry.sellerName])
     .map((value) => String(value || "").trim())
     .filter(Boolean);
   const commodities = entries

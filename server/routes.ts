@@ -212,6 +212,7 @@ const seaBrokerageLocationCreateSchema = z.object({
 
 const seaBrokerageCompanyCreateSchema = z.object({
   displayLabel: z.string().trim().min(2).max(120),
+  role: z.enum(["buyer", "seller"]).optional(),
 });
 
 const seaBrokerageCountryCreateSchema = z.object({
@@ -300,6 +301,8 @@ type SeaBrokerageCustomLocation = {
 
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_COMPANIES_KEY = "sea_brokerage_companies_v1";
+const SEA_BROKERAGE_BUYER_COMPANIES_KEY = "sea_brokerage_buyer_companies_v1";
+const SEA_BROKERAGE_SELLER_COMPANIES_KEY = "sea_brokerage_seller_companies_v1";
 const SEA_BROKERAGE_COUNTRIES_KEY = "sea_brokerage_countries_v1";
 const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
 const SEA_BROKERAGE_BASIS_KEY = "sea_brokerage_basis_v1";
@@ -507,7 +510,7 @@ function normalizeCompanyLabel(value: string) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
-const SEA_BROKERAGE_COMPANY_LABEL_REGEX = /^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/;
+const SEA_BROKERAGE_COMPANY_LABEL_REGEX = /^(?=.{2,120}$)[A-Za-z0-9"'&().,\/-][A-Za-z0-9\s'"&().,\/-]*$/;
 
 function isSeaBrokerageCompanyLabelAllowed(value: string) {
   return SEA_BROKERAGE_COMPANY_LABEL_REGEX.test(value);
@@ -602,6 +605,39 @@ async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionar
   } catch {
     return [];
   }
+}
+
+async function readSeaBrokerageCompaniesByKey(
+  key: string,
+): Promise<SeaBrokerageCompanyDictionaryEntry[]> {
+  const raw = (await storage.getAppSetting(key))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageCompanyDictionaryEntry[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.id === "string" &&
+          typeof item.displayLabel === "string" &&
+          typeof item.compactDisplay === "string",
+      )
+      .map((item) => ({
+        id: String(item.id).trim(),
+        displayLabel: normalizeCompanyLabel(item.displayLabel),
+        compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function readSeaBrokerageBuyerCompanies(): Promise<SeaBrokerageCompanyDictionaryEntry[]> {
+  return readSeaBrokerageCompaniesByKey(SEA_BROKERAGE_BUYER_COMPANIES_KEY);
+}
+
+async function readSeaBrokerageSellerCompanies(): Promise<SeaBrokerageCompanyDictionaryEntry[]> {
+  return readSeaBrokerageCompaniesByKey(SEA_BROKERAGE_SELLER_COMPANIES_KEY);
 }
 
 async function readSeaBrokerageCountries(): Promise<SeaBrokerageCountryDictionaryEntry[]> {
@@ -832,6 +868,28 @@ function deriveSeaBrokerageCompaniesFromEntries(
     if (buyer && isSeaBrokerageCompanyLabelAllowed(buyer)) labels.add(buyer);
   }
 
+  return Array.from(labels.values()).map((label) => buildSeaBrokerageCompanyEntry(label));
+}
+
+function deriveSeaBrokerageBuyerCompaniesFromEntries(
+  entries: SeaBrokerageEntryRow[],
+): SeaBrokerageCompanyDictionaryEntry[] {
+  const labels = new Set<string>();
+  for (const entry of entries) {
+    const buyer = normalizeCompanyLabel(entry.buyerName || "");
+    if (buyer && isSeaBrokerageCompanyLabelAllowed(buyer)) labels.add(buyer);
+  }
+  return Array.from(labels.values()).map((label) => buildSeaBrokerageCompanyEntry(label));
+}
+
+function deriveSeaBrokerageSellerCompaniesFromEntries(
+  entries: SeaBrokerageEntryRow[],
+): SeaBrokerageCompanyDictionaryEntry[] {
+  const labels = new Set<string>();
+  for (const entry of entries) {
+    const seller = normalizeCompanyLabel(entry.sellerName || "");
+    if (seller && isSeaBrokerageCompanyLabelAllowed(seller)) labels.add(seller);
+  }
   return Array.from(labels.values()).map((label) => buildSeaBrokerageCompanyEntry(label));
 }
 
@@ -9636,13 +9694,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sea-brokerage-monitor/companies", async (_req, res) => {
     try {
-      const [savedCompanies, entries] = await Promise.all([
+      const role = String((_req.query as Record<string, unknown>)?.role || "")
+        .trim()
+        .toLowerCase();
+      const [savedCompanies, savedBuyers, savedSellers, entries] = await Promise.all([
         readSeaBrokerageCompanies(),
+        readSeaBrokerageBuyerCompanies(),
+        readSeaBrokerageSellerCompanies(),
         storage.listSeaBrokerageEntries(),
       ]);
       const derivedCompanies = deriveSeaBrokerageCompaniesFromEntries(entries);
+      const derivedBuyers = deriveSeaBrokerageBuyerCompaniesFromEntries(entries);
+      const derivedSellers = deriveSeaBrokerageSellerCompaniesFromEntries(entries);
       const companies = mergeSeaBrokerageCompanies(savedCompanies, derivedCompanies);
-      return res.json({ companies });
+      const buyers = mergeSeaBrokerageCompanies(savedBuyers, derivedBuyers);
+      const sellers = mergeSeaBrokerageCompanies(savedSellers, derivedSellers);
+
+      if (role === "buyer") {
+        return res.json({ companies: buyers, buyers, sellers });
+      }
+      if (role === "seller") {
+        return res.json({ companies: sellers, buyers, sellers });
+      }
+      return res.json({ companies, buyers, sellers });
     } catch (error: any) {
       console.error("Error listing sea brokerage companies:", error);
       return res.status(500).json({ error: "Failed to list companies" });
@@ -9665,25 +9739,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const label = normalizeCompanyLabel(parsed.data.displayLabel);
+      const role = parsed.data.role === "buyer" ? "buyer" : parsed.data.role === "seller" ? "seller" : null;
       if (!isSeaBrokerageCompanyLabelAllowed(label)) {
         return res.status(400).json({
           error: "Company name must use Latin letters/numbers and basic punctuation.",
         });
       }
 
-      const [savedCompanies, entries] = await Promise.all([
+      const [savedCompanies, savedBuyers, savedSellers, entries] = await Promise.all([
         readSeaBrokerageCompanies(),
+        readSeaBrokerageBuyerCompanies(),
+        readSeaBrokerageSellerCompanies(),
         storage.listSeaBrokerageEntries(),
       ]);
       const current = mergeSeaBrokerageCompanies(
         savedCompanies,
         deriveSeaBrokerageCompaniesFromEntries(entries),
       );
+      const currentBuyers = mergeSeaBrokerageCompanies(
+        savedBuyers,
+        deriveSeaBrokerageBuyerCompaniesFromEntries(entries),
+      );
+      const currentSellers = mergeSeaBrokerageCompanies(
+        savedSellers,
+        deriveSeaBrokerageSellerCompaniesFromEntries(entries),
+      );
+      const rolePool =
+        role === "buyer" ? currentBuyers : role === "seller" ? currentSellers : current;
       const duplicate = current.find(
         (item) => item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
       );
+      const roleDuplicate = rolePool.find(
+        (item) => item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+      );
       if (duplicate) {
-        return res.status(200).json({ company: duplicate, duplicate: true });
+        return res.status(200).json({
+          company: roleDuplicate || duplicate,
+          duplicate: true,
+        });
       }
 
       const id = buildCompanyId(label);
@@ -9699,7 +9792,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const next = mergeSeaBrokerageCompanies(savedCompanies, [created]);
-      await storage.upsertAppSetting(SEA_BROKERAGE_COMPANIES_KEY, JSON.stringify(next));
+      const nextBuyers = role === "buyer" ? mergeSeaBrokerageCompanies(savedBuyers, [created]) : savedBuyers;
+      const nextSellers = role === "seller" ? mergeSeaBrokerageCompanies(savedSellers, [created]) : savedSellers;
+      await Promise.all([
+        storage.upsertAppSetting(SEA_BROKERAGE_COMPANIES_KEY, JSON.stringify(next)),
+        storage.upsertAppSetting(SEA_BROKERAGE_BUYER_COMPANIES_KEY, JSON.stringify(nextBuyers)),
+        storage.upsertAppSetting(SEA_BROKERAGE_SELLER_COMPANIES_KEY, JSON.stringify(nextSellers)),
+      ]);
 
       return res.status(201).json({ company: created, duplicate: false });
     } catch (error: any) {

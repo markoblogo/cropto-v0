@@ -591,15 +591,22 @@ export function EntryCreateDialog({
   });
 
   const values = form.watch();
-  const { data: companyOptionsData = [] } = useQuery<CompanyOption[]>({
+  const { data: companyOptionsData = {} } = useQuery<{
+    companies?: CompanyOption[];
+    buyers?: CompanyOption[];
+    sellers?: CompanyOption[];
+  }>({
     queryKey: ["/api/sea-brokerage-monitor/companies"],
     queryFn: async () => {
       const response = await fetch("/api/sea-brokerage-monitor/companies");
       if (!response.ok) {
         throw new Error(`Failed to load companies (${response.status})`);
       }
-      const payload = (await response.json()) as { companies?: CompanyOption[] };
-      return Array.isArray(payload.companies) ? payload.companies : [];
+      return (await response.json()) as {
+        companies?: CompanyOption[];
+        buyers?: CompanyOption[];
+        sellers?: CompanyOption[];
+      };
     },
     staleTime: 60_000,
   });
@@ -720,7 +727,7 @@ export function EntryCreateDialog({
   }, [allCountryOptions]);
   const companyOptions = useMemo(() => {
     const byLabel = new Map<string, CompanyOption>();
-    for (const option of companyOptionsData) {
+    for (const option of companyOptionsData.companies || []) {
       const key = option.displayLabel.trim().toLowerCase();
       if (!key) continue;
       byLabel.set(key, option);
@@ -728,21 +735,45 @@ export function EntryCreateDialog({
     return Array.from(byLabel.values()).sort((left, right) =>
       left.displayLabel.localeCompare(right.displayLabel),
     );
-  }, [companyOptionsData]);
+  }, [companyOptionsData.companies]);
+  const sellerCompanyDictionary = useMemo(() => {
+    const source = (companyOptionsData.sellers?.length ? companyOptionsData.sellers : companyOptions) || [];
+    const byLabel = new Map<string, CompanyOption>();
+    for (const option of source) {
+      const key = option.displayLabel.trim().toLowerCase();
+      if (!key) continue;
+      byLabel.set(key, option);
+    }
+    return Array.from(byLabel.values()).sort((left, right) =>
+      left.displayLabel.localeCompare(right.displayLabel),
+    );
+  }, [companyOptionsData.sellers, companyOptions]);
+  const buyerCompanyDictionary = useMemo(() => {
+    const source = (companyOptionsData.buyers?.length ? companyOptionsData.buyers : companyOptions) || [];
+    const byLabel = new Map<string, CompanyOption>();
+    for (const option of source) {
+      const key = option.displayLabel.trim().toLowerCase();
+      if (!key) continue;
+      byLabel.set(key, option);
+    }
+    return Array.from(byLabel.values()).sort((left, right) =>
+      left.displayLabel.localeCompare(right.displayLabel),
+    );
+  }, [companyOptionsData.buyers, companyOptions]);
   const sellerCompanyOptions = useMemo(() => {
     const query = sellerCompanySearch.trim().toLowerCase();
-    if (!query) return companyOptions;
-    return companyOptions.filter((option) =>
+    if (!query) return sellerCompanyDictionary;
+    return sellerCompanyDictionary.filter((option) =>
       option.displayLabel.toLowerCase().includes(query),
     );
-  }, [companyOptions, sellerCompanySearch]);
+  }, [sellerCompanyDictionary, sellerCompanySearch]);
   const buyerCompanyOptions = useMemo(() => {
     const query = buyerCompanySearch.trim().toLowerCase();
-    if (!query) return companyOptions;
-    return companyOptions.filter((option) =>
+    if (!query) return buyerCompanyDictionary;
+    return buyerCompanyDictionary.filter((option) =>
       option.displayLabel.toLowerCase().includes(query),
     );
-  }, [companyOptions, buyerCompanySearch]);
+  }, [buyerCompanyDictionary, buyerCompanySearch]);
   const filteredPortOptions = useMemo(() => {
     const query = portSearch.trim().toLowerCase();
     if (!query) return allPortOptions;
@@ -1328,12 +1359,21 @@ export function EntryCreateDialog({
       setCompanyEditorMessage("Company name is required.");
       return;
     }
-    if (!/^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/.test(label)) {
+    if (!/^(?=.{2,120}$)[A-Za-z0-9"'&().,\/-][A-Za-z0-9\s'"&().,\/-]*$/.test(label)) {
       setCompanyEditorMessage("Use English company name (letters, numbers, basic punctuation).");
       return;
     }
 
-    const existing = companyOptions.find(
+    const roleForNewCompany =
+      entryType === "offer"
+        ? "seller"
+        : entryType === "bid"
+          ? "buyer"
+          : companyEditorTarget === "sellerName"
+            ? "seller"
+            : "buyer";
+    const dictionaryForRole = roleForNewCompany === "seller" ? sellerCompanyDictionary : buyerCompanyDictionary;
+    const existing = dictionaryForRole.find(
       (option) => option.displayLabel.trim().toLowerCase() === label.toLowerCase(),
     );
     if (existing) {
@@ -1357,7 +1397,7 @@ export function EntryCreateDialog({
           "Content-Type": "application/json",
           ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
         },
-        body: JSON.stringify({ displayLabel: label }),
+        body: JSON.stringify({ displayLabel: label, role: roleForNewCompany }),
       });
 
       if (!response.ok) {
