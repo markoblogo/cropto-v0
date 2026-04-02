@@ -1014,19 +1014,7 @@ export function SeaBrokerageMonitorPage() {
         </section>
 
         <Collapsible>
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant="default"
-              size="sm"
-              className="h-6 bg-emerald-600 px-3 text-[10.5px] font-medium text-white hover:bg-emerald-500 sm:h-6.5 sm:text-xs"
-              onClick={() => {
-                setReportOpen(true);
-                setReportStatus(null);
-              }}
-            >
-              Report
-            </Button>
+          <div className="flex items-center justify-end gap-2">
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="h-6 text-[10.5px] text-muted-foreground sm:h-6.5 sm:text-xs">
                 Secondary Views
@@ -1035,7 +1023,13 @@ export function SeaBrokerageMonitorPage() {
             </CollapsibleTrigger>
           </div>
           <CollapsibleContent>
-            <StandardizedFeedCard entries={filteredEntries} />
+            <StandardizedFeedCard
+              entries={filteredEntries}
+              onOpenReport={() => {
+                setReportOpen(true);
+                setReportStatus(null);
+              }}
+            />
           </CollapsibleContent>
         </Collapsible>
       </div>

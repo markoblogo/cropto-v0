@@ -31,6 +31,7 @@ import type { BrokerageEntry } from "../types";
 
 interface StandardizedFeedCardProps {
   entries: BrokerageEntry[];
+  onOpenReport?: () => void;
 }
 
 type FeedSecondaryView = "tape" | "archive" | "analytics";
@@ -57,7 +58,7 @@ function TapeTypeBadge({ type }: { type: BrokerageEntry["type"] }) {
   );
 }
 
-export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
+export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeedCardProps) {
   const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
   const [view, setView] = useState<FeedSecondaryView>("tape");
 
@@ -78,28 +79,81 @@ export function StandardizedFeedCard({ entries }: StandardizedFeedCardProps) {
               </CardDescription>
             </div>
 
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <Badge variant="outline">{entries.length} visible</Badge>
-              <Badge variant="outline">BIDs {bidCount}</Badge>
-              <Badge variant="outline">OFFERS {offerCount}</Badge>
-              <Badge variant="outline">TRADES {tradeCount}</Badge>
-              <Button variant="ghost" size="sm" onClick={() => exportEntriesToCsv(entries)} disabled={entries.length === 0}>
-                <Download className="mr-2 h-4 w-4" />
-                CSV
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => exportEntriesToXlsx(entries)} disabled={entries.length === 0}>
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                XLSX
-              </Button>
-              <Button variant={view === "tape" ? "secondary" : "ghost"} size="sm" onClick={() => setView("tape")}>
-                Tape
-              </Button>
-              <Button variant={view === "archive" ? "ghost" : "ghost"} size="sm" onClick={() => setView("archive")}>
-                Archive
-              </Button>
-              <Button variant={view === "analytics" ? "ghost" : "ghost"} size="sm" onClick={() => setView("analytics")}>
-                Analytics
-              </Button>
+            <div className="flex min-w-0 flex-wrap items-stretch gap-2">
+              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Stats</span>
+                <Badge variant="outline">{entries.length} visible</Badge>
+                <Badge variant="outline">BIDs {bidCount}</Badge>
+                <Badge variant="outline">OFFERS {offerCount}</Badge>
+                <Badge variant="outline">TRADES {tradeCount}</Badge>
+              </div>
+
+              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Export</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8"
+                  onClick={() => exportEntriesToCsv(entries)}
+                  disabled={entries.length === 0}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  CSV
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8"
+                  onClick={() => exportEntriesToXlsx(entries)}
+                  disabled={entries.length === 0}
+                >
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  XLSX
+                </Button>
+              </div>
+
+              {onOpenReport ? (
+                <div className="flex min-h-[40px] items-center rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1">
+                  <span className="mr-2 text-[10px] uppercase tracking-[0.14em] text-emerald-200/80">Report</span>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    className="h-8 bg-emerald-600 px-3 text-xs font-medium text-white hover:bg-emerald-500"
+                    onClick={onOpenReport}
+                  >
+                    Report
+                  </Button>
+                </div>
+              ) : null}
+
+              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">View</span>
+                <Button
+                  variant={view === "tape" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("tape")}
+                >
+                  Tape
+                </Button>
+                <Button
+                  variant={view === "archive" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("archive")}
+                >
+                  Archive
+                </Button>
+                <Button
+                  variant={view === "analytics" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("analytics")}
+                >
+                  Analytics
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
