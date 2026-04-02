@@ -139,7 +139,7 @@ function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
 }
 
 function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {
-  return entry.commodityLabel.replace(/%/g, "").trim().toUpperCase();
+  return entry.commodityLabel.replace(/%/g, "").trim();
 }
 
 function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
@@ -214,17 +214,17 @@ function formatStandardTelegramMessage(
     "------------------------------",
     isTrade
       ? formatTradePartyLine("SELLER", sellerLine, tradeSellerBroker)
-      : counterpartyLine.toUpperCase(),
+      : counterpartyLine,
     isTrade ? formatTradePartyLine("BUYER", buyerLine, tradeBuyerBroker) : null,
     !isTrade && entry.isNewCrop ? "NEW CROP" : null,
     `${formatTelegramCommodity(entry)}, ${originCountryCode}`,
-    entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim().toUpperCase() : null,
+    entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim() : null,
     formatQuantityLine(entry),
     formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" }),
     formatTelegramTransportCode(entry),
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
-    entry.paymentTerms?.trim() ? entry.paymentTerms.trim().toUpperCase() : null,
+    entry.paymentTerms?.trim() ? entry.paymentTerms.trim() : null,
     formatOptionalOtherTerms(entry.note),
     "------------------------------",
   ];
@@ -251,7 +251,7 @@ function normalizeCounterpartyName(value?: string | null) {
   const normalized = (value || "").trim();
   if (!normalized) return null;
   if (normalized.toLowerCase() === "not specified") return null;
-  return normalized.toUpperCase();
+  return normalized;
 }
 
 function formatTelegramBrokerIdentity(
@@ -274,7 +274,7 @@ function formatTradePartyLine(
   companyName: string,
   brokerIdentity: string,
 ) {
-  const normalizedCompany = (companyName || "").trim().toUpperCase();
+  const normalizedCompany = (companyName || "").trim();
   const normalizedIdentity = (brokerIdentity || "").trim();
   if (normalizedIdentity && normalizedIdentity !== "N/A") {
     return `${label}: ${normalizedCompany} / ${normalizedIdentity}`;
