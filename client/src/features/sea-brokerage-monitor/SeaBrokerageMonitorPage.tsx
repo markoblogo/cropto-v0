@@ -82,6 +82,14 @@ function normalizeCommodityKey(value: string) {
 }
 
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
+const PRIMARY_VIEW_WINDOW_DAYS = 7;
+
+function isWithinPrimaryDisplayWindow(entry: BrokerageEntry, nowMs = Date.now()) {
+  const createdAtMs = new Date(entry.createdAt).getTime();
+  if (Number.isNaN(createdAtMs)) return false;
+  const windowMs = PRIMARY_VIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  return createdAtMs >= nowMs - windowMs;
+}
 
 export function SeaBrokerageMonitorPage() {
   const todayIso = new Date().toISOString().slice(0, 10);
@@ -257,31 +265,36 @@ export function SeaBrokerageMonitorPage() {
     return Array.from(byNormalized.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
   }, [customCommodityOptions, feedWithBusinessUnits]);
 
+  const primaryWindowEntries = useMemo(
+    () => filteredEntries.filter((entry) => isWithinPrimaryDisplayWindow(entry)),
+    [filteredEntries],
+  );
+
   const offerEntriesBase = useMemo(
     () =>
-      filterBrokerageEntries(filteredEntries, {
+      filterBrokerageEntries(primaryWindowEntries, {
         ...defaultFeedFilters,
         entryType: "offer",
       }),
-    [filteredEntries],
+    [primaryWindowEntries],
   );
 
   const bidEntriesBase = useMemo(
     () =>
-      filterBrokerageEntries(filteredEntries, {
+      filterBrokerageEntries(primaryWindowEntries, {
         ...defaultFeedFilters,
         entryType: "bid",
       }),
-    [filteredEntries],
+    [primaryWindowEntries],
   );
 
   const tradeEntriesBase = useMemo(
     () =>
-      filterBrokerageEntries(filteredEntries, {
+      filterBrokerageEntries(primaryWindowEntries, {
         ...defaultFeedFilters,
         entryType: "trade",
       }),
-    [filteredEntries],
+    [primaryWindowEntries],
   );
 
   const offerBrokerOptions = useMemo(
@@ -968,7 +981,7 @@ export function SeaBrokerageMonitorPage() {
 
         <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
           <ContextualMatchingPanel
-            entries={filteredEntries}
+            entries={primaryWindowEntries}
             selectedEntry={selectedEntry}
             monitorAuthToken={session.monitorAuthToken}
             canLikeMatches={session.canCreateEntries}
