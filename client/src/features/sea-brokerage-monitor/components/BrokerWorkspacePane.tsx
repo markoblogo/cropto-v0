@@ -39,6 +39,7 @@ interface BrokerWorkspacePaneProps {
   likesEnabled?: boolean;
   currentBrokerId?: string | null;
   currentBrokerCode?: string | null;
+  onCounterEntry?: (entry: BrokerageEntry) => void;
 }
 
 export function BrokerWorkspacePane({
@@ -59,6 +60,7 @@ export function BrokerWorkspacePane({
   likesEnabled = false,
   currentBrokerId,
   currentBrokerCode,
+  onCounterEntry,
 }: BrokerWorkspacePaneProps) {
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -195,6 +197,27 @@ export function BrokerWorkspacePane({
                         >
                           {hasBossMatchLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
                           {!hasBossMatchLike && hasIncomingLikes ? <span>{entry.likeCount ?? 0}</span> : null}
+                        </span>
+                      ) : null}
+                      {onCounterEntry && (entry.type === "bid" || entry.type === "offer") ? (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className="ml-0.5 inline-flex h-6 min-w-[50px] items-center justify-center rounded border border-border/80 bg-background/70 px-1.5 text-[10px] font-semibold leading-none text-foreground transition-colors hover:bg-muted/30"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onCounterEntry(entry);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              onCounterEntry(entry);
+                            }
+                          }}
+                          aria-label={`Create counter ${entry.type === "offer" ? "bid" : "offer"}`}
+                        >
+                          Counter
                         </span>
                       ) : null}
                     </div>

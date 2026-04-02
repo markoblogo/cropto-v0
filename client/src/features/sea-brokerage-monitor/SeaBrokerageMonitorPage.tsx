@@ -104,6 +104,8 @@ export function SeaBrokerageMonitorPage() {
   const [isDeletingEntry, setIsDeletingEntry] = useState(false);
   const [isRepostingEntry, setIsRepostingEntry] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [bidPrefillFormValues, setBidPrefillFormValues] = useState<EntryCreateFormPrefill | null>(null);
+  const [offerPrefillFormValues, setOfferPrefillFormValues] = useState<EntryCreateFormPrefill | null>(null);
   const [tradePrefillFormValues, setTradePrefillFormValues] = useState<EntryCreateFormPrefill | null>(null);
   const [reportSending, setReportSending] = useState(false);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
@@ -386,6 +388,61 @@ export function SeaBrokerageMonitorPage() {
       paymentTerms: offer.paymentTerms || bid.paymentTerms || "CAD",
       transportType: offer.transportType,
       note: "",
+    };
+  }
+
+  function buildCounterPrefillFromEntry(
+    source: BrokerageEntry,
+    targetType: "bid" | "offer",
+  ): EntryCreateFormPrefill {
+    const periodMonth = source.periodStart?.slice(0, 7) || source.periodEnd?.slice(0, 7) || "";
+    const periodPreset =
+      source.periodType === "spot"
+        ? "spot"
+        : source.periodType === "prompt"
+          ? "prompt"
+          : source.periodType === "month"
+            ? "full_month"
+            : source.periodLabel?.toUpperCase().startsWith("1H")
+              ? "current_month_1h"
+              : source.periodLabel?.toUpperCase().startsWith("2H")
+                ? "current_month_2h"
+                : "explicit_range";
+
+    const sourcePortCodes =
+      source.destinationPortCodes && source.destinationPortCodes.length
+        ? source.destinationPortCodes
+        : String(source.destinationPortCode || "")
+            .split("|")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+    const harvestYear =
+      (String(source.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "2026";
+
+    return {
+      sellerName: targetType === "offer" ? "" : source.sellerName || "",
+      buyerName: targetType === "bid" ? "" : source.buyerName || "",
+      commodity: source.commodity,
+      harvestYear,
+      isNewCrop: !!source.isNewCrop,
+      originCountry: source.originCountryCode || "UA",
+      quantityPreset: source.quantityMt === null || source.quantityMt === undefined ? "range" : "single",
+      quantityMt: source.quantityMt ?? source.volumeFrom ?? 0,
+      quantityFromMt: source.quantityMt == null ? (source.volumeFrom ?? undefined) : undefined,
+      quantityToMt: source.quantityMt == null ? (source.volumeTo ?? undefined) : undefined,
+      tolerancePct: source.tolerancePct ?? 0,
+      basis: source.basis,
+      destinationPortCodes: sourcePortCodes,
+      periodPreset,
+      periodMonth,
+      periodStart: source.periodStart || "",
+      periodEnd: source.periodEnd || "",
+      currency: source.currency,
+      price: source.price ?? source.priceFrom ?? source.priceTo ?? 0,
+      paymentTerms: source.paymentTerms || "CAD",
+      transportType: source.transportType,
+      note: source.note || "",
     };
   }
 
@@ -874,7 +931,14 @@ export function SeaBrokerageMonitorPage() {
             currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             createActionLabel="Create OFFER"
             createActionVariant="secondary"
-            onCreateAction={() => setCreateDialogType("offer")}
+            onCreateAction={() => {
+              setOfferPrefillFormValues(null);
+              setCreateDialogType("offer");
+            }}
+            onCounterEntry={(entry) => {
+              setBidPrefillFormValues(buildCounterPrefillFromEntry(entry, "bid"));
+              setCreateDialogType("bid");
+            }}
           />
           <BrokerWorkspacePane
             title="Bids"
@@ -891,7 +955,14 @@ export function SeaBrokerageMonitorPage() {
             currentBrokerId={session.authorProfile?.id ?? null}
             currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             createActionLabel="Create BID"
-            onCreateAction={() => setCreateDialogType("bid")}
+            onCreateAction={() => {
+              setBidPrefillFormValues(null);
+              setCreateDialogType("bid");
+            }}
+            onCounterEntry={(entry) => {
+              setOfferPrefillFormValues(buildCounterPrefillFromEntry(entry, "offer"));
+              setCreateDialogType("offer");
+            }}
           />
         </section>
 
@@ -959,18 +1030,26 @@ export function SeaBrokerageMonitorPage() {
       <EntryCreateDialog
         open={createDialogType === "bid"}
         onOpenChange={(open) => {
-          if (!open) setCreateDialogType(null);
+          if (!open) {
+            setCreateDialogType(null);
+            setBidPrefillFormValues(null);
+          }
         }}
         entryType="bid"
         session={session}
+        initialFormValues={bidPrefillFormValues}
       />
       <EntryCreateDialog
         open={createDialogType === "offer"}
         onOpenChange={(open) => {
-          if (!open) setCreateDialogType(null);
+          if (!open) {
+            setCreateDialogType(null);
+            setOfferPrefillFormValues(null);
+          }
         }}
         entryType="offer"
         session={session}
+        initialFormValues={offerPrefillFormValues}
       />
       <EntryCreateDialog
         open={createDialogType === "trade"}

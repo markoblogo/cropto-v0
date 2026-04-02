@@ -716,7 +716,7 @@ function buildFallbackAiBlock(params: {
       ? top
           .map((row) => {
             const title =
-              row.headline ||
+              row.title ||
               (row as any).title ||
               (typeof (row as any).raw?.title === "string" ? (row as any).raw.title : "") ||
               "headline unavailable";
