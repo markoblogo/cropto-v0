@@ -909,38 +909,56 @@ export function EntryCreateDialog({
     });
   }, [allCommodityOptions, allPortOptions, countryByCode, entryType, session.authorProfile, values]);
 
-  async function onSubmit(formValues: EntryFormValues) {
-    if (!session.authorProfile || !session.canCreateEntries) {
-      setSubmitMessage(
-        "Author unavailable. Ask admin to add your account into Sea Brokerage broker allowlist.",
-      );
-      return;
+  function normalizeFormValuesForType(
+    formValues: EntryFormValues,
+    targetType: EntryType,
+  ): EntryFormValues {
+    if (targetType === "trade") return formValues;
+    if (targetType === "offer") {
+      const seller = formValues.sellerName?.trim() || formValues.buyerName?.trim() || "";
+      return { ...formValues, sellerName: seller, buyerName: "" };
     }
+    if (targetType === "bid") {
+      const buyer = formValues.buyerName?.trim() || formValues.sellerName?.trim() || "";
+      return { ...formValues, buyerName: buyer, sellerName: "" };
+    }
+    return formValues;
+  }
+
+  function buildEntryPayload(formValues: EntryFormValues, targetType: EntryType) {
+    const normalizedValues = normalizeFormValuesForType(formValues, targetType);
+    const commodity = allCommodityOptions.find((option) => option.code === normalizedValues.commodity);
+    const selectedPort = allPortOptions.find((option) => option.code === normalizedValues.destinationPortCode);
+    const { quantityMt, volumeFrom, volumeTo } = resolveVolumeRange(normalizedValues);
+    const harvestYear = String(normalizedValues.harvestYear || "").trim();
+    const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
+    const resolvedPeriod = resolvePeriodValues(
+      normalizedValues.periodPreset,
+      normalizedValues.periodMonth,
+      normalizedValues.periodStart,
+      normalizedValues.periodEnd,
+    );
 
     let tradeSellerBrokerTelegramUserId: string | null = null;
     let tradeSellerBrokerTelegramUsername: string | null = null;
     let tradeBuyerBrokerTelegramUserId: string | null = null;
     let tradeBuyerBrokerTelegramUsername: string | null = null;
 
-    if (entryType === "trade") {
-      const myRole = (formValues.tradeMyRole || "seller") as TradeMyRole;
-      const counterpartyKey = String(formValues.tradeCounterpartyBrokerKey || "").trim();
+    if (targetType === "trade") {
+      const myRole = (normalizedValues.tradeMyRole || "seller") as TradeMyRole;
+      const counterpartyKey = String(normalizedValues.tradeCounterpartyBrokerKey || "").trim();
       if (!authorBrokerIdentityKey) {
-        setSubmitMessage("Telegram broker identity is required for TRADE publishing.");
-        return;
+        throw new Error("Telegram broker identity is required for TRADE publishing.");
       }
       if (!counterpartyKey) {
-        setSubmitMessage("Select the second broker for TRADE.");
-        return;
+        throw new Error("Select the second broker for TRADE.");
       }
       if (counterpartyKey === authorBrokerIdentityKey) {
-        setSubmitMessage("Counterparty broker must be different from your Telegram account.");
-        return;
+        throw new Error("Counterparty broker must be different from your Telegram account.");
       }
       const counterpartyBroker = brokerDirectoryByKey.get(counterpartyKey);
       if (!counterpartyBroker) {
-        setSubmitMessage("Selected counterparty broker is not available.");
-        return;
+        throw new Error("Selected counterparty broker is not available.");
       }
 
       const meTelegramUserId = session.telegramIdentity.telegramUserId || null;
@@ -959,103 +977,155 @@ export function EntryCreateDialog({
         tradeBuyerBrokerTelegramUsername = meTelegramUsername;
       }
 
-      if (!formValues.sellerName?.trim()) {
-        setSubmitMessage("Seller is required for TRADE.");
-        return;
+      if (!normalizedValues.sellerName?.trim()) {
+        throw new Error("Seller is required for TRADE.");
       }
-      if (!formValues.buyerName?.trim()) {
-        setSubmitMessage("Buyer is required for TRADE.");
-        return;
+      if (!normalizedValues.buyerName?.trim()) {
+        throw new Error("Buyer is required for TRADE.");
       }
     }
 
-    try {
-      const commodity = allCommodityOptions.find((option) => option.code === formValues.commodity);
-      const selectedPort = allPortOptions.find((option) => option.code === formValues.destinationPortCode);
-      const { quantityMt, volumeFrom, volumeTo } = resolveVolumeRange(formValues);
-      const harvestYear = String(formValues.harvestYear || "").trim();
-      const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
-      const resolvedPeriod = resolvePeriodValues(
-        formValues.periodPreset,
-        formValues.periodMonth,
-        formValues.periodStart,
-        formValues.periodEnd,
+    const originCountry =
+      countryByCode.get(normalizedValues.originCountry)?.displayLabel ||
+      getCountryDisplayLabel(normalizedValues.originCountry);
+    const destinationCountry =
+      countryByCode.get(selectedPort?.countryCode || "")?.displayLabel ||
+      getCountryDisplayLabel(selectedPort?.countryCode);
+
+    const canonicalView = buildCanonicalView({
+      id: mode === "edit" && initialEntry?.id ? initialEntry.id : "preview",
+      type: targetType,
+      brokerId: session.authorProfile?.id || "unknown",
+      brokerCode: session.authorProfile?.brokerCode || "",
+      brokerName: session.authorProfile?.brokerName || "",
+      companyName: session.authorProfile?.companyName || "",
+      sellerName:
+        targetType !== "bid" && normalizedValues.sellerName?.trim() ? normalizedValues.sellerName.trim() : null,
+      buyerName:
+        targetType !== "offer" && normalizedValues.buyerName?.trim() ? normalizedValues.buyerName.trim() : null,
+      originCountry,
+      originCountryCode: normalizedValues.originCountry,
+      commodity: normalizedValues.commodity as BrokerageEntry["commodity"],
+      commodityLabel: commodity?.displayLabel ?? normalizedValues.commodity,
+      gradeOrSpec,
+      quantityMt,
+      tolerancePct: normalizedValues.tolerancePct,
+      volumeFrom,
+      volumeTo,
+      volumeUnit: volumeUnitOptions[0].value,
+      basis: normalizedValues.basis as Basis,
+      paymentTerms: normalizedValues.paymentTerms,
+      isNewCrop: targetType === "bid" || targetType === "offer" ? !!normalizedValues.isNewCrop : false,
+      sellerCommission: targetType === "trade" ? normalizedValues.sellerCommission ?? null : null,
+      buyerCommission: targetType === "trade" ? normalizedValues.buyerCommission ?? null : null,
+      destinationPortCode: normalizedValues.destinationPortCode,
+      destinationPort: selectedPort?.displayLabel ?? normalizedValues.destinationPortCode,
+      destinationCountryCode: selectedPort?.countryCode ?? null,
+      destinationCountry,
+      periodType: resolvedPeriod.periodType,
+      periodLabel: resolvedPeriod.periodLabel,
+      periodStart: resolvedPeriod.periodStart,
+      periodEnd: resolvedPeriod.periodEnd,
+      price: normalizedValues.price,
+      priceFrom: normalizedValues.price,
+      priceTo: normalizedValues.price,
+      currency: normalizedValues.currency as Currency,
+      transportType: normalizedValues.transportType as TransportType,
+      note: normalizedValues.note?.trim() ? normalizedValues.note.trim() : null,
+      createdAt: new Date().toISOString(),
+      createdBy: session.authorProfile!,
+      telegramRelayStatus: undefined,
+      telegramRelayMessage: null,
+    });
+
+    return {
+      type: targetType,
+      sellerName:
+        targetType !== "bid" && normalizedValues.sellerName?.trim()
+          ? normalizedValues.sellerName.trim()
+          : null,
+      buyerName:
+        targetType !== "offer" && normalizedValues.buyerName?.trim()
+          ? normalizedValues.buyerName.trim()
+          : null,
+      originCountry,
+      originCountryCode: normalizedValues.originCountry,
+      commodity: normalizedValues.commodity as BrokerageEntry["commodity"],
+      commodityLabel: commodity?.displayLabel ?? normalizedValues.commodity,
+      gradeOrSpec,
+      quantityMt,
+      tolerancePct: normalizedValues.tolerancePct,
+      volumeFrom,
+      volumeTo,
+      volumeUnit: volumeUnitOptions[0].value,
+      basis: normalizedValues.basis,
+      paymentTerms: normalizedValues.paymentTerms,
+      isNewCrop:
+        targetType === "bid" || targetType === "offer" ? !!normalizedValues.isNewCrop : false,
+      sellerCommission: targetType === "trade" ? normalizedValues.sellerCommission ?? null : null,
+      buyerCommission: targetType === "trade" ? normalizedValues.buyerCommission ?? null : null,
+      destinationPortCode: normalizedValues.destinationPortCode,
+      destinationPort: selectedPort?.displayLabel ?? normalizedValues.destinationPortCode,
+      destinationCountryCode: selectedPort?.countryCode ?? null,
+      destinationCountry,
+      periodType: resolvedPeriod.periodType,
+      periodLabel: resolvedPeriod.periodLabel,
+      periodStart: resolvedPeriod.periodStart,
+      periodEnd: resolvedPeriod.periodEnd,
+      price: normalizedValues.price,
+      priceFrom: normalizedValues.price,
+      priceTo: normalizedValues.price,
+      currency: normalizedValues.currency,
+      transportType: normalizedValues.transportType,
+      note: normalizedValues.note?.trim() ? normalizedValues.note.trim() : null,
+      brokerCode: session.authorProfile?.brokerCode || "",
+      brokerName: session.authorProfile?.brokerName || "",
+      companyName: session.authorProfile?.companyName || "",
+      tradeSellerBrokerTelegramUserId:
+        targetType === "trade" ? tradeSellerBrokerTelegramUserId : null,
+      tradeSellerBrokerTelegramUsername:
+        targetType === "trade" ? tradeSellerBrokerTelegramUsername : null,
+      tradeBuyerBrokerTelegramUserId:
+        targetType === "trade" ? tradeBuyerBrokerTelegramUserId : null,
+      tradeBuyerBrokerTelegramUsername:
+        targetType === "trade" ? tradeBuyerBrokerTelegramUsername : null,
+      canonicalView,
+    };
+  }
+
+  async function saveEntryWithType(formValues: EntryFormValues, targetType: EntryType) {
+    if (!session.authorProfile || !session.canCreateEntries) {
+      throw new Error("Author unavailable. Ask admin to add your account into Sea Brokerage broker allowlist.");
+    }
+
+    const payload = buildEntryPayload(formValues, targetType);
+    const requestMethod = mode === "edit" && initialEntry?.id ? "PATCH" : "POST";
+    const requestPath =
+      mode === "edit" && initialEntry?.id
+        ? `/api/sea-brokerage-monitor/entries/${initialEntry.id}`
+        : "/api/sea-brokerage-monitor/entries";
+
+    const response = await apiRequest(requestMethod, requestPath, payload, {
+      headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+    });
+    await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
+    const savedEntry = (await response.json()) as BrokerageEntry;
+    form.reset(getDefaultValues(savedEntry.type));
+    setSubmitMessage(null);
+    onSubmitted?.(savedEntry);
+    onOpenChange(false);
+  }
+
+  async function onSubmit(formValues: EntryFormValues) {
+    if (!session.authorProfile || !session.canCreateEntries) {
+      setSubmitMessage(
+        "Author unavailable. Ask admin to add your account into Sea Brokerage broker allowlist.",
       );
+      return;
+    }
 
-      const payload = {
-        type: entryType,
-        sellerName:
-          entryType !== "bid" && formValues.sellerName?.trim()
-            ? formValues.sellerName.trim()
-            : null,
-        buyerName:
-          entryType !== "offer" && formValues.buyerName?.trim()
-            ? formValues.buyerName.trim()
-            : null,
-        originCountry:
-          countryByCode.get(formValues.originCountry)?.displayLabel ||
-          getCountryDisplayLabel(formValues.originCountry),
-        originCountryCode: formValues.originCountry,
-        commodity: formValues.commodity as BrokerageEntry["commodity"],
-        commodityLabel: commodity?.displayLabel ?? formValues.commodity,
-        gradeOrSpec,
-        quantityMt,
-        tolerancePct: formValues.tolerancePct,
-        volumeFrom,
-        volumeTo,
-        volumeUnit: volumeUnitOptions[0].value,
-        basis: formValues.basis,
-        paymentTerms: formValues.paymentTerms,
-        isNewCrop:
-          entryType === "bid" || entryType === "offer" ? !!formValues.isNewCrop : false,
-        sellerCommission: entryType === "trade" ? formValues.sellerCommission ?? null : null,
-        buyerCommission: entryType === "trade" ? formValues.buyerCommission ?? null : null,
-        destinationPortCode: formValues.destinationPortCode,
-        destinationPort: selectedPort?.displayLabel ?? formValues.destinationPortCode,
-        destinationCountryCode: selectedPort?.countryCode ?? null,
-        destinationCountry:
-          countryByCode.get(selectedPort?.countryCode || "")?.displayLabel ||
-          getCountryDisplayLabel(selectedPort?.countryCode),
-        periodType: resolvedPeriod.periodType,
-        periodLabel: resolvedPeriod.periodLabel,
-        periodStart: resolvedPeriod.periodStart,
-        periodEnd: resolvedPeriod.periodEnd,
-        price: formValues.price,
-        priceFrom: formValues.price,
-        priceTo: formValues.price,
-        currency: formValues.currency,
-        transportType: formValues.transportType,
-        note: formValues.note?.trim() ? formValues.note.trim() : null,
-        brokerCode: session.authorProfile.brokerCode,
-        brokerName: session.authorProfile.brokerName,
-        companyName: session.authorProfile.companyName,
-        tradeSellerBrokerTelegramUserId:
-          entryType === "trade" ? tradeSellerBrokerTelegramUserId : null,
-        tradeSellerBrokerTelegramUsername:
-          entryType === "trade" ? tradeSellerBrokerTelegramUsername : null,
-        tradeBuyerBrokerTelegramUserId:
-          entryType === "trade" ? tradeBuyerBrokerTelegramUserId : null,
-        tradeBuyerBrokerTelegramUsername:
-          entryType === "trade" ? tradeBuyerBrokerTelegramUsername : null,
-        canonicalView: canonicalPreview,
-      };
-
-      const requestMethod = mode === "edit" && initialEntry?.id ? "PATCH" : "POST";
-      const requestPath =
-        mode === "edit" && initialEntry?.id
-          ? `/api/sea-brokerage-monitor/entries/${initialEntry.id}`
-          : "/api/sea-brokerage-monitor/entries";
-
-      const response = await apiRequest(requestMethod, requestPath, payload, {
-        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
-      });
-      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
-      const savedEntry = (await response.json()) as BrokerageEntry;
-
-      form.reset(getDefaultValues(entryType));
-      setSubmitMessage(null);
-      onSubmitted?.(savedEntry);
-      onOpenChange(false);
+    try {
+      await saveEntryWithType(formValues, entryType);
     } catch (error) {
       setSubmitMessage(
         error instanceof Error
@@ -1063,6 +1133,21 @@ export function EntryCreateDialog({
           : mode === "edit"
             ? "Failed to update the brokerage entry."
             : "Failed to create the brokerage entry.",
+      );
+    }
+  }
+
+  async function onConvertEntryType() {
+    if (mode !== "edit" || !initialEntry?.id) return;
+    if (entryType === "trade") return;
+
+    const targetType: EntryType = entryType === "bid" ? "offer" : "bid";
+    const currentValues = form.getValues();
+    try {
+      await saveEntryWithType(currentValues, targetType);
+    } catch (error) {
+      setSubmitMessage(
+        error instanceof Error ? error.message : `Failed to convert to ${targetType.toUpperCase()}.`,
       );
     }
   }
@@ -2174,25 +2259,38 @@ export function EntryCreateDialog({
               <div className="hidden text-[11px] leading-4 text-muted-foreground sm:block">
                 Single-price compact workflow.
               </div>
-              <Button
-                type="submit"
-                className="w-full sm:w-auto"
-                disabled={!session.canCreateEntries || form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting
-                  ? "Saving..."
-                  : entryType === "bid"
-                    ? mode === "edit"
-                      ? "Save BID"
-                      : "Create BID"
-                    : entryType === "offer"
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                {mode === "edit" && (entryType === "bid" || entryType === "offer") ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    disabled={!session.canCreateEntries || form.formState.isSubmitting}
+                    onClick={onConvertEntryType}
+                  >
+                    {entryType === "bid" ? "Convert to OFFER" : "Convert to BID"}
+                  </Button>
+                ) : null}
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto"
+                  disabled={!session.canCreateEntries || form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting
+                    ? "Saving..."
+                    : entryType === "bid"
                       ? mode === "edit"
-                        ? "Save OFFER"
-                        : "Create OFFER"
-                      : mode === "edit"
-                        ? "Save TRADE"
-                        : "Create TRADE"}
-              </Button>
+                        ? "Save BID"
+                        : "Create BID"
+                      : entryType === "offer"
+                        ? mode === "edit"
+                          ? "Save OFFER"
+                          : "Create OFFER"
+                        : mode === "edit"
+                          ? "Save TRADE"
+                          : "Create TRADE"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>

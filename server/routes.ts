@@ -9748,8 +9748,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const payload = parsed.data;
-      if (payload.type !== existing.type) {
-        return res.status(400).json({ error: "Entry type cannot be changed" });
+      const typeChanged = payload.type !== existing.type;
+      if (typeChanged) {
+        const canSwitchBidOffer =
+          (existing.type === "bid" || existing.type === "offer") &&
+          (payload.type === "bid" || payload.type === "offer");
+        if (!canSwitchBidOffer) {
+          return res.status(400).json({ error: "Only BID/OFFER switch is allowed" });
+        }
       }
       if (payload.type === "trade") {
         const hasSellerBrokerIdentity =
@@ -9764,6 +9770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updated = await storage.updateSeaBrokerageEntry(entryId, {
+        type: payload.type,
         sellerName: payload.sellerName ?? null,
         buyerName: payload.buyerName ?? null,
         tradeSellerBrokerTelegramUserId: payload.tradeSellerBrokerTelegramUserId ?? null,
