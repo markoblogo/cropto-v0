@@ -28,13 +28,18 @@ function getPeriodOverlapScore(bidEntry: BrokerageEntry, offerEntry: BrokerageEn
 }
 
 function sameDeliveryPlace(bidEntry: BrokerageEntry, offerEntry: BrokerageEntry) {
-  if (
-    bidEntry.destinationPortCode &&
-    offerEntry.destinationPortCode &&
-    bidEntry.destinationPortCode === offerEntry.destinationPortCode
-  ) {
-    return true;
-  }
+  const parseCodes = (entry: BrokerageEntry) => {
+    if (Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length) {
+      return entry.destinationPortCodes;
+    }
+    return String(entry.destinationPortCode || "")
+      .split("|")
+      .map((part) => part.trim())
+      .filter(Boolean);
+  };
+  const bidCodes = new Set(parseCodes(bidEntry));
+  const offerCodes = parseCodes(offerEntry);
+  if (bidCodes.size && offerCodes.some((code) => bidCodes.has(code))) return true;
 
   return (bidEntry.destinationPort || "").trim().toUpperCase() ===
     (offerEntry.destinationPort || "").trim().toUpperCase();

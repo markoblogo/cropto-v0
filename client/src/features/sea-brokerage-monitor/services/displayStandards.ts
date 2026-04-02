@@ -209,10 +209,21 @@ export function normalizePeriodCompactLabel(input: {
 }
 
 export function formatEntryDestinationCompactDisplay(entry: BrokerageEntry) {
-  if (entry.destinationPortCode) {
-    const compactByCode = getPortPlaceCompactDisplay(entry.destinationPortCode);
+  const destinationPortCodes =
+    Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length
+      ? entry.destinationPortCodes
+      : String(entry.destinationPortCode || "")
+          .split("|")
+          .map((part) => part.trim())
+          .filter(Boolean);
+  const primaryPortCode = destinationPortCodes[0];
+
+  if (primaryPortCode) {
+    const compactByCode = getPortPlaceCompactDisplay(primaryPortCode);
     if (compactByCode) {
-      return compactByCode;
+      return destinationPortCodes.length > 1
+        ? `${compactByCode} +${destinationPortCodes.length - 1}`
+        : compactByCode;
     }
   }
 

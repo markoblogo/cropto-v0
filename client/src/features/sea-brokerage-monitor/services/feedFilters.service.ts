@@ -29,6 +29,16 @@ function normalizeText(value: string | null | undefined) {
   return (value ?? "").toLowerCase().trim();
 }
 
+function resolveDestinationPortCodes(entry: BrokerageEntry) {
+  if (Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length) {
+    return entry.destinationPortCodes;
+  }
+  return String(entry.destinationPortCode || "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 export function mapTransportTypeToMode(transportType: string | null | undefined) {
   const normalized = String(transportType || "").toLowerCase();
   if (normalized === "truck" || normalized === "rail" || normalized === "truck/rail") return "land";
@@ -77,6 +87,7 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       getPaymentTermDisplayLabel(entry.paymentTerms),
       entry.destinationPort,
       entry.destinationCountry,
+      resolveDestinationPortCodes(entry).join(" "),
       getCountryCompactDisplay(entry.destinationCountryCode ?? entry.destinationCountry),
       entry.destinationPortCode ? getPortPlaceCompactDisplay(entry.destinationPortCode) : null,
       formatEntryDestinationCompactDisplay(entry),
@@ -105,6 +116,7 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
             filters.originCountries.includes(candidate),
           )) &&
       (filters.deliveryPlace === "all" ||
+        resolveDestinationPortCodes(entry).includes(filters.deliveryPlace) ||
         filters.deliveryPlace === (entry.destinationPortCode ?? entry.destinationPort) ||
         filters.deliveryPlace === (entry.destinationCountryCode ?? entry.destinationCountry)) &&
       (!effectiveDateFrom || entryDate >= effectiveDateFrom) &&

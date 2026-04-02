@@ -121,6 +121,7 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   sellerCommission: z.coerce.number().nonnegative().nullable().optional(),
   buyerCommission: z.coerce.number().nonnegative().nullable().optional(),
   destinationPortCode: z.string().trim().nullable().optional(),
+  destinationPortCodes: z.array(z.string().trim().min(1)).optional(),
   destinationPort: z.string().min(1),
   destinationCountryCode: z.string().trim().nullable().optional(),
   destinationCountry: z.string().min(1),
@@ -138,6 +139,26 @@ const createSeaBrokerageEntryRequestSchema = z.object({
 });
 
 const updateSeaBrokerageEntryRequestSchema = createSeaBrokerageEntryRequestSchema;
+
+function parseDestinationPortCodesValue(raw: string | null | undefined) {
+  const normalized = String(raw || "").trim();
+  if (!normalized) return [] as string[];
+  return normalized
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function resolveDestinationPortCodesFromPayload(payload: {
+  destinationPortCode?: string | null;
+  destinationPortCodes?: string[] | null;
+}) {
+  const fromArray = Array.isArray(payload.destinationPortCodes)
+    ? payload.destinationPortCodes.map((code) => String(code || "").trim()).filter(Boolean)
+    : [];
+  if (fromArray.length) return fromArray;
+  return parseDestinationPortCodesValue(payload.destinationPortCode);
+}
 
 const upsertSeaBrokerageBrokerAuthSchema = z.object({
   authUserId: z.string().trim().nullable().optional(),
@@ -384,6 +405,8 @@ function mapSeaBrokerageEntryToClientShape(
   entry: SeaBrokerageEntryRow,
   likeMeta?: { likeCount: number; likedByMe: boolean; hasBossMatchLike?: boolean },
 ) {
+  const destinationPortCodes = parseDestinationPortCodesValue(entry.destinationPortCode);
+  const primaryDestinationPortCode = destinationPortCodes[0] ?? null;
   return {
     id: entry.id,
     type: entry.type,
@@ -414,7 +437,8 @@ function mapSeaBrokerageEntryToClientShape(
     isNewCrop: !!entry.isNewCrop,
     sellerCommission: decimalToNumber(entry.sellerCommission),
     buyerCommission: decimalToNumber(entry.buyerCommission),
-    destinationPortCode: entry.destinationPortCode,
+    destinationPortCode: primaryDestinationPortCode,
+    destinationPortCodes,
     destinationPort: entry.destinationPort,
     destinationCountryCode: entry.destinationCountryCode,
     destinationCountry: entry.destinationCountry,
@@ -8409,7 +8433,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter((entry) => (basisSet.size ? basisSet.has(String(entry.basis || "").toUpperCase()) : true))
         .filter((entry) =>
           placeSet.size
-            ? placeSet.has(String(entry.destinationPortCode || "").toLowerCase()) ||
+            ? parseDestinationPortCodesValue(entry.destinationPortCode).some((code) =>
+                placeSet.has(String(code).toLowerCase()),
+              ) ||
               placeSet.has(String(entry.destinationPort || "").toLowerCase())
             : true,
         )
@@ -8514,7 +8540,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
         for (const entry of commodityEntries) {
           const basis = toUpper(entry.basis);
-          const place = toUpper(entry.destinationPort || entry.destinationPortCode);
+          const place = toUpper(
+            String(entry.destinationPort || "")
+              .split("|")
+              .map((part) => part.trim())
+              .filter(Boolean)
+              .join(" / ") || entry.destinationPortCode,
+          );
           const transport = toUpper(transportShort[String(entry.transportType || "").toLowerCase()] || entry.transportType);
           const key = `${basis}|${place}|${transport}`;
           const bucket = byRoute.get(key) || [];
@@ -9644,6 +9676,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: fromZodError(parsed.error).message });
       }
 
+      const destinationPortCodes = resolveDestinationPortCodesFromPayload(parsed.data);
+      const destinationPortCodeValue = destinationPortCodes.length
+        ? destinationPortCodes.join("|")
+        : parsed.data.destinationPortCode ?? null;
+
       if (parsed.data.type === "trade") {
         const hasSellerBrokerIdentity =
           !!parsed.data.tradeSellerBrokerTelegramUserId || !!parsed.data.tradeSellerBrokerTelegramUsername;
@@ -9695,6 +9732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parsed.data.buyerCommission === null || parsed.data.buyerCommission === undefined
             ? null
             : String(parsed.data.buyerCommission),
+        destinationPortCode: destinationPortCodeValue,
         telegramRelayStatus: "queued",
       });
 
@@ -9748,6 +9786,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const payload = parsed.data;
+      const destinationPortCodes = resolveDestinationPortCodesFromPayload(payload);
+      const destinationPortCodeValue = destinationPortCodes.length
+        ? destinationPortCodes.join("|")
+        : payload.destinationPortCode ?? null;
       const typeChanged = payload.type !== existing.type;
       if (typeChanged) {
         const canSwitchBidOffer =
@@ -9798,7 +9840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payload.buyerCommission === null || payload.buyerCommission === undefined
             ? null
             : String(payload.buyerCommission),
-        destinationPortCode: payload.destinationPortCode ?? null,
+        destinationPortCode: destinationPortCodeValue,
         destinationPort: payload.destinationPort,
         destinationCountryCode: payload.destinationCountryCode ?? null,
         destinationCountry: payload.destinationCountry,

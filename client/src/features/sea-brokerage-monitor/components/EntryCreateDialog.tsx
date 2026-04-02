@@ -124,7 +124,7 @@ const entryFormSchema = z
       .min(0, "Tolerance must be 0 or greater")
       .max(25, "Tolerance must be 25% or lower"),
     basis: z.enum(["FOB", "CIF", "CPT", "DAP", "FCA"]),
-    destinationPortCode: z.string().min(1, "Port / place is required"),
+    destinationPortCodes: z.array(z.string().min(1)).min(1, "Port / place is required"),
     periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),
     periodEnd: z.string().optional().default(""),
@@ -263,6 +263,17 @@ function formatPortPlaceLabel(option: PortOption) {
   return `${option.displayLabel}, ${getCountryDisplayLabel(option.countryCode)}`;
 }
 
+function resolveSelectedPorts(portCodes: string[], allPortOptions: PortOption[]) {
+  const selectedPorts = portCodes
+    .map((code) => allPortOptions.find((option) => option.code === code))
+    .filter((option): option is PortOption => !!option);
+  const primaryPort = selectedPorts[0] ?? null;
+  const destinationPort = selectedPorts.length
+    ? selectedPorts.map((option) => option.displayLabel).join(" | ")
+    : "";
+  return { selectedPorts, primaryPort, destinationPort };
+}
+
 function getDefaultValues(entryType: EntryType): EntryFormValues {
   const now = new Date();
   const periodMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -283,7 +294,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     quantityToMt: undefined,
     tolerancePct: 5,
     basis: "FOB",
-    destinationPortCode: "odesa",
+    destinationPortCodes: ["odesa"],
     periodMonth,
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
@@ -328,7 +339,13 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     quantityToMt: quantityPreset === "range" ? entry.volumeTo : undefined,
     tolerancePct: entry.tolerancePct ?? 0,
     basis: entry.basis,
-    destinationPortCode: entry.destinationPortCode || "",
+    destinationPortCodes:
+      (Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length
+        ? entry.destinationPortCodes
+        : String(entry.destinationPortCode || "")
+            .split("|")
+            .map((part) => part.trim())
+            .filter(Boolean)) || [],
     periodMonth,
     periodStart: entry.periodStart || "",
     periodEnd: entry.periodEnd || "",
@@ -549,6 +566,7 @@ export function EntryCreateDialog({
   const [sellerCompanySearch, setSellerCompanySearch] = useState("");
   const [buyerCompanySearch, setBuyerCompanySearch] = useState("");
   const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [portPickerCode, setPortPickerCode] = useState("");
   const [portSearch, setPortSearch] = useState("");
   const [newLocationCity, setNewLocationCity] = useState("");
   const [newLocationCountrySearch, setNewLocationCountrySearch] = useState("Ukraine");
@@ -763,6 +781,7 @@ export function EntryCreateDialog({
     setCompanyEditorMessage(null);
     setIsSavingCompany(false);
     setIsAddingLocation(false);
+    setPortPickerCode("");
     setPortSearch("");
     setNewLocationCity("");
     setNewLocationCountrySearch("Ukraine");
@@ -847,13 +866,13 @@ export function EntryCreateDialog({
     }
 
     const commodity = allCommodityOptions.find((option) => option.code === values.commodity);
-    const selectedPort = allPortOptions.find((option) => option.code === values.destinationPortCode);
+    const { primaryPort, destinationPort } = resolveSelectedPorts(values.destinationPortCodes || [], allPortOptions);
     const originCountry =
       countryByCode.get(values.originCountry)?.displayLabel ||
       getCountryDisplayLabel(values.originCountry);
     const destinationCountry =
-      countryByCode.get(selectedPort?.countryCode || "")?.displayLabel ||
-      getCountryDisplayLabel(selectedPort?.countryCode);
+      countryByCode.get(primaryPort?.countryCode || "")?.displayLabel ||
+      getCountryDisplayLabel(primaryPort?.countryCode);
     const { quantityMt, volumeFrom, volumeTo } = resolveVolumeRange(values);
     const harvestYear = String(values.harvestYear || "").trim();
     const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
@@ -889,9 +908,9 @@ export function EntryCreateDialog({
       isNewCrop: entryType === "bid" || entryType === "offer" ? !!values.isNewCrop : false,
       sellerCommission: entryType === "trade" ? values.sellerCommission ?? null : null,
       buyerCommission: entryType === "trade" ? values.buyerCommission ?? null : null,
-      destinationPortCode: values.destinationPortCode,
-      destinationPort: selectedPort?.displayLabel ?? values.destinationPortCode,
-      destinationCountryCode: selectedPort?.countryCode ?? null,
+      destinationPortCode: primaryPort?.code ?? null,
+      destinationPort: destinationPort || primaryPort?.displayLabel || "",
+      destinationCountryCode: primaryPort?.countryCode ?? null,
       destinationCountry,
       periodType: resolvedPeriod.periodType,
       periodLabel: resolvedPeriod.periodLabel,
@@ -929,7 +948,10 @@ export function EntryCreateDialog({
   function buildEntryPayload(formValues: EntryFormValues, targetType: EntryType) {
     const normalizedValues = normalizeFormValuesForType(formValues, targetType);
     const commodity = allCommodityOptions.find((option) => option.code === normalizedValues.commodity);
-    const selectedPort = allPortOptions.find((option) => option.code === normalizedValues.destinationPortCode);
+    const { selectedPorts, primaryPort, destinationPort } = resolveSelectedPorts(
+      normalizedValues.destinationPortCodes || [],
+      allPortOptions,
+    );
     const { quantityMt, volumeFrom, volumeTo } = resolveVolumeRange(normalizedValues);
     const harvestYear = String(normalizedValues.harvestYear || "").trim();
     const gradeOrSpec = harvestYear ? `HARVEST ${harvestYear}` : "";
@@ -987,8 +1009,8 @@ export function EntryCreateDialog({
       countryByCode.get(normalizedValues.originCountry)?.displayLabel ||
       getCountryDisplayLabel(normalizedValues.originCountry);
     const destinationCountry =
-      countryByCode.get(selectedPort?.countryCode || "")?.displayLabel ||
-      getCountryDisplayLabel(selectedPort?.countryCode);
+      countryByCode.get(primaryPort?.countryCode || "")?.displayLabel ||
+      getCountryDisplayLabel(primaryPort?.countryCode);
 
     const canonicalView = buildCanonicalView({
       id: mode === "edit" && initialEntry?.id ? initialEntry.id : "preview",
@@ -1016,9 +1038,9 @@ export function EntryCreateDialog({
       isNewCrop: targetType === "bid" || targetType === "offer" ? !!normalizedValues.isNewCrop : false,
       sellerCommission: targetType === "trade" ? normalizedValues.sellerCommission ?? null : null,
       buyerCommission: targetType === "trade" ? normalizedValues.buyerCommission ?? null : null,
-      destinationPortCode: normalizedValues.destinationPortCode,
-      destinationPort: selectedPort?.displayLabel ?? normalizedValues.destinationPortCode,
-      destinationCountryCode: selectedPort?.countryCode ?? null,
+      destinationPortCode: selectedPorts.map((port) => port.code).join("|") || primaryPort?.code || null,
+      destinationPort: destinationPort || primaryPort?.displayLabel || "",
+      destinationCountryCode: primaryPort?.countryCode ?? null,
       destinationCountry,
       periodType: resolvedPeriod.periodType,
       periodLabel: resolvedPeriod.periodLabel,
@@ -1062,9 +1084,9 @@ export function EntryCreateDialog({
         targetType === "bid" || targetType === "offer" ? !!normalizedValues.isNewCrop : false,
       sellerCommission: targetType === "trade" ? normalizedValues.sellerCommission ?? null : null,
       buyerCommission: targetType === "trade" ? normalizedValues.buyerCommission ?? null : null,
-      destinationPortCode: normalizedValues.destinationPortCode,
-      destinationPort: selectedPort?.displayLabel ?? normalizedValues.destinationPortCode,
-      destinationCountryCode: selectedPort?.countryCode ?? null,
+      destinationPortCode: selectedPorts.map((port) => port.code).join("|") || primaryPort?.code || null,
+      destinationPort: destinationPort || primaryPort?.displayLabel || "",
+      destinationCountryCode: primaryPort?.countryCode ?? null,
       destinationCountry,
       periodType: resolvedPeriod.periodType,
       periodLabel: resolvedPeriod.periodLabel,
@@ -1176,7 +1198,7 @@ export function EntryCreateDialog({
         option.displayLabel.trim().toLowerCase() === city.toLowerCase(),
     );
     if (existing) {
-      form.setValue("destinationPortCode", existing.code, { shouldValidate: true });
+      form.setValue("destinationPortCodes", [existing.code], { shouldValidate: true });
       setIsAddingLocation(false);
       setLocationEditorMessage("Location already exists and has been selected.");
       return;
@@ -1209,7 +1231,7 @@ export function EntryCreateDialog({
       }
 
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/locations"] });
-      form.setValue("destinationPortCode", location.code, { shouldValidate: true });
+      form.setValue("destinationPortCodes", [location.code], { shouldValidate: true });
       setNewLocationCity("");
       setNewLocationCountrySearch(country.displayLabel);
       setIsAddingLocation(false);
@@ -1898,14 +1920,21 @@ export function EntryCreateDialog({
               />
               <FormField
                 control={form.control}
-                name="destinationPortCode"
+                name="destinationPortCodes"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Port / place</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        const next = Array.from(new Set([...(field.value || []), value]));
+                        field.onChange(next);
+                        setPortPickerCode("");
+                      }}
+                      value={portPickerCode}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Port / place" />
+                          <SelectValue placeholder="Add port / place" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -1925,6 +1954,27 @@ export function EntryCreateDialog({
                         ))}
                       </SelectContent>
                     </Select>
+                    {(field.value || []).length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {(field.value || []).map((code) => {
+                          const option = allPortOptions.find((item) => item.code === code);
+                          const label = option ? formatPortPlaceLabel(option) : code;
+                          return (
+                            <button
+                              key={code}
+                              type="button"
+                              className="rounded-md border border-border/70 bg-muted/20 px-2 py-1 text-[11px] hover:bg-muted/40"
+                              onClick={() => {
+                                const next = (field.value || []).filter((value) => value !== code);
+                                field.onChange(next);
+                              }}
+                            >
+                              {label} ×
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
                     <div className="mt-2 flex items-center gap-2">
                       <Button
                         type="button"

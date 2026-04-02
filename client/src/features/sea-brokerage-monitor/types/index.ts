@@ -107,6 +107,7 @@ export interface BrokerageEntry {
   sellerCommission?: number | null;
   buyerCommission?: number | null;
   destinationPortCode?: string | null;
+  destinationPortCodes?: string[];
   destinationPort: string;
   destinationCountryCode?: string | null;
   destinationCountry: string;

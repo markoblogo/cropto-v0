@@ -73,6 +73,13 @@ function normalizeCompareValue(value: string) {
 function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
   const bid = suggestion.bidEntry;
   const offer = suggestion.offerEntry;
+  const resolvePortCodes = (entry: BrokerageEntry) =>
+    Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length
+      ? entry.destinationPortCodes
+      : String(entry.destinationPortCode || "")
+          .split("|")
+          .map((part) => part.trim())
+          .filter(Boolean);
 
   const rows: CompareRow[] = [
     {
@@ -101,8 +108,7 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
       bidValue: `${bid.basis} ${getPortPlaceDisplayLabel(bid.destinationPortCode || "")}`,
       equal:
         normalizeCompareValue(bid.basis) === normalizeCompareValue(offer.basis) &&
-        normalizeCompareValue(bid.destinationPortCode || bid.destinationPort) ===
-          normalizeCompareValue(offer.destinationPortCode || offer.destinationPort),
+        resolvePortCodes(bid).some((code) => resolvePortCodes(offer).includes(code)),
     },
     {
       label: "Transport",
@@ -184,10 +190,24 @@ export function ContextualMatchingPanel({
         }
 
         const [scope, value] = focus.deliveryPlace.split(":");
+        const bidPortCodes =
+          Array.isArray(suggestion.bidEntry.destinationPortCodes) && suggestion.bidEntry.destinationPortCodes.length
+            ? suggestion.bidEntry.destinationPortCodes
+            : String(suggestion.bidEntry.destinationPortCode || "")
+                .split("|")
+                .map((part) => part.trim())
+                .filter(Boolean);
+        const offerPortCodes =
+          Array.isArray(suggestion.offerEntry.destinationPortCodes) &&
+          suggestion.offerEntry.destinationPortCodes.length
+            ? suggestion.offerEntry.destinationPortCodes
+            : String(suggestion.offerEntry.destinationPortCode || "")
+                .split("|")
+                .map((part) => part.trim())
+                .filter(Boolean);
         const placeMatches =
           scope === "port"
-            ? suggestion.bidEntry.destinationPortCode === value ||
-              suggestion.offerEntry.destinationPortCode === value
+            ? bidPortCodes.includes(value) || offerPortCodes.includes(value)
             : suggestion.bidEntry.destinationCountryCode === value ||
               suggestion.offerEntry.destinationCountryCode === value;
 

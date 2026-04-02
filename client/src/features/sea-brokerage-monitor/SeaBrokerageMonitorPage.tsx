@@ -358,7 +358,25 @@ export function SeaBrokerageMonitorPage() {
       quantityToMt: offer.quantityMt == null ? (offer.volumeTo ?? undefined) : undefined,
       tolerancePct: offer.tolerancePct ?? bid.tolerancePct ?? 0,
       basis: offer.basis,
-      destinationPortCode: offer.destinationPortCode || bid.destinationPortCode || "",
+      destinationPortCodes:
+        (offer.destinationPortCodes && offer.destinationPortCodes.length
+          ? offer.destinationPortCodes
+          : String(offer.destinationPortCode || "")
+              .split("|")
+              .map((part) => part.trim())
+              .filter(Boolean)).length > 0
+          ? (offer.destinationPortCodes && offer.destinationPortCodes.length
+              ? offer.destinationPortCodes
+              : String(offer.destinationPortCode || "")
+                  .split("|")
+                  .map((part) => part.trim())
+                  .filter(Boolean))
+          : (bid.destinationPortCodes && bid.destinationPortCodes.length
+              ? bid.destinationPortCodes
+              : String(bid.destinationPortCode || "")
+                  .split("|")
+                  .map((part) => part.trim())
+                  .filter(Boolean)),
       periodPreset,
       periodMonth,
       periodStart: offer.periodStart || "",
