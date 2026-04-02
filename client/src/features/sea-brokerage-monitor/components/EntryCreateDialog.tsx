@@ -67,6 +67,7 @@ import type {
 import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTelegramSession";
 
 const volumeUnitOptions: Array<{ value: VolumeUnit; label: string }> = [{ value: "mt", label: "MT" }];
+const allowedCurrencyCodes = new Set(currencyOptions.map((option) => option.value.toUpperCase()));
 type PeriodPreset =
   | "spot"
   | "prompt"
@@ -128,7 +129,11 @@ const entryFormSchema = z
     periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),
     periodEnd: z.string().optional().default(""),
-    currency: z.enum(["USD", "EUR", "UAH"]),
+    currency: z
+      .string()
+      .trim()
+      .min(1, "Currency is required")
+      .refine((value) => allowedCurrencyCodes.has(value.toUpperCase()), "Use currency from dictionary"),
     price: z.coerce.number().nonnegative("Price must be 0 or greater"),
     paymentTerms: z.string().min(1, "Payment terms are required"),
     sellerCommission: z.coerce.number().nonnegative("Seller commission must be 0 or greater").optional(),
@@ -298,7 +303,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     periodMonth,
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
-    currency: "USD",
+    currency: "",
     price: entryType === "bid" ? 225 : entryType === "trade" ? 224 : 223,
     paymentTerms: entryType === "bid" ? "CAD" : "CAFD",
     sellerCommission: undefined,
@@ -349,7 +354,7 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     periodMonth,
     periodStart: entry.periodStart || "",
     periodEnd: entry.periodEnd || "",
-    currency: entry.currency,
+    currency: entry.currency || "",
     price: entry.price ?? entry.priceFrom ?? entry.priceTo ?? 0,
     paymentTerms: entry.paymentTerms || "CAD",
     sellerCommission: entry.sellerCommission ?? undefined,
