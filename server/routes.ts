@@ -80,6 +80,7 @@ const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
 const USER_NOTIFICATION_PREFS_PREFIX = "user_notification_prefs:";
 const INDEX_UPDATE_MAILING_MODE_KEY = "index_update_mailing_mode";
 const DEFAULT_INDEX_UPDATE_MAILING_MODE = "manual";
+let hasWarnedMissingAnalyticsEventsTable = false;
 
 type UserNotificationPreferences = {
   tradeStatus: boolean;
@@ -2426,6 +2427,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/index/history - Price history for legacy charts OR country/commodity/basis history
   app.get("/api/index/history", async (req, res) => {
     try {
+      const toDateKey = (value: unknown): string | null => {
+        if (value === null || value === undefined) return null;
+        const parsed = new Date(String(value));
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed.toISOString().split("T")[0];
+      };
+
       const { country, commodity, basis, seriesKey } = req.query;
       let countryStr = typeof country === "string" ? country : "";
       let commodityStr = typeof commodity === "string" ? commodity : "";
@@ -2474,9 +2482,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .orderBy(asc(commodityIndexPrices.timestamp));
 
             for (const price of prices) {
+              const dateKey = toDateKey(price.timestamp);
+              if (!dateKey) continue;
+              const numericPrice = Number.parseFloat(String(price.price));
+              if (!Number.isFinite(numericPrice)) continue;
               history.push({
-                date: new Date(price.timestamp).toISOString().split("T")[0],
-                price: parseFloat(price.price),
+                date: dateKey,
+                price: numericPrice,
               });
             }
           }
@@ -2497,9 +2509,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           for (const price of externalPrices) {
             const rowCommodity = normalizeCanonicalCommodity(String(price.commodity || "")).commodity;
             if (rowCommodity !== canonicalCommodity) continue;
+            const dateKey = toDateKey(price.asOfDate || price.date);
+            if (!dateKey) continue;
+            const numericPrice = Number.parseFloat(String(price.price));
+            if (!Number.isFinite(numericPrice)) continue;
             history.push({
-              date: new Date(price.asOfDate || price.date).toISOString().split("T")[0],
-              price: parseFloat(price.price),
+              date: dateKey,
+              price: numericPrice,
             });
           }
 
@@ -2520,9 +2536,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   metaCommodity === canonicalCommodity &&
                   metaBasis === basisStr
                 ) {
+                  const dateKey = toDateKey(price.asOfDate || price.date);
+                  if (!dateKey) continue;
+                  const numericPrice = Number.parseFloat(String(price.price));
+                  if (!Number.isFinite(numericPrice)) continue;
                   history.push({
-                    date: new Date(price.asOfDate || price.date).toISOString().split("T")[0],
-                    price: parseFloat(price.price),
+                    date: dateKey,
+                    price: numericPrice,
                   });
                 }
               } catch {
@@ -3587,9 +3607,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               payload: JSON.stringify(evt),
             }))
           );
-        } catch (analyticsError) {
+        } catch (analyticsError: any) {
           // Analytics must never break market dashboard payload.
-          console.error("[Market Dashboard] Failed to write failover analytics:", analyticsError);
+          const isMissingTable =
+            analyticsError?.code === "42P01" ||
+            String(analyticsError?.message || "").toLowerCase().includes("analytics_events");
+          if (isMissingTable) {
+            if (!hasWarnedMissingAnalyticsEventsTable) {
+              console.warn(
+                "[Market Dashboard] analytics_events table is missing; failover analytics writes are skipped.",
+              );
+              hasWarnedMissingAnalyticsEventsTable = true;
+            }
+          } else {
+            console.error("[Market Dashboard] Failed to write failover analytics:", analyticsError);
+          }
         }
       }
 

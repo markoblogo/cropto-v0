@@ -151,21 +151,22 @@ export function BrokerWorkspacePane({
                     type="button"
                     variant="ghost"
                     onClick={() => onSelectEntry(entry)}
-                    className={`h-auto w-full min-w-0 items-start justify-start whitespace-normal rounded-none border-l-2 px-2 py-0.5 text-left sm:items-center sm:px-2.5 sm:py-0.75 sm:whitespace-nowrap ${
+                    className={`h-auto w-full min-w-0 items-start justify-start whitespace-normal rounded-none border-l-2 pl-2 pr-3 py-0.5 text-left sm:items-center sm:pl-2.5 sm:pr-3.5 sm:py-0.75 sm:whitespace-nowrap ${
                       isSelected
                         ? "border-l-primary bg-muted/28"
                         : "border-l-transparent hover:bg-muted/16"
                     }`}
                   >
                     <div className="flex w-full min-w-0 items-start gap-2 overflow-hidden">
-                      <div className="line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
+                      <div className="min-w-0 flex-1 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
-                      {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
-                        <span
-                          role={isOwnEntry || entry.likedByMe ? undefined : "button"}
-                          tabIndex={isOwnEntry || entry.likedByMe ? -1 : 0}
-                          className={`ml-auto inline-flex h-6 min-w-[36px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
+                      <div className="ml-auto flex shrink-0 items-center gap-1">
+                        {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
+                          <span
+                            role={isOwnEntry || entry.likedByMe ? undefined : "button"}
+                            tabIndex={isOwnEntry || entry.likedByMe ? -1 : 0}
+                            className={`inline-flex h-6 min-w-[36px] items-center justify-center gap-1 rounded border px-1.5 text-[10px] font-semibold leading-none transition-colors ${
                             hasBossMatchLike
                               ? "cursor-default border-sky-400/80 bg-sky-500/20 text-sky-300"
                               : hasIncomingLikes
@@ -176,50 +177,51 @@ export function BrokerWorkspacePane({
                                   ? "hidden"
                                   : "cursor-pointer border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
                           }`}
-                          onClick={(event) => {
-                            if (isOwnEntry || entry.likedByMe) {
-                              return;
-                            }
-                            event.stopPropagation();
-                            onToggleLike?.(entry);
-                          }}
-                          onKeyDown={(event) => {
-                            if (isOwnEntry || entry.likedByMe) {
-                              return;
-                            }
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
+                            onClick={(event) => {
+                              if (isOwnEntry || entry.likedByMe) {
+                                return;
+                              }
                               event.stopPropagation();
                               onToggleLike?.(entry);
-                            }
-                          }}
-                          aria-label={`Like ${entry.type}`}
-                        >
-                          {hasBossMatchLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
-                          {!hasBossMatchLike && hasIncomingLikes ? <span>{entry.likeCount ?? 0}</span> : null}
-                        </span>
-                      ) : null}
-                      {onCounterEntry && (entry.type === "bid" || entry.type === "offer") ? (
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          className="ml-0.5 inline-flex h-6 min-w-[50px] items-center justify-center rounded border border-border/80 bg-background/70 px-1.5 text-[10px] font-semibold leading-none text-foreground transition-colors hover:bg-muted/30"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onCounterEntry(entry);
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
+                            }}
+                            onKeyDown={(event) => {
+                              if (isOwnEntry || entry.likedByMe) {
+                                return;
+                              }
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onToggleLike?.(entry);
+                              }
+                            }}
+                            aria-label={`Like ${entry.type}`}
+                          >
+                            {hasBossMatchLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
+                            {!hasBossMatchLike && hasIncomingLikes ? <span>{entry.likeCount ?? 0}</span> : null}
+                          </span>
+                        ) : null}
+                        {onCounterEntry && (entry.type === "bid" || entry.type === "offer") ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            className="inline-flex h-6 min-w-[46px] items-center justify-center rounded border border-border/80 bg-background/70 px-1.5 text-[9.5px] font-semibold leading-none text-foreground transition-colors hover:bg-muted/30 sm:min-w-[52px] sm:text-[10px]"
+                            onClick={(event) => {
                               event.stopPropagation();
                               onCounterEntry(entry);
-                            }
-                          }}
-                          aria-label={`Create counter ${entry.type === "offer" ? "bid" : "offer"}`}
-                        >
-                          Counter
-                        </span>
-                      ) : null}
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onCounterEntry(entry);
+                              }
+                            }}
+                            aria-label={`Create counter ${entry.type === "offer" ? "bid" : "offer"}`}
+                          >
+                            Counter
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </Button>
                 );
