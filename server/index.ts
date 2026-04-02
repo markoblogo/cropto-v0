@@ -12,6 +12,7 @@ import { db } from "./db";
 import { startFxIngestionScheduler } from "./ingestion/scheduler/fxIngestionJob";
 import { startMarketIngestionScheduler } from "./ingestion/scheduler/marketIngestionJob";
 import { startSeaBrokerageDailyReportScheduler } from "./services/seaBrokerageDailyReportScheduler";
+import { startSeaBrokerageSheetsSyncScheduler } from "./services/seaBrokerageSheetsSyncScheduler";
 import { getRuntimeInfo } from "./runtimeInfo";
 import { registerMonitorRoutes } from "./monitor/routes";
 import path from "path";
@@ -131,6 +132,29 @@ app.use((req, res, next) => {
     log(`serving on ${host}:${port}`);
   });
 
+  let shutdownStarted = false;
+  const gracefulShutdown = (signal: NodeJS.Signals) => {
+    if (shutdownStarted) return;
+    shutdownStarted = true;
+    console.log(`[server] ${signal} received, shutting down gracefully...`);
+    server.close((err) => {
+      if (err) {
+        console.error("[server] graceful shutdown failed:", err);
+        process.exit(1);
+      }
+      console.log("[server] shutdown complete");
+      process.exit(0);
+    });
+    // Force-exit fallback in case hanging handles keep event loop alive.
+    setTimeout(() => {
+      console.warn("[server] forced shutdown timeout reached");
+      process.exit(1);
+    }, 10_000).unref();
+  };
+
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
   // Background startup tasks must not block the server from binding to $PORT,
   // otherwise Railway health checks / edge routing may mark the deployment as unhealthy.
   (async () => {
@@ -167,6 +191,12 @@ app.use((req, res, next) => {
       startSeaBrokerageDailyReportScheduler();
     } catch (error: any) {
       console.error("⚠️  Warning: Failed to start sea brokerage daily report scheduler:", error?.message || error);
+    }
+
+    try {
+      startSeaBrokerageSheetsSyncScheduler();
+    } catch (error: any) {
+      console.error("⚠️  Warning: Failed to start sea brokerage sheets sync scheduler:", error?.message || error);
     }
   })().catch((err: any) => {
     console.error("⚠️  Warning: Background startup task failed:", err?.message || err);

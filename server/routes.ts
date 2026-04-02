@@ -1427,17 +1427,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (process.env.POLYGON_AMOY_RPC_URL && process.env.CROPT_CONTRACT_ADDRESS) {
     startTransactionPoller();
     startReconciler();
-    
-    // Start periodic deadline processing (expired options and margin calls)
-    const DEADLINE_CHECK_INTERVAL = 60000; // 1 minute
-    setInterval(async () => {
-      try {
-        await processDeadlines();
-      } catch (error) {
-        console.error('[Cron] Error in deadline processing:', error);
-      }
-    }, DEADLINE_CHECK_INTERVAL);
-    console.log(`[Cron] Started deadline processor with ${DEADLINE_CHECK_INTERVAL}ms interval`);
+
+    // NOTE:
+    // Running periodic deadline processing inside the web process can cause
+    // platform flapping/restarts under constrained resources.
+    // Keep it opt-in for web; default is disabled.
+    const runDeadlineInWeb = process.env.RUN_DEADLINE_PROCESSOR_IN_WEB === "true";
+    if (runDeadlineInWeb) {
+      const DEADLINE_CHECK_INTERVAL = 60000; // 1 minute
+      setInterval(async () => {
+        try {
+          await processDeadlines();
+        } catch (error) {
+          console.error("[Cron] Error in deadline processing:", error);
+        }
+      }, DEADLINE_CHECK_INTERVAL);
+      console.log(`[Cron] Started deadline processor with ${DEADLINE_CHECK_INTERVAL}ms interval`);
+    } else {
+      console.log("[Cron] RUN_DEADLINE_PROCESSOR_IN_WEB!=true; skipping deadline processor in web service.");
+    }
   }
 
   // Telegram integration should run in the jobs service by default.
