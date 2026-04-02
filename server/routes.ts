@@ -507,6 +507,12 @@ function normalizeCompanyLabel(value: string) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
+const SEA_BROKERAGE_COMPANY_LABEL_REGEX = /^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/;
+
+function isSeaBrokerageCompanyLabelAllowed(value: string) {
+  return SEA_BROKERAGE_COMPANY_LABEL_REGEX.test(value);
+}
+
 function slugifyLocationLabel(value: string) {
   return normalizeCityLabel(value)
     .toLowerCase()
@@ -822,8 +828,8 @@ function deriveSeaBrokerageCompaniesFromEntries(
   for (const entry of entries) {
     const seller = normalizeCompanyLabel(entry.sellerName || "");
     const buyer = normalizeCompanyLabel(entry.buyerName || "");
-    if (seller) labels.add(seller);
-    if (buyer) labels.add(buyer);
+    if (seller && isSeaBrokerageCompanyLabelAllowed(seller)) labels.add(seller);
+    if (buyer && isSeaBrokerageCompanyLabelAllowed(buyer)) labels.add(buyer);
   }
 
   return Array.from(labels.values()).map((label) => buildSeaBrokerageCompanyEntry(label));
@@ -835,10 +841,16 @@ function mergeSeaBrokerageCompanies(
 ): SeaBrokerageCompanyDictionaryEntry[] {
   const byLabel = new Map<string, SeaBrokerageCompanyDictionaryEntry>();
   for (const item of [...left, ...right]) {
-    const key = item.displayLabel.trim().toLowerCase();
+    const normalizedLabel = normalizeCompanyLabel(item.displayLabel);
+    if (!normalizedLabel || !isSeaBrokerageCompanyLabelAllowed(normalizedLabel)) continue;
+    const key = normalizedLabel.toLowerCase();
     if (!key) continue;
     if (!byLabel.has(key)) {
-      byLabel.set(key, item);
+      byLabel.set(key, {
+        id: String(item.id || "").trim() || buildCompanyId(normalizedLabel),
+        displayLabel: normalizedLabel,
+        compactDisplay: String(item.compactDisplay || normalizedLabel.toUpperCase()).trim(),
+      });
     }
   }
 
@@ -9653,7 +9665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const label = normalizeCompanyLabel(parsed.data.displayLabel);
-      if (!/^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/.test(label)) {
+      if (!isSeaBrokerageCompanyLabelAllowed(label)) {
         return res.status(400).json({
           error: "Company name must use Latin letters/numbers and basic punctuation.",
         });

@@ -47,6 +47,8 @@ function normalizeText(value: unknown) {
     .trim();
 }
 
+const COMPANY_LABEL_REGEX = /^[A-Za-z0-9][A-Za-z0-9\s'"&().,\/-]{1,119}$/;
+
 function normalizeHeaderKey(value: unknown) {
   return String(value ?? "")
     .trim()
@@ -159,6 +161,7 @@ async function main() {
   const registerCompany = (raw: unknown) => {
     const label = normalizeText(raw);
     if (!label) return;
+    if (!COMPANY_LABEL_REGEX.test(label)) return;
     const key = label.toLowerCase();
     if (companiesByLabel.has(key)) return;
     companiesByLabel.set(key, {
