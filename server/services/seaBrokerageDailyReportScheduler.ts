@@ -55,7 +55,7 @@ function isCreatedOnLocalDate(date: Date, dateKey: string, timeZone: string) {
 }
 
 function normalizeCommodityLabel(entry: SeaBrokerageEntryRow) {
-  return String(entry.commodityLabel || entry.commodity || "").trim().toUpperCase();
+  return String(entry.commodityLabel || entry.commodity || "").trim();
 }
 
 function toUpper(value: unknown) {
@@ -97,13 +97,13 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
 
   for (const [commodityKey, commodityEntries] of sortedCommodities) {
     const [commodity, cropKey] = commodityKey.split("|");
-    const commodityTitle = cropKey === "NEW" ? `${commodity} (NEW CROP)` : commodity;
+    const commodityTitle = cropKey === "NEW" ? `${commodity} (new crop)` : commodity;
     // No emoji — plain text header
     lines.push(commodityTitle);
 
     const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
     for (const entry of commodityEntries) {
-      const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
+      const route = formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "alpha2" });
       const transport = getTransportShort(entry.transportType);
       const key = `${route}|${transport}`;
       const bucket = byRoute.get(key) || [];

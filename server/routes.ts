@@ -8661,11 +8661,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      const toUpper = (value: string | null | undefined) => String(value || "").trim().toUpperCase();
+      const toRegular = (value: string | null | undefined) => String(value || "").trim();
 
       const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
       for (const entry of matched) {
-        const commodityLabel = toUpper(entry.commodityLabel || entry.commodity);
+        const commodityLabel = toRegular(entry.commodityLabel || entry.commodity);
         const cropKey = entry.isNewCrop ? "NEW" : "STD";
         const key = `${commodityLabel}|${cropKey}`;
         const bucket = byCommodity.get(key) || [];
@@ -8678,7 +8678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         day: "2-digit",
         month: "2-digit",
       });
-      reportLines.push(`SPIKE BROKERS DAILY UPDATE ${reportDate}`);
+      reportLines.push(`SPIKE BROKERS daily update ${reportDate}`);
       reportLines.push("-----------------------------");
 
       // Sort commodity groups by semantic category (grains -> oilseeds+byproducts -> other)
@@ -8691,13 +8691,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (const [commodityKey, commodityEntries] of sortedCommodities) {
         const [commodityLabel, cropKey] = commodityKey.split("|");
-        const commodityTitle = cropKey === "NEW" ? `${commodityLabel} (NEW CROP)` : commodityLabel;
+        const commodityTitle = cropKey === "NEW" ? `${commodityLabel} (new crop)` : commodityLabel;
         // No emoji
         reportLines.push(commodityTitle);
 
         const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
         for (const entry of commodityEntries) {
-          const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
+          const route = formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "alpha2" });
           const transport = getTransportShort(entry.transportType);
           const key = `${route}|${transport}`;
           const bucket = byRoute.get(key) || [];

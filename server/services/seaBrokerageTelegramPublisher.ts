@@ -256,7 +256,7 @@ function formatStandardTelegramMessage(
     "------------------------------",
   ];
 
-  return lines.filter(Boolean).join("\n");
+  return lines.filter(Boolean).join("\n").toUpperCase();
 }
 
 function formatQuantityInline(entry: SeaBrokerageEntryRow) {
@@ -357,7 +357,7 @@ function formatMatchMessage(
     formatMatchSideLine("BID", match.bidEntry, includeBrokerIdentity),
     formatMatchSideLine("OFFER", match.offerEntry, includeBrokerIdentity),
     "------------------------------",
-  ].join("\n");
+  ].join("\n").toUpperCase();
 }
 
 function parseBoolean(value: string | undefined, fallback: boolean) {

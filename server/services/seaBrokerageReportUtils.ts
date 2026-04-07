@@ -41,10 +41,12 @@ export function getCommoditySortKey(entry: SeaBrokerageEntryRow): number {
  */
 export function getTransportShort(type: string | null | undefined): string {
   const t = String(type || "").toLowerCase();
-  if (["vessel", "handysize", "coaster"].includes(t)) return "VSL";
-  if (t === "rail") return "RAIL";
-  if (t === "truck") return "TRUCK";
-  return t.toUpperCase();
+  if (["vessel", "handysize", "coaster"].includes(t)) return "Vsl";
+  if (t === "rail") return "Rail";
+  if (t === "truck") return "Truck";
+  const raw = String(type || "").trim();
+  if (!raw) return "";
+  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 
 /**
@@ -81,7 +83,7 @@ export function formatPriceRange(entries: SeaBrokerageEntryRow[]): string {
  */
 export function formatPeriodSummary(entries: SeaBrokerageEntryRow[]): string {
   const labels = Array.from(
-    new Set(entries.map((e) => String(e.periodLabel || "").trim().toUpperCase()).filter(Boolean))
+    new Set(entries.map((e) => String(e.periodLabel || "").trim()).filter(Boolean))
   );
   return labels.slice(0, 2).join(" / ");
 }
