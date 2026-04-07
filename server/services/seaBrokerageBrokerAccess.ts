@@ -24,6 +24,13 @@ export type AuthorizedSeaBrokerageBroker = {
   source: "db" | "env";
 };
 
+export const BOSS_BROKER_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
+
+export function isSeaBrokerageBoss(brokerCode: string | null | undefined): boolean {
+  if (!brokerCode) return false;
+  return BOSS_BROKER_CODES.has(brokerCode);
+}
+
 type EnvAllowlistEntry = {
   authUserId?: string;
   authEmail?: string;

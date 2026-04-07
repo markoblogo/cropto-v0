@@ -13,6 +13,7 @@ import { EntryDetailSheet } from "./components/EntryDetailSheet";
 import { EntryCreateDialog, type EntryCreateFormPrefill } from "./components/EntryCreateDialog";
 import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
+import { BossAnalyticsView } from "./components/analytics/BossAnalyticsView";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
 import {
@@ -1056,6 +1057,29 @@ export function SeaBrokerageMonitorPage() {
             />
           </CollapsibleContent>
         </Collapsible>
+
+        {session.authorProfile &&
+          SEA_BROKERAGE_BOSS_CODES.has(String(session.authorProfile.brokerCode || "").toUpperCase()) && (
+            <Collapsible className="mt-1 sm:mt-2">
+              <div className="flex items-center justify-end gap-2">
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10.5px] text-purple-400 hover:text-purple-300 sm:h-6.5 sm:text-xs"
+                  >
+                    Boss View (Analytics)
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <CollapsibleContent>
+                <div className="rounded-lg border border-purple-500/20 bg-card/60 p-1 sm:p-2">
+                  <BossAnalyticsView monitorAuthToken={session.monitorAuthToken} />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
       </div>
 
       <EntryCreateDialog

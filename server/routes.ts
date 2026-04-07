@@ -66,6 +66,7 @@ import { generateSeaBrokerageMatchSuggestions } from "./services/seaBrokerageMat
 import {
   listSeaBrokerageBrokerAllowlist,
   resolveAuthorizedSeaBrokerageBrokerByTelegram,
+  isSeaBrokerageBoss,
 } from "./services/seaBrokerageBrokerAccess";
 import {
   readSeaBrokerageMonitorIdentityFromToken,
@@ -82,6 +83,7 @@ import {
   verifySeaBrokerageTelegramOtp,
 } from "./services/seaBrokerageTelegramOtp";
 import { formatSeaBrokerageBasisRoute } from "./services/seaBrokerageBasisFormat";
+import { calculateSeaBrokerageBossAnalytics } from "./services/seaBrokerageBossAnalytics";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -8484,6 +8486,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching sea brokerage broker directory:", error);
       return res.status(500).json({ error: "Failed to fetch broker directory" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/analytics/boss", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageMonitorIdentityFromToken(req);
+      const authorizedBroker = telegramIdentity
+        ? await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity)
+        : null;
+
+      if (!authorizedBroker || !isSeaBrokerageBoss(authorizedBroker.brokerCode)) {
+        return res.status(403).json({ error: "Access denied. Boss role required." });
+      }
+
+      const filters = {
+        brokerId: req.query.brokerId as string,
+        companyName: req.query.companyName as string,
+        commodity: req.query.commodity as string,
+        basis: req.query.basis as string,
+        dateFrom: req.query.dateFrom as string,
+        dateTo: req.query.dateTo as string,
+      };
+
+      const result = await calculateSeaBrokerageBossAnalytics(filters);
+      return res.json(result);
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage boss analytics:", error);
+      return res.status(500).json({ error: "Failed to fetch boss analytics" });
     }
   });
 
