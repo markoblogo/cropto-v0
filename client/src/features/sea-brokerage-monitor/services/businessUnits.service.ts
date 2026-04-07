@@ -12,7 +12,7 @@ export const businessUnitOptions: Array<{ value: BusinessUnitCode; label: string
   { value: "ua_office", label: "Ukrainian office" },
   { value: "international", label: "International" },
   { value: "italy", label: "Italy" },
-  { value: "turkey", label: "Turkey" },
+  { value: "turkey", label: "Türkiye" },
   { value: "germany", label: "Germany" },
   { value: "argentina", label: "Argentina" },
 ];

@@ -127,7 +127,7 @@ export const countryOptions: CountryOption[] = [
   { code: "IT", displayLabel: "Italy", countryCodeAlpha3: "ITA", compactDisplay: "ITA" },
   { code: "NL", displayLabel: "Netherlands", countryCodeAlpha3: "NLD", compactDisplay: "NLD" },
   { code: "RO", displayLabel: "Romania", countryCodeAlpha3: "ROU", compactDisplay: "ROU" },
-  { code: "TR", displayLabel: "Turkey", countryCodeAlpha3: "TUR", compactDisplay: "TUR" },
+  { code: "TR", displayLabel: "Türkiye", countryCodeAlpha3: "TUR", compactDisplay: "TUR" },
 ];
 
 export const portOptions: PortOption[] = [
