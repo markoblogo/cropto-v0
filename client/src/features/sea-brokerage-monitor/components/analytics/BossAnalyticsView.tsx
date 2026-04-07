@@ -151,12 +151,14 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
       </div>
 
       <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:max-w-md sm:grid-cols-4">
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="market">Market Quality</TabsTrigger>
-          <TabsTrigger value="volume">Volume</TabsTrigger>
-        </TabsList>
+        <div className="relative">
+          <TabsList className="scrollbar-hide flex h-auto w-full justify-start overflow-x-auto bg-background/50 p-1 sm:grid sm:max-w-md sm:grid-cols-4">
+            <TabsTrigger value="activity" className="min-w-[100px] flex-1 sm:min-w-0">Activity</TabsTrigger>
+            <TabsTrigger value="performance" className="min-w-[100px] flex-1 sm:min-w-0">Performance</TabsTrigger>
+            <TabsTrigger value="market" className="min-w-[120px] flex-1 sm:min-w-0">Market Quality</TabsTrigger>
+            <TabsTrigger value="volume" className="min-w-[100px] flex-1 sm:min-w-0">Volume</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="activity" className="mt-4 space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
@@ -220,36 +222,38 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
                 <Badge variant="outline" className="border-purple-500/40 text-purple-400">Team Score</Badge>
               </CardHeader>
               <CardContent className="px-0">
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="text-xs uppercase hover:bg-transparent">
-                        <TableHead className="pl-4">Broker</TableHead>
-                        <TableHead className="text-right">Activity</TableHead>
-                        <TableHead className="text-right">Deals</TableHead>
-                        <TableHead className="text-right">Conversion</TableHead>
-                        <TableHead className="text-right">Score</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {analytics.byBroker.map((broker) => (
-                        <TableRow key={broker.brokerCode} className="text-xs">
-                          <TableCell className="pl-4 font-medium">
-                            {broker.brokerCode}
-                            <div className="text-[10px] text-muted-foreground">{broker.brokerName}</div>
-                          </TableCell>
-                          <TableCell className="text-right">{broker.bidCount + broker.offerCount}</TableCell>
-                          <TableCell className="text-right">{broker.tradeCount}</TableCell>
-                          <TableCell className="text-right">{(broker.dealConversion * 100).toFixed(1)}%</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <span className="font-bold">{broker.performanceScore}</span>
-                            </div>
-                          </TableCell>
+                <ScrollArea className="h-[400px] w-full">
+                  <div className="min-w-[500px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="text-xs uppercase hover:bg-transparent">
+                          <TableHead className="pl-4">Broker</TableHead>
+                          <TableHead className="text-right">Activity</TableHead>
+                          <TableHead className="text-right">Deals</TableHead>
+                          <TableHead className="text-right">Conversion</TableHead>
+                          <TableHead className="text-right">Score</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {analytics.byBroker.map((broker) => (
+                          <TableRow key={broker.brokerCode} className="text-xs">
+                            <TableCell className="pl-4 font-medium">
+                              {broker.brokerCode}
+                              <div className="text-[10px] text-muted-foreground">{broker.brokerName}</div>
+                            </TableCell>
+                            <TableCell className="text-right">{broker.bidCount + broker.offerCount}</TableCell>
+                            <TableCell className="text-right">{broker.tradeCount}</TableCell>
+                            <TableCell className="text-right">{(broker.dealConversion * 100).toFixed(1)}%</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2 pr-4">
+                                <span className="font-bold">{broker.performanceScore}</span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </ScrollArea>
               </CardContent>
             </Card>
