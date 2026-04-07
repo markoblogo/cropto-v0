@@ -44,7 +44,7 @@ export function mapTransportTypeToMode(transportType: string | null | undefined)
   if (normalized === "truck" || normalized === "rail" || normalized === "truck/rail") return "land";
   if (normalized === "barge") return "river";
   if (normalized === "container") return "container";
-  if (normalized === "vessel" || normalized === "coaster" || normalized === "handysize") return "bulk_sea";
+  if (normalized === "vessel" || normalized === "coaster" || normalized === "handysize" || normalized === "supramax" || normalized === "panamax" || normalized === "capesize") return "bulk_sea";
   return "land";
 }
 

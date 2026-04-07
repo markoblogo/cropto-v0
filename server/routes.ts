@@ -8545,6 +8545,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/market-dashboard/quotes", async (req: AuthRequest, res) => {
+    // Phase 1 MVP: Baseline quotes to simulate a delayed API or terminal feed.
+    const quotes = [
+      { id: "euraud", symbol: "EUR/USD", category: "macro", price: 1.085, change: 0.12, priceUnit: "USD", trend: "up" },
+      { id: "gold", symbol: "Gold (XAU)", category: "macro", price: 2345.50, change: -1.2, priceUnit: "USD/oz", trend: "down" },
+      { id: "wti", symbol: "Crude WTI", category: "macro", price: 82.40, change: 2.1, priceUnit: "USD/bbl", trend: "up" },
+      { id: "cbot_corn", symbol: "Corn (CBOT)", category: "cbot", price: 440.00, change: 3.5, priceUnit: "USd/bu", trend: "up" },
+      { id: "cbot_soy", symbol: "Soybean (CBOT)", category: "cbot", price: 1150.25, change: -4.0, priceUnit: "USd/bu", trend: "down" },
+      { id: "cbot_wheat", symbol: "Wheat (CBOT)", category: "cbot", price: 560.50, change: 8.2, priceUnit: "USd/bu", trend: "up" },
+      { id: "matif_rape", symbol: "Rapeseed (MATIF)", category: "matif", price: 460.00, change: -2.5, priceUnit: "EUR/mt", trend: "down" },
+      { id: "matif_wheat", symbol: "Wheat (MATIF)", category: "matif", price: 215.50, change: 1.5, priceUnit: "EUR/mt", trend: "up" },
+      { id: "matif_corn", symbol: "Corn (MATIF)", category: "matif", price: 195.00, change: -0.5, priceUnit: "EUR/mt", trend: "down" },
+    ];
+    // Add artificial delay up to 300ms to simulate real network request
+    setTimeout(() => {
+      res.json(quotes);
+    }, 100);
+  });
+
   app.post("/api/sea-brokerage-monitor/report/send", async (req: AuthRequest, res) => {
     try {
       const telegramIdentity = readSeaBrokerageTelegramIdentity(req);

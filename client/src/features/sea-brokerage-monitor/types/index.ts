@@ -6,6 +6,9 @@ export type Basis = string;
 
 export type TransportType =
   | "handysize"
+  | "supramax"
+  | "panamax"
+  | "capesize"
   | "coaster"
   | "truck"
   | "rail"

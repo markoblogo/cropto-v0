@@ -91,11 +91,14 @@ const periodPresetOptions: SelectOption<PeriodPreset>[] = [
 ];
 const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
   { value: "handysize", label: "Handysize" },
+  { value: "supramax", label: "Supramax" },
+  { value: "panamax", label: "Panamax" },
+  { value: "capesize", label: "Capesize" },
   { value: "coaster", label: "Coaster" },
   { value: "truck", label: "Truck" },
   { value: "rail", label: "Rail" },
   { value: "truck/rail", label: "Truck/Rail" },
-  { value: "vessel", label: "Vessel" },
+  { value: "vessel", label: "Vessel (Other)" },
   { value: "barge", label: "Barge" },
   { value: "container", label: "Container" },
 ];
@@ -146,6 +149,9 @@ const entryFormSchema = z
     buyerCommission: z.coerce.number().nonnegative("Buyer commission must be 0 or greater").optional(),
     transportType: z.enum([
       "handysize",
+      "supramax",
+      "panamax",
+      "capesize",
       "coaster",
       "truck",
       "rail",
