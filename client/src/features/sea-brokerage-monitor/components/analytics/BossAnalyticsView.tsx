@@ -151,7 +151,7 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
       </div>
 
       <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:max-w-md sm:grid-cols-4">
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="market">Market Quality</TabsTrigger>
@@ -169,13 +169,13 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={analytics.byBroker.slice(0, 10)}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                      <XAxis dataKey="brokerCode" fontSize={10} />
-                      <YAxis fontSize={10} />
+                      <XAxis dataKey="brokerCode" fontSize={9} tick={{ fontSize: 9 }} />
+                      <YAxis fontSize={9} tick={{ fontSize: 9 }} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: "#111", border: "1px solid #333" }}
-                        itemStyle={{ fontSize: "12px" }}
+                        contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "8px" }}
+                        itemStyle={{ fontSize: "11px" }}
                       />
-                      <Legend wrapperStyle={{ fontSize: "11px" }} />
+                      <Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
                       <Bar dataKey="bidCount" name="BIDs" fill="#10b981" stackId="a" />
                       <Bar dataKey="offerCount" name="OFFERs" fill="#f59e0b" stackId="a" />
                     </BarChart>
@@ -192,13 +192,13 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={analytics.timeline}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                      <XAxis dataKey="date" fontSize={10} />
-                      <YAxis fontSize={10} />
+                      <XAxis dataKey="date" fontSize={9} tick={{ fontSize: 9 }} />
+                      <YAxis fontSize={9} tick={{ fontSize: 9 }} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: "#111", border: "1px solid #333" }}
-                        itemStyle={{ fontSize: "12px" }}
+                        contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "8px" }}
+                        itemStyle={{ fontSize: "11px" }}
                       />
-                      <Legend wrapperStyle={{ fontSize: "11px" }} />
+                      <Legend wrapperStyle={{ fontSize: "10px", paddingTop: "10px" }} />
                       <Line type="monotone" dataKey="bidCount" name="BIDs" stroke="#10b981" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="offerCount" name="OFFERs" stroke="#f59e0b" strokeWidth={2} dot={false} />
                     </LineChart>
