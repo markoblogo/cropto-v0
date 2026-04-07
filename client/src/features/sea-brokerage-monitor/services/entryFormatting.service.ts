@@ -320,12 +320,18 @@ export function buildCanonicalView(entry: Omit<BrokerageEntry, "canonicalView">)
 }
 
 export function buildTapeLine(entry: BrokerageEntry) {
-  return [
+  const parts = [
     formatEntryDateCompact(entry.createdAt),
     formatEntryTimeCompact(entry.createdAt),
     formatEntryBrokerIdentityCompact(entry),
     `${formatEntryCommodityTape(entry)} ${formatEntryQuantityTape(entry)} ${formatEntryDeliveryCompact(entry)} ${formatEntryPeriodTape(entry)} ${formatEntryPriceTape(entry)}`,
-  ].join(" / ");
+  ];
+
+  if (entry.isMarketTrade) {
+    parts.unshift("[MT]");
+  }
+
+  return parts.join(" / ");
 }
 
 export function buildCompactCanonicalView(entry: BrokerageEntry) {

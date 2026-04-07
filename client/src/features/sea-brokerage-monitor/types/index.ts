@@ -129,6 +129,7 @@ export interface BrokerageEntry {
   likeCount?: number;
   likedByMe?: boolean;
   hasBossMatchLike?: boolean;
+  isMarketTrade?: boolean;
 }
 
 export interface BrokerDirectoryItem {

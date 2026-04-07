@@ -102,8 +102,16 @@ function formatSigned(value: number) {
   return `${value}`;
 }
 
-function TapeTypeBadge({ type }: { type: BrokerageEntry["type"] }) {
-  if (type === "trade") {
+function TapeTypeBadge({ entry }: { entry: BrokerageEntry }) {
+  if (entry.isMarketTrade) {
+    return (
+      <span className="shrink-0 rounded-full border border-slate-500/30 bg-slate-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+        MARKET TRADE
+      </span>
+    );
+  }
+
+  if (entry.type === "trade") {
     return (
       <span className="shrink-0 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
         TRADE IDEA
@@ -114,12 +122,12 @@ function TapeTypeBadge({ type }: { type: BrokerageEntry["type"] }) {
   return (
     <span
       className={
-        type === "bid"
+        entry.type === "bid"
           ? "shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700"
           : "shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700"
       }
     >
-      {type === "bid" ? "BID IDEA" : "OFFER IDEA"}
+      {entry.type === "bid" ? "BID IDEA" : "OFFER IDEA"}
     </span>
   );
 }
@@ -491,7 +499,7 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
                       className="w-full min-w-0 px-4 py-1.5 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="flex items-start gap-3">
-                        <TapeTypeBadge type={entry.type} />
+                        <TapeTypeBadge entry={entry} />
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-sm font-medium leading-5 text-foreground">
                             {entry.canonicalView}
@@ -523,7 +531,7 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
                         className="w-full rounded-lg border border-border/60 px-3 py-2 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="mb-1 flex items-center gap-2">
-                          <TapeTypeBadge type={entry.type} />
+                          <TapeTypeBadge entry={entry} />
                           <span className="text-xs text-muted-foreground">{entry.brokerCode}</span>
                         </div>
                         <div className="truncate text-sm font-medium text-foreground">
@@ -562,7 +570,7 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
                           >
                             <TableCell>{formatEntryDateTime(entry.createdAt)}</TableCell>
                             <TableCell>
-                              <TapeTypeBadge type={entry.type} />
+                              <TapeTypeBadge entry={entry} />
                             </TableCell>
                             <TableCell>{entry.brokerCode}</TableCell>
                             <TableCell>{formatEntryCommodityCompact(entry)}</TableCell>

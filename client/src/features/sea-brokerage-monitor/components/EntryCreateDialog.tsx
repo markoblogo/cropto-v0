@@ -21,6 +21,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -100,6 +102,7 @@ const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
 
 const entryFormSchema = z
   .object({
+    isMarketTrade: z.boolean().optional().default(false),
     quantityPreset: z.enum(["single", "range"]),
     tradeMyRole: z.enum(["seller", "buyer"]).optional(),
     tradeCounterpartyBrokerKey: z.string().optional(),
@@ -116,26 +119,29 @@ const entryFormSchema = z
     commodity: z.string().min(1, "Commodity is required"),
     harvestYear: z.string().trim().optional().default(""),
     isNewCrop: z.boolean().optional().default(false),
-    originCountry: z.string().min(1, "Origin is required"),
-    quantityMt: z.coerce.number().min(0, "Quantity must be 0 or greater"),
+    originCountry: z.string().optional().default("UA"),
+    quantityMt: z.coerce.number().min(0, "Quantity must be 0 or greater").optional().default(0),
     quantityFromMt: z.coerce.number().min(0, "Quantity from must be 0 or greater").optional(),
     quantityToMt: z.coerce.number().min(0, "Quantity to must be 0 or greater").optional(),
     tolerancePct: z.coerce
       .number()
       .min(0, "Tolerance must be 0 or greater")
-      .max(25, "Tolerance must be 25% or lower"),
+      .max(25, "Tolerance must be 25% or lower")
+      .optional()
+      .default(0),
     basis: z.string().trim().min(1, "Delivery basis is required"),
-    destinationPortCodes: z.array(z.string().min(1)).min(1, "Port / place is required"),
+    destinationPortCodes: z.array(z.string().min(1)).optional().default([]),
     periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),
     periodEnd: z.string().optional().default(""),
     currency: z
       .string()
       .trim()
-      .min(1, "Currency is required")
-      .refine((value) => allowedCurrencyCodes.has(value.toUpperCase()), "Use currency from dictionary"),
-    price: z.coerce.number().nonnegative("Price must be 0 or greater"),
-    paymentTerms: z.string().min(1, "Payment terms are required"),
+      .optional()
+      .default("")
+      .refine((value) => !value || allowedCurrencyCodes.has(value.toUpperCase()), "Use currency from dictionary"),
+    price: z.coerce.number().nonnegative("Price must be 0 or greater").optional().default(0),
+    paymentTerms: z.string().optional().default(""),
     sellerCommission: z.coerce.number().nonnegative("Seller commission must be 0 or greater").optional(),
     buyerCommission: z.coerce.number().nonnegative("Buyer commission must be 0 or greater").optional(),
     transportType: z.enum([
@@ -147,10 +153,60 @@ const entryFormSchema = z
       "vessel",
       "barge",
       "container",
-    ]),
+    ]).optional().default("vessel"),
     note: z.string().max(500, "Note must be 500 characters or fewer").optional(),
   })
   .superRefine((values, ctx) => {
+    if (values.isMarketTrade) {
+      if (!values.commodity) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["commodity"],
+          message: "Commodity is required",
+        });
+      }
+      if (!values.basis) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["basis"],
+          message: "Delivery basis is required",
+        });
+      }
+      return;
+    }
+
+    if (!values.originCountry) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["originCountry"],
+        message: "Origin is required",
+      });
+    }
+
+    if (!values.destinationPortCodes || values.destinationPortCodes.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["destinationPortCodes"],
+        message: "Port / place is required",
+      });
+    }
+
+    if (!values.currency) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["currency"],
+        message: "Currency is required",
+      });
+    }
+
+    if (!values.paymentTerms) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["paymentTerms"],
+        message: "Payment terms are required",
+      });
+    }
+
     if (values.quantityPreset === "range") {
       if (values.quantityFromMt === null || values.quantityFromMt === undefined) {
         ctx.addIssue({
@@ -310,6 +366,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     buyerCommission: undefined,
     transportType: "vessel",
     note: "",
+    isMarketTrade: false,
   };
 }
 
@@ -361,6 +418,7 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     buyerCommission: entry.buyerCommission ?? undefined,
     transportType: entry.transportType,
     note: entry.note || "",
+    isMarketTrade: !!entry.isMarketTrade,
   };
 }
 
@@ -1077,6 +1135,7 @@ export function EntryCreateDialog({
     const canonicalView = buildCanonicalView({
       id: mode === "edit" && initialEntry?.id ? initialEntry.id : "preview",
       type: targetType,
+      isMarketTrade: targetType === "trade" ? !!normalizedValues.isMarketTrade : false,
       brokerId: session.authorProfile?.id || "unknown",
       brokerCode: session.authorProfile?.brokerCode || "",
       brokerName: session.authorProfile?.brokerName || "",
@@ -1122,6 +1181,7 @@ export function EntryCreateDialog({
 
     return {
       type: targetType,
+      isMarketTrade: targetType === "trade" ? !!normalizedValues.isMarketTrade : false,
       sellerName:
         targetType !== "bid" && normalizedValues.sellerName?.trim()
           ? normalizedValues.sellerName.trim()
@@ -1495,6 +1555,43 @@ export function EntryCreateDialog({
         <Form {...form}>
           <form className="space-y-3 overflow-x-hidden" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
+              {entryType === "trade" ? (
+                <FormField
+                  control={form.control}
+                  name="isMarketTrade"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Trade category</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={(value) => field.onChange(value === "market")}
+                          value={field.value ? "market" : "our"}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="our" id="trade-our" />
+                            <Label htmlFor="trade-our" className="font-normal">
+                              Our Trade
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="market" id="trade-market" />
+                            <Label htmlFor="trade-market" className="font-normal">
+                              Market Trade
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <div className="text-[11px] text-muted-foreground">
+                        {field.value
+                          ? "Trade observed from the market. Author handle will be included in report."
+                          : "Trade executed by your brokerage. Normal validation applies."}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
               {entryType === "trade" ? (
                 <FormField
                   control={form.control}

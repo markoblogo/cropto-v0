@@ -138,6 +138,7 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   transportType: z.string().min(1),
   note: z.string().trim().max(500).nullable().optional(),
   canonicalView: z.string().min(1),
+  isMarketTrade: z.boolean().optional().default(false),
 });
 
 const updateSeaBrokerageEntryRequestSchema = createSeaBrokerageEntryRequestSchema;
@@ -473,6 +474,7 @@ function mapSeaBrokerageEntryToClientShape(
     canonicalView: entry.canonicalView,
     telegramRelayStatus: entry.telegramRelayStatus,
     telegramRelayMessage: entry.telegramRelayMessage,
+    isMarketTrade: !!entry.isMarketTrade,
     likeCount: likeMeta?.likeCount ?? 0,
     likedByMe: likeMeta?.likedByMe ?? false,
     hasBossMatchLike: likeMeta?.hasBossMatchLike ?? false,
@@ -9907,7 +9909,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? destinationPortCodes.join("|")
         : parsed.data.destinationPortCode ?? null;
 
-      if (parsed.data.type === "trade") {
+      if (parsed.data.type === "trade" && !parsed.data.isMarketTrade) {
         const hasSellerBrokerIdentity =
           !!parsed.data.tradeSellerBrokerTelegramUserId || !!parsed.data.tradeSellerBrokerTelegramUsername;
         const hasBuyerBrokerIdentity =
@@ -9936,6 +9938,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tradeSellerBrokerTelegramUsername: parsed.data.tradeSellerBrokerTelegramUsername ?? null,
         tradeBuyerBrokerTelegramUserId: parsed.data.tradeBuyerBrokerTelegramUserId ?? null,
         tradeBuyerBrokerTelegramUsername: parsed.data.tradeBuyerBrokerTelegramUsername ?? null,
+        isMarketTrade: !!parsed.data.isMarketTrade,
         gradeOrSpec: parsed.data.gradeOrSpec ?? "",
         price:
           parsed.data.price === null || parsed.data.price === undefined
@@ -10015,7 +10018,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "Only BID/OFFER switch is allowed" });
         }
       }
-      if (payload.type === "trade") {
+      if (payload.type === "trade" && !payload.isMarketTrade) {
         const hasSellerBrokerIdentity =
           !!payload.tradeSellerBrokerTelegramUserId || !!payload.tradeSellerBrokerTelegramUsername;
         const hasBuyerBrokerIdentity =
@@ -10035,6 +10038,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tradeSellerBrokerTelegramUsername: payload.tradeSellerBrokerTelegramUsername ?? null,
         tradeBuyerBrokerTelegramUserId: payload.tradeBuyerBrokerTelegramUserId ?? null,
         tradeBuyerBrokerTelegramUsername: payload.tradeBuyerBrokerTelegramUsername ?? null,
+        isMarketTrade: !!payload.isMarketTrade,
         originCountry: payload.originCountry ?? null,
         originCountryCode: payload.originCountryCode ?? null,
         commodity: payload.commodity,

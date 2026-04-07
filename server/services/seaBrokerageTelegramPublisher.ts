@@ -172,6 +172,11 @@ function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
 }
 
 function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) {
+  if (entry.type === "trade" && entry.isMarketTrade) {
+    const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
+    return ["#market_traded", flag, brokerLabel].filter(Boolean).join(" ");
+  }
+
   const ideaTag =
     entry.type === "bid" ? "#bid_idea" : entry.type === "trade" ? "#traded" : "#offer_idea";
   const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
@@ -205,9 +210,10 @@ function formatStandardTelegramMessage(
   includeBrokerSignature = true,
 ) {
   const isTrade = entry.type === "trade";
+  const isMarketTrade = !!entry.isMarketTrade;
   const header = formatTelegramHeader(
     entry,
-    includeBrokerSignature && !isTrade
+    includeBrokerSignature && (!isTrade || isMarketTrade)
       ? brokerSignature || entry.companyName || entry.brokerName || entry.brokerCode
       : "",
   );
