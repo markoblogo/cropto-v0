@@ -81,7 +81,7 @@ function normalizeCommodityKey(value: string) {
     .trim();
 }
 
-const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
+const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
 const PRIMARY_VIEW_WINDOW_DAYS = 7;
 
 function isWithinPrimaryDisplayWindow(entry: BrokerageEntry, nowMs = Date.now()) {

@@ -317,7 +317,7 @@ const SEA_BROKERAGE_BASIS_KEY = "sea_brokerage_basis_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
-const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV"]);
+const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
 const SEA_BROKERAGE_DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_TIMEZONE || "Europe/Paris";
 
 type SeaBrokerageEntryLike = {
