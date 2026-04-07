@@ -74,6 +74,23 @@ async function ensureAppSettingsExists(): Promise<void> {
   ensuredAppSettingsTable = true;
 }
 
+let ensuredSeaBrokerageSchema = false;
+async function ensureSeaBrokerageSchemaSynced(): Promise<void> {
+  if (ensuredSeaBrokerageSchema) return;
+  try {
+    console.log("[DB] Syncing sea_brokerage_entries schema...");
+    await db.execute(
+      sql`ALTER TABLE sea_brokerage_entries ADD COLUMN IF NOT EXISTS is_market_trade BOOLEAN NOT NULL DEFAULT FALSE`
+    );
+    ensuredSeaBrokerageSchema = true;
+    console.log("[DB] Sea brokerage schema synced successfully");
+  } catch (err: any) {
+    console.error("[DB] Failed to sync sea brokerage schema:", err.message);
+    // Continue anyway as the column might exist but the check failed
+    ensuredSeaBrokerageSchema = true;
+  }
+}
+
 export interface IStorage {
   listOptions(): Promise<Option[]>;
   createOption(option: InsertOption): Promise<Option>;
@@ -129,6 +146,7 @@ export interface IStorage {
   findSeaBrokerageBrokerAuthByAuthUserId(authUserId: string): Promise<SeaBrokerageBrokerAuthRow | undefined>;
   findSeaBrokerageBrokerAuthByAuthEmail(authEmail: string): Promise<SeaBrokerageBrokerAuthRow | undefined>;
   upsertSeaBrokerageBrokerAuth(entry: InsertSeaBrokerageBrokerAuth): Promise<SeaBrokerageBrokerAuthRow>;
+  syncSeaBrokerageSchema(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -229,7 +247,12 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  async syncSeaBrokerageSchema(): Promise<void> {
+    await ensureSeaBrokerageSchemaSynced();
+  }
+
   async listSeaBrokerageEntries(): Promise<SeaBrokerageEntryRow[]> {
+    await ensureSeaBrokerageSchemaSynced();
     return db.select().from(seaBrokerageEntries).orderBy(desc(seaBrokerageEntries.createdAt));
   }
 

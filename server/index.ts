@@ -173,8 +173,14 @@ app.use((req, res, next) => {
     // Auto-import demo data if not present in database
     try {
       await autoImportDemoData(db);
+      // Ensure Sea Brokerage schema is synced
+      const { storage } = await import("./storage");
+      const storageInstance = (await import("./storage")).storage;
+      if (storageInstance && typeof storageInstance.syncSeaBrokerageSchema === "function") {
+        await storageInstance.syncSeaBrokerageSchema();
+      }
     } catch (error: any) {
-      console.error("⚠️  Warning: Failed to auto-import demo data:", error.message);
+      console.error("⚠️  Warning: Failed to auto-import demo data or sync schema:", error.message);
     }
 
     if (startIngestionScheduler) {
