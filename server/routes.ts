@@ -48,6 +48,13 @@ import { findSpreadSpec } from "./services/specRegistry";
 import { MARKET_COMMODITY_CONFIG } from "./ingestion/config";
 import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingestion/scheduler/marketIngestionJob";
 import { providerDefinitionsFor } from "./ingestion/config";
+import {
+  getCommoditySortKey,
+  getTransportShort,
+  formatQtyRangeK,
+  formatPriceRange,
+  formatPeriodSummary,
+} from "./services/seaBrokerageReportUtils";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
 import {
@@ -8654,62 +8661,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      const offers = matched.filter((entry) => entry.type === "offer");
-      const bids = matched.filter((entry) => entry.type === "bid");
-
-      const commodityEmoji: Record<string, string> = {
-        corn: "🌽",
-        wheat: "🌾",
-        barley: "🌾",
-        soybean: "🌱",
-        soybeans: "🌱",
-        sunflower: "🌻",
-        rapeseed: "🌱",
-      };
-      const transportShort: Record<string, string> = {
-        vessel: "VSL",
-        truck: "TRUCK",
-        rail: "RAIL",
-        handysize: "VSL",
-        coaster: "VSL",
-      };
       const toUpper = (value: string | null | undefined) => String(value || "").trim().toUpperCase();
-      const parsePrice = (value: unknown) => {
-        const n = Number(value);
-        return Number.isFinite(n) ? n : null;
-      };
-      const formatPriceRange = (values: Array<number | null>) => {
-        const numeric = values.filter((value): value is number => typeof value === "number");
-        if (!numeric.length) return "N/A";
-        const min = Math.min(...numeric);
-        const max = Math.max(...numeric);
-        return min === max ? `${min}$` : `${min}$-${max}$`;
-      };
-      const formatQtyRange = (entries: SeaBrokerageEntryRow[]) => {
-        const qtyValues = entries
-          .flatMap((entry) => {
-            const from = Number(entry.volumeFrom);
-            const to = Number(entry.volumeTo);
-            const qty = Number(entry.quantityMt);
-            return [from, to, qty].filter((n) => Number.isFinite(n) && n > 0);
-          })
-          .filter((n): n is number => typeof n === "number");
-        if (!qtyValues.length) return "";
-        const min = Math.min(...qtyValues);
-        const max = Math.max(...qtyValues);
-        if (min === max) return `${min.toLocaleString("en-US")} MT`;
-        return `${min.toLocaleString("en-US")}-${max.toLocaleString("en-US")} MT`;
-      };
-      const formatPeriodSummary = (entries: SeaBrokerageEntryRow[]) => {
-        const values = Array.from(
-          new Set(
-            entries
-              .map((entry) => String(entry.periodLabel || "").trim().toUpperCase())
-              .filter(Boolean),
-          ),
-        );
-        return values.slice(0, 2).join(" / ");
-      };
 
       const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
       for (const entry of matched) {
@@ -8729,18 +8681,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       reportLines.push(`SPIKE BROKERS DAILY UPDATE ${reportDate}`);
       reportLines.push("-----------------------------");
 
-      for (const [commodityKey, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
-        a[0].localeCompare(b[0]),
-      )) {
+      // Sort commodity groups by semantic category (grains -> oilseeds+byproducts -> other)
+      const sortedCommodities = Array.from(byCommodity.entries()).sort((a, b) => {
+        const keyA = getCommoditySortKey(a[1][0]);
+        const keyB = getCommoditySortKey(b[1][0]);
+        if (keyA !== keyB) return keyA - keyB;
+        return a[0].localeCompare(b[0]);
+      });
+
+      for (const [commodityKey, commodityEntries] of sortedCommodities) {
         const [commodityLabel, cropKey] = commodityKey.split("|");
         const commodityTitle = cropKey === "NEW" ? `${commodityLabel} (NEW CROP)` : commodityLabel;
-        const commodityCode = commodityEntries[0]?.commodity?.toLowerCase?.() || "";
-        reportLines.push(`${commodityEmoji[commodityCode] || "•"}${commodityTitle}`);
+        // No emoji
+        reportLines.push(commodityTitle);
 
         const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
         for (const entry of commodityEntries) {
           const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
-          const transport = toUpper(transportShort[String(entry.transportType || "").toLowerCase()] || entry.transportType);
+          const transport = getTransportShort(entry.transportType);
           const key = `${route}|${transport}`;
           const bucket = byRoute.get(key) || [];
           bucket.push(entry);
@@ -8751,7 +8709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           a[0].localeCompare(b[0]),
         )) {
           const [route, transport] = routeKey.split("|");
-          const qtyLabel = formatQtyRange(routeEntries);
+          const qtyLabel = formatQtyRangeK(routeEntries);
           const headingParts = [route];
           if (qtyLabel) headingParts.push(qtyLabel);
           if (transport) headingParts.push(transport);
@@ -8761,12 +8719,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const routeBids = routeEntries.filter((entry) => entry.type === "bid");
           if (routeOffers.length) {
             reportLines.push(
-              `> Sellers ${formatPriceRange(routeOffers.map((entry) => parsePrice(entry.price)))} ${formatPeriodSummary(routeOffers)}`.trim(),
+              `> Sellers ${formatPriceRange(routeOffers)} ${formatPeriodSummary(routeOffers)}`.trim(),
             );
           }
           if (routeBids.length) {
             reportLines.push(
-              `> Buyers ${formatPriceRange(routeBids.map((entry) => parsePrice(entry.price)))} ${formatPeriodSummary(routeBids)}`.trim(),
+              `> Buyers ${formatPriceRange(routeBids)} ${formatPeriodSummary(routeBids)}`.trim(),
             );
           }
           reportLines.push("");
@@ -8823,8 +8781,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ok: true,
         sentChunks,
         matchedEntries: matched.length,
-        offers: offers.length,
-        bids: bids.length,
+        offers: matched.filter((e) => e.type === "offer").length,
+        bids: matched.filter((e) => e.type === "bid").length,
       });
     } catch (error: any) {
       console.error("Error sending sea brokerage report:", error);

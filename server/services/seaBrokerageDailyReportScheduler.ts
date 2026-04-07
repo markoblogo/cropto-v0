@@ -2,6 +2,13 @@ import type { SeaBrokerageEntryRow } from "@shared/schema";
 import { storage } from "../storage";
 import { sendSeaBrokerageTelegramInternalBroadcast } from "./seaBrokerageTelegramPublisher";
 import { formatSeaBrokerageBasisRoute } from "./seaBrokerageBasisFormat";
+import {
+  getCommoditySortKey,
+  getTransportShort,
+  formatQtyRangeK,
+  formatPriceRange,
+  formatPeriodSummary,
+} from "./seaBrokerageReportUtils";
 
 const DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_DAILY_REPORT_TIMEZONE || "Europe/Paris";
 const DEFAULT_HOUR = Number(process.env.SEA_BROKERAGE_DAILY_REPORT_HOUR || "17");
@@ -51,63 +58,8 @@ function normalizeCommodityLabel(entry: SeaBrokerageEntryRow) {
   return String(entry.commodityLabel || entry.commodity || "").trim().toUpperCase();
 }
 
-function commodityEmoji(entry: SeaBrokerageEntryRow) {
-  const code = String(entry.commodity || "").toLowerCase();
-  if (code === "corn") return "🌽";
-  if (code === "wheat" || code === "barley") return "🌾";
-  if (code === "sunflower") return "🌻";
-  if (code === "soybean" || code === "soybeans" || code === "rapeseed") return "🌱";
-  return "•";
-}
-
 function toUpper(value: unknown) {
   return String(value || "").trim().toUpperCase();
-}
-
-function transportShort(entry: SeaBrokerageEntryRow) {
-  const transport = String(entry.transportType || "").toLowerCase();
-  if (["vessel", "handysize", "coaster"].includes(transport)) return "VSL";
-  if (transport === "rail") return "RAIL";
-  if (transport === "truck") return "TRUCK";
-  return toUpper(entry.transportType);
-}
-
-function priceValue(entry: SeaBrokerageEntryRow): number | null {
-  const direct = Number(entry.price);
-  if (Number.isFinite(direct)) return direct;
-  const from = Number(entry.priceFrom);
-  if (Number.isFinite(from)) return from;
-  const to = Number(entry.priceTo);
-  if (Number.isFinite(to)) return to;
-  return null;
-}
-
-function priceRange(entries: SeaBrokerageEntryRow[]) {
-  const prices = entries.map(priceValue).filter((value): value is number => typeof value === "number");
-  if (!prices.length) return "N/A";
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  const format = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
-  return min === max ? `${format(min)}$` : `${format(min)}$-${format(max)}$`;
-}
-
-function quantityRangeK(entries: SeaBrokerageEntryRow[]) {
-  const values = entries
-    .flatMap((entry) => [Number(entry.volumeFrom), Number(entry.volumeTo), Number(entry.quantityMt)])
-    .filter((value) => Number.isFinite(value) && value > 0);
-  if (!values.length) return "";
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const minK = Math.round(min / 1000);
-  const maxK = Math.round(max / 1000);
-  return minK === maxK ? `${minK}k` : `${minK}-${maxK}k`;
-}
-
-function periodSummary(entries: SeaBrokerageEntryRow[]) {
-  const labels = Array.from(
-    new Set(entries.map((entry) => toUpper(entry.periodLabel)).filter(Boolean)),
-  );
-  return labels.slice(0, 2).join(" / ");
 }
 
 function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabel: string) {
@@ -131,21 +83,29 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
     byCommodity.set(key, bucket);
   }
 
+  // Sort commodity groups by semantic category (grains -> oilseeds+byproducts -> other)
+  const sortedCommodities = Array.from(byCommodity.entries()).sort((a, b) => {
+    const keyA = getCommoditySortKey(a[1][0]);
+    const keyB = getCommoditySortKey(b[1][0]);
+    if (keyA !== keyB) return keyA - keyB;
+    return a[0].localeCompare(b[0]); // alphabetical within same sort key
+  });
+
   const lines: string[] = [];
   lines.push(`SPIKE BROKERS daily update ${reportDateLabel}`);
   lines.push("-----------------------------");
 
-  for (const [commodityKey, commodityEntries] of Array.from(byCommodity.entries()).sort((a, b) =>
-    a[0].localeCompare(b[0]),
-  )) {
+  for (const [commodityKey, commodityEntries] of sortedCommodities) {
     const [commodity, cropKey] = commodityKey.split("|");
     const commodityTitle = cropKey === "NEW" ? `${commodity} (NEW CROP)` : commodity;
-    lines.push(`${commodityEmoji(commodityEntries[0])}${commodityTitle}`);
+    // No emoji — plain text header
+    lines.push(commodityTitle);
 
     const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
     for (const entry of commodityEntries) {
       const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
-      const key = `${route}|${transportShort(entry)}`;
+      const transport = getTransportShort(entry.transportType);
+      const key = `${route}|${transport}`;
       const bucket = byRoute.get(key) || [];
       bucket.push(entry);
       byRoute.set(key, bucket);
@@ -155,18 +115,18 @@ function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabe
       a[0].localeCompare(b[0]),
     )) {
       const [route, transport] = routeKey.split("|");
-      const qty = quantityRangeK(routeEntries);
+      const qty = formatQtyRangeK(routeEntries);
       const heading = [route, qty, transport].filter(Boolean).join(" ");
       lines.push(`${heading}:`);
 
       const sellers = routeEntries.filter((entry) => entry.type === "offer");
-      const buyers = routeEntries.filter((entry) => entry.type === "bid");
+      const buyers  = routeEntries.filter((entry) => entry.type === "bid");
 
       if (sellers.length) {
-        lines.push(`> Sellers ${priceRange(sellers)} ${periodSummary(sellers)}`.trim());
+        lines.push(`> Sellers ${formatPriceRange(sellers)} ${formatPeriodSummary(sellers)}`.trim());
       }
       if (buyers.length) {
-        lines.push(`> Buyers ${priceRange(buyers)} ${periodSummary(buyers)}`.trim());
+        lines.push(`> Buyers ${formatPriceRange(buyers)} ${formatPeriodSummary(buyers)}`.trim());
       }
       lines.push("");
     }
