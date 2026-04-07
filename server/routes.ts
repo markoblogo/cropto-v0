@@ -1232,10 +1232,12 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
 async function processSeaBrokerageEntryRelay(
   entry: SeaBrokerageEntryRow,
   brokerTelegramUsername?: string | null,
+  isEdit = false,
 ) {
   try {
     const relayResult = await publishSeaBrokerageEntryToTelegram(entry, {
       brokerTelegramUsername: brokerTelegramUsername ?? null,
+      isEdit,
     });
     const updated = await storage.updateSeaBrokerageEntry(entry.id, {
       telegramRelayStatus: relayResult.status,
@@ -10120,6 +10122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
         }
       }
+
+      // Auto-publish the updated entry to Telegram channels with EDITED marker
+      void processSeaBrokerageEntryRelay(updated, authorizedBroker.telegramUsername, true);
 
       return res.json(mapSeaBrokerageEntryToClientShape(updated));
     } catch (error: any) {

@@ -1048,6 +1048,7 @@ export function SeaBrokerageMonitorPage() {
           <CollapsibleContent>
             <StandardizedFeedCard
               entries={filteredEntries}
+              onSelectEntry={handleSelectEntry}
               onOpenReport={() => {
                 setReportOpen(true);
                 setReportStatus(null);

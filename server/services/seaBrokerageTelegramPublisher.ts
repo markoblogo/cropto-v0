@@ -14,6 +14,7 @@ type TelegramPublishResult = {
 
 type PublishContext = {
   brokerTelegramUsername?: string | null;
+  isEdit?: boolean;
 };
 
 type RelayChannel = "internal" | "external";
@@ -208,6 +209,7 @@ function formatStandardTelegramMessage(
   entry: SeaBrokerageEntryRow,
   brokerSignature?: string | null,
   includeBrokerSignature = true,
+  isEdit = false,
 ) {
   const isTrade = entry.type === "trade";
   const isMarketTrade = !!entry.isMarketTrade;
@@ -541,8 +543,14 @@ export async function publishSeaBrokerageEntryToTelegram(
     : entry.brokerTelegramUsername
       ? `@${entry.brokerTelegramUsername.replace(/^@+/, "")}`
       : null;
-  const internalMessage = formatStandardTelegramMessage(entry, brokerSignature, true);
-  const externalMessage = formatStandardTelegramMessage(entry, brokerSignature, false);
+  const isEdit = !!context?.isEdit;
+  let internalMessage = formatStandardTelegramMessage(entry, brokerSignature, true, isEdit);
+  let externalMessage = formatStandardTelegramMessage(entry, brokerSignature, false, isEdit);
+  if (isEdit) {
+    const editedPrefix = "🔄 EDITED";
+    internalMessage = `${editedPrefix}\n${internalMessage}`;
+    externalMessage = `${editedPrefix}\n${externalMessage}`;
+  }
   const targets = resolveSeaBrokerageRelayTargets(entry);
   return sendTelegramMessages(internalMessage, externalMessage, targets);
 }

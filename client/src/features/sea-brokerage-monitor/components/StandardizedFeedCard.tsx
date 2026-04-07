@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EntryDetailSheet } from "./EntryDetailSheet";
+
 import { MonitorEmptyState } from "./MonitorEmptyState";
 import { UniversalChart } from "./analytics/UniversalChart";
 import { PremiumToExchange } from "./analytics/PremiumToExchange";
@@ -51,6 +51,7 @@ import type { BrokerageEntry } from "../types";
 interface StandardizedFeedCardProps {
   entries: BrokerageEntry[];
   onOpenReport?: () => void;
+  onSelectEntry?: (entry: BrokerageEntry) => void;
 }
 
 type FeedSecondaryView = "tape" | "archive" | "analytics";
@@ -137,8 +138,7 @@ function TapeTypeBadge({ entry }: { entry: BrokerageEntry }) {
   );
 }
 
-export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeedCardProps) {
-  const [selectedEntry, setSelectedEntry] = useState<BrokerageEntry | null>(null);
+export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: StandardizedFeedCardProps) {
   const [view, setView] = useState<FeedSecondaryView>("tape");
   const [analyticsCurrency, setAnalyticsCurrency] = useState<AnalyticsCurrencyMode>("all");
 
@@ -500,7 +500,7 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
                     <button
                       key={entry.id}
                       type="button"
-                      onClick={() => setSelectedEntry(entry)}
+                      onClick={() => onSelectEntry?.(entry)}
                       className="w-full min-w-0 px-4 py-1.5 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="flex items-start gap-3">
@@ -532,7 +532,7 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
                       <button
                         key={entry.id}
                         type="button"
-                        onClick={() => setSelectedEntry(entry)}
+                        onClick={() => onSelectEntry?.(entry)}
                         className="w-full rounded-lg border border-border/60 px-3 py-2 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="mb-1 flex items-center gap-2">
@@ -571,7 +571,7 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
                           <TableRow
                             key={entry.id}
                             className="cursor-pointer"
-                            onClick={() => setSelectedEntry(entry)}
+                            onClick={() => onSelectEntry?.(entry)}
                           >
                             <TableCell>{formatEntryDateTime(entry.createdAt)}</TableCell>
                             <TableCell>
@@ -608,14 +608,6 @@ export function StandardizedFeedCard({ entries, onOpenReport }: StandardizedFeed
           )}
         </CardContent>
       </Card>
-
-      <EntryDetailSheet
-        entry={selectedEntry}
-        open={!!selectedEntry}
-        onOpenChange={(open) => {
-          if (!open) setSelectedEntry(null);
-        }}
-      />
     </>
   );
 }
