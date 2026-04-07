@@ -222,10 +222,10 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
                 <Badge variant="outline" className="border-purple-500/40 text-purple-400">Team Score</Badge>
               </CardHeader>
               <CardContent className="px-0">
-                <ScrollArea className="h-[400px] w-full">
-                  <div className="min-w-[500px]">
+                <div className="relative w-full overflow-x-auto overflow-y-auto max-h-[450px] scrollbar-thin scrollbar-thumb-muted-foreground/20">
+                  <div className="min-w-[600px] w-full pb-4 pr-1">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm shadow-sm">
                         <TableRow className="text-xs uppercase hover:bg-transparent">
                           <TableHead className="pl-4">Broker</TableHead>
                           <TableHead className="text-right">Activity</TableHead>
@@ -254,7 +254,7 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
                       </TableBody>
                     </Table>
                   </div>
-                </ScrollArea>
+                </div>
               </CardContent>
             </Card>
 
