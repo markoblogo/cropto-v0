@@ -90,6 +90,11 @@ const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
 const USER_NOTIFICATION_PREFS_PREFIX = "user_notification_prefs:";
 const INDEX_UPDATE_MAILING_MODE_KEY = "index_update_mailing_mode";
 const DEFAULT_INDEX_UPDATE_MAILING_MODE = "manual";
+const MARKET_DASHBOARD_EURUSD_CACHE_KEY = "market_dashboard_quote_eurusd_v1";
+const MARKET_DASHBOARD_EURUSD_URL = "https://www.barchart.com/forex/quotes/%5EEURUSD";
+const MARKET_DASHBOARD_WTI_CACHE_KEY = "market_dashboard_quote_wti_clk26_v1";
+const MARKET_DASHBOARD_WTI_URL = "https://www.barchart.com/futures/quotes/CLK26/overview";
+const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 let hasWarnedMissingAnalyticsEventsTable = false;
 
 type UserNotificationPreferences = {
@@ -100,6 +105,184 @@ type UserNotificationPreferences = {
 };
 
 type IndexUpdateMailingMode = "manual" | "auto";
+
+type MarketDashboardEurUsdSnapshot = {
+  symbol: "EUR/USD";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardWtiSnapshot = {
+  symbol: "Crude WTI";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
+const parseBarchartNumericField = (html: string, key: string): number | null => {
+  const match = html.match(new RegExp(`"${key}"\\s*:\\s*"([+-]?\\d+(?:\\.\\d+)?)"`));
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+};
+
+const readEurUsdSnapshotFromSetting = async (): Promise<MarketDashboardEurUsdSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_EURUSD_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardEurUsdSnapshot>;
+    if (
+      parsed.symbol !== "EUR/USD" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "EUR/USD",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartEurUsdSnapshot = async (): Promise<MarketDashboardEurUsdSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_EURUSD_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("EUR/USD parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "EUR/USD",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveEurUsdSnapshot = async (): Promise<MarketDashboardEurUsdSnapshot | null> => {
+  const cached = await readEurUsdSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartEurUsdSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_EURUSD_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] EUR/USD refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readWtiSnapshotFromSetting = async (): Promise<MarketDashboardWtiSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_WTI_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardWtiSnapshot>;
+    if (
+      parsed.symbol !== "Crude WTI" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Crude WTI",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartWtiSnapshot = async (): Promise<MarketDashboardWtiSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_WTI_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("WTI parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Crude WTI",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveWtiSnapshot = async (): Promise<MarketDashboardWtiSnapshot | null> => {
+  const cached = await readWtiSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartWtiSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_WTI_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] WTI refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
 
 const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
   tradeStatus: true,
@@ -8585,11 +8768,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/market-dashboard/quotes", async (req: AuthRequest, res) => {
-    // Phase 1 MVP: Baseline quotes to simulate a delayed API or terminal feed.
+    const eurusd = await resolveEurUsdSnapshot();
+    const wti = await resolveWtiSnapshot();
+    // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
     const quotes = [
-      { id: "euraud", symbol: "EUR/USD", category: "macro", price: 1.085, change: 0.12, priceUnit: "USD", trend: "up" },
+      {
+        id: "wti",
+        symbol: "Crude WTI",
+        category: "macro",
+        price: wti?.price ?? 82.4,
+        change: wti?.change ?? 2.1,
+        priceUnit: "USD/bbl",
+        trend: (wti?.change ?? 2.1) > 0 ? "up" : (wti?.change ?? 2.1) < 0 ? "down" : "flat",
+      },
+      {
+        id: "eurusd",
+        symbol: "EUR/USD",
+        category: "macro",
+        price: eurusd?.price ?? 1.085,
+        change: eurusd?.change ?? 0.12,
+        priceUnit: "USD",
+        trend: (eurusd?.change ?? 0.12) > 0 ? "up" : (eurusd?.change ?? 0.12) < 0 ? "down" : "flat",
+      },
       { id: "gold", symbol: "Gold (XAU)", category: "macro", price: 2345.50, change: -1.2, priceUnit: "USD/oz", trend: "down" },
-      { id: "wti", symbol: "Crude WTI", category: "macro", price: 82.40, change: 2.1, priceUnit: "USD/bbl", trend: "up" },
       { id: "cbot_corn", symbol: "Corn (CBOT)", category: "cbot", price: 440.00, change: 3.5, priceUnit: "USd/bu", trend: "up" },
       { id: "cbot_soy", symbol: "Soybean (CBOT)", category: "cbot", price: 1150.25, change: -4.0, priceUnit: "USd/bu", trend: "down" },
       { id: "cbot_wheat", symbol: "Wheat (CBOT)", category: "cbot", price: 560.50, change: 8.2, priceUnit: "USd/bu", trend: "up" },
@@ -8597,10 +8798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       { id: "matif_wheat", symbol: "Wheat (MATIF)", category: "matif", price: 215.50, change: 1.5, priceUnit: "EUR/mt", trend: "up" },
       { id: "matif_corn", symbol: "Corn (MATIF)", category: "matif", price: 195.00, change: -0.5, priceUnit: "EUR/mt", trend: "down" },
     ];
-    // Add artificial delay up to 300ms to simulate real network request
-    setTimeout(() => {
-      res.json(quotes);
-    }, 100);
+    res.json(quotes);
   });
 
   app.post("/api/sea-brokerage-monitor/report/send", async (req: AuthRequest, res) => {
