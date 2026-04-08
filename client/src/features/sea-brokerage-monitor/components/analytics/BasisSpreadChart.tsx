@@ -23,6 +23,7 @@ interface BasisSpreadChartProps {
 
 type PeriodPreset = "1m" | "3m" | "6m" | "custom";
 type ChartMode = "daily" | "weekly";
+type SpreadMode = "strict" | "asynchronous";
 
 function normalizeLabel(value: string | null | undefined) {
   return String(value || "")
@@ -46,6 +47,7 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [chartMode, setChartMode] = useState<ChartMode>("daily");
+  const [spreadMode, setSpreadMode] = useState<SpreadMode>("strict");
 
   const commodityOptions = useMemo(() => {
     return Array.from(
@@ -226,7 +228,7 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
       }
     }
 
-    return Array.from(grouped.values())
+    const baseRows = Array.from(grouped.values())
       .map((slot) => {
         const avgA = slot.aCount > 0 ? slot.aSum / slot.aCount : null;
         const avgB = slot.bCount > 0 ? slot.bSum / slot.bCount : null;
@@ -237,9 +239,52 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
           [basisA]: avgA === null ? null : Number(avgA.toFixed(2)),
           [basisB]: avgB === null ? null : Number(avgB.toFixed(2)),
           spread: spread === null ? null : Number(spread.toFixed(2)),
+          spreadAsync: null as number | null,
         };
       })
       .sort((a, b) => a.date.localeCompare(b.date));
+
+    const rowsWithIndex = baseRows.map((row, index) => ({
+      row,
+      index,
+      ts: Date.parse(`${row.date}T00:00:00Z`),
+    }));
+    const rowsA = rowsWithIndex.filter((item) => item.row[basisA as keyof typeof item.row] !== null);
+    const rowsB = rowsWithIndex.filter((item) => item.row[basisB as keyof typeof item.row] !== null);
+    if (!rowsA.length || !rowsB.length) return baseRows;
+
+    const findNearestValue = (
+      targetTs: number,
+      sourceRows: Array<{ row: (typeof baseRows)[number]; index: number; ts: number }>,
+      key: string,
+    ) => {
+      let best: number | null = null;
+      let bestDist = Number.POSITIVE_INFINITY;
+      for (const candidate of sourceRows) {
+        const value = candidate.row[key as keyof typeof candidate.row];
+        if (typeof value !== "number") continue;
+        const dist = Math.abs(candidate.ts - targetTs);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = value;
+        }
+      }
+      return best;
+    };
+
+    for (const current of rowsWithIndex) {
+      const ownA = current.row[basisA as keyof typeof current.row];
+      const ownB = current.row[basisB as keyof typeof current.row];
+      const valA =
+        typeof ownA === "number" ? ownA : findNearestValue(current.ts, rowsA, basisA);
+      const valB =
+        typeof ownB === "number" ? ownB : findNearestValue(current.ts, rowsB, basisB);
+      if (typeof valA === "number" && typeof valB === "number") {
+        current.row.spreadAsync = Number((valA - valB).toFixed(2));
+      }
+    }
+
+    return baseRows;
   }, [filteredBidEntries, basisA, basisB, chartMode]);
 
   const hasData = chartData.length > 0;
@@ -248,6 +293,10 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
       chartData.filter((row) => row[basisA as keyof typeof row] !== null && row[basisB as keyof typeof row] !== null)
         .length,
     [chartData, basisA, basisB],
+  );
+  const asyncSpreadPoints = useMemo(
+    () => chartData.filter((row) => typeof row.spreadAsync === "number").length,
+    [chartData],
   );
 
   return (
@@ -349,6 +398,24 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
               ))}
             </SelectContent>
           </Select>
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              size="sm"
+              variant={spreadMode === "strict" ? "secondary" : "outline"}
+              className="h-7 px-2 text-xs"
+              onClick={() => setSpreadMode("strict")}
+            >
+              Strict spread
+            </Button>
+            <Button
+              size="sm"
+              variant={spreadMode === "asynchronous" ? "secondary" : "outline"}
+              className="h-7 px-2 text-xs"
+              onClick={() => setSpreadMode("asynchronous")}
+            >
+              Asynchronous spread
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-0 pb-4">
@@ -384,9 +451,14 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            {overlapPoints === 0 ? (
+            {spreadMode === "strict" && overlapPoints === 0 ? (
               <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
                 No overlap buckets for spread in {chartMode} mode. Basis lines are shown separately.
+              </div>
+            ) : null}
+            {spreadMode === "asynchronous" && asyncSpreadPoints === 0 ? (
+              <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+                Asynchronous spread is unavailable: one of selected basis has no BID values in current filters.
               </div>
             ) : null}
             <div className="h-[280px] w-full">
@@ -403,7 +475,17 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
                 <Legend wrapperStyle={{ fontSize: "11px" }} />
                 <Line yAxisId="price" type="monotone" dataKey={basisA} name={basisA} stroke="hsl(160 65% 45%)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
                 <Line yAxisId="price" type="monotone" dataKey={basisB} name={basisB} stroke="hsl(38 85% 52%)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
-                <Line yAxisId="spread" type="monotone" dataKey="spread" name="Spread A-B" stroke="hsl(280 65% 60%)" strokeWidth={2} strokeDasharray="4 4" dot={false} connectNulls={false} />
+                <Line
+                  yAxisId="spread"
+                  type="monotone"
+                  dataKey={spreadMode === "strict" ? "spread" : "spreadAsync"}
+                  name={spreadMode === "strict" ? "Spread A-B (strict)" : "Spread A-B (async)"}
+                  stroke="hsl(280 65% 60%)"
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                  dot={false}
+                  connectNulls={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
