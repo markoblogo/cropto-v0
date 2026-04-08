@@ -96,6 +96,8 @@ const MARKET_DASHBOARD_WTI_CACHE_KEY = "market_dashboard_quote_wti_clk26_v1";
 const MARKET_DASHBOARD_WTI_URL = "https://www.barchart.com/futures/quotes/CLK26/overview";
 const MARKET_DASHBOARD_CBOT_CORN_CACHE_KEY = "market_dashboard_quote_cbot_corn_zck26_v1";
 const MARKET_DASHBOARD_CBOT_CORN_URL = "https://www.barchart.com/futures/quotes/ZCK26/futures-prices";
+const MARKET_DASHBOARD_CBOT_WHEAT_CACHE_KEY = "market_dashboard_quote_cbot_wheat_zwk26_v1";
+const MARKET_DASHBOARD_CBOT_WHEAT_URL = "https://www.barchart.com/futures/quotes/ZWK26/futures-prices";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 let hasWarnedMissingAnalyticsEventsTable = false;
 
@@ -126,6 +128,14 @@ type MarketDashboardWtiSnapshot = {
 
 type MarketDashboardCbotCornSnapshot = {
   symbol: "Corn (CBOT)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardCbotWheatSnapshot = {
+  symbol: "Wheat (CBOT)";
   price: number;
   change: number;
   updatedAt: string;
@@ -385,6 +395,82 @@ const resolveCbotCornSnapshot = async (): Promise<MarketDashboardCbotCornSnapsho
     return fresh;
   } catch (error: any) {
     console.warn(`[MarketDashboard] Corn (CBOT) refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readCbotWheatSnapshotFromSetting = async (): Promise<MarketDashboardCbotWheatSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_CBOT_WHEAT_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardCbotWheatSnapshot>;
+    if (
+      parsed.symbol !== "Wheat (CBOT)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Wheat (CBOT)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartCbotWheatSnapshot = async (): Promise<MarketDashboardCbotWheatSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_CBOT_WHEAT_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartFuturesFractionalField(html, "lastPrice");
+    const change = parseBarchartFuturesFractionalField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Wheat (CBOT) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Wheat (CBOT)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveCbotWheatSnapshot = async (): Promise<MarketDashboardCbotWheatSnapshot | null> => {
+  const cached = await readCbotWheatSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartCbotWheatSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_CBOT_WHEAT_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Wheat (CBOT) refresh failed: ${error?.message || "unknown error"}`);
     return cached || null;
   }
 };
@@ -8876,6 +8962,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const eurusd = await resolveEurUsdSnapshot();
     const wti = await resolveWtiSnapshot();
     const cbotCorn = await resolveCbotCornSnapshot();
+    const cbotWheat = await resolveCbotWheatSnapshot();
     // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
     const quotes = [
       {
@@ -8908,7 +8995,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (cbotCorn?.change ?? 3.5) > 0 ? "up" : (cbotCorn?.change ?? 3.5) < 0 ? "down" : "flat",
       },
       { id: "cbot_soy", symbol: "Soybean (CBOT)", category: "cbot", price: 1150.25, change: -4.0, priceUnit: "USd/bu", trend: "down" },
-      { id: "cbot_wheat", symbol: "Wheat (CBOT)", category: "cbot", price: 560.50, change: 8.2, priceUnit: "USd/bu", trend: "up" },
+      {
+        id: "cbot_wheat",
+        symbol: "Wheat (CBOT)",
+        category: "cbot",
+        price: cbotWheat?.price ?? 560.5,
+        change: cbotWheat?.change ?? 8.2,
+        priceUnit: "USd/bu",
+        trend:
+          (cbotWheat?.change ?? 8.2) > 0
+            ? "up"
+            : (cbotWheat?.change ?? 8.2) < 0
+            ? "down"
+            : "flat",
+      },
       { id: "matif_rape", symbol: "Rapeseed (MATIF)", category: "matif", price: 460.00, change: -2.5, priceUnit: "EUR/mt", trend: "down" },
       { id: "matif_wheat", symbol: "Wheat (MATIF)", category: "matif", price: 215.50, change: 1.5, priceUnit: "EUR/mt", trend: "up" },
       { id: "matif_corn", symbol: "Corn (MATIF)", category: "matif", price: 195.00, change: -0.5, priceUnit: "EUR/mt", trend: "down" },
