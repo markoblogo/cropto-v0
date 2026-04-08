@@ -109,6 +109,11 @@ const MARKET_DASHBOARD_MATIF_CORN_URL = "https://www.barchart.com/futures/quotes
 const MARKET_DASHBOARD_GOLD_CACHE_KEY = "market_dashboard_quote_gold_gcj26_v1";
 const MARKET_DASHBOARD_GOLD_URL = "https://www.barchart.com/futures/quotes/GCJ26/futures-prices";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const CBOT_BUSHELS_PER_MT: Record<"corn" | "soybean" | "wheat", number> = {
+  corn: 39.368,
+  soybean: 36.744,
+  wheat: 36.744,
+};
 let hasWarnedMissingAnalyticsEventsTable = false;
 
 type UserNotificationPreferences = {
@@ -219,6 +224,14 @@ const parseBarchartFuturesFractionalField = (html: string, key: string): number 
   const eighths = Number(parts[1]);
   if (!Number.isFinite(whole) || !Number.isFinite(eighths)) return null;
   return sign * (whole + eighths / 8);
+};
+
+const cbotCentsPerBushelToUsdPerMt = (
+  centsPerBushel: number | null | undefined,
+  grain: "corn" | "soybean" | "wheat",
+): number | null => {
+  if (!isFiniteNumber(centsPerBushel)) return null;
+  return (centsPerBushel / 100) * CBOT_BUSHELS_PER_MT[grain];
 };
 
 const readEurUsdSnapshotFromSetting = async (): Promise<MarketDashboardEurUsdSnapshot | null> => {
@@ -9398,17 +9411,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const matifRapeseed = await resolveMatifRapeseedSnapshot();
     const matifCorn = await resolveMatifCornSnapshot();
     const gold = await resolveGoldSnapshot();
-    // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
+
+    const eurUsdRate = eurusd?.price ?? 1.085;
+    const cbotCornUsdMt = cbotCentsPerBushelToUsdPerMt(cbotCorn?.price, "corn");
+    const cbotCornChangeUsdMt = cbotCentsPerBushelToUsdPerMt(cbotCorn?.change, "corn");
+    const cbotSoyUsdMt = cbotCentsPerBushelToUsdPerMt(cbotSoy?.price, "soybean");
+    const cbotSoyChangeUsdMt = cbotCentsPerBushelToUsdPerMt(cbotSoy?.change, "soybean");
+    const cbotWheatUsdMt = cbotCentsPerBushelToUsdPerMt(cbotWheat?.price, "wheat");
+    const cbotWheatChangeUsdMt = cbotCentsPerBushelToUsdPerMt(cbotWheat?.change, "wheat");
+    const matifWheatUsdMt = isFiniteNumber(matifWheat?.price) ? matifWheat.price * eurUsdRate : null;
+    const matifWheatChangeUsdMt = isFiniteNumber(matifWheat?.change) ? matifWheat.change * eurUsdRate : null;
+    const matifRapeseedUsdMt = isFiniteNumber(matifRapeseed?.price)
+      ? matifRapeseed.price * eurUsdRate
+      : null;
+    const matifRapeseedChangeUsdMt = isFiniteNumber(matifRapeseed?.change)
+      ? matifRapeseed.change * eurUsdRate
+      : null;
+    const matifCornUsdMt = isFiniteNumber(matifCorn?.price) ? matifCorn.price * eurUsdRate : null;
+    const matifCornChangeUsdMt = isFiniteNumber(matifCorn?.change) ? matifCorn.change * eurUsdRate : null;
+
     const quotes = [
-      {
-        id: "wti",
-        symbol: "Crude WTI",
-        category: "macro",
-        price: wti?.price ?? 82.4,
-        change: wti?.change ?? 2.1,
-        priceUnit: "USD/bbl",
-        trend: (wti?.change ?? 2.1) > 0 ? "up" : (wti?.change ?? 2.1) < 0 ? "down" : "flat",
-      },
       {
         id: "eurusd",
         symbol: "EUR/USD",
@@ -9428,35 +9450,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trend: (gold?.change ?? -1.2) > 0 ? "up" : (gold?.change ?? -1.2) < 0 ? "down" : "flat",
       },
       {
+        id: "wti",
+        symbol: "Crude WTI",
+        category: "macro",
+        price: wti?.price ?? 82.4,
+        change: wti?.change ?? 2.1,
+        priceUnit: "USD/bbl",
+        trend: (wti?.change ?? 2.1) > 0 ? "up" : (wti?.change ?? 2.1) < 0 ? "down" : "flat",
+      },
+      {
         id: "cbot_corn",
         symbol: "Corn (CBOT)",
         category: "cbot",
-        price: cbotCorn?.price ?? 440.0,
-        change: cbotCorn?.change ?? 3.5,
-        priceUnit: "USd/bu",
+        price: cbotCornUsdMt ?? 173.22,
+        change: cbotCornChangeUsdMt ?? 1.38,
+        priceUnit: "USD/MT",
         trend:
-          (cbotCorn?.change ?? 3.5) > 0 ? "up" : (cbotCorn?.change ?? 3.5) < 0 ? "down" : "flat",
+          (cbotCornChangeUsdMt ?? 1.38) > 0
+            ? "up"
+            : (cbotCornChangeUsdMt ?? 1.38) < 0
+            ? "down"
+            : "flat",
       },
       {
         id: "cbot_soy",
         symbol: "Soybean (CBOT)",
         category: "cbot",
-        price: cbotSoy?.price ?? 1150.25,
-        change: cbotSoy?.change ?? -4.0,
-        priceUnit: "USd/bu",
-        trend: (cbotSoy?.change ?? -4.0) > 0 ? "up" : (cbotSoy?.change ?? -4.0) < 0 ? "down" : "flat",
+        price: cbotSoyUsdMt ?? 422.59,
+        change: cbotSoyChangeUsdMt ?? -1.47,
+        priceUnit: "USD/MT",
+        trend:
+          (cbotSoyChangeUsdMt ?? -1.47) > 0
+            ? "up"
+            : (cbotSoyChangeUsdMt ?? -1.47) < 0
+            ? "down"
+            : "flat",
       },
       {
         id: "cbot_wheat",
         symbol: "Wheat (CBOT)",
         category: "cbot",
-        price: cbotWheat?.price ?? 560.5,
-        change: cbotWheat?.change ?? 8.2,
-        priceUnit: "USd/bu",
+        price: cbotWheatUsdMt ?? 205.93,
+        change: cbotWheatChangeUsdMt ?? 3.01,
+        priceUnit: "USD/MT",
         trend:
-          (cbotWheat?.change ?? 8.2) > 0
+          (cbotWheatChangeUsdMt ?? 3.01) > 0
             ? "up"
-            : (cbotWheat?.change ?? 8.2) < 0
+            : (cbotWheatChangeUsdMt ?? 3.01) < 0
             ? "down"
             : "flat",
       },
@@ -9464,13 +9504,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: "matif_wheat",
         symbol: "Milling Wheat (MATIF)",
         category: "matif",
-        price: matifWheat?.price ?? 215.5,
-        change: matifWheat?.change ?? 1.5,
-        priceUnit: "EUR/mt",
+        price: matifWheatUsdMt ?? 233.82,
+        change: matifWheatChangeUsdMt ?? 1.63,
+        priceUnit: "USD/MT",
         trend:
-          (matifWheat?.change ?? 1.5) > 0
+          (matifWheatChangeUsdMt ?? 1.63) > 0
             ? "up"
-            : (matifWheat?.change ?? 1.5) < 0
+            : (matifWheatChangeUsdMt ?? 1.63) < 0
             ? "down"
             : "flat",
       },
@@ -9478,13 +9518,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: "matif_rape",
         symbol: "Rapeseed (MATIF)",
         category: "matif",
-        price: matifRapeseed?.price ?? 460.0,
-        change: matifRapeseed?.change ?? -2.5,
-        priceUnit: "EUR/mt",
+        price: matifRapeseedUsdMt ?? 499.1,
+        change: matifRapeseedChangeUsdMt ?? -2.71,
+        priceUnit: "USD/MT",
         trend:
-          (matifRapeseed?.change ?? -2.5) > 0
+          (matifRapeseedChangeUsdMt ?? -2.71) > 0
             ? "up"
-            : (matifRapeseed?.change ?? -2.5) < 0
+            : (matifRapeseedChangeUsdMt ?? -2.71) < 0
             ? "down"
             : "flat",
       },
@@ -9492,13 +9532,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: "matif_corn",
         symbol: "Corn (MATIF)",
         category: "matif",
-        price: matifCorn?.price ?? 195.0,
-        change: matifCorn?.change ?? -0.5,
-        priceUnit: "EUR/mt",
+        price: matifCornUsdMt ?? 211.57,
+        change: matifCornChangeUsdMt ?? -0.54,
+        priceUnit: "USD/MT",
         trend:
-          (matifCorn?.change ?? -0.5) > 0
+          (matifCornChangeUsdMt ?? -0.54) > 0
             ? "up"
-            : (matifCorn?.change ?? -0.5) < 0
+            : (matifCornChangeUsdMt ?? -0.54) < 0
             ? "down"
             : "flat",
       },

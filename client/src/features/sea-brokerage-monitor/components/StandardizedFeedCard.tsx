@@ -139,7 +139,7 @@ function TapeTypeBadge({ entry }: { entry: BrokerageEntry }) {
 }
 
 export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: StandardizedFeedCardProps) {
-  const [view, setView] = useState<FeedSecondaryView>("tape");
+  const [view, setView] = useState<FeedSecondaryView>("analytics");
   const [analyticsCurrency, setAnalyticsCurrency] = useState<AnalyticsCurrencyMode>("all");
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
