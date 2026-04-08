@@ -118,21 +118,52 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
   }, [filteredBidEntries]);
 
   const commodityBasisStats = useMemo(() => {
-    const map = new Map<string, Set<string>>();
+    const map = new Map<string, { basisByBucket: Map<string, Set<string>>; basisSet: Set<string> }>();
     for (const entry of baseFilteredBidEntries) {
       const commodity = normalizeLabel(entry.commodityLabel || entry.commodity);
       const basis = normalizeLabel(entry.basis).toUpperCase();
       if (!commodity || !basis) continue;
-      if (!map.has(commodity)) map.set(commodity, new Set());
-      map.get(commodity)!.add(basis);
+      const createdAt = new Date(entry.createdAt);
+      if (Number.isNaN(createdAt.getTime())) continue;
+      const bucketKey =
+        chartMode === "weekly" ? getWeekStartIso(createdAt) : createdAt.toISOString().slice(0, 10);
+
+      if (!map.has(commodity)) {
+        map.set(commodity, {
+          basisByBucket: new Map<string, Set<string>>(),
+          basisSet: new Set<string>(),
+        });
+      }
+      const slot = map.get(commodity)!;
+      slot.basisSet.add(basis);
+      if (!slot.basisByBucket.has(bucketKey)) slot.basisByBucket.set(bucketKey, new Set());
+      slot.basisByBucket.get(bucketKey)!.add(basis);
     }
 
     return Array.from(map.entries())
-      .map(([commodity, basisSet]) => ({ commodity, basisCount: basisSet.size }))
-      .sort((a, b) => b.basisCount - a.basisCount || a.commodity.localeCompare(b.commodity));
-  }, [baseFilteredBidEntries]);
+      .map(([commodity, stats]) => {
+        let overlapBuckets = 0;
+        for (const set of stats.basisByBucket.values()) {
+          if (set.size >= 2) overlapBuckets += 1;
+        }
+        return {
+          commodity,
+          basisCount: stats.basisSet.size,
+          overlapBuckets,
+        };
+      })
+      .sort(
+        (a, b) =>
+          b.overlapBuckets - a.overlapBuckets ||
+          b.basisCount - a.basisCount ||
+          a.commodity.localeCompare(b.commodity),
+      );
+  }, [baseFilteredBidEntries, chartMode]);
 
-  const suggestedCommodity = commodityBasisStats.find((item) => item.basisCount >= 2)?.commodity || "";
+  const suggestedCommodity =
+    commodityBasisStats.find((item) => item.overlapBuckets > 0)?.commodity ||
+    commodityBasisStats.find((item) => item.basisCount >= 2)?.commodity ||
+    "";
 
   React.useEffect(() => {
     if (!availableBases.length) {
@@ -329,10 +360,22 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
                 Switch to {suggestedCommodity}
               </Button>
             ) : null}
+            {commodityBasisStats.length > 0 ? (
+              <div className="text-[11px] text-muted-foreground/80">
+                {commodityBasisStats[0].overlapBuckets > 0
+                  ? `Best candidate now: ${commodityBasisStats[0].commodity} (${commodityBasisStats[0].overlapBuckets} overlapping ${chartMode} bucket${
+                      commodityBasisStats[0].overlapBuckets === 1 ? "" : "s"
+                    }).`
+                  : `No commodity currently has overlapping BID buckets in ${chartMode} mode for selected filters.`}
+              </div>
+            ) : null}
           </div>
         ) : !hasData ? (
-          <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
-            No BID data for selected basis pair and chart filters.
+          <div className="flex h-[280px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/60 px-4 text-center text-xs text-muted-foreground">
+            <div>No BID data overlap for selected basis pair and chart filters.</div>
+            <div className="text-[11px] text-muted-foreground/80">
+              Spread requires both basis in the same {chartMode === "daily" ? "day" : "week"} bucket.
+            </div>
           </div>
         ) : (
           <div className="h-[280px] w-full">
