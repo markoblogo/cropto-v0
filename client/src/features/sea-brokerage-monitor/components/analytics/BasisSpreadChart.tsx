@@ -191,17 +191,6 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
 
   const hasData = chartData.length > 0;
 
-  if (availableBases.length < 2) {
-    return (
-      <Card className="border-border/60">
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">Spread Between Basis (BIDs)</CardTitle>
-          <CardDescription>Need at least 2 different BID basis values for selected commodity and transport.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
     <Card className="border-border/60">
       <CardHeader className="space-y-3 py-3 px-4">
@@ -270,11 +259,14 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <Select value={basisA} onValueChange={setBasisA}>
+          <Select value={basisA || "__none"} onValueChange={(next) => setBasisA(next === "__none" ? "" : next)}>
             <SelectTrigger className="h-7 w-[120px] text-xs">
               <SelectValue placeholder="Basis A" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none" disabled className="text-xs">
+                Basis A
+              </SelectItem>
               {availableBases.map((basis) => (
                 <SelectItem key={basis} value={basis} className="text-xs">
                   {basis}
@@ -283,11 +275,14 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground font-semibold">VS</span>
-          <Select value={basisB} onValueChange={setBasisB}>
+          <Select value={basisB || "__none"} onValueChange={(next) => setBasisB(next === "__none" ? "" : next)}>
             <SelectTrigger className="h-7 w-[120px] text-xs">
               <SelectValue placeholder="Basis B" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none" disabled className="text-xs">
+                Basis B
+              </SelectItem>
               {availableBases.map((basis) => (
                 <SelectItem key={basis} value={basis} className="text-xs">
                   {basis}
@@ -298,7 +293,11 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-0 pb-4">
-        {!hasData ? (
+        {availableBases.length < 2 ? (
+          <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 px-4 text-center text-xs text-muted-foreground">
+            Need at least 2 different BID basis values for selected commodity and transport.
+          </div>
+        ) : !hasData ? (
           <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
             No BID data for selected basis pair and chart filters.
           </div>
