@@ -213,26 +213,17 @@ export function UniversalChart({ entries }: UniversalChartProps) {
     return chartData.flatMap(day => day.scatterPoints);
   }, [chartData]);
 
-  if (filteredEntries.length === 0) {
-    return (
-      <Card className="border-border/60">
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">Universal Price & Volume Chart</CardTitle>
-          <CardDescription>No data matching chart filters.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  const hasData = chartData.length > 0;
 
   return (
     <Card className="border-border/60">
       <CardHeader className="space-y-3 py-3 px-4">
-        <div className="flex flex-row items-center justify-between gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-          <CardTitle className="text-sm">Price & Volume Dynamics</CardTitle>
+            <CardTitle className="text-sm">Price & Volume Dynamics</CardTitle>
             <CardDescription className="text-xs">Specific view by commodity/basis/place/period</CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={showPrice ? "secondary" : "outline"}
               size="sm"
@@ -268,7 +259,7 @@ export function UniversalChart({ entries }: UniversalChartProps) {
           </div>
           <div className="space-y-1">
             <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Period</Label>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               <Button size="sm" variant={periodPreset === "1m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("1m")}>1M</Button>
               <Button size="sm" variant={periodPreset === "3m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("3m")}>3M</Button>
               <Button size="sm" variant={periodPreset === "6m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("6m")}>6M</Button>
@@ -326,39 +317,45 @@ export function UniversalChart({ entries }: UniversalChartProps) {
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-0 pb-4">
-        <div className="h-[350px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-              <XAxis dataKey="date" tick={{fontSize: 10}} tickLine={false} axisLine={false} />
-              
-              {showPrice && <YAxis yAxisId="price" orientation="left" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={40} />}
-              {showVolume && <YAxis yAxisId="volume" orientation="right" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={50} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />}
-              
-              <Tooltip 
-                contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid #333", borderRadius: "6px" }}
-                itemStyle={{ fontSize: "12px" }}
-                labelStyle={{ fontSize: "12px", color: "#888", marginBottom: "4px" }}
-              />
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
+        {!hasData ? (
+          <div className="rounded-md border border-dashed border-border/60 px-3 py-6 text-sm text-muted-foreground">
+            No data matching chart filters.
+          </div>
+        ) : (
+          <div className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="date" tick={{fontSize: 10}} tickLine={false} axisLine={false} />
+                
+                {showPrice && <YAxis yAxisId="price" orientation="left" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={40} />}
+                {showVolume && <YAxis yAxisId="volume" orientation="right" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={50} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />}
+                
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid #333", borderRadius: "6px" }}
+                  itemStyle={{ fontSize: "12px" }}
+                  labelStyle={{ fontSize: "12px", color: "#888", marginBottom: "4px" }}
+                />
+                <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
 
-              {showVolume && (
-                <>
-                  <Bar yAxisId="volume" dataKey="bidVolume" name="Bid Volume (MT)" fill="hsl(160 65% 45%)" opacity={0.2} radius={[2,2,0,0]} barSize={20} />
-                  <Bar yAxisId="volume" dataKey="offerVolume" name="Offer Volume (MT)" fill="hsl(38 85% 52%)" opacity={0.2} radius={[2,2,0,0]} barSize={20} />
-                </>
-              )}
+                {showVolume && (
+                  <>
+                    <Bar yAxisId="volume" dataKey="bidVolume" name="Bid Volume (MT)" fill="hsl(160 65% 45%)" opacity={0.2} radius={[2,2,0,0]} barSize={20} />
+                    <Bar yAxisId="volume" dataKey="offerVolume" name="Offer Volume (MT)" fill="hsl(38 85% 52%)" opacity={0.2} radius={[2,2,0,0]} barSize={20} />
+                  </>
+                )}
 
-              {showPrice && (
-                <>
-                  <Line yAxisId="price" type="monotone" dataKey="avgBid" name="Avg Bid" stroke="hsl(160 65% 45%)" strokeWidth={2} dot={false} />
-                  <Line yAxisId="price" type="monotone" dataKey="avgOffer" name="Avg Offer" stroke="hsl(38 85% 52%)" strokeWidth={2} dot={false} />
-                  <Scatter yAxisId="price" data={scatterData} name="Offers" fill="hsl(38 85% 52%)" opacity={0.6} dataKey="y" shape="circle" />
-                </>
-              )}
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+                {showPrice && (
+                  <>
+                    <Line yAxisId="price" type="monotone" dataKey="avgBid" name="Avg Bid" stroke="hsl(160 65% 45%)" strokeWidth={2} dot={false} />
+                    <Line yAxisId="price" type="monotone" dataKey="avgOffer" name="Avg Offer" stroke="hsl(38 85% 52%)" strokeWidth={2} dot={false} />
+                    <Scatter yAxisId="price" data={scatterData} name="Offers" fill="hsl(38 85% 52%)" opacity={0.6} dataKey="y" shape="circle" />
+                  </>
+                )}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
