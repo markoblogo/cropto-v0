@@ -100,6 +100,8 @@ const MARKET_DASHBOARD_CBOT_WHEAT_CACHE_KEY = "market_dashboard_quote_cbot_wheat
 const MARKET_DASHBOARD_CBOT_WHEAT_URL = "https://www.barchart.com/futures/quotes/ZWK26/futures-prices";
 const MARKET_DASHBOARD_CBOT_SOY_CACHE_KEY = "market_dashboard_quote_cbot_soy_zsk26_v1";
 const MARKET_DASHBOARD_CBOT_SOY_URL = "https://www.barchart.com/futures/quotes/ZSK26/futures-prices";
+const MARKET_DASHBOARD_MATIF_WHEAT_CACHE_KEY = "market_dashboard_quote_matif_wheat_mlk26_v1";
+const MARKET_DASHBOARD_MATIF_WHEAT_URL = "https://www.barchart.com/futures/quotes/MLK26/futures-prices";
 const MARKET_DASHBOARD_GOLD_CACHE_KEY = "market_dashboard_quote_gold_gcj26_v1";
 const MARKET_DASHBOARD_GOLD_URL = "https://www.barchart.com/futures/quotes/GCJ26/futures-prices";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -156,6 +158,14 @@ type MarketDashboardGoldSnapshot = {
 
 type MarketDashboardCbotSoySnapshot = {
   symbol: "Soybean (CBOT)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardMatifWheatSnapshot = {
+  symbol: "Milling Wheat (MATIF)";
   price: number;
   change: number;
   updatedAt: string;
@@ -643,6 +653,82 @@ const resolveCbotSoySnapshot = async (): Promise<MarketDashboardCbotSoySnapshot 
     return fresh;
   } catch (error: any) {
     console.warn(`[MarketDashboard] Soybean (CBOT) refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readMatifWheatSnapshotFromSetting = async (): Promise<MarketDashboardMatifWheatSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_MATIF_WHEAT_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardMatifWheatSnapshot>;
+    if (
+      parsed.symbol !== "Milling Wheat (MATIF)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Milling Wheat (MATIF)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartMatifWheatSnapshot = async (): Promise<MarketDashboardMatifWheatSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_MATIF_WHEAT_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Milling Wheat (MATIF) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Milling Wheat (MATIF)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveMatifWheatSnapshot = async (): Promise<MarketDashboardMatifWheatSnapshot | null> => {
+  const cached = await readMatifWheatSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartMatifWheatSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_MATIF_WHEAT_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Milling Wheat (MATIF) refresh failed: ${error?.message || "unknown error"}`);
     return cached || null;
   }
 };
@@ -9136,6 +9222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const cbotCorn = await resolveCbotCornSnapshot();
     const cbotSoy = await resolveCbotSoySnapshot();
     const cbotWheat = await resolveCbotWheatSnapshot();
+    const matifWheat = await resolveMatifWheatSnapshot();
     const gold = await resolveGoldSnapshot();
     // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
     const quotes = [
@@ -9199,8 +9286,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? "down"
             : "flat",
       },
+      {
+        id: "matif_wheat",
+        symbol: "Milling Wheat (MATIF)",
+        category: "matif",
+        price: matifWheat?.price ?? 215.5,
+        change: matifWheat?.change ?? 1.5,
+        priceUnit: "EUR/mt",
+        trend:
+          (matifWheat?.change ?? 1.5) > 0
+            ? "up"
+            : (matifWheat?.change ?? 1.5) < 0
+            ? "down"
+            : "flat",
+      },
       { id: "matif_rape", symbol: "Rapeseed (MATIF)", category: "matif", price: 460.00, change: -2.5, priceUnit: "EUR/mt", trend: "down" },
-      { id: "matif_wheat", symbol: "Wheat (MATIF)", category: "matif", price: 215.50, change: 1.5, priceUnit: "EUR/mt", trend: "up" },
       { id: "matif_corn", symbol: "Corn (MATIF)", category: "matif", price: 195.00, change: -0.5, priceUnit: "EUR/mt", trend: "down" },
     ];
     res.json(quotes);
