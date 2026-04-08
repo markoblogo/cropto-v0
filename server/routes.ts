@@ -104,6 +104,8 @@ const MARKET_DASHBOARD_MATIF_WHEAT_CACHE_KEY = "market_dashboard_quote_matif_whe
 const MARKET_DASHBOARD_MATIF_WHEAT_URL = "https://www.barchart.com/futures/quotes/MLK26/futures-prices";
 const MARKET_DASHBOARD_MATIF_RAPESEED_CACHE_KEY = "market_dashboard_quote_matif_rapeseed_xrk26_v1";
 const MARKET_DASHBOARD_MATIF_RAPESEED_URL = "https://www.barchart.com/futures/quotes/XRK26/futures-prices";
+const MARKET_DASHBOARD_MATIF_CORN_CACHE_KEY = "market_dashboard_quote_matif_corn_xbm26_v1";
+const MARKET_DASHBOARD_MATIF_CORN_URL = "https://www.barchart.com/futures/quotes/XBM26/futures-prices";
 const MARKET_DASHBOARD_GOLD_CACHE_KEY = "market_dashboard_quote_gold_gcj26_v1";
 const MARKET_DASHBOARD_GOLD_URL = "https://www.barchart.com/futures/quotes/GCJ26/futures-prices";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -176,6 +178,14 @@ type MarketDashboardMatifWheatSnapshot = {
 
 type MarketDashboardMatifRapeseedSnapshot = {
   symbol: "Rapeseed (MATIF)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardMatifCornSnapshot = {
+  symbol: "Corn (MATIF)";
   price: number;
   change: number;
   updatedAt: string;
@@ -815,6 +825,82 @@ const resolveMatifRapeseedSnapshot = async (): Promise<MarketDashboardMatifRapes
     return fresh;
   } catch (error: any) {
     console.warn(`[MarketDashboard] Rapeseed (MATIF) refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readMatifCornSnapshotFromSetting = async (): Promise<MarketDashboardMatifCornSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_MATIF_CORN_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardMatifCornSnapshot>;
+    if (
+      parsed.symbol !== "Corn (MATIF)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Corn (MATIF)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartMatifCornSnapshot = async (): Promise<MarketDashboardMatifCornSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_MATIF_CORN_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Corn (MATIF) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Corn (MATIF)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveMatifCornSnapshot = async (): Promise<MarketDashboardMatifCornSnapshot | null> => {
+  const cached = await readMatifCornSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartMatifCornSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_MATIF_CORN_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Corn (MATIF) refresh failed: ${error?.message || "unknown error"}`);
     return cached || null;
   }
 };
@@ -9310,6 +9396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const cbotWheat = await resolveCbotWheatSnapshot();
     const matifWheat = await resolveMatifWheatSnapshot();
     const matifRapeseed = await resolveMatifRapeseedSnapshot();
+    const matifCorn = await resolveMatifCornSnapshot();
     const gold = await resolveGoldSnapshot();
     // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
     const quotes = [
@@ -9401,7 +9488,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? "down"
             : "flat",
       },
-      { id: "matif_corn", symbol: "Corn (MATIF)", category: "matif", price: 195.00, change: -0.5, priceUnit: "EUR/mt", trend: "down" },
+      {
+        id: "matif_corn",
+        symbol: "Corn (MATIF)",
+        category: "matif",
+        price: matifCorn?.price ?? 195.0,
+        change: matifCorn?.change ?? -0.5,
+        priceUnit: "EUR/mt",
+        trend:
+          (matifCorn?.change ?? -0.5) > 0
+            ? "up"
+            : (matifCorn?.change ?? -0.5) < 0
+            ? "down"
+            : "flat",
+      },
     ];
     res.json(quotes);
   });
