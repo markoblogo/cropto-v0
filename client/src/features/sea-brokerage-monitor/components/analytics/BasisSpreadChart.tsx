@@ -73,7 +73,7 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
     setSelectedCommodity((prev) => (prev ? prev : commodityOptions[0]));
   }, [commodityOptions]);
 
-  const filteredBidEntries = useMemo(() => {
+  const baseFilteredBidEntries = useMemo(() => {
     const now = new Date();
     let fromDate: Date | null = null;
     let toDate: Date | null = now;
@@ -89,11 +89,9 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
     return entries.filter((entry) => {
       if (entry.type !== "bid") return false;
 
-      const commodity = normalizeLabel(entry.commodityLabel || entry.commodity).toUpperCase();
       const transportType = normalizeLabel(entry.transportType).toUpperCase();
       const createdAt = new Date(entry.createdAt);
 
-      if (selectedCommodity && commodity !== selectedCommodity.toUpperCase()) return false;
       if (selectedTransportType !== "all" && transportType !== selectedTransportType.toUpperCase()) return false;
       if (!Number.isNaN(createdAt.getTime())) {
         if (fromDate && createdAt < fromDate) return false;
@@ -101,7 +99,15 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
       }
       return true;
     });
-  }, [entries, selectedCommodity, selectedTransportType, periodPreset, customFrom, customTo]);
+  }, [entries, selectedTransportType, periodPreset, customFrom, customTo]);
+
+  const filteredBidEntries = useMemo(() => {
+    return baseFilteredBidEntries.filter((entry) => {
+      const commodity = normalizeLabel(entry.commodityLabel || entry.commodity).toUpperCase();
+      if (selectedCommodity && commodity !== selectedCommodity.toUpperCase()) return false;
+      return true;
+    });
+  }, [baseFilteredBidEntries, selectedCommodity]);
 
   const availableBases = useMemo(() => {
     const bases = new Set<string>();
@@ -110,6 +116,23 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
     });
     return Array.from(bases).sort();
   }, [filteredBidEntries]);
+
+  const commodityBasisStats = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const entry of baseFilteredBidEntries) {
+      const commodity = normalizeLabel(entry.commodityLabel || entry.commodity);
+      const basis = normalizeLabel(entry.basis).toUpperCase();
+      if (!commodity || !basis) continue;
+      if (!map.has(commodity)) map.set(commodity, new Set());
+      map.get(commodity)!.add(basis);
+    }
+
+    return Array.from(map.entries())
+      .map(([commodity, basisSet]) => ({ commodity, basisCount: basisSet.size }))
+      .sort((a, b) => b.basisCount - a.basisCount || a.commodity.localeCompare(b.commodity));
+  }, [baseFilteredBidEntries]);
+
+  const suggestedCommodity = commodityBasisStats.find((item) => item.basisCount >= 2)?.commodity || "";
 
   React.useEffect(() => {
     if (!availableBases.length) {
@@ -232,14 +255,14 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
           </div>
           <div className="space-y-1">
             <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Period</Label>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               <Button size="sm" variant={periodPreset === "1m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("1m")}>1M</Button>
               <Button size="sm" variant={periodPreset === "3m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("3m")}>3M</Button>
               <Button size="sm" variant={periodPreset === "6m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("6m")}>6M</Button>
               <Button size="sm" variant={periodPreset === "custom" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("custom")}>Custom</Button>
             </div>
             {periodPreset === "custom" ? (
-              <div className="flex gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 text-xs" />
                 <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 text-xs" />
               </div>
@@ -294,8 +317,18 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
       </CardHeader>
       <CardContent className="px-2 pt-0 pb-4">
         {availableBases.length < 2 ? (
-          <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 px-4 text-center text-xs text-muted-foreground">
-            Need at least 2 different BID basis values for selected commodity and transport.
+          <div className="flex h-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/60 px-4 text-center text-xs text-muted-foreground">
+            <div>Need at least 2 different BID basis values for selected commodity and transport.</div>
+            {suggestedCommodity && suggestedCommodity !== selectedCommodity ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-3 text-xs"
+                onClick={() => setSelectedCommodity(suggestedCommodity)}
+              >
+                Switch to {suggestedCommodity}
+              </Button>
+            ) : null}
           </div>
         ) : !hasData ? (
           <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">

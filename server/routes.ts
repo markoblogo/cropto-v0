@@ -9473,6 +9473,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : "flat",
       },
       {
+        id: "matif_corn",
+        symbol: "Corn (MATIF)",
+        category: "matif",
+        price: matifCornUsdMt ?? 211.57,
+        change: matifCornChangeUsdMt ?? -0.54,
+        priceUnit: "USD/MT",
+        trend:
+          (matifCornChangeUsdMt ?? -0.54) > 0
+            ? "up"
+            : (matifCornChangeUsdMt ?? -0.54) < 0
+            ? "down"
+            : "flat",
+      },
+      {
         id: "cbot_soy",
         symbol: "Soybean (CBOT)",
         category: "cbot",
@@ -9525,20 +9539,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (matifRapeseedChangeUsdMt ?? -2.71) > 0
             ? "up"
             : (matifRapeseedChangeUsdMt ?? -2.71) < 0
-            ? "down"
-            : "flat",
-      },
-      {
-        id: "matif_corn",
-        symbol: "Corn (MATIF)",
-        category: "matif",
-        price: matifCornUsdMt ?? 211.57,
-        change: matifCornChangeUsdMt ?? -0.54,
-        priceUnit: "USD/MT",
-        trend:
-          (matifCornChangeUsdMt ?? -0.54) > 0
-            ? "up"
-            : (matifCornChangeUsdMt ?? -0.54) < 0
             ? "down"
             : "flat",
       },
