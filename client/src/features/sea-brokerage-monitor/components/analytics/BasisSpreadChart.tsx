@@ -1,15 +1,18 @@
 import React, { useMemo, useState } from "react";
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { BrokerageEntry } from "../../types";
 import { getEntryMidPrice } from "./utils";
@@ -18,86 +21,182 @@ interface BasisSpreadChartProps {
   entries: BrokerageEntry[];
 }
 
+type PeriodPreset = "1m" | "3m" | "6m" | "custom";
+type ChartMode = "daily" | "weekly";
+
+function normalizeLabel(value: string | null | undefined) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function getWeekStartIso(date: Date) {
+  const current = new Date(date);
+  const day = (current.getUTCDay() + 6) % 7; // Monday=0 ... Sunday=6
+  current.setUTCDate(current.getUTCDate() - day);
+  return current.toISOString().slice(0, 10);
+}
+
 export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
   const [basisA, setBasisA] = useState<string>("");
   const [basisB, setBasisB] = useState<string>("");
+  const [selectedCommodity, setSelectedCommodity] = useState<string>("CORN");
+  const [selectedTransportType, setSelectedTransportType] = useState<string>("all");
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("3m");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [chartMode, setChartMode] = useState<ChartMode>("daily");
+
+  const commodityOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        entries
+          .map((entry) => normalizeLabel(entry.commodityLabel || entry.commodity))
+          .filter(Boolean),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [entries]);
+
+  const transportOptions = useMemo(() => {
+    return Array.from(new Set(entries.map((entry) => normalizeLabel(entry.transportType)).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }, [entries]);
+
+  React.useEffect(() => {
+    if (!commodityOptions.length) return;
+    const cornOption = commodityOptions.find((item) => item.toUpperCase() === "CORN");
+    if (cornOption) {
+      setSelectedCommodity((prev) => (prev ? prev : cornOption));
+      return;
+    }
+    setSelectedCommodity((prev) => (prev ? prev : commodityOptions[0]));
+  }, [commodityOptions]);
+
+  const filteredBidEntries = useMemo(() => {
+    const now = new Date();
+    let fromDate: Date | null = null;
+    let toDate: Date | null = now;
+
+    if (periodPreset === "1m") fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    if (periodPreset === "3m") fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    if (periodPreset === "6m") fromDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+    if (periodPreset === "custom") {
+      fromDate = customFrom ? new Date(customFrom) : null;
+      toDate = customTo ? new Date(customTo) : null;
+    }
+
+    return entries.filter((entry) => {
+      if (entry.type !== "bid") return false;
+
+      const commodity = normalizeLabel(entry.commodityLabel || entry.commodity).toUpperCase();
+      const transportType = normalizeLabel(entry.transportType).toUpperCase();
+      const createdAt = new Date(entry.createdAt);
+
+      if (selectedCommodity && commodity !== selectedCommodity.toUpperCase()) return false;
+      if (selectedTransportType !== "all" && transportType !== selectedTransportType.toUpperCase()) return false;
+      if (!Number.isNaN(createdAt.getTime())) {
+        if (fromDate && createdAt < fromDate) return false;
+        if (toDate && createdAt > toDate) return false;
+      }
+      return true;
+    });
+  }, [entries, selectedCommodity, selectedTransportType, periodPreset, customFrom, customTo]);
 
   const availableBases = useMemo(() => {
     const bases = new Set<string>();
-    entries.forEach(e => {
-        if (e.basis) bases.add(e.basis.toUpperCase());
+    filteredBidEntries.forEach((entry) => {
+      if (entry.basis) bases.add(entry.basis.toUpperCase());
     });
-    const sorted = Array.from(bases).sort();
-    
-    // Auto-select first two if not yet selected
-    if (sorted.length >= 2 && !basisA && !basisB) {
-      setBasisA(sorted[0]);
-      setBasisB(sorted[1]);
-    } else if (sorted.length === 1 && !basisA) {
-      setBasisA(sorted[0]);
+    return Array.from(bases).sort();
+  }, [filteredBidEntries]);
+
+  React.useEffect(() => {
+    if (!availableBases.length) {
+      setBasisA("");
+      setBasisB("");
+      return;
     }
-    return sorted;
-  }, [entries, basisA, basisB]);
+    if (availableBases.length === 1) {
+      setBasisA(availableBases[0]);
+      setBasisB("");
+      return;
+    }
+
+    setBasisA((prev) => {
+      if (prev && availableBases.includes(prev)) return prev;
+      return availableBases[0];
+    });
+    setBasisB((prev) => {
+      if (prev && availableBases.includes(prev) && prev !== availableBases[0]) return prev;
+      const fallback = availableBases.find((basis) => basis !== availableBases[0]);
+      return fallback || "";
+    });
+  }, [availableBases]);
 
   const chartData = useMemo(() => {
     if (!basisA || !basisB) return [];
 
-    // Group by Date -> { Date, BasisA_Avg, BasisB_Avg }
-    const dailyAgg = new Map<string, {
-      date: string;
-      aSum: number; aCount: number;
-      bSum: number; bCount: number;
-    }>();
+    const grouped = new Map<
+      string,
+      {
+        date: string;
+        aSum: number;
+        aCount: number;
+        bSum: number;
+        bCount: number;
+      }
+    >();
 
-    for (const entry of entries) {
-      if (entry.type !== "bid" && entry.type !== "offer") continue;
+    for (const entry of filteredBidEntries) {
       if (!entry.basis) continue;
-
       const currentBasis = entry.basis.toUpperCase();
       if (currentBasis !== basisA && currentBasis !== basisB) continue;
 
-      const dateKey = new Date(entry.createdAt).toISOString().slice(0, 10);
+      const createdAt = new Date(entry.createdAt);
+      const key = chartMode === "weekly" ? getWeekStartIso(createdAt) : createdAt.toISOString().slice(0, 10);
       const price = getEntryMidPrice(entry);
+      if (price === null || !Number.isFinite(price)) continue;
 
-      if (price !== null && Number.isFinite(price)) {
-        let dayData = dailyAgg.get(dateKey);
-        if (!dayData) {
-          dayData = { date: dateKey, aSum: 0, aCount: 0, bSum: 0, bCount: 0 };
-          dailyAgg.set(dateKey, dayData);
-        }
-
-        if (currentBasis === basisA) {
-          dayData.aSum += price;
-          dayData.aCount += 1;
-        } else {
-          dayData.bSum += price;
-          dayData.bCount += 1;
-        }
+      let slot = grouped.get(key);
+      if (!slot) {
+        slot = { date: key, aSum: 0, aCount: 0, bSum: 0, bCount: 0 };
+        grouped.set(key, slot);
+      }
+      if (currentBasis === basisA) {
+        slot.aSum += price;
+        slot.aCount += 1;
+      } else {
+        slot.bSum += price;
+        slot.bCount += 1;
       }
     }
 
-    return Array.from(dailyAgg.values())
-      .map(day => {
-        const avgA = day.aCount > 0 ? day.aSum / day.aCount : null;
-        const avgB = day.bCount > 0 ? day.bSum / day.bCount : null;
-        const spread = (avgA !== null && avgB !== null) ? Number((avgA - avgB).toFixed(2)) : null;
+    return Array.from(grouped.values())
+      .filter((slot) => slot.aCount > 0 && slot.bCount > 0)
+      .map((slot) => {
+        const avgA = slot.aSum / slot.aCount;
+        const avgB = slot.bSum / slot.bCount;
+        const spread = avgA - avgB;
 
         return {
-          date: day.date,
-          [basisA]: avgA !== null ? Number(avgA.toFixed(2)) : null,
-          [basisB]: avgB !== null ? Number(avgB.toFixed(2)) : null,
-          spread
+          date: slot.date,
+          [basisA]: Number(avgA.toFixed(2)),
+          [basisB]: Number(avgB.toFixed(2)),
+          spread: Number(spread.toFixed(2)),
         };
       })
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [entries, basisA, basisB]);
+  }, [filteredBidEntries, basisA, basisB, chartMode]);
+
+  const hasData = chartData.length > 0;
 
   if (availableBases.length < 2) {
     return (
       <Card className="border-border/60">
         <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">Basis Spread Chart</CardTitle>
-          <CardDescription>Need at least 2 different bases in current filter to compare.</CardDescription>
+          <CardTitle className="text-sm">Spread Between Basis (BIDs)</CardTitle>
+          <CardDescription>Need at least 2 different BID basis values for selected commodity and transport.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -105,54 +204,124 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
 
   return (
     <Card className="border-border/60">
-      <CardHeader className="py-3 px-4 flex flex-row items-start justify-between flex-wrap gap-4">
+      <CardHeader className="space-y-3 py-3 px-4">
         <div>
-          <CardTitle className="text-sm">Spread Between Basis</CardTitle>
-          <CardDescription className="text-xs">Compare historical average prices</CardDescription>
+          <CardTitle className="text-sm">Spread Between Basis (BIDs)</CardTitle>
+          <CardDescription className="text-xs">
+            Daily mode includes only days with BID on both basis. Weekly mode compares weekly average BID values.
+          </CardDescription>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Commodity</Label>
+            <select
+              className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+              value={selectedCommodity}
+              onChange={(event) => setSelectedCommodity(event.target.value)}
+            >
+              {commodityOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Transport</Label>
+            <select
+              className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+              value={selectedTransportType}
+              onChange={(event) => setSelectedTransportType(event.target.value)}
+            >
+              <option value="all">All transport</option>
+              {transportOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Period</Label>
+            <div className="flex gap-1">
+              <Button size="sm" variant={periodPreset === "1m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("1m")}>1M</Button>
+              <Button size="sm" variant={periodPreset === "3m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("3m")}>3M</Button>
+              <Button size="sm" variant={periodPreset === "6m" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("6m")}>6M</Button>
+              <Button size="sm" variant={periodPreset === "custom" ? "secondary" : "outline"} className="h-8 px-2 text-xs" onClick={() => setPeriodPreset("custom")}>Custom</Button>
+            </div>
+            {periodPreset === "custom" ? (
+              <div className="flex gap-1">
+                <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 text-xs" />
+                <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 text-xs" />
+              </div>
+            ) : null}
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Chart type</Label>
+            <Select value={chartMode} onValueChange={(next) => setChartMode(next as ChartMode)}>
+              <SelectTrigger className="h-8 w-full text-xs">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily" className="text-xs">Daily</SelectItem>
+                <SelectItem value="weekly" className="text-xs">Weekly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center">
           <Select value={basisA} onValueChange={setBasisA}>
-            <SelectTrigger className="w-[120px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[120px] text-xs">
               <SelectValue placeholder="Basis A" />
             </SelectTrigger>
             <SelectContent>
-              {availableBases.map(b => (
-                <SelectItem key={b} value={b} className="text-xs">{b}</SelectItem>
+              {availableBases.map((basis) => (
+                <SelectItem key={basis} value={basis} className="text-xs">
+                  {basis}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground font-semibold">vs</span>
+          <span className="text-xs text-muted-foreground font-semibold">VS</span>
           <Select value={basisB} onValueChange={setBasisB}>
-            <SelectTrigger className="w-[120px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[120px] text-xs">
               <SelectValue placeholder="Basis B" />
             </SelectTrigger>
             <SelectContent>
-              {availableBases.map(b => (
-                <SelectItem key={b} value={b} className="text-xs">{b}</SelectItem>
+              {availableBases.map((basis) => (
+                <SelectItem key={basis} value={basis} className="text-xs">
+                  {basis}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-0 pb-4">
-        <div className="h-[280px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-              <XAxis dataKey="date" tick={{fontSize: 10}} tickLine={false} axisLine={false} />
-              <YAxis yAxisId="price" orientation="left" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={40} />
-              <YAxis yAxisId="spread" orientation="right" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={40} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid #333", borderRadius: "6px" }}
-                itemStyle={{ fontSize: "12px" }}
-              />
-              <Legend wrapperStyle={{ fontSize: "11px" }} />
-              <Line yAxisId="price" type="monotone" dataKey={basisA} name={basisA} stroke="hsl(160 65% 45%)" strokeWidth={2} dot={{ r: 3 }} connectNulls />
-              <Line yAxisId="price" type="monotone" dataKey={basisB} name={basisB} stroke="hsl(38 85% 52%)" strokeWidth={2} dot={{ r: 3 }} connectNulls />
-              <Line yAxisId="spread" type="monotone" dataKey="spread" name="Spread A-B" stroke="hsl(280 65% 60%)" strokeWidth={2} strokeDasharray="4 4" dot={false} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {!hasData ? (
+          <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
+            No BID data for selected basis pair and chart filters.
+          </div>
+        ) : (
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                <YAxis yAxisId="price" orientation="left" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={40} />
+                <YAxis yAxisId="spread" orientation="right" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={40} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid #333", borderRadius: "6px" }}
+                  itemStyle={{ fontSize: "12px" }}
+                />
+                <Legend wrapperStyle={{ fontSize: "11px" }} />
+                <Line yAxisId="price" type="monotone" dataKey={basisA} name={basisA} stroke="hsl(160 65% 45%)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
+                <Line yAxisId="price" type="monotone" dataKey={basisB} name={basisB} stroke="hsl(38 85% 52%)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
+                <Line yAxisId="spread" type="monotone" dataKey="spread" name="Spread A-B" stroke="hsl(280 65% 60%)" strokeWidth={2} strokeDasharray="4 4" dot={false} connectNulls={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
