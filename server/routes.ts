@@ -98,6 +98,8 @@ const MARKET_DASHBOARD_CBOT_CORN_CACHE_KEY = "market_dashboard_quote_cbot_corn_z
 const MARKET_DASHBOARD_CBOT_CORN_URL = "https://www.barchart.com/futures/quotes/ZCK26/futures-prices";
 const MARKET_DASHBOARD_CBOT_WHEAT_CACHE_KEY = "market_dashboard_quote_cbot_wheat_zwk26_v1";
 const MARKET_DASHBOARD_CBOT_WHEAT_URL = "https://www.barchart.com/futures/quotes/ZWK26/futures-prices";
+const MARKET_DASHBOARD_GOLD_CACHE_KEY = "market_dashboard_quote_gold_gcj26_v1";
+const MARKET_DASHBOARD_GOLD_URL = "https://www.barchart.com/futures/quotes/GCJ26/futures-prices";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 let hasWarnedMissingAnalyticsEventsTable = false;
 
@@ -142,13 +144,21 @@ type MarketDashboardCbotWheatSnapshot = {
   source: "barchart_html";
 };
 
+type MarketDashboardGoldSnapshot = {
+  symbol: "Gold (XAU)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
 const parseBarchartNumericField = (html: string, key: string): number | null => {
-  const match = html.match(new RegExp(`"${key}"\\s*:\\s*"([+-]?\\d+(?:\\.\\d+)?)"`));
+  const match = html.match(new RegExp(`"${key}"\\s*:\\s*"([+-]?[\\d,]+(?:\\.\\d+)?)"`));
   if (!match) return null;
-  const value = Number(match[1]);
+  const value = Number(match[1].replace(/,/g, ""));
   return Number.isFinite(value) ? value : null;
 };
 
@@ -471,6 +481,82 @@ const resolveCbotWheatSnapshot = async (): Promise<MarketDashboardCbotWheatSnaps
     return fresh;
   } catch (error: any) {
     console.warn(`[MarketDashboard] Wheat (CBOT) refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readGoldSnapshotFromSetting = async (): Promise<MarketDashboardGoldSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_GOLD_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardGoldSnapshot>;
+    if (
+      parsed.symbol !== "Gold (XAU)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Gold (XAU)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartGoldSnapshot = async (): Promise<MarketDashboardGoldSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_GOLD_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Gold (XAU) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Gold (XAU)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveGoldSnapshot = async (): Promise<MarketDashboardGoldSnapshot | null> => {
+  const cached = await readGoldSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartGoldSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_GOLD_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Gold refresh failed: ${error?.message || "unknown error"}`);
     return cached || null;
   }
 };
@@ -8963,6 +9049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const wti = await resolveWtiSnapshot();
     const cbotCorn = await resolveCbotCornSnapshot();
     const cbotWheat = await resolveCbotWheatSnapshot();
+    const gold = await resolveGoldSnapshot();
     // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
     const quotes = [
       {
@@ -8983,7 +9070,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priceUnit: "USD",
         trend: (eurusd?.change ?? 0.12) > 0 ? "up" : (eurusd?.change ?? 0.12) < 0 ? "down" : "flat",
       },
-      { id: "gold", symbol: "Gold (XAU)", category: "macro", price: 2345.50, change: -1.2, priceUnit: "USD/oz", trend: "down" },
+      {
+        id: "gold",
+        symbol: "Gold (XAU)",
+        category: "macro",
+        price: gold?.price ?? 2345.5,
+        change: gold?.change ?? -1.2,
+        priceUnit: "USD/oz",
+        trend: (gold?.change ?? -1.2) > 0 ? "up" : (gold?.change ?? -1.2) < 0 ? "down" : "flat",
+      },
       {
         id: "cbot_corn",
         symbol: "Corn (CBOT)",
