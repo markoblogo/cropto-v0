@@ -162,6 +162,23 @@ function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {
   return entry.commodityLabel.replace(/%/g, "").trim();
 }
 
+function extractHarvestYearFromGrade(entry: SeaBrokerageEntryRow) {
+  const match = String(entry.gradeOrSpec || "").match(/\b(20\d{2})\b/);
+  return match ? match[1] : null;
+}
+
+function formatTelegramCommodityCountryLine(
+  entry: SeaBrokerageEntryRow,
+  countryCodeAlpha2: string,
+) {
+  const commodity = formatTelegramCommodity(entry);
+  const harvestYear = extractHarvestYearFromGrade(entry);
+  if (harvestYear) {
+    return `${commodity}, ${harvestYear}, ${countryCodeAlpha2}`;
+  }
+  return `${commodity}, ${countryCodeAlpha2}`;
+}
+
 function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
   if (entry.type === "bid") {
     return entry.buyerName?.trim() || null;
@@ -244,8 +261,10 @@ function formatStandardTelegramMessage(
       : counterpartyLine,
     isTrade ? formatTradePartyLine("BUYER", buyerLine, tradeBuyerBroker) : null,
     !isTrade && entry.isNewCrop ? "NEW CROP" : null,
-    `${formatTelegramCommodity(entry)}, ${originCountryCode}`,
-    entry.gradeOrSpec?.trim() ? entry.gradeOrSpec.trim() : null,
+    formatTelegramCommodityCountryLine(entry, originCountryCode),
+    entry.gradeOrSpec?.trim() && !/^HARVEST\b/i.test(entry.gradeOrSpec.trim())
+      ? entry.gradeOrSpec.trim()
+      : null,
     formatQuantityLine(entry),
     formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" }),
     formatTelegramTransportCode(entry),
