@@ -227,23 +227,28 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
     }
 
     return Array.from(grouped.values())
-      .filter((slot) => slot.aCount > 0 && slot.bCount > 0)
       .map((slot) => {
-        const avgA = slot.aSum / slot.aCount;
-        const avgB = slot.bSum / slot.bCount;
-        const spread = avgA - avgB;
+        const avgA = slot.aCount > 0 ? slot.aSum / slot.aCount : null;
+        const avgB = slot.bCount > 0 ? slot.bSum / slot.bCount : null;
+        const spread = avgA !== null && avgB !== null ? avgA - avgB : null;
 
         return {
           date: slot.date,
-          [basisA]: Number(avgA.toFixed(2)),
-          [basisB]: Number(avgB.toFixed(2)),
-          spread: Number(spread.toFixed(2)),
+          [basisA]: avgA === null ? null : Number(avgA.toFixed(2)),
+          [basisB]: avgB === null ? null : Number(avgB.toFixed(2)),
+          spread: spread === null ? null : Number(spread.toFixed(2)),
         };
       })
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredBidEntries, basisA, basisB, chartMode]);
 
   const hasData = chartData.length > 0;
+  const overlapPoints = useMemo(
+    () =>
+      chartData.filter((row) => row[basisA as keyof typeof row] !== null && row[basisB as keyof typeof row] !== null)
+        .length,
+    [chartData, basisA, basisB],
+  );
 
   return (
     <Card className="border-border/60">
@@ -378,7 +383,13 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
             </div>
           </div>
         ) : (
-          <div className="h-[280px] w-full">
+          <div className="space-y-2">
+            {overlapPoints === 0 ? (
+              <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+                No overlap buckets for spread in {chartMode} mode. Basis lines are shown separately.
+              </div>
+            ) : null}
+            <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
@@ -395,6 +406,7 @@ export function BasisSpreadChart({ entries }: BasisSpreadChartProps) {
                 <Line yAxisId="spread" type="monotone" dataKey="spread" name="Spread A-B" stroke="hsl(280 65% 60%)" strokeWidth={2} strokeDasharray="4 4" dot={false} connectNulls={false} />
               </LineChart>
             </ResponsiveContainer>
+          </div>
           </div>
         )}
       </CardContent>
