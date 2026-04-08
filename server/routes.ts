@@ -98,6 +98,8 @@ const MARKET_DASHBOARD_CBOT_CORN_CACHE_KEY = "market_dashboard_quote_cbot_corn_z
 const MARKET_DASHBOARD_CBOT_CORN_URL = "https://www.barchart.com/futures/quotes/ZCK26/futures-prices";
 const MARKET_DASHBOARD_CBOT_WHEAT_CACHE_KEY = "market_dashboard_quote_cbot_wheat_zwk26_v1";
 const MARKET_DASHBOARD_CBOT_WHEAT_URL = "https://www.barchart.com/futures/quotes/ZWK26/futures-prices";
+const MARKET_DASHBOARD_CBOT_SOY_CACHE_KEY = "market_dashboard_quote_cbot_soy_zsk26_v1";
+const MARKET_DASHBOARD_CBOT_SOY_URL = "https://www.barchart.com/futures/quotes/ZSK26/futures-prices";
 const MARKET_DASHBOARD_GOLD_CACHE_KEY = "market_dashboard_quote_gold_gcj26_v1";
 const MARKET_DASHBOARD_GOLD_URL = "https://www.barchart.com/futures/quotes/GCJ26/futures-prices";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -146,6 +148,14 @@ type MarketDashboardCbotWheatSnapshot = {
 
 type MarketDashboardGoldSnapshot = {
   symbol: "Gold (XAU)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardCbotSoySnapshot = {
+  symbol: "Soybean (CBOT)";
   price: number;
   change: number;
   updatedAt: string;
@@ -557,6 +567,82 @@ const resolveGoldSnapshot = async (): Promise<MarketDashboardGoldSnapshot | null
     return fresh;
   } catch (error: any) {
     console.warn(`[MarketDashboard] Gold refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readCbotSoySnapshotFromSetting = async (): Promise<MarketDashboardCbotSoySnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_CBOT_SOY_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardCbotSoySnapshot>;
+    if (
+      parsed.symbol !== "Soybean (CBOT)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Soybean (CBOT)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartCbotSoySnapshot = async (): Promise<MarketDashboardCbotSoySnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_CBOT_SOY_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartFuturesFractionalField(html, "lastPrice");
+    const change = parseBarchartFuturesFractionalField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Soybean (CBOT) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Soybean (CBOT)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveCbotSoySnapshot = async (): Promise<MarketDashboardCbotSoySnapshot | null> => {
+  const cached = await readCbotSoySnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartCbotSoySnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_CBOT_SOY_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Soybean (CBOT) refresh failed: ${error?.message || "unknown error"}`);
     return cached || null;
   }
 };
@@ -9048,6 +9134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const eurusd = await resolveEurUsdSnapshot();
     const wti = await resolveWtiSnapshot();
     const cbotCorn = await resolveCbotCornSnapshot();
+    const cbotSoy = await resolveCbotSoySnapshot();
     const cbotWheat = await resolveCbotWheatSnapshot();
     const gold = await resolveGoldSnapshot();
     // Stage rollout: EUR/USD is live from Barchart (cached daily), others remain static until migrated.
@@ -9089,7 +9176,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trend:
           (cbotCorn?.change ?? 3.5) > 0 ? "up" : (cbotCorn?.change ?? 3.5) < 0 ? "down" : "flat",
       },
-      { id: "cbot_soy", symbol: "Soybean (CBOT)", category: "cbot", price: 1150.25, change: -4.0, priceUnit: "USd/bu", trend: "down" },
+      {
+        id: "cbot_soy",
+        symbol: "Soybean (CBOT)",
+        category: "cbot",
+        price: cbotSoy?.price ?? 1150.25,
+        change: cbotSoy?.change ?? -4.0,
+        priceUnit: "USd/bu",
+        trend: (cbotSoy?.change ?? -4.0) > 0 ? "up" : (cbotSoy?.change ?? -4.0) < 0 ? "down" : "flat",
+      },
       {
         id: "cbot_wheat",
         symbol: "Wheat (CBOT)",
