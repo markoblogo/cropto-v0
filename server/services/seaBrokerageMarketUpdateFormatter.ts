@@ -9,6 +9,8 @@ type CommoditySection = {
 };
 
 export type SeaBrokerageReportGroup = "grains" | "oilseeds" | "byproducts" | "niche";
+export type SeaBrokerageReportFormatMode = "regular" | "client_custom";
+export type SeaBrokerageReportTemplateKey = "none" | "cassilo" | "rava";
 
 export const SEA_BROKERAGE_REPORT_GROUP_ORDER: SeaBrokerageReportGroup[] = [
   "grains",
@@ -171,6 +173,13 @@ function buildRouteLines(routeEntries: SeaBrokerageEntryRow[]) {
 type BuildMarketMessageOptions = {
   groups?: SeaBrokerageReportGroup[];
   title?: string;
+  formatMode?: SeaBrokerageReportFormatMode;
+  templateKey?: SeaBrokerageReportTemplateKey;
+};
+
+const TEMPLATE_TITLES: Record<Exclude<SeaBrokerageReportTemplateKey, "none">, string> = {
+  cassilo: "SPIKE Market for Cassilo",
+  rava: "SPIKE Market for Rava",
 };
 
 export function buildSeaBrokerageMarketUpdateMessage(
@@ -187,7 +196,14 @@ export function buildSeaBrokerageMarketUpdateMessage(
   });
 
   const lines: string[] = [];
-  lines.push(options.title || "🇺🇦 SPIKE BROKERS Market Update");
+  const formatMode = options.formatMode || "regular";
+  const templateTitle =
+    options.templateKey && options.templateKey !== "none" ? TEMPLATE_TITLES[options.templateKey] : null;
+  if (formatMode === "client_custom") {
+    lines.push(options.title || templateTitle || "SPIKE Market Update");
+  } else {
+    lines.push(options.title || templateTitle || "🇺🇦 SPIKE BROKERS Market Update");
+  }
   lines.push(headerDate);
   lines.push("");
   lines.push("------------------------------");

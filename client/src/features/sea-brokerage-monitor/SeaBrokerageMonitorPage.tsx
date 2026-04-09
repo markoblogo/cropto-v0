@@ -42,9 +42,11 @@ import type {
   FeedFilterState,
   FilterPreset,
   MatchSuggestion,
+  ReportFormatMode,
   PortOption,
   ReportGroup,
   ReportProfile,
+  ReportTemplateKey,
   TransportMode,
 } from "./types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -92,6 +94,15 @@ const REPORT_GROUP_OPTIONS: Array<{ value: ReportGroup; label: string }> = [
   { value: "byproducts", label: "By-products" },
   { value: "niche", label: "Niche" },
 ];
+const REPORT_FORMAT_OPTIONS: Array<{ value: ReportFormatMode; label: string }> = [
+  { value: "regular", label: "Regular" },
+  { value: "client_custom", label: "Client custom" },
+];
+const REPORT_TEMPLATE_OPTIONS: Array<{ value: ReportTemplateKey; label: string }> = [
+  { value: "none", label: "No template" },
+  { value: "cassilo", label: "Cassilo" },
+  { value: "rava", label: "Rava" },
+];
 
 function isWithinPrimaryDisplayWindow(entry: BrokerageEntry, nowMs = Date.now()) {
   const createdAtMs = new Date(entry.createdAt).getTime();
@@ -134,6 +145,8 @@ export function SeaBrokerageMonitorPage() {
   const [selectedReportProfileId, setSelectedReportProfileId] = useState<string>("");
   const [reportForm, setReportForm] = useState<{
     title: string;
+    formatMode: ReportFormatMode;
+    templateKey: ReportTemplateKey;
     groups: ReportGroup[];
     commodities: string[];
     basis: string[];
@@ -147,6 +160,8 @@ export function SeaBrokerageMonitorPage() {
     includeOffers: boolean;
   }>({
     title: "",
+    formatMode: "regular",
+    templateKey: "none",
     groups: ["grains", "oilseeds", "byproducts", "niche"],
     commodities: ["corn"],
     basis: [],
@@ -926,6 +941,8 @@ export function SeaBrokerageMonitorPage() {
     setReportForm((prev) => ({
       ...prev,
       title: profile.title || "",
+      formatMode: profile.formatMode || "regular",
+      templateKey: profile.templateKey || "none",
       groups: profile.groups?.length ? profile.groups : prev.groups,
       commodities: profile.commodities?.length ? profile.commodities : prev.commodities,
       basis: profile.basis ?? [],
@@ -963,6 +980,8 @@ export function SeaBrokerageMonitorPage() {
     const payload = {
       name: normalizedName,
       title: reportForm.title.trim(),
+      formatMode: reportForm.formatMode,
+      templateKey: reportForm.templateKey,
       groups: reportForm.groups,
       commodities: Array.from(new Set(reportForm.commodities)),
       basis: Array.from(new Set(reportForm.basis)),
@@ -1498,6 +1517,46 @@ export function SeaBrokerageMonitorPage() {
               onChange={(event) => setReportForm((prev) => ({ ...prev, title: event.target.value }))}
               placeholder="Spike Market for Cassilo dd 09/04/26"
             />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Format mode</div>
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={reportForm.formatMode}
+                onChange={(event) =>
+                  setReportForm((prev) => ({
+                    ...prev,
+                    formatMode: (event.target.value as ReportFormatMode) || "regular",
+                  }))
+                }
+              >
+                {REPORT_FORMAT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Template</div>
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={reportForm.templateKey}
+                onChange={(event) =>
+                  setReportForm((prev) => ({
+                    ...prev,
+                    templateKey: (event.target.value as ReportTemplateKey) || "none",
+                  }))
+                }
+              >
+                {REPORT_TEMPLATE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="rounded-md border border-border/70 p-3">
             <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Groups</div>

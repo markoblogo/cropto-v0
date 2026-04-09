@@ -7,7 +7,9 @@ import {
 import {
   buildSeaBrokerageMarketUpdateMessage,
   buildSeaBrokerageMarketUpdateMessagesByGroup,
+  type SeaBrokerageReportFormatMode,
   type SeaBrokerageReportGroup,
+  type SeaBrokerageReportTemplateKey,
 } from "./seaBrokerageMarketUpdateFormatter";
 
 const DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_DAILY_REPORT_TIMEZONE || "Europe/Paris";
@@ -26,6 +28,8 @@ type SeaBrokerageReportProfile = {
   brokerCode: string;
   name: string;
   title: string;
+  formatMode: SeaBrokerageReportFormatMode;
+  templateKey: SeaBrokerageReportTemplateKey;
   groups: SeaBrokerageReportGroup[];
   commodities: string[];
   basis: string[];
@@ -162,6 +166,8 @@ async function runAutoProfileReports(now: Date, localDateKey: string, entries: S
     const message = buildSeaBrokerageMarketUpdateMessage(matched, now, {
       groups: profile.groups?.length ? profile.groups : undefined,
       title: profile.title || `🇺🇦 SPIKE BROKERS Market Update — ${profile.name}`,
+      formatMode: profile.formatMode || "regular",
+      templateKey: profile.templateKey || "none",
     });
     const dm = await sendSeaBrokerageTelegramDirectMessage(profile.targetChat, message);
     if (!dm.ok) {

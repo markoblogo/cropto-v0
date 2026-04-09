@@ -50,7 +50,9 @@ import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingest
 import { providerDefinitionsFor } from "./ingestion/config";
 import {
   buildSeaBrokerageMarketUpdateMessage,
+  type SeaBrokerageReportFormatMode,
   type SeaBrokerageReportGroup,
+  type SeaBrokerageReportTemplateKey,
 } from "./services/seaBrokerageMarketUpdateFormatter";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
@@ -1054,6 +1056,8 @@ const seaBrokerageCommodityCreateSchema = z.object({
 const seaBrokerageReportRequestSchema = z
   .object({
     title: z.string().trim().max(120).optional().default(""),
+    formatMode: z.enum(["regular", "client_custom"]).optional().default("regular"),
+    templateKey: z.enum(["none", "cassilo", "rava"]).optional().default("none"),
     groups: z
       .array(z.enum(["grains", "oilseeds", "byproducts", "niche"]))
       .optional()
@@ -1117,11 +1121,20 @@ const seaBrokerageReportRequestSchema = z
         message: "Select at least one side (bids or offers)",
       });
     }
+    if (!Array.isArray(value.groups) || !value.groups.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["groups"],
+        message: "Select at least one report group",
+      });
+    }
   });
 
 const seaBrokerageReportProfilePayloadSchema = z.object({
   name: z.string().trim().min(1).max(80),
   title: z.string().trim().max(120).optional().default(""),
+  formatMode: z.enum(["regular", "client_custom"]).optional().default("regular"),
+  templateKey: z.enum(["none", "cassilo", "rava"]).optional().default("none"),
   groups: z
     .array(z.enum(["grains", "oilseeds", "byproducts", "niche"]))
     .optional()
@@ -1222,6 +1235,8 @@ type SeaBrokerageReportProfile = {
   brokerCode: string;
   name: string;
   title: string;
+  formatMode: SeaBrokerageReportFormatMode;
+  templateKey: SeaBrokerageReportTemplateKey;
   groups: SeaBrokerageReportGroup[];
   commodities: string[];
   basis: string[];
@@ -2122,6 +2137,9 @@ async function readSeaBrokerageReportProfiles(): Promise<SeaBrokerageReportProfi
           brokerCode: String(item.brokerCode).trim(),
           name: String(item.name).trim(),
           title: String(item.title || "").trim(),
+          formatMode: item.formatMode === "client_custom" ? "client_custom" : "regular",
+          templateKey:
+            item.templateKey === "cassilo" || item.templateKey === "rava" ? item.templateKey : "none",
           groups: groups.length ? groups : ["grains", "oilseeds", "byproducts", "niche"],
           commodities: Array.isArray(item.commodities)
             ? item.commodities.map((value) => String(value || "").trim()).filter(Boolean)
@@ -9761,6 +9779,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reportMessage = buildSeaBrokerageMarketUpdateMessage(matched, new Date(), {
         groups: payload.groups,
         title: payload.title || undefined,
+        formatMode: payload.formatMode,
+        templateKey: payload.templateKey,
       });
 
       const targetChat =
@@ -9871,6 +9891,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         brokerCode: authorizedBroker.brokerCode,
         name: parsed.data.name.trim(),
         title: parsed.data.title.trim(),
+        formatMode: parsed.data.formatMode,
+        templateKey: parsed.data.templateKey,
         groups: parsed.data.groups as SeaBrokerageReportGroup[],
         commodities: Array.from(new Set(parsed.data.commodities.map((item) => item.toLowerCase()))),
         basis: Array.from(new Set(parsed.data.basis.map((item) => item.toUpperCase()))),
@@ -9922,6 +9944,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nextProfile: SeaBrokerageReportProfile = {
         ...current,
         ...parsed.data,
+        formatMode:
+          parsed.data.formatMode !== undefined ? parsed.data.formatMode : current.formatMode,
+        templateKey:
+          parsed.data.templateKey !== undefined ? parsed.data.templateKey : current.templateKey,
         groups: parsed.data.groups
           ? (parsed.data.groups as SeaBrokerageReportGroup[])
           : current.groups,
@@ -10022,6 +10048,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reportMessage = buildSeaBrokerageMarketUpdateMessage(filterResult.entries, today, {
         groups: profile.groups,
         title: profile.title || `🇺🇦 SPIKE BROKERS Market Update — ${profile.name}`,
+        formatMode: profile.formatMode,
+        templateKey: profile.templateKey,
       });
       const targetChat =
         profile.targetChat ||

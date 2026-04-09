@@ -222,6 +222,8 @@ export interface FilterPreset {
 }
 
 export type ReportGroup = "grains" | "oilseeds" | "byproducts" | "niche";
+export type ReportFormatMode = "regular" | "client_custom";
+export type ReportTemplateKey = "none" | "cassilo" | "rava";
 
 export interface ReportProfile {
   id: string;
@@ -229,6 +231,8 @@ export interface ReportProfile {
   brokerCode: string;
   name: string;
   title: string;
+  formatMode: ReportFormatMode;
+  templateKey: ReportTemplateKey;
   groups: ReportGroup[];
   commodities: string[];
   basis: string[];
