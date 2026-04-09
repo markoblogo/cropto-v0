@@ -63,6 +63,7 @@ import type {
   PeriodType,
   PortOption,
   SelectOption,
+  SeaBrokerageEntryStatus,
   TransportType,
   VolumeUnit,
 } from "../types";
@@ -103,6 +104,11 @@ const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
   { value: "container", label: "Container" },
 ];
 
+const entryStatusOptions: Array<{ value: SeaBrokerageEntryStatus; label: string }> = [
+  { value: "active", label: "Active" },
+  { value: "needs_update", label: "Needs Update" },
+];
+
 function normalizeTransportTypeForForm(value: string | null | undefined): TransportType {
   const normalized = String(value || "")
     .trim()
@@ -140,6 +146,9 @@ const entryFormSchema = z
     quantityPreset: z.enum(["single", "range"]),
     tradeMyRole: z.enum(["seller", "buyer"]).optional(),
     tradeCounterpartyBrokerKey: z.string().optional(),
+    sourceBidEntryId: z.string().optional().default(""),
+    sourceOfferEntryId: z.string().optional().default(""),
+    entryStatus: z.enum(["active", "needs_update", "cancelled", "executed"]).optional().default("active"),
     sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
     buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
     periodPreset: z.enum([
@@ -383,6 +392,9 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     quantityPreset: "single",
     tradeMyRole: "seller",
     tradeCounterpartyBrokerKey: "",
+    sourceBidEntryId: "",
+    sourceOfferEntryId: "",
+    entryStatus: "active",
     sellerName: "",
     buyerName: "",
     periodPreset: "explicit_range",
@@ -429,6 +441,9 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     quantityPreset,
     tradeMyRole: "seller",
     tradeCounterpartyBrokerKey: "",
+    sourceBidEntryId: "",
+    sourceOfferEntryId: "",
+    entryStatus: (entry.entryStatus || "active") as SeaBrokerageEntryStatus,
     sellerName: entry.sellerName || "",
     buyerName: entry.buyerName || "",
     periodPreset,
@@ -689,6 +704,12 @@ export function EntryCreateDialog({
   });
 
   const values = form.watch();
+  const canSetNeedsUpdate = ["OS", "VZH", "ABV", "VTTL"].includes(
+    String(session.authorProfile?.brokerCode || "").trim().toUpperCase(),
+  );
+  const visibleEntryStatusOptions = canSetNeedsUpdate || values.entryStatus === "needs_update"
+    ? entryStatusOptions
+    : entryStatusOptions.filter((option) => option.value !== "needs_update");
   const { data: companyOptionsData = {} } = useQuery<{
     companies?: CompanyOption[];
     buyers?: CompanyOption[];
@@ -1271,6 +1292,20 @@ export function EntryCreateDialog({
         targetType === "trade" ? tradeBuyerBrokerTelegramUserId : null,
       tradeBuyerBrokerTelegramUsername:
         targetType === "trade" ? tradeBuyerBrokerTelegramUsername : null,
+      sourceBidEntryId:
+        targetType === "trade" && normalizedValues.sourceBidEntryId?.trim()
+          ? normalizedValues.sourceBidEntryId.trim()
+          : null,
+      sourceOfferEntryId:
+        targetType === "trade" && normalizedValues.sourceOfferEntryId?.trim()
+          ? normalizedValues.sourceOfferEntryId.trim()
+          : null,
+      entryStatus:
+        targetType === "trade"
+          ? "active"
+          : normalizedValues.entryStatus === "needs_update"
+            ? "needs_update"
+            : "active",
       canonicalView,
     };
   }
@@ -1847,6 +1882,38 @@ export function EntryCreateDialog({
                       {companyEditorMessage && companyEditorTarget === "buyerName" ? (
                         <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
                       ) : null}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
+              {(entryType === "bid" || entryType === "offer") ? (
+                <FormField
+                  control={form.control}
+                  name="entryStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select
+                        value={field.value || "active"}
+                        onValueChange={(value) => field.onChange(value as SeaBrokerageEntryStatus)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {visibleEntryStatusOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="text-[11px] text-muted-foreground">
+                        Active is default. Needs Update is available for boss role only.
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

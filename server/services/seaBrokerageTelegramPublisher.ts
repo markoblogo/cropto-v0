@@ -4,6 +4,7 @@ import {
   formatSeaBrokerageBasisRoute,
   resolveSeaBrokerageCountryAlpha2,
 } from "./seaBrokerageBasisFormat";
+import { resolveSeaBrokerageTelegramTag } from "./seaBrokerageTelegramTags";
 
 type TelegramPublishResult = {
   status: "published" | "failed";
@@ -330,11 +331,15 @@ function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
 function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) {
   if (entry.type === "trade" && entry.isMarketTrade) {
     const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
-    return ["#market_traded", flag, brokerLabel].filter(Boolean).join(" ");
+    return [resolveSeaBrokerageTelegramTag("market_trade"), flag, brokerLabel].filter(Boolean).join(" ");
   }
 
   const ideaTag =
-    entry.type === "bid" ? "#bid_idea" : entry.type === "trade" ? "#traded" : "#offer_idea";
+    entry.type === "bid"
+      ? resolveSeaBrokerageTelegramTag("bid")
+      : entry.type === "trade"
+        ? resolveSeaBrokerageTelegramTag("trade")
+        : resolveSeaBrokerageTelegramTag("offer");
   const flag = countryFlagEmoji(entry.originCountryCode || entry.destinationCountryCode);
   if (entry.type === "trade") {
     return [ideaTag, flag].filter(Boolean).join(" ");
@@ -630,7 +635,7 @@ function formatMatchMessage(
     ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "").toLowerCase()}`
     : `@${String(match.offerEntry.brokerCode || "broker").toLowerCase()}`;
   return [
-    ["#match_idea", "🔗", flag, emoji].filter(Boolean).join(" "),
+    [resolveSeaBrokerageTelegramTag("match"), "🔗", flag, emoji].filter(Boolean).join(" "),
     formatTelegramHeaderSeparator(),
     formatTelegramCommodityCountryLine(refEntry, resolveSeaBrokerageCountryAlpha2(refEntry, refEntry.originCountryCode)),
     formatBasisRouteReadable(refEntry),

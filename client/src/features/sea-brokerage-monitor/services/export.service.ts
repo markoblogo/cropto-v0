@@ -16,6 +16,7 @@ import {
 interface ExportRow {
   date: string;
   type: string;
+  status: string;
   "broker code": string;
   "broker name": string;
   seller: string;
@@ -57,6 +58,7 @@ export function buildExportRows(entries: BrokerageEntry[]): ExportRow[] {
   return entries.map((entry) => ({
     date: formatEntryDateTime(entry.createdAt),
     type: entry.type.toUpperCase(),
+    status: String(entry.entryStatus || "active").toUpperCase(),
     "broker code": entry.brokerCode,
     "broker name": entry.brokerName,
     seller: entry.sellerName ?? "",

@@ -83,6 +83,7 @@ import {
 } from "./services/seaBrokerageTelegramOtp";
 import { formatSeaBrokerageBasisRoute } from "./services/seaBrokerageBasisFormat";
 import { calculateSeaBrokerageBossAnalytics } from "./services/seaBrokerageBossAnalytics";
+import { resolveSeaBrokerageTelegramTag } from "./services/seaBrokerageTelegramTags";
 
 const STALE_MAX_AGE_DAYS = 7;
 const DEFAULT_FEEDBACK_ALERT_EMAIL = "a.biletskiy@gmail.com";
@@ -926,6 +927,7 @@ const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
 
 const createSeaBrokerageEntryRequestSchema = z.object({
   type: z.enum(["bid", "offer", "trade"]),
+  entryStatus: z.enum(["active", "needs_update", "cancelled", "executed"]).optional(),
   sellerName: z.string().trim().max(200).nullable().optional(),
   buyerName: z.string().trim().max(200).nullable().optional(),
   tradeSellerBrokerTelegramUserId: z.string().trim().nullable().optional(),
@@ -964,9 +966,25 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   note: z.string().trim().max(500).nullable().optional(),
   canonicalView: z.string().min(1),
   isMarketTrade: z.boolean().optional().default(false),
+  sourceBidEntryId: z.string().trim().min(1).nullable().optional(),
+  sourceOfferEntryId: z.string().trim().min(1).nullable().optional(),
 });
 
 const updateSeaBrokerageEntryRequestSchema = createSeaBrokerageEntryRequestSchema;
+
+type SeaBrokerageEntryStatus = "active" | "needs_update" | "cancelled" | "executed";
+
+function normalizeRequestedEntryStatus(
+  type: "bid" | "offer" | "trade",
+  requested: string | null | undefined,
+): SeaBrokerageEntryStatus {
+  const normalized = String(requested || "").trim().toLowerCase();
+  if (type === "trade") return "active";
+  if (normalized === "needs_update") return "needs_update";
+  if (normalized === "cancelled") return "cancelled";
+  if (normalized === "executed") return "executed";
+  return "active";
+}
 
 function parseDestinationPortCodesValue(raw: string | null | undefined) {
   const normalized = String(raw || "").trim();
@@ -1358,6 +1376,7 @@ function mapSeaBrokerageEntryToClientShape(
     telegramRelayStatus: entry.telegramRelayStatus,
     telegramRelayMessage: entry.telegramRelayMessage,
     isMarketTrade: !!entry.isMarketTrade,
+    entryStatus: (entry.entryStatus as SeaBrokerageEntryStatus | null) ?? "active",
     likeCount: likeMeta?.likeCount ?? 0,
     likedByMe: likeMeta?.likedByMe ?? false,
     hasBossMatchLike: likeMeta?.hasBossMatchLike ?? false,
@@ -2232,7 +2251,7 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
       await storage.upsertAppSetting(key, "published");
       const compactBid = match.bidEntry.canonicalView;
       const compactOffer = match.offerEntry.canonicalView;
-      const dmMessage = `#match_idea 🤝\nBID: ${compactBid}\nOFFER: ${compactOffer}`;
+      const dmMessage = `${resolveSeaBrokerageTelegramTag("match")} 🤝\nBID: ${compactBid}\nOFFER: ${compactOffer}`;
       const buyerBrokerChat = match.bidEntry.brokerTelegramUsername
         ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
         : match.bidEntry.brokerTelegramUserId
@@ -11192,17 +11211,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!parsed.success) {
         return res.status(400).json({ error: fromZodError(parsed.error).message });
       }
+      const { sourceBidEntryId, sourceOfferEntryId, ...entryInput } = parsed.data;
+      const requestedStatus = normalizeRequestedEntryStatus(entryInput.type, entryInput.entryStatus);
+      if (requestedStatus === "needs_update" && !isSeaBrokerageBoss(authorizedBroker.brokerCode)) {
+        return res.status(403).json({ error: "Only boss can set status Needs Update." });
+      }
 
-      const destinationPortCodes = resolveDestinationPortCodesFromPayload(parsed.data);
+      const destinationPortCodes = resolveDestinationPortCodesFromPayload(entryInput);
       const destinationPortCodeValue = destinationPortCodes.length
         ? destinationPortCodes.join("|")
-        : parsed.data.destinationPortCode ?? null;
+        : entryInput.destinationPortCode ?? null;
 
-      if (parsed.data.type === "trade" && !parsed.data.isMarketTrade) {
+      if (entryInput.type === "trade" && !entryInput.isMarketTrade) {
         const hasSellerBrokerIdentity =
-          !!parsed.data.tradeSellerBrokerTelegramUserId || !!parsed.data.tradeSellerBrokerTelegramUsername;
+          !!entryInput.tradeSellerBrokerTelegramUserId || !!entryInput.tradeSellerBrokerTelegramUsername;
         const hasBuyerBrokerIdentity =
-          !!parsed.data.tradeBuyerBrokerTelegramUserId || !!parsed.data.tradeBuyerBrokerTelegramUsername;
+          !!entryInput.tradeBuyerBrokerTelegramUserId || !!entryInput.tradeBuyerBrokerTelegramUsername;
         if (!hasSellerBrokerIdentity || !hasBuyerBrokerIdentity) {
           return res.status(400).json({
             error: "TRADE requires both seller broker and buyer broker Telegram identities.",
@@ -11211,7 +11235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const created = await storage.createSeaBrokerageEntry({
-        ...parsed.data,
+        ...entryInput,
         brokerUserId:
           authorizedBroker.telegramUserId ||
           authorizedBroker.telegramUsername ||
@@ -11252,7 +11276,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : String(parsed.data.buyerCommission),
         destinationPortCode: destinationPortCodeValue,
         telegramRelayStatus: "queued",
+        entryStatus: requestedStatus,
       });
+
+      if (entryInput.type === "trade") {
+        const linkedIds = [sourceBidEntryId, sourceOfferEntryId]
+          .map((value) => String(value || "").trim())
+          .filter(Boolean);
+        if (linkedIds.length) {
+          const allEntries = await storage.listSeaBrokerageEntries();
+          for (const linkedId of linkedIds) {
+            const linkedEntry = allEntries.find((item) => item.id === linkedId);
+            if (!linkedEntry) continue;
+            if (linkedEntry.type !== "bid" && linkedEntry.type !== "offer") continue;
+            await storage.updateSeaBrokerageEntry(linkedId, {
+              entryStatus: "executed",
+            });
+          }
+        }
+      }
 
       void processSeaBrokerageEntryRelay(created, authorizedBroker.telegramUsername);
       res.status(201).json(mapSeaBrokerageEntryToClientShape(created));
@@ -11323,6 +11365,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
+      const requestedStatus = normalizeRequestedEntryStatus(payload.type, payload.entryStatus);
+      if (requestedStatus === "needs_update" && !actor.isBoss) {
+        return res.status(403).json({ error: "Only boss can set status Needs Update." });
+      }
+      if (requestedStatus === "cancelled" || requestedStatus === "executed") {
+        return res.status(400).json({
+          error: "Cancelled/Executed are system statuses. Use delete or trade flow.",
+        });
+      }
 
       const updated = await storage.updateSeaBrokerageEntry(entryId, {
         type: payload.type,
@@ -11376,6 +11427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transportType: payload.transportType,
         note: payload.note ?? null,
         canonicalView: payload.canonicalView,
+        entryStatus: payload.type === "trade" ? "active" : requestedStatus,
       });
 
       if (!isAuthor && actor.isBoss) {
@@ -11438,24 +11490,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const deleted = await storage.deleteSeaBrokerageEntry(entryId);
-      if (!deleted) {
+      const cancelled = await storage.updateSeaBrokerageEntry(entryId, {
+        entryStatus: "cancelled",
+      });
+      if (!cancelled) {
         return res.status(404).json({ error: "Entry not found" });
-      }
-
-      const [entryLikes, matchLikes] = await Promise.all([
-        readSeaBrokerageEntryLikes(),
-        readSeaBrokerageMatchLikes(),
-      ]);
-      const nextEntryLikes = entryLikes.filter((item) => item.entryId !== entryId);
-      const nextMatchLikes = matchLikes.filter(
-        (item) => item.bidEntryId !== entryId && item.offerEntryId !== entryId,
-      );
-      if (nextEntryLikes.length !== entryLikes.length) {
-        await writeSeaBrokerageEntryLikes(nextEntryLikes);
-      }
-      if (nextMatchLikes.length !== matchLikes.length) {
-        await writeSeaBrokerageMatchLikes(nextMatchLikes);
       }
 
       if (!isAuthor && actor.isBoss) {
@@ -11470,7 +11509,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             [
               "#entry_deleted 🗑️",
               `${actor.actorCode} deleted your ${existing.type.toUpperCase()} entry`,
-              existing.canonicalView,
+              cancelled.canonicalView,
             ].join("\n"),
           );
         }

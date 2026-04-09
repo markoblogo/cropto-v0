@@ -82,6 +82,9 @@ async function ensureSeaBrokerageSchemaSynced(): Promise<void> {
     await db.execute(
       sql`ALTER TABLE sea_brokerage_entries ADD COLUMN IF NOT EXISTS is_market_trade BOOLEAN NOT NULL DEFAULT FALSE`
     );
+    await db.execute(
+      sql`ALTER TABLE sea_brokerage_entries ADD COLUMN IF NOT EXISTS entry_status TEXT NOT NULL DEFAULT 'active'`
+    );
     ensuredSeaBrokerageSchema = true;
     console.log("[DB] Sea brokerage schema synced successfully");
   } catch (err: any) {

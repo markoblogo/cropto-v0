@@ -46,6 +46,11 @@ function isWithinLast7Days(entry: SeaBrokerageEntryRow, now = Date.now()) {
   return createdAt >= now - sevenDaysMs;
 }
 
+function isEligibleStatus(entry: SeaBrokerageEntryRow) {
+  const status = String(entry.entryStatus || "active").toLowerCase();
+  return status === "active" || status === "needs_update";
+}
+
 function scoreBidOfferPair(
   bidEntry: SeaBrokerageEntryRow,
   offerEntry: SeaBrokerageEntryRow,
@@ -77,7 +82,9 @@ function scoreBidOfferPair(
 }
 
 export function generateSeaBrokerageMatchSuggestions(entries: SeaBrokerageEntryRow[]) {
-  const activeEntries = entries.filter((entry) => isWithinLast7Days(entry));
+  const activeEntries = entries.filter(
+    (entry) => isWithinLast7Days(entry) && isEligibleStatus(entry),
+  );
   const bids = activeEntries.filter((entry) => entry.type === "bid");
   const offers = activeEntries.filter((entry) => entry.type === "offer");
   const suggestions: SeaBrokerageMatchSuggestion[] = [];

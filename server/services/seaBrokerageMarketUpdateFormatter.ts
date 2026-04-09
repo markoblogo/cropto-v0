@@ -1,5 +1,6 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
 import { formatSeaBrokerageBasisRoute } from "./seaBrokerageBasisFormat";
+import { resolveSeaBrokerageTelegramTag } from "./seaBrokerageTelegramTags";
 
 type CommoditySection = {
   title: string;
@@ -199,6 +200,7 @@ export function buildSeaBrokerageMarketUpdateMessage(
   const formatMode = options.formatMode || "regular";
   const templateTitle =
     options.templateKey && options.templateKey !== "none" ? TEMPLATE_TITLES[options.templateKey] : null;
+  lines.push(resolveSeaBrokerageTelegramTag("market_report"));
   if (formatMode === "client_custom") {
     lines.push(options.title || templateTitle || "SPIKE Market Update");
   } else {

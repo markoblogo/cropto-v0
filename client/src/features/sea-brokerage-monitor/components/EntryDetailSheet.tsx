@@ -59,6 +59,14 @@ function formatTransportDisplay(value: string | null | undefined) {
   return String(value || "Not set");
 }
 
+function formatEntryStatusDisplay(status: BrokerageEntry["entryStatus"]) {
+  const normalized = String(status || "active").trim().toLowerCase();
+  if (normalized === "needs_update") return "Needs update";
+  if (normalized === "cancelled") return "Cancelled";
+  if (normalized === "executed") return "Executed";
+  return "Active";
+}
+
 interface EntryDetailSheetProps {
   entry: BrokerageEntry | null;
   open: boolean;
@@ -134,6 +142,7 @@ export function EntryDetailSheet({
                 <Badge variant="outline">{entry.commodityLabel}</Badge>
                 <Badge variant="outline">{entry.basis}</Badge>
                 <Badge variant="outline">{formatTransportDisplay(entry.transportType)}</Badge>
+                <Badge variant="outline">Status: {formatEntryStatusDisplay(entry.entryStatus)}</Badge>
                 {entry.telegramRelayStatus ? <Badge variant="outline">Telegram: {entry.telegramRelayStatus}</Badge> : null}
               </div>
               <div className="rounded-xl bg-background px-4 py-4 text-sm font-medium leading-6 shadow-sm">
@@ -188,6 +197,7 @@ export function EntryDetailSheet({
                 }
               />
               <DetailRow label="Delivery Basis" value={entry.basis} />
+              <DetailRow label="Status" value={formatEntryStatusDisplay(entry.entryStatus)} />
               <DetailRow
                 label="Payment Terms"
                 value={

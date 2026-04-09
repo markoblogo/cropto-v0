@@ -145,7 +145,12 @@ function isWithinPrimaryDisplayWindow(entry: BrokerageEntry, nowMs = Date.now())
   const createdAtMs = new Date(entry.createdAt).getTime();
   if (Number.isNaN(createdAtMs)) return false;
   const windowMs = PRIMARY_VIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-  return createdAtMs >= nowMs - windowMs;
+  if (createdAtMs < nowMs - windowMs) return false;
+  if (entry.type === "bid" || entry.type === "offer") {
+    const status = String(entry.entryStatus || "active").toLowerCase();
+    if (status === "cancelled" || status === "executed") return false;
+  }
+  return true;
 }
 
 export function SeaBrokerageMonitorPage() {
@@ -465,6 +470,8 @@ export function SeaBrokerageMonitorPage() {
                 : "explicit_range";
 
     return {
+      sourceBidEntryId: bid.id,
+      sourceOfferEntryId: offer.id,
       sellerName: offer.sellerName || offer.companyName || "",
       buyerName: bid.buyerName || bid.companyName || "",
       commodity: offer.commodity,
@@ -707,29 +714,6 @@ export function SeaBrokerageMonitorPage() {
     await queryClient.invalidateQueries({
       queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
     });
-  }
-
-  async function handleToggleLike(entry: BrokerageEntry) {
-    if (entry.type !== "bid" && entry.type !== "offer") {
-      return;
-    }
-    if (!session.canCreateEntries) {
-      setTelegramAuthOpen(true);
-      return;
-    }
-
-    try {
-      await fetch(`/api/sea-brokerage-monitor/entries/${entry.id}/likes/toggle`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
-        },
-      });
-      await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/entries"] });
-    } catch {
-      // Ignore transient like errors in UI to keep tape interactions fast.
-    }
   }
 
   async function handleDeleteEntry(entry: BrokerageEntry) {
@@ -1251,8 +1235,7 @@ export function SeaBrokerageMonitorPage() {
             onSelectEntry={handleSelectEntry}
             filters={offerPaneFilters}
             onFiltersChange={handleOfferPaneFiltersChange}
-            likesEnabled
-            onToggleLike={handleToggleLike}
+            likesEnabled={false}
             currentBrokerId={session.authorProfile?.id ?? null}
             currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             createActionLabel="Create OFFER"
@@ -1276,8 +1259,7 @@ export function SeaBrokerageMonitorPage() {
             onSelectEntry={handleSelectEntry}
             filters={bidPaneFilters}
             onFiltersChange={handleBidPaneFiltersChange}
-            likesEnabled
-            onToggleLike={handleToggleLike}
+            likesEnabled={false}
             currentBrokerId={session.authorProfile?.id ?? null}
             currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             createActionLabel="Create BID"
@@ -1297,7 +1279,7 @@ export function SeaBrokerageMonitorPage() {
             entries={primaryWindowEntries}
             selectedEntry={selectedEntry}
             monitorAuthToken={session.monitorAuthToken}
-            canLikeMatches={session.canCreateEntries}
+            canLikeMatches={false}
             currentBrokerCode={session.authorProfile?.brokerCode ?? null}
             onRequireAuth={() => setTelegramAuthOpen(true)}
             onCreateTradeFromMatch={(suggestion) => {

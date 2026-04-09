@@ -468,25 +468,27 @@ export function ContextualMatchingPanel({
                           >
                             COMPARE
                           </Button>
-                          <button
-                            type="button"
-                            disabled={!canLikeThisMatch || hasOutgoingLike}
-                            onClick={() => void handleLikeMatch(suggestion)}
-                            className={`inline-flex h-6 min-w-[32px] items-center justify-center rounded border px-1 ${
-                              hasBossLike
-                                ? "border-sky-400/80 bg-sky-500/20 text-sky-300"
-                                : hasOutgoingLike
-                                  ? "cursor-default border-amber-400/80 bg-amber-500/20 text-amber-300"
-                                  : hasIncomingLike
-                                    ? "border-emerald-400/80 bg-emerald-500/20 text-emerald-300"
-                                    : canLikeThisMatch
-                                      ? "border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
-                                      : "cursor-default border-border/60 bg-background/40 text-muted-foreground/60"
-                            }`}
-                            aria-label="Like match"
-                          >
-                            {hasBossLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
-                          </button>
+                          {canLikeMatches ? (
+                            <button
+                              type="button"
+                              disabled={!canLikeThisMatch || hasOutgoingLike}
+                              onClick={() => void handleLikeMatch(suggestion)}
+                              className={`inline-flex h-6 min-w-[32px] items-center justify-center rounded border px-1 ${
+                                hasBossLike
+                                  ? "border-sky-400/80 bg-sky-500/20 text-sky-300"
+                                  : hasOutgoingLike
+                                    ? "cursor-default border-amber-400/80 bg-amber-500/20 text-amber-300"
+                                    : hasIncomingLike
+                                      ? "border-emerald-400/80 bg-emerald-500/20 text-emerald-300"
+                                      : canLikeThisMatch
+                                        ? "border-border/80 bg-background/70 text-foreground hover:bg-muted/30"
+                                        : "cursor-default border-border/60 bg-background/40 text-muted-foreground/60"
+                              }`}
+                              aria-label="Like match"
+                            >
+                              {hasBossLike ? <ShieldCheck className="h-3.5 w-3.5" /> : <Handshake className="h-3.5 w-3.5" />}
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                     </div>

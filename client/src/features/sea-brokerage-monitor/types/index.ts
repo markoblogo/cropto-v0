@@ -32,6 +32,7 @@ export type PeriodType = "spot" | "prompt" | "range" | "month" | "window";
 export type UserRole = "broker" | "trader" | "admin";
 export type BrokerIdentityProvider = "cropto_auth" | "telegram_future";
 export type TelegramRelayStatus = "queued" | "published" | "failed";
+export type SeaBrokerageEntryStatus = "active" | "needs_update" | "cancelled" | "executed";
 
 export interface Commodity {
   code: CommodityCode;
@@ -132,6 +133,7 @@ export interface BrokerageEntry {
   canonicalView: string;
   telegramRelayStatus?: TelegramRelayStatus;
   telegramRelayMessage?: string | null;
+  entryStatus?: SeaBrokerageEntryStatus;
   likeCount?: number;
   likedByMe?: boolean;
   hasBossMatchLike?: boolean;

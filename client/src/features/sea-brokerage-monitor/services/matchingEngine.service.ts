@@ -52,6 +52,11 @@ function isWithinLast7Days(entry: BrokerageEntry, now = Date.now()) {
   return createdAt >= now - sevenDaysMs;
 }
 
+function isEligibleStatus(entry: BrokerageEntry) {
+  const status = String(entry.entryStatus || "active").toLowerCase();
+  return status === "active" || status === "needs_update";
+}
+
 function scoreBidOfferPair(
   bidEntry: BrokerageEntry,
   offerEntry: BrokerageEntry,
@@ -88,7 +93,9 @@ function scoreBidOfferPair(
 }
 
 export function generateMatchSuggestions(entries: BrokerageEntry[]) {
-  const activeEntries = entries.filter((entry) => isWithinLast7Days(entry));
+  const activeEntries = entries.filter(
+    (entry) => isWithinLast7Days(entry) && isEligibleStatus(entry),
+  );
   const bids = activeEntries.filter((entry) => entry.type === "bid");
   const offers = activeEntries.filter((entry) => entry.type === "offer");
   const suggestions: MatchSuggestion[] = [];
@@ -109,12 +116,12 @@ export function generateContextualMatchSuggestions(
   selectedEntry: BrokerageEntry,
   oppositeEntries: BrokerageEntry[],
 ) {
-  if (!isWithinLast7Days(selectedEntry)) {
+  if (!isWithinLast7Days(selectedEntry) || !isEligibleStatus(selectedEntry)) {
     return [];
   }
 
   const suggestions = oppositeEntries
-    .filter((entry) => isWithinLast7Days(entry))
+    .filter((entry) => isWithinLast7Days(entry) && isEligibleStatus(entry))
     .map((entry) =>
       selectedEntry.type === "bid"
         ? scoreBidOfferPair(selectedEntry, entry)
