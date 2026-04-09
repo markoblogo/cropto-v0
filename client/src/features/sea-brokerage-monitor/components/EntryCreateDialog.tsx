@@ -80,6 +80,7 @@ type PeriodPreset =
 
 type QuantityPreset = "single" | "range";
 type TradeMyRole = "seller" | "buyer";
+type VatMode = "none" | "incl_vat" | "plus_vat";
 
 const periodPresetOptions: SelectOption<PeriodPreset>[] = [
   { value: "spot", label: "SPOT" },
@@ -157,6 +158,33 @@ function normalizeCompanyLookupKey(value: string) {
     .toLowerCase();
 }
 
+function parseCurrencyWithVat(rawCurrency: string | null | undefined): { currency: string; vatMode: VatMode } {
+  const normalized = String(rawCurrency || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase();
+  if (!normalized) {
+    return { currency: "", vatMode: "none" };
+  }
+  if (normalized.endsWith(" INCL. VAT")) {
+    return { currency: normalized.replace(/\s+INCL\.\s+VAT$/i, "").trim(), vatMode: "incl_vat" };
+  }
+  if (normalized.endsWith(" + VAT")) {
+    return { currency: normalized.replace(/\s+\+\s+VAT$/i, "").trim(), vatMode: "plus_vat" };
+  }
+  return { currency: normalized, vatMode: "none" };
+}
+
+function composeCurrencyWithVat(currency: string | null | undefined, vatMode: VatMode | null | undefined) {
+  const normalizedCurrency = String(currency || "")
+    .trim()
+    .toUpperCase();
+  if (!normalizedCurrency) return "";
+  if (vatMode === "incl_vat") return `${normalizedCurrency} INCL. VAT`;
+  if (vatMode === "plus_vat") return `${normalizedCurrency} + VAT`;
+  return normalizedCurrency;
+}
+
 const entryFormSchema = z
   .object({
     isMarketTrade: z.boolean().optional().default(false),
@@ -203,6 +231,7 @@ const entryFormSchema = z
       .optional()
       .default("")
       .refine((value) => !value || allowedCurrencyCodes.has(value.toUpperCase()), "Use currency from dictionary"),
+    vatMode: z.enum(["none", "incl_vat", "plus_vat"]).optional().default("none"),
     price: z.coerce.number().nonnegative("Price must be 0 or greater").optional().default(0),
     paymentTerms: z.string().optional().default(""),
     sellerCommission: z.coerce.number().nonnegative("Seller commission must be 0 or greater").optional(),
@@ -419,6 +448,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
     currency: "",
+    vatMode: "none",
     price: entryType === "bid" ? 225 : entryType === "trade" ? 224 : 223,
     paymentTerms: entryType === "bid" ? "CAD" : "CAFD",
     sellerCommission: undefined,
@@ -450,6 +480,7 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
   )
     ? parsedHarvestYear
     : defaultHarvestYear;
+  const parsedCurrency = parseCurrencyWithVat(entry.currency || "");
 
   return {
     quantityPreset,
@@ -485,7 +516,8 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     periodMonth,
     periodStart: entry.periodStart || "",
     periodEnd: entry.periodEnd || "",
-    currency: entry.currency || "",
+    currency: parsedCurrency.currency,
+    vatMode: parsedCurrency.vatMode,
     price: entry.price ?? entry.priceFrom ?? entry.priceTo ?? 0,
     paymentTerms: entry.paymentTerms || "CAD",
     sellerCommission: entry.sellerCommission ?? undefined,
@@ -970,7 +1002,15 @@ export function EntryCreateDialog({
     const nextDefaults =
       mode === "edit" && initialEntry
         ? getDefaultValuesFromEntry(initialEntry)
-        : { ...getDefaultValues(entryType), ...(initialFormValues ?? {}) };
+        : (() => {
+            const mergedDefaults = { ...getDefaultValues(entryType), ...(initialFormValues ?? {}) };
+            const parsedCurrency = parseCurrencyWithVat(mergedDefaults.currency);
+            return {
+              ...mergedDefaults,
+              currency: parsedCurrency.currency,
+              vatMode: parsedCurrency.vatMode,
+            };
+          })();
     form.reset(nextDefaults);
     setSubmitMessage(null);
     setIsAddingCompany(false);
@@ -1082,6 +1122,7 @@ export function EntryCreateDialog({
       values.periodStart,
       values.periodEnd,
     );
+    const resolvedCurrency = composeCurrencyWithVat(values.currency, values.vatMode);
 
     return buildCanonicalView({
       id: "preview",
@@ -1122,7 +1163,7 @@ export function EntryCreateDialog({
       price: values.price,
       priceFrom: values.price,
       priceTo: values.price,
-      currency: values.currency as Currency,
+      currency: resolvedCurrency as Currency,
       transportType: values.transportType as TransportType,
       note: values.note?.trim() ? values.note.trim() : null,
       createdAt: new Date().toISOString(),
@@ -1164,6 +1205,7 @@ export function EntryCreateDialog({
       normalizedValues.periodStart,
       normalizedValues.periodEnd,
     );
+    const resolvedCurrency = composeCurrencyWithVat(normalizedValues.currency, normalizedValues.vatMode);
 
     let tradeSellerBrokerTelegramUserId: string | null = null;
     let tradeSellerBrokerTelegramUsername: string | null = null;
@@ -1256,7 +1298,7 @@ export function EntryCreateDialog({
       price: normalizedValues.price,
       priceFrom: normalizedValues.price,
       priceTo: normalizedValues.price,
-      currency: normalizedValues.currency as Currency,
+      currency: resolvedCurrency as Currency,
       transportType: normalizedValues.transportType as TransportType,
       note: normalizedValues.note?.trim() ? normalizedValues.note.trim() : null,
       createdAt: new Date().toISOString(),
@@ -1305,7 +1347,7 @@ export function EntryCreateDialog({
       price: normalizedValues.price,
       priceFrom: normalizedValues.price,
       priceTo: normalizedValues.price,
-      currency: normalizedValues.currency,
+      currency: resolvedCurrency,
       transportType: normalizedValues.transportType,
       note: normalizedValues.note?.trim() ? normalizedValues.note.trim() : null,
       brokerCode: session.authorProfile?.brokerCode || "",
@@ -2448,7 +2490,7 @@ export function EntryCreateDialog({
               </div>
             ) : null}
 
-            <div className="grid min-w-0 gap-2.5 md:grid-cols-4">
+            <div className="grid min-w-0 gap-2.5 md:grid-cols-5">
               <FormField
                 control={form.control}
                 name="currency"
@@ -2472,6 +2514,42 @@ export function EntryCreateDialog({
                         <option key={option.value} value={option.value} label={option.label} />
                       ))}
                     </datalist>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="vatMode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>VAT</FormLabel>
+                    <FormControl>
+                      <div className="flex h-10 items-center gap-3 rounded-md border border-border px-3">
+                        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            className="h-3.5 w-3.5"
+                            checked={field.value === "incl_vat"}
+                            onChange={(event) =>
+                              field.onChange(event.target.checked ? "incl_vat" : "none")
+                            }
+                          />
+                          incl. VAT
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            className="h-3.5 w-3.5"
+                            checked={field.value === "plus_vat"}
+                            onChange={(event) =>
+                              field.onChange(event.target.checked ? "plus_vat" : "none")
+                            }
+                          />
+                          + VAT
+                        </label>
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

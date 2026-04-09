@@ -100,10 +100,6 @@ const preferredCurrencyOptions: SelectOption<Currency>[] = [
   { value: "USD", label: "USD ($)" },
   { value: "EUR", label: "EUR (€)" },
   { value: "UAH", label: "UAH (₴)" },
-  { value: "USD INCL. VAT", label: "USD incl. VAT" },
-  { value: "USD + VAT", label: "USD + VAT" },
-  { value: "EUR INCL. VAT", label: "EUR incl. VAT" },
-  { value: "EUR + VAT", label: "EUR + VAT" },
 ];
 
 const preferredCurrencyCodes = new Set(

@@ -78,14 +78,26 @@ function getEntryMidPrice(entry: BrokerageEntry) {
 }
 
 function toUsd(value: number, currency: string) {
-  const rate = FX_TO_USD[String(currency || "").toUpperCase()];
+  const normalized = String(currency || "")
+    .toUpperCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s+INCL\.\s+VAT$/i, "")
+    .replace(/\s+\+\s+VAT$/i, "")
+    .trim();
+  const rate = FX_TO_USD[normalized];
   if (!rate) return null;
   return value * rate;
 }
 
 function shouldIncludeEntryByCurrency(entry: BrokerageEntry, mode: AnalyticsCurrencyMode) {
   if (mode === "all") return true;
-  return String(entry.currency || "").toLowerCase() === mode;
+  const normalized = String(entry.currency || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s+incl\.\s+vat$/i, "")
+    .replace(/\s+\+\s+vat$/i, "")
+    .trim();
+  return normalized === mode;
 }
 
 function minuteDiffAbs(aIso: string, bIso: string) {

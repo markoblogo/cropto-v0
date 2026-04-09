@@ -29,6 +29,18 @@ function normalizeText(value: string | null | undefined) {
   return (value ?? "").toLowerCase().trim();
 }
 
+function normalizeCurrencyFilterKey(value: string | null | undefined) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+  if (!normalized) return "";
+  return normalized
+    .replace(/\s+INCL\.\s+VAT$/i, "")
+    .replace(/\s+\+\s+VAT$/i, "")
+    .trim();
+}
+
 function resolveDestinationPortCodes(entry: BrokerageEntry) {
   if (Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length) {
     return entry.destinationPortCodes;
@@ -115,7 +127,9 @@ export function filterBrokerageEntries(entries: BrokerageEntry[], filters: FeedF
       (filters.brokerProfileId === "all" || filters.brokerProfileId === entry.brokerId) &&
       (filters.businessUnits.length === 0 ||
         filters.businessUnits.includes(normalizeText(entry.businessUnitCode))) &&
-      (filters.currencies.length === 0 || filters.currencies.includes(entry.currency)) &&
+      (filters.currencies.length === 0 ||
+        filters.currencies.includes(entry.currency) ||
+        filters.currencies.includes(normalizeCurrencyFilterKey(entry.currency))) &&
       (filters.transportModes.length === 0 ||
         filters.transportModes.includes(mapTransportTypeToMode(entry.transportType))) &&
       (filters.originCountries.length === 0

@@ -103,10 +103,18 @@ function formatTelegramHeaderSeparator() {
 }
 
 function formatCurrencySymbol(currency: string | null | undefined) {
-  const normalized = String(currency || "USD").toUpperCase();
-  if (normalized === "EUR") return "€";
-  if (normalized === "UAH") return "₴";
-  return "$";
+  const parsed = parseCurrencyWithVat(currency);
+  const base = parsed.baseCurrency || "USD";
+  const vatSuffix =
+    parsed.vatMode === "incl_vat" ? " incl. VAT" : parsed.vatMode === "plus_vat" ? " + VAT" : "";
+
+  let symbolOrCode = "$";
+  if (base === "EUR") symbolOrCode = "€";
+  else if (base === "UAH") symbolOrCode = "₴";
+  else if (base === "USD") symbolOrCode = "$";
+  else symbolOrCode = ` ${base}`;
+
+  return `${symbolOrCode}${vatSuffix}`;
 }
 
 function formatDateDotted(value: string) {
@@ -152,20 +160,37 @@ function normalizeCurrencyKey(value: string | null | undefined) {
     .replace(/\s+/g, " ");
 }
 
-function isVatOrLocalCurrency(value: string | null | undefined) {
+function parseCurrencyWithVat(value: string | null | undefined): {
+  baseCurrency: string;
+  vatMode: "none" | "incl_vat" | "plus_vat";
+} {
   const normalized = normalizeCurrencyKey(value);
-  return (
-    normalized === "UAH" ||
-    normalized === "USD INCL. VAT" ||
-    normalized === "USD + VAT" ||
-    normalized === "EUR INCL. VAT" ||
-    normalized === "EUR + VAT"
-  );
+  if (!normalized) {
+    return { baseCurrency: "", vatMode: "none" };
+  }
+  if (normalized.endsWith(" INCL. VAT")) {
+    return {
+      baseCurrency: normalized.replace(/\s+INCL\.\s+VAT$/i, "").trim(),
+      vatMode: "incl_vat",
+    };
+  }
+  if (normalized.endsWith(" + VAT")) {
+    return {
+      baseCurrency: normalized.replace(/\s+\+\s+VAT$/i, "").trim(),
+      vatMode: "plus_vat",
+    };
+  }
+  return { baseCurrency: normalized, vatMode: "none" };
+}
+
+function isVatOrLocalCurrency(value: string | null | undefined) {
+  const parsed = parseCurrencyWithVat(value);
+  return parsed.baseCurrency === "UAH" || parsed.vatMode !== "none";
 }
 
 function isPlainUsdEurCurrency(value: string | null | undefined) {
-  const normalized = normalizeCurrencyKey(value);
-  return normalized === "USD" || normalized === "EUR";
+  const parsed = parseCurrencyWithVat(value);
+  return parsed.vatMode === "none" && (parsed.baseCurrency === "USD" || parsed.baseCurrency === "EUR");
 }
 
 function normalizeTransportKey(value: string | null | undefined) {

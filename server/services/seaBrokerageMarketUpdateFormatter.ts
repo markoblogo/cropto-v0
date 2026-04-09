@@ -61,6 +61,27 @@ function normalizeText(value: unknown) {
     .replace(/\s+/g, " ");
 }
 
+function parseCurrencyWithVat(value: unknown): {
+  baseCurrency: string;
+  vatMode: "none" | "incl_vat" | "plus_vat";
+} {
+  const normalized = normalizeText(value).toUpperCase();
+  if (!normalized) return { baseCurrency: "", vatMode: "none" };
+  if (normalized.endsWith(" INCL. VAT")) {
+    return {
+      baseCurrency: normalized.replace(/\s+INCL\.\s+VAT$/i, "").trim(),
+      vatMode: "incl_vat",
+    };
+  }
+  if (normalized.endsWith(" + VAT")) {
+    return {
+      baseCurrency: normalized.replace(/\s+\+\s+VAT$/i, "").trim(),
+      vatMode: "plus_vat",
+    };
+  }
+  return { baseCurrency: normalized, vatMode: "none" };
+}
+
 function formatQtyCompact(entry: SeaBrokerageEntryRow) {
   const from = Number(entry.volumeFrom || 0);
   const to = Number(entry.volumeTo || 0);
@@ -76,10 +97,17 @@ function formatQtyCompact(entry: SeaBrokerageEntryRow) {
 
 function formatPriceCompact(entry: SeaBrokerageEntryRow) {
   const symbol = (() => {
-    const currency = normalizeText(entry.currency).toUpperCase();
-    if (currency === "EUR") return "€";
-    if (currency === "UAH") return "₴";
-    return "$";
+    const parsed = parseCurrencyWithVat(entry.currency);
+    const vatSuffix =
+      parsed.vatMode === "incl_vat"
+        ? " incl. VAT"
+        : parsed.vatMode === "plus_vat"
+          ? " + VAT"
+          : "";
+    if (parsed.baseCurrency === "EUR") return `€${vatSuffix}`;
+    if (parsed.baseCurrency === "UAH") return `₴${vatSuffix}`;
+    if (parsed.baseCurrency === "USD" || !parsed.baseCurrency) return `$${vatSuffix}`;
+    return ` ${parsed.baseCurrency}${vatSuffix}`;
   })();
 
   const direct = entry.price !== null && entry.price !== undefined ? Number(entry.price) : null;
