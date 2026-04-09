@@ -104,6 +104,43 @@ const REPORT_TEMPLATE_OPTIONS: Array<{ value: ReportTemplateKey; label: string }
   { value: "rava", label: "Rava" },
 ];
 
+type ReportTemplatePreset = {
+  title: string;
+  formatMode: ReportFormatMode;
+  templateKey: ReportTemplateKey;
+  groups: ReportGroup[];
+  includeBids: boolean;
+  includeOffers: boolean;
+  postedWindowDays: number;
+  basis: string[];
+  commodityKeywords: string[];
+};
+
+const REPORT_TEMPLATE_PRESETS: Record<Exclude<ReportTemplateKey, "none">, ReportTemplatePreset> = {
+  cassilo: {
+    title: "SPIKE Market for Cassilo",
+    formatMode: "client_custom",
+    templateKey: "cassilo",
+    groups: ["grains", "oilseeds", "byproducts"],
+    includeBids: true,
+    includeOffers: true,
+    postedWindowDays: 3,
+    basis: ["FOB", "CIF", "CFR", "CPT", "DAP", "FCA", "EXW"],
+    commodityKeywords: ["corn", "wheat", "barley", "rapeseed", "soy", "sunflower"],
+  },
+  rava: {
+    title: "SPIKE Market for Rava",
+    formatMode: "client_custom",
+    templateKey: "rava",
+    groups: ["grains", "oilseeds", "byproducts"],
+    includeBids: true,
+    includeOffers: true,
+    postedWindowDays: 3,
+    basis: ["CIF", "CFR", "FOB", "CPT"],
+    commodityKeywords: ["corn", "wheat", "barley", "rapeseed", "soy", "sunflower", "meal", "cake", "oil"],
+  },
+};
+
 function isWithinPrimaryDisplayWindow(entry: BrokerageEntry, nowMs = Date.now()) {
   const createdAtMs = new Date(entry.createdAt).getTime();
   if (Number.isNaN(createdAtMs)) return false;
@@ -930,6 +967,52 @@ export function SeaBrokerageMonitorPage() {
     });
   }
 
+  function resolveCommodityCodesByKeywords(keywords: string[]) {
+    const normalizedKeywords = keywords.map((keyword) => keyword.toLowerCase());
+    const matched = toolbarCommodityOptions
+      .filter((option) =>
+        normalizedKeywords.some((keyword) =>
+          `${option.code} ${option.displayLabel}`.toLowerCase().includes(keyword),
+        ),
+      )
+      .map((option) => option.code);
+    return Array.from(new Set(matched));
+  }
+
+  function applyReportTemplatePreset(templateKey: Exclude<ReportTemplateKey, "none">) {
+    const preset = REPORT_TEMPLATE_PRESETS[templateKey];
+    if (!preset) return;
+    const commodityCodes = resolveCommodityCodesByKeywords(preset.commodityKeywords);
+    const today = new Date();
+    const postedFrom = new Date(
+      today.getTime() - Math.max(1, preset.postedWindowDays) * 24 * 60 * 60 * 1000,
+    )
+      .toISOString()
+      .slice(0, 10);
+    const postedTo = today.toISOString().slice(0, 10);
+
+    setReportForm((prev) => ({
+      ...prev,
+      title: preset.title,
+      formatMode: preset.formatMode,
+      templateKey: preset.templateKey,
+      groups: preset.groups,
+      basis: preset.basis,
+      commodities: commodityCodes.length ? commodityCodes : prev.commodities,
+      includeBids: preset.includeBids,
+      includeOffers: preset.includeOffers,
+      postedFrom,
+      postedTo,
+      periodStart: postedFrom,
+      periodEnd: postedTo,
+    }));
+    setReportProfilePostedWindowDays(preset.postedWindowDays);
+    setReportProfileAutoDaily(true);
+    setReportProfileActive(true);
+    setReportProfileName((prev) => prev || `${preset.templateKey.toUpperCase()} Daily`);
+    setReportStatus(`Template ${preset.templateKey.toUpperCase()} applied. Adjust filters if needed and save profile.`);
+  }
+
   function applyReportProfile(profile: ReportProfile) {
     const today = new Date();
     const postedFrom = new Date(
@@ -1556,6 +1639,17 @@ export function SeaBrokerageMonitorPage() {
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+          <div className="rounded-md border border-border/70 p-3">
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Quick templates</div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={() => applyReportTemplatePreset("cassilo")}>
+                Apply Cassilo preset
+              </Button>
+              <Button type="button" variant="outline" onClick={() => applyReportTemplatePreset("rava")}>
+                Apply Rava preset
+              </Button>
             </div>
           </div>
           <div className="rounded-md border border-border/70 p-3">
