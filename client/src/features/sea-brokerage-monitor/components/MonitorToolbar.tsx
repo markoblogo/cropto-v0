@@ -68,7 +68,7 @@ export function MonitorToolbar({
   businessUnitOptions = [],
   currencyOptions = defaultCurrencyOptions,
   transportModeOptions = [],
-  basisOptions = ["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"],
+  basisOptions = ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"],
 }: MonitorToolbarProps) {
   const selectedOriginCountries = new Set(
     filters.originCountries.map((value) => String(value).toLowerCase()),

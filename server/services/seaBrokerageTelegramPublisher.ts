@@ -430,7 +430,7 @@ function formatQuantityLine(entry: SeaBrokerageEntryRow) {
 }
 
 function formatBasisRouteReadable(entry: SeaBrokerageEntryRow) {
-  const route = formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "name" });
+  const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "name" });
   return normalizeCountryName(route);
 }
 

@@ -925,6 +925,28 @@ const DEFAULT_USER_NOTIFICATION_PREFS: UserNotificationPreferences = {
   system: true,
 };
 
+const SEA_BROKERAGE_ALLOWED_BASIS = [
+  "EXW",
+  "FCA",
+  "FAS",
+  "FOB",
+  "CFR",
+  "CIF",
+  "CPT",
+  "CIP",
+  "DAP",
+  "DPU",
+  "DDP",
+] as const;
+
+const seaBrokerageAllowedBasisSet = new Set<string>(SEA_BROKERAGE_ALLOWED_BASIS);
+
+function normalizeSeaBrokerageBasis(value: string | null | undefined) {
+  return String(value || "")
+    .trim()
+    .toUpperCase();
+}
+
 const createSeaBrokerageEntryRequestSchema = z.object({
   type: z.enum(["bid", "offer", "trade"]),
   entryStatus: z.enum(["active", "needs_update", "cancelled", "executed"]).optional(),
@@ -944,7 +966,11 @@ const createSeaBrokerageEntryRequestSchema = z.object({
   volumeFrom: z.coerce.number().int().nonnegative(),
   volumeTo: z.coerce.number().int().nonnegative(),
   volumeUnit: z.string().min(1),
-  basis: z.string().min(1),
+  basis: z
+    .string()
+    .trim()
+    .transform((value) => normalizeSeaBrokerageBasis(value))
+    .refine((value) => seaBrokerageAllowedBasisSet.has(value), "Basis must be from dictionary"),
   paymentTerms: z.string().trim().nullable().optional(),
   isNewCrop: z.coerce.boolean().optional().default(false),
   sellerCommission: z.coerce.number().nonnegative().nullable().optional(),
@@ -1489,7 +1515,7 @@ type SeaBrokerageCommodityDictionaryEntry = {
   group?: "grains" | "oilseeds" | "processed";
 };
 
-const SEA_BROKERAGE_DEFAULT_BASIS = ["FOB", "CIF", "CPT", "DAP", "FCA", "EXW", "FAS", "CFR"];
+const SEA_BROKERAGE_DEFAULT_BASIS = [...SEA_BROKERAGE_ALLOWED_BASIS];
 
 function buildCompanyId(label: string) {
   const baseSlug = slugifyLocationLabel(label) || "company";
@@ -1610,8 +1636,8 @@ async function readSeaBrokerageBasis(): Promise<string[]> {
     const parsed = JSON.parse(raw) as string[];
     if (!Array.isArray(parsed)) return [];
     return parsed
-      .map((item) => String(item || "").trim().toUpperCase())
-      .filter((item) => !!item && /^[A-Z0-9 .+\-\/]{2,24}$/.test(item));
+      .map((item) => normalizeSeaBrokerageBasis(item))
+      .filter((item) => seaBrokerageAllowedBasisSet.has(item));
   } catch {
     return [];
   }
@@ -1620,8 +1646,8 @@ async function readSeaBrokerageBasis(): Promise<string[]> {
 function deriveSeaBrokerageBasisFromEntries(entries: SeaBrokerageEntryRow[]): string[] {
   const values = new Set<string>();
   for (const entry of entries) {
-    const basis = String(entry.basis || "").trim().toUpperCase();
-    if (!basis) continue;
+    const basis = normalizeSeaBrokerageBasis(entry.basis);
+    if (!seaBrokerageAllowedBasisSet.has(basis)) continue;
     values.add(basis);
   }
   return Array.from(values);
@@ -1631,12 +1657,12 @@ function mergeSeaBrokerageBasis(...groups: string[][]): string[] {
   const values = new Set<string>();
   for (const group of groups) {
     for (const item of group) {
-      const basis = String(item || "").trim().toUpperCase();
-      if (!basis || !/^[A-Z0-9 .+\-\/]{2,24}$/.test(basis)) continue;
+      const basis = normalizeSeaBrokerageBasis(item);
+      if (!seaBrokerageAllowedBasisSet.has(basis)) continue;
       values.add(basis);
     }
   }
-  return Array.from(values).sort((a, b) => a.localeCompare(b));
+  return SEA_BROKERAGE_ALLOWED_BASIS.filter((basis) => values.has(basis));
 }
 
 function countryAlpha3FromCode(code: string) {

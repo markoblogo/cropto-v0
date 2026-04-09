@@ -155,7 +155,7 @@ function summarySide(entry: SeaBrokerageEntryRow) {
 }
 
 function routeLabel(entry: SeaBrokerageEntryRow) {
-  return formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "alpha2" });
+  return formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" });
 }
 
 function findSection(entry: SeaBrokerageEntryRow) {

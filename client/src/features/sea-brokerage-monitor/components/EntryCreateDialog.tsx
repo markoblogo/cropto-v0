@@ -70,6 +70,7 @@ import type { useSeaBrokerageTelegramSession } from "../hooks/useSeaBrokerageTel
 
 const volumeUnitOptions: Array<{ value: VolumeUnit; label: string }> = [{ value: "mt", label: "MT" }];
 const allowedCurrencyCodes = new Set(currencyOptions.map((option) => option.value.toUpperCase()));
+const allowedBasisCodes = new Set(basisOptions.map((option) => option.value.toUpperCase()));
 type PeriodPreset =
   | "spot"
   | "prompt"
@@ -220,7 +221,11 @@ const entryFormSchema = z
       )
       .optional()
       .default(0),
-    basis: z.string().trim().min(1, "Delivery basis is required"),
+    basis: z
+      .string()
+      .trim()
+      .transform((value) => value.toUpperCase())
+      .refine((value) => allowedBasisCodes.has(value), "Use basis from dictionary"),
     destinationPortCodes: z.array(z.string().min(1)).optional().default([]),
     periodMonth: z.string().optional().default(""),
     periodStart: z.string().optional().default(""),

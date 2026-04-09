@@ -103,6 +103,7 @@ const REPORT_TEMPLATE_OPTIONS: Array<{ value: ReportTemplateKey; label: string }
   { value: "cassilo", label: "Cassilo" },
   { value: "rava", label: "Rava" },
 ];
+const SEA_BROKERAGE_BASIS_CODES = ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"] as const;
 
 type ReportTemplatePreset = {
   title: string;
@@ -125,7 +126,7 @@ const REPORT_TEMPLATE_PRESETS: Record<Exclude<ReportTemplateKey, "none">, Report
     includeBids: true,
     includeOffers: true,
     postedWindowDays: 3,
-    basis: ["FOB", "CIF", "CFR", "CPT", "DAP", "FCA", "EXW"],
+    basis: [...SEA_BROKERAGE_BASIS_CODES],
     commodityKeywords: ["corn", "wheat", "barley", "rapeseed", "soy", "sunflower"],
   },
   rava: {
@@ -136,7 +137,7 @@ const REPORT_TEMPLATE_PRESETS: Record<Exclude<ReportTemplateKey, "none">, Report
     includeBids: true,
     includeOffers: true,
     postedWindowDays: 3,
-    basis: ["CIF", "CFR", "FOB", "CPT"],
+    basis: [...SEA_BROKERAGE_BASIS_CODES],
     commodityKeywords: ["corn", "wheat", "barley", "rapeseed", "soy", "sunflower", "meal", "cake", "oil"],
   },
 };

@@ -81,14 +81,17 @@ export const commodityOptions: Commodity[] = [
 ];
 
 export const basisOptions: SelectOption<Basis>[] = [
+  { value: "EXW", label: "EXW" },
+  { value: "FCA", label: "FCA" },
+  { value: "FAS", label: "FAS" },
   { value: "FOB", label: "FOB" },
+  { value: "CFR", label: "CFR" },
   { value: "CIF", label: "CIF" },
   { value: "CPT", label: "CPT" },
+  { value: "CIP", label: "CIP" },
   { value: "DAP", label: "DAP" },
-  { value: "FCA", label: "FCA" },
-  { value: "EXW", label: "EXW" },
-  { value: "FAS", label: "FAS" },
-  { value: "CFR", label: "CFR" },
+  { value: "DPU", label: "DPU" },
+  { value: "DDP", label: "DDP" },
 ];
 
 export const paymentTermOptions: PaymentTermOption[] = [
