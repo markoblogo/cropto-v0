@@ -10875,6 +10875,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!isAuthor && !actor.isBoss) {
         return res.status(403).json({ error: "Only author or boss can edit this entry" });
       }
+      if (!isSameSeaBrokerageBusinessDay(existing.createdAt, new Date())) {
+        return res.status(400).json({
+          error: "Entry can be edited only on publication day. Next day use REPOST.",
+        });
+      }
 
       const payload = parsed.data;
       const destinationPortCodes = resolveDestinationPortCodesFromPayload(payload);

@@ -524,10 +524,10 @@ export function SeaBrokerageMonitorPage() {
     const isAuthor =
       entry.brokerId === session.authorProfile.id ||
       String(entry.brokerCode || "").toUpperCase() === brokerCode;
-    const canEdit = isAuthor || isBoss;
     const sameDay = isSameCalendarDay(entry.createdAt);
+    const canEdit = (isAuthor || isBoss) && sameDay;
     const canDelete = canEdit && sameDay;
-    const canRepost = canEdit && !sameDay;
+    const canRepost = (isAuthor || isBoss) && !sameDay;
     return { canEdit, canDelete, canRepost };
   }
 
