@@ -1513,6 +1513,12 @@ type SeaBrokerageCommodityDictionaryEntry = {
   displayLabel: string;
   compactDisplay: string;
   group?: "grains" | "oilseeds" | "processed";
+  displayLabelUa?: string;
+  productGroup?: string;
+  productCategory?: string;
+  priority?: string;
+  certification?: string;
+  telegramIcon?: string;
 };
 
 const SEA_BROKERAGE_DEFAULT_BASIS = [...SEA_BROKERAGE_ALLOWED_BASIS];
@@ -1624,6 +1630,16 @@ async function readSeaBrokerageCommodities(): Promise<SeaBrokerageCommodityDicti
           item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
             ? item.group
             : undefined,
+        displayLabelUa:
+          typeof item.displayLabelUa === "string" ? normalizeCityLabel(item.displayLabelUa) : undefined,
+        productGroup: typeof item.productGroup === "string" ? normalizeCityLabel(item.productGroup) : undefined,
+        productCategory:
+          typeof item.productCategory === "string" ? normalizeCityLabel(item.productCategory) : undefined,
+        priority: typeof item.priority === "string" ? normalizeCityLabel(item.priority) : undefined,
+        certification:
+          typeof item.certification === "string" ? normalizeCityLabel(item.certification) : undefined,
+        telegramIcon:
+          typeof item.telegramIcon === "string" ? normalizeCityLabel(item.telegramIcon) : undefined,
       }));
   } catch {
     return [];
@@ -1778,6 +1794,16 @@ function mergeSeaBrokerageCommodities(
           item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
             ? item.group
             : "processed",
+        displayLabelUa:
+          typeof item.displayLabelUa === "string" ? normalizeCityLabel(item.displayLabelUa) : undefined,
+        productGroup: typeof item.productGroup === "string" ? normalizeCityLabel(item.productGroup) : undefined,
+        productCategory:
+          typeof item.productCategory === "string" ? normalizeCityLabel(item.productCategory) : undefined,
+        priority: typeof item.priority === "string" ? normalizeCityLabel(item.priority) : undefined,
+        certification:
+          typeof item.certification === "string" ? normalizeCityLabel(item.certification) : undefined,
+        telegramIcon:
+          typeof item.telegramIcon === "string" ? normalizeCityLabel(item.telegramIcon) : undefined,
       });
     }
   }
@@ -10861,13 +10887,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sea-brokerage-monitor/commodities", async (_req, res) => {
     try {
-      const [savedCommodities, entries] = await Promise.all([
-        readSeaBrokerageCommodities(),
-        storage.listSeaBrokerageEntries(),
-      ]);
-      const derivedCommodities = deriveSeaBrokerageCommoditiesFromEntries(entries);
-      const commodities = mergeSeaBrokerageCommodities(savedCommodities, derivedCommodities);
-      return res.json({ commodities });
+      const commodities = await readSeaBrokerageCommodities();
+      return res.json({ commodities: mergeSeaBrokerageCommodities(commodities, []) });
     } catch (error: any) {
       console.error("Error listing sea brokerage commodities:", error);
       return res.status(500).json({ error: "Failed to list commodities" });
@@ -10913,16 +10934,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const requestedCode = String(parsed.data.code || "").trim().toLowerCase();
       const code = buildCommodityCode(requestedCode || label);
-      const group = parsed.data.group || "processed";
 
-      const [savedCommodities, entries] = await Promise.all([
-        readSeaBrokerageCommodities(),
-        storage.listSeaBrokerageEntries(),
-      ]);
-      const current = mergeSeaBrokerageCommodities(
-        savedCommodities,
-        deriveSeaBrokerageCommoditiesFromEntries(entries),
-      );
+      const current = mergeSeaBrokerageCommodities(await readSeaBrokerageCommodities(), []);
 
       const duplicate = current.find(
         (item) =>
@@ -10933,16 +10946,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(200).json({ commodity: duplicate, duplicate: true });
       }
 
-      const created: SeaBrokerageCommodityDictionaryEntry = {
-        code,
-        displayLabel: label,
-        compactDisplay: label.toUpperCase(),
-        group,
-      };
-
-      const next = mergeSeaBrokerageCommodities(savedCommodities, [created]);
-      await storage.upsertAppSetting(SEA_BROKERAGE_COMMODITIES_KEY, JSON.stringify(next));
-      return res.status(201).json({ commodity: created, duplicate: false });
+      return res.status(400).json({
+        error:
+          "Commodity dictionary is managed from the Google reference sheet. Please update commodity there and run dictionary import sync.",
+      });
     } catch (error: any) {
       console.error("Error creating sea brokerage commodity:", error);
       return res.status(500).json({ error: "Failed to create commodity" });
@@ -11237,6 +11244,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!parsed.success) {
         return res.status(400).json({ error: fromZodError(parsed.error).message });
       }
+      const allowedCommodities = mergeSeaBrokerageCommodities(
+        await readSeaBrokerageCommodities(),
+        [],
+      );
+      const hasCommodity = allowedCommodities.some(
+        (item) => item.code === parsed.data.commodity,
+      );
+      if (!hasCommodity) {
+        return res.status(400).json({
+          error: "Commodity is not in dictionary. Select commodity from approved catalog.",
+        });
+      }
       const { sourceBidEntryId, sourceOfferEntryId, ...entryInput } = parsed.data;
       const requestedStatus = normalizeRequestedEntryStatus(entryInput.type, entryInput.entryStatus);
       if (requestedStatus === "needs_update" && !isSeaBrokerageBoss(authorizedBroker.brokerCode)) {
@@ -11347,6 +11366,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsed = updateSeaBrokerageEntryRequestSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+      const allowedCommodities = mergeSeaBrokerageCommodities(
+        await readSeaBrokerageCommodities(),
+        [],
+      );
+      const hasCommodity = allowedCommodities.some(
+        (item) => item.code === parsed.data.commodity,
+      );
+      if (!hasCommodity) {
+        return res.status(400).json({
+          error: "Commodity is not in dictionary. Select commodity from approved catalog.",
+        });
       }
 
       const entries = await storage.listSeaBrokerageEntries();

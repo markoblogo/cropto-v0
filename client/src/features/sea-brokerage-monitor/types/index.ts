@@ -39,6 +39,12 @@ export interface Commodity {
   displayLabel: string;
   compactDisplay: string;
   group?: "grains" | "oilseeds" | "processed";
+  displayLabelUa?: string;
+  productGroup?: string;
+  productCategory?: string;
+  priority?: string;
+  certification?: string;
+  telegramIcon?: string;
   defaultVolumeUnit?: VolumeUnit;
 }
 

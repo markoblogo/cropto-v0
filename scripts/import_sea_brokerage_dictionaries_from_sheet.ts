@@ -9,6 +9,7 @@ const SEA_BROKERAGE_COUNTRIES_KEY = "sea_brokerage_countries_v1";
 const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
 const SEA_BROKERAGE_CUSTOM_LOCATIONS_KEY = "sea_brokerage_custom_locations_v1";
 const SEA_BROKERAGE_BASIS_KEY = "sea_brokerage_basis_v1";
+const ALLOWED_BASIS = new Set(["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"]);
 
 const DEFAULT_SHEET_URL =
   process.env.SEA_BROKERAGE_DICTIONARIES_SHEET_URL ||
@@ -32,6 +33,12 @@ type CommodityEntry = {
   displayLabel: string;
   compactDisplay: string;
   group?: "grains" | "oilseeds" | "processed";
+  displayLabelUa?: string;
+  productGroup?: string;
+  productCategory?: string;
+  priority?: string;
+  certification?: string;
+  telegramIcon?: string;
 };
 
 type LocationEntry = {
@@ -57,6 +64,19 @@ function normalizeHeaderKey(value: unknown) {
     .replace(/[Сс]/g, "c")
     .replace(/\s+/g, " ")
     .toLowerCase();
+}
+
+function getRowValue(
+  row: Record<string, unknown>,
+  expectedHeaders: string[],
+) {
+  const normalizedExpected = new Set(expectedHeaders.map((item) => normalizeHeaderKey(item)));
+  for (const [key, value] of Object.entries(row)) {
+    if (!normalizedExpected.has(normalizeHeaderKey(key))) continue;
+    const normalizedValue = normalizeText(value);
+    if (normalizedValue) return normalizedValue;
+  }
+  return "";
 }
 
 function slugify(value: string) {
@@ -100,20 +120,53 @@ function normalizeBasis(value: string) {
   return normalizeText(value).toUpperCase();
 }
 
-function classifyCommodityGroup(label: string) {
-  const value = label.toLowerCase();
-  if (
-    value.includes("corn") ||
-    value.includes("wheat") ||
-    value.includes("barley") ||
-    value.includes("peas")
-  ) {
-    return "grains" as const;
+function classifyCommodityGroupByCategory(
+  productCategory: string,
+): "grains" | "oilseeds" | "processed" {
+  const normalized = normalizeText(productCategory).toLowerCase();
+  if (normalized === "grains" || normalized === "legumes" || normalized === "pseudograins") {
+    return "grains";
   }
-  if (value.includes("soy") || value.includes("sunflower") || value.includes("rape")) {
-    return "oilseeds" as const;
-  }
-  return "processed" as const;
+  if (normalized === "oilseeds" || normalized === "oils") return "oilseeds";
+  return "processed";
+}
+
+const PRODUCT_GROUP_ICON_MAP: Record<string, string> = {
+  "by-products|feedstuffs": "🗜️",
+  "by-products|flour": "👝",
+  "by-products|husk": "🗜️",
+  "by-products|rapeseed cake": "🌿⚙️",
+  "by-products|rapeseed meal": "🌿⚙️",
+  "by-products|soybean cake": "🌱⚙️",
+  "by-products|soybean meal": "🌱⚙️",
+  "by-products|sugar": "🍚",
+  "by-products|sunflower cake": "🌻⚙️",
+  "by-products|sunflower meal": "🌻⚙️",
+  "by-products|wheat bran": "👝",
+  "grains|barley": "🌾",
+  "grains|corn": "🌽",
+  "grains|oat": "🌾",
+  "grains|rye": "🌾",
+  "grains|sorghum": "🌾",
+  "grains|wheat": "🌾",
+  "legumes|beans": "🫘",
+  "legumes|chickpea": "🫘",
+  "legumes|peas": "🫘",
+  "oils|rapeseed oil": "🌿💧",
+  "oils|soybeans oil": "🌱💧",
+  "oils|sunflower oil": "🌻💧",
+  "oilseeds|linseed": "🌸",
+  "oilseeds|mustard": "🫘",
+  "oilseeds|rapeseeds": "🌿",
+  "oilseeds|soybeans": "🌱",
+  "oilseeds|sunflower": "🌻",
+  "pseudograins|buckweat": "🫘",
+  "pseudograins|millet": "🌾",
+};
+
+function resolveCommodityIcon(productCategory: string, productGroup: string) {
+  const key = `${normalizeText(productCategory).toLowerCase()}|${normalizeText(productGroup).toLowerCase()}`;
+  return PRODUCT_GROUP_ICON_MAP[key] || "";
 }
 
 function pickRowValuesByHeader(
@@ -160,7 +213,7 @@ async function main() {
   const commoditiesByCode = new Map<string, CommodityEntry>();
   const countriesByCode = new Map<string, CountryEntry>();
   const locationsByCode = new Map<string, LocationEntry>();
-  const basisSet = new Set<string>(["FOB", "CIF", "CPT", "DAP", "FCA", "EXW"]);
+  const basisSet = new Set<string>(["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"]);
 
   const registerCompany = (raw: unknown) => {
     const label = normalizeText(raw);
@@ -201,16 +254,36 @@ async function main() {
     registerCompany(label);
   };
 
-  const registerCommodity = (raw: unknown) => {
-    const label = normalizeText(raw);
-    if (!label || label === "Commodity") return;
+  const registerCommodityFromDictionary = (row: Record<string, unknown>) => {
+    const label = getRowValue(row, ["Commodity"]);
+    if (!label || normalizeHeaderKey(label) === "commodity") return;
+    const displayLabelUa = getRowValue(row, ["Commodity (UA)"]);
+    const productGroup = getRowValue(row, ["Product Group"]);
+    const productCategory = getRowValue(row, ["Product Category"]);
+    const priority = getRowValue(row, ["Priority"]);
+    const certification = getRowValue(row, ["Certification"]);
     const code = buildCommodityCode(label);
-    if (commoditiesByCode.has(code)) return;
+    const existing = commoditiesByCode.get(code);
+    if (existing) {
+      if (!existing.displayLabelUa && displayLabelUa) existing.displayLabelUa = displayLabelUa;
+      if (!existing.productGroup && productGroup) existing.productGroup = productGroup;
+      if (!existing.productCategory && productCategory) existing.productCategory = productCategory;
+      if (!existing.priority && priority) existing.priority = priority;
+      if (!existing.certification && certification) existing.certification = certification;
+      if (!existing.telegramIcon) existing.telegramIcon = resolveCommodityIcon(productCategory, productGroup);
+      return;
+    }
     commoditiesByCode.set(code, {
       code,
       displayLabel: label,
       compactDisplay: label.toUpperCase(),
-      group: classifyCommodityGroup(label),
+      group: classifyCommodityGroupByCategory(productCategory),
+      displayLabelUa: displayLabelUa || undefined,
+      productGroup: productGroup || undefined,
+      productCategory: productCategory || undefined,
+      priority: priority || undefined,
+      certification: certification || undefined,
+      telegramIcon: resolveCommodityIcon(productCategory, productGroup) || undefined,
     });
   };
 
@@ -257,7 +330,7 @@ async function main() {
   const registerBasis = (raw: unknown) => {
     const basis = normalizeBasis(String(raw || ""));
     if (!basis || basis === "BASIS") return;
-    if (!/^[A-Z0-9 .+\-\/]{2,24}$/.test(basis)) return;
+    if (!ALLOWED_BASIS.has(basis)) return;
     basisSet.add(basis);
   };
 
@@ -279,20 +352,18 @@ async function main() {
 
   for (const row of bids) {
     registerBuyerCompany(row["Buyer"]);
-    registerCommodity(row["Commodity"]);
     registerCountry(row["Country"]);
     registerDestination(row["Destination"], row["Country"]);
     registerBasis(row["Basis"]);
   }
   for (const row of offers) {
     registerSellerCompany(row["Seller"] || row["Buyer"]);
-    registerCommodity(row["Commodity"]);
     registerCountry(row["Country"]);
     registerDestination(row["Destination"], row["Country"]);
     registerBasis(row["Basis"]);
   }
   for (const row of dictionary) {
-    registerCommodity(row["Commodity"]);
+    registerCommodityFromDictionary(row);
     registerCountry(row["Country"]);
     registerDestination(row["Destination"], row["Country"]);
     registerBasis(row["Basis"]);
@@ -307,9 +378,22 @@ async function main() {
   const sellerCompanies = Array.from(sellerCompaniesByLabel.values()).sort((a, b) =>
     a.displayLabel.localeCompare(b.displayLabel),
   );
-  const commodities = Array.from(commoditiesByCode.values()).sort((a, b) =>
-    a.displayLabel.localeCompare(b.displayLabel),
-  );
+  const priorityOrder = new Map([
+    ["1st", 1],
+    ["2nd", 2],
+    ["3rd", 3],
+    ["4th", 4],
+  ]);
+  const commodities = Array.from(commoditiesByCode.values()).sort((a, b) => {
+    const cat = String(a.productCategory || "").localeCompare(String(b.productCategory || ""));
+    if (cat !== 0) return cat;
+    const grp = String(a.productGroup || "").localeCompare(String(b.productGroup || ""));
+    if (grp !== 0) return grp;
+    const pa = priorityOrder.get(String(a.priority || "")) ?? 99;
+    const pb = priorityOrder.get(String(b.priority || "")) ?? 99;
+    if (pa !== pb) return pa - pb;
+    return a.displayLabel.localeCompare(b.displayLabel);
+  });
   const countries = Array.from(countriesByCode.values()).sort((a, b) =>
     a.displayLabel.localeCompare(b.displayLabel),
   );
@@ -318,7 +402,7 @@ async function main() {
     const right = `${b.displayLabel}, ${b.countryCode}`;
     return left.localeCompare(right);
   });
-  const basis = Array.from(basisSet.values()).sort();
+  const basis = Array.from(ALLOWED_BASIS.values()).filter((value) => basisSet.has(value));
 
   await storage.upsertAppSetting(SEA_BROKERAGE_COMPANIES_KEY, JSON.stringify(companies));
   await storage.upsertAppSetting(
