@@ -66,6 +66,10 @@ function countryFlagEmoji(countryCode: string | null | undefined) {
 }
 
 function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
+  const compactNumber = (value: number) => {
+    if (Number.isInteger(value)) return `${value}`;
+    return value.toFixed(2).replace(/\.?0+$/, "");
+  };
   const currencySymbol = formatCurrencySymbol(entry.currency);
   const direct = entry.price;
   const from = entry.priceFrom;
@@ -73,14 +77,14 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
 
   if (direct !== null && direct !== undefined) {
     const compact = Number(direct);
-    return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}${currencySymbol}`;
+    return `${compactNumber(compact)}${currencySymbol}`;
   }
 
   if (from !== null && from !== undefined && to !== null && to !== undefined && from !== to) {
     const fromCompact = Number(from);
     const toCompact = Number(to);
-    const left = Number.isInteger(fromCompact) ? `${fromCompact}` : fromCompact.toFixed(2);
-    const right = Number.isInteger(toCompact) ? `${toCompact}` : toCompact.toFixed(2);
+    const left = compactNumber(fromCompact);
+    const right = compactNumber(toCompact);
     return `${left}${currencySymbol} | ${right}${currencySymbol}`;
   }
 
@@ -90,7 +94,7 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
   }
 
   const compact = Number(resolvedPrice);
-  return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}${currencySymbol}`;
+  return `${compactNumber(compact)}${currencySymbol}`;
 }
 
 function formatTelegramHeaderSeparator() {
@@ -589,6 +593,32 @@ function formatMatchMessage(
   match: SeaBrokerageMatchSuggestion,
   includeBrokerIdentity: boolean,
 ) {
+  const formatMatchTitlePeriod = (entry: SeaBrokerageEntryRow) => {
+    const start = entry.periodStart ? new Date(entry.periodStart) : null;
+    const end = entry.periodEnd ? new Date(entry.periodEnd) : null;
+    if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return formatTelegramPeriod(entry);
+    }
+    const sameYear = start.getFullYear() === end.getFullYear();
+    const sameMonth = sameYear && start.getMonth() === end.getMonth();
+    if (sameMonth) return `${shortMonth(start)} ${start.getFullYear()}`;
+    if (sameYear) return `${shortMonth(start)}-${shortMonth(end)} ${start.getFullYear()}`;
+    return `${shortMonth(start)} ${start.getFullYear()}-${shortMonth(end)} ${end.getFullYear()}`;
+  };
+
+  const formatMatchInlinePeriod = (entry: SeaBrokerageEntryRow) => {
+    const start = entry.periodStart ? new Date(entry.periodStart) : null;
+    const end = entry.periodEnd ? new Date(entry.periodEnd) : null;
+    if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return formatTelegramPeriod(entry);
+    }
+    const startDay = String(start.getDate()).padStart(2, "0");
+    const startMonth = String(start.getMonth() + 1).padStart(2, "0");
+    const endDay = String(end.getDate()).padStart(2, "0");
+    const endMonth = String(end.getMonth() + 1).padStart(2, "0");
+    return `${startDay}.${startMonth}-${endDay}.${endMonth}`;
+  };
+
   void includeBrokerIdentity;
   const refEntry = match.bidEntry;
   const flag = countryFlagEmoji(refEntry.destinationCountryCode || refEntry.originCountryCode);
@@ -605,13 +635,13 @@ function formatMatchMessage(
     formatTelegramCommodityCountryLine(refEntry, resolveSeaBrokerageCountryAlpha2(refEntry, refEntry.originCountryCode)),
     formatBasisRouteReadable(refEntry),
     formatTelegramTransportCode(refEntry),
-    formatTelegramPeriod(refEntry),
+    formatMatchTitlePeriod(refEntry),
     formatTelegramHeaderSeparator(),
     `Offer – ${formatPublicEntryId(match.offerEntry.id)} by ${offerBroker}`,
-    `${formatQuantityLine(match.offerEntry)} / ${formatTelegramPeriod(match.offerEntry)} / ${formatTelegramPrice(match.offerEntry)}`,
+    `${formatQuantityLine(match.offerEntry)} / ${formatMatchInlinePeriod(match.offerEntry)} / ${formatTelegramPrice(match.offerEntry)}`,
     "vs.",
     `Bid – ${formatPublicEntryId(match.bidEntry.id)} by ${bidBroker}`,
-    `${formatQuantityLine(match.bidEntry)} / ${formatTelegramPeriod(match.bidEntry)} / ${formatTelegramPrice(match.bidEntry)}`,
+    `${formatQuantityLine(match.bidEntry)} / ${formatMatchInlinePeriod(match.bidEntry)} / ${formatTelegramPrice(match.bidEntry)}`,
     formatTelegramHeaderSeparator(),
   ].join("\n");
 }
