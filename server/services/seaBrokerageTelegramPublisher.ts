@@ -140,6 +140,47 @@ function shortMonth(value: Date) {
   return value.toLocaleString("en-US", { month: "short" }).replace(".", "");
 }
 
+function normalizeCurrencyKey(value: string | null | undefined) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+}
+
+function isVatOrLocalCurrency(value: string | null | undefined) {
+  const normalized = normalizeCurrencyKey(value);
+  return (
+    normalized === "UAH" ||
+    normalized === "USD INCL. VAT" ||
+    normalized === "USD + VAT" ||
+    normalized === "EUR INCL. VAT" ||
+    normalized === "EUR + VAT"
+  );
+}
+
+function isPlainUsdEurCurrency(value: string | null | undefined) {
+  const normalized = normalizeCurrencyKey(value);
+  return normalized === "USD" || normalized === "EUR";
+}
+
+function normalizeTransportKey(value: string | null | undefined) {
+  return String(value || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function isTruckLikeTransport(value: string | null | undefined) {
+  const normalized = normalizeTransportKey(value);
+  return normalized === "truck" || normalized === "dump trucks";
+}
+
+function isWagonLikeTransport(value: string | null | undefined) {
+  const normalized = normalizeTransportKey(value);
+  return normalized === "rail" || normalized === "ua wagons";
+}
+
 function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
   const start = entry.periodStart ? new Date(entry.periodStart) : null;
   const end = entry.periodEnd ? new Date(entry.periodEnd) : null;
@@ -178,6 +219,49 @@ function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
   }
 
   return toTitleCase(rawLabel);
+}
+
+function formatTelegramPeriodForBasis(entry: SeaBrokerageEntryRow, isSeaBasis: boolean) {
+  const start = entry.periodStart ? new Date(entry.periodStart) : null;
+  const end = entry.periodEnd ? new Date(entry.periodEnd) : null;
+  const hasValidStart = !!start && !Number.isNaN(start.getTime());
+  const hasValidEnd = !!end && !Number.isNaN(end.getTime());
+  if (!hasValidStart || !hasValidEnd) {
+    return formatTelegramPeriod(entry);
+  }
+
+  const s = start as Date;
+  const e = end as Date;
+  const sameYear = s.getFullYear() === e.getFullYear();
+  const sameMonth = sameYear && s.getMonth() === e.getMonth();
+  const dayStart = String(s.getDate()).padStart(2, "0");
+  const dayEnd = String(e.getDate()).padStart(2, "0");
+  const monthStart = String(s.getMonth() + 1).padStart(2, "0");
+  const monthEnd = String(e.getMonth() + 1).padStart(2, "0");
+  const monthStartShort = shortMonth(s);
+  const monthEndShort = shortMonth(e);
+  const yearFull = String(s.getFullYear());
+  const yearEndFull = String(e.getFullYear());
+  const yearShortStart = yearFull.slice(-2);
+  const yearShortEnd = yearEndFull.slice(-2);
+
+  if (isSeaBasis) {
+    if (sameMonth) {
+      return `${dayStart}-${dayEnd} ${monthStartShort} ${yearFull}`;
+    }
+    if (sameYear) {
+      return `${dayStart} ${monthStartShort} - ${dayEnd} ${monthEndShort} ${yearFull}`;
+    }
+    return `${dayStart} ${monthStartShort} ${yearFull} - ${dayEnd} ${monthEndShort} ${yearEndFull}`;
+  }
+
+  if (sameMonth) {
+    return `${dayStart}-${dayEnd}.${monthEnd}.${yearFull}`;
+  }
+  if (sameYear) {
+    return `${dayStart}.${monthStart}-${dayEnd}.${monthEnd}.${yearFull}`;
+  }
+  return `${dayStart}.${monthStart}.${yearShortStart}-${dayEnd}.${monthEnd}.${yearShortEnd}`;
 }
 
 function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
@@ -265,6 +349,13 @@ function isSeaBasisValue(value: string | null | undefined) {
   return normalized === "FOB" || normalized === "CIF" || normalized === "CFR";
 }
 
+function isLandBasisValue(value: string | null | undefined) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase();
+  return normalized === "EXW" || normalized === "FCA" || normalized === "CPT" || normalized === "DAP";
+}
+
 function formatQuantityLine(entry: SeaBrokerageEntryRow) {
   const fmtSingle = (value: number) => Number(value).toLocaleString("en-US").replace(/,/g, "'");
   const fmtRangePart = (value: number) => {
@@ -346,7 +437,7 @@ function formatStandardTelegramMessage(
       : "",
   );
   const originCountryCode = resolveSeaBrokerageCountryAlpha2(entry, entry.originCountryCode);
-  const counterpartyLine = formatTelegramCounterparty(entry) || (entry.type === "offer" ? "SELLER" : "BUYER");
+  const counterpartyLine = formatTelegramCounterparty(entry);
   const sellerLine =
     (entry.sellerName || "").trim() ||
     (entry.type === "offer" ? "SELLER" : entry.type === "trade" ? "SELLER" : "");
@@ -367,9 +458,13 @@ function formatStandardTelegramMessage(
     formatTelegramHeaderSeparator(),
     isTrade
       ? formatTradePartyLine("SELLER", sellerLine, tradeSellerBroker)
-      : entry.type === "bid" && !isSeaBasis
-        ? null
-        : counterpartyLine,
+      : entry.type === "offer"
+        ? counterpartyLine || "SELLER"
+        : entry.type === "bid"
+          ? isSeaBasis
+            ? counterpartyLine || "BUYER"
+            : counterpartyLine || null
+          : null,
     isTrade ? formatTradePartyLine("BUYER", buyerLine, tradeBuyerBroker) : null,
     !isTrade && entry.isNewCrop ? "NEW CROP" : null,
     formatTelegramCommodityCountryLine(entry, originCountryCode),
@@ -379,7 +474,7 @@ function formatStandardTelegramMessage(
     formatQuantityLine(entry),
     formatBasisRouteReadable(entry),
     formatTelegramTransportCode(entry),
-    formatTelegramPeriod(entry),
+    formatTelegramPeriodForBasis(entry, isSeaBasis),
     formatTelegramPrice(entry),
     formatTelegramHeaderSeparator(),
   ];
