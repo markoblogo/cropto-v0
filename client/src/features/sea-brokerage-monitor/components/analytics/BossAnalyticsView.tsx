@@ -21,9 +21,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { apiRequest } from "@/lib/queryClient";
 import { buildSeaBrokerageMonitorAuthHeaders } from "../../services/monitorAuth.service";
-import { BrokerageEntry } from "../../types";
 
 interface BossAnalyticsResult {
   summary: {
@@ -64,18 +64,75 @@ interface BossAnalyticsViewProps {
 }
 
 const COLORS = ["#10b981", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"];
+type BossAnalyticsPeriodPreset = "current_month" | "30d" | "90d" | "180d" | "custom";
+
+function formatDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatPeriodLabel(dateFrom: Date, dateTo: Date) {
+  try {
+    const format = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    return `${format.format(dateFrom)} - ${format.format(dateTo)}`;
+  } catch {
+    return `${dateFrom.toISOString().slice(0, 10)} - ${dateTo.toISOString().slice(0, 10)}`;
+  }
+}
 
 export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) {
-  const [period, setPeriod] = useState("30"); // days
+  const [periodPreset, setPeriodPreset] = useState<BossAnalyticsPeriodPreset>("current_month");
+  const [customDateFrom, setCustomDateFrom] = useState("");
+  const [customDateTo, setCustomDateTo] = useState("");
   const [viewType, setViewType] = useState<"team" | "company">("company");
 
+  const periodRange = useMemo(() => {
+    const now = new Date();
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+    const fallbackStart = new Date(now);
+    fallbackStart.setDate(fallbackStart.getDate() - 29);
+    fallbackStart.setHours(0, 0, 0, 0);
+
+    if (periodPreset === "custom") {
+      const from = customDateFrom ? new Date(`${customDateFrom}T00:00:00`) : null;
+      const to = customDateTo ? new Date(`${customDateTo}T23:59:59`) : null;
+      if (from && to && !Number.isNaN(from.getTime()) && !Number.isNaN(to.getTime())) {
+        if (from <= to) return { dateFrom: from, dateTo: to };
+        return { dateFrom: to, dateTo: from };
+      }
+      return { dateFrom: fallbackStart, dateTo: todayEnd };
+    }
+
+    if (periodPreset === "current_month") {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      monthStart.setHours(0, 0, 0, 0);
+      return { dateFrom: monthStart, dateTo: todayEnd };
+    }
+
+    const days = periodPreset === "90d" ? 90 : periodPreset === "180d" ? 180 : 30;
+    const dateFrom = new Date(now);
+    dateFrom.setDate(dateFrom.getDate() - (days - 1));
+    dateFrom.setHours(0, 0, 0, 0);
+    return { dateFrom, dateTo: todayEnd };
+  }, [periodPreset, customDateFrom, customDateTo]);
+
   const { data: analytics, isLoading } = useQuery<BossAnalyticsResult>({
-    queryKey: ["/api/sea-brokerage-monitor/analytics/boss", period, monitorAuthToken],
+    queryKey: [
+      "/api/sea-brokerage-monitor/analytics/boss",
+      periodPreset,
+      periodRange.dateFrom.toISOString(),
+      periodRange.dateTo.toISOString(),
+      monitorAuthToken,
+    ],
     queryFn: async () => {
-      const dateFrom = new Date(Date.now() - parseInt(period) * 24 * 60 * 60 * 1000).toISOString();
       const response = await apiRequest(
         "GET",
-        `/api/sea-brokerage-monitor/analytics/boss?dateFrom=${dateFrom}`,
+        `/api/sea-brokerage-monitor/analytics/boss?dateFrom=${encodeURIComponent(
+          periodRange.dateFrom.toISOString(),
+        )}&dateTo=${encodeURIComponent(periodRange.dateTo.toISOString())}`,
         undefined,
         { headers: buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken) }
       );
@@ -94,6 +151,50 @@ export function BossAnalyticsView({ monitorAuthToken }: BossAnalyticsViewProps) 
 
   return (
     <div className="space-y-6 py-4">
+      <Card className="border-border/70 bg-card/80">
+        <CardContent className="space-y-3 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Analytics period</div>
+            <Badge variant="outline" className="border-primary/30 text-primary">
+              {formatPeriodLabel(periodRange.dateFrom, periodRange.dateTo)}
+            </Badge>
+          </div>
+          <div className="grid gap-2 md:grid-cols-4">
+            <Select value={periodPreset} onValueChange={(value) => setPeriodPreset(value as BossAnalyticsPeriodPreset)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Period preset" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="current_month">Current month (default)</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 3 months</SelectItem>
+                <SelectItem value="180d">Last 6 months</SelectItem>
+                <SelectItem value="custom">Custom range</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              type="date"
+              value={customDateFrom}
+              onChange={(event) => setCustomDateFrom(event.target.value)}
+              disabled={periodPreset !== "custom"}
+              max={customDateTo || undefined}
+            />
+            <Input
+              type="date"
+              value={customDateTo}
+              onChange={(event) => setCustomDateTo(event.target.value)}
+              disabled={periodPreset !== "custom"}
+              min={customDateFrom || undefined}
+            />
+            <div className="flex items-center text-xs text-muted-foreground">
+              {periodPreset === "custom"
+                ? "Custom range is applied to all cards and charts."
+                : "Preset range is applied to all cards and charts."}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Overview Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-emerald-500/20 bg-emerald-500/5">
