@@ -11,7 +11,7 @@ export type SeaBrokerageTelegramTagKind =
  * Canonical hashtag registry for Sea Brokerage Telegram publishing.
  *
  * Rule:
- * - idea entities use *_idea tags
+ * - idea entities use *_idea tags (trade keeps legacy #traded for backward compatibility)
  * - market/report entities use market_* tags
  * - future or optional matching-intent stream can use #potential
  */
@@ -19,7 +19,7 @@ export const SEA_BROKERAGE_TELEGRAM_TAGS: Record<SeaBrokerageTelegramTagKind, st
   offer: "#offer_idea",
   bid: "#bid_idea",
   match: "#match_idea",
-  trade: "#trade_idea",
+  trade: "#traded",
   market_trade: "#market_traded",
   market_report: "#market_price",
   potential: "#potential",
@@ -28,4 +28,3 @@ export const SEA_BROKERAGE_TELEGRAM_TAGS: Record<SeaBrokerageTelegramTagKind, st
 export function resolveSeaBrokerageTelegramTag(kind: SeaBrokerageTelegramTagKind): string {
   return SEA_BROKERAGE_TELEGRAM_TAGS[kind];
 }
-

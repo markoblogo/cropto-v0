@@ -20,7 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
@@ -108,6 +107,22 @@ const entryStatusOptions: Array<{ value: SeaBrokerageEntryStatus; label: string 
   { value: "active", label: "Active" },
   { value: "needs_update", label: "Needs Update" },
 ];
+
+const harvestCurrentYear = new Date().getFullYear();
+const harvestYearValues = [
+  String(harvestCurrentYear - 1),
+  String(harvestCurrentYear),
+  String(harvestCurrentYear + 1),
+] as const;
+const harvestYearOptions: Array<{ value: (typeof harvestYearValues)[number]; label: string }> =
+  harvestYearValues.map((year) => ({ value: year, label: year }));
+const defaultHarvestYear = harvestYearValues[0];
+
+function isNewCropByHarvestYear(value: string | null | undefined) {
+  const normalizedYear = Number(String(value || "").trim());
+  if (!Number.isFinite(normalizedYear)) return false;
+  return normalizedYear >= harvestCurrentYear;
+}
 
 function normalizeTransportTypeForForm(value: string | null | undefined): TransportType {
   const normalized = String(value || "")
@@ -327,24 +342,11 @@ const entryFormSchema = z
     }
 
     const harvestYear = String(values.harvestYear || "").trim();
-    if (!harvestYear) {
-      return;
-    }
-    if (!/^\d{4}$/.test(harvestYear)) {
+    if (!harvestYearValues.includes(harvestYear as (typeof harvestYearValues)[number])) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["harvestYear"],
-        message: "Harvest year must be YYYY",
-      });
-      return;
-    }
-    const year = Number(harvestYear);
-    const nowYear = new Date().getFullYear();
-    if (year < nowYear - 3 || year > nowYear + 3) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["harvestYear"],
-        message: "Harvest year is out of expected range",
+        message: `Harvest year must be one of: ${harvestYearValues.join(", ")}`,
       });
     }
   });
@@ -399,7 +401,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     buyerName: "",
     periodPreset: "explicit_range",
     commodity: "corn",
-    harvestYear: "2026",
+    harvestYear: defaultHarvestYear,
     isNewCrop: false,
     originCountry: "UA",
     quantityMt: entryType === "bid" ? 25000 : entryType === "trade" ? 22000 : 20000,
@@ -437,6 +439,13 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     entry.periodStart?.slice(0, 7) ||
     entry.periodEnd?.slice(0, 7) ||
     `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+  const parsedHarvestYear = (String(entry.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "";
+  const normalizedHarvestYear = harvestYearValues.includes(
+    parsedHarvestYear as (typeof harvestYearValues)[number],
+  )
+    ? parsedHarvestYear
+    : defaultHarvestYear;
+
   return {
     quantityPreset,
     tradeMyRole: "seller",
@@ -448,8 +457,8 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     buyerName: entry.buyerName || "",
     periodPreset,
     commodity: entry.commodity,
-    harvestYear: (String(entry.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "",
-    isNewCrop: !!entry.isNewCrop,
+    harvestYear: normalizedHarvestYear,
+    isNewCrop: isNewCropByHarvestYear(normalizedHarvestYear),
     originCountry: entry.originCountryCode || "UA",
     quantityMt: entry.quantityMt ?? entry.volumeFrom ?? 0,
     quantityFromMt: quantityPreset === "range" ? entry.volumeFrom : undefined,
@@ -1086,7 +1095,10 @@ export function EntryCreateDialog({
       volumeUnit: volumeUnitOptions[0].value,
       basis: values.basis as Basis,
       paymentTerms: values.paymentTerms,
-      isNewCrop: entryType === "bid" || entryType === "offer" ? !!values.isNewCrop : false,
+      isNewCrop:
+        entryType === "bid" || entryType === "offer"
+          ? isNewCropByHarvestYear(harvestYear)
+          : false,
       sellerCommission: entryType === "trade" ? values.sellerCommission ?? null : null,
       buyerCommission: entryType === "trade" ? values.buyerCommission ?? null : null,
       destinationPortCode: primaryPort?.code ?? null,
@@ -1217,7 +1229,10 @@ export function EntryCreateDialog({
       volumeUnit: volumeUnitOptions[0].value,
       basis: normalizedValues.basis as Basis,
       paymentTerms: normalizedValues.paymentTerms,
-      isNewCrop: targetType === "bid" || targetType === "offer" ? !!normalizedValues.isNewCrop : false,
+      isNewCrop:
+        targetType === "bid" || targetType === "offer"
+          ? isNewCropByHarvestYear(harvestYear)
+          : false,
       sellerCommission: targetType === "trade" ? normalizedValues.sellerCommission ?? null : null,
       buyerCommission: targetType === "trade" ? normalizedValues.buyerCommission ?? null : null,
       destinationPortCode: selectedPorts.map((port) => port.code).join("|") || primaryPort?.code || null,
@@ -1264,7 +1279,9 @@ export function EntryCreateDialog({
       basis: normalizedValues.basis,
       paymentTerms: normalizedValues.paymentTerms,
       isNewCrop:
-        targetType === "bid" || targetType === "offer" ? !!normalizedValues.isNewCrop : false,
+        targetType === "bid" || targetType === "offer"
+          ? isNewCropByHarvestYear(harvestYear)
+          : false,
       sellerCommission: targetType === "trade" ? normalizedValues.sellerCommission ?? null : null,
       buyerCommission: targetType === "trade" ? normalizedValues.buyerCommission ?? null : null,
       destinationPortCode: selectedPorts.map((port) => port.code).join("|") || primaryPort?.code || null,
@@ -2044,33 +2061,27 @@ export function EntryCreateDialog({
                   <FormItem>
                     <div className="flex items-center justify-between gap-2">
                       <FormLabel>Harvest year</FormLabel>
-                      {entryType === "bid" || entryType === "offer" ? (
-                        <FormField
-                          control={form.control}
-                          name="isNewCrop"
-                          render={({ field: cropField }) => (
-                            <label className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                              <Checkbox
-                                checked={!!cropField.value}
-                                onCheckedChange={(checked) => cropField.onChange(!!checked)}
-                              />
-                              NEW CROP
-                            </label>
-                          )}
-                        />
+                      {(entryType === "bid" || entryType === "offer") &&
+                      isNewCropByHarvestYear(field.value) ? (
+                        <span className="inline-flex items-center rounded-md border border-primary/60 bg-primary/15 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary">
+                          NEW CROP
+                        </span>
                       ) : null}
                     </div>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="2020"
-                        max="2035"
-                        step="1"
-                        placeholder="e.g. 2026"
-                        value={field.value ?? ""}
-                        onChange={(event) => field.onChange(event.target.value)}
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value || defaultHarvestYear}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Harvest year" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {harvestYearOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
