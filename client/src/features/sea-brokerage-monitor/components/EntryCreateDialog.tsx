@@ -124,6 +124,16 @@ function normalizeTransportTypeForForm(value: string | null | undefined): Transp
   return "vessel";
 }
 
+function normalizeCompanyLookupKey(value: string) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .normalize("NFKC")
+    .replace(/[“”„‟«»]/g, '"')
+    .replace(/[‘’‚‛`´]/g, "'")
+    .toLowerCase();
+}
+
 const entryFormSchema = z
   .object({
     isMarketTrade: z.boolean().optional().default(false),
@@ -816,7 +826,7 @@ export function EntryCreateDialog({
   const companyOptions = useMemo(() => {
     const byLabel = new Map<string, CompanyOption>();
     for (const option of companyOptionsData.companies || []) {
-      const key = option.displayLabel.trim().toLowerCase();
+      const key = normalizeCompanyLookupKey(option.displayLabel);
       if (!key) continue;
       byLabel.set(key, option);
     }
@@ -825,10 +835,10 @@ export function EntryCreateDialog({
     );
   }, [companyOptionsData.companies]);
   const sellerCompanyDictionary = useMemo(() => {
-    const source = (companyOptionsData.sellers?.length ? companyOptionsData.sellers : companyOptions) || [];
+    const source = [...(companyOptionsData.sellers || []), ...companyOptions];
     const byLabel = new Map<string, CompanyOption>();
     for (const option of source) {
-      const key = option.displayLabel.trim().toLowerCase();
+      const key = normalizeCompanyLookupKey(option.displayLabel);
       if (!key) continue;
       byLabel.set(key, option);
     }
@@ -837,10 +847,10 @@ export function EntryCreateDialog({
     );
   }, [companyOptionsData.sellers, companyOptions]);
   const buyerCompanyDictionary = useMemo(() => {
-    const source = (companyOptionsData.buyers?.length ? companyOptionsData.buyers : companyOptions) || [];
+    const source = [...(companyOptionsData.buyers || []), ...companyOptions];
     const byLabel = new Map<string, CompanyOption>();
     for (const option of source) {
-      const key = option.displayLabel.trim().toLowerCase();
+      const key = normalizeCompanyLookupKey(option.displayLabel);
       if (!key) continue;
       byLabel.set(key, option);
     }
@@ -1464,7 +1474,7 @@ export function EntryCreateDialog({
             : "buyer";
     const dictionaryForRole = roleForNewCompany === "seller" ? sellerCompanyDictionary : buyerCompanyDictionary;
     const existing = dictionaryForRole.find(
-      (option) => option.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+      (option) => normalizeCompanyLookupKey(option.displayLabel) === normalizeCompanyLookupKey(label),
     );
     if (existing) {
       const fieldName =

@@ -1395,6 +1395,14 @@ function normalizeCompanyLabel(value: string) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
+function normalizeCompanyLookupKey(value: string) {
+  return normalizeCompanyLabel(value)
+    .normalize("NFKC")
+    .replace(/[“”„‟«»]/g, '"')
+    .replace(/[‘’‚‛`´]/g, "'")
+    .toLowerCase();
+}
+
 const SEA_BROKERAGE_COMPANY_LABEL_REGEX = /^(?=.{2,120}$)[A-Za-z0-9"'&().,\/-][A-Za-z0-9\s'"&().,\/-]*$/;
 
 function isSeaBrokerageCompanyLabelAllowed(value: string) {
@@ -1786,7 +1794,7 @@ function mergeSeaBrokerageCompanies(
   for (const item of [...left, ...right]) {
     const normalizedLabel = normalizeCompanyLabel(item.displayLabel);
     if (!normalizedLabel || !isSeaBrokerageCompanyLabelAllowed(normalizedLabel)) continue;
-    const key = normalizedLabel.toLowerCase();
+    const key = normalizeCompanyLookupKey(normalizedLabel);
     if (!key) continue;
     if (!byLabel.has(key)) {
       byLabel.set(key, {
@@ -10979,10 +10987,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sellers = mergeSeaBrokerageCompanies(savedSellers, derivedSellers);
 
       if (role === "buyer") {
-        return res.json({ companies: buyers, buyers, sellers });
+        return res.json({ companies: mergeSeaBrokerageCompanies(buyers, companies), buyers, sellers });
       }
       if (role === "seller") {
-        return res.json({ companies: sellers, buyers, sellers });
+        return res.json({ companies: mergeSeaBrokerageCompanies(sellers, companies), buyers, sellers });
       }
       return res.json({ companies, buyers, sellers });
     } catch (error: any) {
@@ -11034,13 +11042,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const rolePool =
         role === "buyer" ? currentBuyers : role === "seller" ? currentSellers : current;
+      const lookupKey = normalizeCompanyLookupKey(label);
       const duplicate = current.find(
-        (item) => item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+        (item) => normalizeCompanyLookupKey(item.displayLabel) === lookupKey,
       );
       const roleDuplicate = rolePool.find(
-        (item) => item.displayLabel.trim().toLowerCase() === label.toLowerCase(),
+        (item) => normalizeCompanyLookupKey(item.displayLabel) === lookupKey,
       );
       if (duplicate) {
+        if (role === "buyer" && !roleDuplicate) {
+          const nextBuyers = mergeSeaBrokerageCompanies(savedBuyers, [duplicate]);
+          await storage.upsertAppSetting(
+            SEA_BROKERAGE_BUYER_COMPANIES_KEY,
+            JSON.stringify(nextBuyers),
+          );
+        }
+        if (role === "seller" && !roleDuplicate) {
+          const nextSellers = mergeSeaBrokerageCompanies(savedSellers, [duplicate]);
+          await storage.upsertAppSetting(
+            SEA_BROKERAGE_SELLER_COMPANIES_KEY,
+            JSON.stringify(nextSellers),
+          );
+        }
         return res.status(200).json({
           company: roleDuplicate || duplicate,
           duplicate: true,
