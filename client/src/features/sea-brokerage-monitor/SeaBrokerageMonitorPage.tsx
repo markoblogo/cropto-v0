@@ -43,6 +43,8 @@ import type {
   FilterPreset,
   MatchSuggestion,
   PortOption,
+  ReportGroup,
+  ReportProfile,
   TransportMode,
 } from "./types";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -84,6 +86,12 @@ function normalizeCommodityKey(value: string) {
 
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
 const PRIMARY_VIEW_WINDOW_DAYS = 7;
+const REPORT_GROUP_OPTIONS: Array<{ value: ReportGroup; label: string }> = [
+  { value: "grains", label: "Grains" },
+  { value: "oilseeds", label: "Oilseeds" },
+  { value: "byproducts", label: "By-products" },
+  { value: "niche", label: "Niche" },
+];
 
 function isWithinPrimaryDisplayWindow(entry: BrokerageEntry, nowMs = Date.now()) {
   const createdAtMs = new Date(entry.createdAt).getTime();
@@ -117,8 +125,16 @@ export function SeaBrokerageMonitorPage() {
   const [offerPrefillFormValues, setOfferPrefillFormValues] = useState<EntryCreateFormPrefill | null>(null);
   const [tradePrefillFormValues, setTradePrefillFormValues] = useState<EntryCreateFormPrefill | null>(null);
   const [reportSending, setReportSending] = useState(false);
+  const [reportProfileSendingId, setReportProfileSendingId] = useState<string | null>(null);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const [reportProfileName, setReportProfileName] = useState("");
+  const [reportProfileAutoDaily, setReportProfileAutoDaily] = useState(false);
+  const [reportProfileActive, setReportProfileActive] = useState(true);
+  const [reportProfilePostedWindowDays, setReportProfilePostedWindowDays] = useState(1);
+  const [selectedReportProfileId, setSelectedReportProfileId] = useState<string>("");
   const [reportForm, setReportForm] = useState<{
+    title: string;
+    groups: ReportGroup[];
     commodities: string[];
     basis: string[];
     deliveryPlaces: string[];
@@ -130,6 +146,8 @@ export function SeaBrokerageMonitorPage() {
     includeBids: boolean;
     includeOffers: boolean;
   }>({
+    title: "",
+    groups: ["grains", "oilseeds", "byproducts", "niche"],
     commodities: ["corn"],
     basis: [],
     deliveryPlaces: [],
@@ -148,6 +166,18 @@ export function SeaBrokerageMonitorPage() {
     enabled: !!session.monitorAuthToken,
     queryFn: async () => {
       const response = await fetch("/api/sea-brokerage-monitor/filter-presets", {
+        method: "GET",
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      });
+      if (!response.ok) return [];
+      return response.json();
+    },
+  });
+  const { data: reportProfiles = [] } = useQuery<ReportProfile[]>({
+    queryKey: ["/api/sea-brokerage-monitor/report/profiles", session.monitorAuthToken],
+    enabled: !!session.monitorAuthToken,
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/report/profiles", {
         method: "GET",
         headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
       });
@@ -874,6 +904,163 @@ export function SeaBrokerageMonitorPage() {
     });
   }
 
+  function toggleReportGroup(value: ReportGroup) {
+    setReportForm((prev) => {
+      const exists = prev.groups.includes(value);
+      const next = exists ? prev.groups.filter((item) => item !== value) : [...prev.groups, value];
+      return {
+        ...prev,
+        groups: next.length ? next : prev.groups,
+      };
+    });
+  }
+
+  function applyReportProfile(profile: ReportProfile) {
+    const today = new Date();
+    const postedFrom = new Date(
+      today.getTime() - Math.max(1, profile.postedWindowDays) * 24 * 60 * 60 * 1000,
+    )
+      .toISOString()
+      .slice(0, 10);
+    const postedTo = today.toISOString().slice(0, 10);
+    setReportForm((prev) => ({
+      ...prev,
+      title: profile.title || "",
+      groups: profile.groups?.length ? profile.groups : prev.groups,
+      commodities: profile.commodities?.length ? profile.commodities : prev.commodities,
+      basis: profile.basis ?? [],
+      deliveryPlaces: profile.deliveryPlaces ?? [],
+      postedFrom,
+      postedTo,
+      periodStart: postedFrom,
+      periodEnd: postedTo,
+      includeBids: profile.includeBids,
+      includeOffers: profile.includeOffers,
+    }));
+    setReportProfileName(profile.name);
+    setReportProfileAutoDaily(!!profile.autoDaily);
+    setReportProfileActive(profile.active !== false);
+    setReportProfilePostedWindowDays(Math.max(1, Number(profile.postedWindowDays || 1)));
+    setSelectedReportProfileId(profile.id);
+  }
+
+  async function handleSaveReportProfile() {
+    if (!session.monitorAuthToken) {
+      setReportOpen(false);
+      setTelegramAuthOpen(true);
+      return;
+    }
+    const normalizedName = reportProfileName.trim();
+    if (!normalizedName) {
+      setReportStatus("Profile name is required.");
+      return;
+    }
+    if (!reportForm.groups.length) {
+      setReportStatus("Select at least one report group.");
+      return;
+    }
+
+    const payload = {
+      name: normalizedName,
+      title: reportForm.title.trim(),
+      groups: reportForm.groups,
+      commodities: Array.from(new Set(reportForm.commodities)),
+      basis: Array.from(new Set(reportForm.basis)),
+      deliveryPlaces: Array.from(new Set(reportForm.deliveryPlaces)),
+      postedWindowDays: Math.max(1, reportProfilePostedWindowDays),
+      includeBids: reportForm.includeBids,
+      includeOffers: reportForm.includeOffers,
+      autoDaily: reportProfileAutoDaily,
+      active: reportProfileActive,
+    };
+
+    setReportSending(true);
+    setReportStatus(null);
+    try {
+      let response: Response;
+      if (selectedReportProfileId) {
+        response = await apiRequest(
+          "PATCH",
+          `/api/sea-brokerage-monitor/report/profiles/${selectedReportProfileId}`,
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+            },
+          },
+        );
+      } else {
+        response = await apiRequest("POST", "/api/sea-brokerage-monitor/report/profiles", payload, {
+          headers: {
+            "Content-Type": "application/json",
+            ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+          },
+        });
+      }
+      const profile = (await response.json()) as ReportProfile;
+      setSelectedReportProfileId(profile.id);
+      setReportStatus("Report profile saved.");
+      await queryClient.invalidateQueries({
+        queryKey: ["/api/sea-brokerage-monitor/report/profiles", session.monitorAuthToken],
+      });
+    } catch (error) {
+      setReportStatus(error instanceof Error ? error.message : "Failed to save report profile");
+    } finally {
+      setReportSending(false);
+    }
+  }
+
+  async function handleSendReportProfileNow(profileId: string) {
+    if (!session.monitorAuthToken) {
+      setReportOpen(false);
+      setTelegramAuthOpen(true);
+      return;
+    }
+    setReportProfileSendingId(profileId);
+    setReportStatus(null);
+    try {
+      const response = await apiRequest(
+        "POST",
+        `/api/sea-brokerage-monitor/report/profiles/${profileId}/send`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+          },
+        },
+      );
+      const payload = (await response.json()) as { matchedEntries: number; offers: number; bids: number };
+      setReportStatus(
+        `Profile report sent in Telegram: ${payload.matchedEntries} entries (offers ${payload.offers}, bids ${payload.bids}).`,
+      );
+    } catch (error) {
+      setReportStatus(error instanceof Error ? error.message : "Failed to send profile report");
+    } finally {
+      setReportProfileSendingId(null);
+    }
+  }
+
+  async function handleDeleteReportProfile(profileId: string) {
+    if (!session.monitorAuthToken) return;
+    setReportStatus(null);
+    try {
+      await apiRequest("DELETE", `/api/sea-brokerage-monitor/report/profiles/${profileId}`, undefined, {
+        headers: buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+      });
+      if (selectedReportProfileId === profileId) {
+        setSelectedReportProfileId("");
+      }
+      setReportStatus("Report profile deleted.");
+      await queryClient.invalidateQueries({
+        queryKey: ["/api/sea-brokerage-monitor/report/profiles", session.monitorAuthToken],
+      });
+    } catch (error) {
+      setReportStatus(error instanceof Error ? error.message : "Failed to delete report profile");
+    }
+  }
+
   async function handleSendReport() {
     if (!session.monitorAuthToken) {
       setReportOpen(false);
@@ -1228,6 +1415,104 @@ export function SeaBrokerageMonitorPage() {
               Personal price digest by filters. Report will be sent to your Telegram DM.
             </DialogDescription>
           </DialogHeader>
+          <div className="rounded-md border border-border/70 p-3">
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
+              Saved profiles
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={selectedReportProfileId}
+                onChange={(event) => {
+                  const profileId = event.target.value;
+                  setSelectedReportProfileId(profileId);
+                  const profile = reportProfiles.find((item) => item.id === profileId);
+                  if (profile) {
+                    applyReportProfile(profile);
+                  }
+                }}
+              >
+                <option value="">New profile</option>
+                {reportProfiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </option>
+                ))}
+              </select>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!selectedReportProfileId || reportProfileSendingId === selectedReportProfileId}
+                onClick={() => void handleSendReportProfileNow(selectedReportProfileId)}
+              >
+                {reportProfileSendingId === selectedReportProfileId ? "Sending..." : "Send selected"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!selectedReportProfileId}
+                onClick={() => void handleDeleteReportProfile(selectedReportProfileId)}
+              >
+                Delete
+              </Button>
+            </div>
+            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
+              <Input
+                value={reportProfileName}
+                onChange={(event) => setReportProfileName(event.target.value)}
+                placeholder="Profile name (e.g. Cassilo daily)"
+              />
+              <Input
+                type="number"
+                min={1}
+                max={90}
+                value={String(reportProfilePostedWindowDays)}
+                onChange={(event) => setReportProfilePostedWindowDays(Number(event.target.value) || 1)}
+                placeholder="Days"
+              />
+              <label className="inline-flex h-9 items-center gap-2 rounded-md border border-input px-3 text-sm">
+                <Checkbox
+                  checked={reportProfileAutoDaily}
+                  onCheckedChange={(checked) => setReportProfileAutoDaily(checked === true)}
+                />
+                Auto daily
+              </label>
+              <label className="inline-flex h-9 items-center gap-2 rounded-md border border-input px-3 text-sm">
+                <Checkbox
+                  checked={reportProfileActive}
+                  onCheckedChange={(checked) => setReportProfileActive(checked === true)}
+                />
+                Active
+              </label>
+            </div>
+            <div className="mt-2">
+              <Button type="button" variant="outline" onClick={() => void handleSaveReportProfile()} disabled={reportSending}>
+                Save profile
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Custom title (optional)</div>
+            <Input
+              value={reportForm.title}
+              onChange={(event) => setReportForm((prev) => ({ ...prev, title: event.target.value }))}
+              placeholder="Spike Market for Cassilo dd 09/04/26"
+            />
+          </div>
+          <div className="rounded-md border border-border/70 p-3">
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Groups</div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {REPORT_GROUP_OPTIONS.map((option) => (
+                <label key={option.value} className="inline-flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={reportForm.groups.includes(option.value)}
+                    onCheckedChange={() => toggleReportGroup(option.value)}
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
             Posted range = when BID/OFFER was published. Period range = shipment/delivery window inside entries.
           </div>

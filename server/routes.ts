@@ -48,7 +48,10 @@ import { findSpreadSpec } from "./services/specRegistry";
 import { MARKET_COMMODITY_CONFIG } from "./ingestion/config";
 import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingestion/scheduler/marketIngestionJob";
 import { providerDefinitionsFor } from "./ingestion/config";
-import { buildSeaBrokerageMarketUpdateMessage } from "./services/seaBrokerageMarketUpdateFormatter";
+import {
+  buildSeaBrokerageMarketUpdateMessage,
+  type SeaBrokerageReportGroup,
+} from "./services/seaBrokerageMarketUpdateFormatter";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
 import {
@@ -1050,6 +1053,11 @@ const seaBrokerageCommodityCreateSchema = z.object({
 
 const seaBrokerageReportRequestSchema = z
   .object({
+    title: z.string().trim().max(120).optional().default(""),
+    groups: z
+      .array(z.enum(["grains", "oilseeds", "byproducts", "niche"]))
+      .optional()
+      .default(["grains", "oilseeds", "byproducts", "niche"]),
     commodity: z.string().trim().optional().default(""),
     commodities: z.array(z.string().trim()).optional().default([]),
     basis: z.array(z.string().trim()).optional().default([]),
@@ -1111,6 +1119,25 @@ const seaBrokerageReportRequestSchema = z
     }
   });
 
+const seaBrokerageReportProfilePayloadSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  title: z.string().trim().max(120).optional().default(""),
+  groups: z
+    .array(z.enum(["grains", "oilseeds", "byproducts", "niche"]))
+    .optional()
+    .default(["grains", "oilseeds", "byproducts", "niche"]),
+  commodities: z.array(z.string().trim()).optional().default([]),
+  basis: z.array(z.string().trim()).optional().default([]),
+  deliveryPlaces: z.array(z.string().trim()).optional().default([]),
+  postedWindowDays: z.coerce.number().int().min(1).max(90).optional().default(1),
+  includeBids: z.coerce.boolean().optional().default(true),
+  includeOffers: z.coerce.boolean().optional().default(true),
+  autoDaily: z.coerce.boolean().optional().default(false),
+  active: z.coerce.boolean().optional().default(true),
+});
+
+const seaBrokerageReportProfileUpdateSchema = seaBrokerageReportProfilePayloadSchema.partial();
+
 type SeaBrokerageCustomLocation = {
   code: string;
   displayLabel: string;
@@ -1130,6 +1157,7 @@ const SEA_BROKERAGE_BASIS_KEY = "sea_brokerage_basis_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
+const SEA_BROKERAGE_REPORT_PROFILES_KEY = "sea_brokerage_report_profiles_v1";
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
 const SEA_BROKERAGE_DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_TIMEZONE || "Europe/Paris";
 
@@ -1184,6 +1212,26 @@ type SeaBrokerageFilterPreset = {
     brokerProfileId: string;
     search: string;
   };
+  createdAt: string;
+  updatedAt: string;
+};
+
+type SeaBrokerageReportProfile = {
+  id: string;
+  brokerUserId: string;
+  brokerCode: string;
+  name: string;
+  title: string;
+  groups: SeaBrokerageReportGroup[];
+  commodities: string[];
+  basis: string[];
+  deliveryPlaces: string[];
+  postedWindowDays: number;
+  includeBids: boolean;
+  includeOffers: boolean;
+  autoDaily: boolean;
+  active: boolean;
+  targetChat: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -1897,6 +1945,84 @@ function getDateOverlapDaysInclusive(aStart: Date, aEnd: Date, bStart: Date, bEn
   return Math.floor((end - start) / (24 * 60 * 60 * 1000)) + 1;
 }
 
+function filterSeaBrokerageEntriesForReport(
+  entries: SeaBrokerageEntryRow[],
+  payload: {
+    commodities: string[];
+    basis: string[];
+    deliveryPlaces: string[];
+    postedFrom: string;
+    postedTo: string;
+    periodStart: string;
+    periodEnd: string;
+    overlapDays: number;
+    includeBids: boolean;
+    includeOffers: boolean;
+  },
+) {
+  const includeTypes = new Set<string>();
+  if (payload.includeBids) includeTypes.add("bid");
+  if (payload.includeOffers) includeTypes.add("offer");
+
+  const postedFrom = payload.postedFrom <= payload.postedTo ? payload.postedFrom : payload.postedTo;
+  const postedTo = payload.postedFrom <= payload.postedTo ? payload.postedTo : payload.postedFrom;
+  const periodStart = payload.periodStart <= payload.periodEnd ? payload.periodStart : payload.periodEnd;
+  const periodEnd = payload.periodStart <= payload.periodEnd ? payload.periodEnd : payload.periodStart;
+
+  const postedWindow = (() => {
+    const from = startOfUtcDay(postedFrom);
+    const to = endOfUtcDay(postedTo);
+    return from && to ? { from, to } : null;
+  })();
+  if (!postedWindow) return { ok: false as const, error: "Invalid posted date range", entries: [] as SeaBrokerageEntryRow[] };
+
+  const reportPeriodRange = (() => {
+    const start = startOfUtcDay(periodStart);
+    const end = endOfUtcDay(periodEnd);
+    return start && end ? { start, end } : null;
+  })();
+  if (!reportPeriodRange) return { ok: false as const, error: "Invalid report period range", entries: [] as SeaBrokerageEntryRow[] };
+
+  const commoditySet = new Set(payload.commodities.map((item) => item.toLowerCase()));
+  const basisSet = new Set(payload.basis.map((item) => item.toUpperCase()));
+  const placeSet = new Set(payload.deliveryPlaces.map((item) => item.toLowerCase()));
+  const overlapThreshold = Math.max(1, Number(payload.overlapDays || 1));
+
+  const matched = entries
+    .filter((entry) => includeTypes.has(entry.type))
+    .filter((entry) => commoditySet.has(String(entry.commodity || "").toLowerCase()))
+    .filter((entry) => {
+      const created = new Date(entry.createdAt);
+      if (Number.isNaN(created.getTime())) return false;
+      return created >= postedWindow.from && created <= postedWindow.to;
+    })
+    .filter((entry) => (basisSet.size ? basisSet.has(String(entry.basis || "").toUpperCase()) : true))
+    .filter((entry) =>
+      placeSet.size
+        ? parseDestinationPortCodesValue(entry.destinationPortCode).some((code) =>
+            placeSet.has(String(code).toLowerCase()),
+          ) ||
+          placeSet.has(String(entry.destinationPort || "").toLowerCase())
+        : true,
+    )
+    .filter((entry) => {
+      if (!entry.periodStart || !entry.periodEnd) return false;
+      const entryStart = startOfUtcDay(entry.periodStart);
+      const entryEnd = endOfUtcDay(entry.periodEnd);
+      if (!entryStart || !entryEnd) return false;
+      const overlapDays = getDateOverlapDaysInclusive(
+        entryStart,
+        entryEnd,
+        reportPeriodRange.start,
+        reportPeriodRange.end,
+      );
+      return overlapDays >= overlapThreshold;
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  return { ok: true as const, entries: matched };
+}
+
 async function readSeaBrokerageFilterPresets(): Promise<SeaBrokerageFilterPreset[]> {
   const raw = (await storage.getAppSetting(SEA_BROKERAGE_FILTER_PRESETS_KEY))?.value || "[]";
   try {
@@ -1966,6 +2092,63 @@ async function readSeaBrokerageFilterPresets(): Promise<SeaBrokerageFilterPreset
 
 async function writeSeaBrokerageFilterPresets(presets: SeaBrokerageFilterPreset[]) {
   await storage.upsertAppSetting(SEA_BROKERAGE_FILTER_PRESETS_KEY, JSON.stringify(presets));
+}
+
+async function readSeaBrokerageReportProfiles(): Promise<SeaBrokerageReportProfile[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_REPORT_PROFILES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageReportProfile[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.id === "string" &&
+          typeof item.brokerUserId === "string" &&
+          typeof item.brokerCode === "string" &&
+          typeof item.name === "string" &&
+          typeof item.createdAt === "string" &&
+          typeof item.updatedAt === "string",
+      )
+      .map((item) => {
+        const groups = Array.isArray(item.groups)
+          ? item.groups.filter((group): group is SeaBrokerageReportGroup =>
+              group === "grains" || group === "oilseeds" || group === "byproducts" || group === "niche",
+            )
+          : [];
+        return {
+          id: String(item.id).trim(),
+          brokerUserId: String(item.brokerUserId).trim(),
+          brokerCode: String(item.brokerCode).trim(),
+          name: String(item.name).trim(),
+          title: String(item.title || "").trim(),
+          groups: groups.length ? groups : ["grains", "oilseeds", "byproducts", "niche"],
+          commodities: Array.isArray(item.commodities)
+            ? item.commodities.map((value) => String(value || "").trim()).filter(Boolean)
+            : [],
+          basis: Array.isArray(item.basis)
+            ? item.basis.map((value) => String(value || "").trim().toUpperCase()).filter(Boolean)
+            : [],
+          deliveryPlaces: Array.isArray(item.deliveryPlaces)
+            ? item.deliveryPlaces.map((value) => String(value || "").trim()).filter(Boolean)
+            : [],
+          postedWindowDays: Math.min(90, Math.max(1, Number(item.postedWindowDays || 1))),
+          includeBids: item.includeBids !== false,
+          includeOffers: item.includeOffers !== false,
+          autoDaily: !!item.autoDaily,
+          active: item.active !== false,
+          targetChat: item.targetChat ? String(item.targetChat).trim() : null,
+          createdAt: String(item.createdAt),
+          updatedAt: String(item.updatedAt),
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
+async function writeSeaBrokerageReportProfiles(profiles: SeaBrokerageReportProfile[]) {
+  await storage.upsertAppSetting(SEA_BROKERAGE_REPORT_PROFILES_KEY, JSON.stringify(profiles));
 }
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
@@ -9557,78 +9740,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const payload = parsed.data;
-      const postedFrom = payload.postedFrom <= payload.postedTo ? payload.postedFrom : payload.postedTo;
-      const postedTo = payload.postedFrom <= payload.postedTo ? payload.postedTo : payload.postedFrom;
-      const periodStart = payload.periodStart <= payload.periodEnd ? payload.periodStart : payload.periodEnd;
-      const periodEnd = payload.periodStart <= payload.periodEnd ? payload.periodEnd : payload.periodStart;
       const allEntries = await storage.listSeaBrokerageEntries();
-
-      const includeTypes = new Set<string>();
-      if (payload.includeBids) includeTypes.add("bid");
-      if (payload.includeOffers) includeTypes.add("offer");
-
-      const postedWindow = (() => {
-        const from = startOfUtcDay(postedFrom);
-        const to = endOfUtcDay(postedTo);
-        return from && to ? { from, to } : null;
-      })();
-
-      if (!postedWindow) {
-        return res.status(400).json({ error: "Invalid posted date range" });
+      const filterResult = filterSeaBrokerageEntriesForReport(allEntries, {
+        commodities: [...payload.commodities, ...(payload.commodity ? [payload.commodity] : [])],
+        basis: payload.basis,
+        deliveryPlaces: payload.deliveryPlaces,
+        postedFrom: payload.postedFrom,
+        postedTo: payload.postedTo,
+        periodStart: payload.periodStart,
+        periodEnd: payload.periodEnd,
+        overlapDays: payload.overlapDays,
+        includeBids: payload.includeBids,
+        includeOffers: payload.includeOffers,
+      });
+      if (!filterResult.ok) {
+        return res.status(400).json({ error: filterResult.error });
       }
+      const matched = filterResult.entries;
 
-      const reportPeriodRange = (() => {
-        const start = startOfUtcDay(periodStart);
-        const end = endOfUtcDay(periodEnd);
-        return start && end ? { start, end } : null;
-      })();
-
-      if (!reportPeriodRange) {
-        return res.status(400).json({ error: "Invalid report period range" });
-      }
-
-      const commoditySet = new Set(
-        [...payload.commodities, ...(payload.commodity ? [payload.commodity] : [])].map((item) =>
-          item.toLowerCase(),
-        ),
-      );
-      const basisSet = new Set(payload.basis.map((item) => item.toUpperCase()));
-      const placeSet = new Set(payload.deliveryPlaces.map((item) => item.toLowerCase()));
-      const overlapThreshold = Math.max(1, Number(payload.overlapDays || 1));
-
-      const matched = allEntries
-        .filter((entry) => includeTypes.has(entry.type))
-        .filter((entry) => commoditySet.has(String(entry.commodity || "").toLowerCase()))
-        .filter((entry) => {
-          const created = new Date(entry.createdAt);
-          if (Number.isNaN(created.getTime())) return false;
-          return created >= postedWindow.from && created <= postedWindow.to;
-        })
-        .filter((entry) => (basisSet.size ? basisSet.has(String(entry.basis || "").toUpperCase()) : true))
-        .filter((entry) =>
-          placeSet.size
-            ? parseDestinationPortCodesValue(entry.destinationPortCode).some((code) =>
-                placeSet.has(String(code).toLowerCase()),
-              ) ||
-              placeSet.has(String(entry.destinationPort || "").toLowerCase())
-            : true,
-        )
-        .filter((entry) => {
-          if (!entry.periodStart || !entry.periodEnd) return false;
-          const entryStart = startOfUtcDay(entry.periodStart);
-          const entryEnd = endOfUtcDay(entry.periodEnd);
-          if (!entryStart || !entryEnd) return false;
-          const overlapDays = getDateOverlapDaysInclusive(
-            entryStart,
-            entryEnd,
-            reportPeriodRange!.start,
-            reportPeriodRange!.end,
-          );
-          return overlapDays >= overlapThreshold;
-        })
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      const reportMessage = buildSeaBrokerageMarketUpdateMessage(matched, new Date());
+      const reportMessage = buildSeaBrokerageMarketUpdateMessage(matched, new Date(), {
+        groups: payload.groups,
+        title: payload.title || undefined,
+      });
 
       const targetChat =
         authorizedBroker.telegramUserId ||
@@ -9680,6 +9813,239 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error sending sea brokerage report:", error);
       return res.status(500).json({ error: "Failed to build/send report" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/report/profiles", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const profiles = await readSeaBrokerageReportProfiles();
+      const visible = profiles
+        .filter((profile) => profile.brokerUserId.toLowerCase() === brokerUserId)
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      return res.json(visible);
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage report profiles:", error);
+      return res.status(500).json({ error: "Failed to fetch report profiles" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/report/profiles", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const parsed = seaBrokerageReportProfilePayloadSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+      if (!parsed.data.includeBids && !parsed.data.includeOffers) {
+        return res.status(400).json({ error: "Select at least one side (bids or offers)" });
+      }
+
+      const all = await readSeaBrokerageReportProfiles();
+      const nowIso = new Date().toISOString();
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker);
+      const targetChat =
+        authorizedBroker.telegramUserId ||
+        (authorizedBroker.telegramUsername
+          ? `@${authorizedBroker.telegramUsername.replace(/^@+/, "")}`
+          : null);
+      const created: SeaBrokerageReportProfile = {
+        id: randomUUID(),
+        brokerUserId,
+        brokerCode: authorizedBroker.brokerCode,
+        name: parsed.data.name.trim(),
+        title: parsed.data.title.trim(),
+        groups: parsed.data.groups as SeaBrokerageReportGroup[],
+        commodities: Array.from(new Set(parsed.data.commodities.map((item) => item.toLowerCase()))),
+        basis: Array.from(new Set(parsed.data.basis.map((item) => item.toUpperCase()))),
+        deliveryPlaces: Array.from(new Set(parsed.data.deliveryPlaces.map((item) => item.toLowerCase()))),
+        postedWindowDays: parsed.data.postedWindowDays,
+        includeBids: parsed.data.includeBids,
+        includeOffers: parsed.data.includeOffers,
+        autoDaily: parsed.data.autoDaily,
+        active: parsed.data.active,
+        targetChat,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+      const next = [...all, created];
+      await writeSeaBrokerageReportProfiles(next);
+      return res.status(201).json(created);
+    } catch (error: any) {
+      console.error("Error creating sea brokerage report profile:", error);
+      return res.status(500).json({ error: "Failed to create report profile" });
+    }
+  });
+
+  app.patch("/api/sea-brokerage-monitor/report/profiles/:id", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+      const parsed = seaBrokerageReportProfileUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const all = await readSeaBrokerageReportProfiles();
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const profileId = String(req.params.id || "").trim();
+      const targetIndex = all.findIndex(
+        (profile) => profile.id === profileId && profile.brokerUserId.toLowerCase() === brokerUserId,
+      );
+      if (targetIndex === -1) {
+        return res.status(404).json({ error: "Report profile not found" });
+      }
+
+      const current = all[targetIndex];
+      const nextProfile: SeaBrokerageReportProfile = {
+        ...current,
+        ...parsed.data,
+        groups: parsed.data.groups
+          ? (parsed.data.groups as SeaBrokerageReportGroup[])
+          : current.groups,
+        commodities: parsed.data.commodities
+          ? Array.from(new Set(parsed.data.commodities.map((item) => item.toLowerCase())))
+          : current.commodities,
+        basis: parsed.data.basis
+          ? Array.from(new Set(parsed.data.basis.map((item) => item.toUpperCase())))
+          : current.basis,
+        deliveryPlaces: parsed.data.deliveryPlaces
+          ? Array.from(new Set(parsed.data.deliveryPlaces.map((item) => item.toLowerCase())))
+          : current.deliveryPlaces,
+        updatedAt: new Date().toISOString(),
+      };
+      if (!nextProfile.includeBids && !nextProfile.includeOffers) {
+        return res.status(400).json({ error: "Select at least one side (bids or offers)" });
+      }
+      const next = [...all];
+      next[targetIndex] = nextProfile;
+      await writeSeaBrokerageReportProfiles(next);
+      return res.json(nextProfile);
+    } catch (error: any) {
+      console.error("Error updating sea brokerage report profile:", error);
+      return res.status(500).json({ error: "Failed to update report profile" });
+    }
+  });
+
+  app.delete("/api/sea-brokerage-monitor/report/profiles/:id", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+      const profileId = String(req.params.id || "").trim();
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const all = await readSeaBrokerageReportProfiles();
+      const next = all.filter(
+        (profile) => !(profile.id === profileId && profile.brokerUserId.toLowerCase() === brokerUserId),
+      );
+      if (next.length === all.length) {
+        return res.status(404).json({ error: "Report profile not found" });
+      }
+      await writeSeaBrokerageReportProfiles(next);
+      return res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting sea brokerage report profile:", error);
+      return res.status(500).json({ error: "Failed to delete report profile" });
+    }
+  });
+
+  app.post("/api/sea-brokerage-monitor/report/profiles/:id/send", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor publishing yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const profileId = String(req.params.id || "").trim();
+      const profiles = await readSeaBrokerageReportProfiles();
+      const profile = profiles.find(
+        (item) => item.id === profileId && item.brokerUserId.toLowerCase() === brokerUserId,
+      );
+      if (!profile) {
+        return res.status(404).json({ error: "Report profile not found" });
+      }
+
+      const today = new Date();
+      const postedFrom = new Date(today.getTime() - Math.max(1, profile.postedWindowDays) * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+      const postedTo = today.toISOString().slice(0, 10);
+      const allEntries = await storage.listSeaBrokerageEntries();
+      const filterResult = filterSeaBrokerageEntriesForReport(allEntries, {
+        commodities: profile.commodities,
+        basis: profile.basis,
+        deliveryPlaces: profile.deliveryPlaces,
+        postedFrom,
+        postedTo,
+        periodStart: postedFrom,
+        periodEnd: postedTo,
+        overlapDays: 1,
+        includeBids: profile.includeBids,
+        includeOffers: profile.includeOffers,
+      });
+      if (!filterResult.ok) {
+        return res.status(400).json({ error: filterResult.error });
+      }
+
+      const reportMessage = buildSeaBrokerageMarketUpdateMessage(filterResult.entries, today, {
+        groups: profile.groups,
+        title: profile.title || `🇺🇦 SPIKE BROKERS Market Update — ${profile.name}`,
+      });
+      const targetChat =
+        profile.targetChat ||
+        authorizedBroker.telegramUserId ||
+        (authorizedBroker.telegramUsername
+          ? `@${authorizedBroker.telegramUsername.replace(/^@+/, "")}`
+          : null);
+      if (!targetChat) {
+        return res.status(400).json({ error: "No Telegram target found for this profile" });
+      }
+      const dm = await sendSeaBrokerageTelegramDirectMessage(targetChat, reportMessage);
+      if (!dm.ok) {
+        return res.status(502).json({ error: dm.error || "Failed to deliver profile report in Telegram" });
+      }
+
+      return res.status(201).json({
+        ok: true,
+        matchedEntries: filterResult.entries.length,
+        offers: filterResult.entries.filter((entry) => entry.type === "offer").length,
+        bids: filterResult.entries.filter((entry) => entry.type === "bid").length,
+      });
+    } catch (error: any) {
+      console.error("Error sending sea brokerage report profile:", error);
+      return res.status(500).json({ error: "Failed to build/send profile report" });
     }
   });
 

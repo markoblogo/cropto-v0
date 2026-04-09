@@ -5,34 +5,51 @@ type CommoditySection = {
   title: string;
   emoji: string;
   matcher: RegExp;
+  group: SeaBrokerageReportGroup;
+};
+
+export type SeaBrokerageReportGroup = "grains" | "oilseeds" | "byproducts" | "niche";
+
+export const SEA_BROKERAGE_REPORT_GROUP_ORDER: SeaBrokerageReportGroup[] = [
+  "grains",
+  "oilseeds",
+  "byproducts",
+  "niche",
+];
+
+export const SEA_BROKERAGE_REPORT_GROUP_LABELS: Record<SeaBrokerageReportGroup, string> = {
+  grains: "Grains",
+  oilseeds: "Oilseeds",
+  byproducts: "By-products",
+  niche: "Niche",
 };
 
 const COMMODITY_SECTIONS: CommoditySection[] = [
-  { title: "CORN", emoji: "🌽", matcher: /\bcorn\b|\bmaize\b/i },
-  { title: "WHEAT 12.5", emoji: "🌾", matcher: /\bwheat\b.*12\.?5/i },
-  { title: "WHEAT 11.5", emoji: "🌾", matcher: /\bwheat\b.*11\.?5/i },
-  { title: "FEED WHEAT", emoji: "🌾", matcher: /\bfeed\b.*\bwheat\b|\bwheat\b.*\bfeed\b/i },
-  { title: "BARLEY", emoji: "🌾", matcher: /\bbarley\b/i },
-  { title: "SUNFLOWER SEEDS", emoji: "🌻", matcher: /\bsunflower\b.*\bseed/i },
-  { title: "SOYBEANS", emoji: "🌱", matcher: /\bsoybean|\bsoy bean/i },
-  { title: "RAPESEEDS", emoji: "🌿", matcher: /\brapeseed|\bcanola|\brape\b/i },
-  { title: "SUNFLOWER MEAL", emoji: "⚙️", matcher: /\bsunflower\b.*\bmeal|\bmeal\b.*\bsunflower/i },
-  { title: "SUNFLOWER CAKE", emoji: "⚙️", matcher: /\bsunflower\b.*\bcake|\bcake\b.*\bsunflower/i },
-  { title: "SOYBEAN MEAL", emoji: "⚙️", matcher: /\bsoy\b.*\bmeal|\bmeal\b.*\bsoy/i },
-  { title: "SOYBEAN CAKE", emoji: "⚙️", matcher: /\bsoy\b.*\bcake|\bcake\b.*\bsoy/i },
-  { title: "RAPESEED MEAL", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bmeal|\bmeal\b.*\brapeseed|\bmeal\b.*\bcanola/i },
-  { title: "RAPESEED CAKE", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bcake|\bcake\b.*\brapeseed|\bcake\b.*\bcanola/i },
-  { title: "SUNFLOWER OIL", emoji: "💧", matcher: /\bsunflower\b.*\boil|\boil\b.*\bsunflower/i },
-  { title: "RAPESEED OIL", emoji: "💧", matcher: /\brapeseed|\bcanola|\brape\b.*\boil|\boil\b.*\brapeseed|\boil\b.*\bcanola/i },
-  { title: "SOYBEAN OIL", emoji: "💧", matcher: /\bsoy\b.*\boil|\boil\b.*\bsoy/i },
-  { title: "OAT", emoji: "🌾", matcher: /\boat\b/i },
-  { title: "RYE", emoji: "🌾", matcher: /\brye\b/i },
-  { title: "SORGHUM", emoji: "🌾", matcher: /\bsorghum\b/i },
-  { title: "MILLET", emoji: "🌾", matcher: /\bmillet\b/i },
-  { title: "YELLOW PEAS", emoji: "🫘", matcher: /\byellow\b.*\bpea|\bpea\b.*\byellow/i },
-  { title: "WHEAT BRAN", emoji: "⚙️", matcher: /\bwheat\b.*\bbran|\bbran\b.*\bwheat/i },
-  { title: "FLOUR", emoji: "⚙️", matcher: /\bflour\b/i },
-  { title: "SUGAR BEET PULP", emoji: "🗜️", matcher: /\bsugar\b.*\bbeet\b.*\bpulp/i },
+  { title: "CORN", emoji: "🌽", matcher: /\bcorn\b|\bmaize\b/i, group: "grains" },
+  { title: "WHEAT 12.5", emoji: "🌾", matcher: /\bwheat\b.*12\.?5/i, group: "grains" },
+  { title: "WHEAT 11.5", emoji: "🌾", matcher: /\bwheat\b.*11\.?5/i, group: "grains" },
+  { title: "FEED WHEAT", emoji: "🌾", matcher: /\bfeed\b.*\bwheat\b|\bwheat\b.*\bfeed\b/i, group: "grains" },
+  { title: "BARLEY", emoji: "🌾", matcher: /\bbarley\b/i, group: "grains" },
+  { title: "SUNFLOWER SEEDS", emoji: "🌻", matcher: /\bsunflower\b.*\bseed/i, group: "oilseeds" },
+  { title: "SOYBEANS", emoji: "🌱", matcher: /\bsoybean|\bsoy bean/i, group: "oilseeds" },
+  { title: "RAPESEEDS", emoji: "🌿", matcher: /\brapeseed|\bcanola|\brape\b/i, group: "oilseeds" },
+  { title: "SUNFLOWER MEAL", emoji: "⚙️", matcher: /\bsunflower\b.*\bmeal|\bmeal\b.*\bsunflower/i, group: "byproducts" },
+  { title: "SUNFLOWER CAKE", emoji: "⚙️", matcher: /\bsunflower\b.*\bcake|\bcake\b.*\bsunflower/i, group: "byproducts" },
+  { title: "SOYBEAN MEAL", emoji: "⚙️", matcher: /\bsoy\b.*\bmeal|\bmeal\b.*\bsoy/i, group: "byproducts" },
+  { title: "SOYBEAN CAKE", emoji: "⚙️", matcher: /\bsoy\b.*\bcake|\bcake\b.*\bsoy/i, group: "byproducts" },
+  { title: "RAPESEED MEAL", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bmeal|\bmeal\b.*\brapeseed|\bmeal\b.*\bcanola/i, group: "byproducts" },
+  { title: "RAPESEED CAKE", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bcake|\bcake\b.*\brapeseed|\bcake\b.*\bcanola/i, group: "byproducts" },
+  { title: "SUNFLOWER OIL", emoji: "💧", matcher: /\bsunflower\b.*\boil|\boil\b.*\bsunflower/i, group: "byproducts" },
+  { title: "RAPESEED OIL", emoji: "💧", matcher: /\brapeseed|\bcanola|\brape\b.*\boil|\boil\b.*\brapeseed|\boil\b.*\bcanola/i, group: "byproducts" },
+  { title: "SOYBEAN OIL", emoji: "💧", matcher: /\bsoy\b.*\boil|\boil\b.*\bsoy/i, group: "byproducts" },
+  { title: "OAT", emoji: "🌾", matcher: /\boat\b/i, group: "niche" },
+  { title: "RYE", emoji: "🌾", matcher: /\brye\b/i, group: "niche" },
+  { title: "SORGHUM", emoji: "🌾", matcher: /\bsorghum\b/i, group: "niche" },
+  { title: "MILLET", emoji: "🌾", matcher: /\bmillet\b/i, group: "niche" },
+  { title: "YELLOW PEAS", emoji: "🫘", matcher: /\byellow\b.*\bpea|\bpea\b.*\byellow/i, group: "niche" },
+  { title: "WHEAT BRAN", emoji: "⚙️", matcher: /\bwheat\b.*\bbran|\bbran\b.*\bwheat/i, group: "byproducts" },
+  { title: "FLOUR", emoji: "⚙️", matcher: /\bflour\b/i, group: "byproducts" },
+  { title: "SUGAR BEET PULP", emoji: "🗜️", matcher: /\bsugar\b.*\bbeet\b.*\bpulp/i, group: "byproducts" },
 ];
 
 function normalizeText(value: unknown) {
@@ -151,8 +168,18 @@ function buildRouteLines(routeEntries: SeaBrokerageEntryRow[]) {
   return lines;
 }
 
-export function buildSeaBrokerageMarketUpdateMessage(entries: SeaBrokerageEntryRow[], when = new Date()) {
+type BuildMarketMessageOptions = {
+  groups?: SeaBrokerageReportGroup[];
+  title?: string;
+};
+
+export function buildSeaBrokerageMarketUpdateMessage(
+  entries: SeaBrokerageEntryRow[],
+  when = new Date(),
+  options: BuildMarketMessageOptions = {},
+) {
   const target = entries.filter((entry) => entry.type === "bid" || entry.type === "offer");
+  const enabledGroups = new Set(options.groups?.length ? options.groups : SEA_BROKERAGE_REPORT_GROUP_ORDER);
   const headerDate = when.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
@@ -160,7 +187,7 @@ export function buildSeaBrokerageMarketUpdateMessage(entries: SeaBrokerageEntryR
   });
 
   const lines: string[] = [];
-  lines.push("🇺🇦 SPIKE BROKERS Market Update");
+  lines.push(options.title || "🇺🇦 SPIKE BROKERS Market Update");
   lines.push(headerDate);
   lines.push("");
   lines.push("------------------------------");
@@ -171,7 +198,7 @@ export function buildSeaBrokerageMarketUpdateMessage(entries: SeaBrokerageEntryR
     return lines.join("\n");
   }
 
-  for (const section of COMMODITY_SECTIONS) {
+  for (const section of COMMODITY_SECTIONS.filter((item) => enabledGroups.has(item.group))) {
     lines.push(`${section.emoji} ${section.title}`);
     const sectionEntries = target.filter((entry) => findSection(entry)?.title === section.title);
 
@@ -191,3 +218,22 @@ export function buildSeaBrokerageMarketUpdateMessage(entries: SeaBrokerageEntryR
   return lines.join("\n");
 }
 
+export function buildSeaBrokerageMarketUpdateMessagesByGroup(
+  entries: SeaBrokerageEntryRow[],
+  when = new Date(),
+  groups: SeaBrokerageReportGroup[] = SEA_BROKERAGE_REPORT_GROUP_ORDER,
+) {
+  const uniqueGroups = Array.from(new Set(groups)).filter((group): group is SeaBrokerageReportGroup =>
+    SEA_BROKERAGE_REPORT_GROUP_ORDER.includes(group),
+  );
+  return uniqueGroups.map((group) => {
+    const message = buildSeaBrokerageMarketUpdateMessage(entries, when, {
+      groups: [group],
+      title: `🇺🇦 SPIKE BROKERS Market Update — ${SEA_BROKERAGE_REPORT_GROUP_LABELS[group]}`,
+    });
+    return {
+      group,
+      message,
+    };
+  });
+}

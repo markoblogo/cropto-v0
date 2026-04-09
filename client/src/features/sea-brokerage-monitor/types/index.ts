@@ -221,6 +221,28 @@ export interface FilterPreset {
   updatedAt: string;
 }
 
+export type ReportGroup = "grains" | "oilseeds" | "byproducts" | "niche";
+
+export interface ReportProfile {
+  id: string;
+  brokerUserId: string;
+  brokerCode: string;
+  name: string;
+  title: string;
+  groups: ReportGroup[];
+  commodities: string[];
+  basis: string[];
+  deliveryPlaces: string[];
+  postedWindowDays: number;
+  includeBids: boolean;
+  includeOffers: boolean;
+  autoDaily: boolean;
+  active: boolean;
+  targetChat: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SelectOption<TValue extends string = string> {
   value: TValue;
   label: string;
