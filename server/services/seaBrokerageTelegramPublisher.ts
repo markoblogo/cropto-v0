@@ -93,6 +93,10 @@ function formatTelegramPrice(entry: SeaBrokerageEntryRow) {
   return `${Number.isInteger(compact) ? compact : compact.toFixed(2)}${currencySymbol}`;
 }
 
+function formatTelegramHeaderSeparator() {
+  return "------------------------------";
+}
+
 function formatCurrencySymbol(currency: string | null | undefined) {
   const normalized = String(currency || "USD").toUpperCase();
   if (normalized === "EUR") return "€";
@@ -117,49 +121,92 @@ function formatDateDottedShort(value: string) {
   return `${day}.${month}`;
 }
 
+function toTitleCase(value: string) {
+  return value
+    .toLowerCase()
+    .split(" ")
+    .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join(" ");
+}
+
+function normalizeCountryName(value: string | null | undefined) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^turkey$/i.test(raw)) return "Turkiye";
+  return toTitleCase(raw);
+}
+
+function shortMonth(value: Date) {
+  return value.toLocaleString("en-US", { month: "short" }).replace(".", "");
+}
+
 function formatTelegramPeriod(entry: SeaBrokerageEntryRow) {
-  const rawLabel = (entry.periodLabel || "").trim().toUpperCase();
-  if (!rawLabel) return "OPEN";
-  if (rawLabel === "SPOT" || rawLabel === "PROMPT") return rawLabel;
-
   const start = entry.periodStart ? new Date(entry.periodStart) : null;
+  const end = entry.periodEnd ? new Date(entry.periodEnd) : null;
   const hasValidStart = !!start && !Number.isNaN(start.getTime());
-  const monthShort = hasValidStart
-    ? start.toLocaleString("en-US", { month: "short" }).replace(".", "").toUpperCase()
-    : null;
-  const yearShort = hasValidStart ? String(start.getFullYear()).slice(-2) : null;
+  const hasValidEnd = !!end && !Number.isNaN(end.getTime());
+  const rawLabel = (entry.periodLabel || "").trim();
+  const rawUpper = rawLabel.toUpperCase();
+  if (!rawLabel) return "Open";
+  if (rawUpper === "SPOT") return "Spot";
+  if (rawUpper === "PROMPT") return "Prompt";
 
-  if (entry.periodType === "range" && entry.periodStart && entry.periodEnd) {
-    return `${formatDateDottedShort(entry.periodStart)}-${formatDateDottedShort(entry.periodEnd)}`;
+  if (hasValidStart && hasValidEnd) {
+    const s = start as Date;
+    const e = end as Date;
+    const sDay = String(s.getDate()).padStart(2, "0");
+    const eDay = String(e.getDate()).padStart(2, "0");
+    const sMonth = shortMonth(s);
+    const eMonth = shortMonth(e);
+    const sYear = s.getFullYear();
+    const eYear = e.getFullYear();
+    if (sYear === eYear && sMonth === eMonth) {
+      return `${sDay}-${eDay} ${sMonth} ${sYear}`;
+    }
+    if (sYear === eYear) {
+      return `${sDay} ${sMonth} - ${eDay} ${eMonth} ${sYear}`;
+    }
+    return `${sDay} ${sMonth} ${sYear} - ${eDay} ${eMonth} ${eYear}`;
   }
 
-  if (entry.periodType === "window" || entry.periodType === "month") {
-    if (rawLabel.startsWith("1H")) return monthShort && yearShort ? `1H ${monthShort} ${yearShort}` : "1H";
-    if (rawLabel.startsWith("2H")) return monthShort && yearShort ? `2H ${monthShort} ${yearShort}` : "2H";
-    if (rawLabel.startsWith("LH")) return monthShort && yearShort ? `LH ${monthShort} ${yearShort}` : "LH";
-    if (monthShort && yearShort) return `${monthShort} ${yearShort}`;
+  if (hasValidStart) {
+    const s = start as Date;
+    if (rawUpper.startsWith("1H")) return `1H ${shortMonth(s)} ${s.getFullYear()}`;
+    if (rawUpper.startsWith("2H")) return `2H ${shortMonth(s)} ${s.getFullYear()}`;
+    if (rawUpper.startsWith("LH")) return `LH ${shortMonth(s)} ${s.getFullYear()}`;
+    return `${shortMonth(s)} ${s.getFullYear()}`;
   }
 
-  if (hasValidStart && monthShort && yearShort) {
-    if (rawLabel.startsWith("1H")) return `1H ${monthShort} ${yearShort}`;
-    if (rawLabel.startsWith("2H")) return `2H ${monthShort} ${yearShort}`;
-    if (rawLabel.startsWith("LH")) return `LH ${monthShort} ${yearShort}`;
-    if (rawLabel === "MONTH" || rawLabel.endsWith("MONTH")) return `${monthShort} ${yearShort}`;
-  }
-
-  return rawLabel;
+  return toTitleCase(rawLabel);
 }
 
 function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
-  return entry.transportType
-    .replace(/[_\s-]+/g, " ")
+  const normalized = String(entry.transportType || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "");
+    .toLowerCase();
+  if (normalized === "coaster") return "Coaster vessel";
+  if (normalized === "handysize") return "Handysize vessels";
+  if (normalized === "supramax") return "Supramax vessels";
+  if (normalized === "panamax") return "Panamax vessels";
+  if (normalized === "capesize") return "Capesize vessels";
+  if (normalized === "vessel") return "Vessel";
+  if (normalized === "rail") return "Rail";
+  if (normalized === "truck") return "Truck";
+  if (normalized === "barge") return "Barge";
+  if (normalized === "container") return "Container";
+  if (normalized === "truck/rail") return "Truck / Rail";
+  return toTitleCase(normalized);
 }
 
 function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {
-  return entry.commodityLabel.replace(/%/g, "").trim();
+  const base = String(entry.commodityLabel || entry.commodity || "")
+    .replace(/%/g, "")
+    .trim();
+  if (/^wheat\s*11\.?5$/i.test(base)) return "Wheat 11.5pro";
+  if (/^wheat\s*12\.?5$/i.test(base)) return "Wheat 12.5pro";
+  return toTitleCase(base);
 }
 
 function extractHarvestYearFromGrade(entry: SeaBrokerageEntryRow) {
@@ -173,10 +220,11 @@ function formatTelegramCommodityCountryLine(
 ) {
   const commodity = formatTelegramCommodity(entry);
   const harvestYear = extractHarvestYearFromGrade(entry);
+  const originCode = countryCodeAlpha2.toUpperCase();
   if (harvestYear) {
-    return `${commodity}, ${harvestYear}, ${countryCodeAlpha2}`;
+    return `${commodity}, ${originCode} origin, ${harvestYear}`;
   }
-  return `${commodity}, ${countryCodeAlpha2}`;
+  return `${commodity}, ${originCode} origin`;
 }
 
 function formatTelegramCounterparty(entry: SeaBrokerageEntryRow) {
@@ -201,25 +249,76 @@ function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) 
   if (entry.type === "trade") {
     return [ideaTag, flag].filter(Boolean).join(" ");
   }
-  return [ideaTag, flag, brokerLabel].filter(Boolean).join(" ");
+  if (entry.type === "bid") {
+    const commodityEmoji = resolveCommodityEmoji(entry);
+    return [ideaTag, flag, commodityEmoji].filter(Boolean).join(" ");
+  }
+  return [ideaTag].filter(Boolean).join(" ");
 }
 
 function formatQuantityLine(entry: SeaBrokerageEntryRow) {
+  const fmtSingle = (value: number) => Number(value).toLocaleString("en-US").replace(/,/g, "'");
+  const fmtRangePart = (value: number) => {
+    const normalized = Number(value);
+    if (!Number.isFinite(normalized)) return "0";
+    if (normalized >= 1000 && normalized % 1000 === 0 && normalized < 10_000) {
+      return `${Math.round(normalized / 1000)}`;
+    }
+    return fmtSingle(normalized);
+  };
+
+  const compactThousandsSuffix = (value: number) =>
+    value >= 1000 && value % 1000 === 0 && value < 10_000 ? "'000" : "";
+
   if (
     (entry.quantityMt === null || entry.quantityMt === undefined) &&
     entry.volumeFrom !== null &&
     entry.volumeTo !== null &&
     entry.volumeFrom !== entry.volumeTo
   ) {
-    const fromLabel = Number(entry.volumeFrom).toLocaleString("en-US").replace(/,/g, "'");
-    const toLabel = Number(entry.volumeTo).toLocaleString("en-US").replace(/,/g, "'");
-    return `${fromLabel}-${toLabel} MT`;
+    const fromValue = Math.min(Number(entry.volumeFrom), Number(entry.volumeTo));
+    const toValue = Math.max(Number(entry.volumeFrom), Number(entry.volumeTo));
+    const fromLabel = fmtRangePart(fromValue);
+    const toLabel = fmtRangePart(toValue);
+    const suffix = compactThousandsSuffix(fromValue) === "'000" && compactThousandsSuffix(toValue) === "'000"
+      ? "'000"
+      : "";
+    const tolerance = entry.tolerancePct ?? 0;
+    const qty = `${fromLabel}-${toLabel}${suffix} mt`;
+    return tolerance > 0 ? `${qty} ± ${tolerance}%` : qty;
   }
 
   const quantity = entry.quantityMt ?? entry.volumeTo ?? entry.volumeFrom;
   const tolerance = entry.tolerancePct ?? 0;
-  const quantityLabel = Number(quantity).toLocaleString("en-US").replace(/,/g, "'");
-  return tolerance > 0 ? `${quantityLabel} MT ${tolerance}%` : `${quantityLabel} MT`;
+  const quantityLabel = fmtSingle(Number(quantity));
+  const qty = `${quantityLabel} mt`;
+  return tolerance > 0 ? `${qty} ± ${tolerance}%` : qty;
+}
+
+function formatBasisRouteReadable(entry: SeaBrokerageEntryRow) {
+  const route = formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "name" });
+  return normalizeCountryName(route);
+}
+
+function resolveCommodityEmoji(entry: SeaBrokerageEntryRow) {
+  const label = `${entry.commodityLabel || ""} ${entry.commodity || ""}`.toLowerCase();
+  if (label.includes("corn") || label.includes("maize")) return "🌽";
+  if (label.includes("wheat") || label.includes("barley") || label.includes("oat") || label.includes("rye")) return "🌾";
+  if (label.includes("sunflower")) return "🌻";
+  if (label.includes("soy")) return "🌱";
+  if (label.includes("rape") || label.includes("canola")) return "🌿";
+  if (label.includes("pea")) return "🫘";
+  return "";
+}
+
+function formatPublicEntryId(entryId: string) {
+  let hash = 0;
+  const source = String(entryId || "");
+  for (let i = 0; i < source.length; i += 1) {
+    hash = (hash * 31 + source.charCodeAt(i)) >>> 0;
+  }
+  const serial = (hash % 1000) + 1;
+  return `#ID_${String(serial).padStart(3, "0")}`;
 }
 
 function formatStandardTelegramMessage(
@@ -253,9 +352,9 @@ function formatStandardTelegramMessage(
     entry.tradeBuyerBrokerTelegramUserId,
   );
 
-  const lines = [
+  const bodyLines = [
     header,
-    "------------------------------",
+    formatTelegramHeaderSeparator(),
     isTrade
       ? formatTradePartyLine("SELLER", sellerLine, tradeSellerBroker)
       : counterpartyLine,
@@ -266,16 +365,29 @@ function formatStandardTelegramMessage(
       ? entry.gradeOrSpec.trim()
       : null,
     formatQuantityLine(entry),
-    formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "alpha2" }),
+    formatBasisRouteReadable(entry),
     formatTelegramTransportCode(entry),
     formatTelegramPeriod(entry),
     formatTelegramPrice(entry),
-    entry.paymentTerms?.trim() ? entry.paymentTerms.trim() : null,
-    formatOptionalOtherTerms(entry.note),
-    "------------------------------",
+    formatTelegramHeaderSeparator(),
   ];
 
-  return lines.filter(Boolean).join("\n").toUpperCase();
+  const text = bodyLines.filter(Boolean).join("\n");
+  const normalizedBroker = brokerSignature
+    ? `@${String(brokerSignature).replace(/^@+/, "").toLowerCase()}`
+    : entry.brokerTelegramUsername
+      ? `@${String(entry.brokerTelegramUsername).replace(/^@+/, "").toLowerCase()}`
+      : `@${String(entry.brokerCode || "broker").toLowerCase()}`;
+  const out: string[] = [text];
+  const otherTerms = formatOptionalOtherTerms(entry.note);
+  if (otherTerms) {
+    out.push(otherTerms.replace(/^OTHER TERMS:\s*/i, ""));
+    out.push(formatTelegramHeaderSeparator());
+  }
+  if (!isTrade) {
+    out.push(`${formatPublicEntryId(entry.id)} by ${normalizedBroker}`);
+  }
+  return out.filter(Boolean).join("\n");
 }
 
 function formatQuantityInline(entry: SeaBrokerageEntryRow) {
@@ -370,13 +482,31 @@ function formatMatchMessage(
   match: SeaBrokerageMatchSuggestion,
   includeBrokerIdentity: boolean,
 ) {
+  void includeBrokerIdentity;
+  const refEntry = match.bidEntry;
+  const flag = countryFlagEmoji(refEntry.destinationCountryCode || refEntry.originCountryCode);
+  const emoji = resolveCommodityEmoji(refEntry);
+  const bidBroker = refEntry.brokerTelegramUsername
+    ? `@${refEntry.brokerTelegramUsername.replace(/^@+/, "").toLowerCase()}`
+    : `@${String(refEntry.brokerCode || "broker").toLowerCase()}`;
+  const offerBroker = match.offerEntry.brokerTelegramUsername
+    ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "").toLowerCase()}`
+    : `@${String(match.offerEntry.brokerCode || "broker").toLowerCase()}`;
   return [
-    "#match_idea 🤝",
-    "------------------------------",
-    formatMatchSideLine("BID", match.bidEntry, includeBrokerIdentity),
-    formatMatchSideLine("OFFER", match.offerEntry, includeBrokerIdentity),
-    "------------------------------",
-  ].join("\n").toUpperCase();
+    ["#match_idea", "🔗", flag, emoji].filter(Boolean).join(" "),
+    formatTelegramHeaderSeparator(),
+    formatTelegramCommodityCountryLine(refEntry, resolveSeaBrokerageCountryAlpha2(refEntry, refEntry.originCountryCode)),
+    formatBasisRouteReadable(refEntry),
+    formatTelegramTransportCode(refEntry),
+    formatTelegramPeriod(refEntry),
+    formatTelegramHeaderSeparator(),
+    `Offer – ${formatPublicEntryId(match.offerEntry.id)} by ${offerBroker}`,
+    `${formatQuantityLine(match.offerEntry)} / ${formatTelegramPeriod(match.offerEntry)} / ${formatTelegramPrice(match.offerEntry)}`,
+    "vs.",
+    `Bid – ${formatPublicEntryId(match.bidEntry.id)} by ${bidBroker}`,
+    `${formatQuantityLine(match.bidEntry)} / ${formatTelegramPeriod(match.bidEntry)} / ${formatTelegramPrice(match.bidEntry)}`,
+    formatTelegramHeaderSeparator(),
+  ].join("\n");
 }
 
 function parseBoolean(value: string | undefined, fallback: boolean) {

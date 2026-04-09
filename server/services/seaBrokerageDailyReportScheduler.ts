@@ -1,14 +1,7 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
 import { storage } from "../storage";
 import { sendSeaBrokerageTelegramInternalBroadcast } from "./seaBrokerageTelegramPublisher";
-import { formatSeaBrokerageBasisRoute } from "./seaBrokerageBasisFormat";
-import {
-  getCommoditySortKey,
-  getTransportShort,
-  formatQtyRangeK,
-  formatPriceRange,
-  formatPeriodSummary,
-} from "./seaBrokerageReportUtils";
+import { buildSeaBrokerageMarketUpdateMessage } from "./seaBrokerageMarketUpdateFormatter";
 
 const DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_DAILY_REPORT_TIMEZONE || "Europe/Paris";
 const DEFAULT_HOUR = Number(process.env.SEA_BROKERAGE_DAILY_REPORT_HOUR || "17");
@@ -54,87 +47,9 @@ function isCreatedOnLocalDate(date: Date, dateKey: string, timeZone: string) {
   return local.dateKey === dateKey;
 }
 
-function normalizeCommodityLabel(entry: SeaBrokerageEntryRow) {
-  return String(entry.commodityLabel || entry.commodity || "").trim();
-}
-
-function toUpper(value: unknown) {
-  return String(value || "").trim().toUpperCase();
-}
-
 function buildDailyReportMessage(entries: SeaBrokerageEntryRow[], reportDateLabel: string) {
-  const target = entries.filter((entry) => entry.type === "bid" || entry.type === "offer");
-  if (!target.length) {
-    return [
-      `SPIKE BROKERS daily update ${reportDateLabel}`,
-      "-----------------------------",
-      "No BID/OFFER entries for selected day.",
-      "-----------------------------",
-    ].join("\n");
-  }
-
-  const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
-  for (const entry of target) {
-    const commodityLabel = normalizeCommodityLabel(entry);
-    const cropKey = entry.isNewCrop ? "NEW" : "STD";
-    const key = `${commodityLabel}|${cropKey}`;
-    const bucket = byCommodity.get(key) || [];
-    bucket.push(entry);
-    byCommodity.set(key, bucket);
-  }
-
-  // Sort commodity groups by semantic category (grains -> oilseeds+byproducts -> other)
-  const sortedCommodities = Array.from(byCommodity.entries()).sort((a, b) => {
-    const keyA = getCommoditySortKey(a[1][0]);
-    const keyB = getCommoditySortKey(b[1][0]);
-    if (keyA !== keyB) return keyA - keyB;
-    return a[0].localeCompare(b[0]); // alphabetical within same sort key
-  });
-
-  const lines: string[] = [];
-  lines.push(`SPIKE BROKERS daily update ${reportDateLabel}`);
-  lines.push("-----------------------------");
-
-  for (const [commodityKey, commodityEntries] of sortedCommodities) {
-    const [commodity, cropKey] = commodityKey.split("|");
-    const commodityTitle = cropKey === "NEW" ? `${commodity} (new crop)` : commodity;
-    // No emoji — plain text header
-    lines.push(commodityTitle);
-
-    const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
-    for (const entry of commodityEntries) {
-      const route = formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "alpha2" });
-      const transport = getTransportShort(entry.transportType);
-      const key = `${route}|${transport}`;
-      const bucket = byRoute.get(key) || [];
-      bucket.push(entry);
-      byRoute.set(key, bucket);
-    }
-
-    for (const [routeKey, routeEntries] of Array.from(byRoute.entries()).sort((a, b) =>
-      a[0].localeCompare(b[0]),
-    )) {
-      const [route, transport] = routeKey.split("|");
-      const qty = formatQtyRangeK(routeEntries);
-      const heading = [route, qty, transport].filter(Boolean).join(" ");
-      lines.push(`${heading}:`);
-
-      const sellers = routeEntries.filter((entry) => entry.type === "offer");
-      const buyers  = routeEntries.filter((entry) => entry.type === "bid");
-
-      if (sellers.length) {
-        lines.push(`> Sellers ${formatPriceRange(sellers)} ${formatPeriodSummary(sellers)}`.trim());
-      }
-      if (buyers.length) {
-        lines.push(`> Buyers ${formatPriceRange(buyers)} ${formatPeriodSummary(buyers)}`.trim());
-      }
-      lines.push("");
-    }
-
-    lines.push("-----------------------------");
-  }
-
-  return lines.join("\n");
+  void reportDateLabel;
+  return buildSeaBrokerageMarketUpdateMessage(entries, new Date());
 }
 
 async function runDailyReportTick() {

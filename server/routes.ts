@@ -48,13 +48,7 @@ import { findSpreadSpec } from "./services/specRegistry";
 import { MARKET_COMMODITY_CONFIG } from "./ingestion/config";
 import { getMarketIngestionRuntimeState, runMarketIngestionOnce } from "./ingestion/scheduler/marketIngestionJob";
 import { providerDefinitionsFor } from "./ingestion/config";
-import {
-  getCommoditySortKey,
-  getTransportShort,
-  formatQtyRangeK,
-  formatPriceRange,
-  formatPeriodSummary,
-} from "./services/seaBrokerageReportUtils";
+import { buildSeaBrokerageMarketUpdateMessage } from "./services/seaBrokerageMarketUpdateFormatter";
 import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
 import {
@@ -9634,81 +9628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      const toRegular = (value: string | null | undefined) => String(value || "").trim();
-
-      const byCommodity = new Map<string, SeaBrokerageEntryRow[]>();
-      for (const entry of matched) {
-        const commodityLabel = toRegular(entry.commodityLabel || entry.commodity);
-        const cropKey = entry.isNewCrop ? "NEW" : "STD";
-        const key = `${commodityLabel}|${cropKey}`;
-        const bucket = byCommodity.get(key) || [];
-        bucket.push(entry);
-        byCommodity.set(key, bucket);
-      }
-
-      const reportLines: string[] = [];
-      const reportDate = new Date().toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-      });
-      reportLines.push(`SPIKE BROKERS daily update ${reportDate}`);
-      reportLines.push("-----------------------------");
-
-      // Sort commodity groups by semantic category (grains -> oilseeds+byproducts -> other)
-      const sortedCommodities = Array.from(byCommodity.entries()).sort((a, b) => {
-        const keyA = getCommoditySortKey(a[1][0]);
-        const keyB = getCommoditySortKey(b[1][0]);
-        if (keyA !== keyB) return keyA - keyB;
-        return a[0].localeCompare(b[0]);
-      });
-
-      for (const [commodityKey, commodityEntries] of sortedCommodities) {
-        const [commodityLabel, cropKey] = commodityKey.split("|");
-        const commodityTitle = cropKey === "NEW" ? `${commodityLabel} (new crop)` : commodityLabel;
-        // No emoji
-        reportLines.push(commodityTitle);
-
-        const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
-        for (const entry of commodityEntries) {
-          const route = formatSeaBrokerageBasisRoute(entry, { uppercase: false, countryMode: "alpha2" });
-          const transport = getTransportShort(entry.transportType);
-          const key = `${route}|${transport}`;
-          const bucket = byRoute.get(key) || [];
-          bucket.push(entry);
-          byRoute.set(key, bucket);
-        }
-
-        for (const [routeKey, routeEntries] of Array.from(byRoute.entries()).sort((a, b) =>
-          a[0].localeCompare(b[0]),
-        )) {
-          const [route, transport] = routeKey.split("|");
-          const qtyLabel = formatQtyRangeK(routeEntries);
-          const headingParts = [route];
-          if (qtyLabel) headingParts.push(qtyLabel);
-          if (transport) headingParts.push(transport);
-          reportLines.push(`${headingParts.join(" ")}:`);
-
-          const routeOffers = routeEntries.filter((entry) => entry.type === "offer");
-          const routeBids = routeEntries.filter((entry) => entry.type === "bid");
-          if (routeOffers.length) {
-            reportLines.push(
-              `> Sellers ${formatPriceRange(routeOffers)} ${formatPeriodSummary(routeOffers)}`.trim(),
-            );
-          }
-          if (routeBids.length) {
-            reportLines.push(
-              `> Buyers ${formatPriceRange(routeBids)} ${formatPeriodSummary(routeBids)}`.trim(),
-            );
-          }
-          reportLines.push("");
-        }
-        reportLines.push("-----------------------------");
-      }
-
-      if (!matched.length) {
-        reportLines.push("No entries matched selected filters.");
-        reportLines.push("-----------------------------");
-      }
+      const reportMessage = buildSeaBrokerageMarketUpdateMessage(matched, new Date());
 
       const targetChat =
         authorizedBroker.telegramUserId ||
@@ -9725,7 +9645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const maxMessageLength = 3400;
       const chunks: string[] = [];
       let current = "";
-      for (const line of reportLines) {
+      for (const line of reportMessage.split("\n")) {
         const next = current ? `${current}\n${line}` : line;
         if (next.length > maxMessageLength) {
           if (current) chunks.push(current);
