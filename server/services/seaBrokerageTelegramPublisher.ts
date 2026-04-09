@@ -192,11 +192,13 @@ function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
   if (normalized === "panamax") return "Panamax vessels";
   if (normalized === "capesize") return "Capesize vessels";
   if (normalized === "vessel") return "Vessel";
-  if (normalized === "rail") return "Rail";
-  if (normalized === "truck") return "Truck";
+  if (normalized === "rail" || normalized === "ua wagons") return "UA wagons";
+  if (normalized === "truck" || normalized === "dump trucks") return "Dump trucks";
   if (normalized === "barge") return "Barge";
   if (normalized === "container") return "Container";
-  if (normalized === "truck/rail") return "Truck / Rail";
+  if (normalized === "truck/rail" || normalized === "ua wagons dump trucks") {
+    return "UA wagons | Dump trucks";
+  }
   return toTitleCase(normalized);
 }
 
@@ -254,6 +256,13 @@ function formatTelegramHeader(entry: SeaBrokerageEntryRow, brokerLabel: string) 
     return [ideaTag, flag, commodityEmoji].filter(Boolean).join(" ");
   }
   return [ideaTag].filter(Boolean).join(" ");
+}
+
+function isSeaBasisValue(value: string | null | undefined) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase();
+  return normalized === "FOB" || normalized === "CIF" || normalized === "CFR";
 }
 
 function formatQuantityLine(entry: SeaBrokerageEntryRow) {
@@ -329,6 +338,7 @@ function formatStandardTelegramMessage(
 ) {
   const isTrade = entry.type === "trade";
   const isMarketTrade = !!entry.isMarketTrade;
+  const isSeaBasis = isSeaBasisValue(entry.basis);
   const header = formatTelegramHeader(
     entry,
     includeBrokerSignature && (!isTrade || isMarketTrade)
@@ -357,7 +367,9 @@ function formatStandardTelegramMessage(
     formatTelegramHeaderSeparator(),
     isTrade
       ? formatTradePartyLine("SELLER", sellerLine, tradeSellerBroker)
-      : counterpartyLine,
+      : entry.type === "bid" && !isSeaBasis
+        ? null
+        : counterpartyLine,
     isTrade ? formatTradePartyLine("BUYER", buyerLine, tradeBuyerBroker) : null,
     !isTrade && entry.isNewCrop ? "NEW CROP" : null,
     formatTelegramCommodityCountryLine(entry, originCountryCode),

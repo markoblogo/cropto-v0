@@ -41,7 +41,16 @@ function resolveDestinationPortCodes(entry: BrokerageEntry) {
 
 export function mapTransportTypeToMode(transportType: string | null | undefined) {
   const normalized = String(transportType || "").toLowerCase();
-  if (normalized === "truck" || normalized === "rail" || normalized === "truck/rail") return "land";
+  if (
+    normalized === "truck" ||
+    normalized === "rail" ||
+    normalized === "truck/rail" ||
+    normalized === "dump_trucks" ||
+    normalized === "ua_wagons" ||
+    normalized === "ua_wagons_dump_trucks"
+  ) {
+    return "land";
+  }
   if (normalized === "barge") return "river";
   if (normalized === "container") return "container";
   if (normalized === "vessel" || normalized === "coaster" || normalized === "handysize" || normalized === "supramax" || normalized === "panamax" || normalized === "capesize") return "bulk_sea";

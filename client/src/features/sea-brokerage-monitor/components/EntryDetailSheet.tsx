@@ -45,6 +45,20 @@ function formatBrokerTelegramIdentity(telegramUsername?: string | null, telegram
   return "Not set";
 }
 
+function formatTransportDisplay(value: string | null | undefined) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (normalized === "ua_wagons") return "UA wagons";
+  if (normalized === "dump_trucks") return "Dump trucks";
+  if (normalized === "ua_wagons_dump_trucks") return "UA wagons | Dump trucks";
+  if (normalized === "truck/rail") return "UA wagons | Dump trucks";
+  if (normalized === "truck") return "Dump trucks";
+  if (normalized === "rail") return "UA wagons";
+  if (normalized === "vessel") return "Vessel (Other)";
+  return String(value || "Not set");
+}
+
 interface EntryDetailSheetProps {
   entry: BrokerageEntry | null;
   open: boolean;
@@ -119,7 +133,7 @@ export function EntryDetailSheet({
                 <Badge variant="secondary">{entry.type.toUpperCase()}</Badge>
                 <Badge variant="outline">{entry.commodityLabel}</Badge>
                 <Badge variant="outline">{entry.basis}</Badge>
-                <Badge variant="outline">{entry.transportType}</Badge>
+                <Badge variant="outline">{formatTransportDisplay(entry.transportType)}</Badge>
                 {entry.telegramRelayStatus ? <Badge variant="outline">Telegram: {entry.telegramRelayStatus}</Badge> : null}
               </div>
               <div className="rounded-xl bg-background px-4 py-4 text-sm font-medium leading-6 shadow-sm">
@@ -211,7 +225,7 @@ export function EntryDetailSheet({
               <DetailRow label="Period Start" value={entry.periodStart ?? "Not set"} />
               <DetailRow label="Period End" value={entry.periodEnd ?? "Not set"} />
               <DetailRow label="Price" value={`${formatEntryPriceRange(entry)} ${entry.currency}`} />
-              <DetailRow label="Transport" value={entry.transportType} />
+              <DetailRow label="Transport" value={formatTransportDisplay(entry.transportType)} />
               <DetailRow label="Other terms" value={entry.note || "Not set"} />
             </div>
 

@@ -306,7 +306,7 @@ export function SeaBrokerageMonitorPage() {
   );
   const toolbarTransportModeOptions = useMemo(() => {
     const labels: Record<TransportMode, string> = {
-      land: "Land (truck/rail)",
+      land: "Land (UA wagons / dump trucks)",
       river: "River (barge)",
       bulk_sea: "Bulk Sea (vessel)",
       container: "Containers",

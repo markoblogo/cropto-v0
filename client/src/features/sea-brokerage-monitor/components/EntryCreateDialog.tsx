@@ -95,13 +95,34 @@ const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
   { value: "panamax", label: "Panamax" },
   { value: "capesize", label: "Capesize" },
   { value: "coaster", label: "Coaster" },
-  { value: "truck", label: "Truck" },
-  { value: "rail", label: "Rail" },
-  { value: "truck/rail", label: "Truck/Rail" },
+  { value: "dump_trucks", label: "Dump trucks" },
+  { value: "ua_wagons", label: "UA wagons" },
+  { value: "ua_wagons_dump_trucks", label: "UA wagons | Dump trucks" },
   { value: "vessel", label: "Vessel (Other)" },
   { value: "barge", label: "Barge" },
   { value: "container", label: "Container" },
 ];
+
+function normalizeTransportTypeForForm(value: string | null | undefined): TransportType {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (normalized === "truck") return "dump_trucks";
+  if (normalized === "rail") return "ua_wagons";
+  if (normalized === "truck/rail") return "ua_wagons_dump_trucks";
+  if (normalized === "dump_trucks") return "dump_trucks";
+  if (normalized === "ua_wagons") return "ua_wagons";
+  if (normalized === "ua_wagons_dump_trucks") return "ua_wagons_dump_trucks";
+  if (normalized === "handysize") return "handysize";
+  if (normalized === "supramax") return "supramax";
+  if (normalized === "panamax") return "panamax";
+  if (normalized === "capesize") return "capesize";
+  if (normalized === "coaster") return "coaster";
+  if (normalized === "vessel") return "vessel";
+  if (normalized === "barge") return "barge";
+  if (normalized === "container") return "container";
+  return "vessel";
+}
 
 const entryFormSchema = z
   .object({
@@ -153,6 +174,9 @@ const entryFormSchema = z
       "panamax",
       "capesize",
       "coaster",
+      "dump_trucks",
+      "ua_wagons",
+      "ua_wagons_dump_trucks",
       "truck",
       "rail",
       "truck/rail",
@@ -422,7 +446,7 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     paymentTerms: entry.paymentTerms || "CAD",
     sellerCommission: entry.sellerCommission ?? undefined,
     buyerCommission: entry.buyerCommission ?? undefined,
-    transportType: entry.transportType,
+    transportType: normalizeTransportTypeForForm(entry.transportType),
     note: entry.note || "",
     isMarketTrade: !!entry.isMarketTrade,
   };
