@@ -107,6 +107,8 @@ const entryStatusOptions: Array<{ value: SeaBrokerageEntryStatus; label: string 
   { value: "active", label: "Active" },
   { value: "needs_update", label: "Needs Update" },
 ];
+const tolerancePctOptions = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+const allowedTolerancePct = new Set<number>(tolerancePctOptions);
 
 const harvestCurrentYear = new Date().getFullYear();
 const harvestYearValues = [
@@ -183,8 +185,11 @@ const entryFormSchema = z
     quantityToMt: z.coerce.number().min(0, "Quantity to must be 0 or greater").optional(),
     tolerancePct: z.coerce
       .number()
-      .min(0, "Tolerance must be 0 or greater")
-      .max(25, "Tolerance must be 25% or lower")
+      .int("Tolerance must be an integer value")
+      .refine(
+        (value) => allowedTolerancePct.has(value),
+        `Allowed tolerance values: ${tolerancePctOptions.map((value) => `± ${value}%`).join(", ")}`,
+      )
       .optional()
       .default(0),
     basis: z.string().trim().min(1, "Delivery basis is required"),
@@ -463,7 +468,12 @@ function getDefaultValuesFromEntry(entry: BrokerageEntry): EntryFormValues {
     quantityMt: entry.quantityMt ?? entry.volumeFrom ?? 0,
     quantityFromMt: quantityPreset === "range" ? entry.volumeFrom : undefined,
     quantityToMt: quantityPreset === "range" ? entry.volumeTo : undefined,
-    tolerancePct: entry.tolerancePct ?? 0,
+    tolerancePct:
+      entry.tolerancePct !== null &&
+      entry.tolerancePct !== undefined &&
+      allowedTolerancePct.has(entry.tolerancePct)
+        ? entry.tolerancePct
+        : 5,
     basis: entry.basis,
     destinationPortCodes:
       (Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length
@@ -2171,8 +2181,28 @@ export function EntryCreateDialog({
                   <FormItem>
                     <FormLabel>Tolerance, +/- %</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" step="0.1" {...field} />
+                      <Input
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="1"
+                        list="tolerance-pct-options"
+                        value={field.value ?? ""}
+                        onChange={(event) =>
+                          field.onChange(
+                            event.target.value === "" ? undefined : Number(event.target.value),
+                          )
+                        }
+                      />
                     </FormControl>
+                    <datalist id="tolerance-pct-options">
+                      {tolerancePctOptions.map((value) => (
+                        <option key={value} value={value} />
+                      ))}
+                    </datalist>
+                    <div className="text-[11px] text-muted-foreground">
+                      Allowed: {tolerancePctOptions.map((value) => `± ${value}%`).join(", ")}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
