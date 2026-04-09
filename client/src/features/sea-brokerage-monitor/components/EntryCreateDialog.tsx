@@ -443,7 +443,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     quantityToMt: undefined,
     tolerancePct: 5,
     basis: "FOB",
-    destinationPortCodes: ["odesa"],
+    destinationPortCodes: [],
     periodMonth,
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
@@ -2232,7 +2232,7 @@ export function EntryCreateDialog({
                         value={field.value ?? ""}
                         onChange={(event) =>
                           field.onChange(
-                            event.target.value === "" ? undefined : Number(event.target.value),
+                            event.target.value === "" ? "" : Number(event.target.value),
                           )
                         }
                       />
