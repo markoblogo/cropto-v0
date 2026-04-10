@@ -18,6 +18,8 @@ const DEFAULT_MINUTE = Number(process.env.SEA_BROKERAGE_DAILY_REPORT_MINUTE || "
 const LAST_SENT_KEY = "sea_brokerage_daily_report_last_sent_local_date";
 const REPORT_PROFILES_KEY = "sea_brokerage_report_profiles_v1";
 const REPORT_PROFILES_AUTO_LAST_SENT_KEY = "sea_brokerage_report_profiles_auto_last_sent_v1";
+const SEA_BASIS_SET = new Set(["FOB", "CIF", "CFR"]);
+const LAND_BASIS_SET = new Set(["DAP", "CPT", "FCA", "DDU"]);
 
 let timer: NodeJS.Timeout | null = null;
 let running = false;
@@ -137,34 +139,49 @@ function shouldIncludeEntryByProfile(entry: SeaBrokerageEntryRow, profile: SeaBr
   return true;
 }
 
-async function sendDailyGroupReports(entries: SeaBrokerageEntryRow[]) {
+function isSeaEntryBasis(entry: SeaBrokerageEntryRow) {
+  const basis = String(entry.basis || "").trim().toUpperCase();
+  return SEA_BASIS_SET.has(basis);
+}
+
+function isLandEntryBasis(entry: SeaBrokerageEntryRow) {
+  const basis = String(entry.basis || "").trim().toUpperCase();
+  return LAND_BASIS_SET.has(basis);
+}
+
+async function sendDailyGroupReportsScoped(entries: SeaBrokerageEntryRow[]) {
   if (!entries.length) {
     const noActivityMessage = await buildSeaBrokerageMarketUpdateMessage([], new Date(), {
       title: "🇺🇦 SPIKE BROKERS Market Update",
     });
-    const single = await sendSeaBrokerageTelegramInternalBroadcast(noActivityMessage);
+    const single = await sendSeaBrokerageTelegramInternalBroadcast(noActivityMessage, { scope: "all" });
     if (single.status !== "published") {
       return { ok: false as const, error: single.error || "Failed to send no-activity report" };
     }
     return { ok: true as const };
   }
 
-  const grouped = await buildSeaBrokerageMarketUpdateMessagesByGroup(entries, new Date());
-  if (!grouped.length) {
-    const noActivityMessage = await buildSeaBrokerageMarketUpdateMessage([], new Date(), {
-      title: "🇺🇦 SPIKE BROKERS Market Update",
-    });
-    const single = await sendSeaBrokerageTelegramInternalBroadcast(noActivityMessage);
-    if (single.status !== "published") {
-      return { ok: false as const, error: single.error || "Failed to send no-activity report" };
-    }
-    return { ok: true as const };
-  }
+  const seaEntries = entries.filter(isSeaEntryBasis);
+  const landEntries = entries.filter(isLandEntryBasis);
+  const buckets: Array<{ scope: "sea" | "land"; data: SeaBrokerageEntryRow[] }> = [
+    { scope: "sea", data: seaEntries },
+    { scope: "land", data: landEntries },
+  ];
 
-  for (const groupReport of grouped) {
-    const result = await sendSeaBrokerageTelegramInternalBroadcast(groupReport.message);
-    if (result.status !== "published") {
-      return { ok: false as const, error: result.error || `Failed to send ${groupReport.group}` };
+  for (const bucket of buckets) {
+    if (!bucket.data.length) continue;
+    const grouped = await buildSeaBrokerageMarketUpdateMessagesByGroup(bucket.data, new Date());
+    if (!grouped.length) continue;
+    for (const groupReport of grouped) {
+      const result = await sendSeaBrokerageTelegramInternalBroadcast(groupReport.message, {
+        scope: bucket.scope,
+      });
+      if (result.status !== "published") {
+        return {
+          ok: false as const,
+          error: result.error || `Failed to send ${groupReport.group} (${bucket.scope})`,
+        };
+      }
     }
   }
   return { ok: true as const };
@@ -225,7 +242,7 @@ async function runDailyReportTick() {
     const todayEntries = allEntries.filter((entry) =>
       isCreatedOnLocalDate(new Date(entry.createdAt), local.dateKey, DEFAULT_TIMEZONE),
     );
-    const groupedResult = await sendDailyGroupReports(todayEntries);
+    const groupedResult = await sendDailyGroupReportsScoped(todayEntries);
     if (!groupedResult.ok) {
       console.error(`[SeaBrokerageDailyReport] failed for ${local.dateKey}: ${groupedResult.error}`);
       return;

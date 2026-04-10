@@ -25,6 +25,7 @@ type RelayTarget = {
   channel: RelayChannel;
   chatId: string;
 };
+type RelayScope = "sea" | "land" | "all";
 
 const TELEGRAM_REQUEST_TIMEOUT_MS = Math.max(
   1000,
@@ -371,7 +372,19 @@ function isLandBasisValue(value: string | null | undefined) {
   const normalized = String(value || "")
     .trim()
     .toUpperCase();
-  return normalized === "EXW" || normalized === "FCA" || normalized === "CPT" || normalized === "DAP";
+  return (
+    normalized === "EXW" ||
+    normalized === "FCA" ||
+    normalized === "CPT" ||
+    normalized === "DAP" ||
+    normalized === "DDU"
+  );
+}
+
+function resolveRelayScopeByBasis(value: string | null | undefined): RelayScope {
+  if (isSeaBasisValue(value)) return "sea";
+  if (isLandBasisValue(value)) return "land";
+  return "all";
 }
 
 function formatQuantityLine(entry: SeaBrokerageEntryRow) {
@@ -688,14 +701,31 @@ function resolveSeaBrokerageRelayTargets(entry: SeaBrokerageEntryRow): RelayTarg
   const targets: RelayTarget[] = [];
   const internalEnabled = parseBoolean(process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_ENABLED, true);
   const externalEnabled = parseBoolean(process.env.SEA_BROKERAGE_TELEGRAM_EXTERNAL_ENABLED, false);
+  const scope = resolveRelayScopeByBasis(entry.basis);
 
   if (internalEnabled) {
-    appendChatIds(targets, "internal", [
-      process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID,
-      process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_IDS,
-      process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID,
-      process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS,
-    ]);
+    if (scope === "sea" || scope === "all") {
+      appendChatIds(targets, "internal", [
+        process.env.SEA_BROKERAGE_TELEGRAM_SEA_CHAT_ID,
+        process.env.SEA_BROKERAGE_TELEGRAM_SEA_CHAT_IDS,
+      ]);
+    }
+    if (scope === "land" || scope === "all") {
+      appendChatIds(targets, "internal", [
+        process.env.SEA_BROKERAGE_TELEGRAM_LAND_CHAT_ID,
+        process.env.SEA_BROKERAGE_TELEGRAM_LAND_CHAT_IDS,
+      ]);
+    }
+
+    // Backward-compatible fallback if scoped chats are not configured yet.
+    if (targets.length === 0) {
+      appendChatIds(targets, "internal", [
+        process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID,
+        process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_IDS,
+        process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID,
+        process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS,
+      ]);
+    }
 
     if (entry.originCountryCode?.toUpperCase() === "UA") {
       appendChatIds(targets, "internal", [
@@ -726,14 +756,28 @@ function resolveSeaBrokerageRelayTargetsForMatch(match: SeaBrokerageMatchSuggest
   return resolveSeaBrokerageRelayTargets(match.bidEntry);
 }
 
-function resolveSeaBrokerageInternalRelayTargets(): RelayTarget[] {
+function resolveSeaBrokerageInternalRelayTargets(scope: RelayScope = "all"): RelayTarget[] {
   const targets: RelayTarget[] = [];
-  appendChatIds(targets, "internal", [
-    process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID,
-    process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_IDS,
-    process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID,
-    process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS,
-  ]);
+  if (scope === "sea" || scope === "all") {
+    appendChatIds(targets, "internal", [
+      process.env.SEA_BROKERAGE_TELEGRAM_SEA_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_SEA_CHAT_IDS,
+    ]);
+  }
+  if (scope === "land" || scope === "all") {
+    appendChatIds(targets, "internal", [
+      process.env.SEA_BROKERAGE_TELEGRAM_LAND_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_LAND_CHAT_IDS,
+    ]);
+  }
+  if (targets.length === 0) {
+    appendChatIds(targets, "internal", [
+      process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_INTERNAL_CHAT_IDS,
+      process.env.SEA_BROKERAGE_TELEGRAM_CHAT_ID,
+      process.env.SEA_BROKERAGE_TELEGRAM_CHAT_IDS,
+    ]);
+  }
   const deduped = new Map<string, RelayTarget>();
   for (const target of targets) {
     const key = `${target.channel}:${target.chatId}`;
@@ -913,7 +957,8 @@ export async function sendSeaBrokerageTelegramDirectMessage(
 
 export async function sendSeaBrokerageTelegramInternalBroadcast(
   text: string,
+  options?: { scope?: RelayScope },
 ): Promise<TelegramPublishResult> {
-  const targets = resolveSeaBrokerageInternalRelayTargets();
+  const targets = resolveSeaBrokerageInternalRelayTargets(options?.scope || "all");
   return sendTelegramMessages(text, text, targets);
 }
