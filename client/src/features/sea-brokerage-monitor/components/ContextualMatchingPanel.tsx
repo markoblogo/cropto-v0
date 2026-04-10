@@ -70,6 +70,26 @@ function normalizeCompareValue(value: string) {
   return value.trim().replace(/\s+/g, " ").toUpperCase();
 }
 
+function formatComparePeriod(entry: BrokerageEntry) {
+  const startRaw = String(entry.periodStart || "").trim();
+  const endRaw = String(entry.periodEnd || "").trim();
+  if (!startRaw || !endRaw) {
+    return entry.periodLabel || "Open";
+  }
+
+  const start = new Date(startRaw);
+  const end = new Date(endRaw);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return entry.periodLabel || "Open";
+  }
+
+  const dayMonth = (value: Date) =>
+    `${String(value.getDate()).padStart(2, "0")} ${value.toLocaleString("en-US", {
+      month: "short",
+    })}`;
+  return `${dayMonth(start)} - ${dayMonth(end)} ${end.getFullYear()}`;
+}
+
 function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
   const bid = suggestion.bidEntry;
   const offer = suggestion.offerEntry;
@@ -82,12 +102,6 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
           .filter(Boolean);
 
   const rows: CompareRow[] = [
-    {
-      label: "Counterparty",
-      offerValue: offer.sellerName?.trim() || "Not specified",
-      bidValue: bid.buyerName?.trim() || "Not specified",
-      equal: normalizeCompareValue(bid.buyerName?.trim() || "") === normalizeCompareValue(offer.sellerName?.trim() || ""),
-    },
     {
       label: "Commodity",
       offerValue: offer.commodityLabel,
@@ -118,9 +132,9 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
     },
     {
       label: "Period",
-      offerValue: offer.periodLabel,
-      bidValue: bid.periodLabel,
-      equal: normalizeCompareValue(bid.periodLabel) === normalizeCompareValue(offer.periodLabel),
+      offerValue: formatComparePeriod(offer),
+      bidValue: formatComparePeriod(bid),
+      equal: normalizeCompareValue(formatComparePeriod(bid)) === normalizeCompareValue(formatComparePeriod(offer)),
     },
     {
       label: "Price",
@@ -528,14 +542,18 @@ export function ContextualMatchingPanel({
                   </div>
                   <div
                     className={`rounded border px-2 py-1 text-[11px] sm:col-span-4 ${
-                      row.equal ? "border-border/60 text-foreground" : "border-amber-400/60 text-amber-200"
+                      row.equal
+                        ? "border-border/60 text-foreground"
+                        : "border-amber-500/60 bg-amber-50/70 text-amber-800 dark:border-amber-400/60 dark:bg-amber-950/20 dark:text-amber-200"
                     }`}
                   >
                     {row.offerValue}
                   </div>
                   <div
                     className={`rounded border px-2 py-1 text-[11px] sm:col-span-4 ${
-                      row.equal ? "border-border/60 text-foreground" : "border-sky-400/60 text-sky-200"
+                      row.equal
+                        ? "border-border/60 text-foreground"
+                        : "border-sky-500/60 bg-sky-50/70 text-sky-800 dark:border-sky-400/60 dark:bg-sky-950/20 dark:text-sky-200"
                     }`}
                   >
                     {row.bidValue}
@@ -544,8 +562,8 @@ export function ContextualMatchingPanel({
                     <div
                       className={`inline-flex h-8 w-full items-center justify-center rounded border text-sm font-semibold ${
                         row.equal
-                          ? "border-emerald-500/70 bg-emerald-500/15 text-emerald-300"
-                          : "border-rose-500/70 bg-rose-500/15 text-rose-300"
+                          ? "border-emerald-500/70 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                          : "border-rose-500/70 bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
                       }`}
                     >
                       {row.equal ? "✔️" : "✖️"}
