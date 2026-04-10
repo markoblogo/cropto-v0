@@ -28,7 +28,7 @@ export function MainLayout({
       />
       <main
         className={`container mx-auto flex-1 w-full px-4 sm:px-6 lg:px-8 ${
-          isSeaBrokerageMonitorRoute ? "py-2.5" : "py-8"
+          isSeaBrokerageMonitorRoute ? "py-1.5 sm:py-2" : "py-8"
         }`}
       >
         {children}

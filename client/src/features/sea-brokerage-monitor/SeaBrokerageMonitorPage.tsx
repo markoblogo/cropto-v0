@@ -1307,7 +1307,8 @@ export function SeaBrokerageMonitorPage() {
 
   return (
     <MainLayout>
-      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-0.5 overflow-x-hidden pb-1 sm:gap-1">
+      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-0.5 overflow-x-hidden pb-0 sm:gap-1">
+        <div className="flex min-h-0 flex-col gap-0.5 lg:h-[calc(100vh-172px)] lg:max-h-[calc(100vh-172px)] sm:gap-1">
         <MonitorToolbar
           filters={filters}
           onFilterChange={updateFilter}
@@ -1335,7 +1336,7 @@ export function SeaBrokerageMonitorPage() {
           onDeletePreset={() => void handleDeletePreset()}
         />
 
-        <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
+        <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
           <BrokerWorkspacePane
             title="Offers"
             emptyTitle="No visible offers"
@@ -1385,7 +1386,7 @@ export function SeaBrokerageMonitorPage() {
           />
         </section>
 
-        <section className="grid min-w-0 gap-0.5 overflow-hidden xl:grid-cols-2 sm:gap-1">
+        <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
           <ContextualMatchingPanel
             entries={primaryWindowEntries}
             selectedEntry={selectedEntry}
@@ -1418,6 +1419,8 @@ export function SeaBrokerageMonitorPage() {
             }}
           />
         </section>
+
+        </div>
 
         <Collapsible>
           <div className="flex items-center justify-end gap-2">
