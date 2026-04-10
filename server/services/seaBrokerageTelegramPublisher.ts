@@ -430,8 +430,14 @@ function formatQuantityLine(entry: SeaBrokerageEntryRow) {
 }
 
 function formatBasisRouteReadable(entry: SeaBrokerageEntryRow) {
-  const route = formatSeaBrokerageBasisRoute(entry, { uppercase: true, countryMode: "name" });
-  return normalizeCountryName(route);
+  const route = formatSeaBrokerageBasisRoute(
+    {
+      ...entry,
+      basis: String(entry.basis || "").trim().toUpperCase(),
+    },
+    { uppercase: false, countryMode: "name" },
+  );
+  return route.replace(/\bTurkey\b/gi, "Turkiye");
 }
 
 function resolveCommodityEmoji(entry: SeaBrokerageEntryRow) {

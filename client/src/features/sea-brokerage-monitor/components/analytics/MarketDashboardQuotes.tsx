@@ -20,6 +20,11 @@ export function MarketDashboardQuotes() {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  const deltaFormatter = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  });
+
   if (isLoading || !quotes) {
     return (
       <Card className="border-border/60">
@@ -42,6 +47,9 @@ export function MarketDashboardQuotes() {
     const isPositive = quote.change > 0;
     const isNegative = quote.change < 0;
     const TrendIcon = isPositive ? ArrowUp : isNegative ? ArrowDown : ArrowRight;
+    const formattedDelta = `${isPositive ? "+" : isNegative ? "-" : ""}${deltaFormatter.format(
+      Math.abs(quote.change),
+    )}`;
 
     return (
       <div
@@ -61,8 +69,7 @@ export function MarketDashboardQuotes() {
                 isPositive ? "text-emerald-500" : isNegative ? "text-red-500" : "text-muted-foreground"
               }`}
             >
-              {isPositive ? "+" : ""}
-              {quote.change}
+              {formattedDelta}
             </span>
           </div>
         </div>
