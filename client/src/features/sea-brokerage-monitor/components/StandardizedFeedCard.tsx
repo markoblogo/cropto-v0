@@ -34,6 +34,7 @@ import { PremiumToExchange } from "./analytics/PremiumToExchange";
 import { LiquidityByBasis } from "./analytics/LiquidityByBasis";
 import { MarketDashboardQuotes } from "./analytics/MarketDashboardQuotes";
 import { BasisSpreadChart } from "./analytics/BasisSpreadChart";
+import { BossAnalyticsView } from "./analytics/BossAnalyticsView";
 import { exportEntriesToCsv, exportEntriesToXlsx } from "../services/export.service";
 import {
   buildFeedAnalyticsSeries,
@@ -52,9 +53,19 @@ interface StandardizedFeedCardProps {
   entries: BrokerageEntry[];
   onOpenReport?: () => void;
   onSelectEntry?: (entry: BrokerageEntry) => void;
+  showBossAnalytics?: boolean;
+  monitorAuthToken?: string | null;
 }
 
-type FeedSecondaryView = "tape" | "archive" | "analytics";
+type FeedSecondaryView =
+  | "tape"
+  | "archive"
+  | "markets"
+  | "price_volume"
+  | "liquidity"
+  | "spreads"
+  | "premiums"
+  | "boss";
 type AnalyticsCurrencyMode = "all" | "usd" | "eur";
 
 const FX_TO_USD: Record<string, number> = {
@@ -150,8 +161,34 @@ function TapeTypeBadge({ entry }: { entry: BrokerageEntry }) {
   );
 }
 
-export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: StandardizedFeedCardProps) {
-  const [view, setView] = useState<FeedSecondaryView>("analytics");
+function SecondaryCriteriaPanel({ title, lines }: { title: string; lines: string[] }) {
+  return (
+    <Card className="border-border/60 bg-card/70">
+      <CardHeader className="px-4 py-3">
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <CardDescription className="text-xs">Criteria</CardDescription>
+      </CardHeader>
+      <CardContent className="px-4 pb-4 pt-0">
+        <ul className="space-y-2">
+          {lines.map((line) => (
+            <li key={line} className="text-xs text-muted-foreground">
+              {line}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function StandardizedFeedCard({
+  entries,
+  onOpenReport,
+  onSelectEntry,
+  showBossAnalytics = false,
+  monitorAuthToken = null,
+}: StandardizedFeedCardProps) {
+  const [view, setView] = useState<FeedSecondaryView>("markets");
   const [analyticsCurrency, setAnalyticsCurrency] = useState<AnalyticsCurrencyMode>("all");
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
@@ -484,13 +521,55 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
                   Archive
                 </Button>
                 <Button
-                  variant={view === "analytics" ? "secondary" : "ghost"}
+                  variant={view === "markets" ? "secondary" : "ghost"}
                   size="sm"
                   className="h-8"
-                  onClick={() => setView("analytics")}
+                  onClick={() => setView("markets")}
                 >
-                  Analytics
+                  Markets
                 </Button>
+                <Button
+                  variant={view === "price_volume" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("price_volume")}
+                >
+                  Price & Volume
+                </Button>
+                <Button
+                  variant={view === "liquidity" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("liquidity")}
+                >
+                  Liquidity
+                </Button>
+                <Button
+                  variant={view === "spreads" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("spreads")}
+                >
+                  Spreads
+                </Button>
+                <Button
+                  variant={view === "premiums" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("premiums")}
+                >
+                  Premiums
+                </Button>
+                {showBossAnalytics ? (
+                  <Button
+                    variant={view === "boss" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setView("boss")}
+                  >
+                    Boss
+                  </Button>
+                ) : null}
               </div>
             </div>
           </div>
@@ -605,18 +684,83 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
                 </div>
               </ScrollArea>
             )
+          ) : view === "markets" ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="p-4">
+                <MarketDashboardQuotes />
+              </div>
+            </ScrollArea>
+          ) : view === "price_volume" ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <UniversalChart entries={entries} />
+                <SecondaryCriteriaPanel
+                  title="Price & Volume"
+                  lines={[
+                    "Commodity: default Corn",
+                    "Period: 1M / 3M / 6M / custom",
+                    "Basis: selectable",
+                    "Delivery places: multi-select",
+                    "Mode: Price VWAP / Volume",
+                  ]}
+                />
+              </div>
+            </ScrollArea>
+          ) : view === "liquidity" ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <LiquidityByBasis entries={entries} />
+                <SecondaryCriteriaPanel
+                  title="Liquidity"
+                  lines={[
+                    "Commodity: selectable",
+                    "Period: 1M / 3M / 6M / custom",
+                    "Aggregates BID and OFFER volumes by basis",
+                  ]}
+                />
+              </div>
+            </ScrollArea>
+          ) : view === "spreads" ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <BasisSpreadChart entries={entries} />
+                <SecondaryCriteriaPanel
+                  title="Spreads"
+                  lines={[
+                    "BIDs only",
+                    "Commodity + transport + period filters",
+                    "Pair basis A vs basis B",
+                    "Mode: strict / asynchronous",
+                    "Chart: daily / weekly",
+                  ]}
+                />
+              </div>
+            </ScrollArea>
+          ) : view === "premiums" ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <PremiumToExchange entries={entries} />
+                <SecondaryCriteriaPanel
+                  title="Premiums"
+                  lines={[
+                    "Exchange reference: Barchart",
+                    "Physical filters: commodity / basis / place",
+                    "Period: 1M / 3M / 6M / custom",
+                    "Chart: daily / weekly averages",
+                  ]}
+                />
+              </div>
+            </ScrollArea>
+          ) : view === "boss" && showBossAnalytics ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="p-4">
+                <BossAnalyticsView monitorAuthToken={monitorAuthToken} />
+              </div>
+            </ScrollArea>
           ) : (
             <ScrollArea className="h-full min-h-0 flex-1">
-              <div className="space-y-4 p-4">
+              <div className="p-4">
                 <MarketDashboardQuotes />
-                <div className="grid gap-4 xl:grid-cols-2">
-                  <UniversalChart entries={entries} />
-                  <LiquidityByBasis entries={entries} />
-                </div>
-                <div className="grid gap-4 xl:grid-cols-2">
-                  <BasisSpreadChart entries={entries} />
-                  <PremiumToExchange entries={entries} />
-                </div>
               </div>
             </ScrollArea>
           )}

@@ -6,14 +6,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, BarChart3 } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { BrokerWorkspacePane, type BrokerWorkspacePaneFilters } from "./components/BrokerWorkspacePane";
 import { ContextualMatchingPanel } from "./components/ContextualMatchingPanel";
 import { EntryDetailSheet } from "./components/EntryDetailSheet";
 import { EntryCreateDialog, type EntryCreateFormPrefill } from "./components/EntryCreateDialog";
 import { MonitorToolbar } from "./components/MonitorToolbar";
 import { StandardizedFeedCard } from "./components/StandardizedFeedCard";
-import { BossAnalyticsView } from "./components/analytics/BossAnalyticsView";
 import { useSeaBrokerageTelegramSession } from "./hooks/useSeaBrokerageTelegramSession";
 import { useSeaBrokerageMonitorState } from "./hooks/useSeaBrokerageMonitorState";
 import {
@@ -1447,6 +1446,11 @@ export function SeaBrokerageMonitorPage() {
               <StandardizedFeedCard
                 entries={filteredEntries}
                 onSelectEntry={handleSelectEntry}
+                showBossAnalytics={
+                  !!session.authorProfile &&
+                  SEA_BROKERAGE_BOSS_CODES.has(String(session.authorProfile.brokerCode || "").toUpperCase())
+                }
+                monitorAuthToken={session.monitorAuthToken}
                 onOpenReport={() => {
                   setReportOpen(true);
                   setReportStatus(null);
@@ -1455,30 +1459,6 @@ export function SeaBrokerageMonitorPage() {
             </div>
           </CollapsibleContent>
         </Collapsible>
-
-        {session.authorProfile &&
-          SEA_BROKERAGE_BOSS_CODES.has(String(session.authorProfile.brokerCode || "").toUpperCase()) && (
-  <Collapsible className="mt-2 sm:mt-4">
-    <div className="flex items-center justify-end gap-2 px-1 sm:px-0">
-      <CollapsibleTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 border-purple-500/40 bg-purple-500/10 text-[10.5px] font-semibold uppercase tracking-wider text-purple-300 hover:bg-purple-500/20 hover:text-purple-200 sm:h-8 sm:text-xs"
-        >
-          <BarChart3 className="mr-2 h-3.5 w-3.5" />
-          Boss Analytics Dashboard
-          <ChevronDown className="ml-2 h-4 w-4" />
-        </Button>
-      </CollapsibleTrigger>
-    </div>
-    <CollapsibleContent className="mt-2">
-      <div className="rounded-xl border border-purple-500/30 bg-card/80 p-1.5 shadow-2xl backdrop-blur-sm sm:p-4">
-        <BossAnalyticsView monitorAuthToken={session.monitorAuthToken} />
-      </div>
-    </CollapsibleContent>
-  </Collapsible>
-          )}
       </div>
 
       <EntryCreateDialog
