@@ -1422,7 +1422,7 @@ export function SeaBrokerageMonitorPage() {
         <Collapsible>
           <div className="flex items-center justify-end gap-2">
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 text-[10.5px] text-muted-foreground sm:h-6.5 sm:text-xs">
+              <Button variant="ghost" size="sm" className="h-6 text-[10.5px] text-foreground/70 dark:text-muted-foreground sm:h-6.5 sm:text-xs">
                 Secondary Views
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
@@ -1564,7 +1564,7 @@ export function SeaBrokerageMonitorPage() {
           ) : (
             <div className="space-y-3">
               <div className="rounded-md border border-border/70 p-3">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-foreground/70 dark:text-muted-foreground">
                   Sign in via Telegram link
                 </div>
                 <div className="space-y-2">
@@ -1582,7 +1582,7 @@ export function SeaBrokerageMonitorPage() {
                     Send sign-in link in Telegram
                   </Button>
                   {magicLinkRequested ? (
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                       Link sent in Telegram DM. Open it from Telegram to complete sign-in automatically.
                     </div>
                   ) : null}
@@ -1597,7 +1597,7 @@ export function SeaBrokerageMonitorPage() {
             </div>
           ) : null}
           {session.isLoading ? (
-            <div className="text-xs text-muted-foreground">Authorizing Telegram session...</div>
+            <div className="text-xs text-foreground/70 dark:text-muted-foreground">Authorizing Telegram session...</div>
           ) : null}
         </DialogContent>
       </Dialog>
@@ -1611,7 +1611,7 @@ export function SeaBrokerageMonitorPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-md border border-border/70 p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">
               Saved profiles
             </div>
             <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
@@ -1687,7 +1687,7 @@ export function SeaBrokerageMonitorPage() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Custom title (optional)</div>
+            <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Custom title (optional)</div>
             <Input
               value={reportForm.title}
               onChange={(event) => setReportForm((prev) => ({ ...prev, title: event.target.value }))}
@@ -1696,7 +1696,7 @@ export function SeaBrokerageMonitorPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Format mode</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Format mode</div>
               <select
                 className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={reportForm.formatMode}
@@ -1715,7 +1715,7 @@ export function SeaBrokerageMonitorPage() {
               </select>
             </div>
             <div className="space-y-1.5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Template</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Template</div>
               <select
                 className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={reportForm.templateKey}
@@ -1735,7 +1735,7 @@ export function SeaBrokerageMonitorPage() {
             </div>
           </div>
           <div className="rounded-md border border-border/70 p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Quick templates</div>
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Quick templates</div>
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" onClick={() => applyReportTemplatePreset("cassilo")}>
                 Apply Cassilo preset
@@ -1746,7 +1746,7 @@ export function SeaBrokerageMonitorPage() {
             </div>
           </div>
           <div className="rounded-md border border-border/70 p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Groups</div>
+            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Groups</div>
             <div className="grid gap-2 sm:grid-cols-2">
               {REPORT_GROUP_OPTIONS.map((option) => (
                 <label key={option.value} className="inline-flex items-center gap-2 text-sm">
@@ -1759,12 +1759,12 @@ export function SeaBrokerageMonitorPage() {
               ))}
             </div>
           </div>
-          <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-foreground/70 dark:text-muted-foreground">
             Posted range = when BID/OFFER was published. Period range = shipment/delivery window inside entries.
           </div>
           <div className="rounded-md border border-border/70 p-3">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Commodities</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Commodities</div>
               <div className="flex flex-wrap gap-1">
                 <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={selectCommoditiesFromGroups}>
                   From groups
@@ -1792,7 +1792,7 @@ export function SeaBrokerageMonitorPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Posted from</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Posted from</div>
               <Input
                 type="date"
                 value={reportForm.postedFrom}
@@ -1800,7 +1800,7 @@ export function SeaBrokerageMonitorPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Posted to</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Posted to</div>
               <Input
                 type="date"
                 value={reportForm.postedTo}
@@ -1811,7 +1811,7 @@ export function SeaBrokerageMonitorPage() {
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5 sm:col-span-1">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Period from</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Period from</div>
               <Input
                 type="date"
                 value={reportForm.periodStart}
@@ -1819,7 +1819,7 @@ export function SeaBrokerageMonitorPage() {
               />
             </div>
             <div className="space-y-1.5 sm:col-span-1">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Period to</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Period to</div>
               <Input
                 type="date"
                 value={reportForm.periodEnd}
@@ -1827,7 +1827,7 @@ export function SeaBrokerageMonitorPage() {
               />
             </div>
             <div className="space-y-1.5 sm:col-span-1">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Overlap</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Overlap</div>
               <select
                 className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={String(reportForm.overlapDays)}
@@ -1866,7 +1866,7 @@ export function SeaBrokerageMonitorPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-md border border-border/70 p-3">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Basis</div>
+                <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Basis</div>
                 <div className="flex flex-wrap gap-1">
                   <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={selectAllReportBasis}>
                     Select all
@@ -1890,7 +1890,7 @@ export function SeaBrokerageMonitorPage() {
             </div>
             <div className="rounded-md border border-border/70 p-3">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Delivery places</div>
+                <div className="text-xs uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Delivery places</div>
                 <div className="flex flex-wrap gap-1">
                   <Button
                     type="button"

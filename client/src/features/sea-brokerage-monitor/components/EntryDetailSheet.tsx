@@ -31,7 +31,7 @@ function extractHarvestYear(entry: BrokerageEntry) {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1 rounded-xl border border-border/70 bg-muted/20 px-4 py-3">
-      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-[0.16em] text-foreground/70 dark:text-muted-foreground">{label}</div>
       <div className="break-words text-sm text-foreground">{value}</div>
     </div>
   );
@@ -232,32 +232,32 @@ export function EntryDetailSheet({
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-                  <UserRound className="h-4 w-4 text-muted-foreground" />
+                  <UserRound className="h-4 w-4 text-foreground/70 dark:text-muted-foreground" />
                   Author
                 </div>
                 <div className="space-y-2 text-sm">
                   <div>{entry.createdBy.displayName}</div>
-                  <div className="text-muted-foreground">{entry.createdBy.email}</div>
-                  <div className="text-muted-foreground">
+                  <div className="text-foreground/70 dark:text-muted-foreground">{entry.createdBy.email}</div>
+                  <div className="text-foreground/70 dark:text-muted-foreground">
                     {entry.createdBy.brokerCode} / {entry.createdBy.companyName}
                   </div>
                 </div>
               </div>
               <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                  <CalendarClock className="h-4 w-4 text-foreground/70 dark:text-muted-foreground" />
                   Created
                 </div>
                 <div className="space-y-2 text-sm">
                   <div>{formatEntryDateTime(entry.createdAt)}</div>
-                  <div className="text-muted-foreground">{entry.createdAt}</div>
+                  <div className="text-foreground/70 dark:text-muted-foreground">{entry.createdAt}</div>
                 </div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-                <ShipWheel className="h-4 w-4 text-muted-foreground" />
+                <ShipWheel className="h-4 w-4 text-foreground/70 dark:text-muted-foreground" />
                 Structured Routing
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -280,7 +280,7 @@ export function EntryDetailSheet({
 
             <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-                <FileText className="h-4 w-4 text-muted-foreground" />
+                <FileText className="h-4 w-4 text-foreground/70 dark:text-muted-foreground" />
                 Other Terms
               </div>
               <div className="rounded-xl bg-background px-4 py-4 text-sm text-foreground shadow-sm">

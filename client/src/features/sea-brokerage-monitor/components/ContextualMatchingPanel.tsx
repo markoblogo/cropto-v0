@@ -308,7 +308,7 @@ export function ContextualMatchingPanel({
             >
               Placeholder
             </Button>
-            <div className="text-[9.5px] text-muted-foreground sm:text-[11px]">
+            <div className="text-[9.5px] text-foreground/70 dark:text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
             </div>
             {selectedEntry ? (
@@ -400,7 +400,7 @@ export function ContextualMatchingPanel({
         ) : (
           <CardContent className="p-0">
             {selectedEntry ? (
-              <div className="border-b border-border/50 bg-muted/20 px-2 py-0.5 text-[9.5px] text-muted-foreground sm:px-3.5 sm:py-1.5 sm:text-[11px]">
+              <div className="border-b border-border/50 bg-muted/20 px-2 py-0.5 text-[9.5px] text-foreground/70 dark:text-muted-foreground sm:px-3.5 sm:py-1.5 sm:text-[11px]">
                 Highlighting matches related to selected{" "}
                 <span className="font-medium text-foreground">
                   {selectedEntry.type === "offer" ? "offer" : "bid"}
@@ -529,7 +529,7 @@ export function ContextualMatchingPanel({
           </DialogHeader>
           {compareSuggestion ? (
             <div className="space-y-2">
-              <div className="hidden grid-cols-12 gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:grid">
+              <div className="hidden grid-cols-12 gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground sm:grid">
                 <div className="sm:col-span-2">Parameters</div>
                 <div className="sm:col-span-4">Offer</div>
                 <div className="sm:col-span-4">Bid</div>
@@ -537,7 +537,7 @@ export function ContextualMatchingPanel({
               </div>
               {buildCompareRows(compareSuggestion).map((row) => (
                 <div key={row.label} className="grid gap-1.5 rounded-md border border-border/60 p-2 sm:grid-cols-12 sm:items-center">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:col-span-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground sm:col-span-2">
                     {row.label}
                   </div>
                   <div

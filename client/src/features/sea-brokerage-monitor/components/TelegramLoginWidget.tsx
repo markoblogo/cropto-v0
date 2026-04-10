@@ -113,7 +113,7 @@ export function TelegramLoginWidget({
               <Send className="h-4 w-4" />
               Continue in Telegram app
             </Button>
-            <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+            <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-foreground/70 dark:text-muted-foreground">
               Mobile sign-in is completed inside Telegram app.
             </div>
           </>

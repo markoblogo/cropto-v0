@@ -1660,18 +1660,18 @@ export function EntryCreateDialog({
         </DialogHeader>
 
         <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5 text-sm">
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Author Session</div>
+          <div className="text-xs uppercase tracking-[0.16em] text-foreground/70 dark:text-muted-foreground">Author Session</div>
           {session.authorProfile ? (
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <Badge variant="secondary">
                 {session.sessionState === "demo_telegram" ? "Demo Telegram" : "Telegram session"}
               </Badge>
               <span className="font-medium">{session.telegramHandle}</span>
-              <span className="text-muted-foreground">{session.authorProfile.brokerCode}</span>
+              <span className="text-foreground/70 dark:text-muted-foreground">{session.authorProfile.brokerCode}</span>
             </div>
           ) : (
             <div className="mt-1.5 space-y-2.5">
-              <div className="text-muted-foreground">{session.statusMessage}</div>
+              <div className="text-foreground/70 dark:text-muted-foreground">{session.statusMessage}</div>
               {session.isDemoSelectorEnabled ? (
                 <div className="max-w-[280px]">
                   <Select
@@ -1734,7 +1734,7 @@ export function EntryCreateDialog({
                           </div>
                         </RadioGroup>
                       </FormControl>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                         {field.value
                           ? "Trade observed from the market. Author handle will be included in report."
                           : "Trade executed by your brokerage. Normal validation applies."}
@@ -1765,7 +1765,7 @@ export function EntryCreateDialog({
                           <SelectItem value="buyer">Buyer</SelectItem>
                         </SelectContent>
                       </Select>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                         Your Telegram account is fixed to this side.
                       </div>
                       <FormMessage />
@@ -1800,7 +1800,7 @@ export function EntryCreateDialog({
                           ))}
                         </SelectContent>
                       </Select>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                         Second side of TRADE for Telegram reporting.
                       </div>
                       <FormMessage />
@@ -1879,7 +1879,7 @@ export function EntryCreateDialog({
                         </div>
                       ) : null}
                       {companyEditorMessage && companyEditorTarget === "sellerName" ? (
-                        <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
+                        <div className="mt-1 text-[11px] text-foreground/70 dark:text-muted-foreground">{companyEditorMessage}</div>
                       ) : null}
                       <FormMessage />
                     </FormItem>
@@ -1957,7 +1957,7 @@ export function EntryCreateDialog({
                         </div>
                       ) : null}
                       {companyEditorMessage && companyEditorTarget === "buyerName" ? (
-                        <div className="mt-1 text-[11px] text-muted-foreground">{companyEditorMessage}</div>
+                        <div className="mt-1 text-[11px] text-foreground/70 dark:text-muted-foreground">{companyEditorMessage}</div>
                       ) : null}
                       <FormMessage />
                     </FormItem>
@@ -1988,7 +1988,7 @@ export function EntryCreateDialog({
                           ))}
                         </SelectContent>
                       </Select>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                         Active is default. Needs Update is available for boss role only.
                       </div>
                       <FormMessage />
@@ -2084,7 +2084,7 @@ export function EntryCreateDialog({
                       </div>
                     ) : null}
                     {commodityEditorMessage ? (
-                      <div className="mt-1 text-[11px] text-muted-foreground">{commodityEditorMessage}</div>
+                      <div className="mt-1 text-[11px] text-foreground/70 dark:text-muted-foreground">{commodityEditorMessage}</div>
                     ) : null}
                     <FormMessage />
                   </FormItem>
@@ -2250,7 +2250,7 @@ export function EntryCreateDialog({
                         <option key={value} value={value} />
                       ))}
                     </datalist>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                       Allowed: {tolerancePctOptions.map((value) => `± ${value}%`).join(", ")}
                     </div>
                     <FormMessage />
@@ -2373,7 +2373,7 @@ export function EntryCreateDialog({
                               <option key={option.code} value={option.displayLabel} />
                             ))}
                           </datalist>
-                          <div className="text-[11px] text-muted-foreground">
+                          <div className="text-[11px] text-foreground/70 dark:text-muted-foreground">
                             Type country name and pick suggestion from list.
                           </div>
                         </div>
@@ -2385,7 +2385,7 @@ export function EntryCreateDialog({
                       </div>
                     ) : null}
                     {locationEditorMessage ? (
-                      <div className="mt-1 text-[11px] text-muted-foreground">{locationEditorMessage}</div>
+                      <div className="mt-1 text-[11px] text-foreground/70 dark:text-muted-foreground">{locationEditorMessage}</div>
                     ) : null}
                     <FormMessage />
                   </FormItem>
@@ -2421,7 +2421,7 @@ export function EntryCreateDialog({
               {values.periodPreset === "explicit_range" ? (
                 <div className="hidden md:block" />
               ) : (
-                <div className="flex items-end text-[11px] text-muted-foreground">
+                <div className="flex items-end text-[11px] text-foreground/70 dark:text-muted-foreground">
                   {resolvePeriodValues(
                     values.periodPreset,
                     values.periodMonth,
@@ -2534,7 +2534,7 @@ export function EntryCreateDialog({
                     <FormLabel>VAT</FormLabel>
                     <FormControl>
                       <div className="flex h-10 items-center gap-3 rounded-md border border-border px-3">
-                        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <label className="flex items-center gap-1.5 text-xs text-foreground/70 dark:text-muted-foreground">
                           <input
                             type="checkbox"
                             className="h-3.5 w-3.5"
@@ -2545,7 +2545,7 @@ export function EntryCreateDialog({
                           />
                           incl. VAT
                         </label>
-                        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <label className="flex items-center gap-1.5 text-xs text-foreground/70 dark:text-muted-foreground">
                           <input
                             type="checkbox"
                             className="h-3.5 w-3.5"
@@ -2695,7 +2695,7 @@ export function EntryCreateDialog({
 
             <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
               <div className="mb-1 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Tape preview</div>
+                <div className="text-xs font-medium uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">Tape preview</div>
                 <Badge variant="outline" className="shrink-0">
                   {entryType === "bid" ? "BID IDEA" : entryType === "offer" ? "OFFER IDEA" : "TRADE IDEA"}
                 </Badge>
@@ -2704,7 +2704,7 @@ export function EntryCreateDialog({
             </div>
 
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="hidden text-[11px] leading-4 text-muted-foreground sm:block">
+              <div className="hidden text-[11px] leading-4 text-foreground/70 dark:text-muted-foreground sm:block">
                 Single-price compact workflow.
               </div>
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
