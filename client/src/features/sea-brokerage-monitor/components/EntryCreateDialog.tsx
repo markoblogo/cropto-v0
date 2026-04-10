@@ -452,7 +452,7 @@ function getDefaultValues(entryType: EntryType): EntryFormValues {
     periodMonth,
     periodStart: "2026-03-24",
     periodEnd: "2026-03-31",
-    currency: "",
+    currency: entryType === "trade" ? "" : "USD",
     vatMode: "none",
     price: entryType === "bid" ? 225 : entryType === "trade" ? 224 : 223,
     paymentTerms: entryType === "bid" ? "CAD" : "CAFD",
