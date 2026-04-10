@@ -1341,6 +1341,7 @@ function decimalToNumber(value: unknown) {
 function mapSeaBrokerageEntryToClientShape(
   entry: SeaBrokerageEntryRow,
   likeMeta?: { likeCount: number; likedByMe: boolean; hasBossMatchLike?: boolean },
+  commodityOverride?: SeaBrokerageCommodityDictionaryEntry | null,
 ) {
   const destinationPortCodes = parseDestinationPortCodesValue(entry.destinationPortCode);
   const primaryDestinationPortCode = destinationPortCodes[0] ?? null;
@@ -1361,8 +1362,8 @@ function mapSeaBrokerageEntryToClientShape(
     tradeBuyerBrokerTelegramUsername: entry.tradeBuyerBrokerTelegramUsername,
     originCountry: entry.originCountry,
     originCountryCode: entry.originCountryCode,
-    commodity: entry.commodity,
-    commodityLabel: entry.commodityLabel,
+    commodity: commodityOverride?.code ?? entry.commodity,
+    commodityLabel: commodityOverride?.displayLabel ?? entry.commodityLabel,
     gradeOrSpec: entry.gradeOrSpec,
     quantityMt: entry.quantityMt,
     tolerancePct: entry.tolerancePct,
@@ -1619,33 +1620,36 @@ async function readSeaBrokerageCommodities(): Promise<SeaBrokerageCommodityDicti
   try {
     const parsed = JSON.parse(raw) as SeaBrokerageCommodityDictionaryEntry[];
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (item) =>
-          item &&
-          typeof item.code === "string" &&
-          typeof item.displayLabel === "string" &&
-          typeof item.compactDisplay === "string",
-      )
-      .map((item) => ({
-        code: String(item.code).trim(),
-        displayLabel: normalizeCityLabel(item.displayLabel),
-        compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
-        group:
-          item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
-            ? item.group
-            : undefined,
-        displayLabelUa:
-          typeof item.displayLabelUa === "string" ? normalizeCityLabel(item.displayLabelUa) : undefined,
-        productGroup: typeof item.productGroup === "string" ? normalizeCityLabel(item.productGroup) : undefined,
-        productCategory:
-          typeof item.productCategory === "string" ? normalizeCityLabel(item.productCategory) : undefined,
-        priority: typeof item.priority === "string" ? normalizeCityLabel(item.priority) : undefined,
-        certification:
-          typeof item.certification === "string" ? normalizeCityLabel(item.certification) : undefined,
-        telegramIcon:
-          typeof item.telegramIcon === "string" ? normalizeCityLabel(item.telegramIcon) : undefined,
-      }));
+    return mergeSeaBrokerageCommodities(
+      parsed
+        .filter(
+          (item) =>
+            item &&
+            typeof item.code === "string" &&
+            typeof item.displayLabel === "string" &&
+            typeof item.compactDisplay === "string",
+        )
+        .map((item) => ({
+          code: String(item.code).trim(),
+          displayLabel: normalizeCityLabel(item.displayLabel),
+          compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+          group:
+            item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
+              ? item.group
+              : undefined,
+          displayLabelUa:
+            typeof item.displayLabelUa === "string" ? normalizeCityLabel(item.displayLabelUa) : undefined,
+          productGroup: typeof item.productGroup === "string" ? normalizeCityLabel(item.productGroup) : undefined,
+          productCategory:
+            typeof item.productCategory === "string" ? normalizeCityLabel(item.productCategory) : undefined,
+          priority: typeof item.priority === "string" ? normalizeCityLabel(item.priority) : undefined,
+          certification:
+            typeof item.certification === "string" ? normalizeCityLabel(item.certification) : undefined,
+          telegramIcon:
+            typeof item.telegramIcon === "string" ? normalizeCityLabel(item.telegramIcon) : undefined,
+        })),
+      [],
+    );
   } catch {
     return [];
   }
@@ -1823,57 +1827,177 @@ function buildCommodityCode(value: string) {
   return slug || `commodity_${createHash("md5").update(value).digest("hex").slice(0, 8)}`;
 }
 
+function normalizeSeaBrokerageCommodityVariantKey(value: string) {
+  return normalizeCityLabel(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function buildSeaBrokerageCommodityVariantKeys(
+  code: string | null | undefined,
+  label: string | null | undefined,
+): string[] {
+  const keys = new Set<string>();
+  const normalizedLabel = normalizeCityLabel(String(label || ""));
+  const normalizedCode = String(code || "").trim().toLowerCase();
+
+  const push = (input: string) => {
+    const key = normalizeSeaBrokerageCommodityVariantKey(input);
+    if (key) keys.add(key);
+  };
+
+  if (normalizedLabel) {
+    push(normalizedLabel);
+    push(normalizedLabel.replace(/%/g, "pro"));
+    push(normalizedLabel.replace(/\bpro\b/gi, ""));
+  }
+
+  if (normalizedCode) {
+    push(normalizedCode);
+  }
+
+  const wheatMatch = normalizedLabel.match(/^wheat\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:%|pro)?$/i);
+  if (wheatMatch) {
+    const numeric = wheatMatch[1].replace(/[.,]/g, "");
+    push(`wheat${numeric}pro`);
+    push(`wheat${numeric}`);
+  }
+
+  return Array.from(keys);
+}
+
+function resolveSeaBrokerageCommodityDedupeKey(
+  code: string | null | undefined,
+  label: string | null | undefined,
+) {
+  const keys = buildSeaBrokerageCommodityVariantKeys(code, label);
+  const wheatProKey = keys.find((key) => /^wheat[0-9]+pro$/i.test(key));
+  if (wheatProKey) return wheatProKey;
+  return keys[0] || String(code || "").trim().toLowerCase();
+}
+
+function seaBrokerageCommodityScore(item: SeaBrokerageCommodityDictionaryEntry) {
+  let score = 0;
+  if (item.group && item.group !== "processed") score += 1;
+  if (item.displayLabelUa) score += 1;
+  if (item.productGroup) score += 1;
+  if (item.productCategory) score += 1;
+  if (item.priority) score += 1;
+  if (item.certification) score += 1;
+  if (item.telegramIcon) score += 1;
+  return score;
+}
+
+function resolveSeaBrokerageCommodityFromCatalog(
+  code: string | null | undefined,
+  label: string | null | undefined,
+  catalog: SeaBrokerageCommodityDictionaryEntry[],
+): SeaBrokerageCommodityDictionaryEntry | null {
+  const byCode = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+  const byVariant = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+
+  for (const item of catalog) {
+    if (!item?.code || !item?.displayLabel) continue;
+    byCode.set(String(item.code).trim().toLowerCase(), item);
+    for (const key of buildSeaBrokerageCommodityVariantKeys(item.code, item.displayLabel)) {
+      if (!byVariant.has(key)) byVariant.set(key, item);
+    }
+  }
+
+  const byCodeHit = byCode.get(String(code || "").trim().toLowerCase());
+  if (byCodeHit) return byCodeHit;
+
+  for (const key of buildSeaBrokerageCommodityVariantKeys(code, label)) {
+    const byVariantHit = byVariant.get(key);
+    if (byVariantHit) return byVariantHit;
+  }
+
+  return null;
+}
+
 function deriveSeaBrokerageCommoditiesFromEntries(
   entries: SeaBrokerageEntryRow[],
 ): SeaBrokerageCommodityDictionaryEntry[] {
-  const byCode = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+  const byDedupeKey = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
   for (const entry of entries) {
-    const code = String(entry.commodity || "").trim();
-    const label = normalizeCityLabel(String(entry.commodityLabel || ""));
+    const code = String(entry.commodity || "").trim() || buildCommodityCode(String(entry.commodityLabel || ""));
+    const label = normalizeCityLabel(String(entry.commodityLabel || entry.commodity || ""));
     if (!code || !label) continue;
-    if (!byCode.has(code)) {
-      byCode.set(code, {
-        code,
-        displayLabel: label,
-        compactDisplay: label.toUpperCase(),
-        group: "processed",
-      });
+    const dedupeKey = resolveSeaBrokerageCommodityDedupeKey(code, label);
+    const candidate: SeaBrokerageCommodityDictionaryEntry = {
+      code,
+      displayLabel: label,
+      compactDisplay: label.toUpperCase(),
+      group: "processed",
+    };
+    const existing = byDedupeKey.get(dedupeKey);
+    if (!existing || seaBrokerageCommodityScore(candidate) > seaBrokerageCommodityScore(existing)) {
+      byDedupeKey.set(dedupeKey, candidate);
     }
   }
-  return Array.from(byCode.values());
+  return Array.from(byDedupeKey.values());
 }
 
 function mergeSeaBrokerageCommodities(
   left: SeaBrokerageCommodityDictionaryEntry[],
   right: SeaBrokerageCommodityDictionaryEntry[],
 ): SeaBrokerageCommodityDictionaryEntry[] {
-  const byCode = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+  const byDedupeKey = new Map<string, SeaBrokerageCommodityDictionaryEntry>();
+  const catalog = [...left, ...right];
   for (const item of [...left, ...right]) {
-    const code = String(item.code || "").trim();
-    if (!code) continue;
-    if (!byCode.has(code)) {
-      byCode.set(code, {
-        code,
-        displayLabel: normalizeCityLabel(item.displayLabel),
-        compactDisplay: String(item.compactDisplay || "").trim().toUpperCase(),
-        group:
-          item.group === "grains" || item.group === "oilseeds" || item.group === "processed"
-            ? item.group
-            : "processed",
-        displayLabelUa:
-          typeof item.displayLabelUa === "string" ? normalizeCityLabel(item.displayLabelUa) : undefined,
-        productGroup: typeof item.productGroup === "string" ? normalizeCityLabel(item.productGroup) : undefined,
-        productCategory:
-          typeof item.productCategory === "string" ? normalizeCityLabel(item.productCategory) : undefined,
-        priority: typeof item.priority === "string" ? normalizeCityLabel(item.priority) : undefined,
-        certification:
-          typeof item.certification === "string" ? normalizeCityLabel(item.certification) : undefined,
-        telegramIcon:
-          typeof item.telegramIcon === "string" ? normalizeCityLabel(item.telegramIcon) : undefined,
-      });
+    const fallbackCode = String(item.code || "").trim();
+    const fallbackLabel = normalizeCityLabel(item.displayLabel);
+    if (!fallbackCode || !fallbackLabel) continue;
+
+    const canonical = resolveSeaBrokerageCommodityFromCatalog(fallbackCode, fallbackLabel, catalog);
+    const normalized: SeaBrokerageCommodityDictionaryEntry = {
+      code: String(canonical?.code || fallbackCode).trim(),
+      displayLabel: normalizeCityLabel(canonical?.displayLabel || fallbackLabel),
+      compactDisplay: String(canonical?.compactDisplay || item.compactDisplay || fallbackLabel)
+        .trim()
+        .toUpperCase(),
+      group:
+        (canonical?.group || item.group) === "grains" ||
+        (canonical?.group || item.group) === "oilseeds" ||
+        (canonical?.group || item.group) === "processed"
+          ? (canonical?.group || item.group)
+          : "processed",
+      displayLabelUa:
+        typeof (canonical?.displayLabelUa || item.displayLabelUa) === "string"
+          ? normalizeCityLabel(String(canonical?.displayLabelUa || item.displayLabelUa))
+          : undefined,
+      productGroup:
+        typeof (canonical?.productGroup || item.productGroup) === "string"
+          ? normalizeCityLabel(String(canonical?.productGroup || item.productGroup))
+          : undefined,
+      productCategory:
+        typeof (canonical?.productCategory || item.productCategory) === "string"
+          ? normalizeCityLabel(String(canonical?.productCategory || item.productCategory))
+          : undefined,
+      priority:
+        typeof (canonical?.priority || item.priority) === "string"
+          ? normalizeCityLabel(String(canonical?.priority || item.priority))
+          : undefined,
+      certification:
+        typeof (canonical?.certification || item.certification) === "string"
+          ? normalizeCityLabel(String(canonical?.certification || item.certification))
+          : undefined,
+      telegramIcon:
+        typeof (canonical?.telegramIcon || item.telegramIcon) === "string"
+          ? normalizeCityLabel(String(canonical?.telegramIcon || item.telegramIcon))
+          : undefined,
+    };
+
+    const dedupeKey = resolveSeaBrokerageCommodityDedupeKey(
+      normalized.code,
+      normalized.displayLabel,
+    );
+    const existing = byDedupeKey.get(dedupeKey);
+    if (!existing || seaBrokerageCommodityScore(normalized) > seaBrokerageCommodityScore(existing)) {
+      byDedupeKey.set(dedupeKey, normalized);
     }
   }
-  return Array.from(byCode.values()).sort((a, b) =>
+  return Array.from(byDedupeKey.values()).sort((a, b) =>
     a.displayLabel.localeCompare(b.displayLabel),
   );
 }
@@ -9678,10 +9802,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sea-brokerage-monitor/entries", async (req: AuthRequest, res) => {
     try {
-      const [entries, likes, matchLikes] = await Promise.all([
+      const [entries, likes, matchLikes, commodityCatalog] = await Promise.all([
         storage.listSeaBrokerageEntries(),
         readSeaBrokerageEntryLikes(),
         readSeaBrokerageMatchLikes(),
+        readSeaBrokerageCommodities(),
       ]);
 
       const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
@@ -9734,7 +9859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             likeCount: likesByEntry.get(entry.id)?.count ?? 0,
             likedByMe: likesByEntry.get(entry.id)?.likedByMe ?? false,
             hasBossMatchLike: entryIdsWithBossMatchLike.has(entry.id),
-          }),
+          }, resolveSeaBrokerageCommodityFromCatalog(entry.commodity, entry.commodityLabel, commodityCatalog)),
         ),
       );
     } catch (error: any) {
@@ -11335,6 +11460,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: "Commodity is not in dictionary. Select commodity from approved catalog.",
         });
       }
+      const resolvedCommodity =
+        resolveSeaBrokerageCommodityFromCatalog(
+          parsed.data.commodity,
+          parsed.data.commodityLabel,
+          allowedCommodities,
+        ) || allowedCommodities.find((item) => item.code === parsed.data.commodity) || null;
       const { sourceBidEntryId, sourceOfferEntryId, ...entryInput } = parsed.data;
       const requestedStatus = normalizeRequestedEntryStatus(entryInput.type, entryInput.entryStatus);
       if (requestedStatus === "needs_update" && !isSeaBrokerageBoss(authorizedBroker.brokerCode)) {
@@ -11360,6 +11491,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const created = await storage.createSeaBrokerageEntry({
         ...entryInput,
+        commodity: resolvedCommodity?.code || entryInput.commodity,
+        commodityLabel: resolvedCommodity?.displayLabel || entryInput.commodityLabel,
         transportType: normalizeSeaBrokerageTransportCode(entryInput.transportType),
         brokerUserId:
           authorizedBroker.telegramUserId ||
@@ -11459,6 +11592,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: "Commodity is not in dictionary. Select commodity from approved catalog.",
         });
       }
+      const resolvedCommodity =
+        resolveSeaBrokerageCommodityFromCatalog(
+          parsed.data.commodity,
+          parsed.data.commodityLabel,
+          allowedCommodities,
+        ) || allowedCommodities.find((item) => item.code === parsed.data.commodity) || null;
 
       const entries = await storage.listSeaBrokerageEntries();
       const existing = entries.find((entry) => entry.id === entryId);
@@ -11523,8 +11662,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isMarketTrade: !!payload.isMarketTrade,
         originCountry: payload.originCountry ?? null,
         originCountryCode: payload.originCountryCode ?? null,
-        commodity: payload.commodity,
-        commodityLabel: payload.commodityLabel,
+        commodity: resolvedCommodity?.code || payload.commodity,
+        commodityLabel: resolvedCommodity?.displayLabel || payload.commodityLabel,
         gradeOrSpec: payload.gradeOrSpec ?? "",
         quantityMt: payload.quantityMt ?? null,
         tolerancePct: payload.tolerancePct ?? null,
@@ -11690,6 +11829,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: "Use DELETE on publication day. REPOST is available starting next day.",
         });
       }
+      const commodityCatalog = mergeSeaBrokerageCommodities(
+        await readSeaBrokerageCommodities(),
+        [],
+      );
+      const resolvedCommodity =
+        resolveSeaBrokerageCommodityFromCatalog(
+          source.commodity,
+          source.commodityLabel,
+          commodityCatalog,
+        ) || null;
 
       const created = await storage.createSeaBrokerageEntry({
         type: source.type,
@@ -11708,8 +11857,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tradeBuyerBrokerTelegramUsername: source.tradeBuyerBrokerTelegramUsername,
         originCountry: source.originCountry,
         originCountryCode: source.originCountryCode,
-        commodity: source.commodity,
-        commodityLabel: source.commodityLabel,
+        commodity: resolvedCommodity?.code || source.commodity,
+        commodityLabel: resolvedCommodity?.displayLabel || source.commodityLabel,
         gradeOrSpec: source.gradeOrSpec,
         quantityMt: source.quantityMt,
         tolerancePct: source.tolerancePct,
