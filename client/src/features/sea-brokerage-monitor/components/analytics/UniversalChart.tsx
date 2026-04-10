@@ -79,18 +79,19 @@ export function UniversalChart({ entries }: UniversalChartProps) {
     );
   }, [entries]);
 
-  const [selectedCommodity, setSelectedCommodity] = useState<string>("CORN");
+  const [selectedCommodities, setSelectedCommodities] = useState<string[]>([]);
   const [selectedBasis, setSelectedBasis] = useState<string>("CPT");
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
 
   React.useEffect(() => {
     if (!commodityOptions.length) return;
     const cornOption = commodityOptions.find((item) => item.toUpperCase() === "CORN");
-    if (cornOption) {
-      setSelectedCommodity((prev) => (prev ? prev : cornOption));
-      return;
-    }
-    setSelectedCommodity((prev) => (prev ? prev : commodityOptions[0]));
+    setSelectedCommodities((prev) => {
+      const filtered = prev.filter((item) => commodityOptions.includes(item)).slice(0, 3);
+      if (filtered.length > 0) return filtered;
+      if (cornOption) return [cornOption];
+      return [commodityOptions[0]];
+    });
   }, [commodityOptions]);
 
   React.useEffect(() => {
@@ -134,7 +135,12 @@ export function UniversalChart({ entries }: UniversalChartProps) {
       const place = normalizeLabel(entry.destinationPort);
       const createdAt = new Date(entry.createdAt);
 
-      if (selectedCommodity && commodity !== selectedCommodity.toUpperCase()) return false;
+      if (
+        selectedCommodities.length &&
+        !selectedCommodities.some((selected) => commodity === selected.toUpperCase())
+      ) {
+        return false;
+      }
       if (selectedBasis && basis !== selectedBasis.toUpperCase()) return false;
       if (selectedPlaces.length && !selectedPlaces.includes(place)) return false;
       if (!Number.isNaN(createdAt.getTime())) {
@@ -144,7 +150,7 @@ export function UniversalChart({ entries }: UniversalChartProps) {
 
       return true;
     });
-  }, [entries, periodPreset, customFrom, customTo, selectedCommodity, selectedBasis, selectedPlaces]);
+  }, [entries, periodPreset, customFrom, customTo, selectedCommodities, selectedBasis, selectedPlaces]);
 
   const chartData = useMemo(() => {
     // Group entries by date
@@ -245,17 +251,40 @@ export function UniversalChart({ entries }: UniversalChartProps) {
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1">
             <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Commodity</Label>
-            <select
-              className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
-              value={selectedCommodity}
-              onChange={(event) => setSelectedCommodity(event.target.value)}
-            >
-              {commodityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-8 w-full justify-start truncate text-xs">
+                  {selectedCommodities.length
+                    ? selectedCommodities.join(" / ")
+                    : "Select commodities (max 3)"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="max-h-72 w-64 overflow-y-auto">
+                {commodityOptions.map((option) => {
+                  const checked = selectedCommodities.includes(option);
+                  const maxReached = !checked && selectedCommodities.length >= 3;
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={option}
+                      checked={checked}
+                      disabled={maxReached}
+                      onCheckedChange={(next) =>
+                        setSelectedCommodities((prev) => {
+                          if (next) {
+                            if (prev.includes(option) || prev.length >= 3) return prev;
+                            return [...prev, option];
+                          }
+                          const nextValues = prev.filter((item) => item !== option);
+                          return nextValues.length ? nextValues : prev;
+                        })
+                      }
+                    >
+                      {option}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="space-y-1">
             <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Period</Label>
