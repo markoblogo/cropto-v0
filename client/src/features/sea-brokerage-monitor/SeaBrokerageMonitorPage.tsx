@@ -105,6 +105,23 @@ const REPORT_TEMPLATE_OPTIONS: Array<{ value: ReportTemplateKey; label: string }
 ];
 const SEA_BROKERAGE_BASIS_CODES = ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"] as const;
 
+function mapCommodityToReportGroup(option: Commodity): ReportGroup {
+  const category = String(option.productCategory || "")
+    .trim()
+    .toLowerCase();
+  if (category === "grains") return "grains";
+  if (category === "oilseeds") return "oilseeds";
+  if (category === "by-products" || category === "oils") return "byproducts";
+  if (category === "legumes" || category === "pseudograins") return "niche";
+
+  const fallbackGroup = String(option.group || "")
+    .trim()
+    .toLowerCase();
+  if (fallbackGroup === "grains") return "grains";
+  if (fallbackGroup === "oilseeds") return "oilseeds";
+  return "byproducts";
+}
+
 type ReportTemplatePreset = {
   title: string;
   formatMode: ReportFormatMode;
@@ -206,7 +223,7 @@ export function SeaBrokerageMonitorPage() {
     formatMode: "regular",
     templateKey: "none",
     groups: ["grains", "oilseeds", "byproducts", "niche"],
-    commodities: ["corn"],
+    commodities: [],
     basis: [],
     deliveryPlaces: [],
     periodStart: weekAgoIso,
@@ -218,6 +235,7 @@ export function SeaBrokerageMonitorPage() {
     includeOffers: true,
   });
   const defaultPresetAppliedTokenRef = useRef<string | null>(null);
+  const reportInitialCommodityPrefillDoneRef = useRef(false);
 
   const { data: filterPresets = [] } = useQuery<FilterPreset[]>({
     queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
@@ -375,6 +393,25 @@ export function SeaBrokerageMonitorPage() {
     }
     return Array.from(byNormalized.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
   }, [customCommodityOptions, feedWithBusinessUnits]);
+  const reportCommodityCodesByGroup = useMemo(() => {
+    const map = new Map<ReportGroup, string[]>();
+    for (const group of REPORT_GROUP_OPTIONS.map((item) => item.value)) {
+      map.set(group, []);
+    }
+    for (const option of toolbarCommodityOptions) {
+      const group = mapCommodityToReportGroup(option);
+      const list = map.get(group);
+      if (!list) continue;
+      if (!list.includes(option.code)) {
+        list.push(option.code);
+      }
+    }
+    return map;
+  }, [toolbarCommodityOptions]);
+  const allReportCommodityCodes = useMemo(
+    () => toolbarCommodityOptions.map((option) => option.code),
+    [toolbarCommodityOptions],
+  );
 
   const primaryWindowEntries = useMemo(
     () => filteredEntries.filter((entry) => isWithinPrimaryDisplayWindow(entry)),
@@ -900,6 +937,19 @@ export function SeaBrokerageMonitorPage() {
     defaultPresetAppliedTokenRef.current = session.monitorAuthToken;
   }, [filterPresets, session.monitorAuthToken]);
 
+  useEffect(() => {
+    if (!reportOpen) return;
+    if (reportInitialCommodityPrefillDoneRef.current) return;
+    reportInitialCommodityPrefillDoneRef.current = true;
+    setReportForm((prev) => {
+      if (prev.commodities.length > 0) return prev;
+      return {
+        ...prev,
+        commodities: resolveCommodityCodesForGroups(prev.groups),
+      };
+    });
+  }, [reportOpen]);
+
   async function handleRequestTelegramMagicLink() {
     const normalized = telegramUsername.trim().replace(/^@+/, "");
     if (!normalized) return;
@@ -915,6 +965,17 @@ export function SeaBrokerageMonitorPage() {
         basis: exists ? prev.basis.filter((item) => item !== value) : [...prev.basis, value],
       };
     });
+  }
+
+  function resolveCommodityCodesForGroups(groups: ReportGroup[]) {
+    const out = new Set<string>();
+    for (const group of groups) {
+      const list = reportCommodityCodesByGroup.get(group) || [];
+      for (const code of list) {
+        out.add(code);
+      }
+    }
+    return Array.from(out);
   }
 
   function toggleReportCommodity(value: string) {
@@ -945,11 +1006,60 @@ export function SeaBrokerageMonitorPage() {
     setReportForm((prev) => {
       const exists = prev.groups.includes(value);
       const next = exists ? prev.groups.filter((item) => item !== value) : [...prev.groups, value];
+      const nextGroupCommodities = new Set(resolveCommodityCodesForGroups(next));
+      const currentCommodities = new Set(prev.commodities);
+      if (!exists) {
+        for (const code of reportCommodityCodesByGroup.get(value) || []) {
+          currentCommodities.add(code);
+        }
+      } else {
+        const removedGroupCommodities = reportCommodityCodesByGroup.get(value) || [];
+        for (const code of removedGroupCommodities) {
+          if (!nextGroupCommodities.has(code)) {
+            currentCommodities.delete(code);
+          }
+        }
+      }
       return {
         ...prev,
         groups: next.length ? next : prev.groups,
+        commodities: Array.from(currentCommodities),
       };
     });
+  }
+
+  function selectAllReportCommodities() {
+    setReportForm((prev) => ({ ...prev, commodities: allReportCommodityCodes }));
+  }
+
+  function selectCommoditiesFromGroups() {
+    setReportForm((prev) => ({
+      ...prev,
+      commodities: resolveCommodityCodesForGroups(prev.groups),
+    }));
+  }
+
+  function clearReportCommodities() {
+    setReportForm((prev) => ({ ...prev, commodities: [] }));
+  }
+
+  function selectAllReportBasis() {
+    setReportForm((prev) => ({ ...prev, basis: toolbarBasisOptions }));
+  }
+
+  function clearReportBasis() {
+    setReportForm((prev) => ({ ...prev, basis: [] }));
+  }
+
+  function selectAllReportDeliveryPlaces() {
+    setReportForm((prev) => ({
+      ...prev,
+      deliveryPlaces: toolbarDeliveryPlaceOptions.map((port) => port.code),
+    }));
+  }
+
+  function clearReportDeliveryPlaces() {
+    setReportForm((prev) => ({ ...prev, deliveryPlaces: [] }));
   }
 
   function resolveCommodityCodesByKeywords(keywords: string[]) {
@@ -1012,7 +1122,7 @@ export function SeaBrokerageMonitorPage() {
       formatMode: profile.formatMode || "regular",
       templateKey: profile.templateKey || "none",
       groups: profile.groups?.length ? profile.groups : prev.groups,
-      commodities: profile.commodities?.length ? profile.commodities : prev.commodities,
+      commodities: profile.commodities ?? prev.commodities,
       basis: profile.basis ?? [],
       deliveryPlaces: profile.deliveryPlaces ?? [],
       postedFrom,
@@ -1653,7 +1763,20 @@ export function SeaBrokerageMonitorPage() {
             Posted range = when BID/OFFER was published. Period range = shipment/delivery window inside entries.
           </div>
           <div className="rounded-md border border-border/70 p-3">
-            <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Commodities</div>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Commodities</div>
+              <div className="flex flex-wrap gap-1">
+                <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={selectCommoditiesFromGroups}>
+                  From groups
+                </Button>
+                <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={selectAllReportCommodities}>
+                  Select all
+                </Button>
+                <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={clearReportCommodities}>
+                  Clear
+                </Button>
+              </div>
+            </div>
             <div className="grid max-h-36 gap-2 overflow-auto pr-1 sm:grid-cols-2">
               {toolbarCommodityOptions.map((option) => (
                 <label key={option.code} className="inline-flex items-center gap-2 text-sm">
@@ -1742,7 +1865,17 @@ export function SeaBrokerageMonitorPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-md border border-border/70 p-3">
-              <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Basis</div>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Basis</div>
+                <div className="flex flex-wrap gap-1">
+                  <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={selectAllReportBasis}>
+                    Select all
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={clearReportBasis}>
+                    Clear
+                  </Button>
+                </div>
+              </div>
               <div className="grid max-h-36 gap-2 overflow-auto pr-1">
                 {toolbarBasisOptions.map((basis) => (
                   <label key={basis} className="inline-flex items-center gap-2 text-sm">
@@ -1756,7 +1889,29 @@ export function SeaBrokerageMonitorPage() {
               </div>
             </div>
             <div className="rounded-md border border-border/70 p-3">
-              <div className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">Delivery places</div>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Delivery places</div>
+                <div className="flex flex-wrap gap-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs"
+                    onClick={selectAllReportDeliveryPlaces}
+                  >
+                    Select all
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs"
+                    onClick={clearReportDeliveryPlaces}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
               <div className="grid max-h-36 gap-2 overflow-auto pr-1">
                 {toolbarDeliveryPlaceOptions.slice(0, 60).map((port) => (
                   <label key={port.code} className="inline-flex items-center gap-2 text-sm">

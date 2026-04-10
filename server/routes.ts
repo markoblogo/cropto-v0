@@ -1119,15 +1119,11 @@ const seaBrokerageReportRequestSchema = z
     includeOffers: z.coerce.boolean().optional().default(true),
   })
   .superRefine((value, ctx) => {
-    const selectedCommodities = [
-      ...value.commodities,
-      ...(value.commodity ? [value.commodity] : []),
-    ].filter(Boolean);
-    if (!selectedCommodities.length) {
+    if (!value.groups.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["commodities"],
-        message: "Select at least one commodity",
+        path: ["groups"],
+        message: "Select at least one report group",
       });
     }
     if (!value.postedFrom) {
@@ -2084,7 +2080,9 @@ function filterSeaBrokerageEntriesForReport(
 
   const matched = entries
     .filter((entry) => includeTypes.has(entry.type))
-    .filter((entry) => commoditySet.has(String(entry.commodity || "").toLowerCase()))
+    .filter((entry) =>
+      commoditySet.size ? commoditySet.has(String(entry.commodity || "").toLowerCase()) : true,
+    )
     .filter((entry) => {
       const created = new Date(entry.createdAt);
       if (Number.isNaN(created.getTime())) return false;
