@@ -9855,7 +9855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const matched = filterResult.entries;
 
-      const reportMessage = buildSeaBrokerageMarketUpdateMessage(matched, new Date(), {
+      const reportMessage = await buildSeaBrokerageMarketUpdateMessage(matched, new Date(), {
         groups: payload.groups,
         title: payload.title || undefined,
         formatMode: payload.formatMode,
@@ -10124,7 +10124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: filterResult.error });
       }
 
-      const reportMessage = buildSeaBrokerageMarketUpdateMessage(filterResult.entries, today, {
+      const reportMessage = await buildSeaBrokerageMarketUpdateMessage(filterResult.entries, today, {
         groups: profile.groups,
         title: profile.title || `🇺🇦 SPIKE BROKERS Market Update — ${profile.name}`,
         formatMode: profile.formatMode,

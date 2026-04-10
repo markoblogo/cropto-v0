@@ -138,7 +138,29 @@ function shouldIncludeEntryByProfile(entry: SeaBrokerageEntryRow, profile: SeaBr
 }
 
 async function sendDailyGroupReports(entries: SeaBrokerageEntryRow[]) {
-  const grouped = buildSeaBrokerageMarketUpdateMessagesByGroup(entries, new Date());
+  if (!entries.length) {
+    const noActivityMessage = await buildSeaBrokerageMarketUpdateMessage([], new Date(), {
+      title: "🇺🇦 SPIKE BROKERS Market Update",
+    });
+    const single = await sendSeaBrokerageTelegramInternalBroadcast(noActivityMessage);
+    if (single.status !== "published") {
+      return { ok: false as const, error: single.error || "Failed to send no-activity report" };
+    }
+    return { ok: true as const };
+  }
+
+  const grouped = await buildSeaBrokerageMarketUpdateMessagesByGroup(entries, new Date());
+  if (!grouped.length) {
+    const noActivityMessage = await buildSeaBrokerageMarketUpdateMessage([], new Date(), {
+      title: "🇺🇦 SPIKE BROKERS Market Update",
+    });
+    const single = await sendSeaBrokerageTelegramInternalBroadcast(noActivityMessage);
+    if (single.status !== "published") {
+      return { ok: false as const, error: single.error || "Failed to send no-activity report" };
+    }
+    return { ok: true as const };
+  }
+
   for (const groupReport of grouped) {
     const result = await sendSeaBrokerageTelegramInternalBroadcast(groupReport.message);
     if (result.status !== "published") {
@@ -163,7 +185,7 @@ async function runAutoProfileReports(now: Date, localDateKey: string, entries: S
     if (lastSentMap[profile.id] === localDateKey) continue;
 
     const matched = entries.filter((entry) => shouldIncludeEntryByProfile(entry, profile, now));
-    const message = buildSeaBrokerageMarketUpdateMessage(matched, now, {
+    const message = await buildSeaBrokerageMarketUpdateMessage(matched, now, {
       groups: profile.groups?.length ? profile.groups : undefined,
       title: profile.title || `🇺🇦 SPIKE BROKERS Market Update — ${profile.name}`,
       formatMode: profile.formatMode || "regular",

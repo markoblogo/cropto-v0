@@ -1,12 +1,15 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
 import { formatSeaBrokerageBasisRoute } from "./seaBrokerageBasisFormat";
 import { resolveSeaBrokerageTelegramTag } from "./seaBrokerageTelegramTags";
+import { storage } from "../storage";
 
 type CommoditySection = {
+  code?: string;
   title: string;
   emoji: string;
   matcher: RegExp;
   group: SeaBrokerageReportGroup;
+  priorityOrder: number;
 };
 
 export type SeaBrokerageReportGroup = "grains" | "oilseeds" | "byproducts" | "niche";
@@ -28,32 +31,80 @@ export const SEA_BROKERAGE_REPORT_GROUP_LABELS: Record<SeaBrokerageReportGroup, 
 };
 
 const COMMODITY_SECTIONS: CommoditySection[] = [
-  { title: "CORN", emoji: "🌽", matcher: /\bcorn\b|\bmaize\b/i, group: "grains" },
-  { title: "WHEAT 12.5", emoji: "🌾", matcher: /\bwheat\b.*12\.?5/i, group: "grains" },
-  { title: "WHEAT 11.5", emoji: "🌾", matcher: /\bwheat\b.*11\.?5/i, group: "grains" },
-  { title: "FEED WHEAT", emoji: "🌾", matcher: /\bfeed\b.*\bwheat\b|\bwheat\b.*\bfeed\b/i, group: "grains" },
-  { title: "BARLEY", emoji: "🌾", matcher: /\bbarley\b/i, group: "grains" },
-  { title: "SUNFLOWER SEEDS", emoji: "🌻", matcher: /\bsunflower\b.*\bseed/i, group: "oilseeds" },
-  { title: "SOYBEANS", emoji: "🌱", matcher: /\bsoybean|\bsoy bean/i, group: "oilseeds" },
-  { title: "RAPESEEDS", emoji: "🌿", matcher: /\brapeseed|\bcanola|\brape\b/i, group: "oilseeds" },
-  { title: "SUNFLOWER MEAL", emoji: "⚙️", matcher: /\bsunflower\b.*\bmeal|\bmeal\b.*\bsunflower/i, group: "byproducts" },
-  { title: "SUNFLOWER CAKE", emoji: "⚙️", matcher: /\bsunflower\b.*\bcake|\bcake\b.*\bsunflower/i, group: "byproducts" },
-  { title: "SOYBEAN MEAL", emoji: "⚙️", matcher: /\bsoy\b.*\bmeal|\bmeal\b.*\bsoy/i, group: "byproducts" },
-  { title: "SOYBEAN CAKE", emoji: "⚙️", matcher: /\bsoy\b.*\bcake|\bcake\b.*\bsoy/i, group: "byproducts" },
-  { title: "RAPESEED MEAL", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bmeal|\bmeal\b.*\brapeseed|\bmeal\b.*\bcanola/i, group: "byproducts" },
-  { title: "RAPESEED CAKE", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bcake|\bcake\b.*\brapeseed|\bcake\b.*\bcanola/i, group: "byproducts" },
-  { title: "SUNFLOWER OIL", emoji: "💧", matcher: /\bsunflower\b.*\boil|\boil\b.*\bsunflower/i, group: "byproducts" },
-  { title: "RAPESEED OIL", emoji: "💧", matcher: /\brapeseed|\bcanola|\brape\b.*\boil|\boil\b.*\brapeseed|\boil\b.*\bcanola/i, group: "byproducts" },
-  { title: "SOYBEAN OIL", emoji: "💧", matcher: /\bsoy\b.*\boil|\boil\b.*\bsoy/i, group: "byproducts" },
-  { title: "OAT", emoji: "🌾", matcher: /\boat\b/i, group: "niche" },
-  { title: "RYE", emoji: "🌾", matcher: /\brye\b/i, group: "niche" },
-  { title: "SORGHUM", emoji: "🌾", matcher: /\bsorghum\b/i, group: "niche" },
-  { title: "MILLET", emoji: "🌾", matcher: /\bmillet\b/i, group: "niche" },
-  { title: "YELLOW PEAS", emoji: "🫘", matcher: /\byellow\b.*\bpea|\bpea\b.*\byellow/i, group: "niche" },
-  { title: "WHEAT BRAN", emoji: "⚙️", matcher: /\bwheat\b.*\bbran|\bbran\b.*\bwheat/i, group: "byproducts" },
-  { title: "FLOUR", emoji: "⚙️", matcher: /\bflour\b/i, group: "byproducts" },
-  { title: "SUGAR BEET PULP", emoji: "🗜️", matcher: /\bsugar\b.*\bbeet\b.*\bpulp/i, group: "byproducts" },
+  { title: "CORN", emoji: "🌽", matcher: /\bcorn\b|\bmaize\b/i, group: "grains", priorityOrder: 10 },
+  { title: "WHEAT 12.5", emoji: "🌾", matcher: /\bwheat\b.*12\.?5/i, group: "grains", priorityOrder: 20 },
+  { title: "WHEAT 11.5", emoji: "🌾", matcher: /\bwheat\b.*11\.?5/i, group: "grains", priorityOrder: 30 },
+  { title: "FEED WHEAT", emoji: "🌾", matcher: /\bfeed\b.*\bwheat\b|\bwheat\b.*\bfeed\b/i, group: "grains", priorityOrder: 40 },
+  { title: "BARLEY", emoji: "🌾", matcher: /\bbarley\b/i, group: "grains", priorityOrder: 50 },
+  { title: "SUNFLOWER SEEDS", emoji: "🌻", matcher: /\bsunflower\b.*\bseed/i, group: "oilseeds", priorityOrder: 60 },
+  { title: "SOYBEANS", emoji: "🌱", matcher: /\bsoybean|\bsoy bean/i, group: "oilseeds", priorityOrder: 70 },
+  { title: "RAPESEEDS", emoji: "🌿", matcher: /\brapeseed|\bcanola|\brape\b/i, group: "oilseeds", priorityOrder: 80 },
+  { title: "SUNFLOWER MEAL", emoji: "⚙️", matcher: /\bsunflower\b.*\bmeal|\bmeal\b.*\bsunflower/i, group: "byproducts", priorityOrder: 90 },
+  { title: "SUNFLOWER CAKE", emoji: "⚙️", matcher: /\bsunflower\b.*\bcake|\bcake\b.*\bsunflower/i, group: "byproducts", priorityOrder: 100 },
+  { title: "SOYBEAN MEAL", emoji: "⚙️", matcher: /\bsoy\b.*\bmeal|\bmeal\b.*\bsoy/i, group: "byproducts", priorityOrder: 110 },
+  { title: "SOYBEAN CAKE", emoji: "⚙️", matcher: /\bsoy\b.*\bcake|\bcake\b.*\bsoy/i, group: "byproducts", priorityOrder: 120 },
+  { title: "RAPESEED MEAL", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bmeal|\bmeal\b.*\brapeseed|\bmeal\b.*\bcanola/i, group: "byproducts", priorityOrder: 130 },
+  { title: "RAPESEED CAKE", emoji: "⚙️", matcher: /\brapeseed|\bcanola|\brape\b.*\bcake|\bcake\b.*\brapeseed|\bcake\b.*\bcanola/i, group: "byproducts", priorityOrder: 140 },
+  { title: "SUNFLOWER OIL", emoji: "💧", matcher: /\bsunflower\b.*\boil|\boil\b.*\bsunflower/i, group: "byproducts", priorityOrder: 150 },
+  { title: "RAPESEED OIL", emoji: "💧", matcher: /\brapeseed|\bcanola|\brape\b.*\boil|\boil\b.*\brapeseed|\boil\b.*\bcanola/i, group: "byproducts", priorityOrder: 160 },
+  { title: "SOYBEAN OIL", emoji: "💧", matcher: /\bsoy\b.*\boil|\boil\b.*\bsoy/i, group: "byproducts", priorityOrder: 170 },
+  { title: "OAT", emoji: "🌾", matcher: /\boat\b/i, group: "niche", priorityOrder: 180 },
+  { title: "RYE", emoji: "🌾", matcher: /\brye\b/i, group: "niche", priorityOrder: 190 },
+  { title: "SORGHUM", emoji: "🌾", matcher: /\bsorghum\b/i, group: "niche", priorityOrder: 200 },
+  { title: "MILLET", emoji: "🌾", matcher: /\bmillet\b/i, group: "niche", priorityOrder: 210 },
+  { title: "YELLOW PEAS", emoji: "🫘", matcher: /\byellow\b.*\bpea|\bpea\b.*\byellow/i, group: "niche", priorityOrder: 220 },
+  { title: "WHEAT BRAN", emoji: "⚙️", matcher: /\bwheat\b.*\bbran|\bbran\b.*\bwheat/i, group: "byproducts", priorityOrder: 230 },
+  { title: "FLOUR", emoji: "⚙️", matcher: /\bflour\b/i, group: "byproducts", priorityOrder: 240 },
+  { title: "SUGAR BEET PULP", emoji: "🗜️", matcher: /\bsugar\b.*\bbeet\b.*\bpulp/i, group: "byproducts", priorityOrder: 250 },
 ];
+
+type CommodityDictionaryEntry = {
+  code: string;
+  displayLabel: string;
+  productCategory?: string;
+  priority?: string;
+  telegramIcon?: string;
+};
+
+const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
+
+function priorityToOrder(value?: string) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (normalized === "1st") return 1;
+  if (normalized === "2nd") return 2;
+  if (normalized === "3rd") return 3;
+  if (normalized === "4th") return 4;
+  return 99;
+}
+
+function categoryToReportGroup(value?: string): SeaBrokerageReportGroup {
+  const normalized = normalizeText(value).toLowerCase();
+  if (normalized === "grains") return "grains";
+  if (normalized === "oilseeds") return "oilseeds";
+  if (normalized === "by-products" || normalized === "oils") return "byproducts";
+  if (normalized === "legumes" || normalized === "pseudograins") return "niche";
+  return "niche";
+}
+
+async function readCommodityDictionary(): Promise<CommodityDictionaryEntry[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_COMMODITIES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as CommodityDictionaryEntry[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item) => item && typeof item.code === "string" && typeof item.displayLabel === "string")
+      .map((item) => ({
+        code: normalizeText(item.code),
+        displayLabel: normalizeText(item.displayLabel),
+        productCategory: normalizeText(item.productCategory),
+        priority: normalizeText(item.priority),
+        telegramIcon: normalizeText(item.telegramIcon),
+      }))
+      .filter((item) => item.code && item.displayLabel);
+  } catch {
+    return [];
+  }
+}
 
 function normalizeText(value: unknown) {
   return String(value || "")
@@ -163,6 +214,30 @@ function findSection(entry: SeaBrokerageEntryRow) {
   return COMMODITY_SECTIONS.find((section) => section.matcher.test(label)) || null;
 }
 
+function buildDictionarySections(dictionary: CommodityDictionaryEntry[]) {
+  return dictionary.map((item) => ({
+    code: item.code,
+    title: item.displayLabel,
+    emoji: item.telegramIcon || "•",
+    matcher: /.^/i,
+    group: categoryToReportGroup(item.productCategory),
+    priorityOrder: priorityToOrder(item.priority),
+  }));
+}
+
+function resolveSectionForEntry(
+  entry: SeaBrokerageEntryRow,
+  dictionarySections: CommoditySection[],
+): CommoditySection | null {
+  const commodityCode = normalizeText(entry.commodity).toLowerCase();
+  const commodityLabel = normalizeText(entry.commodityLabel).toLowerCase();
+  const dictionaryMatch =
+    dictionarySections.find((item) => item.code?.toLowerCase() === commodityCode) ||
+    dictionarySections.find((item) => item.title.toLowerCase() === commodityLabel);
+  if (dictionaryMatch) return dictionaryMatch;
+  return findSection(entry);
+}
+
 function groupEntriesForSection(entries: SeaBrokerageEntryRow[]) {
   const byRoute = new Map<string, SeaBrokerageEntryRow[]>();
   for (const entry of entries) {
@@ -211,11 +286,13 @@ const TEMPLATE_TITLES: Record<Exclude<SeaBrokerageReportTemplateKey, "none">, st
   rava: "SPIKE Market for Rava",
 };
 
-export function buildSeaBrokerageMarketUpdateMessage(
+export async function buildSeaBrokerageMarketUpdateMessage(
   entries: SeaBrokerageEntryRow[],
   when = new Date(),
   options: BuildMarketMessageOptions = {},
 ) {
+  const commodityDictionary = await readCommodityDictionary();
+  const dictionarySections = buildDictionarySections(commodityDictionary);
   const target = entries.filter((entry) => entry.type === "bid" || entry.type === "offer");
   const enabledGroups = new Set(options.groups?.length ? options.groups : SEA_BROKERAGE_REPORT_GROUP_ORDER);
   const headerDate = when.toLocaleDateString("en-US", {
@@ -239,24 +316,53 @@ export function buildSeaBrokerageMarketUpdateMessage(
   lines.push("------------------------------");
 
   if (!target.length) {
-    lines.push("No news today");
+    lines.push("No activity today");
     lines.push("------------------------------");
     return lines.join("\n");
   }
 
-  for (const section of COMMODITY_SECTIONS.filter((item) => enabledGroups.has(item.group))) {
-    lines.push(`${section.emoji} ${section.title}`);
-    const sectionEntries = target.filter((entry) => findSection(entry)?.title === section.title);
+  const sectionBuckets = new Map<string, { section: CommoditySection; entries: SeaBrokerageEntryRow[] }>();
+  for (const entry of target) {
+    const section = resolveSectionForEntry(entry, dictionarySections);
+    if (!section) continue;
+    if (!enabledGroups.has(section.group)) continue;
+    const key = section.code || section.title;
+    const current = sectionBuckets.get(key);
+    if (current) {
+      current.entries.push(entry);
+    } else {
+      sectionBuckets.set(key, { section, entries: [entry] });
+    }
+  }
 
-    if (sectionEntries.length) {
-      for (const [route, routeEntries] of groupEntriesForSection(sectionEntries)) {
-        lines.push(route);
-        for (const routeLine of buildRouteLines(routeEntries)) {
-          lines.push(routeLine);
-        }
+  const sectionsToPrint = Array.from(sectionBuckets.values())
+    .sort((a, b) => {
+      if (a.section.group !== b.section.group) {
+        return (
+          SEA_BROKERAGE_REPORT_GROUP_ORDER.indexOf(a.section.group) -
+          SEA_BROKERAGE_REPORT_GROUP_ORDER.indexOf(b.section.group)
+        );
+      }
+      if (a.section.priorityOrder !== b.section.priorityOrder) {
+        return a.section.priorityOrder - b.section.priorityOrder;
+      }
+      return a.section.title.localeCompare(b.section.title);
+    });
+
+  if (!sectionsToPrint.length) {
+    lines.push("No activity today");
+    lines.push("------------------------------");
+    return lines.join("\n");
+  }
+
+  for (const bucket of sectionsToPrint) {
+    lines.push(`${bucket.section.emoji} ${bucket.section.title}`);
+    for (const [route, routeEntries] of groupEntriesForSection(bucket.entries)) {
+      lines.push(route);
+      for (const routeLine of buildRouteLines(routeEntries)) {
+        lines.push(routeLine);
       }
     }
-
     lines.push("");
     lines.push("-----------------------------");
   }
@@ -264,7 +370,7 @@ export function buildSeaBrokerageMarketUpdateMessage(
   return lines.join("\n");
 }
 
-export function buildSeaBrokerageMarketUpdateMessagesByGroup(
+export async function buildSeaBrokerageMarketUpdateMessagesByGroup(
   entries: SeaBrokerageEntryRow[],
   when = new Date(),
   groups: SeaBrokerageReportGroup[] = SEA_BROKERAGE_REPORT_GROUP_ORDER,
@@ -272,14 +378,15 @@ export function buildSeaBrokerageMarketUpdateMessagesByGroup(
   const uniqueGroups = Array.from(new Set(groups)).filter((group): group is SeaBrokerageReportGroup =>
     SEA_BROKERAGE_REPORT_GROUP_ORDER.includes(group),
   );
-  return uniqueGroups.map((group) => {
-    const message = buildSeaBrokerageMarketUpdateMessage(entries, when, {
+  const out: Array<{ group: SeaBrokerageReportGroup; message: string }> = [];
+  for (const group of uniqueGroups) {
+    const message = await buildSeaBrokerageMarketUpdateMessage(entries, when, {
       groups: [group],
       title: `🇺🇦 SPIKE BROKERS Market Update — ${SEA_BROKERAGE_REPORT_GROUP_LABELS[group]}`,
     });
-    return {
-      group,
-      message,
-    };
-  });
+    if (!/\nNo activity today\n/i.test(`\n${message}\n`)) {
+      out.push({ group, message });
+    }
+  }
+  return out;
 }
