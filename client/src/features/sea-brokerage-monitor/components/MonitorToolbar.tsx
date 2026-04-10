@@ -1,4 +1,5 @@
 import { ChevronDown, Save, Search, Star, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,9 @@ interface MonitorToolbarProps {
   currencyOptions?: Array<{ value: Currency; label: string }>;
   transportModeOptions?: Array<{ value: TransportMode; label: string }>;
   basisOptions?: string[];
+  recentOriginCountryCodes?: string[];
+  recentDeliveryPlaceCodes?: string[];
+  recentCurrencies?: string[];
 }
 
 export function MonitorToolbar({
@@ -69,6 +73,9 @@ export function MonitorToolbar({
   currencyOptions = defaultCurrencyOptions,
   transportModeOptions = [],
   basisOptions = ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"],
+  recentOriginCountryCodes = [],
+  recentDeliveryPlaceCodes = [],
+  recentCurrencies = [],
 }: MonitorToolbarProps) {
   const selectedOriginCountries = new Set(
     filters.originCountries.map((value) => String(value).toLowerCase()),
@@ -78,6 +85,9 @@ export function MonitorToolbar({
   const selectedTransportModes = new Set(
     filters.transportModes.map((value) => String(value).toLowerCase()),
   );
+  const [originSearch, setOriginSearch] = useState("");
+  const [deliveryPlaceSearch, setDeliveryPlaceSearch] = useState("");
+  const [currencySearch, setCurrencySearch] = useState("");
 
   function renderMultiLabel(baseLabel: string, selectedCount: number) {
     if (selectedCount <= 0) return `All ${baseLabel}`;
@@ -87,6 +97,138 @@ export function MonitorToolbar({
 
   const compactFilterTriggerClass =
     "flex h-6 w-full min-w-0 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-[10.5px] font-normal text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:h-7 sm:text-[11px]";
+
+  const countryByCode = useMemo(() => {
+    const map = new Map<string, CountryOption>();
+    for (const option of countryOptions) {
+      map.set(String(option.code || "").toLowerCase(), option);
+    }
+    return map;
+  }, [countryOptions]);
+
+  const recentOriginOptions = useMemo(() => {
+    const list: CountryOption[] = [];
+    const seen = new Set<string>();
+    for (const code of recentOriginCountryCodes) {
+      const key = String(code || "").toLowerCase();
+      if (!key || seen.has(key)) continue;
+      const option = countryByCode.get(key);
+      if (!option) continue;
+      seen.add(key);
+      list.push(option);
+    }
+    return list;
+  }, [recentOriginCountryCodes, countryByCode]);
+
+  const visibleOriginOptions = useMemo(() => {
+    const query = originSearch.trim().toLowerCase();
+    if (!query) {
+      const selectedOptions = countryOptions.filter((option) =>
+        selectedOriginCountries.has(String(option.code || "").toLowerCase()),
+      );
+      const merged = [...recentOriginOptions, ...selectedOptions];
+      const seen = new Set<string>();
+      return merged.filter((option) => {
+        const key = String(option.code || "").toLowerCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    return countryOptions.filter((option) => {
+      const label = String(option.displayLabel || "").toLowerCase();
+      const code = String(option.code || "").toLowerCase();
+      return label.includes(query) || code.includes(query);
+    });
+  }, [originSearch, countryOptions, selectedOriginCountries, recentOriginOptions]);
+
+  const deliveryByCode = useMemo(() => {
+    const map = new Map<string, PortOption>();
+    for (const option of deliveryPlaceOptions) {
+      map.set(option.code, option);
+    }
+    return map;
+  }, [deliveryPlaceOptions]);
+
+  const recentDeliveryOptions = useMemo(() => {
+    const list: PortOption[] = [];
+    const seen = new Set<string>();
+    for (const code of recentDeliveryPlaceCodes) {
+      const key = String(code || "").trim();
+      if (!key || seen.has(key)) continue;
+      const option = deliveryByCode.get(key);
+      if (!option) continue;
+      seen.add(key);
+      list.push(option);
+    }
+    return list;
+  }, [recentDeliveryPlaceCodes, deliveryByCode]);
+
+  const visibleDeliveryOptions = useMemo(() => {
+    const query = deliveryPlaceSearch.trim().toLowerCase();
+    if (!query) {
+      if (filters.deliveryPlace !== "all") {
+        const selected = deliveryPlaceOptions.find((item) => item.code === filters.deliveryPlace);
+        if (selected) {
+          return [
+            selected,
+            ...recentDeliveryOptions.filter((item) => item.code !== selected.code),
+          ];
+        }
+      }
+      return recentDeliveryOptions;
+    }
+    return deliveryPlaceOptions.filter((option) => {
+      const label = String(option.displayLabel || "").toLowerCase();
+      const code = String(option.code || "").toLowerCase();
+      const country = getCountryDisplayLabel(option.countryCode).toLowerCase();
+      return label.includes(query) || code.includes(query) || country.includes(query);
+    });
+  }, [deliveryPlaceSearch, deliveryPlaceOptions, filters.deliveryPlace, recentDeliveryOptions]);
+
+  const currencyByCode = useMemo(() => {
+    const map = new Map<string, { value: Currency; label: string }>();
+    for (const option of currencyOptions) {
+      map.set(String(option.value || "").toUpperCase(), option);
+    }
+    return map;
+  }, [currencyOptions]);
+
+  const recentCurrencyOptions = useMemo(() => {
+    const list: Array<{ value: Currency; label: string }> = [];
+    const seen = new Set<string>();
+    for (const value of recentCurrencies) {
+      const key = String(value || "").toUpperCase();
+      if (!key || seen.has(key)) continue;
+      const option = currencyByCode.get(key);
+      if (!option) continue;
+      seen.add(key);
+      list.push(option);
+    }
+    return list;
+  }, [recentCurrencies, currencyByCode]);
+
+  const visibleCurrencyOptions = useMemo(() => {
+    const query = currencySearch.trim().toLowerCase();
+    if (!query) {
+      const selectedOptions = currencyOptions.filter((option) =>
+        selectedCurrencies.has(String(option.value || "").toUpperCase()),
+      );
+      const merged = [...recentCurrencyOptions, ...selectedOptions];
+      const seen = new Set<string>();
+      return merged.filter((option) => {
+        const key = String(option.value || "").toUpperCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    return currencyOptions.filter((option) => {
+      const label = String(option.label || "").toLowerCase();
+      const code = String(option.value || "").toLowerCase();
+      return label.includes(query) || code.includes(query);
+    });
+  }, [currencySearch, currencyOptions, selectedCurrencies, recentCurrencyOptions]);
 
   return (
     <Card className="overflow-hidden border-border/70 bg-card/95 px-1.5 py-1 shadow-sm sm:px-2.5 sm:py-1.5">
@@ -182,7 +324,15 @@ export function MonitorToolbar({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px] max-w-[90vw]">
-              {countryOptions.map((country) => {
+              <div className="px-2 pb-1">
+                <Input
+                  value={originSearch}
+                  onChange={(event) => setOriginSearch(event.target.value)}
+                  placeholder="Type country"
+                  className="h-7 text-xs"
+                />
+              </div>
+              {visibleOriginOptions.map((country) => {
                 const key = country.code.toLowerCase();
                 return (
                   <DropdownMenuCheckboxItem
@@ -226,24 +376,57 @@ export function MonitorToolbar({
             </SelectContent>
           </Select>
 
-          <Select
-            value={filters.deliveryPlace}
-            onValueChange={(value) =>
-              onFilterChange("deliveryPlace", value as FeedFilterState["deliveryPlace"])
-            }
-          >
-            <SelectTrigger className="h-6 min-w-0 w-full text-[10.5px] sm:h-7 sm:text-[11px]">
-              <SelectValue placeholder="Port / place" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All delivery places</SelectItem>
-              {deliveryPlaceOptions.map((port) => (
-                <SelectItem key={port.code} value={port.code}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={compactFilterTriggerClass}
+              >
+                <span className="truncate">
+                  {filters.deliveryPlace === "all"
+                    ? "All delivery places"
+                    : (() => {
+                        const selected = deliveryPlaceOptions.find(
+                          (option) => option.code === filters.deliveryPlace,
+                        );
+                        return selected
+                          ? `${selected.displayLabel}, ${getCountryDisplayLabel(selected.countryCode)}`
+                          : "All delivery places";
+                      })()}
+                </span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[320px] max-w-[92vw]">
+              <div className="px-2 pb-1">
+                <Input
+                  value={deliveryPlaceSearch}
+                  onChange={(event) => setDeliveryPlaceSearch(event.target.value)}
+                  placeholder="Type delivery place"
+                  className="h-7 text-xs"
+                />
+              </div>
+              <DropdownMenuCheckboxItem
+                checked={filters.deliveryPlace === "all"}
+                onCheckedChange={() =>
+                  onFilterChange("deliveryPlace", "all" as FeedFilterState["deliveryPlace"])
+                }
+              >
+                All delivery places
+              </DropdownMenuCheckboxItem>
+              {visibleDeliveryOptions.map((port) => (
+                <DropdownMenuCheckboxItem
+                  key={port.code}
+                  checked={filters.deliveryPlace === port.code}
+                  onCheckedChange={() =>
+                    onFilterChange("deliveryPlace", port.code as FeedFilterState["deliveryPlace"])
+                  }
+                >
                   {`${port.displayLabel}, ${getCountryDisplayLabel(port.countryCode)}`}
-                </SelectItem>
+                </DropdownMenuCheckboxItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -292,7 +475,15 @@ export function MonitorToolbar({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[230px] max-w-[90vw]">
-              {currencyOptions.map((currency) => {
+              <div className="px-2 pb-1">
+                <Input
+                  value={currencySearch}
+                  onChange={(event) => setCurrencySearch(event.target.value)}
+                  placeholder="Type currency"
+                  className="h-7 text-xs"
+                />
+              </div>
+              {visibleCurrencyOptions.map((currency) => {
                 const key = currency.value.toUpperCase();
                 return (
                   <DropdownMenuCheckboxItem

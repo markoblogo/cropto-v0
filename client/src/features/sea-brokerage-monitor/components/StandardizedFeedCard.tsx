@@ -190,6 +190,7 @@ export function StandardizedFeedCard({
 }: StandardizedFeedCardProps) {
   const [view, setView] = useState<FeedSecondaryView>("markets");
   const [analyticsCurrency, setAnalyticsCurrency] = useState<AnalyticsCurrencyMode>("all");
+  const showSecondaryOpsMeta = showBossAnalytics;
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
   const bidCount = entries.filter((entry) => entry.type === "bid").length;
@@ -455,37 +456,41 @@ export function StandardizedFeedCard({
             </div>
 
             <div className="flex min-w-0 flex-wrap items-stretch gap-2">
-              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Stats</span>
-                <Badge variant="outline">{entries.length} visible</Badge>
-                <Badge variant="outline">BIDs {bidCount}</Badge>
-                <Badge variant="outline">OFFERS {offerCount}</Badge>
-                <Badge variant="outline">TRADES {tradeCount}</Badge>
-              </div>
+              {showSecondaryOpsMeta ? (
+                <>
+                  <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Stats</span>
+                    <Badge variant="outline">{entries.length} visible</Badge>
+                    <Badge variant="outline">BIDs {bidCount}</Badge>
+                    <Badge variant="outline">OFFERS {offerCount}</Badge>
+                    <Badge variant="outline">TRADES {tradeCount}</Badge>
+                  </div>
 
-              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Export</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8"
-                  onClick={() => exportEntriesToCsv(entries)}
-                  disabled={entries.length === 0}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  CSV
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8"
-                  onClick={() => exportEntriesToXlsx(entries)}
-                  disabled={entries.length === 0}
-                >
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  XLSX
-                </Button>
-              </div>
+                  <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border/60 px-2 py-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Export</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => exportEntriesToCsv(entries)}
+                      disabled={entries.length === 0}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => exportEntriesToXlsx(entries)}
+                      disabled={entries.length === 0}
+                    >
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      XLSX
+                    </Button>
+                  </div>
+                </>
+              ) : null}
 
               {onOpenReport ? (
                 <div className="flex min-h-[40px] items-center rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1">
@@ -700,7 +705,7 @@ export function StandardizedFeedCard({
                     "Commodity: default Corn",
                     "Period: 1M / 3M / 6M / custom",
                     "Basis: selectable",
-                    "Delivery places: multi-select",
+                    "Delivery country: selectable",
                     "Mode: Price VWAP / Volume",
                   ]}
                 />
@@ -744,7 +749,7 @@ export function StandardizedFeedCard({
                   title="Premiums"
                   lines={[
                     "Exchange reference: Barchart",
-                    "Physical filters: commodity / basis / place",
+                    "Physical filters: commodity / basis / country",
                     "Period: 1M / 3M / 6M / custom",
                     "Chart: daily / weekly averages",
                   ]}

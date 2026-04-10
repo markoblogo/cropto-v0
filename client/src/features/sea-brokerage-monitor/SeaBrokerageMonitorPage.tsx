@@ -399,6 +399,48 @@ export function SeaBrokerageMonitorPage() {
     }
     return Array.from(byNormalized.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
   }, [customCommodityOptions, feedWithBusinessUnits]);
+  const recentActivityWindowStartMs = useMemo(
+    () => Date.now() - 365 * 24 * 60 * 60 * 1000,
+    [],
+  );
+  const toolbarRecentOriginCountryCodes = useMemo(() => {
+    const values = new Set<string>();
+    for (const entry of feedWithBusinessUnits) {
+      const createdAtMs = new Date(entry.createdAt).getTime();
+      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) continue;
+      const code = String(entry.originCountryCode || "").trim().toLowerCase();
+      if (code) values.add(code);
+    }
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [feedWithBusinessUnits, recentActivityWindowStartMs]);
+  const toolbarRecentDeliveryPlaceCodes = useMemo(() => {
+    const values = new Set<string>();
+    for (const entry of feedWithBusinessUnits) {
+      const createdAtMs = new Date(entry.createdAt).getTime();
+      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) continue;
+      const destinationCodes =
+        entry.destinationPortCodes && entry.destinationPortCodes.length
+          ? entry.destinationPortCodes
+          : String(entry.destinationPortCode || "")
+              .split("|")
+              .map((part) => part.trim())
+              .filter(Boolean);
+      for (const code of destinationCodes) {
+        values.add(code);
+      }
+    }
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [feedWithBusinessUnits, recentActivityWindowStartMs]);
+  const toolbarRecentCurrencies = useMemo(() => {
+    const values = new Set<string>();
+    for (const entry of feedWithBusinessUnits) {
+      const createdAtMs = new Date(entry.createdAt).getTime();
+      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) continue;
+      const currency = String(entry.currency || "").trim().toUpperCase();
+      if (currency) values.add(currency);
+    }
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [feedWithBusinessUnits, recentActivityWindowStartMs]);
   const reportCommodityCodesByGroup = useMemo(() => {
     const map = new Map<ReportGroup, string[]>();
     for (const group of REPORT_GROUP_OPTIONS.map((item) => item.value)) {
@@ -1326,6 +1368,9 @@ export function SeaBrokerageMonitorPage() {
           commodityOptions={toolbarCommodityOptions}
           countryOptions={toolbarCountryOptions}
           deliveryPlaceOptions={toolbarDeliveryPlaceOptions}
+          recentOriginCountryCodes={toolbarRecentOriginCountryCodes}
+          recentDeliveryPlaceCodes={toolbarRecentDeliveryPlaceCodes}
+          recentCurrencies={toolbarRecentCurrencies}
           canManagePresets={session.canCreateEntries}
           presetOptions={filterPresets.map((preset) => ({
             value: preset.id,
