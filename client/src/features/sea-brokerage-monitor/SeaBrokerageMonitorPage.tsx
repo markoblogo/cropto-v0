@@ -203,6 +203,8 @@ export function SeaBrokerageMonitorPage() {
   const [reportProfileActive, setReportProfileActive] = useState(true);
   const [reportProfilePostedWindowDays, setReportProfilePostedWindowDays] = useState(1);
   const [selectedReportProfileId, setSelectedReportProfileId] = useState<string>("");
+  const [secondaryViewsOpen, setSecondaryViewsOpen] = useState(false);
+  const secondaryViewsRef = useRef<HTMLDivElement | null>(null);
   const [reportForm, setReportForm] = useState<{
     title: string;
     formatMode: ReportFormatMode;
@@ -236,6 +238,11 @@ export function SeaBrokerageMonitorPage() {
   });
   const defaultPresetAppliedTokenRef = useRef<string | null>(null);
   const reportInitialCommodityPrefillDoneRef = useRef(false);
+
+  useEffect(() => {
+    if (!secondaryViewsOpen) return;
+    secondaryViewsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [secondaryViewsOpen]);
 
   const { data: filterPresets = [] } = useQuery<FilterPreset[]>({
     queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
@@ -1336,7 +1343,9 @@ export function SeaBrokerageMonitorPage() {
           onDeletePreset={() => void handleDeletePreset()}
         />
 
-        <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
+        {!secondaryViewsOpen ? (
+          <>
+            <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
           <BrokerWorkspacePane
             title="Offers"
             emptyTitle="No visible offers"
@@ -1384,9 +1393,9 @@ export function SeaBrokerageMonitorPage() {
               setCreateDialogType("offer");
             }}
           />
-        </section>
+            </section>
 
-        <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
+            <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
           <ContextualMatchingPanel
             entries={primaryWindowEntries}
             selectedEntry={selectedEntry}
@@ -1418,11 +1427,13 @@ export function SeaBrokerageMonitorPage() {
               setCreateDialogType("trade");
             }}
           />
-        </section>
+            </section>
+          </>
+        ) : null}
 
         </div>
 
-        <Collapsible>
+        <Collapsible open={secondaryViewsOpen} onOpenChange={setSecondaryViewsOpen}>
           <div className="flex items-center justify-end gap-2">
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="h-6 text-[10.5px] text-foreground/70 dark:text-muted-foreground sm:h-6.5 sm:text-xs">
@@ -1432,14 +1443,16 @@ export function SeaBrokerageMonitorPage() {
             </CollapsibleTrigger>
           </div>
           <CollapsibleContent>
-            <StandardizedFeedCard
-              entries={filteredEntries}
-              onSelectEntry={handleSelectEntry}
-              onOpenReport={() => {
-                setReportOpen(true);
-                setReportStatus(null);
-              }}
-            />
+            <div ref={secondaryViewsRef} className="lg:h-[calc(100vh-176px)] lg:min-h-[560px]">
+              <StandardizedFeedCard
+                entries={filteredEntries}
+                onSelectEntry={handleSelectEntry}
+                onOpenReport={() => {
+                  setReportOpen(true);
+                  setReportStatus(null);
+                }}
+              />
+            </div>
           </CollapsibleContent>
         </Collapsible>
 

@@ -407,7 +407,7 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
 
   return (
     <>
-      <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
+      <Card className="flex h-full min-h-0 flex-col overflow-hidden border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="space-y-4 border-b border-border/60 pb-4">
           <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
             <div className="min-w-0">
@@ -496,7 +496,7 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
+        <CardContent className="flex min-h-0 flex-1 p-0">
           {view === "tape" ? (
             entries.length === 0 ? (
               <div className="p-6">
@@ -506,7 +506,7 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
                 />
               </div>
             ) : (
-              <ScrollArea className="h-[620px]">
+              <ScrollArea className="h-full min-h-0 flex-1">
                 <div className="divide-y divide-border/60">
                   {entries.map((entry) => (
                     <button
@@ -537,7 +537,7 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
                 />
               </div>
             ) : (
-              <ScrollArea className="h-[620px]">
+              <ScrollArea className="h-full min-h-0 flex-1">
                 <div className="p-3">
                   <div className="space-y-2 sm:hidden">
                     {entries.map((entry) => (
@@ -606,17 +606,19 @@ export function StandardizedFeedCard({ entries, onOpenReport, onSelectEntry }: S
               </ScrollArea>
             )
           ) : (
-            <div className="space-y-4 p-4 min-h-[800px]">
-              <MarketDashboardQuotes />
-              <div className="grid gap-4 xl:grid-cols-2">
-                <UniversalChart entries={entries} />
-                <LiquidityByBasis entries={entries} />
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="space-y-4 p-4">
+                <MarketDashboardQuotes />
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <UniversalChart entries={entries} />
+                  <LiquidityByBasis entries={entries} />
+                </div>
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <BasisSpreadChart entries={entries} />
+                  <PremiumToExchange entries={entries} />
+                </div>
               </div>
-              <div className="grid gap-4 xl:grid-cols-2">
-                <BasisSpreadChart entries={entries} />
-                <PremiumToExchange entries={entries} />
-              </div>
-            </div>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>
