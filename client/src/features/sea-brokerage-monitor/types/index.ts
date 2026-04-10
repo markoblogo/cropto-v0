@@ -4,21 +4,7 @@ export type CommodityCode = string;
 
 export type Basis = string;
 
-export type TransportType =
-  | "handysize"
-  | "supramax"
-  | "panamax"
-  | "capesize"
-  | "coaster"
-  | "dump_trucks"
-  | "ua_wagons"
-  | "ua_wagons_dump_trucks"
-  | "truck"
-  | "rail"
-  | "vessel"
-  | "truck/rail"
-  | "barge"
-  | "container";
+export type TransportType = string;
 
 export type TransportMode = "land" | "river" | "bulk_sea" | "container";
 
@@ -68,6 +54,14 @@ export interface PaymentTermOption {
   code: PaymentTermCode;
   displayLabel: string;
   compactDisplay: string;
+}
+
+export interface TransportOption {
+  code: string;
+  displayLabel: string;
+  displayLabelUa: string;
+  icon: string;
+  transportMode: TransportMode;
 }
 
 export interface CompanyOption {

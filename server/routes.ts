@@ -39,6 +39,12 @@ import { calculateCalendarSpreads, calculateCrossCommoditySpreads, getAllSpreads
 import fs from "fs";
 import path from "path";
 import { AVAILABLE_COMMODITIES, COMMODITY_MAP, BASIS_CPT_ODESA, type CommoditySlug } from "@shared/commodities";
+import {
+  SEA_BROKERAGE_TRANSPORT_DICTIONARY,
+  getSeaBrokerageTransportDisplayLabel,
+  normalizeSeaBrokerageTransportCode,
+  type SeaBrokerageTransportDictionaryEntry,
+} from "@shared/seaBrokerageTransport";
 import { createHash, randomUUID } from "crypto";
 import { getMockMarketDataBR, getMockMarketDataAR, getMockMarketDataUS, type MarketIndexDto } from "./services/mockMarketData";
 import { deriveMarketHealth, selectCountryRows, selectTruthSeriesPerCommodity } from "./services/dashboardSourcePolicy";
@@ -1207,6 +1213,7 @@ const SEA_BROKERAGE_SELLER_COMPANIES_KEY = "sea_brokerage_seller_companies_v1";
 const SEA_BROKERAGE_COUNTRIES_KEY = "sea_brokerage_countries_v1";
 const SEA_BROKERAGE_COMMODITIES_KEY = "sea_brokerage_commodities_v1";
 const SEA_BROKERAGE_BASIS_KEY = "sea_brokerage_basis_v1";
+const SEA_BROKERAGE_TRANSPORTS_KEY = "sea_brokerage_transports_v1";
 const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
@@ -1380,7 +1387,7 @@ function mapSeaBrokerageEntryToClientShape(
     priceFrom: decimalToNumber(entry.priceFrom),
     priceTo: decimalToNumber(entry.priceTo),
     currency: entry.currency,
-    transportType: entry.transportType,
+    transportType: normalizeSeaBrokerageTransportCode(entry.transportType),
     note: entry.note,
     createdAt: entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt),
     createdBy: {
@@ -1516,6 +1523,8 @@ type SeaBrokerageCommodityDictionaryEntry = {
   certification?: string;
   telegramIcon?: string;
 };
+
+type SeaBrokerageTransportDictionaryStoredEntry = SeaBrokerageTransportDictionaryEntry;
 
 const SEA_BROKERAGE_DEFAULT_BASIS = [...SEA_BROKERAGE_ALLOWED_BASIS];
 
@@ -1653,6 +1662,67 @@ async function readSeaBrokerageBasis(): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+async function readSeaBrokerageTransports(): Promise<SeaBrokerageTransportDictionaryStoredEntry[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_TRANSPORTS_KEY))?.value || "[]";
+  let parsed: SeaBrokerageTransportDictionaryStoredEntry[] = [];
+  try {
+    const candidate = JSON.parse(raw) as SeaBrokerageTransportDictionaryStoredEntry[];
+    if (Array.isArray(candidate)) {
+      parsed = candidate
+        .filter(
+          (item) =>
+            item &&
+            typeof item.code === "string" &&
+            typeof item.displayLabel === "string" &&
+            typeof item.displayLabelUa === "string" &&
+            typeof item.icon === "string" &&
+            typeof item.transportMode === "string",
+        )
+        .map((item) => ({
+          code: String(item.code).trim(),
+          displayLabel: normalizeCityLabel(item.displayLabel),
+          displayLabelUa: normalizeCityLabel(item.displayLabelUa),
+          icon: String(item.icon).trim(),
+          transportMode:
+            item.transportMode === "land" ||
+            item.transportMode === "river" ||
+            item.transportMode === "bulk_sea" ||
+            item.transportMode === "container"
+              ? item.transportMode
+              : "land",
+          aliases: Array.isArray(item.aliases)
+            ? item.aliases.map((alias) => normalizeCityLabel(alias)).filter(Boolean)
+            : undefined,
+        }));
+    }
+  } catch {
+    parsed = [];
+  }
+
+  const byCode = new Map<string, SeaBrokerageTransportDictionaryStoredEntry>();
+  for (const item of SEA_BROKERAGE_TRANSPORT_DICTIONARY) {
+    byCode.set(item.code, item);
+  }
+  for (const item of parsed) {
+    if (!item.code) continue;
+    const fallback = byCode.get(item.code);
+    byCode.set(item.code, {
+      code: item.code,
+      displayLabel: item.displayLabel || fallback?.displayLabel || item.code,
+      displayLabelUa: item.displayLabelUa || fallback?.displayLabelUa || item.displayLabel || item.code,
+      icon: item.icon || fallback?.icon || "",
+      transportMode: item.transportMode || fallback?.transportMode || "land",
+      aliases:
+        item.aliases && item.aliases.length
+          ? item.aliases
+          : fallback?.aliases && fallback.aliases.length
+            ? fallback.aliases
+            : undefined,
+    });
+  }
+  return Array.from(byCode.values());
 }
 
 function deriveSeaBrokerageBasisFromEntries(entries: SeaBrokerageEntryRow[]): string[] {
@@ -10908,6 +10978,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/sea-brokerage-monitor/transports", async (_req, res) => {
+    try {
+      const transports = await readSeaBrokerageTransports();
+      await storage.upsertAppSetting(SEA_BROKERAGE_TRANSPORTS_KEY, JSON.stringify(transports));
+      return res.json({ transports });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage transports:", error);
+      return res.status(500).json({ error: "Failed to list transports" });
+    }
+  });
+
   app.post("/api/sea-brokerage-monitor/commodities", async (req: AuthRequest, res) => {
     try {
       const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
@@ -11279,6 +11360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const created = await storage.createSeaBrokerageEntry({
         ...entryInput,
+        transportType: normalizeSeaBrokerageTransportCode(entryInput.transportType),
         brokerUserId:
           authorizedBroker.telegramUserId ||
           authorizedBroker.telegramUsername ||
@@ -11479,7 +11561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? null
             : String(payload.priceTo),
         currency: payload.currency,
-        transportType: payload.transportType,
+        transportType: normalizeSeaBrokerageTransportCode(payload.transportType),
         note: payload.note ?? null,
         canonicalView: payload.canonicalView,
         entryStatus: payload.type === "trade" ? "active" : requestedStatus,
@@ -11651,7 +11733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priceFrom: source.priceFrom,
         priceTo: source.priceTo,
         currency: source.currency,
-        transportType: source.transportType,
+        transportType: normalizeSeaBrokerageTransportCode(source.transportType),
         note: source.note,
         canonicalView: source.canonicalView,
         telegramRelayStatus: "queued",

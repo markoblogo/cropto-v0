@@ -22,7 +22,7 @@ import {
   formatEntryPriceRange,
 } from "../services/entryFormatting.service";
 import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
-import { getPortPlaceDisplayLabel } from "../services/displayStandards";
+import { getPortPlaceDisplayLabel, getTransportDisplayLabel } from "../services/displayStandards";
 import { apiRequest } from "@/lib/queryClient";
 import type { BrokerageEntry, MatchLike, MatchSuggestion } from "../types";
 
@@ -112,8 +112,8 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
     },
     {
       label: "Transport",
-      offerValue: offer.transportType.toUpperCase(),
-      bidValue: bid.transportType.toUpperCase(),
+      offerValue: getTransportDisplayLabel(offer.transportType),
+      bidValue: getTransportDisplayLabel(bid.transportType),
       equal: normalizeCompareValue(bid.transportType) === normalizeCompareValue(offer.transportType),
     },
     {

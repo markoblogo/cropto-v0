@@ -1,4 +1,5 @@
 import type { SeaBrokerageEntryRow } from "@shared/schema";
+import { getSeaBrokerageTransportDisplayLabel } from "@shared/seaBrokerageTransport";
 
 /**
  * Returns a numeric sort key for commodities based on broker hierarchy:
@@ -40,14 +41,7 @@ export function getCommoditySortKey(entry: SeaBrokerageEntryRow): number {
  * Normalizes transport labels for concise reports.
  */
 export function getTransportShort(type: string | null | undefined): string {
-  const t = String(type || "").toLowerCase();
-  if (["vessel", "handysize", "coaster"].includes(t)) return "Vsl";
-  if (t === "rail" || t === "ua_wagons") return "UA wagons";
-  if (t === "truck" || t === "dump_trucks") return "Dump trucks";
-  if (t === "truck/rail" || t === "ua_wagons_dump_trucks") return "UA wagons | Dump trucks";
-  const raw = String(type || "").trim();
-  if (!raw) return "";
-  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  return getSeaBrokerageTransportDisplayLabel(type, String(type || "").trim());
 }
 
 /**

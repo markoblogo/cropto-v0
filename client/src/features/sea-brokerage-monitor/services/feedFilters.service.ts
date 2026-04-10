@@ -8,6 +8,7 @@ import {
 } from "./displayStandards";
 import type { BrokerageEntry, FeedFilterState } from "../types";
 import { formatEntryChartDay } from "./entryFormatting.service";
+import { getSeaBrokerageTransportMode } from "@shared/seaBrokerageTransport";
 
 export const defaultFeedFilters: FeedFilterState = {
   entryType: "all",
@@ -52,21 +53,7 @@ function resolveDestinationPortCodes(entry: BrokerageEntry) {
 }
 
 export function mapTransportTypeToMode(transportType: string | null | undefined) {
-  const normalized = String(transportType || "").toLowerCase();
-  if (
-    normalized === "truck" ||
-    normalized === "rail" ||
-    normalized === "truck/rail" ||
-    normalized === "dump_trucks" ||
-    normalized === "ua_wagons" ||
-    normalized === "ua_wagons_dump_trucks"
-  ) {
-    return "land";
-  }
-  if (normalized === "barge") return "river";
-  if (normalized === "container") return "container";
-  if (normalized === "vessel" || normalized === "coaster" || normalized === "handysize" || normalized === "supramax" || normalized === "panamax" || normalized === "capesize") return "bulk_sea";
-  return "land";
+  return getSeaBrokerageTransportMode(transportType, "land");
 }
 
 function normalizeCountryFilterCandidates(entry: BrokerageEntry) {

@@ -7,6 +7,7 @@ import {
   portOptionMap,
   portOptions,
 } from "../mock/dictionaries";
+import { getSeaBrokerageTransportDisplayLabel } from "@shared/seaBrokerageTransport";
 import type {
   BrokerageEntry,
   CommodityCode,
@@ -147,6 +148,10 @@ export function getPaymentTermCompactDisplay(paymentTermCode: PaymentTermCode | 
 
 export function getBasisCompactDisplay(basis: string | null | undefined) {
   return (basis ?? "").toUpperCase();
+}
+
+export function getTransportDisplayLabel(transportType: string | null | undefined) {
+  return getSeaBrokerageTransportDisplayLabel(transportType, String(transportType || "").trim());
 }
 
 export function normalizePeriodCompactLabel(input: {

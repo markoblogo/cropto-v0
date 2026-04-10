@@ -44,6 +44,11 @@ import { isoCountryOptionsEn } from "../mock/isoCountryOptions.en";
 import {
   getCountryDisplayLabel,
 } from "../services/displayStandards";
+import {
+  SEA_BROKERAGE_TRANSPORT_DICTIONARY,
+  getSeaBrokerageTransportDisplayLabel,
+  normalizeSeaBrokerageTransportCode,
+} from "@shared/seaBrokerageTransport";
 import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
 import {
   buildCanonicalView,
@@ -63,6 +68,7 @@ import type {
   PortOption,
   SelectOption,
   SeaBrokerageEntryStatus,
+  TransportOption,
   TransportType,
   VolumeUnit,
 } from "../types";
@@ -91,20 +97,6 @@ const periodPresetOptions: SelectOption<PeriodPreset>[] = [
   { value: "full_month", label: "Full month" },
   { value: "explicit_range", label: "Exact window" },
 ];
-const transportTypeOptions: Array<{ value: TransportType; label: string }> = [
-  { value: "handysize", label: "Handysize" },
-  { value: "supramax", label: "Supramax" },
-  { value: "panamax", label: "Panamax" },
-  { value: "capesize", label: "Capesize" },
-  { value: "coaster", label: "Coaster" },
-  { value: "dump_trucks", label: "Dump trucks" },
-  { value: "ua_wagons", label: "UA wagons" },
-  { value: "ua_wagons_dump_trucks", label: "UA wagons | Dump trucks" },
-  { value: "vessel", label: "Vessel (Other)" },
-  { value: "barge", label: "Barge" },
-  { value: "container", label: "Container" },
-];
-
 const entryStatusOptions: Array<{ value: SeaBrokerageEntryStatus; label: string }> = [
   { value: "active", label: "Active" },
   { value: "needs_update", label: "Needs Update" },
@@ -129,24 +121,7 @@ function isNewCropByHarvestYear(value: string | null | undefined) {
 }
 
 function normalizeTransportTypeForForm(value: string | null | undefined): TransportType {
-  const normalized = String(value || "")
-    .trim()
-    .toLowerCase();
-  if (normalized === "truck") return "dump_trucks";
-  if (normalized === "rail") return "ua_wagons";
-  if (normalized === "truck/rail") return "ua_wagons_dump_trucks";
-  if (normalized === "dump_trucks") return "dump_trucks";
-  if (normalized === "ua_wagons") return "ua_wagons";
-  if (normalized === "ua_wagons_dump_trucks") return "ua_wagons_dump_trucks";
-  if (normalized === "handysize") return "handysize";
-  if (normalized === "supramax") return "supramax";
-  if (normalized === "panamax") return "panamax";
-  if (normalized === "capesize") return "capesize";
-  if (normalized === "coaster") return "coaster";
-  if (normalized === "vessel") return "vessel";
-  if (normalized === "barge") return "barge";
-  if (normalized === "container") return "container";
-  return "vessel";
+  return normalizeSeaBrokerageTransportCode(value, "vessel");
 }
 
 function normalizeCompanyLookupKey(value: string) {
@@ -241,22 +216,7 @@ const entryFormSchema = z
     paymentTerms: z.string().optional().default(""),
     sellerCommission: z.coerce.number().nonnegative("Seller commission must be 0 or greater").optional(),
     buyerCommission: z.coerce.number().nonnegative("Buyer commission must be 0 or greater").optional(),
-    transportType: z.enum([
-      "handysize",
-      "supramax",
-      "panamax",
-      "capesize",
-      "coaster",
-      "dump_trucks",
-      "ua_wagons",
-      "ua_wagons_dump_trucks",
-      "truck",
-      "rail",
-      "truck/rail",
-      "vessel",
-      "barge",
-      "container",
-    ]).optional().default("vessel"),
+    transportType: z.string().trim().min(1, "Transport is required").optional().default("vessel"),
     note: z.string().max(500, "Note must be 500 characters or fewer").optional(),
   })
   .superRefine((values, ctx) => {
@@ -833,6 +793,18 @@ export function EntryCreateDialog({
     },
     staleTime: 60_000,
   });
+  const { data: sharedTransportOptionsData = [] } = useQuery<TransportOption[]>({
+    queryKey: ["/api/sea-brokerage-monitor/transports"],
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/transports");
+      if (!response.ok) {
+        throw new Error(`Failed to load transport dictionary (${response.status})`);
+      }
+      const payload = (await response.json()) as { transports?: TransportOption[] };
+      return Array.isArray(payload.transports) ? payload.transports : [];
+    },
+    staleTime: 60_000,
+  });
   const { data: brokerDirectory = [] } = useQuery<BrokerDirectoryItem[]>({
     queryKey: ["/api/sea-brokerage-monitor/broker-directory"],
     enabled: open && !!session.monitorAuthToken,
@@ -893,6 +865,32 @@ export function EntryCreateDialog({
       .sort((a, b) => a.localeCompare(b))
       .map((value) => ({ value, label: value }));
   }, [sharedBasisOptionsData]);
+  const allTransportOptions = useMemo(() => {
+    const byCode = new Map<string, TransportOption>();
+    const defaults = SEA_BROKERAGE_TRANSPORT_DICTIONARY.map(
+      (item): TransportOption => ({
+        code: item.code,
+        displayLabel: item.displayLabel,
+        displayLabelUa: item.displayLabelUa,
+        icon: item.icon,
+        transportMode: item.transportMode,
+      }),
+    );
+    for (const option of [...defaults, ...sharedTransportOptionsData]) {
+      const code = String(option.code || "").trim();
+      if (!code) continue;
+      byCode.set(code, {
+        code,
+        displayLabel: String(option.displayLabel || "").trim() || getSeaBrokerageTransportDisplayLabel(code, code),
+        displayLabelUa: String(option.displayLabelUa || "").trim(),
+        icon: String(option.icon || "").trim(),
+        transportMode: option.transportMode,
+      });
+    }
+    return Array.from(byCode.values()).sort((left, right) =>
+      left.displayLabel.localeCompare(right.displayLabel),
+    );
+  }, [sharedTransportOptionsData]);
   const countryByCode = useMemo(() => {
     const map = new Map<string, CountryOption>();
     for (const option of allCountryOptions) {
@@ -1128,6 +1126,7 @@ export function EntryCreateDialog({
       values.periodEnd,
     );
     const resolvedCurrency = composeCurrencyWithVat(values.currency, values.vatMode);
+    const normalizedTransportType = normalizeSeaBrokerageTransportCode(values.transportType, "vessel");
 
     return buildCanonicalView({
       id: "preview",
@@ -1169,7 +1168,7 @@ export function EntryCreateDialog({
       priceFrom: values.price,
       priceTo: values.price,
       currency: resolvedCurrency as Currency,
-      transportType: values.transportType as TransportType,
+      transportType: normalizedTransportType as TransportType,
       note: values.note?.trim() ? values.note.trim() : null,
       createdAt: new Date().toISOString(),
       createdBy: session.authorProfile,
@@ -1211,6 +1210,10 @@ export function EntryCreateDialog({
       normalizedValues.periodEnd,
     );
     const resolvedCurrency = composeCurrencyWithVat(normalizedValues.currency, normalizedValues.vatMode);
+    const normalizedTransportType = normalizeSeaBrokerageTransportCode(
+      normalizedValues.transportType,
+      "vessel",
+    );
 
     let tradeSellerBrokerTelegramUserId: string | null = null;
     let tradeSellerBrokerTelegramUsername: string | null = null;
@@ -1304,7 +1307,7 @@ export function EntryCreateDialog({
       priceFrom: normalizedValues.price,
       priceTo: normalizedValues.price,
       currency: resolvedCurrency as Currency,
-      transportType: normalizedValues.transportType as TransportType,
+      transportType: normalizedTransportType as TransportType,
       note: normalizedValues.note?.trim() ? normalizedValues.note.trim() : null,
       createdAt: new Date().toISOString(),
       createdBy: session.authorProfile!,
@@ -1353,7 +1356,7 @@ export function EntryCreateDialog({
       priceFrom: normalizedValues.price,
       priceTo: normalizedValues.price,
       currency: resolvedCurrency,
-      transportType: normalizedValues.transportType,
+      transportType: normalizedTransportType,
       note: normalizedValues.note?.trim() ? normalizedValues.note.trim() : null,
       brokerCode: session.authorProfile?.brokerCode || "",
       brokerName: session.authorProfile?.brokerName || "",
@@ -2609,9 +2612,9 @@ export function EntryCreateDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {transportTypeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        {allTransportOptions.map((option) => (
+                          <SelectItem key={option.code} value={option.code}>
+                            {option.displayLabel}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -5,6 +5,7 @@ import {
   resolveSeaBrokerageCountryAlpha2,
 } from "./seaBrokerageBasisFormat";
 import { resolveSeaBrokerageTelegramTag } from "./seaBrokerageTelegramTags";
+import { getSeaBrokerageTransportDisplayLabel } from "@shared/seaBrokerageTransport";
 
 type TelegramPublishResult = {
   status: "published" | "failed";
@@ -295,25 +296,8 @@ function formatTelegramPeriodForBasis(entry: SeaBrokerageEntryRow, isSeaBasis: b
 }
 
 function formatTelegramTransportCode(entry: SeaBrokerageEntryRow) {
-  const normalized = String(entry.transportType || "")
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-  if (normalized === "coaster") return "Coaster vessel";
-  if (normalized === "handysize") return "Handysize vessels";
-  if (normalized === "supramax") return "Supramax vessels";
-  if (normalized === "panamax") return "Panamax vessels";
-  if (normalized === "capesize") return "Capesize vessels";
-  if (normalized === "vessel") return "Vessel";
-  if (normalized === "rail" || normalized === "ua wagons") return "UA wagons";
-  if (normalized === "truck" || normalized === "dump trucks") return "Dump trucks";
-  if (normalized === "barge") return "Barge";
-  if (normalized === "container") return "Container";
-  if (normalized === "truck/rail" || normalized === "ua wagons dump trucks") {
-    return "UA wagons | Dump trucks";
-  }
-  return toTitleCase(normalized);
+  const value = getSeaBrokerageTransportDisplayLabel(entry.transportType, String(entry.transportType || "").trim());
+  return value || "";
 }
 
 function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {

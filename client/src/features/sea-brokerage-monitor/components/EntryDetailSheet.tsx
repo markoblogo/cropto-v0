@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { BrokerageEntry } from "../types";
-import { getPaymentTermDisplayLabel } from "../services/displayStandards";
+import { getPaymentTermDisplayLabel, getTransportDisplayLabel } from "../services/displayStandards";
 import {
   formatEntryDateTime,
   formatEntryCommodityCompact,
@@ -46,17 +46,7 @@ function formatBrokerTelegramIdentity(telegramUsername?: string | null, telegram
 }
 
 function formatTransportDisplay(value: string | null | undefined) {
-  const normalized = String(value || "")
-    .trim()
-    .toLowerCase();
-  if (normalized === "ua_wagons") return "UA wagons";
-  if (normalized === "dump_trucks") return "Dump trucks";
-  if (normalized === "ua_wagons_dump_trucks") return "UA wagons | Dump trucks";
-  if (normalized === "truck/rail") return "UA wagons | Dump trucks";
-  if (normalized === "truck") return "Dump trucks";
-  if (normalized === "rail") return "UA wagons";
-  if (normalized === "vessel") return "Vessel (Other)";
-  return String(value || "Not set");
+  return getTransportDisplayLabel(value) || "Not set";
 }
 
 function formatEntryStatusDisplay(status: BrokerageEntry["entryStatus"]) {
