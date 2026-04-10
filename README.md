@@ -3,116 +3,85 @@
 [![Node.js](https://img.shields.io/badge/node-22.x-brightgreen)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Cropto is an early-stage product for commodity trading, market monitoring, and brokerage workflows.
+Cropto is an early-stage platform for commodity trading, market monitoring, and brokerage workflows.
 
-This repository contains the current Cropto MVP: the main web application, the supporting Node/Express backend, market-data ingestion paths, and the latest workflow modules such as Sea Brokerage Monitor.
+This repository contains the active MVP codebase: the main web app, backend APIs/jobs, ingestion pipelines, and the operational Sea Brokerage Monitor used for BID/OFFER/TRADE workflows.
 
-The project is currently in active prototype / staging mode. Parts of the product are already interactive and partner-reviewable, while some integrations and operational flows are still being hardened.
+## Project Status
 
-## Why this repo matters
+- Product state: active prototype/staging with real partner usage in selected modules
+- Main staging domain: [cropto.abvx.xyz](https://cropto.abvx.xyz)
+- Maturity: mixed (some modules are production-like operationally, others remain experimental)
 
-Cropto is not just a landing page or a deck repo. The codebase now reflects a working product direction built around:
+## Key Product Areas
 
-- commodity market monitoring
-- trading and risk workflow prototypes
-- broker-oriented operational surfaces
-- admin and partner operations
-- ingestion, monitoring, and deployment infrastructure behind those surfaces
+- Trading/monitoring surfaces in the main Cropto app
+- Market dashboard and market-data ingestion layers
+- Sea Brokerage Monitor at `/spike-monitor`
+- Broker auth/session and Telegram relay flows for monitor operations
+- Operational/reporting modules (daily reports, export, analytics, sheets sync)
 
-## Product Areas
+## Current Feature Highlights
 
-The current repository includes these visible product areas:
-
-- **Market monitoring surfaces**  
-  Dashboard, market-data views, and monitor-style pages for commodity, logistics, weather, and related market signals.
-
-- **Trading and risk workflow surfaces**  
-  Spot, options, forward-market, wallet, portfolio, and related workflow pages across the main app.
-
-- **Sea Brokerage Monitor**  
-  A broker workspace at `/spike-monitor` built for fast bid/offer entry, compact market scanning, and live matching.
-
-- **Admin and operational tools**  
-  Feedback, reconciliation, audit, waitlist, partner, and contract-management routes.
-
-- **Data and ingestion backend**  
-  Background jobs, polling, normalization, monitoring services, and API routes that support the product surfaces.
-
-## Current Highlights
-
-- Market dashboard and monitoring routes backed by API queries and ingestion services
-- Trading UI flows for spot, options, forward, portfolio, and wallet scenarios
-- Monitor workspace direction with richer operational modules and data services
-- Sea Brokerage Monitor workspace with:
-  - dual-pane `OFFERS` / `BIDS` layout
-  - modal `Create BID` / `Create OFFER` flows
-  - compact tape-style row presentation
-  - rolling `Best Current Matches`
-  - detail sheet, filtering, exports, and secondary views
-- Product-oriented route shells for demo/staging review
-- Shared frontend/backend schema and deployable build pipeline
+- Route-level product shell and dashboard surfaces for market and workflow monitoring
+- Sea Brokerage Monitor dual-pane workspace (`OFFERS` / `BIDS`) with `MATCHES` and `TRADES`
+- Compact tape rows + structured detail modal/drawer flows
+- Create/edit/repost flows for BID/OFFER/TRADE records
+- Broker gating with Telegram-based monitor auth flow
+- Server-side persistence for monitor entries and related dictionaries
+- Telegram publishing for entries, matches, and reports
+- Basis-aware routing for SEA/LAND telegram channels
+- Daily market-report scheduler and custom report profiles
+- Google Sheets sync path for monitor records/dictionaries
 
 ## Sea Brokerage Monitor
 
-Sea Brokerage Monitor is one of the clearest active product modules in this repo.
+Sea Brokerage Monitor is the most actively evolving operational module in this repository.
 
 ### Purpose
 
-It is designed as a compact broker workspace for practical market work:
-
-- scan offers and bids quickly
-- create structured entries fast
-- surface likely matches without requiring heavy navigation
+- Fast broker workflow for creating and scanning BID/OFFER/TRADE ideas
+- Rolling matching visibility
+- Structured operational relay into Telegram channels
 
 ### Current UX shape
 
-- compact top toolbar with global filters
-- dual-pane `OFFERS` / `BIDS` workspace
-- pane-level tools for broker/search filtering
-- compact tape rows optimized for scanning speed
-- rolling matching block visible in the main workspace
-- detail sheet for the full structured record
+- Top global filter row (commodity, origin, basis, delivery place, business unit, currency, transport type, broker, search)
+- Dual-pane `OFFERS` and `BIDS`
+- `MATCHES` and `TRADES` operational blocks
+- Secondary Views (`Tape`, `Archive`, `Analytics`) with exports/reporting
 
-### Current implementation status
+### Current backend/ops shape
 
-- client-side/local-state driven
-- seeded demo data for QA and partner walkthroughs
-- no backend persistence for brokerage entries yet
-- prepared for future integration with Telegram/session/relay flows, but not fully live end-to-end
+- API-backed persistence for monitor entries
+- Monitor-specific Telegram auth/session path
+- Telegram relay publisher + scheduled daily reports
+- Sheets sync scheduler for monitor data sync
+- Dictionary import tooling from Google Sheets
 
 ## Repository Structure
 
-High-level structure:
-
 ```text
 .
-├── client/          # React frontend (routes, shared UI, feature modules, i18n)
-├── server/          # Express API, auth, ingestion jobs, monitor services
-├── shared/          # Shared schema and types across client/server
-├── db/              # Database helpers
-├── migrations/      # SQL and schema migration assets
-├── contracts/       # Contract-related sources/config already present in repo
-├── scripts/         # Operational, ingestion, smoke, and utility scripts
-├── docs/            # Internal product, deploy, testing, and ops docs
-├── public/          # Static assets and public files
-├── tests/           # Repository tests and checks
-├── railway.json
+├── client/        # React frontend (routes, shared UI, feature modules)
+├── server/        # Express API, monitor services, schedulers, ingestion jobs
+├── shared/        # Shared schema/types between client and server
+├── db/            # DB connection/helpers
+├── migrations/    # SQL migration files
+├── scripts/       # Operational scripts (smoke, import, backfill, diagnostics)
+├── docs/          # Internal product/deploy/runbook documentation
+├── public/        # Public static assets
+├── tests/         # Test and verification assets
+├── railway.json   # Railway deployment config
 └── package.json
 ```
 
-Notable frontend areas:
+### Notable monitor paths
 
-- `client/src/pages` - route-level product surfaces
-- `client/src/components` - shared UI and shared product blocks
-- `client/src/components/monitor` - monitor-oriented UI modules
-- `client/src/features/sea-brokerage-monitor` - self-contained brokerage workflow feature
-
-Notable backend areas:
-
-- `server/routes.ts` - main API surface
-- `server/monitor/*` - monitor services, providers, persistence, and routes
-- `server/jobs/*` and `server/jobsRunner.ts` - background jobs and polling
-- `server/ingestion/*` - ingestion scheduling and normalization
+- `client/src/features/sea-brokerage-monitor/`
+- `server/monitor/`
+- `server/services/seaBrokerage*.ts`
+- `scripts/sea_brokerage_*.ts`
 
 ## Tech Stack
 
@@ -123,11 +92,8 @@ Notable backend areas:
 - Wouter
 - TanStack Query
 - React Hook Form + Zod
-- Tailwind CSS
-- Radix UI / shadcn-style primitives
+- Tailwind CSS + Radix UI primitives
 - Recharts
-- i18next
-- MapLibre GL
 
 ### Backend
 
@@ -135,18 +101,16 @@ Notable backend areas:
 - Express
 - TypeScript
 - Drizzle ORM
-- PostgreSQL-compatible database
-- Zod validation
-- Passport/local auth pieces
+- PostgreSQL
+- Zod
+- Session/JWT auth primitives
+
+### Integrations and ops
+
+- Telegram bot integration (auth/relay/reporting paths)
 - Supabase integration hooks
-- Nodemailer / Resend support
-
-### Tooling and deployment
-
-- Railway deployment config
-- esbuild server bundling in production build
-- Playwright installed during postinstall for smoke/browser checks
-- Hardhat / ethers already present for contract-related work
+- Railway deployment
+- Playwright smoke tooling
 
 ## Local Development
 
@@ -156,47 +120,38 @@ Notable backend areas:
 - PostgreSQL-compatible database
 - npm
 
-### Install
+### Setup
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-At minimum, local development needs working values for:
+### Required minimum env
 
 - `DATABASE_URL`
 - `SESSION_SECRET`
 - `JWT_SECRET`
 
-### Database
+For monitor auth/relay work, also configure:
+
+- `TELEGRAM_BOT_TOKEN`
+- `SEA_BROKERAGE_MONITOR_JWT_SECRET`
+- `VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME`
+- monitor relay/chat vars from `.env.example`
+
+### DB and run
 
 ```bash
 npm run db:push
-```
-
-Alternative migration commands:
-
-```bash
-npm run db:migrate
-npm run migrate
-```
-
-### Run the app
-
-```bash
 npm run dev
 ```
 
-Run jobs/pollers separately when needed:
+Run jobs/schedulers in parallel when needed:
 
 ```bash
 npm run dev:jobs
 ```
-
-Typical local app URL:
-
-- `http://127.0.0.1:5000`
 
 ### Build and checks
 
@@ -205,82 +160,47 @@ npm run build
 npm run check
 ```
 
-Useful additional scripts:
+Useful operational scripts:
 
 ```bash
+npm run sea-brokerage:telegram:smoke
+npm run sea-brokerage:dictionaries:import
 npm run e2e:smoke
-npm run ingest:probe
-npm run ingest:smoke
-npm run ingest:backfill
-npm run i18n:extract
-npm run i18n:check
 ```
 
 ## Environment and Configuration
 
-Relevant configuration is visible in `.env.example`.
+`.env.example` documents active configuration areas:
 
-Current categories include:
+- Core app/session/db
+- Supabase integration
+- On-chain settings
+- Ingestion/poller settings
+- Telegram monitor auth/relay/reporting settings
+- Last30days ingestion toggles
 
-- **Core app**  
-  `DATABASE_URL`, `SESSION_SECRET`, `JWT_SECRET`
+Not all env keys are required for every route/module. Configure by feature scope.
 
-- **Supabase**  
-  `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+## Deployment / Hosting
 
-- **On-chain / contracts**  
-  deployer keys, RPC URLs, and contract address settings
+- Primary deployment target: Railway (`railway.json`)
+- Main docs:
+  - [`docs/deploy-runbook.md`](docs/deploy-runbook.md)
+  - [`docs/sea-brokerage-monitor-railway-runbook.md`](docs/sea-brokerage-monitor-railway-runbook.md)
+  - [`docs/sea-brokerage-telegram-partner-handoff.md`](docs/sea-brokerage-telegram-partner-handoff.md)
 
-- **Market data ingestion**  
-  polling toggles, provider settings, and scheduler flags
+## Current Limitations / Work in Progress
 
-- **Telegram / scraping / relay-adjacent flows**  
-  bot tokens, scraper toggles, and related job/runtime flags
-
-Not every variable is required for every route. Some are only needed for specific integrations or jobs.
-
-## Deployment
-
-The repo contains a concrete Railway-oriented deploy path.
-
-- `railway.json` defines the deployment shape
-- `docs/deploy-runbook.md` documents the current operational flow
-- `docs/sea-brokerage-monitor-railway-runbook.md` documents Sea Brokerage Monitor migration/env/relay rollout
-- staging/demo verification target is [cropto.abvx.xyz](https://cropto.abvx.xyz)
-
-Important current nuance:
-
-- `main` is the current repository mainline
-- staging/deploy branch assumptions may still reference `release/demo` until infra is intentionally simplified
-
-Useful production commands:
-
-```bash
-npm run build
-npm start
-npm run start:jobs
-```
-
-## Current Limitations
-
-Useful realities before building on top of this repo:
-
-- product maturity is uneven across modules
-- some UX flows are polished but still prototype-grade under the hood
-- some features still rely on mock/demo or local-state behavior
-- Sea Brokerage Monitor now has backend persistence, broker allowlist gating, and server-side Telegram relay paths (internal + external channels), while native Telegram OAuth login is still pending
-- some Telegram/session/relay paths are operational but still in staged hardening mode
-- deployment and operational assumptions are still somewhat project-specific
+- Product maturity remains uneven across modules
+- Some features are stable operationally but still evolving in UX/format standards
+- Telegram and dictionary/reporting logic is active but still frequently iterated with broker feedback
+- Deployment/runtime tuning (especially scheduler/process stability) is ongoing
 
 ## Contribution / Working Notes
 
-This repo behaves more like an internal product codebase than a polished open-source package.
+- This is an internal product repository, not a polished OSS package
+- Before changing behavior, verify route/script/runbook coupling
+- Treat monitor formatting/dictionaries/telegram templates as product-critical operational logic
+- Prefer incremental, testable changes over broad refactors
 
-Practical guidance:
-
-- validate against real routes, scripts, and config before broad refactors
-- be careful with top-level content and historical artifacts; some are active, some are transitional
-- treat product claims conservatively when editing docs or shipping partner-facing copy
-- prefer keeping main operational paths understandable over adding parallel experimental layers
-
-Additional internal docs are indexed in [docs/README.md](docs/README.md).
+For internal docs index, see [`docs/README.md`](docs/README.md).
