@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export interface MarketQuote {
   id: string;
   symbol: string;
-  category: "macro" | "cbot" | "matif";
+  category: "macro" | "cbot" | "matif" | "spike_cpt";
   price: number;
   change: number;
   priceUnit: string;
@@ -34,9 +34,9 @@ export function MarketDashboardQuotes() {
             Market Dashboard
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-md" />
+        <CardContent className="p-3 pt-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-md" />
           ))}
         </CardContent>
       </Card>
@@ -54,10 +54,10 @@ export function MarketDashboardQuotes() {
     return (
       <div
         key={quote.id}
-        className="flex flex-col justify-center rounded-md border border-border/60 bg-muted/10 p-3 shadow-sm"
+        className="flex min-h-[58px] flex-col justify-center rounded-md border border-border/60 bg-muted/10 px-3 py-2 shadow-sm"
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">{quote.symbol}</span>
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground">{quote.symbol}</span>
           <div className="flex items-center gap-1">
             <TrendIcon
               className={`h-3 w-3 ${
@@ -74,12 +74,48 @@ export function MarketDashboardQuotes() {
           </div>
         </div>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-lg font-bold leading-none">{quote.price.toFixed(2)}</span>
+          <span className="text-2xl font-bold leading-none">{quote.price.toFixed(2)}</span>
           <span className="text-[10px] text-muted-foreground uppercase">{quote.priceUnit}</span>
         </div>
       </div>
     );
   };
+
+  const quoteById = new Map(quotes.map((quote) => [quote.id, quote] as const));
+
+  const columns: Array<{ title: string; ids: string[] }> = [
+    {
+      title: "Global",
+      ids: ["eurusd", "gold", "wti", "spx", "dow"],
+    },
+    {
+      title: "CBOT (US)",
+      ids: ["cbot_corn", "cbot_wheat", "cbot_soy", "cbot_soy_oil", "cbot_soy_meal"],
+    },
+    {
+      title: "MATIF (EU)",
+      ids: ["matif_corn", "matif_wheat", "matif_rape"],
+    },
+    {
+      title: "SPIKE CPT (UA)",
+      ids: [
+        "spike_cpt_corn",
+        "spike_cpt_wheat_115",
+        "spike_cpt_feed_wheat",
+        "spike_cpt_soybean_gmo",
+        "spike_cpt_sunflower_seeds",
+      ],
+    },
+  ];
+
+  const renderEmptySlot = (id: string) => (
+    <div
+      key={id}
+      className="flex min-h-[58px] items-center rounded-md border border-dashed border-border/30 px-3 py-2 text-[11px] text-muted-foreground/60"
+    >
+      No data
+    </div>
+  );
 
   return (
     <Card className="border-border/60 overflow-hidden bg-gradient-to-br from-background to-muted/5">
@@ -89,8 +125,20 @@ export function MarketDashboardQuotes() {
           Market Dashboard
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-        {quotes.map(renderQuote)}
+      <CardContent className="p-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+        {columns.map((column) => (
+          <div key={column.title} className="space-y-2">
+            <div className="px-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              {column.title}
+            </div>
+            <div className="space-y-2">
+              {column.ids.map((id) => {
+                const quote = quoteById.get(id);
+                return quote ? renderQuote(quote) : renderEmptySlot(id);
+              })}
+            </div>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

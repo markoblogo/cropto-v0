@@ -114,6 +114,14 @@ const MARKET_DASHBOARD_MATIF_CORN_CACHE_KEY = "market_dashboard_quote_matif_corn
 const MARKET_DASHBOARD_MATIF_CORN_URL = "https://www.barchart.com/futures/quotes/XBM26/futures-prices";
 const MARKET_DASHBOARD_GOLD_CACHE_KEY = "market_dashboard_quote_gold_gcj26_v1";
 const MARKET_DASHBOARD_GOLD_URL = "https://www.barchart.com/futures/quotes/GCJ26/futures-prices";
+const MARKET_DASHBOARD_SPX_CACHE_KEY = "market_dashboard_quote_spx_v1";
+const MARKET_DASHBOARD_SPX_URL = "https://www.barchart.com/stocks/quotes/$SPX/overview";
+const MARKET_DASHBOARD_DOW_CACHE_KEY = "market_dashboard_quote_dow_dusa_v1";
+const MARKET_DASHBOARD_DOW_URL = "https://www.barchart.com/stocks/quotes/$DUSA/overview";
+const MARKET_DASHBOARD_CBOT_SOY_OIL_CACHE_KEY = "market_dashboard_quote_cbot_soy_oil_zlk26_v1";
+const MARKET_DASHBOARD_CBOT_SOY_OIL_URL = "https://www.barchart.com/futures/quotes/ZLK26/overview";
+const MARKET_DASHBOARD_CBOT_SOY_MEAL_CACHE_KEY = "market_dashboard_quote_cbot_soy_meal_zmk26_v1";
+const MARKET_DASHBOARD_CBOT_SOY_MEAL_URL = "https://www.barchart.com/futures/quotes/ZMK26/overview";
 const MARKET_DASHBOARD_EURUSD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const CBOT_BUSHELS_PER_MT: Record<"corn" | "soybean" | "wheat", number> = {
   corn: 39.368,
@@ -203,6 +211,38 @@ type MarketDashboardMatifCornSnapshot = {
   source: "barchart_html";
 };
 
+type MarketDashboardSpxSnapshot = {
+  symbol: "S&P 500";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardDowSnapshot = {
+  symbol: "DOW";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardCbotSoyOilSnapshot = {
+  symbol: "Soy Oil (CBOT)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
+type MarketDashboardCbotSoyMealSnapshot = {
+  symbol: "Soy Meal (CBOT)";
+  price: number;
+  change: number;
+  updatedAt: string;
+  source: "barchart_html";
+};
+
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
@@ -238,6 +278,20 @@ const cbotCentsPerBushelToUsdPerMt = (
 ): number | null => {
   if (!isFiniteNumber(centsPerBushel)) return null;
   return (centsPerBushel / 100) * CBOT_BUSHELS_PER_MT[grain];
+};
+
+const cbotSoyOilCentsPerPoundToUsdPerMt = (
+  centsPerPound: number | null | undefined,
+): number | null => {
+  if (!isFiniteNumber(centsPerPound)) return null;
+  return centsPerPound * 22.0462262185;
+};
+
+const cbotSoyMealUsdPerShortTonToUsdPerMt = (
+  usdPerShortTon: number | null | undefined,
+): number | null => {
+  if (!isFiniteNumber(usdPerShortTon)) return null;
+  return usdPerShortTon * 1.1023113109;
 };
 
 const readEurUsdSnapshotFromSetting = async (): Promise<MarketDashboardEurUsdSnapshot | null> => {
@@ -920,6 +974,310 @@ const resolveMatifCornSnapshot = async (): Promise<MarketDashboardMatifCornSnaps
     return fresh;
   } catch (error: any) {
     console.warn(`[MarketDashboard] Corn (MATIF) refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readSpxSnapshotFromSetting = async (): Promise<MarketDashboardSpxSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_SPX_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardSpxSnapshot>;
+    if (
+      parsed.symbol !== "S&P 500" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "S&P 500",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartSpxSnapshot = async (): Promise<MarketDashboardSpxSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_SPX_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("S&P 500 parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "S&P 500",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveSpxSnapshot = async (): Promise<MarketDashboardSpxSnapshot | null> => {
+  const cached = await readSpxSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartSpxSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_SPX_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] S&P 500 refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readDowSnapshotFromSetting = async (): Promise<MarketDashboardDowSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_DOW_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardDowSnapshot>;
+    if (
+      parsed.symbol !== "DOW" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "DOW",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartDowSnapshot = async (): Promise<MarketDashboardDowSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_DOW_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("DOW parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "DOW",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveDowSnapshot = async (): Promise<MarketDashboardDowSnapshot | null> => {
+  const cached = await readDowSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartDowSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_DOW_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] DOW refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readCbotSoyOilSnapshotFromSetting = async (): Promise<MarketDashboardCbotSoyOilSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_CBOT_SOY_OIL_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardCbotSoyOilSnapshot>;
+    if (
+      parsed.symbol !== "Soy Oil (CBOT)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Soy Oil (CBOT)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartCbotSoyOilSnapshot = async (): Promise<MarketDashboardCbotSoyOilSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_CBOT_SOY_OIL_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Soy Oil (CBOT) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Soy Oil (CBOT)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveCbotSoyOilSnapshot = async (): Promise<MarketDashboardCbotSoyOilSnapshot | null> => {
+  const cached = await readCbotSoyOilSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartCbotSoyOilSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_CBOT_SOY_OIL_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Soy Oil (CBOT) refresh failed: ${error?.message || "unknown error"}`);
+    return cached || null;
+  }
+};
+
+const readCbotSoyMealSnapshotFromSetting = async (): Promise<MarketDashboardCbotSoyMealSnapshot | null> => {
+  try {
+    const raw = (await storage.getAppSetting(MARKET_DASHBOARD_CBOT_SOY_MEAL_CACHE_KEY))?.value || "";
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MarketDashboardCbotSoyMealSnapshot>;
+    if (
+      parsed.symbol !== "Soy Meal (CBOT)" ||
+      !isFiniteNumber(parsed.price) ||
+      !isFiniteNumber(parsed.change) ||
+      typeof parsed.updatedAt !== "string" ||
+      parsed.source !== "barchart_html"
+    ) {
+      return null;
+    }
+    return {
+      symbol: "Soy Meal (CBOT)",
+      price: parsed.price,
+      change: parsed.change,
+      updatedAt: parsed.updatedAt,
+      source: "barchart_html",
+    };
+  } catch {
+    return null;
+  }
+};
+
+const fetchBarchartCbotSoyMealSnapshot = async (): Promise<MarketDashboardCbotSoyMealSnapshot> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(MARKET_DASHBOARD_CBOT_SOY_MEAL_URL, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Barchart HTTP ${response.status}`);
+    }
+    const html = await response.text();
+    const price = parseBarchartNumericField(html, "lastPrice");
+    const change = parseBarchartNumericField(html, "priceChange");
+    if (!isFiniteNumber(price) || !isFiniteNumber(change)) {
+      throw new Error("Soy Meal (CBOT) parse failed (lastPrice/priceChange not found)");
+    }
+    return {
+      symbol: "Soy Meal (CBOT)",
+      price,
+      change,
+      updatedAt: new Date().toISOString(),
+      source: "barchart_html",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const resolveCbotSoyMealSnapshot = async (): Promise<MarketDashboardCbotSoyMealSnapshot | null> => {
+  const cached = await readCbotSoyMealSnapshotFromSetting();
+  const cachedTs = cached ? Date.parse(cached.updatedAt) : NaN;
+  const cacheFresh = Number.isFinite(cachedTs) && Date.now() - cachedTs <= MARKET_DASHBOARD_EURUSD_MAX_AGE_MS;
+  if (cached && cacheFresh) return cached;
+
+  try {
+    const fresh = await fetchBarchartCbotSoyMealSnapshot();
+    await storage.upsertAppSetting(MARKET_DASHBOARD_CBOT_SOY_MEAL_CACHE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch (error: any) {
+    console.warn(`[MarketDashboard] Soy Meal (CBOT) refresh failed: ${error?.message || "unknown error"}`);
     return cached || null;
   }
 };
@@ -9869,15 +10227,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/market-dashboard/quotes", async (req: AuthRequest, res) => {
-    const eurusd = await resolveEurUsdSnapshot();
-    const wti = await resolveWtiSnapshot();
-    const cbotCorn = await resolveCbotCornSnapshot();
-    const cbotSoy = await resolveCbotSoySnapshot();
-    const cbotWheat = await resolveCbotWheatSnapshot();
-    const matifWheat = await resolveMatifWheatSnapshot();
-    const matifRapeseed = await resolveMatifRapeseedSnapshot();
-    const matifCorn = await resolveMatifCornSnapshot();
-    const gold = await resolveGoldSnapshot();
+    const [
+      eurusd,
+      wti,
+      cbotCorn,
+      cbotSoy,
+      cbotWheat,
+      matifWheat,
+      matifRapeseed,
+      matifCorn,
+      gold,
+      spx,
+      dow,
+      cbotSoyOil,
+      cbotSoyMeal,
+      entries,
+      commodityCatalog,
+    ] = await Promise.all([
+      resolveEurUsdSnapshot(),
+      resolveWtiSnapshot(),
+      resolveCbotCornSnapshot(),
+      resolveCbotSoySnapshot(),
+      resolveCbotWheatSnapshot(),
+      resolveMatifWheatSnapshot(),
+      resolveMatifRapeseedSnapshot(),
+      resolveMatifCornSnapshot(),
+      resolveGoldSnapshot(),
+      resolveSpxSnapshot(),
+      resolveDowSnapshot(),
+      resolveCbotSoyOilSnapshot(),
+      resolveCbotSoyMealSnapshot(),
+      storage.listSeaBrokerageEntries(),
+      readSeaBrokerageCommodities(),
+    ]);
 
     const eurUsdRate = eurusd?.price ?? 1.085;
     const cbotCornUsdMt = cbotCentsPerBushelToUsdPerMt(cbotCorn?.price, "corn");
@@ -9886,6 +10268,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const cbotSoyChangeUsdMt = cbotCentsPerBushelToUsdPerMt(cbotSoy?.change, "soybean");
     const cbotWheatUsdMt = cbotCentsPerBushelToUsdPerMt(cbotWheat?.price, "wheat");
     const cbotWheatChangeUsdMt = cbotCentsPerBushelToUsdPerMt(cbotWheat?.change, "wheat");
+    const cbotSoyOilUsdMt = cbotSoyOilCentsPerPoundToUsdPerMt(cbotSoyOil?.price);
+    const cbotSoyOilChangeUsdMt = cbotSoyOilCentsPerPoundToUsdPerMt(cbotSoyOil?.change);
+    const cbotSoyMealUsdMt = cbotSoyMealUsdPerShortTonToUsdPerMt(cbotSoyMeal?.price);
+    const cbotSoyMealChangeUsdMt = cbotSoyMealUsdPerShortTonToUsdPerMt(cbotSoyMeal?.change);
     const matifWheatUsdMt = isFiniteNumber(matifWheat?.price) ? matifWheat.price * eurUsdRate : null;
     const matifWheatChangeUsdMt = isFiniteNumber(matifWheat?.change) ? matifWheat.change * eurUsdRate : null;
     const matifRapeseedUsdMt = isFiniteNumber(matifRapeseed?.price)
@@ -9897,6 +10283,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const matifCornUsdMt = isFiniteNumber(matifCorn?.price) ? matifCorn.price * eurUsdRate : null;
     const matifCornChangeUsdMt = isFiniteNumber(matifCorn?.change) ? matifCorn.change * eurUsdRate : null;
 
+    const parseEntryPrice = (entry: SeaBrokerageEntryRow): number | null => {
+      const exact = Number.parseFloat(String(entry.price || ""));
+      if (Number.isFinite(exact)) return exact;
+      const from = Number.parseFloat(String(entry.priceFrom || ""));
+      const to = Number.parseFloat(String(entry.priceTo || ""));
+      if (Number.isFinite(from) && Number.isFinite(to)) return (from + to) / 2;
+      if (Number.isFinite(from)) return from;
+      if (Number.isFinite(to)) return to;
+      return null;
+    };
+
+    const resolveSpikeCommodityKey = (
+      entry: SeaBrokerageEntryRow,
+    ): "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds" | null => {
+      const canonical = resolveSeaBrokerageCommodityFromCatalog(
+        entry.commodity,
+        entry.commodityLabel,
+        commodityCatalog,
+      );
+      const raw = String(canonical?.displayLabel || entry.commodityLabel || entry.commodity || "")
+        .trim()
+        .toLowerCase();
+      if (!raw) return null;
+      if (raw.includes("corn")) return "corn";
+      if (/wheat\s*11[.,]?5/.test(raw)) return "wheat_115";
+      if (raw.includes("feed wheat") || raw.includes("wheat feed")) return "feed_wheat";
+      if (raw.includes("soybean") && raw.includes("gmo")) return "soybean_gmo";
+      if (raw.includes("sunflower seeds")) return "sunflower_seeds";
+      return null;
+    };
+
+    const spikeTargets: Array<{
+      key: "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds";
+      id: string;
+      symbol: string;
+      fallbackPrice: number;
+    }> = [
+      { key: "corn", id: "spike_cpt_corn", symbol: "Corn", fallbackPrice: 0 },
+      { key: "wheat_115", id: "spike_cpt_wheat_115", symbol: "Wheat 11.5", fallbackPrice: 0 },
+      { key: "feed_wheat", id: "spike_cpt_feed_wheat", symbol: "Feed wheat", fallbackPrice: 0 },
+      { key: "soybean_gmo", id: "spike_cpt_soybean_gmo", symbol: "Soybean GMO", fallbackPrice: 0 },
+      {
+        key: "sunflower_seeds",
+        id: "spike_cpt_sunflower_seeds",
+        symbol: "Sunflower seeds",
+        fallbackPrice: 0,
+      },
+    ];
+
+    const spikeRowsByKey = new Map<
+      "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds",
+      SeaBrokerageEntryRow[]
+    >();
+
+    for (const entry of entries) {
+      if (entry.type !== "bid" && entry.type !== "offer") continue;
+      if (normalizeSeaBrokerageBasis(entry.basis) !== "CPT") continue;
+      const isUaDestination =
+        String(entry.destinationCountryCode || "")
+          .trim()
+          .toUpperCase() === "UA" || /ukraine/i.test(String(entry.destinationCountry || ""));
+      if (!isUaDestination) continue;
+      const key = resolveSpikeCommodityKey(entry);
+      if (!key) continue;
+      const existing = spikeRowsByKey.get(key) || [];
+      existing.push(entry);
+      spikeRowsByKey.set(key, existing);
+    }
+
+    const spikeQuotes = spikeTargets.map((target) => {
+      const rows = spikeRowsByKey.get(target.key) || [];
+      const latest = rows[0] || null;
+      const previous = rows[1] || null;
+      const latestPrice = latest ? parseEntryPrice(latest) : null;
+      const previousPrice = previous ? parseEntryPrice(previous) : null;
+      const sameCurrency =
+        latest && previous && String(latest.currency || "").trim() === String(previous.currency || "").trim();
+      const delta =
+        isFiniteNumber(latestPrice) && isFiniteNumber(previousPrice) && sameCurrency
+          ? latestPrice - previousPrice
+          : 0;
+      const trend = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+      return {
+        id: target.id,
+        symbol: target.symbol,
+        category: "spike_cpt",
+        price: isFiniteNumber(latestPrice) ? latestPrice : target.fallbackPrice,
+        change: delta,
+        priceUnit: String(latest?.currency || "USD"),
+        trend,
+      };
+    });
+
     const quotes = [
       {
         id: "eurusd",
@@ -9906,6 +10385,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         change: eurusd?.change ?? 0.12,
         priceUnit: "USD",
         trend: (eurusd?.change ?? 0.12) > 0 ? "up" : (eurusd?.change ?? 0.12) < 0 ? "down" : "flat",
+      },
+      {
+        id: "spx",
+        symbol: "S&P 500",
+        category: "macro",
+        price: spx?.price ?? 0,
+        change: spx?.change ?? 0,
+        priceUnit: "USD",
+        trend: (spx?.change ?? 0) > 0 ? "up" : (spx?.change ?? 0) < 0 ? "down" : "flat",
+      },
+      {
+        id: "dow",
+        symbol: "DOW",
+        category: "macro",
+        price: dow?.price ?? 0,
+        change: dow?.change ?? 0,
+        priceUnit: "USD",
+        trend: (dow?.change ?? 0) > 0 ? "up" : (dow?.change ?? 0) < 0 ? "down" : "flat",
       },
       {
         id: "gold",
@@ -9968,6 +10465,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : "flat",
       },
       {
+        id: "cbot_soy_oil",
+        symbol: "Soy Oil (CBOT)",
+        category: "cbot",
+        price: cbotSoyOilUsdMt ?? 0,
+        change: cbotSoyOilChangeUsdMt ?? 0,
+        priceUnit: "USD/MT",
+        trend:
+          (cbotSoyOilChangeUsdMt ?? 0) > 0
+            ? "up"
+            : (cbotSoyOilChangeUsdMt ?? 0) < 0
+            ? "down"
+            : "flat",
+      },
+      {
+        id: "cbot_soy_meal",
+        symbol: "Soy Meal (CBOT)",
+        category: "cbot",
+        price: cbotSoyMealUsdMt ?? 0,
+        change: cbotSoyMealChangeUsdMt ?? 0,
+        priceUnit: "USD/MT",
+        trend:
+          (cbotSoyMealChangeUsdMt ?? 0) > 0
+            ? "up"
+            : (cbotSoyMealChangeUsdMt ?? 0) < 0
+            ? "down"
+            : "flat",
+      },
+      {
         id: "cbot_wheat",
         symbol: "Wheat (CBOT)",
         category: "cbot",
@@ -10009,6 +10534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? "down"
             : "flat",
       },
+      ...spikeQuotes,
     ];
     res.json(quotes);
   });
