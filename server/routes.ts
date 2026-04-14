@@ -10241,8 +10241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       dow,
       cbotSoyOil,
       cbotSoyMeal,
-      entries,
-      commodityCatalog,
+      uaIndexes,
     ] = await Promise.all([
       resolveEurUsdSnapshot(),
       resolveWtiSnapshot(),
@@ -10257,8 +10256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resolveDowSnapshot(),
       resolveCbotSoyOilSnapshot(),
       resolveCbotSoyMealSnapshot(),
-      storage.listSeaBrokerageEntries(),
-      readSeaBrokerageCommodities(),
+      db.select().from(indexes).where(sql`${indexes.category} LIKE 'CPT%'`),
     ]);
 
     const eurUsdRate = eurusd?.price ?? 1.085;
@@ -10283,41 +10281,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const matifCornUsdMt = isFiniteNumber(matifCorn?.price) ? matifCorn.price * eurUsdRate : null;
     const matifCornChangeUsdMt = isFiniteNumber(matifCorn?.change) ? matifCorn.change * eurUsdRate : null;
 
-    const parseEntryPrice = (entry: SeaBrokerageEntryRow): number | null => {
-      const exact = Number.parseFloat(String(entry.price || ""));
-      if (Number.isFinite(exact)) return exact;
-      const from = Number.parseFloat(String(entry.priceFrom || ""));
-      const to = Number.parseFloat(String(entry.priceTo || ""));
-      if (Number.isFinite(from) && Number.isFinite(to)) return (from + to) / 2;
-      if (Number.isFinite(from)) return from;
-      if (Number.isFinite(to)) return to;
-      return null;
-    };
-
-    const resolveSpikeCommodityKey = (
-      entry: SeaBrokerageEntryRow,
-    ): "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds" | null => {
-      const canonical = resolveSeaBrokerageCommodityFromCatalog(
-        entry.commodity,
-        entry.commodityLabel,
-        commodityCatalog,
-      );
-      const raw = String(canonical?.displayLabel || entry.commodityLabel || entry.commodity || "")
-        .trim()
-        .toLowerCase();
-      if (!raw) return null;
-      if (raw.includes("corn")) return "corn";
-      if (/wheat\s*11[.,]?5/.test(raw)) return "wheat_115";
-      if (raw.includes("feed wheat") || raw.includes("wheat feed")) return "feed_wheat";
-      if (raw.includes("soybean") && raw.includes("gmo")) return "soybean_gmo";
-      if (raw.includes("sunflower seeds")) return "sunflower_seeds";
-      return null;
-    };
-
     const spikeTargets: Array<{
       key: "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds";
       id: string;
       symbol: string;
+      preferProcessing?: boolean;
       fallbackPrice: number;
     }> = [
       { key: "corn", id: "spike_cpt_corn", symbol: "Corn", fallbackPrice: 0 },
@@ -10328,42 +10296,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         key: "sunflower_seeds",
         id: "spike_cpt_sunflower_seeds",
         symbol: "Sunflower seeds",
+        preferProcessing: true,
         fallbackPrice: 0,
       },
     ];
 
-    const spikeRowsByKey = new Map<
+    const indexRowsByKey = new Map<
       "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds",
-      SeaBrokerageEntryRow[]
+      Array<{
+        price: number;
+        delta: number;
+        timestamp: Date;
+        isProcessing: boolean;
+      }>
     >();
 
-    for (const entry of entries) {
-      if (entry.type !== "bid" && entry.type !== "offer") continue;
-      if (normalizeSeaBrokerageBasis(entry.basis) !== "CPT") continue;
-      const isUaDestination =
-        String(entry.destinationCountryCode || "")
-          .trim()
-          .toUpperCase() === "UA" || /ukraine/i.test(String(entry.destinationCountry || ""));
-      if (!isUaDestination) continue;
-      const key = resolveSpikeCommodityKey(entry);
+    for (const indexRow of uaIndexes) {
+      const [latestPrice] = await db
+        .select()
+        .from(commodityIndexPrices)
+        .where(eq(commodityIndexPrices.indexId, indexRow.id))
+        .orderBy(desc(commodityIndexPrices.timestamp))
+        .limit(1);
+      if (!latestPrice) continue;
+      const indexName = String(indexRow.name || "").toLowerCase();
+      const isProcessing = String(indexRow.category || "")
+        .toLowerCase()
+        .includes("paritet");
+      const price = Number.parseFloat(String(latestPrice.price || ""));
+      const delta = Number.parseFloat(String(latestPrice.delta || "0"));
+      if (!Number.isFinite(price)) continue;
+
+      let key: "corn" | "wheat_115" | "feed_wheat" | "soybean_gmo" | "sunflower_seeds" | null =
+        null;
+      if (indexName.includes("corn")) key = "corn";
+      else if (indexName.includes("wheat") && /11[.,]?5/.test(indexName)) key = "wheat_115";
+      else if (indexName.includes("feed") && indexName.includes("wheat")) key = "feed_wheat";
+      else if (indexName.includes("soy") && indexName.includes("gmo")) key = "soybean_gmo";
+      else if (indexName.includes("sunflower")) key = "sunflower_seeds";
       if (!key) continue;
-      const existing = spikeRowsByKey.get(key) || [];
-      existing.push(entry);
-      spikeRowsByKey.set(key, existing);
+
+      const rows = indexRowsByKey.get(key) || [];
+      rows.push({
+        price,
+        delta: Number.isFinite(delta) ? delta : 0,
+        timestamp: new Date(latestPrice.timestamp),
+        isProcessing,
+      });
+      rows.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      indexRowsByKey.set(key, rows.slice(0, 5));
     }
 
     const spikeQuotes = spikeTargets.map((target) => {
-      const rows = spikeRowsByKey.get(target.key) || [];
-      const latest = rows[0] || null;
-      const previous = rows[1] || null;
-      const latestPrice = latest ? parseEntryPrice(latest) : null;
-      const previousPrice = previous ? parseEntryPrice(previous) : null;
-      const sameCurrency =
-        latest && previous && String(latest.currency || "").trim() === String(previous.currency || "").trim();
-      const delta =
-        isFiniteNumber(latestPrice) && isFiniteNumber(previousPrice) && sameCurrency
-          ? latestPrice - previousPrice
-          : 0;
+      const rows = indexRowsByKey.get(target.key) || [];
+      const preferred = target.preferProcessing
+        ? rows.find((row) => row.isProcessing)
+        : rows.find((row) => !row.isProcessing) || rows[0];
+      const latest = preferred || rows[0] || null;
+      const latestPrice = latest?.price ?? null;
+      const delta = latest?.delta ?? 0;
       const trend = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
       return {
         id: target.id,
@@ -10371,7 +10362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: "spike_cpt",
         price: isFiniteNumber(latestPrice) ? latestPrice : target.fallbackPrice,
         change: delta,
-        priceUnit: String(latest?.currency || "USD"),
+        priceUnit: "USD/MT",
         trend,
       };
     });
