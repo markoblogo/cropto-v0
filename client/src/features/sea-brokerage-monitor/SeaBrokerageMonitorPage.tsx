@@ -243,6 +243,15 @@ export function SeaBrokerageMonitorPage() {
     secondaryViewsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [secondaryViewsOpen]);
 
+  useEffect(() => {
+    if (!secondaryViewsOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [secondaryViewsOpen]);
+
   const { data: filterPresets = [] } = useQuery<FilterPreset[]>({
     queryKey: ["/api/sea-brokerage-monitor/filter-presets", session.monitorAuthToken],
     enabled: !!session.monitorAuthToken,
@@ -1356,39 +1365,38 @@ export function SeaBrokerageMonitorPage() {
   return (
     <MainLayout>
       <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-0.5 overflow-x-hidden pb-0 sm:gap-1">
-        <div className="flex min-h-0 flex-col gap-0.5 lg:h-[calc(100vh-172px)] lg:max-h-[calc(100vh-172px)] sm:gap-1">
-        <MonitorToolbar
-          filters={filters}
-          onFilterChange={updateFilter}
-          brokerOptions={globalBrokerOptions}
-          businessUnitOptions={toolbarBusinessUnitOptions}
-          currencyOptions={toolbarCurrencyOptions}
-          transportModeOptions={toolbarTransportModeOptions}
-          basisOptions={toolbarBasisOptions}
-          commodityOptions={toolbarCommodityOptions}
-          countryOptions={toolbarCountryOptions}
-          deliveryPlaceOptions={toolbarDeliveryPlaceOptions}
-          recentOriginCountryCodes={toolbarRecentOriginCountryCodes}
-          recentDeliveryPlaceCodes={toolbarRecentDeliveryPlaceCodes}
-          recentCurrencies={toolbarRecentCurrencies}
-          canManagePresets={session.canCreateEntries}
-          presetOptions={filterPresets.map((preset) => ({
-            value: preset.id,
-            label: `${preset.isDefault ? "★ " : ""}${preset.name}`,
-          }))}
-          activePresetId={activePresetId}
-          onApplyPreset={(presetId) => {
-            const preset = filterPresets.find((item) => item.id === presetId);
-            if (!preset) return;
-            applyPreset(preset);
-          }}
-          onSavePreset={() => void handleSavePreset()}
-          onSetDefaultPreset={() => void handleSetDefaultPreset()}
-          onDeletePreset={() => void handleDeletePreset()}
-        />
-
         {!secondaryViewsOpen ? (
-          <>
+          <div className="flex min-h-0 flex-col gap-0.5 lg:h-[calc(100vh-172px)] lg:max-h-[calc(100vh-172px)] sm:gap-1">
+            <MonitorToolbar
+              filters={filters}
+              onFilterChange={updateFilter}
+              brokerOptions={globalBrokerOptions}
+              businessUnitOptions={toolbarBusinessUnitOptions}
+              currencyOptions={toolbarCurrencyOptions}
+              transportModeOptions={toolbarTransportModeOptions}
+              basisOptions={toolbarBasisOptions}
+              commodityOptions={toolbarCommodityOptions}
+              countryOptions={toolbarCountryOptions}
+              deliveryPlaceOptions={toolbarDeliveryPlaceOptions}
+              recentOriginCountryCodes={toolbarRecentOriginCountryCodes}
+              recentDeliveryPlaceCodes={toolbarRecentDeliveryPlaceCodes}
+              recentCurrencies={toolbarRecentCurrencies}
+              canManagePresets={session.canCreateEntries}
+              presetOptions={filterPresets.map((preset) => ({
+                value: preset.id,
+                label: `${preset.isDefault ? "★ " : ""}${preset.name}`,
+              }))}
+              activePresetId={activePresetId}
+              onApplyPreset={(presetId) => {
+                const preset = filterPresets.find((item) => item.id === presetId);
+                if (!preset) return;
+                applyPreset(preset);
+              }}
+              onSavePreset={() => void handleSavePreset()}
+              onSetDefaultPreset={() => void handleSetDefaultPreset()}
+              onDeletePreset={() => void handleDeletePreset()}
+            />
+
             <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
           <BrokerWorkspacePane
             title="Offers"
@@ -1438,7 +1446,6 @@ export function SeaBrokerageMonitorPage() {
             }}
           />
             </section>
-
             <section className="grid min-w-0 gap-0.5 overflow-hidden lg:min-h-0 lg:flex-1 xl:grid-cols-2 sm:gap-1">
           <ContextualMatchingPanel
             entries={primaryWindowEntries}
@@ -1472,10 +1479,8 @@ export function SeaBrokerageMonitorPage() {
             }}
           />
             </section>
-          </>
+          </div>
         ) : null}
-
-        </div>
 
         <Collapsible open={secondaryViewsOpen} onOpenChange={setSecondaryViewsOpen}>
           <div className="flex items-center justify-end gap-2">
@@ -1487,7 +1492,7 @@ export function SeaBrokerageMonitorPage() {
             </CollapsibleTrigger>
           </div>
           <CollapsibleContent>
-            <div ref={secondaryViewsRef} className="lg:h-[calc(100vh-176px)] lg:min-h-[560px]">
+            <div ref={secondaryViewsRef} className="h-[calc(100vh-176px)] min-h-[560px]">
               <StandardizedFeedCard
                 entries={filteredEntries}
                 onSelectEntry={handleSelectEntry}
