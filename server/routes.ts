@@ -10363,6 +10363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: isFiniteNumber(latestPrice) ? latestPrice : target.fallbackPrice,
         change: delta,
         priceUnit: "USD/MT",
+        sourceSlice: latest?.isProcessing ? "processing" : "export",
         trend,
       };
     });

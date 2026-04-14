@@ -11,6 +11,7 @@ export interface MarketQuote {
   price: number;
   change: number;
   priceUnit: string;
+  sourceSlice?: "export" | "processing";
   trend: "up" | "down" | "flat";
 }
 
@@ -55,6 +56,11 @@ export function MarketDashboardQuotes() {
       <div
         key={quote.id}
         className="flex min-h-[58px] flex-col justify-center rounded-md border border-border/60 bg-muted/10 px-3 py-2 shadow-sm"
+        title={
+          quote.category === "spike_cpt"
+            ? `SPIKE source: ${quote.sourceSlice === "processing" ? "processing" : "export"}`
+            : undefined
+        }
       >
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-medium leading-tight text-muted-foreground">{quote.symbol}</span>
