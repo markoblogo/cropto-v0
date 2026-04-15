@@ -2182,6 +2182,7 @@ export function EntryCreateDialog({
                                   type="number"
                                   min="0"
                                   step="1"
+                                  className="sbm-no-spin"
                                   placeholder="From"
                                   value={rangeField.value ?? ""}
                                   onChange={(event) =>
@@ -2202,6 +2203,7 @@ export function EntryCreateDialog({
                                   type="number"
                                   min="0"
                                   step="1"
+                                  className="sbm-no-spin"
                                   placeholder="To"
                                   value={rangeField.value ?? ""}
                                   onChange={(event) =>
@@ -2216,7 +2218,7 @@ export function EntryCreateDialog({
                         </div>
                       ) : (
                         <FormControl>
-                          <Input type="number" min="0" step="1" {...field} />
+                          <Input type="number" min="0" step="1" className="sbm-no-spin" {...field} />
                         </FormControl>
                       )}
                     </div>

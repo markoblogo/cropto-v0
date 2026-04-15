@@ -420,6 +420,17 @@
     border-bottom-color: rgba(2, 8, 18, 0.96);
   }
 
+  .sbm-no-spin {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .sbm-no-spin::-webkit-outer-spin-button,
+  .sbm-no-spin::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
   .prose p {
     @apply mb-4 text-foreground leading-relaxed;
   }
