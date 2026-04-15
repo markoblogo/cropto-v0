@@ -201,6 +201,7 @@ export function StandardizedFeedCard({
   const [counterpartyShortDraft, setCounterpartyShortDraft] = useState<Record<string, string>>({});
   const [counterpartyFilter, setCounterpartyFilter] = useState<CounterpartyActivityFilter>("active");
   const [counterpartySort, setCounterpartySort] = useState<CounterpartySortMode>("activity_desc");
+  const [counterpartySaveError, setCounterpartySaveError] = useState<string | null>(null);
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
   const bidCount = entries.filter((entry) => entry.type === "bid").length;
@@ -494,7 +495,15 @@ export function StandardizedFeedCard({
 
   const saveCounterpartyShortName = async (companyId: string) => {
     if (!monitorAuthToken) return;
-    const value = (counterpartyShortDraft[companyId] || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+    const value = (counterpartyShortDraft[companyId] || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 4);
+    if (value.length > 0 && value.length < 4) {
+      setCounterpartySaveError("Short code must be 4 letters/digits.");
+      return;
+    }
+    setCounterpartySaveError(null);
     setSavingCounterpartyId(companyId);
     try {
       const response = await fetch(`/api/sea-brokerage-monitor/counterparties/${companyId}`, {
@@ -506,7 +515,17 @@ export function StandardizedFeedCard({
         body: JSON.stringify({ shortName: value }),
       });
       if (!response.ok) {
-        throw new Error(`Failed to update short name (${response.status})`);
+        let errorMessage = `Failed to update short name (${response.status})`;
+        try {
+          const payload = (await response.json()) as { error?: string };
+          if (payload?.error) {
+            errorMessage = payload.error;
+          }
+        } catch {
+          // no-op
+        }
+        setCounterpartySaveError(errorMessage);
+        throw new Error(errorMessage);
       }
       await refetchCounterparties();
     } finally {
@@ -769,6 +788,9 @@ export function StandardizedFeedCard({
                         {filteredSortedCounterparties.length} shown
                       </Badge>
                     </div>
+                    {counterpartySaveError ? (
+                      <div className="text-xs text-destructive">{counterpartySaveError}</div>
+                    ) : null}
                   </CardHeader>
                   <CardContent className="pt-0">
                     {filteredSortedCounterparties.length === 0 ? (
@@ -791,7 +813,14 @@ export function StandardizedFeedCard({
                         </TableHeader>
                         <TableBody>
                           {filteredSortedCounterparties.map((item) => {
-                            const shortValue = counterpartyShortDraft[item.companyId] ?? item.profile?.shortName ?? item.shortCode;
+                            const shortValue = (
+                              counterpartyShortDraft[item.companyId] ??
+                              item.profile?.shortName ??
+                              item.shortCode
+                            )
+                              .toUpperCase()
+                              .replace(/[^A-Z0-9]/g, "")
+                              .slice(0, 4);
                             return (
                               <TableRow key={item.companyId}>
                                 <TableCell>
@@ -812,7 +841,7 @@ export function StandardizedFeedCard({
                                         }))
                                       }
                                       placeholder={item.shortCode}
-                                      maxLength={8}
+                                      maxLength={4}
                                     />
                                     <Button
                                       size="sm"

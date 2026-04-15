@@ -1451,7 +1451,7 @@ const seaBrokerageCompanyCreateSchema = z.object({
 });
 
 const seaBrokerageCompanyProfileUpsertSchema = z.object({
-  shortName: z.string().trim().max(40).optional(),
+  shortName: z.string().trim().max(12).optional(),
   legalName: z.string().trim().max(180).optional(),
   contactPerson: z.string().trim().max(120).optional(),
   contactTelegram: z.string().trim().max(80).optional(),
@@ -1828,11 +1828,15 @@ function normalizeCompanyLabel(value: string) {
 }
 
 function normalizeCompanyLookupKey(value: string) {
-  return normalizeCompanyLabel(value)
+  const normalized = normalizeCompanyLabel(value)
     .normalize("NFKC")
     .replace(/[“”„‟«»]/g, '"')
     .replace(/[‘’‚‛`´]/g, "'")
-    .toLowerCase();
+    .toUpperCase();
+  return normalized
+    .replace(/^"+|"+$/g, "")
+    .replace(/^'+|'+$/g, "")
+    .replace(/[^A-Z0-9]+/g, "");
 }
 
 const SEA_BROKERAGE_COMPANY_LABEL_REGEX = /^(?=.{2,120}$)[A-Za-z0-9"'&().,\/-][A-Za-z0-9\s'"&().,\/-]*$/;
@@ -1939,6 +1943,37 @@ function resolveSeaBrokerageCompanyShortCode(input: string | undefined, displayL
     return normalized.slice(0, 4);
   }
   return buildSeaBrokerageCompanyShortCode(displayLabel);
+}
+
+function buildUniqueSeaBrokerageCompanyShortCode(
+  preferredCode: string,
+  displayLabel: string,
+  usedCodes: Set<string>,
+) {
+  const base = resolveSeaBrokerageCompanyShortCode(preferredCode, displayLabel);
+  if (!usedCodes.has(base)) return base;
+
+  const suffixAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  for (let i = 0; i < suffixAlphabet.length; i += 1) {
+    const candidate = `${base.slice(0, 3)}${suffixAlphabet[i]}`;
+    if (!usedCodes.has(candidate)) return candidate;
+  }
+
+  for (let i = 0; i < suffixAlphabet.length; i += 1) {
+    for (let j = 0; j < suffixAlphabet.length; j += 1) {
+      const candidate = `${base.slice(0, 2)}${suffixAlphabet[i]}${suffixAlphabet[j]}`;
+      if (!usedCodes.has(candidate)) return candidate;
+    }
+  }
+
+  const hashSeed = createHash("md5").update(displayLabel).digest("hex").toUpperCase();
+  for (let i = 0; i < hashSeed.length - 3; i += 1) {
+    const candidate = hashSeed.slice(i, i + 4).replace(/[^A-Z0-9]/g, "X");
+    if (candidate.length === 4 && !usedCodes.has(candidate)) return candidate;
+  }
+
+  return base;
 }
 
 async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionaryEntry[]> {
@@ -2482,10 +2517,22 @@ function mergeSeaBrokerageCompanies(
       });
     }
   }
-
-  return Array.from(byLabel.values()).sort((a, b) =>
+  const sorted = Array.from(byLabel.values()).sort((a, b) =>
     a.displayLabel.localeCompare(b.displayLabel),
   );
+  const usedCodes = new Set<string>();
+  return sorted.map((company) => {
+    const shortCode = buildUniqueSeaBrokerageCompanyShortCode(
+      company.shortCode,
+      company.displayLabel,
+      usedCodes,
+    );
+    usedCodes.add(shortCode);
+    return {
+      ...company,
+      shortCode,
+    };
+  });
 }
 
 async function readSeaBrokerageEntryLikes(): Promise<SeaBrokerageEntryLike[]> {
@@ -2866,7 +2913,9 @@ async function readSeaBrokerageCompanyProfiles(): Promise<SeaBrokerageCompanyPro
       .filter((item) => item && typeof item.companyId === "string" && typeof item.updatedAt === "string")
       .map((item) => ({
         companyId: String(item.companyId).trim(),
-        shortName: item.shortName ? String(item.shortName).trim() : null,
+        shortName: item.shortName
+          ? String(item.shortName).trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4) || null
+          : null,
         legalName: item.legalName ? String(item.legalName).trim() : null,
         contactPerson: item.contactPerson ? String(item.contactPerson).trim() : null,
         contactTelegram: item.contactTelegram ? String(item.contactTelegram).trim() : null,
@@ -2974,12 +3023,32 @@ function buildSeaBrokerageCounterpartySummary(
     }
   }
 
+  const usedProfileShortNames = new Set<string>();
+
   return companies
     .map((company) => ({
+      profile: (() => {
+        const profile = profileByCompanyId.get(company.id);
+        if (!profile) return null;
+        const normalizedShort = String(profile.shortName || "")
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, "")
+          .slice(0, 4);
+        if (normalizedShort.length === 4 && !usedProfileShortNames.has(normalizedShort)) {
+          usedProfileShortNames.add(normalizedShort);
+          return {
+            ...profile,
+            shortName: normalizedShort,
+          };
+        }
+        return {
+          ...profile,
+          shortName: null,
+        };
+      })(),
       companyId: company.id,
       displayLabel: company.displayLabel,
       shortCode: company.shortCode || buildSeaBrokerageCompanyShortCode(company.displayLabel),
-      profile: profileByCompanyId.get(company.id) || null,
       stats:
         statsByCompanyId.get(company.id) || {
           offersCount: 0,
@@ -12126,8 +12195,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const prev = idx >= 0 ? existingProfiles[idx] : null;
       const shortName =
         parsed.data.shortName && parsed.data.shortName.length
-          ? parsed.data.shortName.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8)
+          ? parsed.data.shortName.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4)
           : null;
+      if (shortName && shortName.length < 4) {
+        return res.status(400).json({ error: "Short code must be 4 letters/digits or empty." });
+      }
+
+      if (shortName) {
+        const reservedCodes = new Set<string>();
+        for (const company of mergedCompanies) {
+          if (company.id === companyId) continue;
+          const code = resolveSeaBrokerageCompanyShortCode(company.shortCode, company.displayLabel);
+          if (code) reservedCodes.add(code);
+        }
+        for (const profile of existingProfiles) {
+          if (profile.companyId === companyId) continue;
+          const profileCode = String(profile.shortName || "")
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "")
+            .slice(0, 4);
+          if (profileCode.length === 4) reservedCodes.add(profileCode);
+        }
+        if (reservedCodes.has(shortName)) {
+          return res.status(409).json({ error: `Short code '${shortName}' is already in use.` });
+        }
+      }
+
       const next: SeaBrokerageCompanyProfile = {
         companyId,
         shortName,
