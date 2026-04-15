@@ -1313,7 +1313,7 @@ function normalizeSeaBrokerageBasis(value: string | null | undefined) {
 
 const createSeaBrokerageEntryRequestSchema = z.object({
   type: z.enum(["bid", "offer", "trade"]),
-  entryStatus: z.enum(["active", "needs_update", "cancelled", "executed"]).optional(),
+  entryStatus: z.enum(["active", "needs_update", "not_valid", "cancelled", "executed"]).optional(),
   sellerName: z.string().trim().max(200).nullable().optional(),
   buyerName: z.string().trim().max(200).nullable().optional(),
   tradeSellerBrokerTelegramUserId: z.string().trim().nullable().optional(),
@@ -1362,7 +1362,7 @@ const createSeaBrokerageEntryRequestSchema = z.object({
 
 const updateSeaBrokerageEntryRequestSchema = createSeaBrokerageEntryRequestSchema;
 
-type SeaBrokerageEntryStatus = "active" | "needs_update" | "cancelled" | "executed";
+type SeaBrokerageEntryStatus = "active" | "needs_update" | "not_valid" | "cancelled" | "executed";
 
 function normalizeRequestedEntryStatus(
   type: "bid" | "offer" | "trade",
@@ -1371,6 +1371,7 @@ function normalizeRequestedEntryStatus(
   const normalized = String(requested || "").trim().toLowerCase();
   if (type === "trade") return "active";
   if (normalized === "needs_update") return "needs_update";
+  if (normalized === "not_valid") return "not_valid";
   if (normalized === "cancelled") return "cancelled";
   if (normalized === "executed") return "executed";
   return "active";
@@ -2882,12 +2883,13 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
 async function processSeaBrokerageEntryRelay(
   entry: SeaBrokerageEntryRow,
   brokerTelegramUsername?: string | null,
-  isEdit = false,
+  options?: { isEdit?: boolean; statusAnnouncement?: "needs_update" | "not_valid" | null },
 ) {
   try {
     const relayResult = await publishSeaBrokerageEntryToTelegram(entry, {
       brokerTelegramUsername: brokerTelegramUsername ?? null,
-      isEdit,
+      isEdit: !!options?.isEdit,
+      statusAnnouncement: options?.statusAnnouncement ?? null,
     });
     const updated = await storage.updateSeaBrokerageEntry(entry.id, {
       telegramRelayStatus: relayResult.status,
@@ -11986,10 +11988,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ) || allowedCommodities.find((item) => item.code === parsed.data.commodity) || null;
       const { sourceBidEntryId, sourceOfferEntryId, ...entryInput } = parsed.data;
       const requestedStatus = normalizeRequestedEntryStatus(entryInput.type, entryInput.entryStatus);
-      if (requestedStatus === "needs_update" && !isSeaBrokerageBoss(authorizedBroker.brokerCode)) {
-        return res.status(403).json({ error: "Only boss can set status Needs Update." });
-      }
-
       const destinationPortCodes = resolveDestinationPortCodesFromPayload(entryInput);
       const destinationPortCodeValue = destinationPortCodes.length
         ? destinationPortCodes.join("|")
@@ -12160,14 +12158,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       const requestedStatus = normalizeRequestedEntryStatus(payload.type, payload.entryStatus);
-      if (requestedStatus === "needs_update" && !actor.isBoss) {
-        return res.status(403).json({ error: "Only boss can set status Needs Update." });
-      }
       if (requestedStatus === "cancelled" || requestedStatus === "executed") {
         return res.status(400).json({
           error: "Cancelled/Executed are system statuses. Use delete or trade flow.",
         });
       }
+      const previousStatus = normalizeRequestedEntryStatus(
+        existing.type as "bid" | "offer" | "trade",
+        existing.entryStatus,
+      );
 
       const updated = await storage.updateSeaBrokerageEntry(entryId, {
         type: payload.type,
@@ -12224,6 +12223,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entryStatus: payload.type === "trade" ? "active" : requestedStatus,
       });
 
+      const updatedStatus = normalizeRequestedEntryStatus(
+        updated.type as "bid" | "offer" | "trade",
+        updated.entryStatus,
+      );
+      const statusAnnouncement =
+        previousStatus !== updatedStatus &&
+        (updatedStatus === "needs_update" || updatedStatus === "not_valid")
+          ? updatedStatus
+          : null;
+
       if (!isAuthor && actor.isBoss) {
         const authorChat = existing.brokerTelegramUserId
           ? String(existing.brokerTelegramUserId)
@@ -12243,7 +12252,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Auto-publish the updated entry to Telegram channels with EDITED marker
-      void processSeaBrokerageEntryRelay(updated, authorizedBroker.telegramUsername, true);
+      void processSeaBrokerageEntryRelay(updated, authorizedBroker.telegramUsername, {
+        isEdit: true,
+        statusAnnouncement,
+      });
 
       return res.json(mapSeaBrokerageEntryToClientShape(updated));
     } catch (error: any) {

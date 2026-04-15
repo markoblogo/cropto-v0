@@ -539,7 +539,7 @@ export const seaBrokerageEntries = pgTable("sea_brokerage_entries", {
   telegramMessageId: text("telegram_message_id"),
   isMarketTrade: boolean("is_market_trade").notNull().default(false),
   entryStatus: text("entry_status", {
-    enum: ["active", "needs_update", "cancelled", "executed"],
+    enum: ["active", "needs_update", "not_valid", "cancelled", "executed"],
   })
     .notNull()
     .default("active"),

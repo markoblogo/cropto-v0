@@ -99,6 +99,7 @@ const periodPresetOptions: SelectOption<PeriodPreset>[] = [
 ];
 const entryStatusOptions: Array<{ value: SeaBrokerageEntryStatus; label: string }> = [
   { value: "active", label: "Active" },
+  { value: "not_valid", label: "Not Valid" },
   { value: "needs_update", label: "Needs Update" },
 ];
 const tolerancePctOptions = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -169,7 +170,10 @@ const entryFormSchema = z
     tradeCounterpartyBrokerKey: z.string().optional(),
     sourceBidEntryId: z.string().optional().default(""),
     sourceOfferEntryId: z.string().optional().default(""),
-    entryStatus: z.enum(["active", "needs_update", "cancelled", "executed"]).optional().default("active"),
+    entryStatus: z
+      .enum(["active", "needs_update", "not_valid", "cancelled", "executed"])
+      .optional()
+      .default("active"),
     sellerName: z.string().max(200, "Seller name must be 200 characters or fewer").optional(),
     buyerName: z.string().max(200, "Buyer name must be 200 characters or fewer").optional(),
     periodPreset: z.enum([
@@ -720,12 +724,7 @@ export function EntryCreateDialog({
   });
 
   const values = form.watch();
-  const canSetNeedsUpdate = ["OS", "VZH", "ABV", "VTTL"].includes(
-    String(session.authorProfile?.brokerCode || "").trim().toUpperCase(),
-  );
-  const visibleEntryStatusOptions = canSetNeedsUpdate || values.entryStatus === "needs_update"
-    ? entryStatusOptions
-    : entryStatusOptions.filter((option) => option.value !== "needs_update");
+  const visibleEntryStatusOptions = entryStatusOptions;
   const { data: companyOptionsData = {} } = useQuery<{
     companies?: CompanyOption[];
     buyers?: CompanyOption[];
@@ -1382,6 +1381,8 @@ export function EntryCreateDialog({
           ? "active"
           : normalizedValues.entryStatus === "needs_update"
             ? "needs_update"
+            : normalizedValues.entryStatus === "not_valid"
+              ? "not_valid"
             : "active",
       canonicalView,
     };

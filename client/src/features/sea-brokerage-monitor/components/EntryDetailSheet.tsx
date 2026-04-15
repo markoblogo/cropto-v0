@@ -51,6 +51,7 @@ function formatTransportDisplay(value: string | null | undefined) {
 
 function formatEntryStatusDisplay(status: BrokerageEntry["entryStatus"]) {
   const normalized = String(status || "active").trim().toLowerCase();
+  if (normalized === "not_valid") return "Not valid";
   if (normalized === "needs_update") return "Needs update";
   if (normalized === "cancelled") return "Cancelled";
   if (normalized === "executed") return "Executed";

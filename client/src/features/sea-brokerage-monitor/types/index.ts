@@ -18,7 +18,7 @@ export type PeriodType = "spot" | "prompt" | "range" | "month" | "window";
 export type UserRole = "broker" | "trader" | "admin";
 export type BrokerIdentityProvider = "cropto_auth" | "telegram_future";
 export type TelegramRelayStatus = "queued" | "published" | "failed";
-export type SeaBrokerageEntryStatus = "active" | "needs_update" | "cancelled" | "executed";
+export type SeaBrokerageEntryStatus = "active" | "needs_update" | "not_valid" | "cancelled" | "executed";
 
 export interface Commodity {
   code: CommodityCode;
