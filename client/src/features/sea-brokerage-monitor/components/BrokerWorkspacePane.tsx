@@ -1,4 +1,14 @@
-import { Handshake, Plus, Search, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  Ban,
+  CheckCircle2,
+  Circle,
+  Handshake,
+  Plus,
+  Search,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,6 +50,54 @@ interface BrokerWorkspacePaneProps {
   currentBrokerId?: string | null;
   currentBrokerCode?: string | null;
   onCounterEntry?: (entry: BrokerageEntry) => void;
+}
+
+type NormalizedEntryStatus = "active" | "needs_update" | "not_valid" | "cancelled" | "executed";
+
+function normalizeEntryStatus(status: BrokerageEntry["entryStatus"]): NormalizedEntryStatus {
+  const normalized = String(status || "active").trim().toLowerCase();
+  if (normalized === "needs_update") return "needs_update";
+  if (normalized === "not_valid") return "not_valid";
+  if (normalized === "cancelled") return "cancelled";
+  if (normalized === "executed") return "executed";
+  return "active";
+}
+
+function renderEntryStatusIcon(status: BrokerageEntry["entryStatus"]) {
+  const normalized = normalizeEntryStatus(status);
+  if (normalized === "needs_update") {
+    return {
+      label: "Needs update",
+      icon: AlertTriangle,
+      className: "border-amber-500/60 bg-amber-500/15 text-amber-300",
+    };
+  }
+  if (normalized === "not_valid") {
+    return {
+      label: "Not valid",
+      icon: XCircle,
+      className: "border-rose-500/60 bg-rose-500/15 text-rose-300",
+    };
+  }
+  if (normalized === "cancelled") {
+    return {
+      label: "Cancelled",
+      icon: Ban,
+      className: "border-slate-500/60 bg-slate-500/15 text-slate-300",
+    };
+  }
+  if (normalized === "executed") {
+    return {
+      label: "Executed",
+      icon: CheckCircle2,
+      className: "border-sky-500/60 bg-sky-500/15 text-sky-300",
+    };
+  }
+  return {
+    label: "Active",
+    icon: Circle,
+    className: "border-emerald-500/60 bg-emerald-500/15 text-emerald-300",
+  };
 }
 
 export function BrokerWorkspacePane({
@@ -144,6 +202,8 @@ export function BrokerWorkspacePane({
                 const hasIncomingLikes = isOwnEntry && (entry.likeCount ?? 0) > 0;
                 const hasOutgoingLike = !isOwnEntry && !!entry.likedByMe;
                 const hasBossMatchLike = !!entry.hasBossMatchLike;
+                const statusIconConfig = renderEntryStatusIcon(entry.entryStatus);
+                const StatusIcon = statusIconConfig.icon;
 
                 return (
                   <Button
@@ -162,6 +222,13 @@ export function BrokerWorkspacePane({
                         {buildCompactCanonicalView(entry)}
                       </div>
                       <div className="flex shrink-0 items-center gap-1 justify-self-end">
+                        <span
+                          className={`inline-flex h-6 w-6 items-center justify-center rounded border ${statusIconConfig.className}`}
+                          title={statusIconConfig.label}
+                          aria-label={`Status: ${statusIconConfig.label}`}
+                        >
+                          <StatusIcon className="h-3.5 w-3.5" />
+                        </span>
                         {likesEnabled && (entry.type === "bid" || entry.type === "offer") ? (
                           <span
                             role={isOwnEntry || entry.likedByMe ? undefined : "button"}
