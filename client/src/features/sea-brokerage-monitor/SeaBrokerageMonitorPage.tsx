@@ -412,44 +412,96 @@ export function SeaBrokerageMonitorPage() {
     () => Date.now() - 365 * 24 * 60 * 60 * 1000,
     [],
   );
-  const toolbarRecentOriginCountryCodes = useMemo(() => {
-    const values = new Set<string>();
-    for (const entry of feedWithBusinessUnits) {
+  const activeBrokerCodeUpper = useMemo(
+    () => String(session.authorProfile?.brokerCode || "").trim().toUpperCase(),
+    [session.authorProfile?.brokerCode],
+  );
+
+  const toolbarActivityPool = useMemo(() => {
+    return feedWithBusinessUnits.filter((entry) => {
       const createdAtMs = new Date(entry.createdAt).getTime();
-      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) continue;
-      const code = String(entry.originCountryCode || "").trim().toLowerCase();
-      if (code) values.add(code);
-    }
-    return Array.from(values).sort((a, b) => a.localeCompare(b));
+      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) return false;
+      if (!activeBrokerCodeUpper) return true;
+      return String(entry.brokerCode || "").trim().toUpperCase() === activeBrokerCodeUpper;
+    });
+  }, [feedWithBusinessUnits, recentActivityWindowStartMs, activeBrokerCodeUpper]);
+
+  const toolbarFallbackActivityPool = useMemo(() => {
+    return feedWithBusinessUnits.filter((entry) => {
+      const createdAtMs = new Date(entry.createdAt).getTime();
+      return !Number.isNaN(createdAtMs) && createdAtMs >= recentActivityWindowStartMs;
+    });
   }, [feedWithBusinessUnits, recentActivityWindowStartMs]);
-  const toolbarRecentDeliveryPlaceCodes = useMemo(() => {
-    const values = new Set<string>();
-    for (const entry of feedWithBusinessUnits) {
-      const createdAtMs = new Date(entry.createdAt).getTime();
-      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) continue;
-      const destinationCodes =
-        entry.destinationPortCodes && entry.destinationPortCodes.length
-          ? entry.destinationPortCodes
-          : String(entry.destinationPortCode || "")
-              .split("|")
-              .map((part) => part.trim())
-              .filter(Boolean);
-      for (const code of destinationCodes) {
-        values.add(code);
+
+  function resolveTopKeys(
+    pool: BrokerageEntry[],
+    fallbackPool: BrokerageEntry[],
+    collectKeys: (entry: BrokerageEntry) => string[],
+  ) {
+    const rank = (entries: BrokerageEntry[]) => {
+      const counts = new Map<string, number>();
+      const lastSeen = new Map<string, number>();
+      for (const entry of entries) {
+        const ts = new Date(entry.createdAt).getTime();
+        for (const keyRaw of collectKeys(entry)) {
+          const key = String(keyRaw || "").trim();
+          if (!key) continue;
+          counts.set(key, (counts.get(key) || 0) + 1);
+          lastSeen.set(key, Math.max(lastSeen.get(key) || 0, Number.isNaN(ts) ? 0 : ts));
+        }
       }
-    }
-    return Array.from(values).sort((a, b) => a.localeCompare(b));
-  }, [feedWithBusinessUnits, recentActivityWindowStartMs]);
+      return Array.from(counts.keys()).sort((a, b) => {
+        const countDiff = (counts.get(b) || 0) - (counts.get(a) || 0);
+        if (countDiff !== 0) return countDiff;
+        const lastSeenDiff = (lastSeen.get(b) || 0) - (lastSeen.get(a) || 0);
+        if (lastSeenDiff !== 0) return lastSeenDiff;
+        return a.localeCompare(b);
+      });
+    };
+
+    const primary = rank(pool);
+    if (primary.length > 0) return primary.slice(0, 5);
+    return rank(fallbackPool).slice(0, 5);
+  }
+
+  const toolbarRecentOriginCountryCodes = useMemo(() => {
+    return resolveTopKeys(
+      toolbarActivityPool,
+      toolbarFallbackActivityPool,
+      (entry) => {
+        const code = String(entry.originCountryCode || "").trim().toLowerCase();
+        return code ? [code] : [];
+      },
+    );
+  }, [toolbarActivityPool, toolbarFallbackActivityPool]);
+
+  const toolbarRecentDeliveryPlaceCodes = useMemo(() => {
+    return resolveTopKeys(
+      toolbarActivityPool,
+      toolbarFallbackActivityPool,
+      (entry) => {
+        const destinationCodes =
+          entry.destinationPortCodes && entry.destinationPortCodes.length
+            ? entry.destinationPortCodes
+            : String(entry.destinationPortCode || "")
+                .split("|")
+                .map((part) => part.trim())
+                .filter(Boolean);
+        return destinationCodes;
+      },
+    );
+  }, [toolbarActivityPool, toolbarFallbackActivityPool]);
+
   const toolbarRecentCurrencies = useMemo(() => {
-    const values = new Set<string>();
-    for (const entry of feedWithBusinessUnits) {
-      const createdAtMs = new Date(entry.createdAt).getTime();
-      if (Number.isNaN(createdAtMs) || createdAtMs < recentActivityWindowStartMs) continue;
-      const currency = String(entry.currency || "").trim().toUpperCase();
-      if (currency) values.add(currency);
-    }
-    return Array.from(values).sort((a, b) => a.localeCompare(b));
-  }, [feedWithBusinessUnits, recentActivityWindowStartMs]);
+    return resolveTopKeys(
+      toolbarActivityPool,
+      toolbarFallbackActivityPool,
+      (entry) => {
+        const currency = String(entry.currency || "").trim().toUpperCase();
+        return currency ? [currency] : [];
+      },
+    );
+  }, [toolbarActivityPool, toolbarFallbackActivityPool]);
   const reportCommodityCodesByGroup = useMemo(() => {
     const map = new Map<ReportGroup, string[]>();
     for (const group of REPORT_GROUP_OPTIONS.map((item) => item.value)) {

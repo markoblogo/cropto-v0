@@ -72,6 +72,8 @@ type FeedSecondaryView =
   | "premiums"
   | "boss";
 type AnalyticsCurrencyMode = "all" | "usd" | "eur";
+type CounterpartyActivityFilter = "all" | "active" | "empty";
+type CounterpartySortMode = "activity_desc" | "volume_desc" | "recent_desc" | "alpha_asc";
 
 const FX_TO_USD: Record<string, number> = {
   USD: 1,
@@ -197,6 +199,8 @@ export function StandardizedFeedCard({
   const [analyticsCurrency, setAnalyticsCurrency] = useState<AnalyticsCurrencyMode>("all");
   const [savingCounterpartyId, setSavingCounterpartyId] = useState<string | null>(null);
   const [counterpartyShortDraft, setCounterpartyShortDraft] = useState<Record<string, string>>({});
+  const [counterpartyFilter, setCounterpartyFilter] = useState<CounterpartyActivityFilter>("active");
+  const [counterpartySort, setCounterpartySort] = useState<CounterpartySortMode>("activity_desc");
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
   const bidCount = entries.filter((entry) => entry.type === "bid").length;
@@ -216,6 +220,32 @@ export function StandardizedFeedCard({
     },
     staleTime: 30_000,
   });
+  const filteredSortedCounterparties = useMemo(() => {
+    const hasActivity = (item: CounterpartySummary) =>
+      item.stats.offersCount + item.stats.bidsCount + item.stats.tradesCount > 0;
+    const list = counterparties.filter((item) => {
+      if (counterpartyFilter === "active") return hasActivity(item);
+      if (counterpartyFilter === "empty") return !hasActivity(item);
+      return true;
+    });
+    const score = (item: CounterpartySummary) =>
+      item.stats.offersCount + item.stats.bidsCount + item.stats.tradesCount;
+    list.sort((a, b) => {
+      if (counterpartySort === "alpha_asc") {
+        return a.displayLabel.localeCompare(b.displayLabel);
+      }
+      if (counterpartySort === "volume_desc") {
+        return b.stats.totalVolumeMt - a.stats.totalVolumeMt;
+      }
+      if (counterpartySort === "recent_desc") {
+        const aTs = a.stats.lastSeenAt ? new Date(a.stats.lastSeenAt).getTime() : 0;
+        const bTs = b.stats.lastSeenAt ? new Date(b.stats.lastSeenAt).getTime() : 0;
+        return bTs - aTs;
+      }
+      return score(b) - score(a);
+    });
+    return list;
+  }, [counterparties, counterpartyFilter, counterpartySort]);
 
   const { kpis, hourlySeries, priceDots, spreadByBasis, destinationVolume, pivot, matchAnalytics, timelineMarkers } =
     useMemo(() => {
@@ -715,12 +745,36 @@ export function StandardizedFeedCard({
                     <CardDescription>
                       Short names and activity analytics by company (offers, bids, trades, tonnage).
                     </CardDescription>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <select
+                        className="h-8 rounded border border-border/70 bg-background px-2 text-xs"
+                        value={counterpartyFilter}
+                        onChange={(event) => setCounterpartyFilter(event.target.value as CounterpartyActivityFilter)}
+                      >
+                        <option value="active">Only with activity</option>
+                        <option value="all">All companies</option>
+                        <option value="empty">Only without activity</option>
+                      </select>
+                      <select
+                        className="h-8 rounded border border-border/70 bg-background px-2 text-xs"
+                        value={counterpartySort}
+                        onChange={(event) => setCounterpartySort(event.target.value as CounterpartySortMode)}
+                      >
+                        <option value="activity_desc">Sort: activity</option>
+                        <option value="volume_desc">Sort: volume</option>
+                        <option value="recent_desc">Sort: recent</option>
+                        <option value="alpha_asc">Sort: alphabet</option>
+                      </select>
+                      <Badge variant="outline" className="h-8 px-2 text-xs">
+                        {filteredSortedCounterparties.length} shown
+                      </Badge>
+                    </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    {counterparties.length === 0 ? (
+                    {filteredSortedCounterparties.length === 0 ? (
                       <MonitorEmptyState
-                        title="No counterparties yet"
-                        description="Create BID/OFFER/TRADE entries to build company analytics."
+                        title="No counterparties for current filter"
+                        description="Try a different filter or create BID/OFFER/TRADE entries."
                       />
                     ) : (
                       <Table>
@@ -736,7 +790,7 @@ export function StandardizedFeedCard({
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {counterparties.map((item) => {
+                          {filteredSortedCounterparties.map((item) => {
                             const shortValue = counterpartyShortDraft[item.companyId] ?? item.profile?.shortName ?? item.shortCode;
                             return (
                               <TableRow key={item.companyId}>
