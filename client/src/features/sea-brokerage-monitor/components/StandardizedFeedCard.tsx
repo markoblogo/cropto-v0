@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Download, FileSpreadsheet } from "lucide-react";
 import {
   Bar,
@@ -36,6 +37,7 @@ import { MarketDashboardQuotes } from "./analytics/MarketDashboardQuotes";
 import { BasisSpreadChart } from "./analytics/BasisSpreadChart";
 import { BossAnalyticsView } from "./analytics/BossAnalyticsView";
 import { exportEntriesToCsv, exportEntriesToXlsx } from "../services/export.service";
+import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
 import {
   buildFeedAnalyticsSeries,
 } from "../services/feedFilters.service";
@@ -49,7 +51,7 @@ import {
   formatEntryPeriodCompact,
   formatEntryPriceRange,
 } from "../services/entryFormatting.service";
-import type { BrokerageEntry } from "../types";
+import type { BrokerageEntry, CounterpartySummary } from "../types";
 
 interface StandardizedFeedCardProps {
   entries: BrokerageEntry[];
@@ -62,6 +64,7 @@ interface StandardizedFeedCardProps {
 type FeedSecondaryView =
   | "tape"
   | "archive"
+  | "counterparties"
   | "markets"
   | "price_volume"
   | "liquidity"
@@ -192,12 +195,27 @@ export function StandardizedFeedCard({
 }: StandardizedFeedCardProps) {
   const [view, setView] = useState<FeedSecondaryView>("markets");
   const [analyticsCurrency, setAnalyticsCurrency] = useState<AnalyticsCurrencyMode>("all");
+  const [savingCounterpartyId, setSavingCounterpartyId] = useState<string | null>(null);
+  const [counterpartyShortDraft, setCounterpartyShortDraft] = useState<Record<string, string>>({});
 
   const analyticsData = useMemo(() => buildFeedAnalyticsSeries(entries), [entries]);
   const bidCount = entries.filter((entry) => entry.type === "bid").length;
   const offerCount = entries.filter((entry) => entry.type === "offer").length;
   const tradeCount = entries.filter((entry) => entry.type === "trade").length;
   const matches = useMemo(() => generateMatchSuggestions(entries), [entries]);
+  const { data: counterparties = [], refetch: refetchCounterparties } = useQuery<CounterpartySummary[]>({
+    queryKey: ["/api/sea-brokerage-monitor/counterparties"],
+    enabled: view === "counterparties",
+    queryFn: async () => {
+      const response = await fetch("/api/sea-brokerage-monitor/counterparties");
+      if (!response.ok) {
+        throw new Error(`Failed to load counterparties (${response.status})`);
+      }
+      const payload = (await response.json()) as { counterparties?: CounterpartySummary[] };
+      return Array.isArray(payload.counterparties) ? payload.counterparties : [];
+    },
+    staleTime: 30_000,
+  });
 
   const { kpis, hourlySeries, priceDots, spreadByBasis, destinationVolume, pivot, matchAnalytics, timelineMarkers } =
     useMemo(() => {
@@ -444,6 +462,28 @@ export function StandardizedFeedCard({
       };
     }, [entries, analyticsCurrency, bidCount, offerCount, matches]);
 
+  const saveCounterpartyShortName = async (companyId: string) => {
+    if (!monitorAuthToken) return;
+    const value = (counterpartyShortDraft[companyId] || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+    setSavingCounterpartyId(companyId);
+    try {
+      const response = await fetch(`/api/sea-brokerage-monitor/counterparties/${companyId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken),
+        },
+        body: JSON.stringify({ shortName: value }),
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to update short name (${response.status})`);
+      }
+      await refetchCounterparties();
+    } finally {
+      setSavingCounterpartyId(null);
+    }
+  };
+
   return (
     <>
       <Card className="flex h-full min-h-0 flex-col overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -489,6 +529,14 @@ export function StandardizedFeedCard({
                   onClick={() => setView("archive")}
                 >
                   Archive
+                </Button>
+                <Button
+                  variant={view === "counterparties" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setView("counterparties")}
+                >
+                  Counterparties
                 </Button>
                 <Button
                   variant={view === "markets" ? "secondary" : "ghost"}
@@ -658,6 +706,88 @@ export function StandardizedFeedCard({
                 </div>
               </ScrollArea>
             )
+          ) : view === "counterparties" ? (
+            <ScrollArea className="h-full min-h-0 flex-1">
+              <div className="p-4">
+                <Card className="border-border/60 bg-background/30">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Counterparty Profiles & Analytics</CardTitle>
+                    <CardDescription>
+                      Short names and activity analytics by company (offers, bids, trades, tonnage).
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    {counterparties.length === 0 ? (
+                      <MonitorEmptyState
+                        title="No counterparties yet"
+                        description="Create BID/OFFER/TRADE entries to build company analytics."
+                      />
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Company</TableHead>
+                            <TableHead>Short</TableHead>
+                            <TableHead className="text-right">Offers</TableHead>
+                            <TableHead className="text-right">Bids</TableHead>
+                            <TableHead className="text-right">Trades</TableHead>
+                            <TableHead className="text-right">Volume, MT</TableHead>
+                            <TableHead>Last seen</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {counterparties.map((item) => {
+                            const shortValue = counterpartyShortDraft[item.companyId] ?? item.profile?.shortName ?? item.shortCode;
+                            return (
+                              <TableRow key={item.companyId}>
+                                <TableCell>
+                                  <div className="font-medium">{item.displayLabel}</div>
+                                  {item.profile?.legalName ? (
+                                    <div className="text-xs text-muted-foreground">{item.profile.legalName}</div>
+                                  ) : null}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      className="h-8 w-20 rounded border border-border/70 bg-background px-2 text-xs font-semibold uppercase"
+                                      value={shortValue}
+                                      onChange={(event) =>
+                                        setCounterpartyShortDraft((prev) => ({
+                                          ...prev,
+                                          [item.companyId]: event.target.value,
+                                        }))
+                                      }
+                                      placeholder={item.shortCode}
+                                      maxLength={8}
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-8 px-2 text-xs"
+                                      disabled={!monitorAuthToken || savingCounterpartyId === item.companyId}
+                                      onClick={() => saveCounterpartyShortName(item.companyId)}
+                                    >
+                                      Save
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right">{item.stats.offersCount}</TableCell>
+                                <TableCell className="text-right">{item.stats.bidsCount}</TableCell>
+                                <TableCell className="text-right">{item.stats.tradesCount}</TableCell>
+                                <TableCell className="text-right">{Math.round(item.stats.totalVolumeMt).toLocaleString()}</TableCell>
+                                <TableCell>
+                                  {item.stats.lastSeenAt ? formatEntryDateTime(item.stats.lastSeenAt) : "—"}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
           ) : view === "markets" ? (
             <ScrollArea className="h-full min-h-0 flex-1">
               <div className="p-4">

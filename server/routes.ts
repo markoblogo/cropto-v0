@@ -1450,6 +1450,16 @@ const seaBrokerageCompanyCreateSchema = z.object({
   role: z.enum(["buyer", "seller"]).optional(),
 });
 
+const seaBrokerageCompanyProfileUpsertSchema = z.object({
+  shortName: z.string().trim().max(40).optional(),
+  legalName: z.string().trim().max(180).optional(),
+  contactPerson: z.string().trim().max(120).optional(),
+  contactTelegram: z.string().trim().max(80).optional(),
+  contactEmail: z.string().trim().max(120).optional(),
+  requisites: z.string().trim().max(1000).optional(),
+  templateNotes: z.string().trim().max(1000).optional(),
+});
+
 const seaBrokerageCountryCreateSchema = z.object({
   displayLabel: z.string().trim().min(2).max(80),
   countryCode: z.string().trim().length(2),
@@ -1577,6 +1587,7 @@ const SEA_BROKERAGE_ENTRY_LIKES_KEY = "sea_brokerage_entry_likes_v1";
 const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
 const SEA_BROKERAGE_REPORT_PROFILES_KEY = "sea_brokerage_report_profiles_v1";
+const SEA_BROKERAGE_COMPANY_PROFILES_KEY = "sea_brokerage_company_profiles_v1";
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
 const SEA_BROKERAGE_DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_TIMEZONE || "Europe/Paris";
 
@@ -1599,6 +1610,19 @@ type SeaBrokerageMatchLike = {
   likerBrokerName: string;
   kind: "normal" | "boss";
   createdAt: string;
+};
+
+type SeaBrokerageCompanyProfile = {
+  companyId: string;
+  shortName?: string | null;
+  legalName?: string | null;
+  contactPerson?: string | null;
+  contactTelegram?: string | null;
+  contactEmail?: string | null;
+  requisites?: string | null;
+  templateNotes?: string | null;
+  updatedAt: string;
+  updatedByBrokerCode?: string | null;
 };
 
 type SeaBrokerageFilterPreset = {
@@ -2831,6 +2855,141 @@ async function readSeaBrokerageReportProfiles(): Promise<SeaBrokerageReportProfi
 
 async function writeSeaBrokerageReportProfiles(profiles: SeaBrokerageReportProfile[]) {
   await storage.upsertAppSetting(SEA_BROKERAGE_REPORT_PROFILES_KEY, JSON.stringify(profiles));
+}
+
+async function readSeaBrokerageCompanyProfiles(): Promise<SeaBrokerageCompanyProfile[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_COMPANY_PROFILES_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageCompanyProfile[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item) => item && typeof item.companyId === "string" && typeof item.updatedAt === "string")
+      .map((item) => ({
+        companyId: String(item.companyId).trim(),
+        shortName: item.shortName ? String(item.shortName).trim() : null,
+        legalName: item.legalName ? String(item.legalName).trim() : null,
+        contactPerson: item.contactPerson ? String(item.contactPerson).trim() : null,
+        contactTelegram: item.contactTelegram ? String(item.contactTelegram).trim() : null,
+        contactEmail: item.contactEmail ? String(item.contactEmail).trim() : null,
+        requisites: item.requisites ? String(item.requisites).trim() : null,
+        templateNotes: item.templateNotes ? String(item.templateNotes).trim() : null,
+        updatedAt: String(item.updatedAt),
+        updatedByBrokerCode: item.updatedByBrokerCode ? String(item.updatedByBrokerCode).trim() : null,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function writeSeaBrokerageCompanyProfiles(profiles: SeaBrokerageCompanyProfile[]) {
+  await storage.upsertAppSetting(SEA_BROKERAGE_COMPANY_PROFILES_KEY, JSON.stringify(profiles));
+}
+
+type SeaBrokerageCounterpartySummary = {
+  companyId: string;
+  displayLabel: string;
+  shortCode: string;
+  profile: SeaBrokerageCompanyProfile | null;
+  stats: {
+    offersCount: number;
+    bidsCount: number;
+    tradesCount: number;
+    totalVolumeMt: number;
+    lastSeenAt: string | null;
+  };
+};
+
+function resolveSeaBrokerageEntryVolumeMt(entry: SeaBrokerageEntryRow) {
+  if (typeof entry.quantityMt === "number" && Number.isFinite(entry.quantityMt)) {
+    return Math.max(0, entry.quantityMt);
+  }
+  const from = typeof entry.volumeFrom === "number" && Number.isFinite(entry.volumeFrom) ? entry.volumeFrom : null;
+  const to = typeof entry.volumeTo === "number" && Number.isFinite(entry.volumeTo) ? entry.volumeTo : null;
+  if (from != null && to != null) return Math.max(0, (from + to) / 2);
+  if (from != null) return Math.max(0, from);
+  if (to != null) return Math.max(0, to);
+  return 0;
+}
+
+function buildSeaBrokerageCounterpartySummary(
+  companies: SeaBrokerageCompanyDictionaryEntry[],
+  profiles: SeaBrokerageCompanyProfile[],
+  entries: SeaBrokerageEntryRow[],
+): SeaBrokerageCounterpartySummary[] {
+  const companyByKey = new Map<string, SeaBrokerageCompanyDictionaryEntry>();
+  for (const company of companies) {
+    const key = normalizeCompanyLookupKey(company.displayLabel);
+    if (!key) continue;
+    companyByKey.set(key, company);
+  }
+
+  const profileByCompanyId = new Map<string, SeaBrokerageCompanyProfile>();
+  for (const profile of profiles) {
+    if (!profile.companyId) continue;
+    profileByCompanyId.set(profile.companyId, profile);
+  }
+
+  const statsByCompanyId = new Map<
+    string,
+    { offersCount: number; bidsCount: number; tradesCount: number; totalVolumeMt: number; lastSeenAt: string | null }
+  >();
+
+  const touch = (
+    companyId: string,
+    type: "offer" | "bid" | "trade",
+    createdAt: string | Date,
+    volumeMt: number,
+  ) => {
+    const createdAtIso =
+      createdAt instanceof Date ? createdAt.toISOString() : new Date(createdAt).toISOString();
+    const prev =
+      statsByCompanyId.get(companyId) || { offersCount: 0, bidsCount: 0, tradesCount: 0, totalVolumeMt: 0, lastSeenAt: null };
+    if (type === "offer") prev.offersCount += 1;
+    if (type === "bid") prev.bidsCount += 1;
+    if (type === "trade") prev.tradesCount += 1;
+    prev.totalVolumeMt += Math.max(0, volumeMt || 0);
+    if (!prev.lastSeenAt || new Date(createdAtIso).getTime() > new Date(prev.lastSeenAt).getTime()) {
+      prev.lastSeenAt = createdAtIso;
+    }
+    statsByCompanyId.set(companyId, prev);
+  };
+
+  for (const entry of entries) {
+    const volume = resolveSeaBrokerageEntryVolumeMt(entry);
+    if (entry.type === "offer") {
+      const key = normalizeCompanyLookupKey(entry.sellerName || "");
+      const company = key ? companyByKey.get(key) : null;
+      if (company) touch(company.id, "offer", entry.createdAt, volume);
+    } else if (entry.type === "bid") {
+      const key = normalizeCompanyLookupKey(entry.buyerName || "");
+      const company = key ? companyByKey.get(key) : null;
+      if (company) touch(company.id, "bid", entry.createdAt, volume);
+    } else if (entry.type === "trade") {
+      const sellerKey = normalizeCompanyLookupKey(entry.sellerName || "");
+      const buyerKey = normalizeCompanyLookupKey(entry.buyerName || "");
+      const seller = sellerKey ? companyByKey.get(sellerKey) : null;
+      const buyer = buyerKey ? companyByKey.get(buyerKey) : null;
+      if (seller) touch(seller.id, "trade", entry.createdAt, volume);
+      if (buyer && buyer.id !== seller?.id) touch(buyer.id, "trade", entry.createdAt, volume);
+    }
+  }
+
+  return companies
+    .map((company) => ({
+      companyId: company.id,
+      displayLabel: company.displayLabel,
+      shortCode: company.shortCode || buildSeaBrokerageCompanyShortCode(company.displayLabel),
+      profile: profileByCompanyId.get(company.id) || null,
+      stats:
+        statsByCompanyId.get(company.id) || {
+          offersCount: 0,
+          bidsCount: 0,
+          tradesCount: 0,
+          totalVolumeMt: 0,
+          lastSeenAt: null,
+        },
+    }))
+    .sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
 }
 
 function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
@@ -11906,6 +12065,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating sea brokerage company:", error);
       return res.status(500).json({ error: "Failed to create company" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/counterparties", async (_req, res) => {
+    try {
+      const [savedCompanies, savedBuyers, savedSellers, profiles, entries] = await Promise.all([
+        readSeaBrokerageCompanies(),
+        readSeaBrokerageBuyerCompanies(),
+        readSeaBrokerageSellerCompanies(),
+        readSeaBrokerageCompanyProfiles(),
+        storage.listSeaBrokerageEntries(),
+      ]);
+      const mergedCompanies = mergeSeaBrokerageCompanies(
+        mergeSeaBrokerageCompanies(savedCompanies, savedBuyers),
+        savedSellers,
+      );
+      const summaries = buildSeaBrokerageCounterpartySummary(mergedCompanies, profiles, entries);
+      return res.json({ counterparties: summaries });
+    } catch (error: any) {
+      console.error("Error listing sea brokerage counterparties:", error);
+      return res.status(500).json({ error: "Failed to list counterparties" });
+    }
+  });
+
+  app.put("/api/sea-brokerage-monitor/counterparties/:companyId", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({ error: "Broker is not authorized to update counterparties." });
+      }
+
+      const companyId = String(req.params.companyId || "").trim();
+      if (!companyId) {
+        return res.status(400).json({ error: "companyId is required" });
+      }
+
+      const parsed = seaBrokerageCompanyProfileUpsertSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const [savedCompanies, savedBuyers, savedSellers, existingProfiles] = await Promise.all([
+        readSeaBrokerageCompanies(),
+        readSeaBrokerageBuyerCompanies(),
+        readSeaBrokerageSellerCompanies(),
+        readSeaBrokerageCompanyProfiles(),
+      ]);
+      const mergedCompanies = mergeSeaBrokerageCompanies(
+        mergeSeaBrokerageCompanies(savedCompanies, savedBuyers),
+        savedSellers,
+      );
+      const target = mergedCompanies.find((item) => item.id === companyId);
+      if (!target) {
+        return res.status(404).json({ error: "Counterparty not found" });
+      }
+
+      const idx = existingProfiles.findIndex((item) => item.companyId === companyId);
+      const prev = idx >= 0 ? existingProfiles[idx] : null;
+      const shortName =
+        parsed.data.shortName && parsed.data.shortName.length
+          ? parsed.data.shortName.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8)
+          : null;
+      const next: SeaBrokerageCompanyProfile = {
+        companyId,
+        shortName,
+        legalName: parsed.data.legalName?.trim() || null,
+        contactPerson: parsed.data.contactPerson?.trim() || null,
+        contactTelegram: parsed.data.contactTelegram?.trim() || null,
+        contactEmail: parsed.data.contactEmail?.trim() || null,
+        requisites: parsed.data.requisites?.trim() || null,
+        templateNotes: parsed.data.templateNotes?.trim() || null,
+        updatedAt: new Date().toISOString(),
+        updatedByBrokerCode: authorizedBroker.brokerCode,
+      };
+      const updatedProfiles = [...existingProfiles];
+      if (idx >= 0) {
+        updatedProfiles[idx] = { ...prev, ...next };
+      } else {
+        updatedProfiles.push(next);
+      }
+      await writeSeaBrokerageCompanyProfiles(updatedProfiles);
+      return res.json({ profile: next });
+    } catch (error: any) {
+      console.error("Error updating sea brokerage counterparty:", error);
+      return res.status(500).json({ error: "Failed to update counterparty profile" });
     }
   });
 

@@ -71,6 +71,31 @@ export interface CompanyOption {
   shortCode?: string;
 }
 
+export interface CounterpartySummary {
+  companyId: string;
+  displayLabel: string;
+  shortCode: string;
+  profile: {
+    companyId: string;
+    shortName?: string | null;
+    legalName?: string | null;
+    contactPerson?: string | null;
+    contactTelegram?: string | null;
+    contactEmail?: string | null;
+    requisites?: string | null;
+    templateNotes?: string | null;
+    updatedAt: string;
+    updatedByBrokerCode?: string | null;
+  } | null;
+  stats: {
+    offersCount: number;
+    bidsCount: number;
+    tradesCount: number;
+    totalVolumeMt: number;
+    lastSeenAt: string | null;
+  };
+}
+
 export interface BrokerUser {
   // Stable broker profile identifier used by module entries and filters.
   id: string;
