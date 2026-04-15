@@ -64,7 +64,6 @@ import { fetchAndParseProvider } from "./ingestion/sources/common";
 import { getRuntimeInfo } from "./runtimeInfo";
 import {
   publishSeaBrokerageEntryToTelegram,
-  publishSeaBrokerageMatchToTelegram,
   sendSeaBrokerageTelegramDirectMessage,
 } from "./services/seaBrokerageTelegramPublisher";
 import { generateSeaBrokerageMatchSuggestions } from "./services/seaBrokerageMatching";
@@ -1588,6 +1587,7 @@ const SEA_BROKERAGE_MATCH_LIKES_KEY = "sea_brokerage_match_likes_v1";
 const SEA_BROKERAGE_FILTER_PRESETS_KEY = "sea_brokerage_filter_presets_v1";
 const SEA_BROKERAGE_REPORT_PROFILES_KEY = "sea_brokerage_report_profiles_v1";
 const SEA_BROKERAGE_COMPANY_PROFILES_KEY = "sea_brokerage_company_profiles_v1";
+const SEA_BROKERAGE_MATCH_SETTINGS_KEY = "sea_brokerage_match_settings_v1";
 const SEA_BROKERAGE_BOSS_CODES = new Set(["OS", "VZH", "ABV", "VttL"]);
 const SEA_BROKERAGE_DEFAULT_TIMEZONE = process.env.SEA_BROKERAGE_TIMEZONE || "Europe/Paris";
 
@@ -1659,6 +1659,13 @@ type SeaBrokerageFilterPreset = {
   updatedAt: string;
 };
 
+type SeaBrokerageMatchSettings = {
+  brokerUserId: string;
+  brokerCode: string;
+  freshnessDays: number;
+  updatedAt: string;
+};
+
 type SeaBrokerageReportProfile = {
   id: string;
   brokerUserId: string;
@@ -1713,6 +1720,10 @@ const seaBrokerageFilterPresetPayloadSchema = z.object({
 const seaBrokerageFilterPresetUpdateSchema = z.object({
   name: z.string().trim().min(1).max(60).optional(),
   isDefault: z.coerce.boolean().optional(),
+});
+
+const seaBrokerageMatchSettingsUpdateSchema = z.object({
+  freshnessDays: z.coerce.number().int().min(1).max(30),
 });
 
 function decimalToNumber(value: unknown) {
@@ -2844,6 +2855,34 @@ async function writeSeaBrokerageFilterPresets(presets: SeaBrokerageFilterPreset[
   await storage.upsertAppSetting(SEA_BROKERAGE_FILTER_PRESETS_KEY, JSON.stringify(presets));
 }
 
+async function readSeaBrokerageMatchSettings(): Promise<SeaBrokerageMatchSettings[]> {
+  const raw = (await storage.getAppSetting(SEA_BROKERAGE_MATCH_SETTINGS_KEY))?.value || "[]";
+  try {
+    const parsed = JSON.parse(raw) as SeaBrokerageMatchSettings[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          typeof item.brokerUserId === "string" &&
+          typeof item.brokerCode === "string" &&
+          typeof item.updatedAt === "string",
+      )
+      .map((item) => ({
+        brokerUserId: String(item.brokerUserId).trim(),
+        brokerCode: String(item.brokerCode).trim(),
+        freshnessDays: Math.min(30, Math.max(1, Number(item.freshnessDays || 7))),
+        updatedAt: String(item.updatedAt),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+async function writeSeaBrokerageMatchSettings(settings: SeaBrokerageMatchSettings[]) {
+  await storage.upsertAppSetting(SEA_BROKERAGE_MATCH_SETTINGS_KEY, JSON.stringify(settings));
+}
+
 async function readSeaBrokerageReportProfiles(): Promise<SeaBrokerageReportProfile[]> {
   const raw = (await storage.getAppSetting(SEA_BROKERAGE_REPORT_PROFILES_KEY))?.value || "[]";
   try {
@@ -3061,8 +3100,8 @@ function buildSeaBrokerageCounterpartySummary(
     .sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
 }
 
-function matchNotifiedKey(bidEntryId: string, offerEntryId: string) {
-  return `sea_brokerage_match_notified:${bidEntryId}:${offerEntryId}`;
+function matchNotifiedKey(bidEntryId: string, offerEntryId: string, receiverKey: string) {
+  return `sea_brokerage_match_notified:${bidEntryId}:${offerEntryId}:${receiverKey}`;
 }
 
 async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
@@ -3076,7 +3115,7 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
   }
 
   const allEntries = await storage.listSeaBrokerageEntries();
-  const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries)
+  const relatedMatches = generateSeaBrokerageMatchSuggestions(allEntries, { freshnessDays: 30 })
     .filter((match) => match.bidEntry.id === updated.id || match.offerEntry.id === updated.id)
     .sort(
       (a, b) =>
@@ -3093,51 +3132,71 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
     }),
   );
 
+  const perBrokerSettings = await readSeaBrokerageMatchSettings();
+  const settingsByBrokerCode = new Map(
+    perBrokerSettings.map((item) => [String(item.brokerCode || "").trim().toUpperCase(), item]),
+  );
+
   for (const match of relatedMatches) {
-    const key = matchNotifiedKey(match.bidEntry.id, match.offerEntry.id);
-    const alreadyNotified = await storage.getAppSetting(key);
-    if (alreadyNotified?.value === "published") {
-      continue;
-    }
+    const participants = [
+      {
+        brokerCode: String(match.bidEntry.brokerCode || "").trim().toUpperCase(),
+        chat: match.bidEntry.brokerTelegramUserId
+          ? String(match.bidEntry.brokerTelegramUserId)
+          : match.bidEntry.brokerTelegramUsername
+            ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null,
+      },
+      {
+        brokerCode: String(match.offerEntry.brokerCode || "").trim().toUpperCase(),
+        chat: match.offerEntry.brokerTelegramUserId
+          ? String(match.offerEntry.brokerTelegramUserId)
+          : match.offerEntry.brokerTelegramUsername
+            ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "")}`
+            : null,
+      },
+    ];
 
-    const matchRelayResult = await publishSeaBrokerageMatchToTelegram(match);
-    console.info(
-      "[SeaBrokerage][MatchRelay]",
-      JSON.stringify({
-        bidEntryId: match.bidEntry.id,
-        offerEntryId: match.offerEntry.id,
-        score: match.score,
-        status: matchRelayResult.status,
-        error: matchRelayResult.error || null,
-      }),
-    );
+    for (const participant of participants) {
+      if (!participant.chat || !participant.brokerCode) continue;
+      const brokerSettings = settingsByBrokerCode.get(participant.brokerCode);
+      const freshnessDays = brokerSettings?.freshnessDays ?? 7;
+      const matchForBroker = generateSeaBrokerageMatchSuggestions(allEntries, { freshnessDays }).find(
+        (item) => item.id === match.id,
+      );
+      if (!matchForBroker) continue;
 
-    if (matchRelayResult.status === "published") {
-      await storage.upsertAppSetting(key, "published");
+      const dedupeKey = matchNotifiedKey(match.bidEntry.id, match.offerEntry.id, participant.brokerCode);
+      const alreadyNotified = await storage.getAppSetting(dedupeKey);
+      if (alreadyNotified?.value === "published") {
+        continue;
+      }
+
       const compactBid = match.bidEntry.canonicalView;
       const compactOffer = match.offerEntry.canonicalView;
       const dmMessage = `${resolveSeaBrokerageTelegramTag("match")} 🤝\nBID: ${compactBid}\nOFFER: ${compactOffer}`;
-      const buyerBrokerChat = match.bidEntry.brokerTelegramUsername
-        ? `@${match.bidEntry.brokerTelegramUsername.replace(/^@+/, "")}`
-        : match.bidEntry.brokerTelegramUserId
-          ? String(match.bidEntry.brokerTelegramUserId)
-          : null;
-      const sellerBrokerChat = match.offerEntry.brokerTelegramUsername
-        ? `@${match.offerEntry.brokerTelegramUsername.replace(/^@+/, "")}`
-        : match.offerEntry.brokerTelegramUserId
-          ? String(match.offerEntry.brokerTelegramUserId)
-          : null;
-      if (buyerBrokerChat) {
-        await sendSeaBrokerageTelegramDirectMessage(buyerBrokerChat, dmMessage);
-      }
-      if (sellerBrokerChat && sellerBrokerChat !== buyerBrokerChat) {
-        await sendSeaBrokerageTelegramDirectMessage(sellerBrokerChat, dmMessage);
-      }
-    } else {
-      await storage.upsertAppSetting(
-        `${key}:last_error`,
-        matchRelayResult.error || "unknown_match_relay_error",
+      const dmResult = await sendSeaBrokerageTelegramDirectMessage(participant.chat, dmMessage);
+
+      console.info(
+        "[SeaBrokerage][MatchRelayDM]",
+        JSON.stringify({
+          bidEntryId: match.bidEntry.id,
+          offerEntryId: match.offerEntry.id,
+          receiver: participant.brokerCode,
+          freshnessDays,
+          ok: dmResult.ok,
+          error: dmResult.ok ? null : dmResult.error,
+        }),
       );
+
+      if (dmResult.ok) {
+        await storage.upsertAppSetting(dedupeKey, "published");
+      } else {
+        await storage.upsertAppSetting(
+          `${dedupeKey}:last_error`,
+          dmResult.error || "unknown_match_dm_error",
+        );
+      }
     }
   }
 }
@@ -11128,6 +11187,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error sending sea brokerage report profile:", error);
       return res.status(500).json({ error: "Failed to build/send profile report" });
+    }
+  });
+
+  app.get("/api/sea-brokerage-monitor/match-settings", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker).toLowerCase();
+      const settings = await readSeaBrokerageMatchSettings();
+      const current = settings.find((item) => item.brokerUserId.toLowerCase() === brokerUserId);
+      return res.json({
+        freshnessDays: current?.freshnessDays ?? 7,
+        brokerCode: authorizedBroker.brokerCode,
+      });
+    } catch (error: any) {
+      console.error("Error fetching sea brokerage match settings:", error);
+      return res.status(500).json({ error: "Failed to fetch match settings" });
+    }
+  });
+
+  app.put("/api/sea-brokerage-monitor/match-settings", async (req: AuthRequest, res) => {
+    try {
+      const telegramIdentity = readSeaBrokerageTelegramIdentity(req);
+      const authorizedBroker = await resolveAuthorizedSeaBrokerageBrokerByTelegram(telegramIdentity);
+      if (!authorizedBroker) {
+        return res.status(403).json({
+          error:
+            "Broker is not authorized for monitor actions yet. Provide Telegram id/username from allowlist.",
+        });
+      }
+      const parsed = seaBrokerageMatchSettingsUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: fromZodError(parsed.error).message });
+      }
+
+      const all = await readSeaBrokerageMatchSettings();
+      const brokerUserId = resolveSeaBrokerageBrokerUserId(authorizedBroker);
+      const normalizedBrokerUserId = brokerUserId.toLowerCase();
+      const nowIso = new Date().toISOString();
+      const nextSetting: SeaBrokerageMatchSettings = {
+        brokerUserId,
+        brokerCode: authorizedBroker.brokerCode,
+        freshnessDays: parsed.data.freshnessDays,
+        updatedAt: nowIso,
+      };
+
+      const next = all.filter((item) => item.brokerUserId.toLowerCase() !== normalizedBrokerUserId);
+      next.push(nextSetting);
+      await writeSeaBrokerageMatchSettings(next);
+      return res.json(nextSetting);
+    } catch (error: any) {
+      console.error("Error updating sea brokerage match settings:", error);
+      return res.status(500).json({ error: "Failed to update match settings" });
     }
   });
 

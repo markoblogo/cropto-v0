@@ -1,5 +1,9 @@
 import type { BrokerageEntry, MatchSuggestion } from "../types";
 
+type GenerateMatchSuggestionsOptions = {
+  freshnessDays?: number;
+};
+
 function getPeriodOverlapScore(bidEntry: BrokerageEntry, offerEntry: BrokerageEntry) {
   if (
     bidEntry.periodStart &&
@@ -45,11 +49,12 @@ function sameDeliveryPlace(bidEntry: BrokerageEntry, offerEntry: BrokerageEntry)
     (offerEntry.destinationPort || "").trim().toUpperCase();
 }
 
-function isWithinLast7Days(entry: BrokerageEntry, now = Date.now()) {
+function isWithinFreshnessWindow(entry: BrokerageEntry, freshnessDays: number, now = Date.now()) {
   const createdAt = new Date(entry.createdAt).getTime();
   if (Number.isNaN(createdAt)) return false;
-  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-  return createdAt >= now - sevenDaysMs;
+  const safeDays = Number.isFinite(freshnessDays) ? Math.max(1, Math.floor(freshnessDays)) : 7;
+  const freshnessMs = safeDays * 24 * 60 * 60 * 1000;
+  return createdAt >= now - freshnessMs;
 }
 
 function isEligibleStatus(entry: BrokerageEntry) {
@@ -92,9 +97,16 @@ function scoreBidOfferPair(
   };
 }
 
-export function generateMatchSuggestions(entries: BrokerageEntry[]) {
+export function generateMatchSuggestions(
+  entries: BrokerageEntry[],
+  options: GenerateMatchSuggestionsOptions = {},
+) {
+  const freshnessDays =
+    options.freshnessDays && Number.isFinite(options.freshnessDays)
+      ? Math.max(1, Math.floor(options.freshnessDays))
+      : 7;
   const activeEntries = entries.filter(
-    (entry) => isWithinLast7Days(entry) && isEligibleStatus(entry),
+    (entry) => isWithinFreshnessWindow(entry, freshnessDays) && isEligibleStatus(entry),
   );
   const bids = activeEntries.filter((entry) => entry.type === "bid");
   const offers = activeEntries.filter((entry) => entry.type === "offer");
@@ -116,12 +128,12 @@ export function generateContextualMatchSuggestions(
   selectedEntry: BrokerageEntry,
   oppositeEntries: BrokerageEntry[],
 ) {
-  if (!isWithinLast7Days(selectedEntry) || !isEligibleStatus(selectedEntry)) {
+  if (!isWithinFreshnessWindow(selectedEntry, 7) || !isEligibleStatus(selectedEntry)) {
     return [];
   }
 
   const suggestions = oppositeEntries
-    .filter((entry) => isWithinLast7Days(entry) && isEligibleStatus(entry))
+    .filter((entry) => isWithinFreshnessWindow(entry, 7) && isEligibleStatus(entry))
     .map((entry) =>
       selectedEntry.type === "bid"
         ? scoreBidOfferPair(selectedEntry, entry)

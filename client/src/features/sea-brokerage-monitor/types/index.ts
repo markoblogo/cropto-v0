@@ -200,6 +200,13 @@ export interface MatchLike {
   createdAt: string;
 }
 
+export type MatchVisibilityMode = "mine" | "all";
+
+export interface MatchSettings {
+  freshnessDays: number;
+  brokerCode: string;
+}
+
 export interface FeedFilterState {
   // This reflects the live filter UI exactly, so the view state stays strongly typed.
   entryType: EntryType | "all";

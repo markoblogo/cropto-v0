@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Handshake, ShieldCheck } from "lucide-react";
+import { ExternalLink, Handshake, Settings2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,7 +24,13 @@ import {
 import { buildSeaBrokerageMonitorAuthHeaders } from "../services/monitorAuth.service";
 import { getPortPlaceDisplayLabel, getTransportDisplayLabel } from "../services/displayStandards";
 import { apiRequest } from "@/lib/queryClient";
-import type { BrokerageEntry, MatchLike, MatchSuggestion } from "../types";
+import type {
+  BrokerageEntry,
+  MatchLike,
+  MatchSettings,
+  MatchSuggestion,
+  MatchVisibilityMode,
+} from "../types";
 
 interface ContextualMatchingPanelProps {
   entries: BrokerageEntry[];
@@ -48,6 +54,7 @@ const defaultFocusState: MatchingFocusState = {
   deliveryPlace: "all",
 };
 const BOSS_BROKER_CODES = new Set(["OS", "VZH", "ABV"]);
+const MATCH_FRESHNESS_OPTIONS = [1, 3, 5, 7, 10, 14, 21, 30] as const;
 
 function buildCompactCounterpartyLine(entry: BrokerageEntry) {
   return buildCompactCanonicalView(entry);
@@ -168,10 +175,17 @@ export function ContextualMatchingPanel({
   const [detailEntry, setDetailEntry] = useState<BrokerageEntry | null>(null);
   const [compareSuggestion, setCompareSuggestion] = useState<MatchSuggestion | null>(null);
   const [focus, setFocus] = useState<MatchingFocusState>(defaultFocusState);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [matchVisibilityMode, setMatchVisibilityMode] = useState<MatchVisibilityMode>("mine");
+  const [localFreshnessDays, setLocalFreshnessDays] = useState(7);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
   const matchableEntries = useMemo(
     () => entries.filter((entry) => entry.type === "bid" || entry.type === "offer"),
     [entries],
   );
+  const brokerCodeUpper = String(currentBrokerCode || "").toUpperCase();
+  const isBoss = !!brokerCodeUpper && BOSS_BROKER_CODES.has(brokerCodeUpper);
 
   const deliveryPlaceOptions = useMemo(
     () => [
@@ -188,10 +202,24 @@ export function ContextualMatchingPanel({
   );
 
   const rollingSuggestions = useMemo(() => {
-    const suggestions = generateMatchSuggestions(matchableEntries);
+    const suggestions = generateMatchSuggestions(matchableEntries, {
+      freshnessDays: localFreshnessDays,
+    });
 
     return suggestions
       .filter((suggestion) => {
+        const hasBrokerScope = !!brokerCodeUpper;
+        const bidBrokerCode = String(suggestion.bidEntry.brokerCode || "").toUpperCase();
+        const offerBrokerCode = String(suggestion.offerEntry.brokerCode || "").toUpperCase();
+        const mineScopeMatches = hasBrokerScope
+          ? bidBrokerCode === brokerCodeUpper || offerBrokerCode === brokerCodeUpper
+          : false;
+        const visibilityMatches =
+          matchVisibilityMode === "all" && isBoss ? true : mineScopeMatches;
+        if (!visibilityMatches) {
+          return false;
+        }
+
         const commodityMatches =
           focus.commodity === "all" || suggestion.bidEntry.commodity === focus.commodity;
         const basisMatches =
@@ -244,7 +272,38 @@ export function ContextualMatchingPanel({
         return getLatestMatchTimestamp(b) - getLatestMatchTimestamp(a);
       })
       .slice(0, 12);
-  }, [focus, matchableEntries, selectedEntry]);
+  }, [
+    brokerCodeUpper,
+    focus,
+    isBoss,
+    localFreshnessDays,
+    matchVisibilityMode,
+    matchableEntries,
+    selectedEntry,
+  ]);
+
+  const { data: matchSettings } = useQuery<MatchSettings>({
+    queryKey: ["/api/sea-brokerage-monitor/match-settings", monitorAuthToken],
+    enabled: !!monitorAuthToken && !!brokerCodeUpper,
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/sea-brokerage-monitor/match-settings", undefined, {
+        headers: buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken),
+      });
+      return response.json();
+    },
+  });
+
+  useEffect(() => {
+    if (!isBoss) {
+      setMatchVisibilityMode("mine");
+    }
+  }, [isBoss]);
+
+  useEffect(() => {
+    if (matchSettings?.freshnessDays) {
+      setLocalFreshnessDays(matchSettings.freshnessDays);
+    }
+  }, [matchSettings?.freshnessDays]);
 
   const { data: matchLikes = [] } = useQuery<MatchLike[]>({
     queryKey: ["/api/sea-brokerage-monitor/matches/likes", monitorAuthToken],
@@ -290,6 +349,33 @@ export function ContextualMatchingPanel({
     }
   }
 
+  async function handleSaveMatchSettings() {
+    if (!monitorAuthToken) {
+      onRequireAuth?.();
+      return;
+    }
+    setSavingSettings(true);
+    setSettingsError(null);
+    try {
+      await apiRequest(
+        "PUT",
+        "/api/sea-brokerage-monitor/match-settings",
+        { freshnessDays: localFreshnessDays },
+        {
+          headers: buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken),
+        },
+      );
+      await queryClient.invalidateQueries({
+        queryKey: ["/api/sea-brokerage-monitor/match-settings", monitorAuthToken],
+      });
+      setSettingsOpen(false);
+    } catch (error: any) {
+      setSettingsError(error?.message || "Failed to save matching settings");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
   return (
     <>
       <Card className="overflow-hidden border-border/70 bg-card/95 shadow-sm">
@@ -298,15 +384,36 @@ export function ContextualMatchingPanel({
             <CardTitle className="mr-auto text-[11.5px] uppercase tracking-[0.12em] sm:text-[13px] sm:tracking-[0.16em]">
               MATCHES
             </CardTitle>
+            {isBoss ? (
+              <Select
+                value={matchVisibilityMode}
+                onValueChange={(value) => setMatchVisibilityMode(value as MatchVisibilityMode)}
+              >
+                <SelectTrigger className="h-5.5 w-[82px] px-1 text-[9px] sm:h-6.5 sm:w-[102px] sm:text-[10px]">
+                  <SelectValue placeholder="Scope" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mine">My matches</SelectItem>
+                  <SelectItem value="all">All matches</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : null}
             <Button
               type="button"
+              variant="outline"
               size="sm"
-              aria-hidden="true"
-              tabIndex={-1}
-              disabled
-              className="invisible h-5.5 shrink-0 px-1.5 text-[10px] sm:h-6.5 sm:px-2 sm:text-[11px]"
+              className="h-5.5 shrink-0 px-1 text-[9.5px] sm:h-6.5 sm:px-2 sm:text-[10px]"
+              onClick={() => {
+                if (!monitorAuthToken) {
+                  onRequireAuth?.();
+                  return;
+                }
+                setSettingsError(null);
+                setSettingsOpen(true);
+              }}
             >
-              Placeholder
+              <Settings2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="ml-1 hidden sm:inline">Settings</span>
             </Button>
             <div className="text-[9.5px] text-foreground/70 dark:text-muted-foreground sm:text-[11px]">
               {rollingSuggestions.length} shown
@@ -394,7 +501,11 @@ export function ContextualMatchingPanel({
           <CardContent className="p-2.5 sm:p-4">
             <MonitorEmptyState
               title="No current matches"
-              description="Create compatible offers and bids from last 7 days to populate matching."
+              description={
+                matchVisibilityMode === "all" && isBoss
+                  ? `No matches found in last ${localFreshnessDays} days for selected filters.`
+                  : `No matches found in your scope for last ${localFreshnessDays} days.`
+              }
             />
           </CardContent>
         ) : (
@@ -573,6 +684,48 @@ export function ContextualMatchingPanel({
               ))}
             </div>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Matching settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">
+                Freshness window
+              </p>
+              <Select
+                value={String(localFreshnessDays)}
+                onValueChange={(value) => setLocalFreshnessDays(Number(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select days" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MATCH_FRESHNESS_OPTIONS.map((days) => (
+                    <SelectItem key={days} value={String(days)}>
+                      Last {days} day{days === 1 ? "" : "s"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-foreground/70 dark:text-muted-foreground">
+                Applies to your match card and personal Telegram match notifications.
+              </p>
+            </div>
+            {settingsError ? <p className="text-xs text-destructive">{settingsError}</p> : null}
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setSettingsOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={() => void handleSaveMatchSettings()} disabled={savingSettings}>
+                {savingSettings ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -10,6 +10,10 @@ export type SeaBrokerageMatchSuggestion = {
   reasons: string[];
 };
 
+type SeaBrokerageMatchOptions = {
+  freshnessDays?: number;
+};
+
 function getPeriodOverlapScore(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBrokerageEntryRow) {
   if (bidEntry.periodStart && bidEntry.periodEnd && offerEntry.periodStart && offerEntry.periodEnd) {
     const bidStart = new Date(bidEntry.periodStart).getTime();
@@ -39,11 +43,12 @@ function sameDeliveryPlace(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBroker
     (offerEntry.destinationPort || "").trim().toUpperCase();
 }
 
-function isWithinLast7Days(entry: SeaBrokerageEntryRow, now = Date.now()) {
+function isWithinFreshnessWindow(entry: SeaBrokerageEntryRow, freshnessDays: number, now = Date.now()) {
   const createdAt = new Date(entry.createdAt).getTime();
   if (Number.isNaN(createdAt)) return false;
-  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-  return createdAt >= now - sevenDaysMs;
+  const safeDays = Number.isFinite(freshnessDays) ? Math.max(1, Math.floor(freshnessDays)) : 7;
+  const freshnessMs = safeDays * 24 * 60 * 60 * 1000;
+  return createdAt >= now - freshnessMs;
 }
 
 function isEligibleStatus(entry: SeaBrokerageEntryRow) {
@@ -81,9 +86,16 @@ function scoreBidOfferPair(
   };
 }
 
-export function generateSeaBrokerageMatchSuggestions(entries: SeaBrokerageEntryRow[]) {
+export function generateSeaBrokerageMatchSuggestions(
+  entries: SeaBrokerageEntryRow[],
+  options: SeaBrokerageMatchOptions = {},
+) {
+  const freshnessDays =
+    options.freshnessDays && Number.isFinite(options.freshnessDays)
+      ? Math.max(1, Math.floor(options.freshnessDays))
+      : 7;
   const activeEntries = entries.filter(
-    (entry) => isWithinLast7Days(entry) && isEligibleStatus(entry),
+    (entry) => isWithinFreshnessWindow(entry, freshnessDays) && isEligibleStatus(entry),
   );
   const bids = activeEntries.filter((entry) => entry.type === "bid");
   const offers = activeEntries.filter((entry) => entry.type === "offer");
