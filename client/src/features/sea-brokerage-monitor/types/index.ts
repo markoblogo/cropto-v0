@@ -68,6 +68,7 @@ export interface CompanyOption {
   id: string;
   displayLabel: string;
   compactDisplay: string;
+  shortCode?: string;
 }
 
 export interface BrokerUser {

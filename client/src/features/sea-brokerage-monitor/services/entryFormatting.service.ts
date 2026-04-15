@@ -319,11 +319,39 @@ export function buildCanonicalView(entry: Omit<BrokerageEntry, "canonicalView">)
   return buildTapeLine(entry as BrokerageEntry);
 }
 
+function normalizeCompanyShortCodeSeed(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+export function buildCompanyShortCode(companyLabel: string) {
+  const normalized = normalizeCompanyShortCodeSeed(String(companyLabel || ""));
+  if (!normalized) return "";
+  const consonants = normalized.replace(/[AEIOUY]/g, "");
+  const base = (consonants || normalized).slice(0, 4);
+  return base.padEnd(4, "X");
+}
+
+export function formatEntryCounterpartyShortCode(entry: BrokerageEntry) {
+  if (entry.type === "offer") {
+    return buildCompanyShortCode(entry.sellerName || "");
+  }
+  if (entry.type === "bid") {
+    return buildCompanyShortCode(entry.buyerName || "");
+  }
+  return "";
+}
+
 export function buildTapeLine(entry: BrokerageEntry) {
+  const counterpartyShortCode = formatEntryCounterpartyShortCode(entry);
   const parts = [
     formatEntryDateCompact(entry.createdAt),
     formatEntryTimeCompact(entry.createdAt),
     formatEntryBrokerIdentityCompact(entry),
+    ...(counterpartyShortCode ? [counterpartyShortCode] : []),
     `${formatEntryCommodityTape(entry)} ${formatEntryQuantityTape(entry)} ${formatEntryDeliveryCompact(entry)} ${formatEntryPeriodTape(entry)} ${formatEntryPriceTape(entry)}`,
   ];
 

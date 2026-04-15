@@ -41,7 +41,9 @@ import {
 } from "../services/feedFilters.service";
 import { generateMatchSuggestions } from "../services/matchingEngine.service";
 import {
+  buildCompactCanonicalView,
   formatEntryCommodityCompact,
+  formatEntryCounterpartyShortCode,
   formatEntryDateTime,
   formatEntryDestinationCompact,
   formatEntryPeriodCompact,
@@ -566,7 +568,7 @@ export function StandardizedFeedCard({
                         <TapeTypeBadge entry={entry} />
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-sm font-medium leading-5 text-foreground">
-                            {entry.canonicalView}
+                            {buildCompactCanonicalView(entry)}
                           </div>
                         </div>
                       </div>
@@ -597,12 +599,14 @@ export function StandardizedFeedCard({
                         <div className="mb-1 flex items-center gap-2">
                           <TapeTypeBadge entry={entry} />
                           <span className="text-xs text-muted-foreground">{entry.brokerCode}</span>
+                          {formatEntryCounterpartyShortCode(entry) ? (
+                            <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-semibold">
+                              {formatEntryCounterpartyShortCode(entry)}
+                            </Badge>
+                          ) : null}
                         </div>
                         <div className="truncate text-sm font-medium text-foreground">
-                          {formatEntryCommodityCompact(entry)} {formatEntryPriceRange(entry)} {entry.currency}
-                        </div>
-                        <div className="truncate text-xs text-muted-foreground">
-                          {entry.basis} {formatEntryDestinationCompact(entry)} / {formatEntryPeriodCompact(entry)}
+                          {buildCompactCanonicalView(entry)}
                         </div>
                         <div className="mt-1 text-[11px] text-muted-foreground">
                           {formatEntryDateTime(entry.createdAt)}
@@ -618,6 +622,7 @@ export function StandardizedFeedCard({
                           <TableHead>Date</TableHead>
                           <TableHead>Type</TableHead>
                           <TableHead>Broker</TableHead>
+                          <TableHead>Cpty</TableHead>
                           <TableHead>Commodity</TableHead>
                           <TableHead>Basis</TableHead>
                           <TableHead>Destination</TableHead>
@@ -637,6 +642,7 @@ export function StandardizedFeedCard({
                               <TapeTypeBadge entry={entry} />
                             </TableCell>
                             <TableCell>{entry.brokerCode}</TableCell>
+                            <TableCell>{formatEntryCounterpartyShortCode(entry) || "—"}</TableCell>
                             <TableCell>{formatEntryCommodityCompact(entry)}</TableCell>
                             <TableCell>{entry.basis}</TableCell>
                             <TableCell>{formatEntryDestinationCompact(entry)}</TableCell>

@@ -1862,6 +1862,7 @@ type SeaBrokerageCompanyDictionaryEntry = {
   id: string;
   displayLabel: string;
   compactDisplay: string;
+  shortCode: string;
 };
 
 type SeaBrokerageCountryDictionaryEntry = {
@@ -1893,6 +1894,29 @@ function buildCompanyId(label: string) {
   return `company_${baseSlug}`;
 }
 
+function buildSeaBrokerageCompanyShortCode(label: string) {
+  const normalized = normalizeCompanyLabel(String(label || ""))
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+  if (!normalized) return "XXXX";
+  const consonants = normalized.replace(/[AEIOUY]/g, "");
+  const base = (consonants || normalized).slice(0, 4);
+  return base.padEnd(4, "X");
+}
+
+function resolveSeaBrokerageCompanyShortCode(input: string | undefined, displayLabel: string) {
+  const normalized = String(input || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+  if (normalized.length >= 4) {
+    return normalized.slice(0, 4);
+  }
+  return buildSeaBrokerageCompanyShortCode(displayLabel);
+}
+
 async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionaryEntry[]> {
   const raw = (await storage.getAppSetting(SEA_BROKERAGE_COMPANIES_KEY))?.value || "[]";
   try {
@@ -1910,6 +1934,10 @@ async function readSeaBrokerageCompanies(): Promise<SeaBrokerageCompanyDictionar
         id: String(item.id).trim(),
         displayLabel: normalizeCompanyLabel(item.displayLabel),
         compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+        shortCode: resolveSeaBrokerageCompanyShortCode(
+          (item as { shortCode?: string }).shortCode,
+          String(item.displayLabel || ""),
+        ),
       }));
   } catch {
     return [];
@@ -1935,6 +1963,10 @@ async function readSeaBrokerageCompaniesByKey(
         id: String(item.id).trim(),
         displayLabel: normalizeCompanyLabel(item.displayLabel),
         compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
+        shortCode: resolveSeaBrokerageCompanyShortCode(
+          (item as { shortCode?: string }).shortCode,
+          String(item.displayLabel || ""),
+        ),
       }));
   } catch {
     return [];
@@ -2367,6 +2399,7 @@ function buildSeaBrokerageCompanyEntry(label: string): SeaBrokerageCompanyDictio
     id: buildCompanyId(normalized),
     displayLabel: normalized,
     compactDisplay: normalized.toUpperCase(),
+    shortCode: buildSeaBrokerageCompanyShortCode(normalized),
   };
 }
 
@@ -2421,6 +2454,7 @@ function mergeSeaBrokerageCompanies(
         id: String(item.id || "").trim() || buildCompanyId(normalizedLabel),
         displayLabel: normalizedLabel,
         compactDisplay: String(item.compactDisplay || normalizedLabel.toUpperCase()).trim(),
+        shortCode: resolveSeaBrokerageCompanyShortCode(item.shortCode, normalizedLabel),
       });
     }
   }
@@ -11856,6 +11890,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: resolvedId,
         displayLabel: label,
         compactDisplay: label.toUpperCase(),
+        shortCode: buildSeaBrokerageCompanyShortCode(label),
       };
 
       const next = mergeSeaBrokerageCompanies(savedCompanies, [created]);

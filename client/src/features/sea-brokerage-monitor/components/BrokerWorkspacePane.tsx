@@ -218,7 +218,7 @@ export function BrokerWorkspacePane({
                     }`}
                   >
                     <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 overflow-hidden">
-                      <div className="min-w-0 flex-1 line-clamp-2 break-words text-left text-[10px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
+                      <div className="min-w-0 flex-1 line-clamp-2 break-words text-left text-[9px] font-medium leading-3.5 text-foreground sm:truncate sm:text-[11px] sm:leading-4">
                         {buildCompactCanonicalView(entry)}
                       </div>
                       <div className="flex shrink-0 items-center gap-1 justify-self-end">
@@ -271,7 +271,7 @@ export function BrokerWorkspacePane({
                           <span
                             role="button"
                             tabIndex={0}
-                            className="inline-flex h-6 min-w-[46px] items-center justify-center rounded border border-border/80 bg-background/70 px-1.5 text-[9.5px] font-semibold leading-none text-foreground transition-colors hover:bg-muted/30 sm:min-w-[52px] sm:text-[10px]"
+                            className="inline-flex h-6 min-w-[30px] items-center justify-center rounded border border-border/80 bg-background/70 px-1 text-[9px] font-semibold leading-none text-foreground transition-colors hover:bg-muted/30 sm:min-w-[52px] sm:px-1.5 sm:text-[10px]"
                             onClick={(event) => {
                               event.stopPropagation();
                               onCounterEntry(entry);
@@ -285,7 +285,8 @@ export function BrokerWorkspacePane({
                             }}
                             aria-label={`Create counter ${entry.type === "offer" ? "bid" : "offer"}`}
                           >
-                            Counter
+                            <span className="hidden sm:inline">Counter</span>
+                            <span className="sm:hidden">Ctr</span>
                           </span>
                         ) : null}
                       </div>
