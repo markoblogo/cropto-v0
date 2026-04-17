@@ -100,6 +100,10 @@ function formatComparePeriod(entry: BrokerageEntry) {
 function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
   const bid = suggestion.bidEntry;
   const offer = suggestion.offerEntry;
+  const formatCounterparty = (value: string | null | undefined) => {
+    const normalized = String(value || "").trim();
+    return normalized || "Not specified";
+  };
   const resolvePortCodes = (entry: BrokerageEntry) =>
     Array.isArray(entry.destinationPortCodes) && entry.destinationPortCodes.length
       ? entry.destinationPortCodes
@@ -109,6 +113,18 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
           .filter(Boolean);
 
   const rows: CompareRow[] = [
+    {
+      label: "Seller",
+      offerValue: formatCounterparty(offer.sellerName),
+      bidValue: formatCounterparty(bid.sellerName),
+      equal: normalizeCompareValue(formatCounterparty(bid.sellerName)) === normalizeCompareValue(formatCounterparty(offer.sellerName)),
+    },
+    {
+      label: "Buyer",
+      offerValue: formatCounterparty(offer.buyerName),
+      bidValue: formatCounterparty(bid.buyerName),
+      equal: normalizeCompareValue(formatCounterparty(bid.buyerName)) === normalizeCompareValue(formatCounterparty(offer.buyerName)),
+    },
     {
       label: "Commodity",
       offerValue: offer.commodityLabel,
