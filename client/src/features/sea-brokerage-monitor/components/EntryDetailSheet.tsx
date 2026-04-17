@@ -63,11 +63,13 @@ interface EntryDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   canEdit?: boolean;
+  canClone?: boolean;
   canDelete?: boolean;
   canRepost?: boolean;
   isDeleting?: boolean;
   isReposting?: boolean;
   onEdit?: (entry: BrokerageEntry) => void;
+  onClone?: (entry: BrokerageEntry) => void;
   onDelete?: (entry: BrokerageEntry) => void;
   onRepost?: (entry: BrokerageEntry) => void;
 }
@@ -77,11 +79,13 @@ export function EntryDetailSheet({
   open,
   onOpenChange,
   canEdit = false,
+  canClone = false,
   canDelete = false,
   canRepost = false,
   isDeleting = false,
   isReposting = false,
   onEdit,
+  onClone,
   onDelete,
   onRepost,
 }: EntryDetailSheetProps) {
@@ -96,11 +100,16 @@ export function EntryDetailSheet({
               <SheetDescription>
                 Structured sea brokerage entry detail with normalized canonical output.
               </SheetDescription>
-              {canEdit || canDelete || canRepost ? (
+              {canEdit || canClone || canDelete || canRepost ? (
                 <div className="flex flex-wrap gap-2">
                   {canEdit ? (
                     <Button size="sm" variant="outline" onClick={() => onEdit?.(entry)}>
                       Edit
+                    </Button>
+                  ) : null}
+                  {canClone ? (
+                    <Button size="sm" variant="outline" onClick={() => onClone?.(entry)}>
+                      Clone
                     </Button>
                   ) : null}
                   {canDelete ? (

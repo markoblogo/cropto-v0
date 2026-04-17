@@ -718,6 +718,58 @@ export function SeaBrokerageMonitorPage() {
     };
   }
 
+  function buildClonePrefillFromEntry(source: BrokerageEntry): EntryCreateFormPrefill {
+    const periodMonth = source.periodStart?.slice(0, 7) || source.periodEnd?.slice(0, 7) || "";
+    const periodPreset =
+      source.periodType === "spot"
+        ? "spot"
+        : source.periodType === "prompt"
+          ? "prompt"
+          : source.periodType === "month"
+            ? "full_month"
+            : source.periodLabel?.toUpperCase().startsWith("1H")
+              ? "current_month_1h"
+              : source.periodLabel?.toUpperCase().startsWith("2H")
+                ? "current_month_2h"
+                : "explicit_range";
+
+    const sourcePortCodes =
+      source.destinationPortCodes && source.destinationPortCodes.length
+        ? source.destinationPortCodes
+        : String(source.destinationPortCode || "")
+            .split("|")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+    const harvestYear =
+      (String(source.gradeOrSpec || "").match(/\b(20\d{2})\b/) || [])[1] || "2026";
+
+    return {
+      sellerName: source.sellerName || "",
+      buyerName: source.buyerName || "",
+      commodity: source.commodity,
+      harvestYear,
+      isNewCrop: !!source.isNewCrop,
+      originCountry: source.originCountryCode || "UA",
+      quantityPreset: source.quantityMt === null || source.quantityMt === undefined ? "range" : "single",
+      quantityMt: source.quantityMt ?? source.volumeFrom ?? 0,
+      quantityFromMt: source.quantityMt == null ? (source.volumeFrom ?? undefined) : undefined,
+      quantityToMt: source.quantityMt == null ? (source.volumeTo ?? undefined) : undefined,
+      tolerancePct: source.tolerancePct ?? 0,
+      basis: source.basis,
+      destinationPortCodes: sourcePortCodes,
+      periodPreset,
+      periodMonth,
+      periodStart: source.periodStart || "",
+      periodEnd: source.periodEnd || "",
+      currency: source.currency,
+      price: source.price ?? source.priceFrom ?? source.priceTo ?? 0,
+      paymentTerms: source.paymentTerms || "CAD",
+      transportType: source.transportType,
+      note: source.note || "",
+    };
+  }
+
   function handleOfferPaneFiltersChange(next: BrokerWorkspacePaneFilters) {
     setActivePresetId(null);
     setOfferPaneFilters(next);
@@ -1621,12 +1673,29 @@ export function SeaBrokerageMonitorPage() {
           setIsEntryDetailOpen(open);
         }}
         canEdit={canManageEntry(selectedEntry).canEdit}
+        canClone={selectedEntry?.type === "bid" || selectedEntry?.type === "offer"}
         canDelete={canManageEntry(selectedEntry).canDelete}
         canRepost={canManageEntry(selectedEntry).canRepost}
         isDeleting={isDeletingEntry}
         isReposting={isRepostingEntry}
         onEdit={(entry) => {
           setEditEntry(entry);
+          setIsEntryDetailOpen(false);
+        }}
+        onClone={(entry) => {
+          if (entry.type !== "bid" && entry.type !== "offer") return;
+          const prefill = buildClonePrefillFromEntry(entry);
+          if (entry.type === "bid") {
+            setOfferPrefillFormValues(null);
+            setTradePrefillFormValues(null);
+            setBidPrefillFormValues(prefill);
+            setCreateDialogType("bid");
+          } else {
+            setBidPrefillFormValues(null);
+            setTradePrefillFormValues(null);
+            setOfferPrefillFormValues(prefill);
+            setCreateDialogType("offer");
+          }
           setIsEntryDetailOpen(false);
         }}
         onDelete={(entry) => void handleDeleteEntry(entry)}
