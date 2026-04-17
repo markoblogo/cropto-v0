@@ -12,6 +12,7 @@ export type SeaBrokerageMatchSuggestion = {
 
 type SeaBrokerageMatchOptions = {
   freshnessDays?: number;
+  maxPriceDelta?: number | null;
 };
 
 function getPeriodOverlapScore(bidEntry: SeaBrokerageEntryRow, offerEntry: SeaBrokerageEntryRow) {
@@ -56,9 +57,20 @@ function isEligibleStatus(entry: SeaBrokerageEntryRow) {
   return status === "active" || status === "needs_update";
 }
 
+function extractComparablePrice(entry: SeaBrokerageEntryRow): number | null {
+  const raw = entry.price ?? entry.priceFrom;
+  const numeric = Number(raw);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function normalizeCurrency(value: string | null | undefined) {
+  return String(value || "").trim().toUpperCase();
+}
+
 function scoreBidOfferPair(
   bidEntry: SeaBrokerageEntryRow,
   offerEntry: SeaBrokerageEntryRow,
+  options: SeaBrokerageMatchOptions = {},
 ): SeaBrokerageMatchSuggestion | null {
   if (bidEntry.commodity !== offerEntry.commodity) return null;
   if ((bidEntry.basis || "").toUpperCase() !== (offerEntry.basis || "").toUpperCase()) return null;
@@ -66,6 +78,24 @@ function scoreBidOfferPair(
 
   const periodScore = getPeriodOverlapScore(bidEntry, offerEntry);
   if (periodScore.score === 0) return null;
+
+  const maxPriceDelta =
+    options.maxPriceDelta == null || !Number.isFinite(options.maxPriceDelta)
+      ? null
+      : Math.max(0, Number(options.maxPriceDelta));
+  const bidPrice = extractComparablePrice(bidEntry);
+  const offerPrice = extractComparablePrice(offerEntry);
+  const comparableCurrencies =
+    normalizeCurrency(bidEntry.currency) && normalizeCurrency(bidEntry.currency) === normalizeCurrency(offerEntry.currency);
+  const priceDelta =
+    bidPrice != null && offerPrice != null && comparableCurrencies
+      ? Math.abs(offerPrice - bidPrice)
+      : null;
+  if (maxPriceDelta != null) {
+    if (priceDelta == null || priceDelta > maxPriceDelta) {
+      return null;
+    }
+  }
 
   const normalizedScore = 100;
   const reasons = [
@@ -81,7 +111,7 @@ function scoreBidOfferPair(
     offerEntry,
     score: normalizedScore,
     confidenceLabel: "high confidence",
-    priceDelta: null,
+    priceDelta,
     reasons,
   };
 }
@@ -103,7 +133,7 @@ export function generateSeaBrokerageMatchSuggestions(
 
   for (const bidEntry of bids) {
     for (const offerEntry of offers) {
-      const suggestion = scoreBidOfferPair(bidEntry, offerEntry);
+      const suggestion = scoreBidOfferPair(bidEntry, offerEntry, options);
       if (suggestion) suggestions.push(suggestion);
     }
   }

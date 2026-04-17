@@ -2,6 +2,7 @@ import type { BrokerageEntry, MatchSuggestion } from "../types";
 
 type GenerateMatchSuggestionsOptions = {
   freshnessDays?: number;
+  maxPriceDelta?: number | null;
 };
 
 function getPeriodOverlapScore(bidEntry: BrokerageEntry, offerEntry: BrokerageEntry) {
@@ -62,9 +63,20 @@ function isEligibleStatus(entry: BrokerageEntry) {
   return status === "active" || status === "needs_update";
 }
 
+function extractComparablePrice(entry: BrokerageEntry): number | null {
+  const raw = entry.price ?? entry.priceFrom;
+  const numeric = Number(raw);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function normalizeCurrency(value: string | null | undefined) {
+  return String(value || "").trim().toUpperCase();
+}
+
 function scoreBidOfferPair(
   bidEntry: BrokerageEntry,
   offerEntry: BrokerageEntry,
+  options: GenerateMatchSuggestionsOptions = {},
 ): MatchSuggestion | null {
   if (bidEntry.commodity !== offerEntry.commodity) return null;
   if (bidEntry.basis !== offerEntry.basis) return null;
@@ -72,6 +84,23 @@ function scoreBidOfferPair(
 
   const periodScore = getPeriodOverlapScore(bidEntry, offerEntry);
   if (periodScore.score === 0) return null;
+
+  const maxPriceDelta =
+    options.maxPriceDelta == null || !Number.isFinite(options.maxPriceDelta)
+      ? null
+      : Math.max(0, Number(options.maxPriceDelta));
+  const bidPrice = extractComparablePrice(bidEntry);
+  const offerPrice = extractComparablePrice(offerEntry);
+  const comparableCurrencies =
+    normalizeCurrency(bidEntry.currency) &&
+    normalizeCurrency(bidEntry.currency) === normalizeCurrency(offerEntry.currency);
+  const priceDelta =
+    bidPrice != null && offerPrice != null && comparableCurrencies
+      ? Math.abs(offerPrice - bidPrice)
+      : null;
+  if (maxPriceDelta != null) {
+    if (priceDelta == null || priceDelta > maxPriceDelta) return null;
+  }
 
   const normalizedScore = 100;
   const reasons = [
@@ -90,8 +119,8 @@ function scoreBidOfferPair(
     score: normalizedScore,
     scoreLabel: `${normalizedScore}/100`,
     confidenceLabel: "high confidence",
-    priceDelta: null,
-    priceDeltaLabel: "N/A",
+    priceDelta,
+    priceDeltaLabel: priceDelta != null ? `${priceDelta.toFixed(2)} ${bidEntry.currency}` : "N/A",
     reasons,
     matchedAt: null,
   };
@@ -114,7 +143,7 @@ export function generateMatchSuggestions(
 
   for (const bidEntry of bids) {
     for (const offerEntry of offers) {
-      const suggestion = scoreBidOfferPair(bidEntry, offerEntry);
+      const suggestion = scoreBidOfferPair(bidEntry, offerEntry, options);
       if (suggestion) {
         suggestions.push(suggestion);
       }
@@ -127,6 +156,7 @@ export function generateMatchSuggestions(
 export function generateContextualMatchSuggestions(
   selectedEntry: BrokerageEntry,
   oppositeEntries: BrokerageEntry[],
+  options: GenerateMatchSuggestionsOptions = {},
 ) {
   if (!isWithinFreshnessWindow(selectedEntry, 7) || !isEligibleStatus(selectedEntry)) {
     return [];
@@ -136,8 +166,8 @@ export function generateContextualMatchSuggestions(
     .filter((entry) => isWithinFreshnessWindow(entry, 7) && isEligibleStatus(entry))
     .map((entry) =>
       selectedEntry.type === "bid"
-        ? scoreBidOfferPair(selectedEntry, entry)
-        : scoreBidOfferPair(entry, selectedEntry),
+        ? scoreBidOfferPair(selectedEntry, entry, options)
+        : scoreBidOfferPair(entry, selectedEntry, options),
     )
     .filter((suggestion): suggestion is MatchSuggestion => suggestion !== null);
 

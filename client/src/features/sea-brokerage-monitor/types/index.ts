@@ -204,6 +204,7 @@ export type MatchVisibilityMode = "mine" | "all";
 
 export interface MatchSettings {
   freshnessDays: number;
+  maxPriceDelta: number;
   brokerCode: string;
 }
 

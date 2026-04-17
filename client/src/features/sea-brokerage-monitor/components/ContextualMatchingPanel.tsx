@@ -4,6 +4,7 @@ import { ExternalLink, Handshake, Settings2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -55,6 +56,7 @@ const defaultFocusState: MatchingFocusState = {
 };
 const BOSS_BROKER_CODES = new Set(["OS", "VZH", "ABV"]);
 const MATCH_FRESHNESS_OPTIONS = [1, 3, 5, 7, 10, 14, 21, 30] as const;
+const DEFAULT_MAX_PRICE_DELTA = 100;
 
 function buildCompactCounterpartyLine(entry: BrokerageEntry) {
   return buildCompactCanonicalView(entry);
@@ -190,6 +192,7 @@ export function ContextualMatchingPanel({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [matchVisibilityMode, setMatchVisibilityMode] = useState<MatchVisibilityMode>("mine");
   const [localFreshnessDays, setLocalFreshnessDays] = useState(7);
+  const [localMaxPriceDelta, setLocalMaxPriceDelta] = useState(DEFAULT_MAX_PRICE_DELTA);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const matchableEntries = useMemo(
@@ -216,6 +219,7 @@ export function ContextualMatchingPanel({
   const rollingSuggestions = useMemo(() => {
     const suggestions = generateMatchSuggestions(matchableEntries, {
       freshnessDays: localFreshnessDays,
+      maxPriceDelta: localMaxPriceDelta,
     });
 
     return suggestions
@@ -289,6 +293,7 @@ export function ContextualMatchingPanel({
     focus,
     isBoss,
     localFreshnessDays,
+    localMaxPriceDelta,
     matchVisibilityMode,
     matchableEntries,
     selectedEntry,
@@ -315,7 +320,14 @@ export function ContextualMatchingPanel({
     if (matchSettings?.freshnessDays) {
       setLocalFreshnessDays(matchSettings.freshnessDays);
     }
-  }, [matchSettings?.freshnessDays]);
+    if (
+      matchSettings &&
+      typeof matchSettings.maxPriceDelta === "number" &&
+      Number.isFinite(matchSettings.maxPriceDelta)
+    ) {
+      setLocalMaxPriceDelta(matchSettings.maxPriceDelta);
+    }
+  }, [matchSettings?.freshnessDays, matchSettings?.maxPriceDelta]);
 
   const { data: matchLikes = [] } = useQuery<MatchLike[]>({
     queryKey: ["/api/sea-brokerage-monitor/matches/likes", monitorAuthToken],
@@ -372,7 +384,10 @@ export function ContextualMatchingPanel({
       await apiRequest(
         "PUT",
         "/api/sea-brokerage-monitor/match-settings",
-        { freshnessDays: localFreshnessDays },
+        {
+          freshnessDays: localFreshnessDays,
+          maxPriceDelta: Math.max(0, Number(localMaxPriceDelta) || 0),
+        },
         {
           headers: buildSeaBrokerageMonitorAuthHeaders(monitorAuthToken),
         },
@@ -732,6 +747,25 @@ export function ContextualMatchingPanel({
               </Select>
               <p className="text-xs text-foreground/70 dark:text-muted-foreground">
                 Applies to your match card and personal Telegram match notifications.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/70 dark:text-muted-foreground">
+                Max price delta ($/€)
+              </p>
+              <Input
+                type="number"
+                min={0}
+                max={1000}
+                step={1}
+                value={String(localMaxPriceDelta)}
+                onChange={(event) => {
+                  const next = Number(event.target.value);
+                  setLocalMaxPriceDelta(Number.isFinite(next) ? Math.min(1000, Math.max(0, next)) : 0);
+                }}
+              />
+              <p className="text-xs text-foreground/70 dark:text-muted-foreground">
+                Match is shown only when offer-bid price difference is within this value.
               </p>
             </div>
             {settingsError ? <p className="text-xs text-destructive">{settingsError}</p> : null}

@@ -1663,6 +1663,7 @@ type SeaBrokerageMatchSettings = {
   brokerUserId: string;
   brokerCode: string;
   freshnessDays: number;
+  maxPriceDelta: number;
   updatedAt: string;
 };
 
@@ -1724,6 +1725,7 @@ const seaBrokerageFilterPresetUpdateSchema = z.object({
 
 const seaBrokerageMatchSettingsUpdateSchema = z.object({
   freshnessDays: z.coerce.number().int().min(1).max(30),
+  maxPriceDelta: z.coerce.number().min(0).max(1000),
 });
 
 function decimalToNumber(value: unknown) {
@@ -2902,6 +2904,7 @@ async function readSeaBrokerageMatchSettings(): Promise<SeaBrokerageMatchSetting
         brokerUserId: String(item.brokerUserId).trim(),
         brokerCode: String(item.brokerCode).trim(),
         freshnessDays: Math.min(30, Math.max(1, Number(item.freshnessDays || 7))),
+        maxPriceDelta: Math.min(1000, Math.max(0, Number(item.maxPriceDelta ?? 100))),
         updatedAt: String(item.updatedAt),
       }));
   } catch {
@@ -3191,7 +3194,11 @@ async function relaySeaBrokerageMatchesForEntry(updated: SeaBrokerageEntryRow) {
       if (!participant.chat || !participant.brokerCode) continue;
       const brokerSettings = settingsByBrokerCode.get(participant.brokerCode);
       const freshnessDays = brokerSettings?.freshnessDays ?? 7;
-      const matchForBroker = generateSeaBrokerageMatchSuggestions(allEntries, { freshnessDays }).find(
+      const maxPriceDelta = Math.min(1000, Math.max(0, Number(brokerSettings?.maxPriceDelta ?? 100)));
+      const matchForBroker = generateSeaBrokerageMatchSuggestions(allEntries, {
+        freshnessDays,
+        maxPriceDelta,
+      }).find(
         (item) => item.id === match.id,
       );
       if (!matchForBroker) continue;
@@ -11236,6 +11243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const current = settings.find((item) => item.brokerUserId.toLowerCase() === brokerUserId);
       return res.json({
         freshnessDays: current?.freshnessDays ?? 7,
+        maxPriceDelta: current?.maxPriceDelta ?? 100,
         brokerCode: authorizedBroker.brokerCode,
       });
     } catch (error: any) {
@@ -11267,6 +11275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         brokerUserId,
         brokerCode: authorizedBroker.brokerCode,
         freshnessDays: parsed.data.freshnessDays,
+        maxPriceDelta: Math.min(1000, Math.max(0, Number(parsed.data.maxPriceDelta))),
         updatedAt: nowIso,
       };
 
