@@ -308,6 +308,10 @@ function formatTelegramCommodity(entry: SeaBrokerageEntryRow) {
     .trim();
   if (/^wheat\s*11\.?5$/i.test(base)) return "Wheat 11.5pro";
   if (/^wheat\s*12\.?5$/i.test(base)) return "Wheat 12.5pro";
+  if (/\bddgs\b/i.test(base)) {
+    // Keep DDGS in uppercase in all Telegram payloads.
+    return base.replace(/\bddgs\b/gi, "DDGS");
+  }
   return toTitleCase(base);
 }
 
