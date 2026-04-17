@@ -1927,6 +1927,24 @@ type SeaBrokerageCommodityDictionaryEntry = {
 type SeaBrokerageTransportDictionaryStoredEntry = SeaBrokerageTransportDictionaryEntry;
 
 const SEA_BROKERAGE_DEFAULT_BASIS = [...SEA_BROKERAGE_ALLOWED_BASIS];
+const SEA_BROKERAGE_MANDATORY_COMMODITIES: SeaBrokerageCommodityDictionaryEntry[] = [
+  {
+    code: "ddgs_from_corn",
+    displayLabel: "DDGS (from corn)",
+    compactDisplay: "DDGS (FROM CORN)",
+    group: "processed",
+    productGroup: "DDGS",
+    productCategory: "By-products",
+  },
+  {
+    code: "ddgs_from_wheat",
+    displayLabel: "DDGS (from wheat)",
+    compactDisplay: "DDGS (FROM WHEAT)",
+    group: "processed",
+    productGroup: "DDGS",
+    productCategory: "By-products",
+  },
+];
 
 function buildCompanyId(label: string) {
   const baseSlug = slugifyLocationLabel(label) || "company";
@@ -2109,7 +2127,7 @@ async function readSeaBrokerageCommodities(): Promise<SeaBrokerageCommodityDicti
           telegramIcon:
             typeof item.telegramIcon === "string" ? normalizeCityLabel(item.telegramIcon) : undefined,
         })),
-      [],
+      SEA_BROKERAGE_MANDATORY_COMMODITIES,
     );
   } catch {
     return [];
@@ -12051,10 +12069,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(200).json({ commodity: duplicate, duplicate: true });
       }
 
-      return res.status(400).json({
-        error:
-          "Commodity dictionary is managed from the Google reference sheet. Please update commodity there and run dictionary import sync.",
-      });
+      const created: SeaBrokerageCommodityDictionaryEntry = {
+        code,
+        displayLabel: label,
+        compactDisplay: label.toUpperCase(),
+        group: parsed.data.group || "processed",
+      };
+
+      const next = mergeSeaBrokerageCommodities(current, [created]);
+      await storage.upsertAppSetting(SEA_BROKERAGE_COMMODITIES_KEY, JSON.stringify(next));
+      return res.status(201).json({ commodity: created, duplicate: false });
     } catch (error: any) {
       console.error("Error creating sea brokerage commodity:", error);
       return res.status(500).json({ error: "Failed to create commodity" });
