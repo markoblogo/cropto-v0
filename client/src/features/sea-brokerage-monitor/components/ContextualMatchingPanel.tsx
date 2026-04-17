@@ -71,6 +71,7 @@ type CompareRow = {
   offerValue: string;
   bidValue: string;
   equal: boolean;
+  compareDisabled?: boolean;
 };
 
 function normalizeCompareValue(value: string) {
@@ -114,16 +115,11 @@ function buildCompareRows(suggestion: MatchSuggestion): CompareRow[] {
 
   const rows: CompareRow[] = [
     {
-      label: "Seller",
-      offerValue: formatCounterparty(offer.sellerName),
-      bidValue: formatCounterparty(bid.sellerName),
-      equal: normalizeCompareValue(formatCounterparty(bid.sellerName)) === normalizeCompareValue(formatCounterparty(offer.sellerName)),
-    },
-    {
-      label: "Buyer",
-      offerValue: formatCounterparty(offer.buyerName),
-      bidValue: formatCounterparty(bid.buyerName),
-      equal: normalizeCompareValue(formatCounterparty(bid.buyerName)) === normalizeCompareValue(formatCounterparty(offer.buyerName)),
+      label: "Counterparty",
+      offerValue: `Seller: ${formatCounterparty(offer.sellerName)}`,
+      bidValue: `Buyer: ${formatCounterparty(bid.buyerName)}`,
+      equal: true,
+      compareDisabled: true,
     },
     {
       label: "Commodity",
@@ -686,15 +682,21 @@ export function ContextualMatchingPanel({
                     {row.bidValue}
                   </div>
                   <div className="sm:col-span-2">
-                    <div
-                      className={`inline-flex h-8 w-full items-center justify-center rounded border text-sm font-semibold ${
-                        row.equal
-                          ? "border-emerald-500/70 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-                          : "border-rose-500/70 bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
-                      }`}
-                    >
-                      {row.equal ? "✔️" : "✖️"}
-                    </div>
+                    {row.compareDisabled ? (
+                      <div className="inline-flex h-8 w-full items-center justify-center rounded border border-border/60 text-sm font-semibold text-foreground/60 dark:text-muted-foreground">
+                        —
+                      </div>
+                    ) : (
+                      <div
+                        className={`inline-flex h-8 w-full items-center justify-center rounded border text-sm font-semibold ${
+                          row.equal
+                            ? "border-emerald-500/70 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                            : "border-rose-500/70 bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
+                        }`}
+                      >
+                        {row.equal ? "✔️" : "✖️"}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
