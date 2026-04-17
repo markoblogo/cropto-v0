@@ -1834,6 +1834,18 @@ function normalizeCityLabel(value: string) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
+function normalizeSeaBrokerageCountryLabel(value: string, code?: string | null) {
+  const label = normalizeCityLabel(value);
+  const normalizedKey = label
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (String(code || "").toUpperCase() === "TR" || normalizedKey === "turkey" || normalizedKey === "turkiye") {
+    return "Turkiye";
+  }
+  return label;
+}
+
 function normalizeCompanyLabel(value: string) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
@@ -2085,7 +2097,7 @@ async function readSeaBrokerageCountries(): Promise<SeaBrokerageCountryDictionar
       )
       .map((item) => ({
         code: String(item.code).trim().toUpperCase(),
-        displayLabel: normalizeCityLabel(item.displayLabel),
+        displayLabel: normalizeSeaBrokerageCountryLabel(item.displayLabel, item.code),
         countryCodeAlpha3: String(item.countryCodeAlpha3).trim().toUpperCase(),
         compactDisplay: String(item.compactDisplay).trim().toUpperCase(),
       }));
@@ -2258,7 +2270,7 @@ function deriveSeaBrokerageCountriesFromEntries(
     ];
     for (const candidate of candidates) {
       const code = String(candidate.code || "").trim().toUpperCase();
-      const label = normalizeCityLabel(String(candidate.label || ""));
+      const label = normalizeSeaBrokerageCountryLabel(String(candidate.label || ""), code);
       if (!/^[A-Z]{2}$/.test(code) || !label) continue;
       if (!byCode.has(code)) {
         const alpha3 = countryAlpha3FromCode(code) || `${code}X`;
@@ -2285,7 +2297,7 @@ function mergeSeaBrokerageCountries(
     if (!byCode.has(code)) {
       byCode.set(code, {
         code,
-        displayLabel: normalizeCityLabel(item.displayLabel),
+        displayLabel: normalizeSeaBrokerageCountryLabel(item.displayLabel, code),
         countryCodeAlpha3: String(item.countryCodeAlpha3 || "").trim().toUpperCase(),
         compactDisplay: String(item.compactDisplay || "").trim().toUpperCase(),
       });
@@ -11950,7 +11962,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: fromZodError(parsed.error).message });
       }
 
-      const label = normalizeCityLabel(parsed.data.displayLabel);
+      const label = normalizeSeaBrokerageCountryLabel(parsed.data.displayLabel, parsed.data.countryCode);
       if (!/^[A-Za-z][A-Za-z\s'-]{1,79}$/.test(label)) {
         return res.status(400).json({
           error: "Country name must use English letters and can include spaces, apostrophe, or hyphen.",

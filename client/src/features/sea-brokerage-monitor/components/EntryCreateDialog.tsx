@@ -372,6 +372,25 @@ function normalizeLocationCityInput(value: string) {
     .replace(/\s+/g, " ");
 }
 
+function normalizeCountryLabel(value: string, countryCode?: string | null) {
+  const normalized = normalizeLocationCityInput(value);
+  const key = normalized
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (String(countryCode || "").toUpperCase() === "TR" || key === "turkey" || key === "turkiye") {
+    return "Turkiye";
+  }
+  return normalized;
+}
+
+function normalizeCountryLookupKey(value: string) {
+  return normalizeLocationCityInput(value)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 const globalEnglishCountryOptions = isoCountryOptionsEn;
 
 function formatPortPlaceLabel(option: PortOption) {
@@ -835,7 +854,18 @@ export function EntryCreateDialog({
       ...countryOptions,
       ...sharedCountryOptionsData,
     ]) {
-      byCode.set(option.code, option);
+      const code = String(option.code || "").trim().toUpperCase();
+      if (!code) continue;
+      const normalizedOption: CountryOption = {
+        ...option,
+        code,
+        displayLabel: normalizeCountryLabel(option.displayLabel, code),
+      };
+      if (!byCode.has(code)) {
+        byCode.set(code, normalizedOption);
+      } else if (code === "TR") {
+        byCode.set(code, normalizedOption);
+      }
     }
     return Array.from(byCode.values()).sort((left, right) =>
       left.displayLabel.localeCompare(right.displayLabel),
@@ -1448,12 +1478,20 @@ export function EntryCreateDialog({
   }
 
   async function addCustomLocation() {
-    const city = normalizeLocationCityInput(newLocationCity);
-    const countrySearch = normalizeLocationCityInput(newLocationCountrySearch);
+    const cityInput = normalizeLocationCityInput(newLocationCity);
+    const cityCandidates = Array.from(
+      new Set(
+        cityInput
+          .split(/[\/|,]/g)
+          .map((part) => normalizeLocationCityInput(part))
+          .filter(Boolean),
+      ),
+    );
+    const countrySearch = normalizeCountryLookupKey(newLocationCountrySearch);
     const country = allCountryOptions.find(
       (option) =>
-        option.code.toLowerCase() === countrySearch.toLowerCase() ||
-        option.displayLabel.toLowerCase() === countrySearch.toLowerCase(),
+        option.code.toLowerCase() === countrySearch ||
+        normalizeCountryLookupKey(option.displayLabel) === countrySearch,
     );
     const countryCode = country?.code || "";
 
@@ -1462,55 +1500,72 @@ export function EntryCreateDialog({
       return;
     }
 
-    if (!/^[A-Za-z][A-Za-z\\s'\\-]{1,59}$/.test(city)) {
-      setLocationEditorMessage("Use English city name (letters, spaces, hyphen).");
+    if (cityCandidates.length === 0) {
+      setLocationEditorMessage("Enter at least one port/city name.");
       return;
     }
 
-    const existing = allPortOptions.find(
-      (option) =>
-        option.countryCode === countryCode &&
-        option.displayLabel.trim().toLowerCase() === city.toLowerCase(),
-    );
-    if (existing) {
-      form.setValue("destinationPortCodes", [existing.code], { shouldValidate: true });
-      setIsAddingLocation(false);
-      setLocationEditorMessage("Location already exists and has been selected.");
+    const invalidCity = cityCandidates.find((city) => !/^[A-Za-z][A-Za-z\s'\-]{1,59}$/.test(city));
+    if (invalidCity) {
+      setLocationEditorMessage("Use English city names (letters, spaces, hyphen). You can separate ports with '/'.");
       return;
     }
 
     try {
       setIsSavingLocation(true);
-      const response = await fetch("/api/sea-brokerage-monitor/locations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
-        },
-        body: JSON.stringify({
-          displayLabel: city,
-          countryCode,
-          countryCodeAlpha3: country.countryCodeAlpha3,
-        }),
-      });
+      const selectedCodes = new Set<string>(form.getValues("destinationPortCodes") || []);
+      let createdCount = 0;
 
-      if (!response.ok) {
-        const text = (await response.text()) || "Failed to add location";
-        throw new Error(text);
-      }
+      for (const city of cityCandidates) {
+        const existing = allPortOptions.find(
+          (option) =>
+            option.countryCode === countryCode &&
+            option.displayLabel.trim().toLowerCase() === city.toLowerCase(),
+        );
+        if (existing) {
+          selectedCodes.add(existing.code);
+          continue;
+        }
 
-      const payload = (await response.json()) as { location?: PortOption; duplicate?: boolean };
-      const location = payload.location;
-      if (!location) {
-        throw new Error("Invalid location payload.");
+        const response = await fetch("/api/sea-brokerage-monitor/locations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...buildSeaBrokerageMonitorAuthHeaders(session.monitorAuthToken),
+          },
+          body: JSON.stringify({
+            displayLabel: city,
+            countryCode,
+            countryCodeAlpha3: country.countryCodeAlpha3,
+          }),
+        });
+
+        if (!response.ok) {
+          const text = (await response.text()) || "Failed to add location";
+          throw new Error(text);
+        }
+
+        const payload = (await response.json()) as { location?: PortOption; duplicate?: boolean };
+        const location = payload.location;
+        if (!location) {
+          throw new Error("Invalid location payload.");
+        }
+        if (!payload.duplicate) {
+          createdCount += 1;
+        }
+        selectedCodes.add(location.code);
       }
 
       await queryClient.invalidateQueries({ queryKey: ["/api/sea-brokerage-monitor/locations"] });
-      form.setValue("destinationPortCodes", [location.code], { shouldValidate: true });
+      form.setValue("destinationPortCodes", Array.from(selectedCodes), { shouldValidate: true });
       setNewLocationCity("");
-      setNewLocationCountrySearch(country.displayLabel);
+      setNewLocationCountrySearch(normalizeCountryLabel(country.displayLabel, country.code));
       setIsAddingLocation(false);
-      setLocationEditorMessage(payload.duplicate ? "Location already existed and was selected." : "Location added.");
+      setLocationEditorMessage(
+        cityCandidates.length > 1
+          ? `Locations selected: ${cityCandidates.length}${createdCount ? ` (${createdCount} added)` : ""}.`
+          : (createdCount ? "Location added." : "Location already existed and was selected."),
+      );
     } catch (error) {
       setLocationEditorMessage(error instanceof Error ? error.message : "Failed to add location.");
     } finally {
