@@ -10,7 +10,7 @@ This repository contains the active MVP codebase: the main web app, backend APIs
 ## Project Status
 
 - Product state: active prototype/staging with real partner usage in selected modules
-- Main staging domain: [cropto.abvx.xyz](https://cropto.abvx.xyz)
+- Main staging domain: [cr0pto.com](https://cr0pto.com)
 - Maturity: mixed (some modules are production-like operationally, others remain experimental)
 
 ## Key Product Areas

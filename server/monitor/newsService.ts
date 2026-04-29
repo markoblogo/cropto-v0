@@ -137,7 +137,7 @@ async function fetchFeed(source: MonitorSource): Promise<ParsedFeedItem[]> {
     const response = await fetch(source.url, {
       signal: controller.signal,
       headers: {
-        "user-agent": "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)",
+        "user-agent": "CroptoMonitor/1.1 (+https://cr0pto.com)",
         accept: "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
       },
     });

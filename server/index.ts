@@ -16,6 +16,7 @@ import { startSeaBrokerageSheetsSyncScheduler } from "./services/seaBrokerageShe
 import { getRuntimeInfo } from "./runtimeInfo";
 import { registerMonitorRoutes } from "./monitor/routes";
 import path from "path";
+import { getCanonicalHost, getLegacyHosts, getPublicAppUrl } from "./config/domain";
 
 const app = express();
 
@@ -35,10 +36,24 @@ app.use(express.urlencoded({ extended: false }));
 app.use(blockServiceRole);
 app.use(auditLog);
 app.use((req, res, next) => {
+  const hostHeader = String(req.headers.host || "").toLowerCase();
+  const host = hostHeader.split(":")[0];
+  const legacyHosts = getLegacyHosts();
+
+  if (legacyHosts.includes(host)) {
+    const destination = `${getPublicAppUrl()}${req.originalUrl || "/"}`;
+    return res.redirect(301, destination);
+  }
+
+  return next();
+});
+
+app.use((req, res, next) => {
   if (req.path.startsWith("/api")) {
     const info = getRuntimeInfo();
     res.setHeader("X-Cropto-GitSha", info.gitSha);
     res.setHeader("X-Cropto-BuildTime", info.buildTime || "unknown");
+    res.setHeader("X-Cropto-Canonical-Host", getCanonicalHost());
   }
   next();
 });

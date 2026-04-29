@@ -1,7 +1,7 @@
 # Railway Deploy Runbook
 
 ## When to run
-Use this when `/api/version` on `https://cropto.abvx.xyz` does not match the latest commit on `release/demo`.
+Use this when `/api/version` on `https://cr0pto.com` does not match the latest commit on `release/demo`.
 
 ## Target state
 - Railway web service is built from `release/demo`.
@@ -16,7 +16,7 @@ Use this when `/api/version` on `https://cropto.abvx.xyz` does not match the lat
    - click **Redeploy** on latest deployment for the web service.
 4. Wait for deployment to reach healthy state.
 5. Verify:
-   - `curl -sS https://cropto.abvx.xyz/api/version`
+   - `curl -sS https://cr0pto.com/api/version`
    - confirm `gitSha` equals latest `release/demo` commit.
 6. If jobs run as separate service, redeploy **jobs** service too (running `npm run start:jobs`).
 
@@ -28,11 +28,11 @@ Use this when `/api/version` on `https://cropto.abvx.xyz` does not match the lat
 - `INGESTION_DISABLE_PRIMARY` should be unset unless doing controlled failover testing.
 
 ## 2-minute verification (curl)
-1. `curl -sS https://cropto.abvx.xyz/api/version`
-2. `curl -sS -H "Authorization: Bearer <admin_token>" https://cropto.abvx.xyz/api/admin/market-ingestion/runtime`
-3. `curl -sS -H "Authorization: Bearer <admin_token>" https://cropto.abvx.xyz/api/admin/market-ingestion/db-check`
-4. `curl -sS -X POST -H "Authorization: Bearer <admin_token>" "https://cropto.abvx.xyz/api/admin/market-ingestion/run-now?market=BR"`
-5. `curl -sS "https://cropto.abvx.xyz/api/market-dashboard?debugSources=1"`
+1. `curl -sS https://cr0pto.com/api/version`
+2. `curl -sS -H "Authorization: Bearer <admin_token>" https://cr0pto.com/api/admin/market-ingestion/runtime`
+3. `curl -sS -H "Authorization: Bearer <admin_token>" https://cr0pto.com/api/admin/market-ingestion/db-check`
+4. `curl -sS -X POST -H "Authorization: Bearer <admin_token>" "https://cr0pto.com/api/admin/market-ingestion/run-now?market=BR"`
+5. `curl -sS "https://cr0pto.com/api/market-dashboard?debugSources=1"`
 
 Expected:
 - `/api/version` SHA equals `release/demo` HEAD.

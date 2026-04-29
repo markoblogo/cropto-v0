@@ -3,6 +3,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { Button } from "@/components/ui/button";
 
+const PUBLIC_APP_URL = (import.meta.env.VITE_PUBLIC_APP_URL || "https://cr0pto.com").replace(/\/+$/, "");
+
 export type MonitorNavItem = {
   href: string;
   label: string;
@@ -55,7 +57,7 @@ export function MonitorHeader({ navItems }: MonitorHeaderProps) {
             <a href="/deck">Open Deck</a>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <a href="https://cropto.abvx.xyz/" target="_blank" rel="noreferrer">
+            <a href={`${PUBLIC_APP_URL}/`} target="_blank" rel="noreferrer">
               Back to Cropto
             </a>
           </Button>

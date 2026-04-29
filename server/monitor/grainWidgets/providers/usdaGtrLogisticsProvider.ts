@@ -398,7 +398,7 @@ async function downloadBufferViaNode(url: string): Promise<{ buffer: Buffer; fin
       const req = requester(targetUrl, {
         method: "GET",
         headers: {
-          "user-agent": "CroptoMonitor/1.0 (+https://cropto.abvx.xyz)",
+          "user-agent": "CroptoMonitor/1.0 (+https://cr0pto.com)",
           accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*",
           "accept-language": "en-US,en;q=0.9",
           referer: "https://www.ams.usda.gov/",

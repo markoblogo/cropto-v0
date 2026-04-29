@@ -1,6 +1,6 @@
 # Deployment Verification (2 minutes)
 
-Use this after each Railway deploy to confirm `cropto.abvx.xyz` is serving the expected backend build.
+Use this after each Railway deploy to confirm `cr0pto.com` is serving the expected backend build.
 
 ## 0) Expected SHA
 
@@ -10,10 +10,20 @@ Get expected SHA from git:
 git rev-parse origin/release/demo
 ```
 
+## 0.1) Legacy domain redirect must preserve path
+
+```bash
+curl -i -sS https://cropto.abvx.xyz/monitor | head -n 20
+```
+
+Expected:
+- `301`
+- `location: https://cr0pto.com/monitor`
+
 ## 1) Version endpoint must be JSON and match SHA
 
 ```bash
-curl -i -sS https://cropto.abvx.xyz/api/version
+curl -i -sS https://cr0pto.com/api/version
 ```
 
 Expected:
@@ -25,7 +35,7 @@ Expected:
 ## 2) Dashboard API must return JSON (not SPA HTML)
 
 ```bash
-curl -i -sS "https://cropto.abvx.xyz/api/market-dashboard?debugSources=1" | head -n 30
+curl -i -sS "https://cr0pto.com/api/market-dashboard?debugSources=1" | head -n 30
 ```
 
 Expected:
@@ -37,8 +47,8 @@ Expected:
 Without auth:
 
 ```bash
-curl -i -sS https://cropto.abvx.xyz/api/admin/market-ingestion/runtime | head -n 20
-curl -i -sS https://cropto.abvx.xyz/api/admin/market-ingestion/db-check | head -n 20
+curl -i -sS https://cr0pto.com/api/admin/market-ingestion/runtime | head -n 20
+curl -i -sS https://cr0pto.com/api/admin/market-ingestion/db-check | head -n 20
 ```
 
 Expected:
@@ -49,8 +59,8 @@ With auth:
 
 ```bash
 export TOKEN="<admin_or_broker_jwt>"
-curl -i -sS -H "Authorization: Bearer $TOKEN" https://cropto.abvx.xyz/api/admin/market-ingestion/runtime | head -n 40
-curl -i -sS -H "Authorization: Bearer $TOKEN" https://cropto.abvx.xyz/api/admin/market-ingestion/db-check | head -n 60
+curl -i -sS -H "Authorization: Bearer $TOKEN" https://cr0pto.com/api/admin/market-ingestion/runtime | head -n 40
+curl -i -sS -H "Authorization: Bearer $TOKEN" https://cr0pto.com/api/admin/market-ingestion/db-check | head -n 60
 ```
 
 Expected:
@@ -60,7 +70,7 @@ Expected:
 ## 4) Healthz quick state
 
 ```bash
-curl -i -sS https://cropto.abvx.xyz/api/healthz
+curl -i -sS https://cr0pto.com/api/healthz
 ```
 
 Expected JSON:
@@ -79,7 +89,7 @@ All `/api/*` responses should include:
 Example:
 
 ```bash
-curl -i -sS https://cropto.abvx.xyz/api/version | rg -n "X-Cropto-GitSha|X-Cropto-BuildTime|content-type|HTTP/"
+curl -i -sS https://cr0pto.com/api/version | rg -n "X-Cropto-GitSha|X-Cropto-BuildTime|content-type|HTTP/"
 ```
 
 ## Common failure modes

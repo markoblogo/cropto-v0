@@ -1,5 +1,7 @@
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
+const PUBLIC_APP_URL = (import.meta.env.VITE_PUBLIC_APP_URL || "https://cr0pto.com").replace(/\/+$/, "");
+
 interface MonitorFooterProps {
   hiddenCount?: number;
 }
@@ -19,7 +21,7 @@ export function MonitorFooter({ hiddenCount = 0 }: MonitorFooterProps) {
           <div className="space-y-1 text-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground/65">Links</p>
             <div className="flex flex-wrap items-center gap-x-2 text-foreground/78">
-              <a className="transition-colors hover:text-foreground" href="https://cropto.abvx.xyz/" target="_blank" rel="noreferrer">
+              <a className="transition-colors hover:text-foreground" href={`${PUBLIC_APP_URL}/`} target="_blank" rel="noreferrer">
                 Back to Cropto site
               </a>
               <span className="text-foreground/55" aria-hidden="true">,</span>

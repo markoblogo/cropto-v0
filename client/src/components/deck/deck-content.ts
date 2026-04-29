@@ -25,7 +25,7 @@ export type DeckEcosystemLink = {
   tag: string;
 };
 
-export const CROPTO_MAIN_SITE_URL = "https://cropto.abvx.xyz/";
+export const CROPTO_MAIN_SITE_URL = `${(import.meta.env.VITE_PUBLIC_APP_URL || "https://cr0pto.com").replace(/\/+$/, "")}/`;
 
 // YouTube source reference for teaser playback on /deck.
 export const CROPTO_DECK_VIDEO_SOURCE_URL = "https://youtu.be/zumLJKZQFxc";
@@ -226,7 +226,7 @@ export const DECK_ECOSYSTEM_LINKS: DeckEcosystemLink[] = [
   },
   {
     label: "Cropto beta",
-    href: "https://cropto.abvx.xyz/",
+    href: CROPTO_MAIN_SITE_URL,
     description: "Current product environment",
     tag: "Beta",
   },

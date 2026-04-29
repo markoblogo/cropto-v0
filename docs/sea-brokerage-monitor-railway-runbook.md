@@ -70,7 +70,7 @@ psql "$DATABASE_URL" -c "\d+ sea_brokerage_broker_auth"
 3. Verify backend SHA:
 
 ```bash
-curl -sS https://cropto.abvx.xyz/api/version
+curl -sS https://cr0pto.com/api/version
 ```
 
 ## 5) Smoke test monitor API
@@ -78,7 +78,7 @@ curl -sS https://cropto.abvx.xyz/api/version
 ### List entries (public view path)
 
 ```bash
-curl -sS https://cropto.abvx.xyz/api/sea-brokerage-monitor/entries
+curl -sS https://cr0pto.com/api/sea-brokerage-monitor/entries
 ```
 
 Expected: JSON array.
@@ -87,7 +87,7 @@ Expected: JSON array.
 
 ```bash
 export TOKEN="<broker_jwt>"
-curl -sS -X POST https://cropto.abvx.xyz/api/sea-brokerage-monitor/entries \
+curl -sS -X POST https://cr0pto.com/api/sea-brokerage-monitor/entries \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -138,7 +138,7 @@ Create an allowlist entry (admin JWT required):
 
 ```bash
 export ADMIN_TOKEN="<admin_jwt>"
-curl -sS -X POST https://cropto.abvx.xyz/api/sea-brokerage-monitor/broker-auth/upsert \
+curl -sS -X POST https://cr0pto.com/api/sea-brokerage-monitor/broker-auth/upsert \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -155,7 +155,7 @@ Verify current user authorization:
 
 ```bash
 export TOKEN="<broker_jwt>"
-curl -sS https://cropto.abvx.xyz/api/sea-brokerage-monitor/broker-auth/me \
+curl -sS https://cr0pto.com/api/sea-brokerage-monitor/broker-auth/me \
   -H "Authorization: Bearer $TOKEN"
 ```
 

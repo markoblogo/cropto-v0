@@ -47,5 +47,5 @@ Run every 3 hours:
 ## API smoke check
 
 ```bash
-curl -sS "https://cropto.abvx.xyz/api/last30days/summary?days=30&region=all&lang=all" | head -c 1000
+curl -sS "https://cr0pto.com/api/last30days/summary?days=30&region=all&lang=all" | head -c 1000
 ```

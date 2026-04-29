@@ -146,7 +146,7 @@ export const USDA_GTR_BASE_URL =
   "https://www.ams.usda.gov/sites/default/files/media";
 export const USDA_GTR_USER_AGENT =
   process.env.USDA_GTR_USER_AGENT ||
-  "CroptoMonitor/1.0 (+https://cropto.abvx.xyz)";
+  "CroptoMonitor/1.0 (+https://cr0pto.com)";
 export const USDA_GTR_DATASET_URLS = (
   process.env.USDA_GTR_DATASET_URLS ||
   `${USDA_GTR_BASE_URL}/GTRTable1.xlsx,${USDA_GTR_BASE_URL}/GTRFigure9.xlsx`
@@ -418,7 +418,7 @@ export const TRADINGCHARTS_CBOT_URLS = (
   .filter(Boolean);
 export const TRADINGCHARTS_FETCH_TIMEOUT_MS = envNum("TRADINGCHARTS_FETCH_TIMEOUT_MS", GRAIN_WIDGETS_FETCH_TIMEOUT_MS);
 export const TRADINGCHARTS_USER_AGENT =
-  process.env.TRADINGCHARTS_USER_AGENT || "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)";
+  process.env.TRADINGCHARTS_USER_AGENT || "CroptoMonitor/1.1 (+https://cr0pto.com)";
 
 export const COMMODITIC_LIVESTOCK_API_URL = process.env.COMMODITIC_LIVESTOCK_API_URL || "";
 export const COMMODITIC_LIVESTOCK_SOURCE_URL =

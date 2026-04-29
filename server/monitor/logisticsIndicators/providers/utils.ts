@@ -12,7 +12,7 @@ export async function fetchTextWithTimeout(url: string, timeoutMs: number): Prom
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "user-agent": "CroptoMonitor/1.1 (+https://cropto.abvx.xyz)",
+        "user-agent": "CroptoMonitor/1.1 (+https://cr0pto.com)",
         accept: "text/csv,text/plain,application/json,*/*",
       },
     });
