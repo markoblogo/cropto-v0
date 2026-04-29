@@ -204,6 +204,31 @@ function extractDatePricePairs(
   return [...dedup.entries()].map(([asOf, price]) => ({ asOf, price })).sort((a, b) => b.asOf.localeCompare(a.asOf));
 }
 
+function extractCommodityFallbackPrice(
+  body: string,
+  opts?: { customPriceRegex?: string; commodityKeywords?: string[]; numberFormat?: "auto" | "thousands_dot_decimal_comma" }
+): number | null {
+  const priceRe = opts?.customPriceRegex ? new RegExp(opts.customPriceRegex, "g") : PRICE_RE;
+  const commodityKeywords = (opts?.commodityKeywords || []).map((k) => k.toLowerCase());
+  const numberFormat = opts?.numberFormat || "auto";
+  const lines = body.split(/\n|<tr|<li|<p|<div/gi);
+  const values: number[] = [];
+
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    if (commodityKeywords.length > 0 && !commodityKeywords.some((kw) => lowerLine.includes(kw))) {
+      continue;
+    }
+    const chosen = pickCommodityAwarePriceFromLine(line, commodityKeywords, priceRe, numberFormat);
+    if (Number.isFinite(chosen) && (chosen as number) > 0) {
+      values.push(chosen as number);
+    }
+  }
+
+  if (values.length === 0) return null;
+  return values[0] ?? null;
+}
+
 async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -330,7 +355,12 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
       });
     }
   } else if (asOf && dedupPrices.length > 0) {
-    const price = dedupPrices[0];
+    const price =
+      extractCommodityFallbackPrice(body, {
+        customPriceRegex: def.parserSpec?.priceRegex,
+        commodityKeywords: def.parserSpec?.commodityKeywords,
+        numberFormat: def.parserSpec?.numberFormat,
+      }) ?? dedupPrices[0];
     const htmlSha = createHash("sha256").update(body).digest("hex").slice(0, 16);
     points.push({
       market: def.market,
@@ -387,7 +417,7 @@ export async function fetchAndParseProvider(def: ProviderDefinition, layer: Sour
     notes: [
       `pricesDetected=${dedupPrices.length}`,
       `datesDetected=${new Set(dates).size}`,
-      ...(failureSnippet ? [`failureSnippet=${failureSnippet.slice(0, 2200)}`] : []),
+      ...(failureSnippet ? [`failureSnippet=${failureSnippet.slice(0, 360)}`] : []),
     ],
     latencyMs: Date.now() - started,
   };

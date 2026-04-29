@@ -5119,6 +5119,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         return row.lastSuccessAt ? "ok" : "failed";
       };
+      const shortenError = (value: string | null | undefined): string | null => {
+        if (!value) return null;
+        const cleaned = String(value).replace(/\s+/g, " ").trim();
+        if (!cleaned) return null;
+        return cleaned.length > 360 ? `${cleaned.slice(0, 360)}...` : cleaned;
+      };
       // Helper function to extract commodity name and grade from index name
       function extractCommodityAndGrade(indexName: string): { commodity: string; grade: string | null } {
         const lower = indexName.toLowerCase();
@@ -5330,7 +5336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             needsReview: row.needsReview === "true",
             sourceTier: row.sourceLayer === "primary" ? "primary" : "secondary",
             lastFetchStatus: computeLastFetchStatus(providerStatus),
-            lastFetchError: providerStatus?.lastError || null,
+            lastFetchError: shortenError(providerStatus?.lastError),
             alternatives: debugSources
               ? [
                   {
@@ -5393,6 +5399,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // For IGC data, use label as basis identifier
               const basis = label;
               const key = `${commodity}:${basis}`;
+              if (seenIngestionSeries.has(`${country}:${key}`)) {
+                continue;
+              }
 
               const priceValue = parseFloat(price.price);
               const change24h = price.dailyChangePct ? parseFloat(price.dailyChangePct.toString()) : 0;
@@ -5450,7 +5459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 conversionNotes: typeof metaObj.conversionNotes === "string" ? metaObj.conversionNotes : undefined,
                 priceStatus,
                 lastFetchStatus: computeLastFetchStatus(providerStatus),
-                lastFetchError: providerStatus?.lastError || null,
+                lastFetchError: shortenError(providerStatus?.lastError),
               };
               if (price.annualChangePct !== null && price.annualChangePct !== undefined) {
                 result.annualChange = parseFloat(price.annualChangePct.toString());
@@ -5474,8 +5483,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const commodity = meta.commodity || price.commodity.toLowerCase();
               const basis = meta.basis || "";
               const key = `${commodity}:${basis}`;
-
               const country = meta.country;
+              if (seenIngestionSeries.has(`${country}:${key}`)) {
+                continue;
+              }
+
               const priceValue = parseFloat(price.price);
               let change24h = 0;
               for (const prevPrice of allIndexPrices) {
@@ -5538,7 +5550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 conversionNotes: typeof meta.conversionNotes === "string" ? meta.conversionNotes : undefined,
                 priceStatus,
                 lastFetchStatus: computeLastFetchStatus(providerStatus),
-                lastFetchError: providerStatus?.lastError || null,
+                lastFetchError: shortenError(providerStatus?.lastError),
               });
             }
           }
@@ -5594,10 +5606,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? candidates.filter((c) => c.source !== "mock")
             : candidates;
           const sorted = [...candidatesWithoutMock].sort((a, b) => {
-            const aIdx = Math.max(0, order.indexOf(a.source));
-            const bIdx = Math.max(0, order.indexOf(b.source));
-            if (aIdx !== bIdx) return aIdx - bIdx;
-            return new Date(b.asOf).getTime() - new Date(a.asOf).getTime();
+            const asOfDelta = new Date(b.asOf).getTime() - new Date(a.asOf).getTime();
+            if (asOfDelta !== 0) return asOfDelta;
+            const fetchedDelta = new Date(b.fetchedAt || b.asOf).getTime() - new Date(a.fetchedAt || a.asOf).getTime();
+            if (fetchedDelta !== 0) return fetchedDelta;
+            const aIdx = order.includes(a.source) ? order.indexOf(a.source) : order.length + 1;
+            const bIdx = order.includes(b.source) ? order.indexOf(b.source) : order.length + 1;
+            return aIdx - bIdx;
           });
 
           const freshCandidates = sorted

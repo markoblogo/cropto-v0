@@ -9,7 +9,14 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "corn",
     basis: "Rosario",
     url: "https://teseo.clal.it/en/?section=argentina_mais",
-    parserSpec: { dateKeywords: ["Rosario", "Corn"], priceKeywords: ["USD", "ARS"], commodityKeywords: ["corn", "maize", "mais"], unitHint: "t" },
+    parserSpec: {
+      dateKeywords: ["Rosario", "Corn", "Mais"],
+      priceKeywords: ["USD", "ARS", "qq", "quintal"],
+      commodityKeywords: ["corn", "maize", "mais", "rosario"],
+      unitHint: "qq100kg",
+      currencyHint: "ARS",
+      numberFormat: "thousands_dot_decimal_comma",
+    },
   },
   AR_WHEAT: {
     vendor: "CLAL",
@@ -18,7 +25,14 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "wheat",
     basis: "Argentina wheat",
     url: "https://teseo.clal.it/en/?section=argentina_wheat",
-    parserSpec: { dateKeywords: ["Wheat"], priceKeywords: ["USD", "ARS"], commodityKeywords: ["wheat"], unitHint: "t" },
+    parserSpec: {
+      dateKeywords: ["Wheat", "Trigo"],
+      priceKeywords: ["USD", "ARS", "qq", "quintal"],
+      commodityKeywords: ["wheat", "trigo"],
+      unitHint: "qq100kg",
+      currencyHint: "ARS",
+      numberFormat: "thousands_dot_decimal_comma",
+    },
   },
   AR_SOY: {
     vendor: "CLAL",
@@ -27,7 +41,14 @@ const DEF_BY_KEY: Record<string, ProviderDefinition> = {
     commodityHint: "soybeans",
     basis: "Argentina",
     url: "https://teseo.clal.it/en/?section=argentina_soia",
-    parserSpec: { dateKeywords: ["Soy"], priceKeywords: ["USD", "ARS"], commodityKeywords: ["soy"], unitHint: "t" },
+    parserSpec: {
+      dateKeywords: ["Soy", "Soia"],
+      priceKeywords: ["USD", "ARS", "qq", "quintal"],
+      commodityKeywords: ["soy", "soia", "soya"],
+      unitHint: "qq100kg",
+      currencyHint: "ARS",
+      numberFormat: "thousands_dot_decimal_comma",
+    },
   },
   BR_CORN: {
     vendor: "CLAL",

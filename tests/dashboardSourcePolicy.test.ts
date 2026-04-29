@@ -155,6 +155,31 @@ describe('dashboard source policy', () => {
     expect(corn?.price).toBe(cornRow.price);
   });
 
+  it('drops row when raw commodity mismatches selected commodity', () => {
+    const leakingRow = row({
+      commodity: 'corn',
+      rawCommodity: 'soybeans',
+      provider: 'CLAL',
+      source: 'CLAL',
+      sourceTier: 'primary',
+      priceStatus: 'fresh',
+      dataStatus: 'fresh',
+    });
+    const trueCorn = row({
+      commodity: 'corn',
+      rawCommodity: 'corn',
+      provider: 'BCR',
+      source: 'BCR',
+      sourceTier: 'secondary',
+      priceStatus: 'stale',
+      dataStatus: 'stale',
+    });
+
+    const selected = selectTruthSeriesPerCommodity([leakingRow, trueCorn], { providerPriority: ['CLAL', 'BCR'] });
+    expect(selected).toHaveLength(1);
+    expect(selected[0].provider).toBe('BCR');
+  });
+
   it('ignores rows marked needsReview or invalidReason', () => {
     const bad = row({
       commodity: 'soybeans',

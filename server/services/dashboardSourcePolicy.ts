@@ -26,12 +26,26 @@ function providerPriorityRank(row: MarketIndexDto, providerPriority: string[]): 
   return idx >= 0 ? providerPriority.length - idx : 0;
 }
 
+function asTimestamp(value?: string | null): number {
+  if (!value) return 0;
+  const ts = new Date(value).getTime();
+  return Number.isFinite(ts) ? ts : 0;
+}
+
+function isCommodityConsistent(row: MarketIndexDto): boolean {
+  const selected = normalizeCanonicalCommodity(String(row.commodity || "")).commodity;
+  const rawValue = String(row.rawCommodity || row.commodity || "").trim();
+  if (!rawValue) return true;
+  const raw = normalizeCanonicalCommodity(rawValue).commodity;
+  return selected === raw;
+}
+
 export function selectTruthSeriesPerCommodity(
   rows: MarketIndexDto[],
   options?: { providerPriority?: string[]; debug?: boolean }
 ): MarketIndexDto[] {
   const providerPriority = (options?.providerPriority || []).map((p) => p.toUpperCase());
-  const validRows = rows.filter((row) => !row.needsReview && !row.invalidReason);
+  const validRows = rows.filter((row) => !row.needsReview && !row.invalidReason && isCommodityConsistent(row));
   const grouped = new Map<string, MarketIndexDto[]>();
 
   for (const row of validRows) {
@@ -54,13 +68,17 @@ export function selectTruthSeriesPerCommodity(
       const statusDelta = statusRank(b) - statusRank(a);
       if (statusDelta !== 0) return statusDelta;
 
+      // Pick the freshest valid real row first; provider priority is tie-break only.
+      const freshnessDelta = asTimestamp(b.asOf) - asTimestamp(a.asOf);
+      if (freshnessDelta !== 0) return freshnessDelta;
+
       const tierDelta = sourceTierRank(b) - sourceTierRank(a);
       if (tierDelta !== 0) return tierDelta;
 
       const providerDelta = providerPriorityRank(b, providerPriority) - providerPriorityRank(a, providerPriority);
       if (providerDelta !== 0) return providerDelta;
 
-      return new Date(b.asOf).getTime() - new Date(a.asOf).getTime();
+      return asTimestamp(b.fetchedAt || null) - asTimestamp(a.fetchedAt || null);
     });
 
     const picked = sorted[0];
