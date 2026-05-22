@@ -10,6 +10,7 @@ import { fetchLatamFuturesProxyPrices } from "../services/latamFuturesProxyServi
 import { upsertIgcIndexPrices } from "../services/igcUpsert";
 import { emailService } from "../utils/emailMock";
 import { storage } from "../storage";
+import { isDirectEntrypoint } from "../utils/moduleEntrypoint";
 
 const POLL_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 let pollerInterval: NodeJS.Timeout | null = null;
@@ -304,7 +305,7 @@ export function stopPoller(): void {
 }
 
 // CLI support: run once if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isDirectEntrypoint(import.meta.url, process.argv[1], ["igcPoller"])) {
   pollOnce()
     .then((count) => {
       console.log(`[IGC Poller] Completed: ${count} prices upserted`);

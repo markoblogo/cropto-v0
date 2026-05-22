@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { commodityIndexPrices, indexes } from '../../shared/schema.js';
 import { eq, and, sql } from 'drizzle-orm';
 import { parseAllSpikeMessage } from '../services/telegramParser.js';
+import { isDirectEntrypoint } from '../utils/moduleEntrypoint.js';
 
 const CHANNEL_URL = 'https://t.me/s/spike_brokers';
 const SOURCE_SCRAPER = 'telegram/scraper';
@@ -213,7 +214,7 @@ export async function runScraper(once = false) {
 }
 
 // CLI support
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isDirectEntrypoint(import.meta.url, process.argv[1], ["telegramScraper"])) {
   const onceFlag = process.argv.includes('--once');
   runScraper(onceFlag).catch(console.error);
 }

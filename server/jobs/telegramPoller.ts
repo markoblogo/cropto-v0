@@ -2,6 +2,7 @@ import { db } from "../db.js";
 import { indexPrices } from "../../shared/schema.js";
 import { parseIndexMessage } from "../services/telegramParser.js";
 import { eq } from "drizzle-orm";
+import { isDirectEntrypoint } from "../utils/moduleEntrypoint.js";
 
 interface TelegramUpdate {
   update_id: number;
@@ -173,7 +174,7 @@ export async function startPoller(): Promise<void> {
   await pollOnce();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isDirectEntrypoint(import.meta.url, process.argv[1], ["telegramPoller"])) {
   const args = process.argv.slice(2);
   const isOnce = args.includes('--once');
   const isTest = args.includes('--test');

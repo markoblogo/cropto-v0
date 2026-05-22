@@ -10,6 +10,8 @@
     "sleepApplication": false,
     "useLegacyStacker": false,
     "ipv6EgressEnabled": false,
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 120,
     "multiRegionConfig": {
       "europe-west4-drams3a": {
         "numReplicas": 1

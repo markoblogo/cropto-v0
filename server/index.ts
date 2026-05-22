@@ -17,6 +17,7 @@ import { getRuntimeInfo } from "./runtimeInfo";
 import { registerMonitorRoutes } from "./monitor/routes";
 import path from "path";
 import { getCanonicalHost, getLegacyHosts, getPublicAppUrl } from "./config/domain";
+import { startEventLoopWatchdog } from "./utils/eventLoopWatchdog";
 
 const app = express();
 
@@ -91,6 +92,11 @@ app.use((req, res, next) => {
 (async () => {
   // Initialize Sentry error monitoring
   initSentry();
+
+  if (process.env.NODE_ENV === "production" && process.env.EVENT_LOOP_WATCHDOG_DISABLED !== "1") {
+    startEventLoopWatchdog();
+    log("event loop watchdog enabled");
+  }
 
   // Initialize authentication (validates JWT_SECRET is present)
   try {
