@@ -11,6 +11,7 @@ import { OptionsMarketStrip } from "@/components/home/OptionsMarketStrip";
 import { SpotMarketGrid } from "@/components/SpotMarketGrid";
 import { MarketDashboard } from "@/components/home/MarketDashboard";
 import { HowCroptoWorks } from "@/components/home/HowCroptoWorks";
+import { CroptoInfrastructureSection } from "@/components/home/CroptoInfrastructureSection";
 import { SpotPositionsTable } from "@/components/SpotPositionsTable";
 import { WalletSummary } from "@/components/WalletSummary";
 import { useWalletSummary } from "@/hooks/useWalletSummary";
@@ -351,6 +352,8 @@ export default function Dashboard() {
 
       {/* How Cropto Works Section */}
       <HowCroptoWorks />
+
+      <CroptoInfrastructureSection />
 
       <main className="py-12 flex-1 w-full">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">

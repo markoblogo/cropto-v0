@@ -58,17 +58,17 @@ export const DECK_NAV_ITEMS: DeckNavItem[] = [
 ];
 
 export const DECK_PAGE_COPY = {
-  heroTitle: "Cropto brings local market risk tools into modern digital infrastructure.",
+  heroTitle: "Cropto is the indexed trading and settlement layer of the AMI ecosystem.",
   heroSubtitle:
-    "A tokenized spot-index framework for commodity hedging, speculation, and arbitrage - built to reflect physical market realities, not just global benchmark exchanges.",
+    "Agricultural commodity spot and options workflows based on local benchmark indices from 1D3X and SPIKE, with document verification and settlement traceability built in.",
   heroMicrocopy:
-    "Built for commodity traders, producers, and market participants seeking more relevant hedging instruments.",
+    "Built for commodity traders, producers, brokers, infrastructure partners, and investors evaluating locally relevant risk workflows.",
   viewDeckCta: "View partner deck",
-  exploreProductCta: "Explore Cropto product",
+  exploreProductCta: "View technical demo",
   backToCroptoCta: "Back to Cropto",
   videoTitle: "Teaser Video",
   videoIntro:
-    "A short visual overview of Cropto's market thesis and product direction for partners and investors.",
+    "A short visual overview of Cropto's market-infrastructure thesis and product direction for partners and investors.",
   problemTitle: "The Hedging Gap in Physical Commodity Markets",
   problemBody:
     "Global commodity markets operate in persistent turbulence driven by geopolitical shocks, macro uncertainty, and excess financial liquidity. A growing share of volatility is shaped by technical and emotional flows rather than changes in local physical supply-demand fundamentals.",
@@ -77,11 +77,11 @@ export const DECK_PAGE_COPY = {
   notEnoughTitle: "Benchmark Liquidity Is Not the Same as Relevant Protection",
   notEnoughBody:
     "Benchmark contracts can be liquid, but liquidity alone does not guarantee hedge efficiency. When local price behavior diverges from benchmark exchange pricing, protection weakens. Cropto starts from a different premise: risk tools should align with the market structure they protect.",
-  productTitle: "Cropto: Tokenized Local Spot-Index Risk Infrastructure",
+  productTitle: "Cropto: Indexed Trading, Verification and Settlement Infrastructure",
   productBody:
-    "Cropto is building an accessible alternative for commodity risk management based on tokenized local spot indices. The goal is stronger correlation with physical market realities and more flexible settlement rails enabled by modern blockchain infrastructure.",
+    "Cropto is designed for commodity risk management based on local benchmark indices from 1D3X and SPIKE. The goal is stronger correlation with physical market realities and flexible settlement rails that can be public-chain, permissioned-ledger, private-ledger or non-crypto depending on regulatory and partner requirements.",
   productBody2:
-    "Cropto is designed as a bridge between the physical commodity world and programmable digital market infrastructure.",
+    "Cropto uses tokenization as infrastructure for document verification, contract-state records, settlement traceability and optional programmable clearing, not as a speculative NFT or public-token product.",
   marketModelTitle: "How Cropto Changes the Market Structure",
   marketModelIntro:
     "Cropto is not only a trading interface. It can become infrastructure that improves how risk is distributed across real-sector and financial participants.",
@@ -94,7 +94,7 @@ export const DECK_PAGE_COPY = {
   whyNowTitle: "Why Now",
   statusTitle: "Product Status",
   statusBody:
-    "Cropto is in active development, with core product foundations already built. The current environment is available for review, testing, and partner conversations while platform capabilities continue to expand.",
+    "Cropto standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE. The platform remains a functional prototype with implemented document-tokenization and tokenized-settlement experiments, ready for partner-backed revival or pilot work.",
   deckTitle: "Project Deck",
   deckIntro:
     "Partner / investor overview presentation (strategy, market model, product direction, and expansion logic).",
@@ -102,10 +102,10 @@ export const DECK_PAGE_COPY = {
   contactTitle: "Partner & Investor Conversations",
   contactBody:
     "We are open to discussions with strategic partners, market participants, and investors interested in the next generation of commodity market infrastructure.",
-  footerNote: "Investor / partner materials. Product is in active development.",
+  footerNote: "Investor / partner materials. Functional prototype; standalone development currently paused while the AMI ecosystem expands.",
   ctaBandTitle: "Build with the next layer of commodity market infrastructure.",
   ctaBandBody:
-    "We are looking for strategic partners, market participants, and investors who want to help shape locally relevant risk infrastructure for global commodity markets.",
+    "We are looking for strategic partners, market participants, and investors who want to shape locally relevant index, verification and settlement infrastructure for global commodity markets.",
 };
 
 export const PROBLEM_BULLETS = [
@@ -117,8 +117,8 @@ export const PROBLEM_BULLETS = [
 
 export const PRODUCT_FEATURES: DeckCardItem[] = [
   {
-    title: "Tokenized local spot indices",
-    description: "Index design aligned with local market pricing behavior.",
+    title: "Local benchmark indices",
+    description: "Index-linked instrument design aligned with 1D3X/SPIKE local market pricing behavior.",
   },
   {
     title: "Futures-like and options-like framework",
@@ -129,8 +129,8 @@ export const PRODUCT_FEATURES: DeckCardItem[] = [
     description: "Country-by-country expansion model with reusable index logic.",
   },
   {
-    title: "Transparent digital-first rails",
-    description: "Programmable execution and settlement workflows with auditability in mind.",
+    title: "Chain-optional settlement rails",
+    description: "Programmable execution, document verification and settlement workflows with auditability in mind.",
   },
 ];
 
@@ -165,8 +165,8 @@ export const USE_CASES: DeckCardItem[] = [
     description: "For producers and commercial participants seeking protection closer to local market conditions.",
   },
   {
-    title: "Speculation",
-    description: "For participants expressing views on local markets, spreads, and volatility.",
+    title: "Indexed risk exposure",
+    description: "For participants expressing managed views on local markets, spreads, and volatility.",
   },
   {
     title: "Arbitrage / Relative Value",
@@ -177,7 +177,7 @@ export const USE_CASES: DeckCardItem[] = [
 export const WHY_NOW_POINTS = [
   "Persistent geopolitical and macro volatility",
   "Need for more locally relevant risk tools",
-  "Maturing blockchain infrastructure and settlement rails",
+  "Maturing document-verification and settlement rails",
   "Increasing demand for transparent, programmable market infrastructure",
   "Opportunity to build category leadership early in tokenized commodity risk markets",
 ];
@@ -186,7 +186,7 @@ export const DECK_FAQ_ITEMS: DeckFaqItem[] = [
   {
     question: "What is Cropto in one sentence?",
     answer:
-      "Cropto is a tokenized local spot-index infrastructure for commodity hedging, speculation, and arbitrage.",
+      "Cropto is the indexed trading, document-verification and settlement layer for agricultural commodity markets.",
   },
   {
     question: "Who is Cropto for first?",

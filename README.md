@@ -3,85 +3,137 @@
 [![Node.js](https://img.shields.io/badge/node-22.x-brightgreen)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Cropto is an early-stage platform for commodity trading, market monitoring, and brokerage workflows.
+Cropto is indexed trading and settlement infrastructure for agricultural commodities.
 
-This repository contains the active MVP codebase: the main web app, backend APIs/jobs, ingestion pipelines, and the operational Sea Brokerage Monitor used for BID/OFFER/TRADE workflows.
+Cropto is the trade, document and settlement layer of the AMI ecosystem. It is designed for spot and options workflows on agricultural commodities and local commodity indices, using 1D3X/SPIKE benchmark data as reference infrastructure.
 
-## Project Status
+Cropto is not a generic crypto exchange. Blockchain is used as a trust and verification layer: document tokenization, contract-state records, settlement traceability and optional programmable clearing. The platform has implemented document-to-token workflows and tokenized settlement mechanics on Polygon testnet infrastructure.
 
-- Product state: active prototype/staging with real partner usage in selected modules
-- Main staging domain: [cr0pto.com](https://cr0pto.com)
-- Maturity: mixed (some modules are production-like operationally, others remain experimental)
+Standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE. The codebase remains functional and can be revived for partner-backed indexed trading and settlement pilots.
+
+## Links
+
+- Live site: [https://cr0pto.com](https://cr0pto.com)
+- Investor deck: [https://cr0pto.com/deck](https://cr0pto.com/deck)
+- Repository status: [PRODUCT_STATUS.md](./PRODUCT_STATUS.md)
+- Revival roadmap: [REVIVAL_ROADMAP.md](./REVIVAL_ROADMAP.md)
+- AMI integration: [AMI_INTEGRATION.md](./AMI_INTEGRATION.md)
+- Demo guide: [DEMO.md](./DEMO.md)
+
+## What Cropto Is
+
+Cropto is a functional prototype and architecture base for indexed commodity-market infrastructure.
+
+It combines four layers:
+
+1. **Indexed trading layer** - spot, forward and options-style workflows linked to local commodity indices.
+2. **Document and contract verification layer** - document-bound records, contract metadata, ownership/state transitions and audit history.
+3. **Settlement and accounting layer** - CROPT as an internal demo accounting/settlement unit, margin logic, P&L calculation, settlement records and reconciliation views.
+4. **Optional blockchain trust layer** - ERC-20/ERC-721 testnet contracts, on-chain transaction tracking and tokenized document/option records where blockchain adds auditability.
+
+## What Cropto Is Not
+
+Cropto is not a generic crypto exchange, NFT marketplace or DeFi product.
+
+Tokenization is used as a representation and trust mechanism. Document-bound tokenized records represent documents, contract states or settlement events; they are not designed as standalone speculative assets.
+
+Cropto is also not currently operating as a live financial trading venue. The repository contains prototype, demo, staging and operational workflow modules that require partner, legal, regulatory and infrastructure decisions before any regulated production use.
+
+## Implemented Prototypes and Modules
+
+The repository supports the following claims:
+
+- **Document-to-token / NFT-like document records**: `CroptOptionNFT` ERC-721 contract, option metadata generation, mint route and UI flow for document-bound option records.
+- **Polygon testnet settlement experiments**: CROPT ERC-20 contract, on-chain mint/balance routes, transaction tracking and deployment notes for Polygon Amoy.
+- **Tokenized asset settlement tests**: option exercise, settlement, margin call, force-settlement and on-chain transaction tables/routes.
+- **Internal USD-linked settlement-unit concept**: CROPT is used in the prototype as a demo accounting, margin and settlement unit.
+- **Spot/options/indexed trading architecture**: market index tables, spot positions, options, forward orders/contracts, forward settlements, spreads and index-based P&L logic.
+- **Sea Brokerage Monitor**: BID/OFFER/TRADE workflows, matching views, market memory, broker attribution and operational tape/archive/analytics surfaces.
+- **Operational integrations**: Telegram broker auth/relay/reporting paths, scheduled report jobs, Google Sheets dictionary/record sync scripts and ingestion tooling.
+
+## How Cropto Fits Into AMI
+
+Cropto is intended to sit inside a broader agro-commodity market infrastructure stack:
+
+- **MN7R / Monitor** captures brokerage workflows, BID/OFFER/TRADE activity, contracts and market memory.
+- **1D3X / SPIKE / UGA Index** provide local commodity and logistics benchmark indices.
+- **Cropto** consumes these indices as reference infrastructure for indexed spot/options workflows, document verification and settlement logic.
+- **Future regulated partners** may provide clearing, custody, payment rails and compliant risk instruments.
+
+In this model, Cropto is the indexed trading and settlement layer. It does not replace physical trade execution; it creates a verifiable digital layer around indexed exposure, contract state and settlement traceability.
+
+## Current Status
+
+- **Paused standalone development**: Cropto is not the main active standalone product while AMI expands through MN7R, 1D3X and SPIKE.
+- **Functional prototype**: the codebase builds and contains working application, API, database, on-chain, monitor and integration modules.
+- **Partner-pilot ready with work**: a pilot would require scope selection, data-source integration, legal/regulatory review, partner rails and product hardening.
+- **Architecture under review**: final ledger/clearing design remains chain-optional and should be selected by partner, jurisdiction and compliance needs.
+- **Not currently live trading**: the public site and app should be treated as demo/prototype infrastructure, not a regulated venue.
+
+See [PRODUCT_STATUS.md](./PRODUCT_STATUS.md) for a more detailed status map.
 
 ## Key Product Areas
 
-- Trading/monitoring surfaces in the main Cropto app
-- Market dashboard and market-data ingestion layers
-- Sea Brokerage Monitor at `/spike-monitor`
-- Broker auth/session and Telegram relay flows for monitor operations
-- Operational/reporting modules (daily reports, export, analytics, sheets sync)
-
-## Current Feature Highlights
-
-- Route-level product shell and dashboard surfaces for market and workflow monitoring
-- Sea Brokerage Monitor dual-pane workspace (`OFFERS` / `BIDS`) with `MATCHES` and `TRADES`
-- Compact tape rows + structured detail modal/drawer flows
-- Create/edit/repost flows for BID/OFFER/TRADE records
-- Broker gating with Telegram-based monitor auth flow
-- Server-side persistence for monitor entries and related dictionaries
-- Telegram publishing for entries, matches, and reports
-- Basis-aware routing for SEA/LAND telegram channels
-- Daily market-report scheduler and custom report profiles
-- Google Sheets sync path for monitor records/dictionaries
+- Main Cropto web app for market, portfolio, options, spot and forward workflows.
+- Market dashboard and market-data ingestion layers.
+- Sea Brokerage Monitor at `/spike-monitor`.
+- Broker auth/session and Telegram relay flows for monitor operations.
+- Operational/reporting modules: daily reports, export, analytics and Sheets sync.
+- Partner/investor deck at `/deck`.
 
 ## Sea Brokerage Monitor
 
-Sea Brokerage Monitor is the most actively evolving operational module in this repository.
+Sea Brokerage Monitor is the most operationally mature module in this repository.
 
 ### Purpose
 
-- Fast broker workflow for creating and scanning BID/OFFER/TRADE ideas
-- Rolling matching visibility
-- Structured operational relay into Telegram channels
+- Fast broker workflow for creating and scanning BID/OFFER/TRADE ideas.
+- Rolling matching visibility.
+- Structured operational relay into Telegram channels.
+- Market memory for later index, risk and settlement infrastructure.
 
-### Current UX shape
+### Current UX Shape
 
-- Top global filter row (commodity, origin, basis, delivery place, business unit, currency, transport type, broker, search)
-- Dual-pane `OFFERS` and `BIDS`
-- `MATCHES` and `TRADES` operational blocks
-- Secondary Views (`Tape`, `Archive`, `Analytics`) with exports/reporting
+- Top global filter row: commodity, origin, basis, delivery place, business unit, currency, transport type, broker and search.
+- Dual-pane `OFFERS` and `BIDS`.
+- `MATCHES` and `TRADES` operational blocks.
+- Secondary views: `Tape`, `Archive`, `Analytics`, with exports/reporting.
 
-### Current backend/ops shape
+### Current Backend/Ops Shape
 
-- API-backed persistence for monitor entries
-- Monitor-specific Telegram auth/session path
-- Telegram relay publisher + scheduled daily reports
-- Sheets sync scheduler for monitor data sync
-- Dictionary import tooling from Google Sheets
+- API-backed persistence for monitor entries.
+- Monitor-specific Telegram auth/session path.
+- Telegram relay publisher and scheduled daily reports.
+- Sheets sync scheduler for monitor data sync.
+- Dictionary import tooling from Google Sheets.
 
 ## Repository Structure
 
 ```text
 .
-├── client/        # React frontend (routes, shared UI, feature modules)
-├── server/        # Express API, monitor services, schedulers, ingestion jobs
+├── client/        # React frontend routes, shared UI and feature modules
+├── server/        # Express API, monitor services, schedulers and ingestion jobs
 ├── shared/        # Shared schema/types between client and server
+├── contracts/     # ERC-20 / ERC-721 prototype contracts
 ├── db/            # DB connection/helpers
 ├── migrations/    # SQL migration files
-├── scripts/       # Operational scripts (smoke, import, backfill, diagnostics)
+├── scripts/       # Operational scripts, imports, smoke tests and diagnostics
 ├── docs/          # Internal product/deploy/runbook documentation
-├── public/        # Public static assets
+├── public/        # Public static assets and public docs
 ├── tests/         # Test and verification assets
 ├── railway.json   # Railway deployment config
 └── package.json
 ```
 
-### Notable monitor paths
+### Notable Paths
 
-- `client/src/features/sea-brokerage-monitor/`
-- `server/monitor/`
-- `server/services/seaBrokerage*.ts`
-- `scripts/sea_brokerage_*.ts`
+- `client/src/components/home/` - public homepage sections.
+- `client/src/components/deck/` - partner/investor deck page.
+- `client/src/features/sea-brokerage-monitor/` - Monitor UI and client-side services.
+- `server/monitor/` and `server/services/seaBrokerage*.ts` - Monitor backend services.
+- `server/onchainRoutes.ts`, `server/services/onchain.ts`, `contracts/` - on-chain prototype routes and contracts.
+- `shared/schema.ts` - core database schema for indices, options, settlements, forwards and monitor entries.
+- `scripts/sea_brokerage_*.ts` - monitor operations scripts.
 
 ## Tech Stack
 
@@ -105,12 +157,14 @@ Sea Brokerage Monitor is the most actively evolving operational module in this r
 - Zod
 - Session/JWT auth primitives
 
-### Integrations and ops
+### Integrations and Ops
 
-- Telegram bot integration (auth/relay/reporting paths)
-- Supabase integration hooks
-- Railway deployment
-- Playwright smoke tooling
+- Polygon Amoy testnet routes/contracts for prototype token and document-record flows.
+- Telegram bot integration for auth, relay and reporting paths.
+- Supabase integration hooks.
+- Google Sheets import/sync tooling.
+- Railway deployment.
+- Playwright smoke tooling.
 
 ## Local Development
 
@@ -127,7 +181,7 @@ npm install
 cp .env.example .env
 ```
 
-### Required minimum env
+### Required Minimum Env
 
 - `DATABASE_URL`
 - `SESSION_SECRET`
@@ -140,7 +194,15 @@ For monitor auth/relay work, also configure:
 - `VITE_SEA_BROKERAGE_TELEGRAM_BOT_USERNAME`
 - monitor relay/chat vars from `.env.example`
 
-### DB and run
+For on-chain prototype work, configure:
+
+- `POLYGON_AMOY_RPC_URL`
+- `DEPLOYER_PRIVATE_KEY`
+- `CROPT_CONTRACT_ADDRESS`
+- `CROPT_NFT_CONTRACT_ADDRESS`
+- `ENABLE_MINT`
+
+### DB and Run
 
 ```bash
 npm run db:push
@@ -153,11 +215,11 @@ Run jobs/schedulers in parallel when needed:
 npm run dev:jobs
 ```
 
-### Build and checks
+### Build and Checks
 
 ```bash
-npm run build
 npm run check
+npm run build
 ```
 
 Useful operational scripts:
@@ -168,39 +230,28 @@ npm run sea-brokerage:dictionaries:import
 npm run e2e:smoke
 ```
 
-## Environment and Configuration
-
-`.env.example` documents active configuration areas:
-
-- Core app/session/db
-- Supabase integration
-- On-chain settings
-- Ingestion/poller settings
-- Telegram monitor auth/relay/reporting settings
-- Last30days ingestion toggles
-
-Not all env keys are required for every route/module. Configure by feature scope.
-
 ## Deployment / Hosting
 
-- Primary deployment target: Railway (`railway.json`)
+- Primary deployment target: Railway (`railway.json`).
 - Main docs:
-  - [`docs/deploy-runbook.md`](docs/deploy-runbook.md)
-  - [`docs/sea-brokerage-monitor-railway-runbook.md`](docs/sea-brokerage-monitor-railway-runbook.md)
-  - [`docs/sea-brokerage-telegram-partner-handoff.md`](docs/sea-brokerage-telegram-partner-handoff.md)
+  - [docs/deploy-runbook.md](docs/deploy-runbook.md)
+  - [docs/sea-brokerage-monitor-railway-runbook.md](docs/sea-brokerage-monitor-railway-runbook.md)
+  - [docs/sea-brokerage-telegram-partner-handoff.md](docs/sea-brokerage-telegram-partner-handoff.md)
 
-## Current Limitations / Work in Progress
+## Current Limitations
 
-- Product maturity remains uneven across modules
-- Some features are stable operationally but still evolving in UX/format standards
-- Telegram and dictionary/reporting logic is active but still frequently iterated with broker feedback
-- Deployment/runtime tuning (especially scheduler/process stability) is ongoing
+- Product maturity is uneven across modules.
+- Some legacy docs and locale files still use older NFT/crypto-first wording and should be aligned with the new positioning.
+- Full local development requires a configured database and feature-specific env values.
+- Telegram, Sheets and on-chain flows are feature-scoped integrations; configure only the modules being tested.
+- Legal/regulatory architecture is intentionally not finalized in this repository.
 
 ## Contribution / Working Notes
 
-- This is an internal product repository, not a polished OSS package
-- Before changing behavior, verify route/script/runbook coupling
-- Treat monitor formatting/dictionaries/telegram templates as product-critical operational logic
-- Prefer incremental, testable changes over broad refactors
+- This is an internal product repository, not a polished OSS package.
+- Before changing behavior, verify route/script/runbook coupling.
+- Treat monitor formatting, dictionaries and Telegram templates as product-critical operational logic.
+- Keep public positioning aligned with AMI: indexed commodity workflows, document verification, settlement traceability and chain-optional infrastructure.
+- Prefer incremental, testable changes over broad refactors.
 
-For internal docs index, see [`docs/README.md`](docs/README.md).
+For internal docs index, see [docs/README.md](docs/README.md).

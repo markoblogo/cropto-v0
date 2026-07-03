@@ -29,7 +29,7 @@ export function InvestorDeckCallout() {
           </div>
           <p className="text-lg font-semibold leading-tight text-foreground">Cropto Deck</p>
           <p className="line-clamp-2 text-sm leading-5 text-foreground/85">
-            Market thesis, product roadmap, and investor overview.
+            Indexed trading, settlement infrastructure, and AMI ecosystem position.
           </p>
           <div className="hidden items-center gap-2 text-[11px] text-foreground/70 sm:flex xl:hidden">
             <span>English only</span>
@@ -37,7 +37,7 @@ export function InvestorDeckCallout() {
             <span>Slides + PDF</span>
           </div>
           <p className="inline-flex items-center rounded-md border border-primary/45 bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:shadow-primary/30">
-            Open deck
+            Read investor brief
             <span className="ml-1 transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transform-none">→</span>
           </p>
         </div>

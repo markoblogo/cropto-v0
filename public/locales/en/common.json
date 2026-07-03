@@ -69,7 +69,7 @@
     "settle": "Force Settle",
     "topup": "Top Up",
     "withdraw": "Withdraw",
-    "mint": "Mint NFT",
+    "mint": "Create Verification Record",
     "confirm": "Confirm",
     "close": "Close"
   },
@@ -132,19 +132,19 @@
     "mintingDisabled": "Minting Disabled",
     "mintingDisabledDesc": "CROPT minting is currently disabled. Contact admin.",
     "mintFailed": "Mint Failed",
-    "nftMinted": "NFT Minted Successfully!",
+    "nftMinted": "Verification Record Created",
     "noMarginCall": "No pending margin call found for this option"
   },
   "hero": {
-    "headline": "Cropto — pricing, hedging and trading grain",
-    "tagline": "pricing, hedging and trading grain",
-    "subheadline": "Trade agricultural commodity options with blockchain-backed transparency",
+    "headline": "Cropto — indexed trading and settlement infrastructure",
+    "tagline": "indexed trading and settlement infrastructure",
+    "subheadline": "Agricultural commodity workflows with document verification and settlement traceability",
     "cta": {
       "createOption": "Create Option",
       "connectWallet": "Connect Wallet",
-      "startIndexTrading": "Start Index Trading",
-      "startOptionsTrading": "Start Options Trading",
-      "viewMarkets": "View Markets",
+      "startIndexTrading": "View Technical Demo",
+      "startOptionsTrading": "Explore Indexed Markets",
+      "viewMarkets": "Explore AMI Ecosystem",
       "walletConnected": "Wallet: Connected"
     },
     "label": {
@@ -153,12 +153,14 @@
   },
   "home": {
     "hero": {
-      "title": "Trade Tokenized Grain Indices & Options. The global tokenized commodity market.",
-      "subtitle": "Tokenized grain indices and options across Ukraine, Argentina and Brazil. Forward curves up to 12 months. Settlement by index — no physical delivery.",
+      "title": "Cropto",
+      "subtitle": "Indexed trading and settlement infrastructure for agricultural commodities.",
+      "body": "Cropto connects local commodity indices, physical-market contracts and programmable settlement workflows. It is designed for spot and options trading on agricultural commodities and index-linked instruments, using 1D3X/SPIKE benchmark data as reference infrastructure.",
+      "blockchainClarification": "Its blockchain layer is not crypto speculation. It is used for document verification, contract-state records, settlement traceability and optional tokenized clearing.",
       "cta": {
-        "startIndexTrading": "Start Index Trading",
-        "startOptionsTrading": "Start Options Trading",
-        "viewMarkets": "View Markets",
+        "startIndexTrading": "View Technical Demo",
+        "startOptionsTrading": "Explore Indexed Markets",
+        "viewMarkets": "Explore AMI Ecosystem",
         "connectWallet": "Connect Wallet",
         "walletConnected": "Wallet: Connected"
       }
@@ -208,34 +210,34 @@
     },
     "how": {
       "title": "How Cropto Works",
-      "subtitle": "Trade tokenized grain indices and options in 6 simple steps",
+      "subtitle": "How the prototype connects benchmark indices, contract workflows and settlement traceability",
       "cta": {
-        "startTrading": "Start Trading"
+        "startTrading": "View Technical Demo"
       },
       "steps": {
         "1": {
-          "title": "Connect Wallet",
-          "description": "Connect MetaMask, WalletConnect, or Coinbase Wallet to open a Web3 session. Without a wallet, only viewing is possible."
+          "title": "Open a verified session",
+          "description": "Use wallet or account authentication to create an auditable demo session. Without authentication, markets remain view-only."
         },
         "2": {
-          "title": "Choose Market & Product",
-          "description": "Select a country (UA/BR/AR) → Choose: Index Trading or Options Trading."
+          "title": "Choose market and benchmark",
+          "description": "Select a local commodity market and reference index from the available 1D3X/SPIKE-aligned data set."
         },
         "3": {
-          "title": "Select Delivery Window (H1/H2)",
-          "description": "Each month is divided into H1 (1–15) and H2 (16–30/31). Forward available up to 12 months."
+          "title": "Define contract window",
+          "description": "Set delivery or settlement windows such as H1/H2 and map the workflow to spot, forward or option-like exposure."
         },
         "4": {
-          "title": "Place Order",
-          "description": "Limit order → order enters the on-chain orderbook."
+          "title": "Record order state",
+          "description": "Orders and contract states move through the prototype workflow with traceable status changes and audit records."
         },
         "5": {
-          "title": "Fund & Activate",
-          "description": "Add collateral in CROPT/USDC. After that, the order activates → counterparty search begins."
+          "title": "Activate settlement logic",
+          "description": "Use the internal USD-linked accounting unit and optional tokenized rails to model margin, clearing and settlement."
         },
         "6": {
-          "title": "Manage or Wait for Settlement",
-          "description": "Monitor margin, PnL, Greeks, health bar. Settlement = average index price of the delivery period."
+          "title": "Verify settlement trace",
+          "description": "Monitor margin, P&L, contract records and final settlement against the relevant local benchmark index."
         }
       }
     }
@@ -504,7 +506,7 @@
       "calculatorTitle": "Options Calculator",
       "calculatorDescription": "Calculate premium, notional, and intrinsic value for educational purposes",
       "readScenario": "Read Scenario",
-      "heroDescription": "Cropto is a platform for trading tokenized grain indices and options, designed for farmers (hedging), traders (speculation), and brokers. It combines on-chain settlement with off-chain index price feeds.",
+      "heroDescription": "Cropto is a platform concept and functional prototype for indexed agricultural commodity workflows, designed for producers, traders, brokers and infrastructure partners. It combines local benchmark indices, document verification and settlement traceability.",
       "about": {
         "title": "About Cropto",
         "body": "Cropto is a prototype platform for trading and risk management of commodity-linked instruments. It combines on-chain settlement with off-chain index price feeds. Instruments are cash-settled against the Spike Spot Index (CPT Odesa) and do not involve physical delivery."
@@ -518,7 +520,7 @@
       },
       "keyConcepts": {
         "title": "Key Concepts",
-        "lead": "Cropto separates price risk from physical grain flows so logistics and supply chains are not distorted by speculation.",
+        "lead": "Cropto separates price risk from physical grain flows so logistics and supply chains are not distorted by unrelated financial activity.",
         "bullet1": "Price expectations are managed financially.",
         "bullet2": "Market risk can be hedged without forcing physical delivery.",
         "bullet3": "Physical grain moves when it’s optimal for the supply chain, not for trading timing.",
@@ -535,8 +537,8 @@
           "body": "Traders get an instrument to trade real commodity price indices and run arbitrage across local and global markets without disrupting physical deliveries."
         },
         "web3": {
-          "title": "For Web3 / Crypto",
-          "body": "Cropto uses blockchain for trust and verification: transparent rules and immutable audit trails. This is infrastructure for real commodities, not crypto speculation."
+          "title": "For Infrastructure Partners",
+          "body": "Cropto uses blockchain where it adds value: document verification, transparent rules and immutable audit trails. This is infrastructure for real commodities, not crypto speculation."
         }
       },
       "indicesSpot": {
@@ -1594,17 +1596,17 @@
       "button": "Withdraw"
     },
     "mintNft": {
-      "title": "Mint Option NFT",
-      "subtitle": "Mint this option as an ERC-721 NFT on Polygon Amoy testnet",
+      "title": "Create Option Verification Record",
+      "subtitle": "Create a document-bound ERC-721 verification record for this option on Polygon Amoy testnet",
       "recipientLabel": "Recipient Address",
       "recipientPlaceholder": "0x...",
-      "recipientDesc": "The Ethereum address that will receive the NFT",
-      "success": "NFT Minted Successfully!",
+      "recipientDesc": "The Ethereum address that will receive the verification record",
+      "success": "Verification Record Created",
       "tokenId": "Token ID:",
       "viewExplorer": "View on Explorer",
-      "nftLabel": "NFT #{{id}}",
-      "button": "Mint NFT",
-      "buttonPending": "Minting...",
+      "nftLabel": "Record #{{id}}",
+      "button": "Create Record",
+      "buttonPending": "Creating...",
       "view": "View",
       "errorTitle": "Mint Failed",
       "errors": {
@@ -1678,7 +1680,7 @@
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "subtitle": "Common questions about the Cropto platform and crypto options trading",
+      "subtitle": "Common questions about Cropto's indexed commodity-market infrastructure prototype",
     "q1": {
       "question": "What is Cropto?",
       "answer": "Cropto is a prototype platform for trading and risk management of commodity-linked instruments. It uses price indexes and cash settlement (in CROPT) and does not involve physical delivery of grain."
@@ -1699,7 +1701,7 @@
     },
     "q4": {
       "question": "How does NFT minting work?",
-      "answer": "After an option is FILLED or EXERCISED, the owner can mint it as an NFT (ERC-721) on the supported test network. The NFT contains option metadata and can be viewed in a block explorer. Each option can be minted only once."
+      "answer": "After an option is FILLED or EXERCISED, the owner can create a document-bound ERC-721 verification record on the supported test network. The record contains option metadata for auditability; it is not intended as a collectible or speculative NFT."
     },
     "q5": {
       "question": "What are margin calls?",
@@ -1716,11 +1718,11 @@
     },
     "q7": {
       "question": "Which blockchain does Cropto use?",
-      "answer": "Cropto uses the Polygon Amoy testnet for on-chain features. This includes:",
+      "answer": "Cropto currently uses the Polygon Amoy testnet for on-chain proof-of-concept features. The final architecture remains chain-optional and can use public-chain, permissioned-ledger, private-ledger or non-crypto accounting rails depending on regulation and partner requirements. Current proofs include:",
       "features": {
-        "1": "CROPT ERC-20 token for platform currency",
-        "2": "CroptOptionNFT ERC-721 contract for tokenizing options",
-        "3": "All transactions can be viewed on PolygonScan"
+        "1": "CROPT as a demo USD-linked accounting and settlement unit",
+        "2": "CroptOptionNFT ERC-721 contract for document-bound option records",
+        "3": "Traceable demo transactions viewable on PolygonScan"
       }
     },
     "q8": {
