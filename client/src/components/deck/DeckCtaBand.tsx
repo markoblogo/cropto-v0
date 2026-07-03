@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CROPTO_MAIN_SITE_URL, DECK_PAGE_COPY } from "@/components/deck/deck-content";
+import { CROPTO_REPOSITORY_URL, DECK_PAGE_COPY } from "@/components/deck/deck-content";
 
 interface DeckCtaBandProps {
   onViewDeck: () => void;
@@ -29,7 +29,7 @@ export function DeckCtaBand({ onViewDeck }: DeckCtaBandProps) {
                 className="border-lime-300/45 bg-lime-300/90 text-lime-950 shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-lime-200 dark:border-foreground/30 dark:text-lime-950"
                 asChild
               >
-                <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
+                <a href={CROPTO_REPOSITORY_URL} target="_blank" rel="noreferrer">
                   {DECK_PAGE_COPY.exploreProductCta}
                 </a>
               </Button>

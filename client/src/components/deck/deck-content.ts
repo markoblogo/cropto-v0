@@ -13,6 +13,10 @@ export type DeckCardItem = {
   description: string;
 };
 
+export type DeckProofItem = DeckCardItem & {
+  status: string;
+};
+
 export type DeckHeroImage = {
   src: string;
   alt: string;
@@ -26,6 +30,7 @@ export type DeckEcosystemLink = {
 };
 
 export const CROPTO_MAIN_SITE_URL = `${(import.meta.env.VITE_PUBLIC_APP_URL || "https://cr0pto.com").replace(/\/+$/, "")}/`;
+export const CROPTO_REPOSITORY_URL = "https://github.com/markoblogo/cropto";
 
 // YouTube source reference for teaser playback on /deck.
 export const CROPTO_DECK_VIDEO_SOURCE_URL = "https://youtu.be/zumLJKZQFxc";
@@ -49,23 +54,27 @@ export const CROPTO_DECK_HERO_IMAGES: DeckHeroImage[] = [
 
 export const DECK_NAV_ITEMS: DeckNavItem[] = [
   { label: "Overview", href: "#overview" },
-  { label: "Problem", href: "#problem" },
-  { label: "Product", href: "#product" },
-  { label: "Market Model", href: "#market-model" },
+  { label: "What", href: "#what" },
+  { label: "Indices", href: "#indices" },
+  { label: "Proofs", href: "#proofs" },
+  { label: "Path", href: "#path" },
   { label: "Deck", href: "#deck" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ];
 
 export const DECK_PAGE_COPY = {
-  heroTitle: "Cropto is the indexed trading and settlement layer of the AMI ecosystem.",
+  heroTitle: "Cropto Investor Brief",
   heroSubtitle:
-    "Agricultural commodity spot and options workflows based on local benchmark indices from 1D3X and SPIKE, with document verification and settlement traceability built in.",
+    "Indexed trading and settlement infrastructure for agricultural commodities.",
   heroMicrocopy:
-    "Built for commodity traders, producers, brokers, infrastructure partners, and investors evaluating locally relevant risk workflows.",
-  viewDeckCta: "View partner deck",
-  exploreProductCta: "View technical demo",
-  backToCroptoCta: "Back to Cropto",
+    "Cropto connects local commodity indices, physical-market contracts and programmable settlement workflows. It is the planned trading and settlement layer of the broader AMI stack, built around MN7R, 1D3X, SPIKE/UGA Index and future regulated risk-product partners.",
+  heroStatus:
+    "Status: functional prototype, paused standalone development, revival-ready for partner-backed pilots.",
+  viewDeckCta: "View deck PDF",
+  exploreProductCta: "View technical repository",
+  discussPilotCta: "Discuss indexed trading pilot",
+  exploreAmiCta: "Explore AMI stack",
   videoTitle: "Teaser Video",
   videoIntro:
     "A short visual overview of Cropto's market-infrastructure thesis and product direction for partners and investors.",
@@ -77,11 +86,28 @@ export const DECK_PAGE_COPY = {
   notEnoughTitle: "Benchmark Liquidity Is Not the Same as Relevant Protection",
   notEnoughBody:
     "Benchmark contracts can be liquid, but liquidity alone does not guarantee hedge efficiency. When local price behavior diverges from benchmark exchange pricing, protection weakens. Cropto starts from a different premise: risk tools should align with the market structure they protect.",
-  productTitle: "Cropto: Indexed Trading, Verification and Settlement Infrastructure",
+  productTitle: "What Cropto Is",
   productBody:
-    "Cropto is designed for commodity risk management based on local benchmark indices from 1D3X and SPIKE. The goal is stronger correlation with physical market realities and flexible settlement rails that can be public-chain, permissioned-ledger, private-ledger or non-crypto depending on regulatory and partner requirements.",
+    "Cropto is designed for spot and options workflows on agricultural commodities and local commodity indices, using benchmark data from 1D3X and SPIKE as reference infrastructure.",
   productBody2:
     "Cropto uses tokenization as infrastructure for document verification, contract-state records, settlement traceability and optional programmable clearing, not as a speculative NFT or public-token product.",
+  notCryptoTitle: "What Cropto Is Not",
+  notCryptoBody:
+    "Cropto is not a generic crypto exchange, DeFi casino or speculative NFT marketplace. Tokenization is used as a representation and trust layer. A tokenized document or contract-state record is not designed for standalone speculation; it represents a verified document, contract state, settlement record or index-linked exposure.",
+  indicesTitle: "Why Indices Matter",
+  indicesBody:
+    "1D3X provides local benchmark infrastructure. SPIKE provides Ukrainian physical-market indices. Cropto uses these indices as reference prices for indexed spot, options and risk-management workflows.",
+  indicesPrinciple:
+    "No trusted index -> no serious indexed trading layer. Trusted index -> possible local-market risk tools.",
+  proofsTitle: "Implemented Technical Proofs",
+  proofsBody:
+    "The repository already contains working prototype modules and experiments. These are proof points, not claims of live regulated operation.",
+  partnerPathTitle: "Commercial and Partner Path",
+  partnerPathBody:
+    "The next step is not to launch a public crypto market. The next step is to select the right regulated architecture for commodity-index trading, document verification and settlement workflows.",
+  regulatoryTitle: "Risk and Regulatory Clarity",
+  regulatoryBody:
+    "Cropto is not currently offering live financial products or public trading services. The current system should be understood as a prototype and partner-pilot infrastructure. Any production deployment involving financial instruments, clearing, custody, payments or tokenized assets would require appropriate legal, regulatory and partner architecture.",
   marketModelTitle: "How Cropto Changes the Market Structure",
   marketModelIntro:
     "Cropto is not only a trading interface. It can become infrastructure that improves how risk is distributed across real-sector and financial participants.",
@@ -103,9 +129,9 @@ export const DECK_PAGE_COPY = {
   contactBody:
     "We are open to discussions with strategic partners, market participants, and investors interested in the next generation of commodity market infrastructure.",
   footerNote: "Investor / partner materials. Functional prototype; standalone development currently paused while the AMI ecosystem expands.",
-  ctaBandTitle: "Build with the next layer of commodity market infrastructure.",
+  ctaBandTitle: "Discuss a partner-backed Cropto pilot.",
   ctaBandBody:
-    "We are looking for strategic partners, market participants, and investors who want to shape locally relevant index, verification and settlement infrastructure for global commodity markets.",
+    "We are looking for strategic partners, market participants and investors who can help define the regulated architecture for indexed commodity workflows, document verification and settlement traceability.",
 };
 
 export const PROBLEM_BULLETS = [
@@ -117,20 +143,80 @@ export const PROBLEM_BULLETS = [
 
 export const PRODUCT_FEATURES: DeckCardItem[] = [
   {
-    title: "Local benchmark indices",
-    description: "Index-linked instrument design aligned with 1D3X/SPIKE local market pricing behavior.",
+    title: "Market Instruments Layer",
+    description: "Spot, options and index-linked instruments on agricultural commodities and logistics.",
   },
   {
-    title: "Futures-like and options-like framework",
-    description: "Instrument architecture in active development across roadmap stages.",
+    title: "Document & Contract Layer",
+    description: "Digital contracts, document tokenization, audit trail and document-state verification.",
   },
   {
-    title: "Regional market rollout",
-    description: "Country-by-country expansion model with reusable index logic.",
+    title: "Settlement Layer",
+    description: "Internal USD-linked settlement unit, FX bridge, clearing logic and payment-state tracking.",
   },
   {
-    title: "Chain-optional settlement rails",
-    description: "Programmable execution, document verification and settlement workflows with auditability in mind.",
+    title: "Blockchain / Trust Layer",
+    description: "Optional on-chain anchoring, document fingerprints, tokenized records and programmable settlement experiments.",
+  },
+];
+
+export const TECHNICAL_PROOFS: DeckProofItem[] = [
+  {
+    title: "Document-to-token workflow",
+    description: "CroptOptionNFT and related routes prove document-bound option records can be represented as verifiable ERC-721 testnet records.",
+    status: "Prototype",
+  },
+  {
+    title: "Non-speculative document records",
+    description: "NFT-like records are framed as document, contract-state and audit records, not collectible assets or retail trading inventory.",
+    status: "Implemented proof",
+  },
+  {
+    title: "Polygon Amoy settlement experiments",
+    description: "The current codebase uses Polygon Amoy for CROPT ERC-20 and document-record experiments, keeping testnet references aligned with the repository-backed network.",
+    status: "Experimental",
+  },
+  {
+    title: "Tokenized asset settlement tests",
+    description: "On-chain mint/balance routes, transaction records, option exercise, margin and settlement tables show settlement mechanics in prototype form.",
+    status: "Prototype",
+  },
+  {
+    title: "Internal settlement unit concept",
+    description: "CROPT is used as a demo USD-linked accounting, margin and settlement unit. Final production rails remain architecture-dependent.",
+    status: "Concept + demo",
+  },
+  {
+    title: "Market workflow modules",
+    description: "Sea Brokerage Monitor, BID/OFFER/TRADE flows, Telegram relay, scheduled reports and Sheets import support market-memory and broker workflow use cases.",
+    status: "Functional modules",
+  },
+];
+
+export const PARTNER_PATH_STEPS: DeckCardItem[] = [
+  {
+    title: "Partner-backed pilot",
+    description: "Define market, commodity, participants, governance and pilot success criteria with strategic partners.",
+  },
+  {
+    title: "1D3X/SPIKE index-data integration",
+    description: "Consume live or demo benchmark data as reference prices for indexed workflows.",
+  },
+  {
+    title: "Regulated architecture selection",
+    description: "Choose public-chain, permissioned-ledger, private-ledger or non-crypto accounting based on legal and partner needs.",
+  },
+  {
+    title: "Clearing and settlement partner research",
+    description: "Map custody, payment rails, FX bridge, clearing logic and reporting requirements.",
+  },
+  {
+    title: "Document verification pilot",
+    description: "Test document fingerprints, contract-state records and settlement-state traceability with real partner workflows.",
+  },
+  {
+    title: "Spot/options simulation before live products",
+    description: "Run indexed simulations before any regulated financial product or production trading workflow.",
   },
 ];
 
@@ -141,7 +227,7 @@ export const MARKET_MODEL_STEPS: DeckCardItem[] = [
   },
   {
     title: "2. Local-market speculative liquidity",
-    description: "Hedging demand attracts speculative capital around local risk rather than only global benchmarks.",
+    description: "Hedging demand can attract managed risk capital around local exposure rather than only global benchmarks.",
   },
   {
     title: "3. Scalable digital participation",
@@ -179,7 +265,7 @@ export const WHY_NOW_POINTS = [
   "Need for more locally relevant risk tools",
   "Maturing document-verification and settlement rails",
   "Increasing demand for transparent, programmable market infrastructure",
-  "Opportunity to build category leadership early in tokenized commodity risk markets",
+  "Opportunity to build category leadership early in indexed commodity risk infrastructure",
 ];
 
 export const DECK_FAQ_ITEMS: DeckFaqItem[] = [
@@ -230,10 +316,17 @@ export const DECK_ECOSYSTEM_LINKS: DeckEcosystemLink[] = [
     description: "Current product environment",
     tag: "Beta",
   },
+  {
+    label: "GitHub repository",
+    href: CROPTO_REPOSITORY_URL,
+    description: "Technical source and status docs",
+    tag: "Technical",
+  },
 ];
 
 export const CONTACT_INTEREST_OPTIONS = [
   "Partnership discussion",
   "Investor conversation",
   "Pilot / integration interest",
+  "Indexed trading pilot",
 ];

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   CROPTO_DECK_HERO_IMAGES,
-  CROPTO_MAIN_SITE_URL,
+  CROPTO_DECK_PDF_URL,
+  CROPTO_REPOSITORY_URL,
   DECK_PAGE_COPY,
   type DeckHeroImage,
 } from "@/components/deck/deck-content";
@@ -14,11 +15,7 @@ const FALLBACK_HERO_IMAGE: DeckHeroImage = {
 
 const HERO_ROTATION_MS = 6500;
 
-interface DeckHeroProps {
-  onViewDeck: () => void;
-}
-
-export function DeckHero({ onViewDeck }: DeckHeroProps) {
+export function DeckHero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -67,26 +64,36 @@ export function DeckHero({ onViewDeck }: DeckHeroProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/84 via-black/68 to-black/40 dark:from-black/90 dark:via-black/76 dark:to-black/44" />
         <div className="absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-black/58 via-black/28 to-transparent" />
 
-        <div className="relative container mx-auto px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-          <div className="max-w-3xl rounded-2xl border border-white/26 bg-black/48 p-6 shadow-2xl backdrop-blur-[5px] sm:p-7 lg:p-8">
+        <div className="relative container mx-auto px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="max-w-3xl">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Partner & Investor Page</p>
             <h1 className="text-3xl font-semibold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl [text-shadow:0_2px_16px_rgba(0,0,0,0.45)]">
               {DECK_PAGE_COPY.heroTitle}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white sm:text-lg [text-shadow:0_1px_10px_rgba(0,0,0,0.45)]">{DECK_PAGE_COPY.heroSubtitle}</p>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white sm:text-base [text-shadow:0_1px_8px_rgba(0,0,0,0.4)]">{DECK_PAGE_COPY.heroMicrocopy}</p>
+            <p className="mt-4 max-w-2xl rounded-lg border border-white/24 bg-white/10 px-3 py-2 text-sm font-medium leading-6 text-white shadow-sm backdrop-blur-sm">
+              {DECK_PAGE_COPY.heroStatus}
+            </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button
                 size="lg"
                 className="bg-amber-300 text-amber-950 shadow-lg shadow-black/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl"
-                onClick={onViewDeck}
+                asChild
               >
-                {DECK_PAGE_COPY.viewDeckCta}
+                <a href={CROPTO_DECK_PDF_URL} target="_blank" rel="noreferrer">
+                  {DECK_PAGE_COPY.viewDeckCta}
+                </a>
               </Button>
               <Button size="lg" className="border border-lime-300/70 bg-lime-300/90 text-lime-950 shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-lime-200" asChild>
-                <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
+                <a href={CROPTO_REPOSITORY_URL} target="_blank" rel="noreferrer">
                   {DECK_PAGE_COPY.exploreProductCta}
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" className="border-white/45 bg-black/20 text-white shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/15 hover:text-white" asChild>
+                <a href="#contact">
+                  {DECK_PAGE_COPY.discussPilotCta}
                 </a>
               </Button>
             </div>

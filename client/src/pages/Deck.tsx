@@ -13,14 +13,16 @@ import {
   CROPTO_DECK_PDF_URL,
   CROPTO_GOOGLE_SLIDES_EMBED_URL,
   CROPTO_GOOGLE_SLIDES_PUBLIC_URL,
-  CROPTO_MAIN_SITE_URL,
+  CROPTO_REPOSITORY_URL,
   DECK_FAQ_ITEMS,
   DECK_NAV_ITEMS,
   DECK_PAGE_COPY,
   MARKET_MODEL_STEPS,
+  PARTNER_PATH_STEPS,
   PRODUCT_FEATURES,
   PROBLEM_BULLETS,
   TARGET_MARKETS,
+  TECHNICAL_PROOFS,
   USE_CASES,
   WHY_NOW_POINTS,
 } from "@/components/deck/deck-content";
@@ -53,7 +55,61 @@ export default function DeckPage() {
       <DeckHeader navItems={DECK_NAV_ITEMS} />
 
       <main>
-        <DeckHero onViewDeck={() => scrollToSection("deck")} />
+        <DeckHero />
+
+        <section id="what" className="scroll-mt-24 border-b border-border/60 py-14 sm:py-16 lg:py-20">
+          <div className="container mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
+            <SectionIntro label="What Cropto Is" title={DECK_PAGE_COPY.productTitle} body={DECK_PAGE_COPY.productBody} />
+            <p className="max-w-3xl text-base leading-8 text-foreground/82 sm:text-lg">{DECK_PAGE_COPY.productBody2}</p>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {PRODUCT_FEATURES.map((item) => (
+                <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-foreground">{item.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="border-primary/50 bg-gradient-to-br from-primary/14 via-card to-muted/25 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-xl text-foreground">{DECK_PAGE_COPY.notCryptoTitle}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-base leading-8 text-foreground/88">{DECK_PAGE_COPY.notCryptoBody}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section id="indices" className="scroll-mt-24 border-b border-border/60 py-14 sm:py-16 lg:py-20">
+          <div className="container mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
+            <SectionIntro label="Indices" title={DECK_PAGE_COPY.indicesTitle} body={DECK_PAGE_COPY.indicesBody} />
+            <Card className="border-black/85 dark:border-white/85 bg-gradient-to-br from-muted/80 via-card to-primary/10 shadow-md">
+              <CardContent className="p-6 sm:p-8">
+                <p className="text-xl font-semibold leading-9 text-foreground">{DECK_PAGE_COPY.indicesPrinciple}</p>
+              </CardContent>
+            </Card>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md">
+                <CardHeader><CardTitle className="text-lg">1D3X</CardTitle></CardHeader>
+                <CardContent><CardDescription className="text-base leading-7 text-foreground/82">Local benchmark infrastructure for commodity and logistics markets.</CardDescription></CardContent>
+              </Card>
+              <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md">
+                <CardHeader><CardTitle className="text-lg">SPIKE / UGA Index</CardTitle></CardHeader>
+                <CardContent><CardDescription className="text-base leading-7 text-foreground/82">Ukrainian physical-market index references and market data context.</CardDescription></CardContent>
+              </Card>
+              <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md">
+                <CardHeader><CardTitle className="text-lg">Cropto</CardTitle></CardHeader>
+                <CardContent><CardDescription className="text-base leading-7 text-foreground/82">Indexed spot, options, document-verification and settlement workflows built on trusted reference prices.</CardDescription></CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
 
         <section id="problem" className="scroll-mt-24 border-b border-border/60 py-14 sm:py-16 lg:py-20">
           <div className="container mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
@@ -89,22 +145,6 @@ export default function DeckPage() {
 
         <section id="product" className="scroll-mt-24 border-b border-border/60 py-14 sm:py-16 lg:py-20">
           <div className="container mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
-            <SectionIntro label="Product" title={DECK_PAGE_COPY.productTitle} body={DECK_PAGE_COPY.productBody} />
-            <p className="max-w-3xl text-base leading-8 text-foreground/82 sm:text-lg">{DECK_PAGE_COPY.productBody2}</p>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {PRODUCT_FEATURES.map((item) => (
-                <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-foreground">{item.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
             <Card className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/30 shadow-md">
               <CardHeader>
                 <CardTitle className="text-foreground">{DECK_PAGE_COPY.marketScopeTitle}</CardTitle>
@@ -163,13 +203,60 @@ export default function DeckPage() {
                 </CardContent>
                 <CardFooter className="pt-2">
                   <Button className="mt-auto w-fit bg-amber-300 text-amber-950 shadow-md shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 hover:shadow-xl" asChild>
-                    <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
-                      Explore current product environment
+                    <a href={CROPTO_REPOSITORY_URL} target="_blank" rel="noreferrer">
+                      View technical repository
                     </a>
                   </Button>
                 </CardFooter>
               </Card>
             </div>
+          </div>
+        </section>
+
+        <section id="proofs" className="scroll-mt-24 border-b border-border/60 py-14 sm:py-16 lg:py-20">
+          <div className="container mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
+            <SectionIntro label="Proofs" title={DECK_PAGE_COPY.proofsTitle} body={DECK_PAGE_COPY.proofsBody} />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {TECHNICAL_PROOFS.map((item) => (
+                <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                  <CardHeader className="space-y-3">
+                    <Badge variant="outline" className="w-fit border-primary/35 bg-primary/10 text-[10px] uppercase tracking-wide text-foreground/80">
+                      {item.status}
+                    </Badge>
+                    <CardTitle className="text-lg text-foreground">{item.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="path" className="scroll-mt-24 border-b border-border/60 py-14 sm:py-16 lg:py-20">
+          <div className="container mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
+            <SectionIntro label="Commercial Path" title={DECK_PAGE_COPY.partnerPathTitle} body={DECK_PAGE_COPY.partnerPathBody} />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {PARTNER_PATH_STEPS.map((item) => (
+                <Card key={item.title} className="border-black/85 dark:border-white/85 bg-gradient-to-b from-card to-muted/35 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-foreground">{item.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-base leading-7 text-foreground/82">{item.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card className="border-amber-500/60 bg-amber-100 text-amber-950 shadow-md dark:border-amber-400/40 dark:bg-amber-950/35 dark:text-amber-100">
+              <CardHeader>
+                <CardTitle>{DECK_PAGE_COPY.regulatoryTitle}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-base leading-8">{DECK_PAGE_COPY.regulatoryBody}</p>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
@@ -223,7 +310,7 @@ export default function DeckPage() {
             <div className="flex flex-wrap items-center gap-3">
               <Button className="shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
                 <a href={CROPTO_DECK_PDF_URL} target="_blank" rel="noreferrer">
-                  Download PDF
+                  View deck PDF
                 </a>
               </Button>
               <Button variant="outline" className="transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-md" asChild>
@@ -268,7 +355,7 @@ export default function DeckPage() {
               <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{DECK_PAGE_COPY.contactTitle}</h2>
               <p className="text-base leading-8 text-foreground/82 sm:text-lg">{DECK_PAGE_COPY.contactBody}</p>
               <div className="space-y-1 text-base leading-8 text-foreground/88">
-                <p>For partnerships, pilot corridors, and investor conversations.</p>
+                <p>For partner-backed pilots, index-data integrations, and investor conversations.</p>
                 <p>We reply personally.</p>
               </div>
             </div>

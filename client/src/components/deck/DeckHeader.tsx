@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { Button } from "@/components/ui/button";
 import type { DeckNavItem } from "@/components/deck/deck-content";
-import { CROPTO_MAIN_SITE_URL } from "@/components/deck/deck-content";
+import { CROPTO_REPOSITORY_URL, DECK_PAGE_COPY } from "@/components/deck/deck-content";
 
 interface DeckHeaderProps {
   navItems: DeckNavItem[];
@@ -51,12 +51,12 @@ export function DeckHeader({ navItems }: DeckHeaderProps) {
           <ThemeToggle />
           <Button variant="default" size="sm" asChild>
             <a href="/monitor">
-              Open Monitor
+              {DECK_PAGE_COPY.exploreAmiCta}
             </a>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <a href={CROPTO_MAIN_SITE_URL} target="_blank" rel="noreferrer">
-              Back to Cropto
+            <a href={CROPTO_REPOSITORY_URL} target="_blank" rel="noreferrer">
+              Repository
             </a>
           </Button>
         </div>
