@@ -69,7 +69,7 @@
     "settle": "Liquidar à força",
     "topup": "Recarregar",
     "withdraw": "Sacar",
-    "mint": "Mintar NFT",
+    "mint": "Criar registro de verificação",
     "confirm": "Confirmar",
     "close": "Fechar"
   },
@@ -132,19 +132,19 @@
     "mintingDisabled": "Mint desativado",
     "mintingDisabledDesc": "O mint de CROPT está desativado no momento. Contate o admin.",
     "mintFailed": "Falha ao mintar",
-    "nftMinted": "NFT mintado com sucesso!",
+    "nftMinted": "Registro de verificação criado",
     "noMarginCall": "Não foi encontrado margin call pendente para esta opção"
   },
   "hero": {
-    "headline": "Cropto: precificação, hedge e trading de grãos",
-    "tagline": "precificação, hedge e trading de grãos",
-    "subheadline": "Negocie opções de commodities agrícolas com transparência garantida por blockchain",
+    "headline": "Cropto — infraestrutura de negociação indexada e liquidação",
+    "tagline": "infraestrutura de negociação indexada e liquidação",
+    "subheadline": "Fluxos de commodities agrícolas com verificação documental e rastreabilidade de liquidação",
     "cta": {
       "createOption": "Criar opção",
       "connectWallet": "Conectar carteira",
-      "startIndexTrading": "Iniciar negociação de índices",
-      "startOptionsTrading": "Iniciar negociação de opções",
-      "viewMarkets": "Ver mercados",
+      "startIndexTrading": "Ver demo técnica",
+      "startOptionsTrading": "Explorar mercados indexados",
+      "viewMarkets": "Explorar ecossistema AMI",
       "walletConnected": "Carteira: Conectada"
     },
     "label": {
@@ -153,15 +153,17 @@
   },
   "home": {
     "hero": {
-      "title": "Negocie índices de grãos tokenizados e opções. O mercado global de commodities tokenizadas.",
-      "subtitle": "Índices de grãos tokenizados e opções em Ucrânia, Argentina e Brasil. Curvas a termo de até 12 meses. Liquidação por índice — sem entrega física.",
+      "title": "Cropto",
+      "subtitle": "Infraestrutura de negociação indexada e liquidação para commodities agrícolas.",
       "cta": {
-        "startIndexTrading": "Começar a negociar índices",
-        "startOptionsTrading": "Começar a negociar opções",
-        "viewMarkets": "Ver mercados",
+        "startIndexTrading": "Ver demo técnica",
+        "startOptionsTrading": "Explorar mercados indexados",
+        "viewMarkets": "Explorar ecossistema AMI",
         "connectWallet": "Conectar carteira",
         "walletConnected": "Carteira: conectada"
-      }
+      },
+      "body": "A Cropto conecta índices locais de commodities, contratos do mercado físico e fluxos programáveis de liquidação. Foi desenhada para workflows spot e de opções em commodities agrícolas e instrumentos vinculados a índices, usando dados benchmark da 1D3X/SPIKE como infraestrutura de referência.",
+      "blockchainClarification": "Sua camada blockchain não é sobre especulação cripto. Ela é usada para verificação documental, registros de estado contratual, rastreabilidade de liquidação e clearing tokenizado opcional."
     },
     "market": {
       "title": "Painel de mercado",
@@ -208,35 +210,52 @@
     },
     "how": {
       "title": "Como a Cropto funciona",
-      "subtitle": "Negocie índices de grãos tokenizados e opções em 6 passos simples",
+      "subtitle": "Como o protótipo conecta índices benchmark, fluxos contratuais e rastreabilidade de liquidação",
       "cta": {
-        "startTrading": "Começar a negociar"
+        "startTrading": "Ver demo técnica"
       },
       "steps": {
         "1": {
-          "title": "Conectar carteira",
-          "description": "Conecte MetaMask, WalletConnect ou Coinbase Wallet para iniciar uma sessão Web3. Sem uma carteira, apenas a visualização é possível."
+          "title": "Abrir uma sessão verificada",
+          "description": "Use autenticação por carteira ou conta para criar uma sessão demo auditável. Sem autenticação, os mercados permanecem somente leitura."
         },
         "2": {
-          "title": "Escolha mercado e produto",
-          "description": "Selecione um país (UA/BR/AR) → Escolha: negociação de índices ou negociação de opções."
+          "title": "Escolher mercado e benchmark",
+          "description": "Selecione um mercado local de commodities e um índice de referência do conjunto de dados alinhado à 1D3X/SPIKE."
         },
         "3": {
-          "title": "Selecione a janela de entrega (H1/H2)",
-          "description": "Cada mês é dividido em H1 (1–15) e H2 (16–30/31). O forward está disponível por até 12 meses."
+          "title": "Definir janela contratual",
+          "description": "Configure janelas de entrega ou liquidação como H1/H2 e conecte o fluxo a exposição spot, forward ou options-like."
         },
         "4": {
-          "title": "Fazer ordem",
-          "description": "Ordem limitada → a ordem entra no livro de ordens on-chain."
+          "title": "Registrar estado da ordem",
+          "description": "Ordens e estados contratuais avançam pelo fluxo do protótipo com mudanças de status e registros auditáveis."
         },
         "5": {
-          "title": "Financiar e ativar",
-          "description": "Adicione colateral em CROPT/USDC. Depois, a ordem é ativada → começa a busca por contraparte."
+          "title": "Ativar lógica de liquidação",
+          "description": "Use a unidade contábil interna vinculada ao USD e rails tokenizados opcionais para modelar margem, clearing e liquidação."
         },
         "6": {
-          "title": "Gerencie ou aguarde a liquidação",
-          "description": "Monitore margem, PnL, gregas e barra de saúde. Liquidação = preço médio do índice no período de entrega."
+          "title": "Verificar trilha de liquidação",
+          "description": "Monitore margem, P&L, registros contratuais e liquidação final contra o índice benchmark local relevante."
         }
+      }
+    },
+    "education": {
+      "heroDescription": "A Cropto é um conceito de plataforma e protótipo funcional para workflows indexados de commodities agrícolas, desenhada para produtores, traders, brokers e parceiros de infraestrutura. Ela combina índices benchmark locais, verificação documental e rastreabilidade de liquidação.",
+      "keyConcepts": {
+        "lead": "A Cropto separa o risco de preço dos fluxos físicos de grãos para que logística e cadeia de suprimentos não sejam distorcidas por atividade financeira não relacionada."
+      },
+      "audiences": {
+        "web3": {
+          "title": "Para parceiros de infraestrutura",
+          "body": "A Cropto usa blockchain onde isso agrega valor: verificação documental, regras transparentes e trilhas de auditoria imutáveis. É infraestrutura para commodities reais, não especulação cripto."
+        }
+      },
+      "indicesSpot": {
+        "title": "Índices e exposição spot",
+        "lead": "Índices são preços de referência para mercados específicos. As exposições spot do demo representam exposição ao preço e não significam posse de grãos físicos.",
+        "bullet3": "Fluxos spot permitem exposição direcional (long/short) sem lidar com logística de entrega física."
       }
     }
   },
@@ -391,7 +410,7 @@
   "page": {
     "spot": {
       "title": "Negociação de índices",
-      "subtitle": "Negocie índices de grãos tokenizados usando contratos a termo",
+      "subtitle": "Negocie exposição indexada em commodities usando contratos a termo",
       "noTradingPairs": "Não há pares de trading disponíveis",
       "spotMarkets": "Mercados spot",
       "recentPriceUpdates": "Atualizações recentes de preços (cotações do índice)",
@@ -504,7 +523,7 @@
       "calculatorTitle": "Calculadora de opções",
       "calculatorDescription": "Calcule o prêmio, o notional e o valor intrínseco para fins educacionais",
       "readScenario": "Ler cenário",
-      "heroDescription": "A Cropto é uma plataforma para negociar índices de grãos tokenizados e opções, criada para agricultores (hedge), traders (especulação) e corretores. Ela combina liquidação on-chain com feeds off-chain de preços de índices.",
+      "heroDescription": "A Cropto é um conceito de plataforma e protótipo funcional para workflows indexados de commodities agrícolas, desenhada para produtores, traders, brokers e parceiros de infraestrutura. Ela combina índices benchmark locais, verificação documental e rastreabilidade de liquidação.",
       "about": {
         "title": "Sobre a Cropto",
         "body": "Cropto é uma plataforma protótipo para negociação e gestão de risco de instrumentos atrelados a commodities. Ela combina liquidação on-chain com feeds off-chain de preços de índices. Os instrumentos são liquidados em dinheiro contra o Spike Spot Index (CPT Odesa) e não envolvem entrega física."
@@ -518,7 +537,7 @@
       },
       "keyConcepts": {
         "title": "Conceitos-chave",
-        "lead": "A Cropto separa o risco de preço dos fluxos físicos de grãos para que a logística e a cadeia de suprimentos não sejam distorcidas pela especulação.",
+        "lead": "A Cropto separa o risco de preço dos fluxos físicos de grãos para que logística e cadeia de suprimentos não sejam distorcidas por atividade financeira não relacionada.",
         "bullet1": "As expectativas de preço são geridas financeiramente.",
         "bullet2": "O risco de mercado pode ser protegido sem forçar entrega física.",
         "bullet3": "O grão físico se move quando é o melhor para a cadeia de suprimentos, não por timing de trading.",
@@ -535,16 +554,16 @@
           "body": "Traders ganham um instrumento para negociar índices de preços de commodities reais e fazer arbitragem entre mercados locais e globais sem afetar entregas físicas."
         },
         "web3": {
-          "title": "Para Web3 / crypto",
-          "body": "A Cropto usa blockchain para confiança e verificação: regras transparentes e trilhas imutáveis. É infraestrutura para commodities reais, não especulação cripto."
+          "title": "Para parceiros de infraestrutura",
+          "body": "A Cropto usa blockchain onde isso agrega valor: verificação documental, regras transparentes e trilhas de auditoria imutáveis. É infraestrutura para commodities reais, não especulação cripto."
         }
       },
       "indicesSpot": {
-        "title": "Índices e tokens spot",
-        "lead": "Índices são preços de referência para mercados específicos. Tokens spot representam exposição ao preço para trading de demo e não significam posse de grãos físicos.",
+        "title": "Índices e exposição spot",
+        "lead": "Índices são preços de referência para mercados específicos. As exposições spot do demo representam exposição ao preço e não significam posse de grãos físicos.",
         "bullet1": "Cada índice é definido por região, commodity e base (ex.: CPT Odesa).",
         "bullet2": "As cotações geralmente são exibidas em USD por tonelada e atualizadas conforme novos dados de mercado chegam.",
-        "bullet3": "Tokens spot permitem exposição direcional (long/short) sem lidar com logística de entrega física.",
+        "bullet3": "Fluxos spot permitem exposição direcional (long/short) sem lidar com logística de entrega física.",
         "bullet4": "O P&L é calculado a partir dos preços do índice e liquidado em CROPT no ambiente de demo."
       },
       "tradingScenarios": {
@@ -1594,20 +1613,20 @@
       "button": "Sacar"
     },
     "mintNft": {
-      "title": "Mintar NFT da opção",
-      "subtitle": "Minte esta opção como um NFT ERC-721 na testnet Polygon Amoy",
+      "title": "Criar registro de verificação da opção",
+      "subtitle": "Crie um registro de verificação ERC-721 vinculado ao documento desta opção na testnet Polygon Amoy",
       "recipientLabel": "Endereço do destinatário",
       "recipientPlaceholder": "0x…",
-      "recipientDesc": "O endereço Ethereum que receberá o NFT",
-      "success": "NFT mintado com sucesso!",
+      "recipientDesc": "O endereço Ethereum que receberá o registro de verificação",
+      "success": "Registro de verificação criado",
       "tokenId": "ID do token:",
       "viewExplorer": "Ver no explorador",
-      "nftLabel": "NFT #{{id}}",
-      "button": "Mintar NFT",
-      "buttonPending": "Mintando…",
+      "nftLabel": "Registro #{{id}}",
+      "button": "Criar registro",
+      "buttonPending": "Criando…",
       "errorTitle": "Falha ao mintar",
       "errors": {
-        "failed": "Não foi possível mintar o NFT"
+        "failed": "Não foi possível criar o registro de verificação"
       },
       "validation": {
         "addressInvalid": "Endereço Ethereum inválido",
@@ -1643,7 +1662,7 @@
         },
         "trader": {
           "title": "Trader",
-          "subtitle": "Negocie e especule com preços de commodities"
+          "subtitle": "Gerencie exposição indexada e estratégias sobre preços de commodities"
         },
         "broker": {
           "title": "Broker",
@@ -1678,7 +1697,7 @@
   },
   "faq": {
     "title": "Perguntas frequentes",
-    "subtitle": "Perguntas comuns sobre a plataforma Cropto e a negociação de opções cripto",
+    "subtitle": "Perguntas comuns sobre o protótipo de infraestrutura indexada da Cropto",
     "q1": {
       "question": "O que é a Cropto?",
       "answer": "A Cropto é uma plataforma protótipo para negociação e gestão de risco de instrumentos atrelados a commodities. Ela usa índices de preços e liquidação em dinheiro (em CROPT) e não envolve entrega física de grãos."
@@ -1698,8 +1717,8 @@
       "answer": "O matching conecta os dois lados de uma negociação de opções. No fluxo de demo, a opção começa com status OPEN e passa para FILLED quando uma contraparte é atribuída. Depois disso, o contrato pode ser exercido conforme as regras."
     },
     "q4": {
-      "question": "Como funciona a cunhagem de NFT?",
-      "answer": "Após a opção ficar com status FILLED ou EXERCISED, o proprietário pode cunhá-la como um NFT (ERC-721) na rede de teste suportada. O NFT contém metadados da opção e pode ser visto em um explorador de blocos. Cada opção só pode ser cunhada uma vez."
+      "question": "Como funciona o registro de verificação?",
+      "answer": "Após a opção ficar com status FILLED ou EXERCISED, o proprietário pode criar um registro de verificação ERC-721 vinculado ao documento na rede de teste suportada. O registro contém metadados da opção para auditabilidade; ele não foi desenhado como NFT colecionável ou especulativo."
     },
     "q5": {
       "question": "O que são margin calls?",
@@ -1716,11 +1735,11 @@
     },
     "q7": {
       "question": "Qual blockchain a Cropto usa?",
-      "answer": "A Cropto usa a testnet Polygon Amoy para recursos on-chain. Isso inclui:",
+      "answer": "A Cropto usa atualmente a testnet Polygon Amoy para provas de conceito on-chain. A arquitetura final permanece opcional quanto à cadeia e pode usar cadeia pública, ledger permissionado, ledger privado ou contabilidade não cripto conforme regulação e requisitos dos parceiros. As provas atuais incluem:",
       "features": {
-        "1": "Token CROPT ERC-20 como moeda da plataforma",
-        "2": "Contrato CroptOptionNFT ERC-721 para tokenizar opções",
-        "3": "Todas as transações podem ser vistas no PolygonScan"
+        "1": "CROPT como unidade demo de contabilidade e liquidação vinculada ao USD",
+        "2": "Contrato CroptOptionNFT ERC-721 para registros de opção vinculados a documentos",
+        "3": "Transações demo rastreáveis visíveis no PolygonScan"
       }
     },
     "q8": {
@@ -2103,5 +2122,8 @@
   "language.name.uk": "Ucraniano",
   "language.name.es": "Espanhol",
   "language.name.pt": "Português",
-  "geo.dismiss": "Não mostrar novamente"
+  "geo.dismiss": "Não mostrar novamente",
+  "actions": {
+    "mint": "Criar registro de verificação"
+  }
 }

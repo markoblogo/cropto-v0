@@ -1,25 +1,25 @@
 # FAQ — Cropto
 
-### What is an NFT option in Cropto?
+### What is Cropto?
 
-An NFT option is an ERC-721 token that represents the right to receive a payout based on a specific option contract in the Cropto system.  
-The token itself is not the grain — it is a **claim on settlement** linked to a physical deal.
+Cropto is a prototype for indexed agricultural commodity workflows, document verification and settlement traceability.
 
-### How is PnL calculated?
+### Is Cropto live trading?
 
-- Every day we take the **Spike Spot Commodity Index** for the chosen grade (e.g. wheat 11.5 pro).  
-- We compare it with the strike price of the option.  
-- For CALL/PUT we compute intrinsic value and update unrealized PnL and margin status.
+No. Cropto is a demo/prototype environment, not a regulated exchange or live trading venue.
+
+### What is a document-bound verification record?
+
+It is a testnet ERC-721 record that stores option or contract metadata for auditability. It is used to verify documents, contract states or settlement events. It is not a speculative NFT collectible.
+
+### How is P&L calculated?
+
+The prototype compares the selected index price with the contract or option terms, then records P&L, margin and settlement events.
 
 ### What happens on a margin call?
 
-If losses approach the collateral limit, the position is flagged, and the trader has a time window to top up margin.  
-If the call is not met, the platform can trigger **forced settlement** using the remaining collateral.
+If losses approach the collateral limit, the position can be flagged for margin top-up. If the margin call is not resolved, the prototype can record forced settlement.
 
 ### How do I get CROPT for tests?
 
-In the current Pre-MVP:
-
-- CROPT exists only on **Polygon Amoy testnet**.  
-- Test tokens are minted via backend endpoints by the team.  
-- You only need POL (testnet gas) in MetaMask to see transactions and NFT mints.
+CROPT is a demo accounting and settlement unit. In on-chain tests it exists on Polygon Amoy testnet, and test balances are minted through controlled backend endpoints.

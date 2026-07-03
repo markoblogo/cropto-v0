@@ -1,17 +1,17 @@
 # Mini‑FAQ
 
-### Do I need a crypto wallet?
+### Do I need a wallet?
 
 For the pilot you can either:
 
-- connect a MetaMask wallet on Polygon Amoy testnet, or
+- connect a MetaMask wallet on Polygon Amoy testnet for testnet verification records, or
 - use a demo account with an internally managed address.
 
 ### Where are CROPT tokens stored?
 
 On testnet CROPT exists both:
 
-- **on‑chain** as an ERC‑20 token on Polygon Amoy, and
+- **on‑chain** as an ERC‑20 testnet unit on Polygon Amoy, and
 - **internally** in Cropto’s ledger for spot trading and P&L.
 
 ### What is the difference between spot and an option?
@@ -44,5 +44,4 @@ In a full production setup you could:
 - unwind spot exposure against the index.
 
 In the current pilot we focus on **creating, matching and exercising** a small set of demo contracts to validate flows and risk logic.
-
 

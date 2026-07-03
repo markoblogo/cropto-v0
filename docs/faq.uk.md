@@ -1,25 +1,25 @@
-# FAQ — часті питання
+# FAQ — Cropto
 
-### Що таке NFT-опціон у Cropto?
-NFT-опціон — ERC-721 токен з метаданими опціону: тип, страйк, об'єм, строк, прив'язка до фізичного контракту. Це цифрове свідоцтво права/позиції.
+### Що таке Cropto?
 
-### Як фермер використовує інструмент?
-Фермер купує опціон як страховку — платить премію і фіксує ціну на майбутню партію. При несприятливому русі ринку, різниця компенсується згідно опціону.
+Cropto — функціональний прототип для індексованих аграрних commodity workflow, верифікації документів і трасованості розрахунків.
 
-### Хто платить премію?
-Платить покупець опціону. Продавець встановлює премію — орієнтир 3–4% для 6-місячного опціону, але гнучко.
+### Cropto є live trading venue?
 
-### Які ризики для трейдера?
-Ризик — рух ринку проти позиції. Трейдер вносить заставу; при втраті більше застави — margin call → forced settlement → рейтинг дефолту.
+Ні. Cropto зараз не працює як live financial trading venue, public crypto exchange, NFT marketplace або DeFi product.
 
-### Що таке margin call?
-Автоматичне повідомлення при досягненні порогу (80% від застави). Трейдер має 24 години поповнити заставу або буде forced settlement.
+### Що таке document-bound verification record?
 
-### Як відбувається settlement / exercise?
-Exercise ініціює покупець; система обчислює intrinsic value по Spike Index, порівнює із заставою — виконує payout (off-chain) або on-chain release за умов.
+Це ERC-721 testnet record, який зберігає metadata опціону або контракту для auditability. Він може представляти документ, contract state або settlement event. Це не collectible або speculative NFT asset.
 
-### Як працює mint on-chain?
-CROPT — ERC-20. На MVP mint здійснюється бекендом (dev-wallet, testnet). Користувачі запитують withdraw — бекенд мінтить CROPT на адресу (тестнет). Для продакшн потрібна додаткова архітектура.
+### Як працює settlement / exercise у прототипі?
 
-### Чи можна продавати NFT-опціон?
-Так — NFT торгується. Правовий бік фізичної поставки описаний в умовах контракту; передача NFT змінює цифрового власника.
+Система розраховує intrinsic value за обраним commodity index, порівнює його з strike/collateral rules і записує payout, margin або forced-settlement events у database. On-chain proof може додаватися для окремих flow у Polygon Amoy testnet.
+
+### Що таке CROPT?
+
+CROPT — demo accounting and settlement unit у прототипі. Він реалізований як ERC-20 testnet contract для experiments, але фінальна архітектура може використовувати public-chain, permissioned-ledger, private-ledger або non-crypto accounting rails.
+
+### Чи можна торгувати document records?
+
+Product direction не є speculative record trading. Document-bound records призначені для verification, state tracking і settlement traceability. Будь-яка transferability у pilot має відповідати legal і partner requirements.

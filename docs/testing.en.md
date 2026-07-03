@@ -11,7 +11,7 @@ Password: `pass`
 ## Farmer tests
 1. Login → Create Option (CALL/PUT, strike, qty ≥ 500t) → check OPEN status.
 2. Wait for match → becomes FILLED.
-3. Mint NFT → check tokenId on option row.
+3. Create verification record → check record/tokenId on option row.
 4. Exercise → verify settlement and PnL.
 
 ## Trader tests

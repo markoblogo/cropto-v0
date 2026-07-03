@@ -11,7 +11,7 @@ As a broker in the Cropto ecosystem, Maria earns fees from matching trades, prov
 ### 1. Client Onboarding
 **Partners & Contracts Section**:
 - Register new farmer clients (hedging needs)
-- Onboard institutional traders (speculative positions)
+- Onboard institutional participants (indexed risk workflows)
 - Connect liquidity providers (market making)
 - Set fee-sharing agreements (typically 10-20% of platform fees)
 

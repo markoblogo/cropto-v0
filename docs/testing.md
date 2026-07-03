@@ -1,6 +1,6 @@
 # Testing Documentation
 
-[Final E2E NFT Mint report](#final-e2e-nft-mint--отчет)
+[Final E2E verification-record report](#final-e2e-verification-record--отчет)
 
 ## Overview
 
@@ -8,9 +8,9 @@ This document contains testing reports and validation results for the Cropto pla
 
 ---
 
-## Final E2E NFT Mint — отчет
+## Final E2E verification record — отчет
 
-Ниже — итоговый автоматический отчёт по проверке процесса mint NFT (Polygon Amoy):
+Ниже — итоговый автоматический отчёт по проверке создания document-bound ERC-721 verification record в Polygon Amoy:
 
 ```json
 {
@@ -30,4 +30,4 @@ This document contains testing reports and validation results for the Cropto pla
 }
 ```
 
-**Кратко:** NFT успешно заминчен на Polygon Amoy (tokenId #1). Полный транзакционный лог доступен по ссылке выше.
+**Кратко:** verification record успешно создан в Polygon Amoy (tokenId #1). Полный транзакционный лог доступен по ссылке выше. Этот тест подтверждает document-record mechanics, а не запуск speculative NFT marketplace.

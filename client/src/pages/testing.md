@@ -15,7 +15,7 @@ Updated testing instructions for the Cropto demo. Use the demo accounts below to
 - **Premium:** premium_per_t ($/t). Total premium = premium_per_t * qty.
 - **Network:** Polygon Amoy (currency: POL).
 
-## Quick scenario: Create → Match → Mint (recommended)
+## Quick scenario: Create → Match → Create verification record
 
 ### 1) Create option (farmer)
 
@@ -35,13 +35,13 @@ Updated testing instructions for the Cropto demo. Use the demo accounts below to
 2. Find the created option → press _Match_ and assign counterparty.
 3. Status should change to `FILLED`.
 
-### 3) Mint NFT (owner)
+### 3) Create verification record (owner)
 
-Prerequisite: FILLED option and sufficient POL in wallet (≈0.02–0.03 POL per mint) OR mock mode enabled.
+Prerequisite: FILLED option and sufficient POL in wallet (≈0.02–0.03 POL per testnet record) OR mock mode enabled.
 
-To mint:
-- If backend relayer (dev-mint): call the API `POST /api/onchain/mint-nft` with auth token (curl example below).
-- If user mint via MetaMask: click _Mint NFT_ in UI and approve the transaction in MetaMask.
+To create the record:
+- If backend relayer is used: call the API `POST /api/onchain/mint-nft` with auth token (curl example below).
+- If user wallet signing is used: click _Create Record_ in UI and approve the transaction in MetaMask.
 
 ## Admin: Manual settlement (daily)
 
@@ -56,7 +56,7 @@ Response includes per-option settlements, PnL and actions taken (margin calls, f
 
 ## Useful curl commands
 
-### Mint NFT (backend relayer)
+### Create verification record (backend relayer)
 
 ```bash
 curl -s -X POST https://<BASE_URL>/api/onchain/mint-nft \
@@ -79,7 +79,7 @@ To avoid spending POL during early tests, set environment vars:
 
 ## Troubleshooting (common)
 
-- **Mint fails:** check POL balance, faucet, or enable mock mode.
+- **Record creation fails:** check POL balance, faucet, or enable mock mode.
 - **Invalid address:** use checksummed address from MetaMask (ethers.getAddress validation).
 - **401 Unauthorized:** log in and use returned JWT for curl commands.
 - **Validation errors:** ensure qty >= 500 and numeric strike.
@@ -87,7 +87,7 @@ To avoid spending POL during early tests, set environment vars:
 ## Where to find contract addresses / env
 
 - `CROPT_CONTRACT_ADDRESS` — CROPT token (env / Replit secrets)
-- `CROPT_NFT_CONTRACT_ADDRESS` — Option NFT contract
+- `CROPT_NFT_CONTRACT_ADDRESS` — document-bound option record contract
 - Explorer: `https://amoy.polygonscan.com`
 
 ## Expected status flow

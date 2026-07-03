@@ -11,7 +11,7 @@
 ## Тестування — фермер
 1. Login → Create Option (CALL/PUT, strike, qty ≥ 500t) → перевірка OPEN.
 2. Дочекатись match → FILLED.
-3. Mint NFT → перевірити tokenId у рядку.
+3. Створити verification record → перевірити record/tokenId у рядку.
 4. Exercise → перевірити settlement та PnL.
 
 ## Тестування — трейдер

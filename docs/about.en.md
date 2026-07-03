@@ -1,37 +1,36 @@
-# Cropto — what it is and why
+# Cropto — What It Is
 
-**Cropto** is a simple, transparent tool to manage price risk in the agricultural market. We connect the physical grain market with digital instruments (NFTs and the CROPT token) so farmers can hedge prices and traders can earn additional income.
+Cropto is indexed trading and settlement infrastructure for agricultural commodities.
 
-## Who is it for
-- **Farmers** — lock in expected revenue by fixing a future delivery price.
-- **Traders** — earn option premiums and profit from market movements.
-- **Brokers / operators** — manage deals and maintain records tied to physical delivery.
+It is designed as the trade, document and settlement layer of the AMI ecosystem: local benchmark indices from 1D3X/SPIKE provide reference prices, while Cropto models spot, forward and options-style workflows around those references.
 
-## How it works (brief)
-1. A physical deal (farmer ↔ trader) or an option listing is created.
-2. The system issues an **NFT-option** (CALL/PUT) with strike, volume, term, premium.
-3. Daily recalculation via the Spike Spot Commodity Index — PnL, margin calls, payouts.
-4. Settlements happen off-chain first; optionally withdraw → mint on-chain (CROPT).
-5. Admin panel: partners registry, transactions journal, reconciliation.
+Cropto is not a generic crypto exchange or NFT marketplace. Tokenization is used as infrastructure for document verification, contract-state records, settlement traceability and optional programmable clearing.
 
-## Spot-forward model (what we actually run)
-- Non-deliverable (cash-settled) forwards on grain indexes: Corn, Wheat 11.5, Feed Wheat, Soy GMO, Sunflower processing.
-- Settlement in CROPT versus Spike Spot (CPT Odesa) using PnL = (SettlementPrice – ContractPrice) × Qty.
-- Margin-based: initial margin + margin calls; overdue margin can be auto-liquidated.
-- Legal form is an electronic agreement on the platform (not GAFTA-style physical delivery); disputes are handled off-chain.
+## Who It Is For
 
-## What the NFT-option contains
-- Option id and link to the physical contract
-- Type (CALL/PUT), strike, volume (tons), expiry
-- Premium and settlement currency (CROPT / fiat)
-- Execution / payout status
+- **Producers and commercial participants** — manage price risk against local benchmark indices.
+- **Traders and risk participants** — express indexed exposure without interfering with physical logistics.
+- **Brokers and operators** — record market workflows, contracts, counterparty context and settlement events.
+- **Infrastructure partners** — evaluate indexed pilot workflows, clearing, custody, payment rails and compliance architecture.
 
-## Money flow (simplified)
-- Premium goes to the seller (trader) or can act as a discount in the physical contract.
-- Upon exercise — payout from collateral or CROPT balance.
-- CROPT can be swapped to stablecoins / cashed out via usual channels.
+## How It Works
 
-## Why it's useful
-- For farmers — a simpler hedging tool.
-- For traders — additional income streams.
-- For the market — a transparent ledger and an easy pilot path.
+1. A market workflow, contract or option-like record is created.
+2. The record is tied to a commodity, benchmark index, quantity, strike/window and counterparties.
+3. The system tracks state changes, margin, P&L and settlement events.
+4. CROPT is used as a demo accounting and settlement unit in the prototype.
+5. Optionally, document-bound verification records can be created on Polygon Amoy testnet.
+
+## What Document-Bound Records Contain
+
+- Option or contract id.
+- Type, strike, quantity, expiry/window and commodity reference.
+- Link to contract metadata.
+- Settlement/accounting status.
+- Testnet transaction and record id when an on-chain proof is created.
+
+These records are not designed as speculative collectible NFTs. They are audit and verification records for prototype workflows.
+
+## Current Status
+
+Cropto is a functional prototype. Standalone development is currently paused while AMI expands through MN7R, 1D3X and SPIKE. The codebase remains useful for partner-backed pilots, architecture review and indexed settlement demonstrations.

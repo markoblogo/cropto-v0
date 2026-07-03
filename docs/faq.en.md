@@ -1,25 +1,25 @@
-# FAQ — Frequently Asked Questions
+# FAQ — Cropto
 
-### What is an NFT-option in Cropto?
-An NFT-option is an ERC-721 token that stores option metadata: type, strike, volume, term, and link to the physical contract. It is a digital certificate of the right/position.
+### What is Cropto?
 
-### How does a farmer use it?
-A farmer buys an option as insurance — pays the premium and locks a price for a future delivery. If the market moves unfavorably, the difference is compensated per the option terms.
+Cropto is a functional prototype for indexed agricultural commodity workflows, document verification and settlement traceability.
 
-### Who pays the premium?
-The option buyer pays the premium. The seller (trader) sets the premium — guideline 3–4% for a 6-month option, but it's market-driven.
+### Is Cropto a live trading venue?
 
-### What are the trader's risks?
-Main risk is the market moving against the position. Traders post collateral; if losses exceed collateral → margin call → forced settlement → default rating.
+No. Cropto is not currently operating as a live financial trading venue, public crypto exchange, NFT marketplace or DeFi product.
 
-### What is a margin call?
-Automatic notification triggered at a threshold (80% of collateral). Trader has 24 hours to top up, otherwise forced settlement occurs.
+### What is a document-bound verification record?
 
-### How does settlement / exercise work?
-Buyer initiates exercise. System calculates intrinsic value using Spike Index, compares to collateral, performs payout (off-chain) or triggers on-chain release when required.
+It is an ERC-721 testnet record that stores option or contract metadata for auditability. It can represent a document, contract state or settlement event. It is not designed as a collectible or speculative NFT asset.
 
-### How does minting on-chain work?
-CROPT is ERC-20. In MVP, minting is handled by the backend (dev-wallet, testnet). Users request withdraw — backend mints CROPT to the address. Production requires additional infrastructure.
+### How does settlement / exercise work in the prototype?
 
-### Can I transfer/sell the NFT-option?
-Yes — the NFT can be traded. Legal/physical obligations are described in the contract; transferring the NFT changes the digital owner of the right.
+The system calculates intrinsic value using a selected commodity index, compares it with strike/collateral rules and records payout, margin or forced-settlement events in the database. On-chain proof can be added for selected flows on Polygon Amoy testnet.
+
+### What is CROPT?
+
+CROPT is a demo accounting and settlement unit in the prototype. It is implemented as an ERC-20 testnet contract for experiments, but the final architecture can use public-chain, permissioned-ledger, private-ledger or non-crypto accounting rails.
+
+### Can document records be traded?
+
+The product direction is not speculative record trading. Document-bound records are intended for verification, state tracking and settlement traceability. Any transferability, if used in a pilot, must follow legal and partner requirements.

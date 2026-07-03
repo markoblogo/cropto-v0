@@ -1,25 +1,25 @@
 # FAQ — Cropto
 
-### Що таке NFT-опціон у Cropto?
+### Що таке Cropto?
 
-NFT-опціон — це токен ERC-721, який представляє право на отримання виплати за конкретним опціонним контрактом у системі Cropto.  
-Сам токен не є зерном — це **вимога на розрахунок**, привʼязана до фізичної угоди.
+Cropto — прототип для індексованих аграрних commodity workflows, верифікації документів і трасованості розрахунків.
 
-### Як розраховується PnL?
+### Cropto — це live trading?
 
-- Щодня береться **Spike Spot Commodity Index** для обраного класу (наприклад, пшениця 11.5 pro).  
-- Страйк опціону порівнюється з поточним значенням індексу.  
-- Для CALL/PUT рахується внутрішня вартість, оновлюється нереалізований PnL та статус маржі.
+Ні. Cropto — demo/prototype environment, а не regulated exchange або live trading venue.
+
+### Що таке document-bound verification record?
+
+Це testnet ERC-721 record, який зберігає metadata опціону або контракту для auditability. Він використовується для verification документів, contract states або settlement events. Це не speculative NFT collectible.
+
+### Як розраховується P&L?
+
+Прототип порівнює selected index price з умовами contract або option, а потім записує P&L, margin і settlement events.
 
 ### Що відбувається при margin call?
 
-Якщо збитки наближаються до розміру застави, позиція позначається як ризикова, і трейдер отримує час на поповнення маржі.  
-Якщо margin call не виконано, платформа може ініціювати **forced settlement**, використовуючи наявну заставу.
+Якщо збитки наближаються до collateral limit, позиція може отримати margin top-up flag. Якщо margin call не вирішено, прототип може записати forced settlement.
 
 ### Як отримати CROPT для тестів?
 
-У поточному Pre-MVP:
-
-- CROPT існує лише в тестовій мережі **Polygon Amoy**.  
-- Тестові токени мінтяться через backend-ендпоінти командою.  
-- Вам потрібен лише POL (тестовий gas) у MetaMask, щоб бачити транзакції та NFT-мінти.
+CROPT — demo accounting and settlement unit. В on-chain tests він існує у Polygon Amoy testnet, а test balances mint через controlled backend endpoints.

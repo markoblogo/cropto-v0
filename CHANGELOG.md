@@ -11,6 +11,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Repositioned Cropto as indexed trading, document-verification and settlement infrastructure for agro-commodity markets.
 - Added `PRODUCT_STATUS.md`, `REVIVAL_ROADMAP.md`, `AMI_INTEGRATION.md` and `DEMO.md`.
 - Clarified that Cropto is a functional prototype, not a live trading venue, generic crypto exchange or speculative NFT marketplace.
+- Aligned ES/PT/UK public localization and legacy docs with the updated AMI/infrastructure positioning.
 
 ## [v1.1.0] - 2026-02-24
 
