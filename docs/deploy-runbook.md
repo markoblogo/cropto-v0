@@ -22,10 +22,13 @@ Use this when `/api/version` on `https://cr0pto.com` does not match the latest c
 
 ## Mandatory env checks
 - `DATABASE_URL` set for both web and jobs services.
+- `JWT_SECRET` and `SESSION_SECRET` set to non-placeholder production values.
+- `JOB_RUNNER_SECRET` set on any service or caller that invokes operational job endpoints.
 - `ENABLE_MARKET_INGESTION` not set to `false`.
 - `START_INGESTION_SCHEDULER=1` on web service (unless ingestion runs in dedicated jobs service).
 - `ALLOW_DEMO_DATA` should be unset or `0` in production.
 - `INGESTION_DISABLE_PRIMARY` should be unset unless doing controlled failover testing.
+- Optional hardening limits can be tuned with `API_RATE_LIMIT_PER_MINUTE`, `AUTH_RATE_LIMIT_PER_MINUTE` and `UPLOAD_RATE_LIMIT_PER_5_MINUTES`.
 
 ## 2-minute verification (curl)
 1. `curl -sS https://cr0pto.com/api/version`
@@ -33,6 +36,7 @@ Use this when `/api/version` on `https://cr0pto.com` does not match the latest c
 3. `curl -sS -H "Authorization: Bearer <admin_token>" https://cr0pto.com/api/admin/market-ingestion/db-check`
 4. `curl -sS -X POST -H "Authorization: Bearer <admin_token>" "https://cr0pto.com/api/admin/market-ingestion/run-now?market=BR"`
 5. `curl -sS "https://cr0pto.com/api/market-dashboard?debugSources=1"`
+6. `curl -sS -X POST https://cr0pto.com/api/jobs/run-margin-check` should return `403` when no `x-job-secret` or `Authorization: Bearer <JOB_RUNNER_SECRET>` is supplied.
 
 Expected:
 - `/api/version` SHA equals `release/demo` HEAD.
@@ -40,3 +44,4 @@ Expected:
 - db-check => table status `db_ok` and `marketSummary` shows BR/AR/US counts.
 - run-now => `result.upserted > 0` (or clear sanitized failure reason + vendor list).
 - dashboard debug => BR/AR/US use real providers when rows exist; mock appears only when demo mode is explicitly allowed.
+- operational job endpoints reject unauthenticated production calls.

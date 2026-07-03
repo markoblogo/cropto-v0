@@ -111,13 +111,9 @@ router.post('/register', async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
 
-    // Normalize incoming role to current backend role model.
-    // We keep FARMER/TRADER as USER for now and preserve BROKER.
-    const normalizeIncomingRole = (role?: string): 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'BROKER' => {
+    // Public registration must never grant elevated roles. FARMER/TRADER map to USER.
+    const normalizeIncomingRole = (role?: string): 'USER' => {
       const raw = (role || 'USER').toLowerCase();
-      if (raw === 'broker') return 'BROKER';
-      if (raw === 'admin') return 'ADMIN';
-      if (raw === 'super_admin') return 'SUPER_ADMIN';
       if (raw === 'farmer' || raw === 'trader' || raw === 'user') return 'USER';
       return 'USER';
     };
@@ -535,6 +531,10 @@ router.put('/update-role', authenticateToken, async (req: AuthRequest, res) => {
       if (raw === 'super_admin') return 'SUPER_ADMIN' as const;
       return 'USER' as const;
     })();
+    if (normalizedRole !== 'USER') {
+      return res.status(403).json({ error: 'Elevated roles must be assigned through operator-controlled flows' });
+    }
+
     const updatedUser = await updateUserRole(req.user.id, normalizedRole);
 
     if (!updatedUser) {

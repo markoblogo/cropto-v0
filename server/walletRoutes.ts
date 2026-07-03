@@ -5,6 +5,8 @@ import {
   updateUserWallet,
   findUserById,
   optionalAuth,
+  authenticateToken,
+  hasAdminPermissions,
   AuthRequest
 } from './auth';
 
@@ -86,8 +88,16 @@ router.get('/me', optionalAuth, async (req: AuthRequest, res) => {
 });
 
 // GET /api/wallet/:userId - Get user's wallet info
-router.get('/:userId', async (req, res) => {
+// Restricted to the user themself or an admin/broker operator.
+router.get('/:userId', authenticateToken, async (req: AuthRequest, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    if (req.user.id !== req.params.userId && !hasAdminPermissions(req.user)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const user = await findUserById(req.params.userId);
     
     if (!user) {

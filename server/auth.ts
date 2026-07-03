@@ -468,9 +468,6 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   }
   
   req.user = user;
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/9954e01e-166a-402a-b350-ebd5f6863d16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'run1',hypothesisId:'H1-auth-role',location:'auth.ts:authenticateToken',message:'auth user set',data:{id:user.id,email:user.email,role:user.role},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   next();
 }
 

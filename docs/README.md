@@ -19,6 +19,7 @@ Internal project documentation for the Cropto prototype.
 
 ## Operations and deployment
 
+- [Audit hardening report (2026-07-03)](./audit-hardening-2026-07-03.md) - Code/security/reliability pass, fixes and residual risks.
 - [Monitoring](./monitoring.md) - Runtime monitoring and observability notes.
 - [Deploy runbook](./deploy-runbook.md) - Deployment process checklist.
 - [Sea Brokerage Monitor runbook](./sea-brokerage-monitor-railway-runbook.md) - Railway env + migration + relay checklist for `/spike-monitor`.

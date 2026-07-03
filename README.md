@@ -186,6 +186,7 @@ cp .env.example .env
 - `DATABASE_URL`
 - `SESSION_SECRET`
 - `JWT_SECRET`
+- `JOB_RUNNER_SECRET` in production, required for operational job endpoints such as margin checks, daily settlement and index ingestion triggers
 
 For monitor auth/relay work, also configure:
 
@@ -219,7 +220,9 @@ npm run dev:jobs
 
 ```bash
 npm run check
+npm run i18n:check
 npm run build
+npm audit --omit=dev
 ```
 
 Useful operational scripts:
@@ -245,6 +248,16 @@ npm run e2e:smoke
 - Full local development requires a configured database and feature-specific env values.
 - Telegram, Sheets and on-chain flows are feature-scoped integrations; configure only the modules being tested.
 - Legal/regulatory architecture is intentionally not finalized in this repository.
+- Dependency audit still has residual risk from major-version migrations or no-fix packages: `drizzle-orm`, `nodemailer`, Hardhat toolchain transitive dependencies and `xlsx`. Treat these as tracked follow-up migrations rather than silent production acceptance.
+
+## Operational Hardening Baseline
+
+- Public registration now grants only `USER`; elevated roles should be created through controlled operator flows.
+- Self-service role updates cannot assign broker/admin roles.
+- Operational job endpoints require `JOB_RUNNER_SECRET` in production.
+- API, auth and upload endpoints have process-local rate limits.
+- Uploaded feedback images are served with static-file hardening headers and dotfile denial.
+- `GET /api/wallet/:userId` is restricted to the user themself or an admin/broker operator.
 
 ## Contribution / Working Notes
 

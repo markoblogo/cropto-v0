@@ -1151,7 +1151,7 @@
       "category": "jsx_text"
     },
     {
-      "text": "Cropto standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE.\n            The platform remains a functional prototype with implemented document-tokenization and tokenized-settlement experiments.",
+      "text": "Cropto standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE.\n            The platform remains a functional prototype with implemented document-tokenization and tokenized-settlement experiments.\n            The current codebase has been hardened around API rate limits, operational job guards and role-escalation controls.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
       "line": 35,
       "category": "jsx_text"
@@ -1159,85 +1159,85 @@
     {
       "text": "Ecosystem role",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 42,
+      "line": 43,
       "category": "jsx_text"
     },
     {
       "text": "Cropto is the indexed trading and settlement layer of the AMI ecosystem.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 43,
+      "line": 44,
       "category": "jsx_text"
     },
     {
       "text": "1D3X provides local benchmark infrastructure. SPIKE provides Ukrainian physical-market indices. Cropto uses these indices\n              as reference prices for indexed spot, options and risk-management workflows.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 45,
+      "line": 46,
       "category": "jsx_text"
     },
     {
       "text": "brokerage workflows, BID/OFFER/TRADE, contracts, market memory.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 49,
+      "line": 50,
       "category": "jsx_text"
     },
     {
       "text": "MN7R / Monitor:",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 49,
+      "line": 50,
       "category": "jsx_text"
     },
     {
       "text": "local commodity and logistics benchmark indices.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 50,
+      "line": 51,
       "category": "jsx_text"
     },
     {
       "text": "1D3X / SPIKE:",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 50,
+      "line": 51,
       "category": "jsx_text"
     },
     {
       "text": "indexed spot/options trading, document verification and settlement traceability.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 51,
+      "line": 52,
       "category": "jsx_text"
     },
     {
       "text": "Cropto:",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 51,
+      "line": 52,
       "category": "jsx_text"
     },
     {
       "text": "clearing, custody, payment rails and risk instruments.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 52,
+      "line": 53,
       "category": "jsx_text"
     },
     {
       "text": "Regulated partners:",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 52,
+      "line": 53,
       "category": "jsx_text"
     },
     {
       "text": "Not a crypto exchange",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 59,
+      "line": 60,
       "category": "jsx_text"
     },
     {
       "text": "Cropto does not use tokenization to create speculative NFTs or unrelated public crypto assets. Tokenization is an\n              infrastructure mechanism for document verification, contract-state records, settlement traceability and indexed\n              commodity-risk workflows. The core asset is a verified commodity-market obligation, index exposure, contract state\n              or settlement record.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 62,
+      "line": 63,
       "category": "jsx_text"
     },
     {
       "text": "Technical proofs already implemented",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-      "line": 73,
+      "line": 74,
       "category": "jsx_text"
     },
     {
@@ -1262,7 +1262,7 @@
       "context": "property: title"
     },
     {
-      "text": "Polygon testnet flows prove settlement traceability, CROPT accounting-unit logic, and contract-state recording for demo instruments.",
+      "text": "Polygon Amoy testnet flows prove settlement traceability, CROPT accounting-unit logic, and contract-state recording for demo instruments.",
       "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
       "line": 12,
       "category": "other",
@@ -6250,7 +6250,7 @@
         "category": "jsx_text"
       },
       {
-        "text": "Cropto standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE.\n            The platform remains a functional prototype with implemented document-tokenization and tokenized-settlement experiments.",
+        "text": "Cropto standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE.\n            The platform remains a functional prototype with implemented document-tokenization and tokenized-settlement experiments.\n            The current codebase has been hardened around API rate limits, operational job guards and role-escalation controls.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
         "line": 35,
         "category": "jsx_text"
@@ -6258,85 +6258,85 @@
       {
         "text": "Ecosystem role",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 42,
+        "line": 43,
         "category": "jsx_text"
       },
       {
         "text": "Cropto is the indexed trading and settlement layer of the AMI ecosystem.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 43,
+        "line": 44,
         "category": "jsx_text"
       },
       {
         "text": "1D3X provides local benchmark infrastructure. SPIKE provides Ukrainian physical-market indices. Cropto uses these indices\n              as reference prices for indexed spot, options and risk-management workflows.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 45,
+        "line": 46,
         "category": "jsx_text"
       },
       {
         "text": "brokerage workflows, BID/OFFER/TRADE, contracts, market memory.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 49,
+        "line": 50,
         "category": "jsx_text"
       },
       {
         "text": "MN7R / Monitor:",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 49,
+        "line": 50,
         "category": "jsx_text"
       },
       {
         "text": "local commodity and logistics benchmark indices.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 50,
+        "line": 51,
         "category": "jsx_text"
       },
       {
         "text": "1D3X / SPIKE:",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 50,
+        "line": 51,
         "category": "jsx_text"
       },
       {
         "text": "indexed spot/options trading, document verification and settlement traceability.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 51,
+        "line": 52,
         "category": "jsx_text"
       },
       {
         "text": "Cropto:",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 51,
+        "line": 52,
         "category": "jsx_text"
       },
       {
         "text": "clearing, custody, payment rails and risk instruments.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 52,
+        "line": 53,
         "category": "jsx_text"
       },
       {
         "text": "Regulated partners:",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 52,
+        "line": 53,
         "category": "jsx_text"
       },
       {
         "text": "Not a crypto exchange",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 59,
+        "line": 60,
         "category": "jsx_text"
       },
       {
         "text": "Cropto does not use tokenization to create speculative NFTs or unrelated public crypto assets. Tokenization is an\n              infrastructure mechanism for document verification, contract-state records, settlement traceability and indexed\n              commodity-risk workflows. The core asset is a verified commodity-market obligation, index exposure, contract state\n              or settlement record.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 62,
+        "line": 63,
         "category": "jsx_text"
       },
       {
         "text": "Technical proofs already implemented",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
-        "line": 73,
+        "line": 74,
         "category": "jsx_text"
       },
       {
@@ -6361,7 +6361,7 @@
         "context": "property: title"
       },
       {
-        "text": "Polygon testnet flows prove settlement traceability, CROPT accounting-unit logic, and contract-state recording for demo instruments.",
+        "text": "Polygon Amoy testnet flows prove settlement traceability, CROPT accounting-unit logic, and contract-state recording for demo instruments.",
         "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
         "line": 12,
         "category": "other",

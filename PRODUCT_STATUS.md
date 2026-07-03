@@ -60,3 +60,17 @@ A partner-backed revival should define:
 - pilot success metrics;
 - security, audit and data-retention requirements;
 - production support and incident process.
+
+## Hardening Status
+
+The current codebase includes a baseline hardening pass for prototype and partner-pilot readiness:
+
+- public registration cannot assign broker/admin/super-admin roles;
+- self-service role updates cannot assign operator roles;
+- production job endpoints require `JOB_RUNNER_SECRET`;
+- API/auth/upload rate limits are enabled in the web process;
+- feedback uploads are restricted to image MIME types, size-capped and served with static hardening headers;
+- wallet lookup by user id is no longer public;
+- duplicate spot-route registration was removed from server startup.
+
+Residual dependency audit items remain. `npm audit --omit=dev` still reports issues that require breaking upgrades or package replacement, mainly `drizzle-orm`, `nodemailer`, Hardhat-related transitive packages and `xlsx` with no upstream fix. These should be handled as explicit migration tasks with regression testing.

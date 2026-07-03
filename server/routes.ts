@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -118,6 +118,27 @@ const MARKET_DASHBOARD_SPX_URL = "https://www.barchart.com/stocks/quotes/$SPX/ov
 const MARKET_DASHBOARD_DOW_CACHE_KEY = "market_dashboard_quote_dow_dusa_v1";
 const MARKET_DASHBOARD_DOW_URL = "https://www.barchart.com/stocks/quotes/$DUSA/overview";
 const MARKET_DASHBOARD_CBOT_SOY_OIL_CACHE_KEY = "market_dashboard_quote_cbot_soy_oil_zlk26_v1";
+
+function hasJobRunnerAccess(req: AuthRequest): boolean {
+  const secret = String(process.env.JOB_RUNNER_SECRET || "").trim();
+  if (!secret) {
+    return process.env.NODE_ENV !== "production";
+  }
+
+  const authHeader = String(req.headers.authorization || "");
+  const bearer = authHeader.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
+  const headerSecret = String(req.headers["x-job-secret"] || "").trim();
+  return headerSecret === secret || bearer === secret;
+}
+
+function requireJobRunnerAccess(req: AuthRequest, res: Response): boolean {
+  if (hasJobRunnerAccess(req)) {
+    return true;
+  }
+  const configured = Boolean(String(process.env.JOB_RUNNER_SECRET || "").trim());
+  res.status(configured ? 403 : 404).json({ error: configured ? "Forbidden" : "Not found" });
+  return false;
+}
 const MARKET_DASHBOARD_CBOT_SOY_OIL_URL = "https://www.barchart.com/futures/quotes/ZLK26/overview";
 const MARKET_DASHBOARD_CBOT_SOY_MEAL_CACHE_KEY = "market_dashboard_quote_cbot_soy_meal_zmk26_v1";
 const MARKET_DASHBOARD_CBOT_SOY_MEAL_URL = "https://www.barchart.com/futures/quotes/ZMK26/overview";
@@ -4236,7 +4257,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Internal endpoint for scraper ingestion
-  app.post("/api/index/ingest/scrape", async (req, res) => {
+  app.post("/api/index/ingest/scrape", async (req: AuthRequest, res) => {
+    if (!requireJobRunnerAccess(req, res)) return;
+
     try {
       const { commodity, price, message_id, raw, date } = req.body;
 
@@ -7100,7 +7123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/jobs/run-margin-check - Run margin check on open options
-  app.post("/api/jobs/run-margin-check", async (req, res) => {
+  app.post("/api/jobs/run-margin-check", async (req: AuthRequest, res) => {
+    if (!requireJobRunnerAccess(req, res)) return;
+
     try {
       const marginCheckSchema = z.object({
         date: z.string().optional(),
@@ -7261,7 +7286,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/jobs/daily-settle - Daily settlement with margin call generation
-  app.post("/api/jobs/daily-settle", async (req, res) => {
+  app.post("/api/jobs/daily-settle", async (req: AuthRequest, res) => {
+    if (!requireJobRunnerAccess(req, res)) return;
+
     try {
       const dailySettleSchema = z.object({
         date: z.string().optional(),

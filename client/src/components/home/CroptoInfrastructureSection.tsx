@@ -9,7 +9,7 @@ const proofs = [
   },
   {
     title: "Tokenized settlement experiments",
-    description: "Polygon testnet flows prove settlement traceability, CROPT accounting-unit logic, and contract-state recording for demo instruments.",
+    description: "Polygon Amoy testnet flows prove settlement traceability, CROPT accounting-unit logic, and contract-state recording for demo instruments.",
     Icon: Link2,
   },
   {
@@ -34,6 +34,7 @@ export function CroptoInfrastructureSection() {
           <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
             Cropto standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE.
             The platform remains a functional prototype with implemented document-tokenization and tokenized-settlement experiments.
+            The current codebase has been hardened around API rate limits, operational job guards and role-escalation controls.
           </p>
         </div>
 

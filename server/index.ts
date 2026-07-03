@@ -1,11 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { registerSpotRoutes } from "./spotRoutes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeAuth } from "./auth";
 import { initSentry } from "./utils/sentry";
 import blockServiceRole from "./middleware/blockServiceRole";
 import auditLog from "./middleware/auditLog";
+import { apiRateLimiter, securityHeaders } from "./middleware/security";
 import { autoImportDemoData } from "../scripts/auto-import-demo-data";
 import { seedCommodityIndexes } from "./seed/commodityIndexes";
 import { db } from "./db";
@@ -34,6 +34,8 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false }));
 
+app.use(securityHeaders);
+app.use("/api", apiRateLimiter);
 app.use(blockServiceRole);
 app.use(auditLog);
 app.use((req, res, next) => {
@@ -109,14 +111,26 @@ app.use((req, res, next) => {
   }
 
   const server = await registerRoutes(app);
-  registerSpotRoutes(app);
   registerMonitorRoutes(app);
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "API route not found" });
   });
 
   // Static files uploaded by users (e.g. feedback screenshots)
-  app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+  app.use(
+    "/uploads",
+    express.static(path.resolve(process.cwd(), "uploads"), {
+      dotfiles: "deny",
+      fallthrough: false,
+      immutable: true,
+      maxAge: "7d",
+      setHeaders: (res) => {
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self' data:; style-src 'none'");
+        res.setHeader("Referrer-Policy", "no-referrer");
+      },
+    })
+  );
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
