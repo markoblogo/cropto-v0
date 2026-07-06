@@ -17,6 +17,7 @@ Internal project documentation for the Cropto prototype.
 - [Commodity Ops Terminal](./commodity-ops-terminal.md) - Agent terminal safe-mode model, CLI skeleton and operator gates.
 - [Data sources](./data-sources.md) - Market data source notes.
 - [Testing (general)](./testing.md) - Generic testing checklist.
+- [Architecture decisions](./adr/) - Hard-to-reverse product and architecture decisions.
 
 ## Operations and deployment
 

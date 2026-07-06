@@ -1,0 +1,3 @@
+# Chain-Optional Commodity Infrastructure
+
+Cropto is treated as the trade, document and settlement layer for indexed agricultural commodity workflows inside AMI, not as a generic crypto exchange, NFT marketplace or DeFi protocol. Blockchain remains an optional trust and verification layer for document-bound records, contract-state history and settlement traceability; current prototype references should use Polygon Amoy for testnet work. Final pilot architecture must be selected by commodity scope, partner rails, jurisdiction and compliance requirements, and Cropto must not be described as replacing physical trade execution.
