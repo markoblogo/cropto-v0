@@ -1,7 +1,7 @@
 # 1D3X Cortex Integration
 
 Status: planning + documented consumer contract
-Updated: 2026-07-06
+Updated: 2026-07-07
 
 1D3X Cortex is the ecosystem intelligence layer for Index Platform, MN7R,
 Cr0pto and related agro-commodity resources. In Cropto, Cortex should work
@@ -66,22 +66,33 @@ product is revived under a scoped pilot.
 
 The first Cr0pto slice is documented rather than runtime-enabled because
 standalone development is currently paused. When revived, Cr0pto should consume
-the Index-hosted Cortex ledger through the same internal read contract used by
-MN7R:
+the Index-hosted Cortex ledger and on-demand builder through the same internal
+contracts used by MN7R:
 
 ```txt
 GET /api/internal/cortex/context-packs
 Authorization: Bearer <CROPT_CORTEX_INTERNAL_API_SECRET>
 ```
 
+```txt
+POST /api/internal/cortex/context-pack
+Authorization: Bearer <CROPT_CORTEX_INTERNAL_API_SECRET>
+Content-Type: application/json
+```
+
 Recommended environment variables:
 
 - `CROPT_CORTEX_CONTEXT_PACKS_URL`
+- `CROPT_CORTEX_CONTEXT_PACK_URL`
 - `CROPT_CORTEX_INTERNAL_API_SECRET`
 
 The default Cr0pto client should read bounded metadata first: target, source
 IDs, visibility, metrics, query and pack hash. Full pack JSON should be
 requested only by an explicitly reviewed assistant workflow.
+When an assistant needs fresh context, it should call the builder with a
+bounded query, purpose, filters, `maxEvidence` and `maxTokens`. `allowProtected`
+must stay false unless the revived Cr0pto workflow has explicit partner/legal
+approval and redaction for that data class.
 
 Next implementation slices:
 

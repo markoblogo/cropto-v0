@@ -68,8 +68,8 @@ Cropto is intended to sit inside a broader agro-commodity market infrastructure 
 - **1D3X / SPIKE / UGA Index** provide local commodity and logistics benchmark indices.
 - **1D3X Cortex** provides the evidence-backed context layer that can compare
   index, monitor and market signals before any LLM-assisted drafting. Cr0pto is
-  a documented consumer of the Index-hosted Cortex context-pack read contract
-  until the standalone product is revived.
+  a documented consumer of the Index-hosted Cortex context-pack read and
+  on-demand builder contracts until the standalone product is revived.
 - **Cropto** consumes these indices as reference infrastructure for indexed spot/options workflows, document verification and settlement logic.
 - **Future regulated partners** may provide clearing, custody, payment rails and compliant risk instruments.
 
