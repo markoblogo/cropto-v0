@@ -1,4 +1,4 @@
-import { BadgeCheck, FileCheck2, Layers3, Link2, ShieldCheck, Workflow } from "lucide-react";
+import { BadgeCheck, BrainCircuit, FileCheck2, Layers3, Link2, ShieldCheck, Workflow } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const proofs = [
@@ -49,6 +49,7 @@ export function CroptoInfrastructureSection() {
             <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
               <div className="rounded-md border bg-muted/30 p-3"><strong>MN7R / Monitor:</strong> brokerage workflows, BID/OFFER/TRADE, contracts, market memory.</div>
               <div className="rounded-md border bg-muted/30 p-3"><strong>1D3X / SPIKE:</strong> local commodity and logistics benchmark indices.</div>
+              <div className="rounded-md border bg-muted/30 p-3"><strong>1D3X Cortex:</strong> evidence-backed context packs for future assistants, reports and due-diligence.</div>
               <div className="rounded-md border bg-muted/30 p-3"><strong>Cropto:</strong> indexed spot/options trading, document verification and settlement traceability.</div>
               <div className="rounded-md border bg-muted/30 p-3"><strong>Regulated partners:</strong> clearing, custody, payment rails and risk instruments.</div>
             </div>
@@ -66,6 +67,19 @@ export function CroptoInfrastructureSection() {
               or settlement record.
             </p>
           </div>
+        </div>
+
+        <div className="rounded-lg border border-primary/25 bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-primary">
+            <BrainCircuit className="h-5 w-5" />
+            <p className="text-xs font-semibold uppercase tracking-wide">1D3X Cortex</p>
+          </div>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">Cropto consumes the ecosystem intelligence layer before any future assistant acts.</h2>
+          <p className="mt-2 max-w-5xl text-sm leading-6 text-muted-foreground">
+            Cortex is the shared memory layer for approved index, MediaHub, Monitor and Cropto context. In Cropto it starts as a documented
+            consumer contract for bounded evidence, market context and partner due-diligence. Any future trading, settlement, wallet,
+            token or clearing action still requires explicit tool contracts, confirmation, idempotency and audit.
+          </p>
         </div>
 
         <div>

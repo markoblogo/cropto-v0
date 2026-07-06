@@ -68,7 +68,7 @@ export const DECK_PAGE_COPY = {
   heroSubtitle:
     "Indexed trading and settlement infrastructure for agricultural commodities.",
   heroMicrocopy:
-    "Cropto connects local commodity indices, physical-market contracts and programmable settlement workflows. It is the planned trading and settlement layer of the broader AMI stack, built around MN7R, 1D3X, SPIKE/UGA Index and future regulated risk-product partners.",
+    "Cropto connects local commodity indices, physical-market contracts and programmable settlement workflows. It is the planned trading and settlement layer of the broader AMI stack, built around MN7R, 1D3X, SPIKE/UGA Index, 1D3X Cortex and future regulated risk-product partners.",
   heroStatus:
     "Status: functional prototype, paused standalone development, revival-ready for partner-backed pilots.",
   viewDeckCta: "View deck PDF",
@@ -88,7 +88,7 @@ export const DECK_PAGE_COPY = {
     "Benchmark contracts can be liquid, but liquidity alone does not guarantee hedge efficiency. When local price behavior diverges from benchmark exchange pricing, protection weakens. Cropto starts from a different premise: risk tools should align with the market structure they protect.",
   productTitle: "What Cropto Is",
   productBody:
-    "Cropto is designed for spot and options workflows on agricultural commodities and local commodity indices, using benchmark data from 1D3X and SPIKE as reference infrastructure.",
+    "Cropto is designed for spot and options workflows on agricultural commodities and local commodity indices, using benchmark data from 1D3X/SPIKE and bounded 1D3X Cortex context as reference infrastructure.",
   productBody2:
     "Cropto uses tokenization as infrastructure for document verification, contract-state records, settlement traceability and optional programmable clearing, not as a speculative NFT or public-token product.",
   notCryptoTitle: "What Cropto Is Not",
@@ -96,7 +96,7 @@ export const DECK_PAGE_COPY = {
     "Cropto is not a generic crypto exchange, DeFi casino or speculative NFT marketplace. Tokenization is used as a representation and trust layer. A tokenized document or contract-state record is not designed for standalone speculation; it represents a verified document, contract state, settlement record or index-linked exposure.",
   indicesTitle: "Why Indices Matter",
   indicesBody:
-    "1D3X provides local benchmark infrastructure. SPIKE provides Ukrainian physical-market indices. Cropto uses these indices as reference prices for indexed spot, options and risk-management workflows.",
+    "1D3X provides local benchmark infrastructure. SPIKE provides Ukrainian physical-market indices. 1D3X Cortex provides evidence-backed market context around those signals. Cropto uses this stack as reference infrastructure for indexed spot, options and risk-management workflows.",
   indicesPrinciple:
     "No trusted index -> no serious indexed trading layer. Trusted index -> possible local-market risk tools.",
   proofsTitle: "Implemented Technical Proofs",
@@ -292,6 +292,12 @@ export const DECK_FAQ_ITEMS: DeckFaqItem[] = [
 ];
 
 export const DECK_ECOSYSTEM_LINKS: DeckEcosystemLink[] = [
+  {
+    label: "1D3X Cortex",
+    href: "https://1d3x.com/en/media-hub",
+    description: "Evidence-backed context memory for reports and future assistants",
+    tag: "Intelligence Layer",
+  },
   {
     label: "Spike.brokers",
     href: "https://spike.broker/",
