@@ -1,10 +1,10 @@
 # 1D3X Cortex Integration
 
-Status: planning
+Status: planning + documented consumer contract
 Updated: 2026-07-06
 
-1D3X Cortex is the planned ecosystem intelligence layer for Index Platform,
-MN7R, Cr0pto and related agro-commodity resources. In Cropto, Cortex should work
+1D3X Cortex is the ecosystem intelligence layer for Index Platform, MN7R,
+Cr0pto and related agro-commodity resources. In Cropto, Cortex should work
 inside future assistant surfaces as an upstream evidence, market-context and
 governed-tool layer for indexed trading, document verification and settlement
 pilots.
@@ -54,6 +54,27 @@ product is revived under a scoped pilot.
   `protected` or `secret`.
 
 ## First Useful Slice
+
+The first Cr0pto slice is documented rather than runtime-enabled because
+standalone development is currently paused. When revived, Cr0pto should consume
+the Index-hosted Cortex ledger through the same internal read contract used by
+MN7R:
+
+```txt
+GET /api/internal/cortex/context-packs
+Authorization: Bearer <CROPT_CORTEX_INTERNAL_API_SECRET>
+```
+
+Recommended environment variables:
+
+- `CROPT_CORTEX_CONTEXT_PACKS_URL`
+- `CROPT_CORTEX_INTERNAL_API_SECRET`
+
+The default Cr0pto client should read bounded metadata first: target, source
+IDs, visibility, metrics, query and pack hash. Full pack JSON should be
+requested only by an explicitly reviewed assistant workflow.
+
+Next implementation slices:
 
 1. Register Cr0pto public surfaces and docs in the Cortex source registry.
 2. Map Cropto instruments to Index Platform commodities and basis labels.

@@ -9,13 +9,13 @@ Cropto is the trade, document and settlement layer of the AMI ecosystem. It is d
 
 Cropto is not a generic crypto exchange. Blockchain is used as a trust and verification layer: document tokenization, contract-state records, settlement traceability and optional programmable clearing. The platform has implemented document-to-token workflows and tokenized settlement mechanics on Polygon testnet infrastructure.
 
-1D3X Cortex is planned as the ecosystem intelligence layer around Index Platform,
-MN7R and Cr0pto. For Cropto, it should work inside future assistant surfaces
-with evidence, market context, index context and governed tool proposals for
-indexed trading and settlement pilots. It starts by observing/learning from
-approved data and workflow traces, then can move toward approval-gated actions
-and later bounded autonomy per capability; it must not bypass trading,
-settlement, token, wallet or clearing controls.
+1D3X Cortex is the ecosystem intelligence layer around Index Platform, MN7R and
+Cr0pto. For Cropto, it is currently a documented read-only consumer contract for
+future assistant surfaces: bounded evidence, market context, index context and
+governed tool proposals for indexed trading and settlement pilots. It starts by
+observing/learning from approved data and workflow traces, then can move toward
+approval-gated actions and later bounded autonomy per capability; it must not
+bypass trading, settlement, token, wallet or clearing controls.
 
 Standalone development is currently paused while the AMI ecosystem expands through MN7R, 1D3X and SPIKE. The codebase remains functional and can be revived for partner-backed indexed trading and settlement pilots.
 
@@ -66,8 +66,10 @@ Cropto is intended to sit inside a broader agro-commodity market infrastructure 
 
 - **MN7R / Monitor** captures brokerage workflows, BID/OFFER/TRADE activity, contracts and market memory.
 - **1D3X / SPIKE / UGA Index** provide local commodity and logistics benchmark indices.
-- **1D3X Cortex** provides the planned evidence-backed context layer that can
-  compare index, monitor and market signals before any LLM-assisted drafting.
+- **1D3X Cortex** provides the evidence-backed context layer that can compare
+  index, monitor and market signals before any LLM-assisted drafting. Cr0pto is
+  a documented consumer of the Index-hosted Cortex context-pack read contract
+  until the standalone product is revived.
 - **Cropto** consumes these indices as reference infrastructure for indexed spot/options workflows, document verification and settlement logic.
 - **Future regulated partners** may provide clearing, custody, payment rails and compliant risk instruments.
 
