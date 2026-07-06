@@ -230,6 +230,7 @@ Useful operational scripts:
 ```bash
 npm run sea-brokerage:telegram:smoke
 npm run sea-brokerage:dictionaries:import
+npm run ops:terminal -- session status
 npm run e2e:smoke
 ```
 

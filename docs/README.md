@@ -14,6 +14,7 @@ Internal project documentation for the Cropto prototype.
 ## Product and API
 
 - [API examples](./api-examples.md) - API request/response usage examples.
+- [Commodity Ops Terminal](./commodity-ops-terminal.md) - Agent terminal safe-mode model, CLI skeleton and operator gates.
 - [Data sources](./data-sources.md) - Market data source notes.
 - [Testing (general)](./testing.md) - Generic testing checklist.
 

@@ -1,7 +1,7 @@
 {
   "name": "cropto-v0",
   "version": "1.1.0",
-  "description": "Cropto commodity market infrastructure prototype with tokenized local grain indices, trading UI, and partner/investor deck.",
+  "description": "Cropto indexed trading and settlement infrastructure prototype for agricultural commodities.",
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -34,7 +34,8 @@
     "data:backfill:usda": "tsx scripts/backfillUsdaAmsArchives.ts",
     "data:audit:index-contract": "tsx scripts/auditIndexContract.ts",
     "auth:sync-legacy-users": "tsx scripts/syncLegacyUsersToSupabase.ts",
-    "sea-brokerage:dictionaries:import": "tsx scripts/import_sea_brokerage_dictionaries_from_sheet.ts"
+    "sea-brokerage:dictionaries:import": "tsx scripts/import_sea_brokerage_dictionaries_from_sheet.ts",
+    "ops:terminal": "tsx scripts/commodity-ops-terminal.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
