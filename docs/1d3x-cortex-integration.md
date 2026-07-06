@@ -34,6 +34,12 @@ proposals for:
 - assistant chat and draft preparation around scenarios, documents and pilot
   due-diligence;
 - pilot due-diligence packs for partner discussions.
+- public site/deck content, product docs, scenario docs, technical proof
+  descriptions and archived partner-facing materials.
+- repository code, tests, contracts, route contracts, plans, runbooks and
+  development notes when the standalone product is revived or reviewed.
+- future approved action/event history from trading, settlement or document
+  workflows only after explicit redaction, permissions and audit contracts.
 
 Cropto contributes only public or explicitly approved internal context until the
 product is revived under a scoped pilot.
@@ -49,6 +55,9 @@ product is revived under a scoped pilot.
   general product-wide permission.
 - External LLM calls receive only bounded Cortex context packs, not raw wallet,
   private-key, counterparty, payment or settlement records.
+- Cortex can analyze Cropto code, docs, plans, archives and action history for
+  recommendations, but must separate implemented behavior from planned,
+  prototype, stale or partner-dependent work.
 - Public Cr0pto pages can be indexed as `public`; prototype internals default to
   `internal`; any partner, account, wallet or settlement-sensitive material is
   `protected` or `secret`.
