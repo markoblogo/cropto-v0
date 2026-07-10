@@ -64,10 +64,21 @@ product is revived under a scoped pilot.
 
 ## First Useful Slice
 
-The first Cr0pto slice is documented rather than runtime-enabled because
-standalone development is currently paused. When revived, Cr0pto should consume
-the Index-hosted Cortex ledger and on-demand builder through the same internal
-contracts used by MN7R:
+The first Cr0pto slice is documented and source-manifest enabled rather than
+runtime-enabled because standalone development is currently paused. Cr0pto can
+export an approved local inventory for Index-hosted Cortex:
+
+```bash
+npm run cortex:source-manifest -- --out=.cortex/cropto-source-manifest.json
+```
+
+The manifest covers approved docs, public surfaces, code, runbooks and plans;
+it excludes `.env`, secrets, `node_modules`, build outputs and local Cortex
+artifacts. Public Markdown docs are marked `public`; implementation and
+prototype internals default to `internal`.
+
+When revived, Cr0pto should consume the Index-hosted Cortex ledger and on-demand
+builder through the same internal contracts used by MN7R:
 
 ```txt
 GET /api/internal/cortex/context-packs
@@ -96,7 +107,8 @@ approval and redaction for that data class.
 
 Next implementation slices:
 
-1. Register Cr0pto public surfaces and docs in the Cortex source registry.
+1. Feed `.cortex/cropto-source-manifest.json` into the Index-hosted Cortex
+   source registry / chunking pipeline.
 2. Map Cropto instruments to Index Platform commodities and basis labels.
 3. Build one context pack that explains an indexed trading scenario with public
    index evidence.

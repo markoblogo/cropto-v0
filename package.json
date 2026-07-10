@@ -15,6 +15,7 @@
     "start:jobs": "NODE_ENV=production node dist/jobsRunner.js",
     "postinstall": "playwright install chromium",
     "check": "tsc",
+    "cortex:source-manifest": "tsx scripts/cortex_source_manifest.ts",
     "db:push": "drizzle-kit push",
     "db:migrate": "tsx scripts/apply-migrations.ts",
     "migrate": "tsx db/migrate.ts",
