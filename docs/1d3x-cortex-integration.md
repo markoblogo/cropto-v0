@@ -1,7 +1,7 @@
 # 1D3X Cortex Integration
 
 Status: planning + documented consumer contract
-Updated: 2026-07-07
+Updated: 2026-07-11
 
 1D3X Cortex is the ecosystem intelligence layer for Index Platform, MN7R,
 Cr0pto and related agro-commodity resources. In Cropto, Cortex should work
@@ -108,7 +108,17 @@ approval and redaction for that data class.
 Next implementation slices:
 
 1. Feed `.cortex/cropto-source-manifest.json` into the Index-hosted Cortex
-   source registry / chunking pipeline.
+   runtime artifact build:
+
+   ```bash
+   npm run cortex:artifact-build -- \
+     --cropto-manifest=.cortex/cropto-source-manifest.json \
+     --require-project=index \
+     --require-project=mn7r \
+     --require-project=cropto \
+     --min-chunks=100
+   ```
+
 2. Map Cropto instruments to Index Platform commodities and basis labels.
 3. Build one context pack that explains an indexed trading scenario with public
    index evidence.

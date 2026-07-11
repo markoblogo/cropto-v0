@@ -72,7 +72,8 @@ Cropto is intended to sit inside a broader agro-commodity market infrastructure 
   on-demand builder contracts until the standalone product is revived. Cr0pto
   can also export a local Cortex source manifest with
   `npm run cortex:source-manifest` so Index-hosted Cortex can inventory approved
-  Cr0pto docs, public surfaces, code, runbooks and plans.
+  Cr0pto docs, public surfaces, code, runbooks and plans. Index can include the
+  manifest in its local runtime artifact with `npm run cortex:artifact-build`.
 - **Cropto** consumes these indices as reference infrastructure for indexed spot/options workflows, document verification and settlement logic.
 - **Future regulated partners** may provide clearing, custody, payment rails and compliant risk instruments.
 
