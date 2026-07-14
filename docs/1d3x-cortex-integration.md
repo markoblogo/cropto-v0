@@ -44,6 +44,20 @@ proposals for:
 Cropto contributes only public or explicitly approved internal context until the
 product is revived under a scoped pilot.
 
+## Ownership Boundary
+
+Cortex owns the shared AI layer, including cross-product context assembly,
+memory/retrieval, model routing, workforce packets, evaluation records and the
+OpenAI/API handoff. Cropto owns the indexed trading, document, settlement,
+wallet and clearing domain adapter, permissions and approval gates. Any Cropto
+assistant is a Cortex surface and must not create a separate memory or
+autonomous action layer.
+
+Future Cortex synthesis for Cropto follows source-scoped evidence, retrieval,
+cited synthesis, explicit known gaps/staleness and then an approval-gated
+proposal. This is a contract reference adapted from GBrain, not a GBrain
+runtime integration or a connector to wallets, mail, Telegram or local files.
+
 ## Safety Contract
 
 - Cortex does not autonomously make trading, settlement, transfer, minting,
