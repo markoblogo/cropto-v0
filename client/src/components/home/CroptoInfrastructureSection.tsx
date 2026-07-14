@@ -76,8 +76,8 @@ export function CroptoInfrastructureSection() {
           </div>
           <h2 className="mt-2 text-2xl font-bold tracking-tight">Cropto consumes the ecosystem intelligence layer before any future assistant acts.</h2>
           <p className="mt-2 max-w-5xl text-sm leading-6 text-muted-foreground">
-            Cortex is the shared memory layer for approved index, MediaHub, Monitor and Cropto context. In Cropto it starts as a documented
-            consumer contract for bounded evidence, market context and partner due-diligence. Any future trading, settlement, wallet,
+            Cortex is the shared internal intelligence product for approved index, MediaHub, Monitor and Cropto context. In Cropto it is
+            currently a source-manifest-enabled consumer contract for bounded evidence, market context and partner due-diligence. Any future trading, settlement, wallet,
             token or clearing action still requires explicit tool contracts, confirmation, idempotency and audit.
           </p>
         </div>

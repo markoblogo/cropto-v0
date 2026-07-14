@@ -1,13 +1,13 @@
 # 1D3X Cortex Integration
 
-Status: planning + documented consumer contract
-Updated: 2026-07-11
+Status: active ecosystem product, Cropto source-consumer rollout
+Updated: 2026-07-14
 
-1D3X Cortex is the ecosystem intelligence layer for Index Platform, MN7R,
-Cr0pto and related agro-commodity resources. In Cropto, Cortex should work
-inside future assistant surfaces as an upstream evidence, market-context and
-governed-tool layer for indexed trading, document verification and settlement
-pilots.
+1D3X Cortex is the active internal intelligence product for Index Platform,
+MN7R, Cr0pto and related agro-commodity resources. In Cropto, its current
+rollout is source-manifest and consumer-contract based: it supplies approved
+evidence, market context and governed-tool context for future indexed trading,
+document verification and settlement assistant surfaces.
 
 ## Lifecycle In Cropto
 
