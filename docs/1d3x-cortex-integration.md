@@ -1,7 +1,7 @@
 # 1D3X Cortex Integration
 
 Status: active ecosystem product, Cropto source-consumer rollout
-Updated: 2026-07-14
+Updated: 2026-07-15
 
 1D3X Cortex is the active internal intelligence product for Index Platform,
 MN7R, Cr0pto and related agro-commodity resources. In Cropto, its current
@@ -91,8 +91,10 @@ it excludes `.env`, secrets, `node_modules`, build outputs and local Cortex
 artifacts. Public Markdown docs are marked `public`; implementation and
 prototype internals default to `internal`.
 
-When revived, Cr0pto should consume the Index-hosted Cortex ledger and on-demand
-builder through the same internal contracts used by MN7R:
+When revived, Cr0pto should consume the Index-hosted Cortex ledger, Ecosystem
+Evidence read surface and on-demand builder through the same internal contracts
+used by MN7R. The current repository does not implement that adapter or submit
+events to the ledger.
 
 ```txt
 GET /api/internal/cortex/context-packs
@@ -105,10 +107,16 @@ Authorization: Bearer <CROPT_CORTEX_INTERNAL_API_SECRET>
 Content-Type: application/json
 ```
 
+```txt
+GET /api/internal/cortex/ecosystem-evidence
+Authorization: Bearer <CROPT_CORTEX_INTERNAL_API_SECRET>
+```
+
 Recommended environment variables:
 
 - `CROPT_CORTEX_CONTEXT_PACKS_URL`
 - `CROPT_CORTEX_CONTEXT_PACK_URL`
+- `CROPT_CORTEX_ECOSYSTEM_EVIDENCE_URL`
 - `CROPT_CORTEX_INTERNAL_API_SECRET`
 
 The default Cr0pto client should read bounded metadata first: target, source
@@ -118,6 +126,10 @@ When an assistant needs fresh context, it should call the builder with a
 bounded query, purpose, filters, `maxEvidence` and `maxTokens`. `allowProtected`
 must stay false unless the revived Cr0pto workflow has explicit partner/legal
 approval and redaction for that data class.
+
+The shared builder merges eligible Ecosystem Evidence events with artifact
+retrieval. The direct evidence read surface is for provenance, freshness and
+known-gap inspection; it is not a settlement, wallet or transaction API.
 
 Next implementation slices:
 
