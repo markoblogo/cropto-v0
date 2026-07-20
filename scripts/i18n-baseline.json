@@ -1,5 +1,5 @@
 {
-  "total": 811,
+  "total": 816,
   "strings": [
     {
       "text": "No recent quotes. Trading temporarily disabled.",
@@ -5042,6 +5042,36 @@
       "file": "client/src/pages/not-found.tsx",
       "line": 21,
       "category": "jsx_text"
+    },
+    {
+      "text": "evidence-backed context packs for future assistants, reports and due-diligence.",
+      "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+      "line": 52,
+      "category": "jsx_text"
+    },
+    {
+      "text": "1D3X Cortex:",
+      "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+      "line": 52,
+      "category": "jsx_text"
+    },
+    {
+      "text": "1D3X Cortex",
+      "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+      "line": 75,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cropto consumes the ecosystem intelligence layer before any future assistant acts.",
+      "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+      "line": 77,
+      "category": "jsx_text"
+    },
+    {
+      "text": "Cortex is the shared internal intelligence product for approved index, MediaHub, Monitor and Cropto context. In Cropto it is\n            currently a source-manifest-enabled consumer contract for bounded evidence, market context and partner due-diligence. Any future trading, settlement, wallet,\n            token or clearing action still requires explicit tool contracts, confirmation, idempotency and audit.",
+      "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+      "line": 79,
+      "category": "jsx_text"
     }
   ],
   "byFile": {
@@ -6394,6 +6424,36 @@
         "line": 22,
         "category": "other",
         "context": "property: description"
+      },
+      {
+        "text": "evidence-backed context packs for future assistants, reports and due-diligence.",
+        "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+        "line": 52,
+        "category": "jsx_text"
+      },
+      {
+        "text": "1D3X Cortex:",
+        "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+        "line": 52,
+        "category": "jsx_text"
+      },
+      {
+        "text": "1D3X Cortex",
+        "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+        "line": 75,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cropto consumes the ecosystem intelligence layer before any future assistant acts.",
+        "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+        "line": 77,
+        "category": "jsx_text"
+      },
+      {
+        "text": "Cortex is the shared internal intelligence product for approved index, MediaHub, Monitor and Cropto context. In Cropto it is\n            currently a source-manifest-enabled consumer contract for bounded evidence, market context and partner due-diligence. Any future trading, settlement, wallet,\n            token or clearing action still requires explicit tool contracts, confirmation, idempotency and audit.",
+        "file": "client/src/components/home/CroptoInfrastructureSection.tsx",
+        "line": 79,
+        "category": "jsx_text"
       }
     ],
     "client/src/components/home/InvestorDeckCallout.tsx": [

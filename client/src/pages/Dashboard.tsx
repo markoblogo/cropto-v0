@@ -18,6 +18,7 @@ import { useWalletSummary } from "@/hooks/useWalletSummary";
 import { WalletAuthModal } from "@/components/WalletAuthModal";
 import { RoleSelectionModal } from "@/components/RoleSelectionModal";
 import { TradingStatusBanner } from "@/components/TradingStatusBanner";
+import { ProductLifecycleBanner } from "@/components/ProductLifecycleBanner";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePolling } from "@/hooks/usePolling";
@@ -344,6 +345,8 @@ export default function Dashboard() {
         onOpenLogin={handleOpenLogin}
         onOpenWalletModal={handleOpenWalletModal}
       />
+
+      <ProductLifecycleBanner />
 
       {/* Market Dashboard Section */}
       <div id="market-dashboard">

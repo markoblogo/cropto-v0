@@ -88,6 +88,9 @@ export function Hero({
               <p className="text-sm sm:text-base text-white/75 max-w-3xl md:pl-[7rem]">
                 {t('home.hero.body')}
               </p>
+              <p className="text-sm sm:text-base font-semibold text-white/95 max-w-3xl md:pl-[7rem]">
+                {t('home.hero.lifecycle')}
+              </p>
               <p className="max-w-3xl rounded-lg border border-white/20 bg-black/25 p-3 text-sm leading-6 text-white/85 backdrop-blur-sm md:ml-[7rem]">
                 {t('home.hero.blockchainClarification')}
               </p>

@@ -155,6 +155,7 @@
     "hero": {
       "title": "Cropto",
       "subtitle": "Indexed trading and settlement infrastructure for agricultural commodities.",
+      "lifecycle": "Cropto is currently in maintenance mode: the prototype is intentionally paused, but market analytics and reporting are still available for testing and evaluation.",
       "body": "Cropto connects local commodity indices, physical-market contracts and programmable settlement workflows. It is designed for spot and options trading on agricultural commodities and index-linked instruments, using 1D3X/SPIKE benchmark data as reference infrastructure.",
       "blockchainClarification": "Its blockchain layer is not crypto speculation. It is used for document verification, contract-state records, settlement traceability and optional tokenized clearing.",
       "cta": {
@@ -163,6 +164,19 @@
         "viewMarkets": "Explore AMI Ecosystem",
         "connectWallet": "Connect Wallet",
         "walletConnected": "Wallet: Connected"
+      }
+    },
+    "lifecycle": {
+      "badge": "Project Status",
+      "title": "Paused, But Maintained",
+      "description": "Cropto is temporarily in maintenance mode. Core market data, reporting, and technical demo workflows remain available, while production trading workflows are intentionally disabled until readiness checks are finalized.",
+      "stateLine": "Current mode: read-only market monitoring with manual review path.",
+      "refreshLine": "Benchmark refresh: every 15 minutes (scheduled).",
+      "lastChecked": "Last status check completed in July 2026.",
+      "actions": {
+        "deck": "Explore Demo Deck",
+        "market": "Open Market Dashboard",
+        "feedback": "Send Feedback"
       }
     },
     "market": {

@@ -155,6 +155,7 @@
     "hero": {
       "title": "Cropto",
       "subtitle": "Infraestructura de trading indexado y liquidación para commodities agrícolas.",
+      "lifecycle": "Cropto está actualmente en modo de mantenimiento: el prototipo está temporalmente pausado, pero la analítica de mercado y los reportes siguen disponibles para pruebas y evaluación.",
       "cta": {
         "startIndexTrading": "Ver demo técnica",
         "startOptionsTrading": "Explorar mercados indexados",
@@ -164,6 +165,19 @@
       },
       "body": "Cropto conecta índices locales de commodities, contratos del mercado físico y flujos programables de liquidación. Está diseñado para workflows spot y de opciones sobre commodities agrícolas e instrumentos vinculados a índices, usando datos benchmark de 1D3X/SPIKE como infraestructura de referencia.",
       "blockchainClarification": "Su capa blockchain no trata de especulación cripto. Se usa para verificación documental, registros de estado contractual, trazabilidad de liquidación y clearing tokenizado opcional."
+    },
+    "lifecycle": {
+      "badge": "Estado del proyecto",
+      "title": "En pausa, pero activo",
+      "description": "Cropto está temporalmente en mantenimiento. Continúan disponibles los datos de mercado, reportes y flujos de demo técnica, mientras los flujos de trading productivo están deshabilitados hasta completar la validación de riesgos y operaciones.",
+      "stateLine": "Modo actual: monitoreo del mercado en read-only con revisión manual.",
+      "refreshLine": "Actualización de índices: cada 15 minutos (según programación).",
+      "lastChecked": "Última revisión del estado: julio de 2026.",
+      "actions": {
+        "deck": "Ver deck de demo",
+        "market": "Abrir el panel de mercado",
+        "feedback": "Enviar feedback"
+      }
     },
     "market": {
       "title": "Panel de mercado",
