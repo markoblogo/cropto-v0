@@ -5,6 +5,10 @@
 
 Cropto is an early-stage product for commodity trading, market monitoring, and brokerage workflows.
 
+The repository keeps a public product surface aligned to indexed spot and options
+exposure using transparent, reference-facing snapshots from the active commodity
+indexing components.
+
 This repository contains the current Cropto MVP: the main web application, the supporting Node/Express backend, market-data ingestion paths, and the latest workflow modules such as Sea Brokerage Monitor.
 
 The project is currently in active prototype / staging mode. Parts of the product are already interactive and partner-reviewable, while some integrations and operational flows are still being hardened.
