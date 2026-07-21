@@ -39,6 +39,7 @@ The current repository includes these visible product areas:
   Background jobs, polling, normalization, monitoring services, and API routes that support the product surfaces.
 
 ## Current Highlights
+- The repository now publishes a public monthly indexed-spot update cadence for Ukraine, Argentina and Brazil.
 - Cropto now expands indexed spot market exposure across Ukraine, Argentina, and Brazil.
 
 - Market dashboard and monitoring routes backed by API queries and ingestion services
