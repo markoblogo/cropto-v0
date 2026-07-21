@@ -283,3 +283,7 @@ Practical guidance:
 - prefer keeping main operational paths understandable over adding parallel experimental layers
 
 Additional internal docs are indexed in [docs/README.md](docs/README.md).
+
+
+<!-- CortexABV synthetic test marker: public-safe README update for proposal-only verification. -->
+CortexABV synthetic test marker for workflow verification.
