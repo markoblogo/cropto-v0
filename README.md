@@ -44,7 +44,7 @@ The current repository includes these visible product areas:
 
 ## Current Highlights
 - The repository now publishes a public monthly indexed-spot update cadence for Ukraine, Argentina and Brazil.
-- Cropto now publishes monthly regional indexed-spot and options analytics snapshots for Ukraine, Argentina, and Brazil.
+- The public monthly digest now includes indexed spot market snapshots for Ukraine, Argentina, and Brazil.
 
 - Market dashboard and monitoring routes backed by API queries and ingestion services
 - Trading UI flows for spot, options, forward, portfolio, and wallet scenarios
