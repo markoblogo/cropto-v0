@@ -287,3 +287,8 @@ npm run e2e:smoke
 - Prefer incremental, testable changes over broad refactors.
 
 For internal docs index, see [docs/README.md](docs/README.md).
+
+
+## CortexABV Synthetic Test
+This is a controlled public-safe marker for workflow verification only.
+_No action/change intent beyond read-only-safe PR proposal surface test._
