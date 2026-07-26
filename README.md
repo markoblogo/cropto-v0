@@ -13,6 +13,32 @@ This repository contains the current Cropto MVP: the main web application, the s
 
 The project is currently in active prototype / staging mode. Parts of the product are already interactive and partner-reviewable, while some integrations and operational flows are still being hardened.
 
+## System Map
+
+```mermaid
+flowchart LR
+    Public["Public product and partner-review surfaces"]
+    Frontend["React client routes and feature modules"]
+    Monitor["Sea Brokerage Monitor"]
+    Trading["Trading, risk and admin workflows"]
+    API["Express API and shared schema"]
+    Ingestion["Ingestion jobs, polling and normalization"]
+    Data["Market, logistics and weather sources"]
+    Ops["Contracts, docs, scripts and deployment ops"]
+
+    Public --> Frontend
+    Frontend --> Monitor
+    Frontend --> Trading
+    Monitor --> API
+    Trading --> API
+    Data --> Ingestion
+    Ingestion --> API
+    Ops --> API
+    Ops --> Frontend
+```
+
+Keep this map updated when monitor boundaries, ingestion paths, backend ownership, or public review surfaces change.
+
 ## Why this repo matters
 
 Cropto is not just a landing page or a deck repo. The codebase now reflects a working product direction built around:
